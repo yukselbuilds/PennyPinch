@@ -1,0 +1,98 @@
+name: Source checks
+
+on:
+  workflow_dispatch:
+    inputs:
+      free_only_confirmed:
+        description: Confirm that this run fits the current free standard-runner allocation and account hard stop.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: source-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend-source:
+    if: ${{ inputs.free_only_confirmed == true }}
+    name: Frontend source checks (Ubuntu standard runner)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up pinned Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+
+      - name: Install pinned pnpm and run source checks
+        shell: bash
+        env:
+          npm_config_cache: ${{ github.workspace }}/work/.npm-cache
+        run: |
+          set -euo pipefail
+
+          if ! mkdir -p work/.npm-cache work/ci-tools work/caches/pnpm >/dev/null 2>&1; then
+            echo "::error::Could not prepare project-local tool and cache directories."
+            exit 1
+          fi
+
+          if bootstrap_output="$(npm install --prefix work/ci-tools --no-save --ignore-scripts --no-audit --no-fund pnpm@11.25.0 2>&1)"; then
+            echo "Pinned pnpm bootstrap: passed."
+          else
+            status=$?
+            echo "::error::Pinned pnpm bootstrap failed (exit ${status}). Reproduce with: npm install --prefix work/ci-tools --no-save --ignore-scripts --no-audit --no-fund pnpm@11.25.0"
+            exit "$status"
+          fi
+
+          pnpm_entry="$GITHUB_WORKSPACE/work/ci-tools/node_modules/pnpm/bin/pnpm.cjs"
+          if actual_pnpm_version="$(node "$pnpm_entry" --version 2>&1)" && [[ "$actual_pnpm_version" == "11.25.0" ]]; then
+            echo "Pinned pnpm version check: passed."
+          else
+            status=$?
+            echo "::error::Pinned pnpm version check failed (exit ${status}). Expected version 11.25.0."
+            exit 1
+          fi
+
+          if install_output="$(node "$pnpm_entry" --store-dir work/caches/pnpm install --frozen-lockfile 2>&1)"; then
+            echo "Frozen dependency install: passed."
+          else
+            status=$?
+            echo "::error::Frozen dependency install failed (exit ${status}). Reproduce with: pnpm --store-dir work/caches/pnpm install --frozen-lockfile"
+            exit "$status"
+          fi
+
+          if test_output="$(node "$pnpm_entry" test:app 2>&1)"; then
+            test_count="$(printf '%s\n' "$test_output" | sed -nE 's/^[[:space:]]*((ℹ|#)[[:space:]]+)?tests[[:space:]]+([0-9]+)[[:space:]]*$/\3/p' | tail -n 1)"
+            if [[ "$test_count" =~ ^[0-9]+$ ]]; then
+              echo "App tests: passed (${test_count})."
+              app_test_summary="passed (${test_count})"
+            else
+              echo "App tests: passed (count unavailable)."
+              app_test_summary='passed; count unavailable'
+            fi
+          else
+            status=$?
+            echo "::error::App tests failed (exit ${status}). Reproduce with: pnpm test:app"
+            exit "$status"
+          fi
+
+          if build_output="$(node "$pnpm_entry" build 2>&1)"; then
+            echo "Frontend build: passed."
+          else
+            status=$?
+            echo "::error::Frontend build failed (exit ${status}). Reproduce with: pnpm build"
+            exit "$status"
+          fi
+
+          printf '%s\n' '## Source-only checks' '' "- App tests: ${app_test_summary}." '- Frontend build: passed.' '- Scope: source-only frontend; no engine or native runtime validation.' >> "$GITHUB_STEP_SUMMARY"
