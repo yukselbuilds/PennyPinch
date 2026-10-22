@@ -1,0 +1,49 @@
+# Project-local proof, download, cache, and generated artifacts.
+/work/
+/outputs/
+
+# JavaScript, Rust, and TypeScript build output.
+/node_modules/
+/dist/
+/target/
+/src-tauri/target/
+/src-tauri/gen/
+**/target/
+**/node_modules/
+**/__pycache__/
+*.py[cod]
+*.tsbuildinfo
+
+# Local environment and credentials. Keep safe templates and source files.
+**/.env
+**/.env.*
+!**/.env.example
+**/secrets/
+**/credentials/
+**/credentials.json
+**/*credentials.json
+**/auth.json
+**/hosts.yml
+**/.netrc
+**/.npmrc
+**/.pypirc
+**/.cargo/credentials*
+*.secret
+*.secrets
+*.token
+*.credentials
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.ppk
+*.jks
+*.keystore
+**/id_rsa
+**/id_dsa
+**/id_ecdsa
+**/id_ed25519
+
+# Local logs.
+*.log

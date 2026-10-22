@@ -1,0 +1,778 @@
+use super::discovery::{
+    DiscoveryInputs, DiscoveryManager, DiscoveryReply, InstallationSelectionError,
+};
+use std::fs;
+use std::path::{Component, Path, PathBuf};
+use uuid::Uuid;
+
+const REQUEST_ID: &str = "7132bced-3ce0-4c1b-8f48-d93d7b96f7ce";
+const RUNS_RELATIVE: &str = "work/proofs/discovery/runs";
+
+struct Fixture {
+    project_root: PathBuf,
+    runs_root: PathBuf,
+    uuid: String,
+    path: PathBuf,
+    cleaned: bool,
+}
+
+impl Fixture {
+    fn new() -> Self {
+        let project_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .canonicalize()
+            .unwrap();
+        assert_safe_directory(&project_root, &project_root);
+        let mut runs = project_root.clone();
+        for component in Path::new(RUNS_RELATIVE).components() {
+            let Component::Normal(part) = component else {
+                panic!("fixture path must be a fixed relative path");
+            };
+            runs.push(part);
+            match fs::symlink_metadata(&runs) {
+                Ok(_) => {
+                    assert_safe_directory(&runs, &project_root);
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                    // The already-checked parent is the only location used by this create.
+                    fs::create_dir(&runs).expect("create one checked fixture ancestor");
+                    assert_safe_directory(&runs, &project_root);
+                }
+                Err(error) => panic!("fixture ancestor metadata failed: {error:?}"),
+            }
+        }
+        let runs_root = runs.canonicalize().expect("canonical runs root");
+        assert!(runs_root.starts_with(&project_root));
+        let uuid = Uuid::new_v4().to_string();
+        let path = runs_root.join(&uuid);
+        assert!(matches!(
+            fs::symlink_metadata(&path),
+            Err(ref error) if error.kind() == std::io::ErrorKind::NotFound
+        ));
+        fs::create_dir(&path).unwrap();
+        assert_safe_directory(&path, &runs_root);
+        Self {
+            project_root,
+            runs_root,
+            uuid,
+            path,
+            cleaned: false,
+        }
+    }
+
+    fn at(&self, relative: impl AsRef<Path>) -> PathBuf {
+        let path = self.path.join(relative);
+        let raw = path.as_os_str().to_string_lossy();
+        raw.strip_prefix(r"\\?\")
+            .filter(|local| {
+                let bytes = local.as_bytes();
+                bytes.len() >= 3
+                    && bytes[0].is_ascii_alphabetic()
+                    && bytes[1] == b':'
+                    && matches!(bytes[2], b'\\' | b'/')
+            })
+            .map(PathBuf::from)
+            .unwrap_or(path)
+    }
+
+    fn cleanup(&mut self) {
+        if self.cleaned {
+            return;
+        }
+        assert_safe_runs_chain(&self.project_root, &self.runs_root);
+        let original_metadata = fs::symlink_metadata(&self.path).expect("fixture UUID metadata");
+        assert!(original_metadata.is_dir());
+        assert!(!original_metadata.file_type().is_symlink());
+        assert_no_reparse(&original_metadata);
+        let root = self.path.canonicalize().expect("fixture root exists");
+        let expected_root = self.runs_root.join(&self.uuid);
+        assert!(root.starts_with(&self.runs_root));
+        assert_eq!(test_path_key(&root), test_path_key(&expected_root));
+        let mut pending = vec![root.clone()];
+        while let Some(path) = pending.pop() {
+            let metadata = fs::symlink_metadata(&path).expect("fixture metadata");
+            assert_no_reparse(&metadata);
+            assert!(path.canonicalize().unwrap().starts_with(&root));
+            if metadata.is_dir() {
+                for child in fs::read_dir(&path).expect("fixture descendants") {
+                    pending.push(child.expect("fixture entry").path());
+                }
+            }
+        }
+        assert_safe_runs_chain(&self.project_root, &self.runs_root);
+        let original_metadata = fs::symlink_metadata(&self.path).expect("fixture UUID metadata");
+        assert!(original_metadata.is_dir());
+        assert_no_reparse(&original_metadata);
+        let confirmed_root = self
+            .path
+            .canonicalize()
+            .expect("fixture UUID canonical path");
+        assert_eq!(
+            test_path_key(&confirmed_root),
+            test_path_key(&expected_root)
+        );
+        assert!(confirmed_root.starts_with(&self.runs_root));
+        fs::remove_dir_all(&root).expect("remove only this UUID fixture");
+        self.cleaned = true;
+    }
+}
+
+fn assert_safe_runs_chain(project_root: &Path, runs_root: &Path) {
+    let mut current = project_root.to_path_buf();
+    assert_safe_directory(&current, project_root);
+    for component in Path::new(RUNS_RELATIVE).components() {
+        let Component::Normal(part) = component else {
+            panic!("fixture path must be a fixed relative path");
+        };
+        current.push(part);
+        assert_safe_directory(&current, project_root);
+    }
+    let canonical_runs = current.canonicalize().expect("canonical runs root");
+    assert_eq!(test_path_key(&canonical_runs), test_path_key(runs_root));
+}
+
+fn assert_safe_directory(path: &Path, boundary: &Path) {
+    let metadata = fs::symlink_metadata(path).expect("fixture directory metadata");
+    assert!(metadata.is_dir());
+    assert_no_reparse(&metadata);
+    let canonical = path
+        .canonicalize()
+        .expect("fixture directory canonical path");
+    assert!(canonical.starts_with(boundary));
+}
+
+fn assert_no_reparse(metadata: &fs::Metadata) {
+    assert!(!metadata.file_type().is_symlink());
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        assert_eq!(
+            metadata.file_attributes() & 0x400,
+            0,
+            "fixture contains reparse point"
+        );
+    }
+}
+
+fn test_path_key(path: &Path) -> String {
+    path.to_string_lossy().to_lowercase()
+}
+
+impl Drop for Fixture {
+    fn drop(&mut self) {
+        if !self.cleaned {
+            self.cleanup();
+        }
+    }
+}
+
+fn write_file(path: &Path, bytes: &[u8]) {
+    fs::create_dir_all(path.parent().unwrap()).unwrap();
+    fs::write(path, bytes).unwrap();
+}
+
+fn snapshot(reply: DiscoveryReply) -> super::discovery::DiscoverySnapshot {
+    match reply {
+        DiscoveryReply::Snapshot(value) => value,
+        DiscoveryReply::Error(_) => panic!("expected discovery snapshot"),
+        DiscoveryReply::Cancelled(_) => panic!("expected discovery snapshot"),
+    }
+}
+
+#[test]
+fn initial_state_is_not_scanned_and_absence_is_not_unsupported() {
+    let manager = DiscoveryManager::new();
+    let initial = snapshot(manager.list_snapshot(REQUEST_ID.to_owned()));
+    assert_eq!(initial.status, "not_scanned");
+    assert!(initial.installations.is_empty());
+    assert!(initial
+        .warnings
+        .iter()
+        .any(|warning| *warning == "scan_not_run"));
+
+    let scanned =
+        snapshot(manager.scan_with_inputs(REQUEST_ID.to_owned(), DiscoveryInputs::default()));
+    assert_eq!(scanned.status, "partial");
+    assert!(scanned.installations.is_empty());
+    assert!(scanned
+        .warnings
+        .iter()
+        .any(|warning| *warning == "scope_partial"));
+    assert!(scanned
+        .warnings
+        .iter()
+        .any(|warning| *warning == "absence_is_not_unsupported"));
+}
+
+#[test]
+fn installation_selection_is_bound_to_scan_generation_and_returns_no_path() {
+    let mut fixture = Fixture::new();
+    let bin = fixture.at("Selected Codex");
+    let executable = bin.join("codex.cmd");
+    write_file(&executable, b"fixture command stub");
+    let manager = DiscoveryManager::new();
+    let scanned = snapshot(manager.scan_with_inputs(
+        REQUEST_ID.to_owned(),
+        DiscoveryInputs {
+            path_entries: vec![bin],
+            ..DiscoveryInputs::default()
+        },
+    ));
+    let candidate = scanned
+        .installations
+        .iter()
+        .find(|installation| installation.client_kind == "codex")
+        .expect("fixture PATH candidate");
+
+    let selected = manager
+        .select_installation(&candidate.installation_id, scanned.scan_generation)
+        .expect("current opaque installation should resolve to a summary");
+    assert_eq!(selected.installation_id, candidate.installation_id);
+    assert_eq!(selected.client_kind, "codex");
+    assert_eq!(selected.source, "path");
+    let serialized = serde_json::to_string(&selected).unwrap();
+    assert!(!serialized.contains(&executable.to_string_lossy().to_string()));
+
+    assert!(matches!(
+        manager.select_installation("invalid-id", scanned.scan_generation),
+        Err(InstallationSelectionError::InvalidInstallationId)
+    ));
+    assert!(matches!(
+        manager.select_installation(&candidate.installation_id, scanned.scan_generation + 1),
+        Err(InstallationSelectionError::StaleScanGeneration)
+    ));
+    assert!(matches!(
+        manager.select_installation(&candidate.installation_id, 0),
+        Err(InstallationSelectionError::InvalidScanGeneration)
+    ));
+    let missing_id = Uuid::new_v4().to_string();
+    assert!(matches!(
+        manager.select_installation(&missing_id, scanned.scan_generation),
+        Err(InstallationSelectionError::InstallationNotFound)
+    ));
+    assert!(matches!(
+        DiscoveryManager::new().select_installation(&candidate.installation_id, 1),
+        Err(InstallationSelectionError::NotScanned)
+    ));
+    fixture.cleanup();
+}
+
+#[test]
+fn path_keeps_multiple_installations_and_deduplicates_case_insensitive_same_file() {
+    let mut fixture = Fixture::new();
+    let first = fixture.at("Bin One");
+    let second = fixture.at("Îşlemci 工具");
+    write_file(&first.join("codex.cmd"), b"test shim marker");
+    write_file(&second.join("codex.cmd"), b"another installation marker");
+    let inputs = DiscoveryInputs {
+        path_entries: vec![
+            first.clone(),
+            first.with_file_name("bin one"),
+            second.clone(),
+        ],
+        ..DiscoveryInputs::default()
+    };
+    let manager = DiscoveryManager::new();
+    let result = snapshot(manager.scan_with_inputs(REQUEST_ID.to_owned(), inputs));
+    let codex: Vec<_> = result
+        .installations
+        .iter()
+        .filter(|item| item.client_kind == "codex")
+        .collect();
+    assert_eq!(codex.len(), 2);
+    assert!(codex.iter().all(|item| item.version.is_none()));
+    assert!(codex
+        .iter()
+        .all(|item| item.connection_status == "not_verified"));
+    assert!(codex.iter().all(|item| item.status == "detected"));
+    let serialized = serde_json::to_string(&result).unwrap();
+    assert!(!serialized.contains(&fixture.path.to_string_lossy().to_string()));
+    let owned_path = manager
+        .installation_path(&codex[0].installation_id)
+        .unwrap();
+    assert!(owned_path.starts_with(fixture.at("")));
+    fixture.cleanup();
+}
+
+#[test]
+fn npm_metadata_is_separate_from_unverified_path_wrappers_and_scan_is_read_only() {
+    let mut fixture = Fixture::new();
+    let npm = fixture.at("npm");
+    let codex = npm.join("node_modules/@openai/codex");
+    let claude = npm.join("node_modules/@anthropic-ai/claude-code");
+    let opencode = npm.join("node_modules/opencode-ai");
+    let codex_manifest = br#"{"name":"@openai/codex","version":"0.163.0-alpha.10.2","bin":{"codex":"bin/codex.js"},"scripts":{"postinstall":"must not run"}}"#;
+    let claude_manifest =
+        br#"{"name":"@anthropic-ai/claude-code","version":"latest","bin":{"claude":"cli.js"}}"#;
+    let oversized_manifest = format!(
+        "{{\"name\":\"opencode-ai\",\"version\":\"1.2.3\",\"bin\":{{\"opencode\":\"cli.js\"}},\"padding\":\"{}\"}}",
+        "x".repeat(16 * 1024)
+    );
+    write_file(&codex.join("package.json"), codex_manifest);
+    write_file(&codex.join("bin/codex.js"), b"fixture executable data");
+    write_file(&npm.join("codex.cmd"), b"independent PATH wrapper");
+    write_file(&claude.join("package.json"), claude_manifest);
+    write_file(&claude.join("cli.js"), b"fixture executable data");
+    write_file(
+        &opencode.join("package.json"),
+        oversized_manifest.as_bytes(),
+    );
+
+    let manager = DiscoveryManager::new();
+    let result = snapshot(manager.scan_with_inputs(
+        REQUEST_ID.to_owned(),
+        DiscoveryInputs {
+            path_entries: vec![npm.clone()],
+            npm_roots: vec![npm.clone()],
+            ..DiscoveryInputs::default()
+        },
+    ));
+    let codex_entries: Vec<_> = result
+        .installations
+        .iter()
+        .filter(|item| item.client_kind == "codex")
+        .collect();
+    assert_eq!(codex_entries.len(), 2);
+    let package_entry = codex_entries
+        .iter()
+        .find(|item| item.source == "user_local_npm")
+        .unwrap();
+    let path_entry = codex_entries
+        .iter()
+        .find(|item| item.source == "path")
+        .unwrap();
+    let claude_entry = result
+        .installations
+        .iter()
+        .find(|item| item.client_kind == "claude_code")
+        .unwrap();
+    assert_eq!(package_entry.version.as_deref(), Some("0.163.0-alpha.10.2"));
+    assert_eq!(path_entry.version, None);
+    let path_executable = manager
+        .installation_path(&path_entry.installation_id)
+        .unwrap();
+    assert!(path_executable.ends_with("codex.cmd"));
+    assert_eq!(claude_entry.version, None);
+    assert!(!result
+        .installations
+        .iter()
+        .any(|item| item.client_kind == "opencode"));
+    assert!(result
+        .warnings
+        .iter()
+        .any(|warning| *warning == "package_metadata_untrusted"));
+    assert_eq!(
+        fs::read(codex.join("package.json")).unwrap(),
+        codex_manifest
+    );
+    assert_eq!(
+        fs::read(claude.join("package.json")).unwrap(),
+        claude_manifest
+    );
+    assert_eq!(
+        fs::read(codex.join("bin/codex.js")).unwrap(),
+        b"fixture executable data"
+    );
+    assert_eq!(
+        fs::read(npm.join("codex.cmd")).unwrap(),
+        b"independent PATH wrapper"
+    );
+    fixture.cleanup();
+}
+
+#[test]
+fn candidate_scan_is_bounded() {
+    let mut fixture = Fixture::new();
+    let mut path_entries = Vec::new();
+    for index in 0..57 {
+        let bin = fixture.at(format!("candidate-{index}"));
+        for name in ["codex.exe", "claude.exe", "opencode.exe"] {
+            write_file(&bin.join(name), b"fixture only");
+        }
+        path_entries.push(bin);
+    }
+    let result = snapshot(DiscoveryManager::new().scan_with_inputs(
+        REQUEST_ID.to_owned(),
+        DiscoveryInputs {
+            path_entries,
+            ..DiscoveryInputs::default()
+        },
+    ));
+    assert!(result
+        .warnings
+        .iter()
+        .any(|warning| *warning == "candidate_limit_reached"));
+    assert!(result.installations.len() <= 512);
+    fixture.cleanup();
+}
+
+#[test]
+fn path_and_metadata_limits_are_reported_and_network_candidates_are_skipped() {
+    let mut fixture = Fixture::new();
+    let local = fixture.at("local-bin");
+    write_file(&local.join("opencode.exe"), b"fixture only");
+    let mut path_entries = vec![local.clone()];
+    path_entries.extend((0..80).map(|_| PathBuf::from(r"\\nonexistent.invalid\share")));
+    let manager = DiscoveryManager::new();
+    let result = snapshot(manager.scan_with_inputs(
+        REQUEST_ID.to_owned(),
+        DiscoveryInputs {
+            path_entries,
+            ..DiscoveryInputs::default()
+        },
+    ));
+    assert!(result
+        .installations
+        .iter()
+        .any(|item| item.client_kind == "opencode"));
+    assert!(result
+        .warnings
+        .iter()
+        .any(|warning| *warning == "path_entry_limit_reached"));
+    assert!(result
+        .warnings
+        .iter()
+        .any(|warning| *warning == "network_location_skipped"));
+    assert!(result
+        .installations
+        .iter()
+        .all(|item| item.version.is_none()));
+    fixture.cleanup();
+}
+
+#[test]
+fn fixed_error_dto_rejects_invalid_request_and_preserves_correlation() {
+    let manager = DiscoveryManager::new();
+    let reply = manager.list_snapshot("invalid".to_owned());
+    match reply {
+        DiscoveryReply::Error(error) => {
+            assert_eq!(error.schema_version, 1);
+            assert_eq!(error.status, "error");
+            assert_eq!(error.request_id, "");
+            assert_eq!(error.error.code, "validation_failed");
+            assert_eq!(error.error.retryable, false);
+            assert_eq!(error.error.message_key, "discovery.validation_failed");
+            assert_eq!(error.error.diagnostic_id, None);
+        }
+        DiscoveryReply::Snapshot(_) | DiscoveryReply::Cancelled(_) => {
+            panic!("invalid request must fail closed")
+        }
+    }
+}
+
+fn select_fixture(manager: &DiscoveryManager, client_kind: &str, path: PathBuf) -> DiscoveryReply {
+    manager.select_client_file_with(REQUEST_ID.to_owned(), client_kind.to_owned(), move |_| {
+        Ok(Some(path))
+    })
+}
+
+fn discovery_error_code(reply: &DiscoveryReply) -> &str {
+    match reply {
+        DiscoveryReply::Error(error) => error.error.code,
+        _ => panic!("expected fixed discovery error"),
+    }
+}
+
+#[test]
+fn picker_cancel_keeps_snapshot_generation_and_returns_correlated_cancelled_envelope() {
+    let manager = DiscoveryManager::new();
+    let before = snapshot(manager.list_snapshot(REQUEST_ID.to_owned()));
+    let reply =
+        manager.select_client_file_with(REQUEST_ID.to_owned(), "codex".to_owned(), |_| Ok(None));
+    assert!(matches!(reply, DiscoveryReply::Cancelled(_)));
+    let cancelled = serde_json::to_value(reply).unwrap();
+    assert_eq!(cancelled["schema_version"], 1);
+    assert_eq!(cancelled["request_id"], REQUEST_ID);
+    assert_eq!(cancelled["status"], "cancelled");
+    let after = snapshot(manager.list_snapshot(REQUEST_ID.to_owned()));
+    assert_eq!(before.status, after.status);
+    assert_eq!(before.scan_generation, after.scan_generation);
+    assert_eq!(before.installations.len(), after.installations.len());
+    assert_eq!(before.warnings, after.warnings);
+}
+
+#[test]
+fn picker_failure_keeps_previous_snapshot_and_uses_only_fixed_error_metadata() {
+    let manager = DiscoveryManager::new();
+    let before = snapshot(manager.list_snapshot(REQUEST_ID.to_owned()));
+    let failed =
+        manager.select_client_file_with(REQUEST_ID.to_owned(), "codex".to_owned(), |_| Err(()));
+    assert_eq!(discovery_error_code(&failed), "environment_blocked");
+    let serialized = serde_json::to_string(&failed).unwrap();
+    assert!(serialized.contains("discovery.environment_blocked"));
+    assert!(!serialized.contains("path"));
+    let after = snapshot(manager.list_snapshot(REQUEST_ID.to_owned()));
+    assert_eq!(before.status, after.status);
+    assert_eq!(before.scan_generation, after.scan_generation);
+    assert!(after.installations.is_empty());
+}
+
+#[test]
+fn picker_rejects_invalid_request_client_mismatch_wrong_name_and_unc_without_state_change() {
+    let mut fixture = Fixture::new();
+    let codex = fixture.at("codex.cmd");
+    let claude = fixture.at("claude.exe");
+    let wrong_basename = fixture.at("other.exe");
+    let wrong_extension = fixture.at("codex.ps1");
+    write_file(&codex, b"fixture command stub");
+    write_file(&claude, b"fixture executable data");
+    write_file(&wrong_basename, b"fixture executable data");
+    write_file(&wrong_extension, b"fixture only");
+    let manager = DiscoveryManager::new();
+    let before = snapshot(manager.list_snapshot(REQUEST_ID.to_owned()));
+
+    let invalid_id =
+        manager.select_client_file_with("invalid".to_owned(), "codex".to_owned(), |_| {
+            panic!("invalid request must not open the picker")
+        });
+    assert_eq!(discovery_error_code(&invalid_id), "validation_failed");
+    let invalid_kind =
+        manager.select_client_file_with(REQUEST_ID.to_owned(), "Codex".to_owned(), |_| {
+            panic!("invalid client kind must not open the picker")
+        });
+    assert_eq!(discovery_error_code(&invalid_kind), "validation_failed");
+
+    let mismatched = select_fixture(&manager, "codex", claude);
+    assert_eq!(discovery_error_code(&mismatched), "validation_failed");
+    let wrong_name = select_fixture(&manager, "codex", wrong_basename);
+    assert_eq!(discovery_error_code(&wrong_name), "validation_failed");
+    let wrong_name = select_fixture(&manager, "codex", wrong_extension);
+    assert_eq!(discovery_error_code(&wrong_name), "validation_failed");
+    let network = select_fixture(
+        &manager,
+        "codex",
+        PathBuf::from(r"\\nonexistent.invalid\share\codex.exe"),
+    );
+    assert_eq!(discovery_error_code(&network), "validation_failed");
+
+    let after = snapshot(manager.list_snapshot(REQUEST_ID.to_owned()));
+    assert_eq!(before.status, after.status);
+    assert_eq!(before.scan_generation, after.scan_generation);
+    assert!(after.installations.is_empty());
+    fixture.cleanup();
+}
+
+#[test]
+fn manual_picker_candidate_is_unverified_canonical_and_session_memory_only() {
+    let mut fixture = Fixture::new();
+    let executable = fixture.at("Selected 工具/codex.CMD");
+    write_file(&executable, b"fixture command stub");
+    let manager = DiscoveryManager::new();
+    let result = snapshot(select_fixture(&manager, "codex", executable.clone()));
+    assert_eq!(result.status, "partial");
+    assert_eq!(result.scan_generation, 1);
+    assert_eq!(result.installations.len(), 1);
+    let install = &result.installations[0];
+    assert_eq!(install.client_kind, "codex");
+    assert_eq!(install.surface, "cli");
+    assert_eq!(install.version, None);
+    assert_eq!(install.source, "manual_file");
+    assert_eq!(install.location_label, "Selected file");
+    assert_eq!(install.connection_status, "not_verified");
+    let path = manager.installation_path(&install.installation_id).unwrap();
+    let canonical = executable.canonicalize().unwrap();
+    let canonical_text = canonical.to_string_lossy();
+    let expected = PathBuf::from(
+        canonical_text
+            .strip_prefix(r"\\?\")
+            .unwrap_or(canonical_text.as_ref()),
+    );
+    assert_eq!(path, expected);
+    let serialized = serde_json::to_string(&result).unwrap();
+    assert!(!serialized.contains(&executable.to_string_lossy().to_string()));
+    assert!(result
+        .warnings
+        .iter()
+        .any(|warning| *warning == "absence_is_not_unsupported"));
+    fixture.cleanup();
+}
+
+#[test]
+fn selecting_a_file_already_found_by_scan_does_not_duplicate_or_advance_generation() {
+    let mut fixture = Fixture::new();
+    let bin = fixture.at("auto-bin");
+    let executable = bin.join("codex.cmd");
+    write_file(&executable, b"fixture command stub");
+    let manager = DiscoveryManager::new();
+    let scanned = snapshot(manager.scan_with_inputs(
+        REQUEST_ID.to_owned(),
+        DiscoveryInputs {
+            path_entries: vec![bin],
+            ..DiscoveryInputs::default()
+        },
+    ));
+    let selected = snapshot(select_fixture(&manager, "codex", executable));
+    assert_eq!(scanned.scan_generation, selected.scan_generation);
+    assert_eq!(selected.installations.len(), 1);
+    assert_eq!(selected.installations[0].source, "path");
+    let rescanned =
+        snapshot(manager.scan_with_inputs(REQUEST_ID.to_owned(), DiscoveryInputs::default()));
+    assert_eq!(rescanned.installations.len(), 1);
+    assert_eq!(rescanned.installations[0].source, "manual_file");
+    fixture.cleanup();
+}
+
+#[test]
+fn manual_candidates_survive_rescan_and_disappeared_files_are_dropped_with_warning() {
+    let mut fixture = Fixture::new();
+    let executable = fixture.at("Chosen/opencode.exe");
+    write_file(&executable, b"fixture executable data");
+    let manager = DiscoveryManager::new();
+    let selected = snapshot(select_fixture(&manager, "opencode", executable.clone()));
+    assert_eq!(selected.installations.len(), 1);
+    let rescanned =
+        snapshot(manager.scan_with_inputs(REQUEST_ID.to_owned(), DiscoveryInputs::default()));
+    assert_eq!(rescanned.installations.len(), 1);
+    assert_eq!(rescanned.installations[0].source, "manual_file");
+    assert_eq!(rescanned.scan_generation, selected.scan_generation + 1);
+
+    fs::remove_file(&executable).unwrap();
+    let after_gone =
+        snapshot(manager.scan_with_inputs(REQUEST_ID.to_owned(), DiscoveryInputs::default()));
+    assert!(after_gone.installations.is_empty());
+    assert!(after_gone
+        .warnings
+        .iter()
+        .any(|warning| *warning == "candidate_location_unavailable"));
+    fixture.cleanup();
+}
+
+#[test]
+fn zero_byte_cmd_picker_candidate_survives_rescan() {
+    let mut fixture = Fixture::new();
+    let executable = fixture.at("Selected/opencode.cmd");
+    write_file(&executable, b"");
+    assert_eq!(fs::metadata(&executable).unwrap().len(), 0);
+
+    let manager = DiscoveryManager::new();
+    let selected = snapshot(select_fixture(&manager, "opencode", executable.clone()));
+    assert_eq!(selected.status, "partial");
+    assert_eq!(selected.installations.len(), 1);
+    assert_eq!(selected.installations[0].source, "manual_file");
+    assert_eq!(selected.installations[0].version, None);
+    assert_eq!(selected.installations[0].location_label, "Selected file");
+    let selected_path = manager
+        .installation_path(&selected.installations[0].installation_id)
+        .unwrap();
+
+    let rescanned =
+        snapshot(manager.scan_with_inputs(REQUEST_ID.to_owned(), DiscoveryInputs::default()));
+    assert_eq!(rescanned.status, "partial");
+    assert_eq!(rescanned.scan_generation, selected.scan_generation + 1);
+    assert_eq!(rescanned.installations.len(), 1);
+    assert_eq!(rescanned.installations[0].client_kind, "opencode");
+    assert_eq!(rescanned.installations[0].source, "manual_file");
+    assert_eq!(rescanned.installations[0].version, None);
+    assert_eq!(rescanned.installations[0].location_label, "Selected file");
+    let rescanned_path = manager
+        .installation_path(&rescanned.installations[0].installation_id)
+        .unwrap();
+    assert_eq!(
+        test_path_key(&rescanned_path),
+        test_path_key(&selected_path)
+    );
+
+    fixture.cleanup();
+}
+
+#[test]
+#[ignore = "Opt-in: runs only bounded local installation metadata discovery; launches no client."]
+fn real_environment_scan_retains_zero_byte_cmd_picker_candidate() {
+    let mut fixture = Fixture::new();
+    let executable = fixture.at("Selected/opencode.cmd");
+    write_file(&executable, b"");
+    assert_eq!(fs::metadata(&executable).unwrap().len(), 0);
+
+    let manager = DiscoveryManager::new();
+    let selected = snapshot(select_fixture(&manager, "opencode", executable));
+    assert_eq!(selected.installations.len(), 1);
+    assert_eq!(selected.installations[0].source, "manual_file");
+    let selected_path = manager
+        .installation_path(&selected.installations[0].installation_id)
+        .unwrap();
+
+    let rescanned = snapshot(manager.scan(REQUEST_ID.to_owned()));
+    let matching: Vec<_> = rescanned
+        .installations
+        .iter()
+        .filter(|installation| {
+            manager
+                .installation_path(&installation.installation_id)
+                .is_some_and(|path| test_path_key(&path) == test_path_key(&selected_path))
+        })
+        .collect();
+    let candidate_location_unavailable = rescanned
+        .warnings
+        .iter()
+        .any(|warning| *warning == "candidate_location_unavailable");
+    println!(
+        "bounded discovery metadata: before_count={} after_count={} generation={} retained_count={} retained_source={} candidate_location_unavailable={}",
+        selected.installations.len(),
+        rescanned.installations.len(),
+        rescanned.scan_generation,
+        matching.len(),
+        matching.first().map(|item| item.source).unwrap_or("absent"),
+        candidate_location_unavailable,
+    );
+    assert_eq!(matching.len(), 1, "selected candidate was not retained");
+    assert_eq!(matching[0].source, "manual_file");
+    assert_eq!(rescanned.scan_generation, selected.scan_generation + 1);
+
+    fixture.cleanup();
+}
+
+#[test]
+fn manual_candidate_count_is_bounded() {
+    let mut fixture = Fixture::new();
+    let manager = DiscoveryManager::new();
+    for index in 0..32 {
+        let path = fixture.at(format!("manual-{index}/claude.exe"));
+        write_file(&path, b"fixture executable data");
+        let result = select_fixture(&manager, "claude_code", path);
+        assert!(matches!(result, DiscoveryReply::Snapshot(_)));
+    }
+    let overflow = fixture.at("manual-overflow/claude.exe");
+    write_file(&overflow, b"fixture executable data");
+    let rejected = select_fixture(&manager, "claude_code", overflow);
+    assert_eq!(discovery_error_code(&rejected), "validation_failed");
+    let final_snapshot = snapshot(manager.list_snapshot(REQUEST_ID.to_owned()));
+    assert_eq!(final_snapshot.installations.len(), 32);
+    fixture.cleanup();
+}
+
+#[test]
+fn scan_and_picker_share_the_mutation_lock_while_snapshot_reads_remain_available() {
+    use std::sync::mpsc;
+    use std::time::Duration;
+
+    let manager = DiscoveryManager::new();
+    let picker_manager = manager.clone();
+    let (entered_tx, entered_rx) = mpsc::channel();
+    let (release_tx, release_rx) = mpsc::channel();
+    let picker = std::thread::spawn(move || {
+        picker_manager.select_client_file_with(REQUEST_ID.to_owned(), "codex".to_owned(), |_| {
+            entered_tx.send(()).unwrap();
+            let _ = release_rx.recv_timeout(Duration::from_secs(3));
+            Ok(None)
+        })
+    });
+    if entered_rx.recv_timeout(Duration::from_secs(3)).is_err() {
+        let _ = release_tx.send(());
+        let _ = picker.join();
+        panic!("picker selector was not reached");
+    }
+
+    let busy = manager.scan_with_inputs(REQUEST_ID.to_owned(), DiscoveryInputs::default());
+    assert_eq!(discovery_error_code(&busy), "busy");
+    let readable = snapshot(manager.list_snapshot(REQUEST_ID.to_owned()));
+    assert_eq!(readable.status, "not_scanned");
+    release_tx.send(()).unwrap();
+    assert!(matches!(
+        picker.join().unwrap(),
+        DiscoveryReply::Cancelled(_)
+    ));
+    let after = snapshot(manager.list_snapshot(REQUEST_ID.to_owned()));
+    assert_eq!(after.status, "not_scanned");
+    assert_eq!(after.scan_generation, 0);
+}

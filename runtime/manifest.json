@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "protocol_version": 1,
+  "engine": {
+    "name": "headroom-ai",
+    "version": "0.41.0",
+    "payload_root": "../work/proofs/packaging/artifacts/headroom-engine/runtime",
+    "runtime_manifest": "runtime-manifest.json",
+    "runtime_manifest_sha256": "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908",
+    "runner": "headroom_runtime.py",
+    "runner_sha256": "bf887b6f783f4385debc84836353340f39e3773433782305376a3247be0f4ac1",
+    "python": "python.exe",
+    "python_version": "3.13.13",
+    "python_sha256": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+    "site_packages": "Lib/site-packages",
+    "prefix_tracker": "Lib/site-packages/headroom/cache/prefix_tracker.py",
+    "prefix_tracker_sha256": "f1af4ee279f879efc48ddfebbff125a088893bb64ee960ca2dbd4ad1cdb628ee"
+  },
+  "shim": {
+    "file": "cache_control_shim.py",
+    "sha256": "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1"
+  },
+  "profile": {
+    "mode": "cache",
+    "savings_profile": "coding",
+    "ccr_ttl_seconds": 7200,
+    "telemetry": "on",
+    "beacon": "off",
+    "output_shaper": "0",
+    "model_router_enabled": "0",
+    "memory": false,
+    "learn": false
+  }
+}

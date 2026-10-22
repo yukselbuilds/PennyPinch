@@ -1,0 +1,32 @@
+{
+  "name": "headroom-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 1420 --strictPort",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --pretty false",
+    "test:snapshot": "node --experimental-strip-types --test tests/app/snapshot.test.mjs",
+    "test:preferences": "node --experimental-strip-types --test tests/app/preferences.test.mjs",
+    "test:integrations": "node --experimental-strip-types --test tests/app/integrations.test.mjs",
+    "test:connection-plan": "node --experimental-strip-types --test tests/app/connection-plan.test.mjs",
+    "test:connection-actions": "node --experimental-strip-types --test tests/app/connection-actions.test.mjs",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev --config src-tauri/tauri.dev.conf.json"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.12.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "typescript": "7.0.2",
+    "vite": "8.3.4"
+  }
+}

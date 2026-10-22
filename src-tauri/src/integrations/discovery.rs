@@ -1,0 +1,1383 @@
+use serde::Serialize;
+use serde_json::Value;
+use std::collections::{BTreeSet, HashMap, HashSet};
+use std::env;
+use std::fs::{self, File};
+use std::io::Read;
+use std::path::{Component, Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, RwLock};
+use uuid::Uuid;
+
+#[cfg(windows)]
+use std::ffi::c_void;
+#[cfg(windows)]
+use std::os::windows::ffi::OsStrExt;
+#[cfg(windows)]
+use std::os::windows::fs::MetadataExt;
+#[cfg(windows)]
+use windows_sys::Win32::Storage::FileSystem::{
+    GetDriveTypeW, GetFileVersionInfoSizeW, GetFileVersionInfoW, VerQueryValueW,
+};
+#[cfg(windows)]
+use windows_sys::Win32::System::WindowsProgramming::DRIVE_FIXED;
+
+const SCHEMA_VERSION: u8 = 1;
+const MAX_PATH_ENTRIES: usize = 64;
+const MAX_CANDIDATES: usize = 512;
+const MAX_PACKAGE_JSON_BYTES: u64 = 16 * 1024;
+const MAX_VERSION_RESOURCE_BYTES: usize = 128 * 1024;
+const MAX_WINDOWS_APP_ENTRIES: usize = 256;
+const MAX_SCOOP_ENTRIES: usize = 64;
+const MAX_SCOOP_VERSIONS_PER_APP: usize = 16;
+const MAX_PATH_CHARS: usize = 32_767;
+const MAX_MANUAL_FILES: usize = 32;
+const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
+
+#[cfg(debug_assertions)]
+macro_rules! discovery_trace {
+    ($($argument:tt)*) => {
+        eprintln!("headroom_discovery {}", format_args!($($argument)*));
+    };
+}
+
+#[cfg(not(debug_assertions))]
+macro_rules! discovery_trace {
+    ($($argument:tt)*) => {};
+}
+
+#[derive(Clone)]
+pub struct DiscoveryManager {
+    inner: Arc<DiscoveryInner>,
+}
+
+struct DiscoveryInner {
+    state: RwLock<DiscoveryState>,
+    scanning: AtomicBool,
+}
+
+#[derive(Clone, Default)]
+struct DiscoveryState {
+    scanned: bool,
+    generation: u64,
+    installations: Vec<InstallationSummary>,
+    paths: HashMap<String, PathBuf>,
+    manual_candidates: Vec<Candidate>,
+    warnings: Vec<&'static str>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(untagged)]
+pub enum DiscoveryReply {
+    Snapshot(DiscoverySnapshot),
+    Error(DiscoveryError),
+    Cancelled(DiscoveryCancelled),
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct DiscoveryCancelled {
+    pub schema_version: u8,
+    pub request_id: String,
+    pub status: &'static str,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct DiscoverySnapshot {
+    pub schema_version: u8,
+    pub request_id: String,
+    pub status: &'static str,
+    pub scan_generation: u64,
+    pub installations: Vec<InstallationSummary>,
+    pub warnings: Vec<&'static str>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct InstallationSummary {
+    pub installation_id: String,
+    pub client_kind: &'static str,
+    pub surface: &'static str,
+    pub version: Option<String>,
+    pub source: &'static str,
+    pub location_label: &'static str,
+    pub status: &'static str,
+    pub connection_status: &'static str,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum InstallationSelectionError {
+    InvalidInstallationId,
+    InvalidScanGeneration,
+    StaleScanGeneration,
+    NotScanned,
+    InstallationNotFound,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct DiscoveryError {
+    pub schema_version: u8,
+    pub request_id: String,
+    pub status: &'static str,
+    pub error: DiscoveryErrorDetail,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct DiscoveryErrorDetail {
+    pub code: &'static str,
+    pub retryable: bool,
+    pub message_key: &'static str,
+    pub diagnostic_id: Option<String>,
+}
+
+#[derive(Clone, Copy)]
+enum ErrorCode {
+    ValidationFailed,
+    Busy,
+    EnvironmentBlocked,
+}
+
+impl ErrorCode {
+    fn parts(self) -> (&'static str, bool, &'static str) {
+        match self {
+            Self::ValidationFailed => ("validation_failed", false, "discovery.validation_failed"),
+            Self::Busy => ("busy", true, "discovery.busy"),
+            Self::EnvironmentBlocked => (
+                "environment_blocked",
+                false,
+                "discovery.environment_blocked",
+            ),
+        }
+    }
+}
+
+impl DiscoveryManager {
+    pub fn new() -> Self {
+        Self {
+            inner: Arc::new(DiscoveryInner {
+                state: RwLock::new(DiscoveryState::default()),
+                scanning: AtomicBool::new(false),
+            }),
+        }
+    }
+
+    pub fn list_snapshot(&self, request_id: String) -> DiscoveryReply {
+        if !valid_request_id(&request_id) {
+            return error_reply(&request_id, ErrorCode::ValidationFailed);
+        }
+        match self.inner.state.read() {
+            Ok(state) => snapshot_reply(request_id, &state),
+            Err(poisoned) => snapshot_reply(request_id, &poisoned.into_inner()),
+        }
+    }
+
+    pub(crate) fn select_installation(
+        &self,
+        installation_id: &str,
+        expected_scan_generation: u64,
+    ) -> Result<InstallationSummary, InstallationSelectionError> {
+        if !valid_request_id(installation_id) {
+            return Err(InstallationSelectionError::InvalidInstallationId);
+        }
+        let state = self
+            .inner
+            .state
+            .read()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if !state.scanned {
+            return Err(InstallationSelectionError::NotScanned);
+        }
+        if expected_scan_generation == 0
+            || expected_scan_generation > MAX_SAFE_INTEGER
+            || state.generation > MAX_SAFE_INTEGER
+        {
+            return Err(InstallationSelectionError::InvalidScanGeneration);
+        }
+        if expected_scan_generation != state.generation {
+            return Err(InstallationSelectionError::StaleScanGeneration);
+        }
+        state
+            .installations
+            .iter()
+            .find(|installation| installation.installation_id == installation_id)
+            .cloned()
+            .ok_or(InstallationSelectionError::InstallationNotFound)
+    }
+
+    pub fn scan(&self, request_id: String) -> DiscoveryReply {
+        self.scan_from_inputs(request_id, DiscoveryInputs::from_environment())
+    }
+
+    #[cfg(test)]
+    pub(super) fn scan_with_inputs(
+        &self,
+        request_id: String,
+        inputs: DiscoveryInputs,
+    ) -> DiscoveryReply {
+        self.scan_from_inputs(request_id, inputs)
+    }
+
+    fn scan_from_inputs(&self, request_id: String, inputs: DiscoveryInputs) -> DiscoveryReply {
+        if !valid_request_id(&request_id) {
+            return error_reply(&request_id, ErrorCode::ValidationFailed);
+        }
+        if self
+            .inner
+            .scanning
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            .is_err()
+        {
+            return error_reply(&request_id, ErrorCode::Busy);
+        }
+        let _guard = ScanGuard(&self.inner.scanning);
+        let (previous_manual, previous_generation) = match self.inner.state.read() {
+            Ok(state) => (state.manual_candidates.clone(), state.generation),
+            Err(poisoned) => {
+                let state = poisoned.into_inner();
+                (state.manual_candidates.clone(), state.generation)
+            }
+        };
+        discovery_trace!(
+            "event=scan_begin manual_before={} generation={}",
+            previous_manual.len(),
+            previous_generation
+        );
+        let mut report = discover(inputs);
+        let mut retained_manual = Vec::with_capacity(previous_manual.len());
+        let mut manual_rejected = 0usize;
+        for candidate in previous_manual {
+            let revalidated = match manual_candidate(candidate.kind, &candidate.executable_path) {
+                Ok(candidate) => candidate,
+                Err(reason) => {
+                    report.warnings.insert("candidate_location_unavailable");
+                    manual_rejected += 1;
+                    discovery_trace!("event=manual_rejected reason={}", reason.label());
+                    continue;
+                }
+            };
+            if report.installations.len() >= MAX_CANDIDATES {
+                report.warnings.insert("candidate_limit_reached");
+            } else if !report_contains_executable(
+                &report,
+                revalidated.kind,
+                &revalidated.executable_path,
+            ) {
+                let id = Uuid::new_v4().to_string();
+                report
+                    .paths
+                    .insert(id.clone(), revalidated.executable_path.clone());
+                report.installations.push(InstallationSummary {
+                    installation_id: id,
+                    client_kind: revalidated.kind,
+                    surface: revalidated.surface,
+                    version: None,
+                    source: "manual_file",
+                    location_label: "Selected file",
+                    status: "detected",
+                    connection_status: "not_verified",
+                });
+            }
+            retained_manual.push(revalidated);
+        }
+        let manual_retained = retained_manual.len();
+        let installation_count = report.installations.len();
+        {
+            let mut state = match self.inner.state.write() {
+                Ok(state) => state,
+                Err(poisoned) => poisoned.into_inner(),
+            };
+            state.scanned = true;
+            state.generation = state.generation.saturating_add(1);
+            state.installations = report.installations;
+            state.paths = report.paths;
+            state.manual_candidates = retained_manual;
+            state.warnings = report.warnings.into_iter().collect();
+            discovery_trace!(
+                "event=scan_end manual_retained={} manual_rejected={} installation_count={} generation={}",
+                manual_retained,
+                manual_rejected,
+                installation_count,
+                state.generation
+            );
+            return snapshot_reply(request_id, &state);
+        }
+    }
+
+    pub fn select_client_file_with<F>(
+        &self,
+        request_id: String,
+        requested_client_kind: String,
+        selector: F,
+    ) -> DiscoveryReply
+    where
+        F: FnOnce(&'static str) -> Result<Option<PathBuf>, ()>,
+    {
+        if !valid_request_id(&request_id) {
+            return error_reply(&request_id, ErrorCode::ValidationFailed);
+        }
+        let Some(client_kind) = client_kind(&requested_client_kind) else {
+            return error_reply(&request_id, ErrorCode::ValidationFailed);
+        };
+        if self
+            .inner
+            .scanning
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            .is_err()
+        {
+            return error_reply(&request_id, ErrorCode::Busy);
+        }
+        let _guard = ScanGuard(&self.inner.scanning);
+        let selected = match selector(client_kind) {
+            Ok(Some(path)) => path,
+            Ok(None) => return cancelled_reply(request_id),
+            Err(()) => return error_reply(&request_id, ErrorCode::EnvironmentBlocked),
+        };
+        let candidate = match manual_candidate(client_kind, &selected) {
+            Ok(candidate) => candidate,
+            Err(reason) => {
+                discovery_trace!("event=select_rejected reason={}", reason.label());
+                return error_reply(&request_id, ErrorCode::ValidationFailed);
+            }
+        };
+
+        let mut state = match self.inner.state.write() {
+            Ok(state) => state,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        let key = path_key(&candidate.executable_path);
+        let already_manual = state.manual_candidates.iter().any(|existing| {
+            existing.kind == client_kind && path_key(&existing.executable_path) == key
+        });
+        if already_manual {
+            discovery_trace!(
+                "event=select_duplicate manual_count={} generation={}",
+                state.manual_candidates.len(),
+                state.generation
+            );
+            return snapshot_reply(request_id, &state);
+        }
+        let already_discovered = state.installations.iter().any(|installation| {
+            installation.client_kind == client_kind
+                && state
+                    .paths
+                    .get(&installation.installation_id)
+                    .is_some_and(|path| path_key(path) == key)
+        });
+        if state.manual_candidates.len() >= MAX_MANUAL_FILES {
+            return error_reply(&request_id, ErrorCode::ValidationFailed);
+        }
+        if already_discovered {
+            state.manual_candidates.push(candidate);
+            discovery_trace!(
+                "event=select_duplicate manual_count={} generation={}",
+                state.manual_candidates.len(),
+                state.generation
+            );
+            return snapshot_reply(request_id, &state);
+        }
+        if state.installations.len() >= MAX_CANDIDATES {
+            return error_reply(&request_id, ErrorCode::ValidationFailed);
+        }
+
+        let id = Uuid::new_v4().to_string();
+        state.installations.push(InstallationSummary {
+            installation_id: id.clone(),
+            client_kind,
+            surface: "cli",
+            version: None,
+            source: "manual_file",
+            location_label: "Selected file",
+            status: "detected",
+            connection_status: "not_verified",
+        });
+        state.paths.insert(id, candidate.executable_path.clone());
+        state.manual_candidates.push(candidate);
+        if !state.scanned {
+            state.scanned = true;
+            state.warnings = vec!["absence_is_not_unsupported", "scope_partial"];
+        }
+        state.generation = state.generation.saturating_add(1);
+        discovery_trace!(
+            "event=select_accepted manual_count={} generation={}",
+            state.manual_candidates.len(),
+            state.generation
+        );
+        snapshot_reply(request_id, &state)
+    }
+
+    pub fn failure_reply(request_id: String) -> DiscoveryReply {
+        error_reply(&request_id, ErrorCode::EnvironmentBlocked)
+    }
+
+    #[cfg(test)]
+    pub(super) fn installation_path(&self, installation_id: &str) -> Option<PathBuf> {
+        self.inner
+            .state
+            .read()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .paths
+            .get(installation_id)
+            .cloned()
+    }
+}
+
+impl Default for DiscoveryManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+struct ScanGuard<'a>(&'a AtomicBool);
+
+impl Drop for ScanGuard<'_> {
+    fn drop(&mut self) {
+        self.0.store(false, Ordering::SeqCst);
+    }
+}
+
+fn snapshot_reply(request_id: String, state: &DiscoveryState) -> DiscoveryReply {
+    DiscoveryReply::Snapshot(DiscoverySnapshot {
+        schema_version: SCHEMA_VERSION,
+        request_id,
+        status: if state.scanned {
+            "partial"
+        } else {
+            "not_scanned"
+        },
+        scan_generation: state.generation,
+        installations: state.installations.clone(),
+        warnings: if state.scanned {
+            state.warnings.clone()
+        } else {
+            vec!["scan_not_run"]
+        },
+    })
+}
+
+fn error_reply(request_id: &str, code: ErrorCode) -> DiscoveryReply {
+    let (code, retryable, message_key) = code.parts();
+    DiscoveryReply::Error(DiscoveryError {
+        schema_version: SCHEMA_VERSION,
+        request_id: if valid_request_id(request_id) {
+            request_id.to_owned()
+        } else {
+            String::new()
+        },
+        status: "error",
+        error: DiscoveryErrorDetail {
+            code,
+            retryable,
+            message_key,
+            diagnostic_id: None,
+        },
+    })
+}
+
+fn cancelled_reply(request_id: String) -> DiscoveryReply {
+    DiscoveryReply::Cancelled(DiscoveryCancelled {
+        schema_version: SCHEMA_VERSION,
+        request_id,
+        status: "cancelled",
+    })
+}
+
+fn client_kind(value: &str) -> Option<&'static str> {
+    match value {
+        "codex" => Some("codex"),
+        "claude_code" => Some("claude_code"),
+        "opencode" => Some("opencode"),
+        _ => None,
+    }
+}
+
+fn manual_candidate(
+    client_kind: &'static str,
+    path: &Path,
+) -> Result<Candidate, ManualRejectReason> {
+    // Reject network/device prefixes before any filesystem metadata call.
+    if is_network_or_device_path(path) {
+        return Err(ManualRejectReason::Unsafe);
+    }
+    if !manual_filename_matches(client_kind, path) {
+        return Err(ManualRejectReason::Filename);
+    }
+    let executable = check_existing_path(path, PathKind::File).map_err(|error| match error {
+        PathCheckError::Missing => ManualRejectReason::Missing,
+        PathCheckError::Unsafe => ManualRejectReason::Unsafe,
+        PathCheckError::Unavailable => ManualRejectReason::Unavailable,
+    })?;
+    Ok(Candidate {
+        kind: client_kind,
+        surface: "cli",
+        version: None,
+        source: "manual_file",
+        location_label: "Selected file",
+        identity_path: executable.clone(),
+        executable_path: executable,
+    })
+}
+
+#[derive(Clone, Copy)]
+enum ManualRejectReason {
+    Missing,
+    Unsafe,
+    Unavailable,
+    Filename,
+}
+
+impl ManualRejectReason {
+    fn label(self) -> &'static str {
+        match self {
+            Self::Missing => "missing",
+            Self::Unsafe => "unsafe",
+            Self::Unavailable => "unavailable",
+            Self::Filename => "filename",
+        }
+    }
+}
+
+fn manual_filename_matches(client_kind: &str, path: &Path) -> bool {
+    let Some(filename) = path.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    let expected = match client_kind {
+        "codex" => ["codex.exe", "codex.cmd", "codex.bat"],
+        "claude_code" => ["claude.exe", "claude.cmd", "claude.bat"],
+        "opencode" => ["opencode.exe", "opencode.cmd", "opencode.bat"],
+        _ => return false,
+    };
+    expected
+        .iter()
+        .any(|name| filename.eq_ignore_ascii_case(name))
+}
+
+fn report_contains_executable(report: &DiscoveryReport, client_kind: &str, path: &Path) -> bool {
+    let key = path_key(path);
+    report.installations.iter().any(|installation| {
+        installation.client_kind == client_kind
+            && report
+                .paths
+                .get(&installation.installation_id)
+                .is_some_and(|candidate| path_key(candidate) == key)
+    })
+}
+
+fn valid_request_id(request_id: &str) -> bool {
+    if request_id.len() != 36 || !request_id.is_ascii() {
+        return false;
+    }
+    let bytes = request_id.as_bytes();
+    if bytes[8] != b'-' || bytes[13] != b'-' || bytes[18] != b'-' || bytes[23] != b'-' {
+        return false;
+    }
+    for (index, byte) in bytes.iter().enumerate() {
+        if [8, 13, 18, 23].contains(&index) {
+            continue;
+        }
+        if !byte.is_ascii_hexdigit() {
+            return false;
+        }
+    }
+    matches!(bytes[14].to_ascii_lowercase(), b'1'..=b'8')
+        && matches!(bytes[19].to_ascii_lowercase(), b'8' | b'9' | b'a' | b'b')
+}
+
+#[derive(Default)]
+pub(super) struct DiscoveryInputs {
+    pub(super) path_entries: Vec<PathBuf>,
+    pub(super) path_was_truncated: bool,
+    pub(super) npm_roots: Vec<PathBuf>,
+    pub(super) user_profile: Option<PathBuf>,
+    pub(super) program_files: Option<PathBuf>,
+}
+
+impl DiscoveryInputs {
+    fn from_environment() -> Self {
+        let mut inputs = Self::default();
+        if let Some(path) = env::var_os("PATH") {
+            for entry in env::split_paths(&path) {
+                if inputs.path_entries.len() == MAX_PATH_ENTRIES {
+                    inputs.path_was_truncated = true;
+                    break;
+                }
+                inputs.path_entries.push(entry);
+            }
+        }
+        if let Some(app_data) = env::var_os("APPDATA") {
+            inputs.npm_roots.push(PathBuf::from(app_data).join("npm"));
+        }
+        if let Some(local_app_data) = env::var_os("LOCALAPPDATA") {
+            inputs
+                .npm_roots
+                .push(PathBuf::from(local_app_data).join("npm"));
+        }
+        inputs.user_profile = env::var_os("USERPROFILE").map(PathBuf::from);
+        inputs.program_files = env::var_os("ProgramFiles").map(PathBuf::from);
+        inputs
+    }
+}
+
+#[derive(Clone, Copy)]
+struct Product {
+    kind: &'static str,
+    command: &'static str,
+    package: &'static str,
+    bin_name: &'static str,
+}
+
+const PRODUCTS: [Product; 3] = [
+    Product {
+        kind: "codex",
+        command: "codex",
+        package: "@openai/codex",
+        bin_name: "codex",
+    },
+    Product {
+        kind: "claude_code",
+        command: "claude",
+        package: "@anthropic-ai/claude-code",
+        bin_name: "claude",
+    },
+    Product {
+        kind: "opencode",
+        command: "opencode",
+        package: "opencode-ai",
+        bin_name: "opencode",
+    },
+];
+
+#[derive(Clone)]
+struct Candidate {
+    kind: &'static str,
+    surface: &'static str,
+    version: Option<String>,
+    source: &'static str,
+    location_label: &'static str,
+    identity_path: PathBuf,
+    executable_path: PathBuf,
+}
+
+struct DiscoveryReport {
+    installations: Vec<InstallationSummary>,
+    paths: HashMap<String, PathBuf>,
+    warnings: BTreeSet<&'static str>,
+}
+
+fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
+    let mut warnings = BTreeSet::from(["scope_partial", "absence_is_not_unsupported"]);
+    if inputs.path_was_truncated {
+        warnings.insert("path_entry_limit_reached");
+    }
+    if inputs.path_entries.len() > MAX_PATH_ENTRIES {
+        warnings.insert("path_entry_limit_reached");
+    }
+    let mut candidates = HashMap::<String, Candidate>::new();
+    let mut candidate_count = 0usize;
+
+    for npm_root in &inputs.npm_roots {
+        for product in PRODUCTS {
+            if candidate_count >= MAX_CANDIDATES {
+                warnings.insert("candidate_limit_reached");
+                break;
+            }
+            candidate_count += 1;
+            add_npm_candidate(npm_root, product, &mut candidates, &mut warnings);
+        }
+    }
+
+    if let Some(user_profile) = inputs.user_profile.as_deref() {
+        add_user_native_candidates(
+            user_profile,
+            &mut candidates,
+            &mut warnings,
+            &mut candidate_count,
+        );
+        add_scoop_candidates(
+            user_profile,
+            &mut candidates,
+            &mut warnings,
+            &mut candidate_count,
+        );
+    }
+
+    let mut path_entries = HashSet::new();
+    for entry in inputs.path_entries.into_iter().take(MAX_PATH_ENTRIES) {
+        if is_network_or_device_path(&entry) {
+            warnings.insert("network_location_skipped");
+            continue;
+        }
+        let Some(canonical_dir) = checked_existing_path(&entry, PathKind::Directory, &mut warnings)
+        else {
+            continue;
+        };
+        let normalized = path_key(&canonical_dir);
+        if !path_entries.insert(normalized) {
+            continue;
+        }
+        for product in PRODUCTS {
+            for extension in ["exe", "cmd", "bat"] {
+                if candidate_count >= MAX_CANDIDATES {
+                    warnings.insert("candidate_limit_reached");
+                    break;
+                }
+                candidate_count += 1;
+                let executable = canonical_dir.join(format!("{}.{}", product.command, extension));
+                if let Some(canonical_exe) =
+                    checked_existing_path(&executable, PathKind::File, &mut warnings)
+                {
+                    insert_candidate(
+                        &mut candidates,
+                        Candidate {
+                            kind: product.kind,
+                            surface: "cli",
+                            version: None,
+                            source: "path",
+                            location_label: "PATH",
+                            identity_path: canonical_exe.clone(),
+                            executable_path: canonical_exe,
+                        },
+                    );
+                }
+            }
+        }
+    }
+
+    if let Some(program_files) = inputs.program_files.as_deref() {
+        add_codex_desktop_candidates(
+            program_files,
+            &mut candidates,
+            &mut warnings,
+            &mut candidate_count,
+        );
+    }
+
+    let mut candidate_list: Vec<_> = candidates.into_values().collect();
+    candidate_list.sort_by(|left, right| {
+        (left.kind, left.surface, path_key(&left.identity_path)).cmp(&(
+            right.kind,
+            right.surface,
+            path_key(&right.identity_path),
+        ))
+    });
+    let mut paths = HashMap::new();
+    let installations = candidate_list
+        .into_iter()
+        .map(|candidate| {
+            let id = Uuid::new_v4().to_string();
+            paths.insert(id.clone(), candidate.executable_path);
+            InstallationSummary {
+                installation_id: id,
+                client_kind: candidate.kind,
+                surface: candidate.surface,
+                version: candidate.version,
+                source: candidate.source,
+                location_label: candidate.location_label,
+                status: "detected",
+                connection_status: "not_verified",
+            }
+        })
+        .collect();
+
+    DiscoveryReport {
+        installations,
+        paths,
+        warnings,
+    }
+}
+
+fn add_npm_candidate(
+    npm_root: &Path,
+    product: Product,
+    candidates: &mut HashMap<String, Candidate>,
+    warnings: &mut BTreeSet<&'static str>,
+) {
+    if is_network_or_device_path(npm_root) {
+        warnings.insert("network_location_skipped");
+        return;
+    }
+    let package_root = npm_root.join("node_modules").join(product.package);
+    let Some(package_root) = checked_existing_path(&package_root, PathKind::Directory, warnings)
+    else {
+        return;
+    };
+    let manifest_path = package_root.join("package.json");
+    let Some(manifest_path) = checked_existing_path(&manifest_path, PathKind::File, warnings)
+    else {
+        return;
+    };
+    let manifest = match read_limited_json(&manifest_path) {
+        Ok(value) => value,
+        Err(ReadMetadataError::Missing) => return,
+        Err(ReadMetadataError::Invalid) => {
+            warnings.insert("package_metadata_untrusted");
+            return;
+        }
+    };
+    if manifest.get("name").and_then(Value::as_str) != Some(product.package) {
+        warnings.insert("package_metadata_untrusted");
+        return;
+    }
+    let Some(bin) = package_bin(&manifest, product.bin_name) else {
+        warnings.insert("package_metadata_untrusted");
+        return;
+    };
+    let Some(relative_bin) = safe_relative_path(bin) else {
+        warnings.insert("package_metadata_untrusted");
+        return;
+    };
+    let executable = package_root.join(relative_bin);
+    let Some(executable) = checked_existing_path(&executable, PathKind::File, warnings) else {
+        return;
+    };
+    let version = manifest
+        .get("version")
+        .and_then(Value::as_str)
+        .and_then(valid_display_version);
+    if version.is_none() {
+        warnings.insert("package_version_unknown");
+    }
+    insert_candidate(
+        candidates,
+        Candidate {
+            kind: product.kind,
+            surface: "cli",
+            version,
+            source: "user_local_npm",
+            location_label: "User-local npm",
+            identity_path: package_root,
+            executable_path: executable,
+        },
+    );
+}
+
+fn package_bin<'a>(manifest: &'a Value, expected_name: &str) -> Option<&'a str> {
+    match manifest.get("bin")? {
+        Value::String(value) => Some(value),
+        Value::Object(values) => values.get(expected_name).and_then(Value::as_str),
+        _ => None,
+    }
+}
+
+fn safe_relative_path(value: &str) -> Option<PathBuf> {
+    if value.is_empty() || value.len() > 512 || !value.is_ascii() || value.contains(':') {
+        return None;
+    }
+    let path = Path::new(value);
+    if path.is_absolute() {
+        return None;
+    }
+    let mut parts = 0usize;
+    for component in path.components() {
+        match component {
+            Component::Normal(name) if !name.is_empty() => parts += 1,
+            _ => return None,
+        }
+    }
+    if parts == 0 || parts > 16 {
+        None
+    } else {
+        Some(path.to_path_buf())
+    }
+}
+
+fn read_limited_json(path: &Path) -> Result<Value, ReadMetadataError> {
+    let file = File::open(path).map_err(|error| {
+        if error.kind() == std::io::ErrorKind::NotFound {
+            ReadMetadataError::Missing
+        } else {
+            ReadMetadataError::Invalid
+        }
+    })?;
+    let mut bytes = Vec::new();
+    file.take(MAX_PACKAGE_JSON_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|_| ReadMetadataError::Invalid)?;
+    if bytes.len() as u64 > MAX_PACKAGE_JSON_BYTES {
+        return Err(ReadMetadataError::Invalid);
+    }
+    serde_json::from_slice(&bytes).map_err(|_| ReadMetadataError::Invalid)
+}
+
+enum ReadMetadataError {
+    Missing,
+    Invalid,
+}
+
+fn valid_display_version(value: &str) -> Option<String> {
+    if value.is_empty()
+        || value.len() > 64
+        || !value.is_ascii()
+        || value.bytes().any(|byte| byte.is_ascii_whitespace())
+    {
+        return None;
+    }
+    let (without_build, build) = value
+        .split_once('+')
+        .map_or((value, None), |(head, tail)| (head, Some(tail)));
+    if build.is_some_and(|part| !valid_semver_identifiers(part)) {
+        return None;
+    }
+    let (core, prerelease) = without_build
+        .split_once('-')
+        .map_or((without_build, None), |(head, tail)| (head, Some(tail)));
+    let components: Vec<_> = core.split('.').collect();
+    if !(2..=4).contains(&components.len())
+        || components.iter().any(|part| {
+            part.is_empty()
+                || part.len() > 10
+                || !part.bytes().all(|byte| byte.is_ascii_digit())
+                || (part.len() > 1 && part.starts_with('0'))
+        })
+        || prerelease.is_some_and(|part| !valid_semver_identifiers(part))
+    {
+        return None;
+    }
+    Some(value.to_owned())
+}
+
+fn valid_semver_identifiers(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= 32
+        && value.split('.').all(|part| {
+            !part.is_empty()
+                && part
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-')
+        })
+}
+
+fn add_user_native_candidates(
+    user_profile: &Path,
+    candidates: &mut HashMap<String, Candidate>,
+    warnings: &mut BTreeSet<&'static str>,
+    candidate_count: &mut usize,
+) {
+    let known = [
+        ("claude_code", user_profile.join(".local/bin/claude.exe")),
+        ("opencode", user_profile.join(".local/bin/opencode.exe")),
+    ];
+    for (kind, path) in known {
+        if *candidate_count >= MAX_CANDIDATES {
+            warnings.insert("candidate_limit_reached");
+            return;
+        }
+        *candidate_count += 1;
+        if let Some(executable) = checked_existing_path(&path, PathKind::File, warnings) {
+            insert_candidate(
+                candidates,
+                Candidate {
+                    kind,
+                    surface: "cli",
+                    version: None,
+                    source: "user_local_native",
+                    location_label: "User-local install",
+                    identity_path: executable.clone(),
+                    executable_path: executable,
+                },
+            );
+        }
+    }
+}
+
+fn add_scoop_candidates(
+    user_profile: &Path,
+    candidates: &mut HashMap<String, Candidate>,
+    warnings: &mut BTreeSet<&'static str>,
+    candidate_count: &mut usize,
+) {
+    for (kind, package_name, executable_name) in [
+        ("codex", "codex", "codex.exe"),
+        ("claude_code", "claude-code", "claude.exe"),
+        ("opencode", "opencode", "opencode.exe"),
+    ] {
+        let app_root = user_profile.join("scoop/apps").join(package_name);
+        if is_network_or_device_path(&app_root) {
+            warnings.insert("network_location_skipped");
+            continue;
+        }
+        let Some(app_root) = checked_existing_path(&app_root, PathKind::Directory, warnings) else {
+            continue;
+        };
+        let Ok(entries) = fs::read_dir(&app_root) else {
+            warnings.insert("candidate_location_unavailable");
+            continue;
+        };
+        let mut version_count = 0usize;
+        for (index, entry) in entries.enumerate() {
+            if index >= MAX_SCOOP_ENTRIES {
+                warnings.insert("scoop_entry_limit_reached");
+                break;
+            }
+            if version_count >= MAX_SCOOP_VERSIONS_PER_APP {
+                warnings.insert("scoop_version_limit_reached");
+                break;
+            }
+            let Ok(entry) = entry else {
+                warnings.insert("candidate_location_unavailable");
+                continue;
+            };
+            if entry
+                .file_name()
+                .to_string_lossy()
+                .eq_ignore_ascii_case("current")
+            {
+                continue;
+            }
+            let Some(version_dir) =
+                checked_existing_path(&entry.path(), PathKind::Directory, warnings)
+            else {
+                continue;
+            };
+            version_count += 1;
+            if *candidate_count >= MAX_CANDIDATES {
+                warnings.insert("candidate_limit_reached");
+                return;
+            }
+            *candidate_count += 1;
+            let executable_path = version_dir.join(executable_name);
+            if let Some(executable) =
+                checked_existing_path(&executable_path, PathKind::File, warnings)
+            {
+                let version = entry.file_name().to_string_lossy().to_string();
+                let version = valid_display_version(&version);
+                insert_candidate(
+                    candidates,
+                    Candidate {
+                        kind,
+                        surface: "cli",
+                        version,
+                        source: "scoop",
+                        location_label: "Scoop",
+                        identity_path: version_dir,
+                        executable_path: executable,
+                    },
+                );
+            }
+        }
+    }
+}
+
+fn add_codex_desktop_candidates(
+    program_files: &Path,
+    candidates: &mut HashMap<String, Candidate>,
+    warnings: &mut BTreeSet<&'static str>,
+    candidate_count: &mut usize,
+) {
+    let windows_apps = program_files.join("WindowsApps");
+    if is_network_or_device_path(&windows_apps) {
+        warnings.insert("network_location_skipped");
+        return;
+    }
+    let Some(windows_apps) = checked_existing_path(&windows_apps, PathKind::Directory, warnings)
+    else {
+        return;
+    };
+    let Ok(entries) = fs::read_dir(windows_apps) else {
+        warnings.insert("candidate_location_unavailable");
+        return;
+    };
+    for (index, entry) in entries.enumerate() {
+        if index >= MAX_WINDOWS_APP_ENTRIES {
+            warnings.insert("windows_app_entry_limit_reached");
+            break;
+        }
+        let Ok(entry) = entry else {
+            warnings.insert("candidate_location_unavailable");
+            continue;
+        };
+        let folder = entry.file_name().to_string_lossy().to_string();
+        if !folder.to_ascii_lowercase().starts_with("openai.codex_") {
+            continue;
+        }
+        if *candidate_count >= MAX_CANDIDATES {
+            warnings.insert("candidate_limit_reached");
+            return;
+        }
+        *candidate_count += 1;
+        let Some(package_root) =
+            checked_existing_path(&entry.path(), PathKind::Directory, warnings)
+        else {
+            continue;
+        };
+        let executable_path = package_root.join("app/Codex.exe");
+        let Some(executable) = checked_existing_path(&executable_path, PathKind::File, warnings)
+        else {
+            continue;
+        };
+        let Some(version) = verified_codex_desktop_version(&executable) else {
+            warnings.insert("desktop_metadata_untrusted");
+            continue;
+        };
+        let identity_path = package_root;
+        insert_candidate(
+            candidates,
+            Candidate {
+                kind: "codex",
+                surface: "desktop",
+                version,
+                source: "windows_app_package",
+                location_label: "Windows app package",
+                identity_path,
+                executable_path: executable,
+            },
+        );
+    }
+}
+
+fn insert_candidate(candidates: &mut HashMap<String, Candidate>, candidate: Candidate) {
+    let key = format!(
+        "{}|{}|{}",
+        candidate.kind,
+        candidate.surface,
+        path_key(&candidate.identity_path)
+    );
+    match candidates.get_mut(&key) {
+        Some(existing) if existing.version.is_none() && candidate.version.is_some() => {
+            *existing = candidate;
+        }
+        Some(_) => {}
+        None => {
+            candidates.insert(key, candidate);
+        }
+    }
+}
+
+enum PathKind {
+    Directory,
+    File,
+}
+
+fn checked_existing_path(
+    path: &Path,
+    expected: PathKind,
+    warnings: &mut BTreeSet<&'static str>,
+) -> Option<PathBuf> {
+    match check_existing_path(path, expected) {
+        Ok(path) => Some(path),
+        Err(PathCheckError::Missing | PathCheckError::Unsafe) => None,
+        Err(PathCheckError::Unavailable) => {
+            warnings.insert("candidate_location_unavailable");
+            None
+        }
+    }
+}
+
+enum PathCheckError {
+    Missing,
+    Unsafe,
+    Unavailable,
+}
+
+fn check_existing_path(path: &Path, expected: PathKind) -> Result<PathBuf, PathCheckError> {
+    if is_network_or_device_path(path) || path.as_os_str().to_string_lossy().len() > MAX_PATH_CHARS
+    {
+        return Err(PathCheckError::Unsafe);
+    }
+    if !path.is_absolute() || !is_local_fixed_volume(path) {
+        return Err(PathCheckError::Unsafe);
+    }
+    let mut current = PathBuf::new();
+    for component in path.components() {
+        match component {
+            Component::Prefix(prefix) => current.push(prefix.as_os_str()),
+            Component::RootDir => current.push(component.as_os_str()),
+            Component::CurDir => return Err(PathCheckError::Unsafe),
+            Component::ParentDir => return Err(PathCheckError::Unsafe),
+            Component::Normal(part) => current.push(part),
+        }
+        if matches!(component, Component::Prefix(_)) {
+            continue;
+        }
+        let metadata = match fs::symlink_metadata(&current) {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                return Err(PathCheckError::Missing)
+            }
+            Err(_) => return Err(PathCheckError::Unavailable),
+        };
+        if is_reparse_point(&metadata) || metadata.file_type().is_symlink() {
+            return Err(PathCheckError::Unsafe);
+        }
+        if !matches!(component, Component::Normal(_)) && !metadata.is_dir() {
+            return Err(PathCheckError::Unsafe);
+        }
+    }
+    let metadata = fs::symlink_metadata(path).map_err(|error| {
+        if error.kind() == std::io::ErrorKind::NotFound {
+            PathCheckError::Missing
+        } else {
+            PathCheckError::Unavailable
+        }
+    })?;
+    let matches = match expected {
+        PathKind::Directory => metadata.is_dir(),
+        PathKind::File => metadata.is_file(),
+    };
+    if !matches || is_reparse_point(&metadata) || metadata.file_type().is_symlink() {
+        return Err(PathCheckError::Unsafe);
+    }
+    let canonical = fs::canonicalize(path).map_err(|_| PathCheckError::Unavailable)?;
+    let canonical = normalize_local_canonical_path(canonical).ok_or(PathCheckError::Unsafe)?;
+    if is_network_or_device_path(&canonical) || !is_local_fixed_volume(&canonical) {
+        return Err(PathCheckError::Unsafe);
+    }
+    Ok(canonical)
+}
+
+#[cfg(windows)]
+fn normalize_local_canonical_path(path: PathBuf) -> Option<PathBuf> {
+    let raw = path.as_os_str().to_string_lossy();
+    if let Some(local) = raw.strip_prefix(r"\\?\") {
+        let bytes = local.as_bytes();
+        if bytes.len() < 3
+            || !bytes[0].is_ascii_alphabetic()
+            || bytes[1] != b':'
+            || !matches!(bytes[2], b'\\' | b'/')
+        {
+            return None;
+        }
+        return Some(PathBuf::from(local));
+    }
+    if is_network_or_device_path(&path) {
+        return None;
+    }
+    Some(path)
+}
+
+#[cfg(not(windows))]
+fn normalize_local_canonical_path(path: PathBuf) -> Option<PathBuf> {
+    (!is_network_or_device_path(&path)).then_some(path)
+}
+
+fn is_network_or_device_path(path: &Path) -> bool {
+    let raw = path.as_os_str().to_string_lossy();
+    raw.starts_with(r"\") || raw.starts_with(r"\?") || raw.starts_with(r"\.")
+}
+
+#[cfg(windows)]
+fn is_local_fixed_volume(path: &Path) -> bool {
+    let Some(Component::Prefix(prefix)) = path.components().next() else {
+        return false;
+    };
+    let root = format!("{}\\", prefix.as_os_str().to_string_lossy());
+    let wide: Vec<u16> = std::ffi::OsStr::new(&root)
+        .encode_wide()
+        .chain(Some(0))
+        .collect();
+    unsafe { GetDriveTypeW(wide.as_ptr()) == DRIVE_FIXED }
+}
+
+#[cfg(not(windows))]
+fn is_local_fixed_volume(_path: &Path) -> bool {
+    false
+}
+
+#[cfg(windows)]
+fn is_reparse_point(metadata: &fs::Metadata) -> bool {
+    metadata.file_attributes() & 0x400 != 0
+}
+
+#[cfg(not(windows))]
+fn is_reparse_point(_metadata: &fs::Metadata) -> bool {
+    false
+}
+
+fn path_key(path: &Path) -> String {
+    path.to_string_lossy().to_lowercase()
+}
+
+#[cfg(windows)]
+fn verified_codex_desktop_version(path: &Path) -> Option<Option<String>> {
+    let wide_path: Vec<u16> = path.as_os_str().encode_wide().chain(Some(0)).collect();
+    let mut ignored_handle = 0u32;
+    let size = unsafe { GetFileVersionInfoSizeW(wide_path.as_ptr(), &mut ignored_handle) } as usize;
+    if size == 0 || size > MAX_VERSION_RESOURCE_BYTES {
+        return None;
+    }
+    let mut bytes = vec![0u8; size];
+    if unsafe {
+        GetFileVersionInfoW(
+            wide_path.as_ptr(),
+            0,
+            size as u32,
+            bytes.as_mut_ptr().cast::<c_void>(),
+        )
+    } == 0
+    {
+        return None;
+    }
+    let translations = version_translations(&bytes);
+    let mut company = None;
+    let mut product = None;
+    let mut file_version = None;
+    for (language, code_page) in translations.into_iter().take(16) {
+        company = company.or_else(|| version_string(&bytes, language, code_page, "CompanyName"));
+        product = product.or_else(|| version_string(&bytes, language, code_page, "ProductName"));
+        file_version =
+            file_version.or_else(|| version_string(&bytes, language, code_page, "FileVersion"));
+    }
+    let company = company?;
+    let product = product?;
+    if !company.to_ascii_lowercase().contains("openai")
+        || !(product.to_ascii_lowercase().contains("codex")
+            || product.to_ascii_lowercase().contains("chatgpt"))
+    {
+        return None;
+    }
+    Some(file_version.as_deref().and_then(valid_display_version))
+}
+
+#[cfg(not(windows))]
+fn verified_codex_desktop_version(_path: &Path) -> Option<Option<String>> {
+    None
+}
+
+#[cfg(windows)]
+fn version_translations(bytes: &[u8]) -> Vec<(u16, u16)> {
+    let key: Vec<u16> = "\\VarFileInfo\\Translation"
+        .encode_utf16()
+        .chain(Some(0))
+        .collect();
+    let mut value = std::ptr::null_mut();
+    let mut length = 0u32;
+    let ok = unsafe {
+        VerQueryValueW(
+            bytes.as_ptr().cast::<c_void>(),
+            key.as_ptr(),
+            &mut value,
+            &mut length,
+        )
+    };
+    if ok == 0 || value.is_null() || length < 4 {
+        return vec![(0x0409, 0x04b0)];
+    }
+    let count = (length as usize / 4).min(16);
+    let words = unsafe { std::slice::from_raw_parts(value.cast::<u16>(), count * 2) };
+    words
+        .chunks_exact(2)
+        .map(|pair| (pair[0], pair[1]))
+        .collect()
+}
+
+#[cfg(windows)]
+fn version_string(bytes: &[u8], language: u16, code_page: u16, field: &str) -> Option<String> {
+    let key = format!("\\StringFileInfo\\{language:04x}{code_page:04x}\\{field}");
+    let wide: Vec<u16> = key.encode_utf16().chain(Some(0)).collect();
+    let mut value = std::ptr::null_mut();
+    let mut length = 0u32;
+    let ok = unsafe {
+        VerQueryValueW(
+            bytes.as_ptr().cast::<c_void>(),
+            wide.as_ptr(),
+            &mut value,
+            &mut length,
+        )
+    };
+    if ok == 0 || value.is_null() || length == 0 || length as usize > 256 {
+        return None;
+    }
+    let words = unsafe { std::slice::from_raw_parts(value.cast::<u16>(), length as usize) };
+    let end = words
+        .iter()
+        .position(|unit| *unit == 0)
+        .unwrap_or(words.len());
+    String::from_utf16(&words[..end]).ok()
+}

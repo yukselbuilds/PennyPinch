@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "last_updated": "2026-10-19",
+  "purpose": "Observed compatibility combinations only. A local fixture result does not imply live auth, desktop, subagent, or release support.",
+  "allowed_statuses": [
+    "not_tested",
+    "unknown",
+    "environment_blocked",
+    "local_fixture_partial",
+    "local_fixture_pass",
+    "live_verified",
+    "unsupported"
+  ],
+  "records": [
+    {
+      "id": "headroom-packaged-runtime-win10-helper",
+      "product": "Headroom engine runtime",
+      "version": "headroom-ai 0.41.0; CPython 3.13.13",
+      "surface": "Packaged runtime; consoleless controller to hidden helper",
+      "platform": "Windows 10 Pro 22H2 x64 (10.0.19045)",
+      "auth": "not applicable",
+      "protocol": "Helper stdio JSON control and HTTP loopback health",
+      "transport": "stdin/stdout pipes; IPv4 loopback TCP",
+      "status": "local_fixture_pass",
+      "capabilities": {
+        "relocated_pinned_readiness_and_listener_ownership": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/windows-engine.md"
+        },
+        "hidden_helper_graceful_shutdown": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/windows-engine.md"
+        },
+        "tauri_native_process_wiring": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/windows-engine.md"
+        }
+      },
+      "evidence": ["docs/proofs/windows-engine.md"],
+      "evidence_date": "2026-10-19"
+    },
+    {
+      "id": "codex-cli-responses-api-fixture",
+      "product": "OpenAI Codex CLI",
+      "version": "0.163.0-alpha.10.2",
+      "surface": "CLI exec, isolated process profile",
+      "platform": "Windows 10 Pro 22H2 x64 (10.0.19045)",
+      "auth": "Synthetic API-key sentinel; real credentials not used",
+      "protocol": "Responses API",
+      "transport": "HTTP SSE; no WebSocket upgrade observed",
+      "status": "local_fixture_partial",
+      "capabilities": {
+        "request_model_reasoning_and_auth_forwarding": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/codex.md"
+        },
+        "native_get_goal_callback_transport": {
+          "status": "local_fixture_partial",
+          "result_semantics": "unknown; callback was unclassified text",
+          "evidence": "docs/proofs/codex.md"
+        },
+        "read_only_os_process_tool": {
+          "status": "environment_blocked",
+          "detail": "Automatic policy rejection occurred when the CLI attempted PowerShell launch; this is not a client incompatibility result.",
+          "evidence": "docs/proofs/codex.md"
+        },
+        "chatgpt_auth": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/codex.md"
+        },
+        "desktop_main_agent_and_subagent": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/codex.md"
+        },
+        "client_side_ccr_retrieval": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/codex.md"
+        }
+      },
+      "evidence": ["docs/proofs/codex.md"],
+      "evidence_date": "2026-10-19"
+    },
+    {
+      "id": "codex-desktop-chatgpt-auth",
+      "product": "OpenAI Codex Desktop",
+      "version": "unknown",
+      "surface": "Desktop main agent and subagent",
+      "platform": "Windows 10/11 status not tested",
+      "auth": "Existing ChatGPT auth; not inspected or copied",
+      "protocol": "unknown",
+      "transport": "unknown",
+      "status": "not_tested",
+      "capabilities": {
+        "desktop_gateway_and_subagent_routing": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/codex.md"
+        },
+        "client_side_ccr_retrieval": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/codex.md"
+        }
+      },
+      "evidence": ["docs/proofs/codex.md"],
+      "evidence_date": "2026-10-19"
+    },
+    {
+      "id": "claude-code-cli-anthropic-api-fixture",
+      "product": "Claude Code CLI",
+      "version": "2.1.158",
+      "surface": "CLI --bare/--print; tools disabled",
+      "platform": "Windows 10 Pro 22H2 x64 (10.0.19045)",
+      "auth": "Synthetic API-key sentinel; real credentials not used",
+      "protocol": "Anthropic Messages API",
+      "transport": "HTTP SSE",
+      "status": "local_fixture_pass",
+      "capabilities": {
+        "text_stream_and_final_usage": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/claude.md"
+        },
+        "model_effort_auth_and_tools_off_forwarding": {
+          "status": "local_fixture_pass",
+          "detail": "Fixture label, effort=high, sentinel auth and zero tools were observed; no live model is implied.",
+          "evidence": "docs/proofs/claude.md"
+        },
+        "thinking_value_preservation": {
+          "status": "not_tested",
+          "detail": "Presence was observed; value preservation was not claimed.",
+          "evidence": "docs/proofs/claude.md"
+        },
+        "oauth_desktop_subagent_and_client_side_ccr": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/claude.md"
+        }
+      },
+      "evidence": ["docs/proofs/claude.md"],
+      "evidence_date": "2026-10-19"
+    },
+    {
+      "id": "claude-code-cli-oauth-and-agent-surfaces",
+      "product": "Claude Code CLI",
+      "version": "2.1.158",
+      "surface": "Existing OAuth session, enabled tools, hooks/plugins, subagents",
+      "platform": "Windows 10/11 status not tested",
+      "auth": "Existing OAuth session",
+      "protocol": "Anthropic Messages API; unverified on this auth/surface combination",
+      "transport": "unknown",
+      "status": "not_tested",
+      "capabilities": {
+        "oauth_desktop_extension_and_subagent": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/claude.md"
+        },
+        "client_side_ccr_retrieval": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/claude.md"
+        }
+      },
+      "evidence": ["docs/proofs/claude.md"],
+      "evidence_date": "2026-10-19"
+    },
+    {
+      "id": "opencode-v1-cli-openai-compatible-fixture",
+      "product": "OpenCode CLI",
+      "version": "1.19.3 (V1 config)",
+      "surface": "CLI run; tools disabled; --pure",
+      "platform": "Windows 10 Pro 22H2 x64 (10.0.19045)",
+      "auth": "Synthetic API-key sentinel; real credentials not used",
+      "protocol": "OpenAI Chat Completions-compatible API",
+      "transport": "HTTP SSE",
+      "status": "local_fixture_pass",
+      "capabilities": {
+        "completed_text_usage_and_exit": {
+          "status": "local_fixture_pass",
+          "detail": "Completed text part, 12/4 synthetic usage and exit 0; token-first visibility was not tested.",
+          "evidence": "docs/proofs/opencode.md"
+        },
+        "reasoning_variant_preservation": {
+          "status": "not_tested",
+          "detail": "No reasoning variant was selected.",
+          "evidence": "docs/proofs/opencode.md"
+        },
+        "oauth_desktop_tui_v2_and_subagent": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/opencode.md"
+        },
+        "client_side_ccr_retrieval": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/opencode.md"
+        }
+      },
+      "evidence": ["docs/proofs/opencode.md"],
+      "evidence_date": "2026-10-19"
+    },
+    {
+      "id": "opencode-v2-tui-desktop",
+      "product": "OpenCode",
+      "version": "unknown (V2 not installed or exercised)",
+      "surface": "V2 CLI, TUI and desktop surfaces",
+      "platform": "Windows 10/11 status not tested",
+      "auth": "unknown",
+      "protocol": "unknown",
+      "transport": "unknown",
+      "status": "not_tested",
+      "capabilities": {
+        "v2_config_and_transport": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/opencode.md"
+        },
+        "tui_desktop_subagent_and_client_side_ccr": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/opencode.md"
+        }
+      },
+      "evidence": ["docs/proofs/opencode.md"],
+      "evidence_date": "2026-10-19"
+    }
+  ],
+  "product_capabilities": [
+    {
+      "id": "compression-pause",
+      "status": "not_tested",
+      "implementation": "not_implemented",
+      "ui": "disabled until H011/H028 proof",
+      "evidence": "docs/proofs/pause.md",
+      "evidence_date": "2026-10-19"
+    }
+  ],
+  "environment_gates": [
+    {
+      "id": "windows-11-x64",
+      "status": "not_tested",
+      "detail": "Windows 10 proof is not Windows 11 evidence.",
+      "evidence": ["docs/proofs/windows-engine.md", "docs/proofs/codex.md", "docs/proofs/claude.md", "docs/proofs/opencode.md"],
+      "evidence_date": "2026-10-19"
+    },
+    {
+      "id": "clean-machine-runtime-and-clients",
+      "status": "not_tested",
+      "detail": "No clean Windows 10/11 machine verification is recorded.",
+      "evidence": ["docs/proofs/windows-engine.md", "docs/proofs/codex.md", "docs/proofs/claude.md", "docs/proofs/opencode.md"],
+      "evidence_date": "2026-10-19"
+    },
+    {
+      "id": "tauri-native-helper-wiring",
+      "status": "not_tested",
+      "detail": "H006-a used a GUI-like consoleless controller; it did not exercise Tauri process creation or stdio wiring.",
+      "evidence": ["docs/proofs/windows-engine.md"],
+      "evidence_date": "2026-10-19"
+    }
+  ]
+}
