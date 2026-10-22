@@ -22,7 +22,7 @@ The test and build steps use the checked-in app sources, package manifest, and l
 
 The job uses one standard `ubuntu-24.04` x64 runner, a ten-minute job limit, read-only repository permission, and concurrency cancellation for duplicate runs on the same ref. Checkout and Node setup actions use immutable commit pins. Node is read from `.node-version`; pnpm 11.25.0 is installed under `work/ci-tools` with scripts disabled, and npm/pnpm stores stay under `work/`. No GitHub Actions dependency cache, build artifact, release, deployment, provider credential, or paid/larger runner is configured. The workflow captures command output in step memory and emits fixed success labels plus a numeric test count when Node's summary format is recognized; failure output is discarded and only a fixed command label and exit code are reported.
 
-The workflow has been configured but has not been dispatched or accepted yet. A successful run would establish only the source-only frontend checks described above. It would not establish Tauri/Rust native behavior, engine packaging or readiness, client/provider compatibility, macOS/Linux native support, or Windows 11/clean-machine support.
+The [first manual run](https://github.com/Protocol272/headroom-desktop/actions/runs/39759872053) passed 49 app tests and the frontend build on 22 October 2026 (job 21s, total 29s); [H047 evidence](../proofs/free-ci.md) records the free-only account gate and post-run observation. This establishes only the source-only frontend checks described above. It does not establish Tauri/Rust native behavior, engine packaging or readiness, client/provider compatibility, macOS/Linux native support, or Windows 11/clean-machine support.
 
 ## Excluded checks and limits
 
