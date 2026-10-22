@@ -3,10 +3,12 @@ import {
   codexStatusClient,
   CodexStatusRequestSequence,
   isCodexStatusAvailable,
+  presentCodexSetting,
   visibleRuntimeStatus,
   type CodexStatusErrorCode,
   type CodexStatusResult,
   type CodexStatusSnapshot,
+  type CodexSettingPresentationKey,
 } from "../../lib/codexStatus";
 import type { InstallationSummary } from "../../lib/integrations";
 import type { PreferenceLanguage } from "../../lib/preferences";
@@ -33,7 +35,9 @@ type Copy = {
   liveCoverage: string;
   more: string;
   currentValue: string;
-  notRechecked: string;
+  diskSetting: string;
+  diskState: Record<CodexSettingPresentationKey, string>;
+  diskObservationLimit: string;
   configScope: string;
   userConfig: string;
   policy: string;
@@ -76,8 +80,15 @@ const copy: Record<PreferenceLanguage, Copy> = {
     compatibility: "Sürüm kapsamı", ownership: "Headroom kaydı", endpointBinding: "Endpoint eşleşmesi",
     ingress: "Yerel giriş", engine: "Motor", traffic: "İstemci trafiği",
     liveCoverage: "Canlı auth ve ajan kapsamı", more: "Diğer ayrıntılar",
-    currentValue: "Codex ayarındaki değer", policy: "Ayar kapsamı", auth: "Kimlik doğrulama kapsamı",
-    notRechecked: "Ayar yeniden okunmadı", configScope: "Kapsam", userConfig: "Kullanıcı ayarları",
+    currentValue: "Codex ayarındaki değer", diskSetting: "Diskteki Codex ayarı",
+    diskState: {
+      matches: "Kayıtlı adresle eşleşiyor", missing: "Codex ayarında Headroom adresi yok",
+      different: "Codex ayarında farklı bir adres var", unavailable: "Codex ayarı güvenle okunamadı",
+      not_owned: "Headroom'a ait bir ayar kaydı yok", not_rechecked: "Disk ayarı yeniden kontrol edilmedi",
+    },
+    diskObservationLimit: "Bu, dosyanın anlık gözlemidir; çalışan Codex sürecinin bu ayarı kullandığını doğrulamaz.",
+    policy: "Ayar kapsamı", auth: "Kimlik doğrulama kapsamı",
+    configScope: "Kapsam", userConfig: "Kullanıcı ayarları",
     agents: "Ajan kapsamı", agentsValue: "Ana ajan: bilinmiyor; alt ajan: sınanmadı.",
     currentMethodNotRead: "Mevcut yöntem okunmadı.", active: "Etkin kayıt", released: "Kayıt geri alınmış", none: "Kayıt yok",
     unavailable: "Kayıt okunamadı", same: "Aynı endpoint", different: "Farklı endpoint",
@@ -104,7 +115,14 @@ const copy: Record<PreferenceLanguage, Copy> = {
     compatibility: "Version scope", ownership: "Headroom record", endpointBinding: "Endpoint binding",
     ingress: "Local ingress", engine: "Engine", traffic: "Client traffic",
     liveCoverage: "Live auth and agent coverage", more: "More details",
-    currentValue: "Value in Codex settings", notRechecked: "Setting was not re-read", configScope: "Scope", userConfig: "User config",
+    currentValue: "Value in Codex settings", diskSetting: "Codex setting on disk",
+    diskState: {
+      matches: "Matches saved address", missing: "No Headroom address in Codex settings",
+      different: "Codex settings contain a different address", unavailable: "Codex settings could not be read safely",
+      not_owned: "No setting record is owned by Headroom", not_rechecked: "Disk setting was not rechecked",
+    },
+    diskObservationLimit: "This is a point-in-time file observation; it does not verify that the running Codex process uses this setting.",
+    configScope: "Scope", userConfig: "User config",
     policy: "Settings scope", auth: "Authentication scope", agents: "Agent coverage",
     agentsValue: "Main agent: unknown; subagent: not tested.", currentMethodNotRead: "Current method was not read.",
     active: "Active record", released: "Record released", none: "No record",
@@ -210,6 +228,7 @@ function StatusDetails({ snapshot, text }: { snapshot: CodexStatusSnapshot; text
   const runtime = snapshot.runtime;
   const compatibility = installation.compatibility === "fixture_only" ? text.fixtureOnly :
     installation.compatibility === "not_tested" ? text.notTested : text.notVerified;
+  const diskSetting = presentCodexSetting(ownership.current_config_value);
   const ownerState = ownership.state === "active" ? text.active : ownership.state === "released" ? text.released :
     ownership.state === "none" ? text.none : text.unavailable;
   const binding = ownership.endpoint_binding === "same" ? text.same : ownership.endpoint_binding === "different" ? text.different :
@@ -235,13 +254,17 @@ function StatusDetails({ snapshot, text }: { snapshot: CodexStatusSnapshot; text
     [text.endpointBinding, binding],
     [text.ingress, ingress],
     [text.configScope, text.userConfig],
-    [text.currentValue, text.notRechecked],
+    [text.currentValue, text.diskState[diskSetting.key]],
     [text.auth, `${text.currentMethodNotRead} · ${text.chatgptUntested} · ${apiKey}`],
   ];
   return <>
     <dl className="connection-status-panel__facts">
       {summaryRows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
     </dl>
+    <p className={`connection-dialog__detail-note connection-status__setting connection-status__setting--${diskSetting.tone}`} role="status">
+      <strong>{text.diskSetting}:</strong> {text.diskState[diskSetting.key]}
+    </p>
+    {ownership.state === "active" && <p className="connection-dialog__detail-note">{text.diskObservationLimit}</p>}
     <p className="connection-dialog__detail-note">
       {text.liveCoverage}: {text.chatgptUntested} · {apiKey} · {text.agentsValue}
     </p>

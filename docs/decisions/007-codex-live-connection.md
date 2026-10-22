@@ -25,6 +25,12 @@ No paid API call/key acquisition, existing credential copying, provider switch, 
 
 The user deferred sign-in; both isolated login attempts were stopped without creating an auth file. A generic continuation does not revoke that decision. Independent implementation and fixture/native checks may continue, while real auth/provider acceptance stays open.
 
+## H019-d1 — Read-only current setting observation
+
+The next independent prerequisite is to recheck the currently owned Codex endpoint setting. A saved ownership record and a matching runtime endpoint do not establish that the current config still contains that endpoint. Reuse H018's safe config-root resolution, bounded reads, ownership path binding and transaction/rollback rules. Observe the record and config consistently; stale scope, busy access, unsafe paths and unreadable/invalid files must not report a match. Never fall back to another config or credential store.
+
+Return only fixed redacted setting-state codes. Do not return a path, URL, config content, model/auth literal, parse error or credential. Released/absent ownership and unsupported installation surfaces remain distinct from an active matching setting. A matching setting is a point-in-time disk observation, not effective adoption by an open Codex process, auth support, traffic verification or agent coverage. This operation neither changes files nor launches a client/provider request. The UI must explain changed/missing/unreadable settings without automatically repairing them.
+
 ## Sources checked
 
 Current official [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference) and [advanced configuration](https://learn.chatgpt.com/docs/config-file/config-advanced) describe `openai_base_url` for the built-in provider and exclude provider/auth overrides from project config. The [authentication guide](https://learn.chatgpt.com/docs/auth) separates subscription and usage-billed API-key access. Documentation describes possibilities; the installed client and pinned Headroom runtime still require their own route proof. The existing gateway/Sign-in-with-ChatGPT integration examples do not authorize copying the user's existing tokens or changing their provider.

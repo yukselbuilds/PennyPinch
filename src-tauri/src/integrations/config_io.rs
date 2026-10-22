@@ -185,6 +185,22 @@ pub(super) struct ConfigRead {
     pub fingerprint: String,
 }
 
+/// A bounded Codex config observation whose file and parent-directory handles
+/// remain open while the caller reads the corresponding ownership record.
+/// The held handles prevent ordinary writes, deletes, and path replacement
+/// during that shared observation window.
+pub(super) struct PinnedCodexConfigRead {
+    pub presence: ConfigPresence,
+    pub bytes: Vec<u8>,
+    pin: CandidatePin,
+}
+
+impl PinnedCodexConfigRead {
+    pub(super) fn validate(&self) -> Result<(), ConfigIoError> {
+        self.pin.validate()
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum ConfigIoError {
     InvalidRoot,
@@ -224,7 +240,7 @@ pub(super) fn read_user_config(
     let target = inputs.target(kind)?;
     let (source, bytes, presence, identity, stable_path) = match target {
         ConfigTarget::Single { path, source } => match read_candidate(&path)? {
-            CandidateRead::Missing { target_path } => (
+            CandidateRead::Missing { target_path, .. } => (
                 source,
                 empty_document(kind),
                 ConfigPresence::Missing,
@@ -235,6 +251,7 @@ pub(super) fn read_user_config(
                 bytes,
                 identity,
                 target_path,
+                ..
             } => (
                 source,
                 bytes,
@@ -255,6 +272,7 @@ pub(super) fn read_user_config(
                         bytes,
                         identity,
                         target_path,
+                        ..
                     },
                     CandidateRead::Missing { .. },
                 ) => (
@@ -270,6 +288,7 @@ pub(super) fn read_user_config(
                         bytes,
                         identity,
                         target_path,
+                        ..
                     },
                 ) => (
                     ConfigSource::OpenCodeJsonc,
@@ -305,6 +324,30 @@ pub(super) fn read_user_config(
     })
 }
 
+pub(super) fn read_codex_config_pinned(
+    inputs: &ConfigRootInputs,
+) -> Result<PinnedCodexConfigRead, ConfigIoError> {
+    let ConfigTarget::Single { path, source } = inputs.target(ClientKind::Codex)? else {
+        return Err(ConfigIoError::InvalidRoot);
+    };
+    if source != ConfigSource::CodexToml {
+        return Err(ConfigIoError::InvalidRoot);
+    }
+    match read_candidate(&path)? {
+        CandidateRead::Present { bytes, pin, .. } => Ok(PinnedCodexConfigRead {
+            presence: ConfigPresence::Present,
+            bytes,
+            pin,
+        }),
+        CandidateRead::Missing { pin: Some(pin), .. } => Ok(PinnedCodexConfigRead {
+            presence: ConfigPresence::Missing,
+            bytes: Vec::new(),
+            pin,
+        }),
+        CandidateRead::Missing { pin: None, .. } => Err(ConfigIoError::Unavailable),
+    }
+}
+
 fn empty_document(kind: ClientKind) -> Vec<u8> {
     match kind {
         ClientKind::Codex => Vec::new(),
@@ -315,27 +358,99 @@ fn empty_document(kind: ClientKind) -> Vec<u8> {
 enum CandidateRead {
     Missing {
         target_path: PathBuf,
+        pin: Option<CandidatePin>,
     },
     Present {
         bytes: Vec<u8>,
         identity: FileIdentity,
         target_path: PathBuf,
+        pin: CandidatePin,
     },
+}
+
+struct CandidatePin {
+    path: PathBuf,
+    expected_path: Option<PathBuf>,
+    parent_pins: Option<DirectoryPins>,
+    file: Option<File>,
+    identity: Option<FileIdentity>,
+}
+
+impl CandidatePin {
+    fn missing(path: &Path, parent_pins: DirectoryPins) -> Self {
+        Self {
+            path: path.to_path_buf(),
+            expected_path: None,
+            parent_pins: Some(parent_pins),
+            file: None,
+            identity: None,
+        }
+    }
+
+    fn present(
+        path: &Path,
+        expected_path: PathBuf,
+        parent_pins: DirectoryPins,
+        file: File,
+        identity: FileIdentity,
+    ) -> Self {
+        Self {
+            path: path.to_path_buf(),
+            expected_path: Some(expected_path),
+            parent_pins: Some(parent_pins),
+            file: Some(file),
+            identity: Some(identity),
+        }
+    }
+
+    fn validate(&self) -> Result<(), ConfigIoError> {
+        let Some(parent_pins) = self.parent_pins.as_ref() else {
+            return Err(ConfigIoError::Unavailable);
+        };
+        validate_pinned_directories(parent_pins)?;
+        let parent = self.path.parent().ok_or(ConfigIoError::UnsafePath)?;
+        let canonical_parent = fs::canonicalize(parent).map_err(|_| ConfigIoError::UnsafePath)?;
+        if !same_path(parent, &canonical_parent) {
+            return Err(ConfigIoError::UnsafePath);
+        }
+
+        match (&self.file, self.identity, &self.expected_path) {
+            (Some(file), Some(expected_identity), Some(expected_path)) => {
+                let metadata =
+                    fs::symlink_metadata(&self.path).map_err(|_| ConfigIoError::Unavailable)?;
+                if !metadata.is_file() || is_reparse(&metadata) {
+                    return Err(ConfigIoError::UnsafePath);
+                }
+                let current_identity = file_identity(file)?;
+                if !same_file_object(expected_identity, current_identity)
+                    || !handle_is_regular_file(current_identity.attributes)
+                    || !same_path(
+                        &fs::canonicalize(&self.path).map_err(|_| ConfigIoError::UnsafePath)?,
+                        expected_path,
+                    )
+                {
+                    return Err(ConfigIoError::UnsafePath);
+                }
+            }
+            (None, None, None) => match fs::symlink_metadata(&self.path) {
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Ok(_) | Err(_) => return Err(ConfigIoError::Unavailable),
+            },
+            _ => return Err(ConfigIoError::Unavailable),
+        }
+        Ok(())
+    }
 }
 
 fn read_candidate(path: &Path) -> Result<CandidateRead, ConfigIoError> {
     validate_lexical_path(path)?;
     ensure_fixed_volume(path)?;
     let Some(_) = validate_path_chain(path)? else {
-        return Ok(CandidateRead::Missing {
-            target_path: path.to_path_buf(),
-        });
+        return read_missing_candidate(path);
     };
     let parent_pins = pin_parent_directories(path)?;
     let Some(canonical_parent) = validate_path_chain(path)? else {
-        return Ok(CandidateRead::Missing {
-            target_path: path.to_path_buf(),
-        });
+        return read_missing_candidate(path);
     };
     let parent = path.parent().ok_or(ConfigIoError::UnsafePath)?;
     let name = path.file_name().ok_or(ConfigIoError::UnsafePath)?;
@@ -347,9 +462,7 @@ fn read_candidate(path: &Path) -> Result<CandidateRead, ConfigIoError> {
     let metadata = match fs::symlink_metadata(path) {
         Ok(metadata) => metadata,
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-            return Ok(CandidateRead::Missing {
-                target_path: path.to_path_buf(),
-            })
+            return read_missing_candidate(path)
         }
         Err(_) => return Err(ConfigIoError::Unavailable),
     };
@@ -406,7 +519,38 @@ fn read_candidate(path: &Path) -> Result<CandidateRead, ConfigIoError> {
         bytes,
         identity: first_identity,
         target_path: canonical_file,
+        pin: CandidatePin::present(path, expected_path, parent_pins, file, first_identity),
     })
+}
+
+fn read_missing_candidate(path: &Path) -> Result<CandidateRead, ConfigIoError> {
+    let parent = path.parent().ok_or(ConfigIoError::UnsafePath)?;
+    let parent_metadata = match fs::symlink_metadata(parent) {
+        Ok(metadata) if metadata.is_dir() && !is_reparse(&metadata) => metadata,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            return Ok(CandidateRead::Missing {
+                target_path: path.to_path_buf(),
+                pin: None,
+            })
+        }
+        Ok(_) => return Err(ConfigIoError::UnsafePath),
+        Err(_) => return Err(ConfigIoError::Unavailable),
+    };
+    let _ = parent_metadata;
+    let parent_pins = pin_parent_directories(path)?;
+    validate_pinned_directories(&parent_pins)?;
+    let canonical_parent = fs::canonicalize(parent).map_err(|_| ConfigIoError::UnsafePath)?;
+    if !same_path(parent, &canonical_parent) {
+        return Err(ConfigIoError::UnsafePath);
+    }
+    match fs::symlink_metadata(path) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(CandidateRead::Missing {
+            target_path: path.to_path_buf(),
+            pin: Some(CandidatePin::missing(path, parent_pins)),
+        }),
+        Ok(_) => Err(ConfigIoError::Unavailable),
+        Err(_) => Err(ConfigIoError::Unavailable),
+    }
 }
 
 pub(super) fn validate_lexical_path(path: &Path) -> Result<(), ConfigIoError> {
@@ -817,6 +961,8 @@ pub(crate) struct PlanManager {
     #[cfg(test)]
     after_first_read: Option<Arc<dyn Fn() + Send + Sync>>,
     #[cfg(test)]
+    after_codex_config_rollback: Option<Arc<dyn Fn() + Send + Sync>>,
+    #[cfg(test)]
     fail_action_before_commit: bool,
     #[cfg(test)]
     fail_undo_before_commit: bool,
@@ -833,6 +979,8 @@ impl PlanManager {
             ownership_store: None,
             #[cfg(test)]
             after_first_read: None,
+            #[cfg(test)]
+            after_codex_config_rollback: None,
             #[cfg(test)]
             fail_action_before_commit: false,
             #[cfg(test)]
@@ -866,6 +1014,7 @@ impl PlanManager {
             preview_in_flight: AtomicBool::new(false),
             ownership_store: None,
             after_first_read: None,
+            after_codex_config_rollback: None,
             fail_action_before_commit: false,
             fail_undo_before_commit: false,
         }
@@ -889,6 +1038,7 @@ impl PlanManager {
             preview_in_flight: AtomicBool::new(false),
             ownership_store: None,
             after_first_read: None,
+            after_codex_config_rollback: None,
             fail_action_before_commit: false,
             fail_undo_before_commit: false,
         }
@@ -913,6 +1063,7 @@ impl PlanManager {
             preview_in_flight: AtomicBool::new(false),
             ownership_store: None,
             after_first_read: Some(Arc::new(after_first_read)),
+            after_codex_config_rollback: None,
             fail_action_before_commit: false,
             fail_undo_before_commit: false,
         }
@@ -1043,6 +1194,15 @@ impl PlanManager {
     #[cfg(test)]
     pub(super) fn with_action_commit_fault(mut self) -> Self {
         self.fail_action_before_commit = true;
+        self
+    }
+
+    #[cfg(test)]
+    pub(super) fn with_codex_status_rollback_hook<H>(mut self, hook: H) -> Self
+    where
+        H: Fn() + Send + Sync + 'static,
+    {
+        self.after_codex_config_rollback = Some(Arc::new(hook));
         self
     }
 

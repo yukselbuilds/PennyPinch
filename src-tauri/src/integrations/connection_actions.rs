@@ -1,3 +1,4 @@
+use super::codex::CurrentConfigValue;
 use super::*;
 use crate::integrations::plan::{
     ClientKind, ConfigPresence, ConfigSource, ConnectionPlan, EndpointBefore, PlanStatus,
@@ -109,9 +110,180 @@ impl PlanManager {
         ownership_snapshot(self, request)
     }
 
+    pub(super) fn codex_config_observation(
+        &self,
+        expected_installation: &InstallationSummary,
+        scan_generation: u64,
+    ) -> (Result<Option<OwnershipSummary>, ()>, CurrentConfigValue) {
+        codex_config_observation(self, expected_installation, scan_generation)
+    }
+
     pub(crate) fn action_failure_reply(raw_request_id: String) -> ConnectionActionReply {
         let safe_id = request_id(&raw_request_id);
         error_reply(safe_id, ActionFault::Unavailable)
+    }
+}
+
+fn codex_config_observation(
+    manager: &PlanManager,
+    expected_installation: &InstallationSummary,
+    scan_generation: u64,
+) -> (Result<Option<OwnershipSummary>, ()>, CurrentConfigValue) {
+    let unavailable = || (Err(()), CurrentConfigValue::Unavailable);
+    let Some(_guard) = PreviewGuard::try_acquire(&manager.preview_in_flight) else {
+        return unavailable();
+    };
+    let Some(store) = manager.ownership_store.as_ref() else {
+        return unavailable();
+    };
+    if !current_codex_selection(manager, expected_installation, scan_generation) {
+        return unavailable();
+    }
+
+    let mut transaction = match FileTransaction::begin() {
+        Ok(value) => value,
+        Err(_) => return unavailable(),
+    };
+    let snapshot = match store.read_snapshot_in_transaction(&mut transaction, ClientKind::Codex) {
+        Ok(value) => value,
+        Err(_) => {
+            let _ = transaction.rollback();
+            return unavailable();
+        }
+    };
+    let Some(snapshot) = snapshot else {
+        if transaction.rollback().is_err()
+            || !current_codex_selection(manager, expected_installation, scan_generation)
+        {
+            return unavailable();
+        }
+        return (Ok(None), CurrentConfigValue::NotOwned);
+    };
+    let owner = match summary(&snapshot.record, snapshot.record_fingerprint) {
+        Ok(value) => value,
+        Err(_) => {
+            let _ = transaction.rollback();
+            return unavailable();
+        }
+    };
+    if snapshot.record.state() != OwnershipState::Active {
+        if transaction.rollback().is_err()
+            || !current_codex_selection(manager, expected_installation, scan_generation)
+        {
+            return unavailable();
+        }
+        return (Ok(Some(owner)), CurrentConfigValue::NotOwned);
+    }
+
+    let supported_fixture = expected_installation.surface == "cli"
+        && expected_installation
+            .version
+            .as_deref()
+            .is_some_and(|version| {
+                super::super::plan::CODEX_FIXTURE_CLI_VERSIONS.contains(&version)
+            });
+    if !supported_fixture {
+        if transaction.rollback().is_err()
+            || !current_codex_selection(manager, expected_installation, scan_generation)
+        {
+            return unavailable();
+        }
+        return (Ok(Some(owner)), CurrentConfigValue::NotRechecked);
+    }
+
+    if snapshot.record.client_kind() != Some(ClientKind::Codex)
+        || snapshot.record.config_source() != Some(ConfigSource::CodexToml)
+    {
+        let _ = transaction.rollback();
+        return (Ok(Some(owner)), CurrentConfigValue::Unavailable);
+    }
+
+    let roots = (manager.roots_provider)();
+    let path = match target_for_plan(&roots, ClientKind::Codex, ConfigSource::CodexToml) {
+        Ok((path, None)) => path,
+        _ => {
+            let _ = transaction.rollback();
+            return (Ok(Some(owner)), CurrentConfigValue::Unavailable);
+        }
+    };
+    let binding = match config_path_binding(&path) {
+        Ok(value) => value,
+        Err(_) => {
+            let _ = transaction.rollback();
+            return (Ok(Some(owner)), CurrentConfigValue::Unavailable);
+        }
+    };
+    if snapshot.record.config_path_binding_sha256() != binding {
+        let _ = transaction.rollback();
+        return (Ok(Some(owner)), CurrentConfigValue::Unavailable);
+    }
+
+    let config = match super::read_codex_config_pinned(&roots) {
+        Ok(value) => value,
+        Err(_) => {
+            let _ = transaction.rollback();
+            return (Ok(Some(owner)), CurrentConfigValue::Unavailable);
+        }
+    };
+    let mut current_value =
+        classify_codex_config(&config.bytes, config.presence, owner.endpoint_port);
+    let rollback = transaction.rollback();
+    #[cfg(test)]
+    if rollback.is_ok() {
+        if let Some(hook) = &manager.after_codex_config_rollback {
+            hook();
+        }
+    }
+    if rollback.is_err() {
+        current_value = CurrentConfigValue::Unavailable;
+    } else if config.validate().is_err()
+        || !same_target_roots(
+            &roots,
+            &(manager.roots_provider)(),
+            ClientKind::Codex,
+            ConfigSource::CodexToml,
+        )
+        || !current_codex_selection(manager, expected_installation, scan_generation)
+    {
+        current_value = CurrentConfigValue::Unavailable;
+    }
+    (Ok(Some(owner)), current_value)
+}
+
+fn current_codex_selection(
+    manager: &PlanManager,
+    expected: &InstallationSummary,
+    scan_generation: u64,
+) -> bool {
+    manager
+        .discovery
+        .select_installation(&expected.installation_id, scan_generation)
+        .is_ok_and(|selected| same_installation(expected, &Ok(selected)))
+}
+
+fn classify_codex_config(
+    bytes: &[u8],
+    presence: ConfigPresence,
+    endpoint_port: u16,
+) -> CurrentConfigValue {
+    if presence == ConfigPresence::Missing {
+        return CurrentConfigValue::Missing;
+    }
+    let Ok(document) = super::super::config_document::parse_document(ClientKind::Codex, bytes)
+    else {
+        return CurrentConfigValue::Unavailable;
+    };
+    match document.get("openai_base_url") {
+        None => CurrentConfigValue::Missing,
+        Some(serde_json::Value::String(value)) => {
+            let expected = format!("http://127.0.0.1:{endpoint_port}/v1");
+            if value == &expected {
+                CurrentConfigValue::MatchesOwnedEndpoint
+            } else {
+                CurrentConfigValue::Different
+            }
+        }
+        Some(_) => CurrentConfigValue::Unavailable,
     }
 }
 

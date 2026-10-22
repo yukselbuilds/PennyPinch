@@ -1,14 +1,35 @@
 use super::super::discovery::{InstallationSelectionError, InstallationSummary};
 use super::super::plan::CODEX_FIXTURE_CLI_VERSIONS;
-use super::connection_actions::{
-    ConnectionActionReply, OwnershipSnapshotRequest, OwnershipSummary,
-};
+use super::connection_actions::OwnershipSummary;
 use super::PlanManager;
 use crate::runtime::manager::{CodexRuntimeObservation, RuntimeManager};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 const ZERO_UUID: &str = "00000000-0000-0000-0000-000000000000";
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(super) enum CurrentConfigValue {
+    MatchesOwnedEndpoint,
+    Missing,
+    Different,
+    Unavailable,
+    NotOwned,
+    NotRechecked,
+}
+
+impl CurrentConfigValue {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::MatchesOwnedEndpoint => "matches_owned_endpoint",
+            Self::Missing => "missing",
+            Self::Different => "different",
+            Self::Unavailable => "unavailable",
+            Self::NotOwned => "not_owned",
+            Self::NotRechecked => "not_rechecked",
+        }
+    }
+}
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -130,22 +151,16 @@ pub(crate) fn connection_status(
         .discovery
         .select_installation(&request.installation_id, request.scan_generation);
     let snapshot_request_id = request_id.clone();
+    let scan_generation = request.scan_generation;
     snapshot_for_selection(request_id, selection, move |installation| {
-        let ownership = match manager.ownership_snapshot(OwnershipSnapshotRequest {
-            schema_version: 1,
-            request_id: snapshot_request_id.clone(),
-            client_kind: "codex".to_owned(),
-        }) {
-            ConnectionActionReply::Success(success) if success.client_kind == "codex" => {
-                Ok(success.ownership)
-            }
-            ConnectionActionReply::Success(_) | ConnectionActionReply::Error(_) => Err(()),
-        };
+        let (ownership, current_config_value) =
+            manager.codex_config_observation(&installation, scan_generation);
         build_snapshot(
             snapshot_request_id,
             installation,
             ownership,
             runtime.codex_connection_observation(),
+            current_config_value,
         )
     })
 }
@@ -190,6 +205,7 @@ pub(super) fn build_snapshot(
     installation: InstallationSummary,
     ownership: Result<Option<OwnershipSummary>, ()>,
     runtime: CodexRuntimeObservation,
+    current_config_value: CurrentConfigValue,
 ) -> CodexStatusSnapshot {
     let fixture_scope = installation.surface == "cli"
         && installation
@@ -263,7 +279,7 @@ pub(super) fn build_snapshot(
             config_source: owner_config_source,
             endpoint_id: owner_endpoint_id,
             endpoint_port: owner_endpoint_port,
-            current_config_value: "not_rechecked",
+            current_config_value: current_config_value.as_str(),
         },
         runtime: CodexRuntimeStatus {
             ingress_status: runtime.endpoint_status,

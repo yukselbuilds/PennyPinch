@@ -24,7 +24,7 @@ function makeSnapshot(overrides = {}) {
       config_source: "codex_toml",
       endpoint_id: endpointId,
       endpoint_port: 43125,
-      current_config_value: "not_rechecked",
+      current_config_value: "matches_owned_endpoint",
     },
     runtime: {
       ingress_status: "ready",
@@ -151,6 +151,7 @@ test("limits local API fixture scope to exact CLI versions, never Desktop or nei
     const neighborCli = makeSnapshot({
       installation: { ...makeSnapshot().installation, version, compatibility: "not_verified" },
       auth_scope: { ...makeSnapshot().auth_scope, api_key_auth: "not_tested" },
+      ownership: { ...makeSnapshot().ownership, current_config_value: "not_rechecked" },
     });
     assert.equal(api.decodeCodexStatusReply(neighborCli, expected()).kind, "snapshot");
     assert.equal(api.decodeCodexStatusReply({
@@ -164,14 +165,82 @@ test("limits local API fixture scope to exact CLI versions, never Desktop or nei
     const desktop = makeSnapshot({
       installation: { ...makeSnapshot().installation, surface: "desktop", version, compatibility: "not_tested" },
       auth_scope: { ...makeSnapshot().auth_scope, api_key_auth: "not_tested" },
+      ownership: { ...makeSnapshot().ownership, current_config_value: "not_rechecked" },
     });
     assert.equal(api.decodeCodexStatusReply(desktop, expected({ surface: "desktop" })).kind, "snapshot");
+    const desktopClaimingDiskMatch = {
+      ...desktop,
+      ownership: { ...desktop.ownership, current_config_value: "matches_owned_endpoint" },
+    };
+    assert.equal(api.decodeCodexStatusReply(desktopClaimingDiskMatch, expected({ surface: "desktop" })), null);
     assert.equal(api.decodeCodexStatusReply({
       ...desktop,
       installation: { ...desktop.installation, compatibility: "fixture_only" },
       auth_scope: { ...desktop.auth_scope, api_key_auth: "fixture_only" },
     }, expected({ surface: "desktop" })), null);
   }
+});
+
+test("decodes disk setting states only when consistent with ownership and fixture scope", () => {
+  assert.ok(api);
+  for (const currentValue of ["matches_owned_endpoint", "missing", "different", "unavailable"]) {
+    const snapshot = makeSnapshot({
+      ownership: { ...makeSnapshot().ownership, current_config_value: currentValue },
+    });
+    assert.equal(api.decodeCodexStatusReply(snapshot, expected()).kind, "snapshot", currentValue);
+  }
+
+  const settingIndependentOfRuntime = makeSnapshot({
+    ownership: { ...makeSnapshot().ownership, endpoint_binding: "different", current_config_value: "matches_owned_endpoint" },
+    runtime: { ...makeSnapshot().runtime, ingress_status: "unknown", stable_ingress_ready: false, engine_status: "stopped", engine_ready: false },
+  });
+  assert.equal(api.decodeCodexStatusReply(settingIndependentOfRuntime, expected()).kind, "snapshot");
+
+  const activeNotOwned = makeSnapshot({
+    ownership: { ...makeSnapshot().ownership, current_config_value: "not_owned" },
+  });
+  assert.equal(api.decodeCodexStatusReply(activeNotOwned, expected()), null);
+
+  const released = makeSnapshot({
+    ownership: { ...makeSnapshot().ownership, state: "released", endpoint_binding: "not_owned", current_config_value: "not_owned" },
+  });
+  assert.equal(api.decodeCodexStatusReply(released, expected()).kind, "snapshot");
+
+  const noOwner = makeSnapshot({
+    ownership: { state: "none", endpoint_binding: "not_owned", config_source: null, endpoint_id: null, endpoint_port: null, current_config_value: "not_owned" },
+  });
+  assert.equal(api.decodeCodexStatusReply(noOwner, expected()).kind, "snapshot");
+
+  const ownerUnavailable = makeSnapshot({
+    ownership: { state: "unavailable", endpoint_binding: "unknown", config_source: null, endpoint_id: null, endpoint_port: null, current_config_value: "unavailable" },
+  });
+  assert.equal(api.decodeCodexStatusReply(ownerUnavailable, expected()).kind, "snapshot");
+
+  const unsupportedCli = makeSnapshot({
+    installation: { ...makeSnapshot().installation, version: "0.163.0-alpha.99", compatibility: "not_verified" },
+    ownership: { ...makeSnapshot().ownership, current_config_value: "not_rechecked" },
+    auth_scope: { ...makeSnapshot().auth_scope, api_key_auth: "not_tested" },
+  });
+  assert.equal(api.decodeCodexStatusReply(unsupportedCli, expected()).kind, "snapshot");
+  assert.equal(api.decodeCodexStatusReply(makeSnapshot(), expected({ surface: "desktop" })), null);
+  assert.equal(api.decodeCodexStatusReply({
+    ...unsupportedCli,
+    ownership: { ...unsupportedCli.ownership, current_config_value: "matches_owned_endpoint" },
+  }, expected()), null);
+  assert.equal(api.decodeCodexStatusReply({
+    ...makeSnapshot(),
+    ownership: { ...makeSnapshot().ownership, current_config_value: "not_rechecked" },
+  }, expected()), null);
+});
+
+test("presents disk-setting outcomes without turning no ownership into a warning", () => {
+  assert.ok(api);
+  assert.deepEqual(api.presentCodexSetting("matches_owned_endpoint"), { key: "matches", tone: "positive" });
+  assert.deepEqual(api.presentCodexSetting("missing"), { key: "missing", tone: "caution" });
+  assert.deepEqual(api.presentCodexSetting("different"), { key: "different", tone: "caution" });
+  assert.deepEqual(api.presentCodexSetting("unavailable"), { key: "unavailable", tone: "caution" });
+  assert.deepEqual(api.presentCodexSetting("not_rechecked"), { key: "not_rechecked", tone: "muted" });
+  assert.deepEqual(api.presentCodexSetting("not_owned"), { key: "not_owned", tone: "quiet" });
 });
 
 test("decodes only the correlated fixed error envelope", () => {

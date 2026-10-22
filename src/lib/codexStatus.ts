@@ -2,6 +2,13 @@ import { invoke, isTauri } from "@tauri-apps/api/core";
 
 export type CodexSurface = "cli" | "desktop";
 export type CodexCompatibility = "fixture_only" | "not_tested" | "not_verified";
+export type CodexCurrentConfigValue =
+  | "matches_owned_endpoint"
+  | "missing"
+  | "different"
+  | "unavailable"
+  | "not_owned"
+  | "not_rechecked";
 export type CodexStatusErrorCode =
   | "validation_failed"
   | "stale_selection"
@@ -31,7 +38,7 @@ export interface CodexStatusSnapshot {
     config_source: "codex_toml" | null;
     endpoint_id: string | null;
     endpoint_port: number | null;
-    current_config_value: "not_rechecked";
+    current_config_value: CodexCurrentConfigValue;
   };
   runtime: {
     ingress_status: "starting" | "ready" | "unknown" | "unavailable";
@@ -204,13 +211,21 @@ function decodeSnapshot(value: unknown, expected: ExpectedReply): CodexStatusSna
     || !(ownership.config_source === null || ownership.config_source === "codex_toml")
     || !(ownership.endpoint_id === null || isCanonicalUuid(ownership.endpoint_id))
     || !(ownership.endpoint_port === null || (Number.isInteger(ownership.endpoint_port) && (ownership.endpoint_port as number) >= 1 && (ownership.endpoint_port as number) <= 65_535))
-    || ownership.current_config_value !== "not_rechecked") return null;
+    || !( ["matches_owned_endpoint", "missing", "different", "unavailable", "not_owned", "not_rechecked"] as unknown[]).includes(ownership.current_config_value)) return null;
 
   const ownerHasEndpoint = ownership.config_source === "codex_toml" && ownership.endpoint_id !== null && ownership.endpoint_port !== null;
   if ((ownership.state === "active" && (!ownerHasEndpoint || !["same", "different", "unknown"].includes(ownership.endpoint_binding as string)))
     || (ownership.state === "released" && (!ownerHasEndpoint || ownership.endpoint_binding !== "not_owned"))
     || (ownership.state === "none" && (ownership.config_source !== null || ownership.endpoint_id !== null || ownership.endpoint_port !== null || ownership.endpoint_binding !== "not_owned"))
     || (ownership.state === "unavailable" && (ownership.config_source !== null || ownership.endpoint_id !== null || ownership.endpoint_port !== null || ownership.endpoint_binding !== "unknown"))) return null;
+
+  const currentConfigValue = ownership.current_config_value as CodexCurrentConfigValue;
+  const isFixtureCli = expected.surface === "cli" && fixtureScope;
+  if ((ownership.state === "active" && (isFixtureCli
+      ? !["matches_owned_endpoint", "missing", "different", "unavailable"].includes(currentConfigValue)
+      : currentConfigValue !== "not_rechecked"))
+    || ((ownership.state === "released" || ownership.state === "none") && currentConfigValue !== "not_owned")
+    || (ownership.state === "unavailable" && currentConfigValue !== "unavailable")) return null;
 
   if (!( ["starting", "ready", "unknown", "unavailable"] as unknown[]).includes(runtime.ingress_status)
     || typeof runtime.stable_ingress_ready !== "boolean"
@@ -250,7 +265,7 @@ function decodeSnapshot(value: unknown, expected: ExpectedReply): CodexStatusSna
       config_source: ownership.config_source as "codex_toml" | null,
       endpoint_id: ownership.endpoint_id as string | null,
       endpoint_port: ownership.endpoint_port as number | null,
-      current_config_value: "not_rechecked",
+      current_config_value: currentConfigValue,
     },
     runtime: {
       ingress_status: runtime.ingress_status as CodexStatusSnapshot["runtime"]["ingress_status"],
@@ -279,6 +294,28 @@ function decodeSnapshot(value: unknown, expected: ExpectedReply): CodexStatusSna
       subagent: "not_tested",
     },
   };
+}
+
+export type CodexSettingPresentationKey =
+  | "matches"
+  | "missing"
+  | "different"
+  | "unavailable"
+  | "not_owned"
+  | "not_rechecked";
+
+export function presentCodexSetting(value: CodexCurrentConfigValue): {
+  key: CodexSettingPresentationKey;
+  tone: "positive" | "caution" | "muted" | "quiet";
+} {
+  switch (value) {
+    case "matches_owned_endpoint": return { key: "matches", tone: "positive" };
+    case "missing": return { key: "missing", tone: "caution" };
+    case "different": return { key: "different", tone: "caution" };
+    case "unavailable": return { key: "unavailable", tone: "caution" };
+    case "not_owned": return { key: "not_owned", tone: "quiet" };
+    case "not_rechecked": return { key: "not_rechecked", tone: "muted" };
+  }
 }
 
 function decodeError(value: unknown, expected: ExpectedReply): CodexStatusError | null {
