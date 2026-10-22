@@ -1,5 +1,6 @@
 use super::discovery::{
-    DiscoveryInputs, DiscoveryManager, DiscoveryReply, InstallationSelectionError,
+    codex_cli_version_from_digest, DiscoveryInputs, DiscoveryManager, DiscoveryReply,
+    InstallationSelectionError,
 };
 use std::fs;
 use std::path::{Component, Path, PathBuf};
@@ -635,6 +636,109 @@ fn manual_candidates_survive_rescan_and_disappeared_files_are_dropped_with_warni
         .warnings
         .iter()
         .any(|warning| *warning == "candidate_location_unavailable"));
+    fixture.cleanup();
+}
+
+#[test]
+fn local_codex_directory_name_does_not_infer_binary_version() {
+    let mut fixture = Fixture::new();
+    let local_app_data = fixture.at("Local App Data");
+    let executable = local_app_data.join("OpenAI/Codex/bin/0.163.0-alpha.11.1/codex.exe");
+    write_file(&executable, b"small unknown executable fixture");
+
+    let result = snapshot(DiscoveryManager::new().scan_with_inputs(
+        REQUEST_ID.to_owned(),
+        DiscoveryInputs {
+            local_app_data: Some(local_app_data),
+            ..DiscoveryInputs::default()
+        },
+    ));
+
+    let codex = result
+        .installations
+        .iter()
+        .find(|installation| installation.source == "user_local_native")
+        .expect("bounded local Codex installation should be detected");
+    assert_eq!(codex.client_kind, "codex");
+    assert_eq!(codex.surface, "cli");
+    assert_eq!(
+        codex.version, None,
+        "directory name is not version evidence"
+    );
+    fixture.cleanup();
+}
+
+#[test]
+fn local_codex_scan_is_bounded_to_sixteen_direct_version_directories() {
+    let mut fixture = Fixture::new();
+    let local_app_data = fixture.at("Local App Data");
+    for index in 0..17 {
+        let executable = local_app_data
+            .join("OpenAI/Codex/bin")
+            .join(format!("slot-{index}"))
+            .join("codex.exe");
+        write_file(&executable, b"small unknown executable fixture");
+    }
+
+    let result = snapshot(DiscoveryManager::new().scan_with_inputs(
+        REQUEST_ID.to_owned(),
+        DiscoveryInputs {
+            local_app_data: Some(local_app_data),
+            ..DiscoveryInputs::default()
+        },
+    ));
+
+    assert_eq!(
+        result
+            .installations
+            .iter()
+            .filter(|installation| installation.source == "user_local_native")
+            .count(),
+        16
+    );
+    assert!(result.warnings.contains(&"candidate_limit_reached"));
+    fixture.cleanup();
+}
+
+#[test]
+fn bundled_codex_version_requires_both_exact_size_and_sha256() {
+    const HASH: &str = "e757246b4de87359e660647fa9514955a0971ff6a30affdd8c145d1d5ece7b84";
+    assert_eq!(
+        codex_cli_version_from_digest(336_011_568, HASH).as_deref(),
+        Some("0.163.0-alpha.11.1")
+    );
+    assert_eq!(
+        codex_cli_version_from_digest(336_011_567, HASH),
+        None,
+        "matching digest with a different size must not identify a version"
+    );
+    assert_eq!(
+        codex_cli_version_from_digest(
+            336_011_568,
+            "f757246b4de87359e660647fa9514955a0971ff6a30affdd8c145d1d5ece7b84"
+        ),
+        None,
+        "matching size with a different digest must remain unknown"
+    );
+}
+
+#[test]
+fn small_manual_codex_executable_stays_unknown_across_rescan() {
+    let mut fixture = Fixture::new();
+    let executable = fixture.at("Chosen/codex.exe");
+    write_file(&executable, b"not the pinned Codex executable");
+    let manager = DiscoveryManager::new();
+
+    let selected = snapshot(select_fixture(&manager, "codex", executable));
+    assert_eq!(selected.installations.len(), 1);
+    assert_eq!(selected.installations[0].source, "manual_file");
+    assert_eq!(selected.installations[0].version, None);
+
+    let rescanned =
+        snapshot(manager.scan_with_inputs(REQUEST_ID.to_owned(), DiscoveryInputs::default()));
+    assert_eq!(rescanned.installations.len(), 1);
+    assert_eq!(rescanned.installations[0].source, "manual_file");
+    assert_eq!(rescanned.installations[0].version, None);
     fixture.cleanup();
 }
 

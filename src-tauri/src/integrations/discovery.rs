@@ -1,8 +1,9 @@
 use serde::Serialize;
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::env;
-use std::fs::{self, File};
+use std::fs::{self, File, OpenOptions};
 use std::io::Read;
 use std::path::{Component, Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -14,10 +15,14 @@ use std::ffi::c_void;
 #[cfg(windows)]
 use std::os::windows::ffi::OsStrExt;
 #[cfg(windows)]
-use std::os::windows::fs::MetadataExt;
+use std::os::windows::fs::{MetadataExt, OpenOptionsExt};
+#[cfg(windows)]
+use std::os::windows::io::AsRawHandle;
 #[cfg(windows)]
 use windows_sys::Win32::Storage::FileSystem::{
-    GetDriveTypeW, GetFileVersionInfoSizeW, GetFileVersionInfoW, VerQueryValueW,
+    GetDriveTypeW, GetFileInformationByHandle, GetFileVersionInfoSizeW, GetFileVersionInfoW,
+    VerQueryValueW, BY_HANDLE_FILE_INFORMATION, FILE_ATTRIBUTE_DIRECTORY,
+    FILE_ATTRIBUTE_REPARSE_POINT, FILE_SHARE_READ,
 };
 #[cfg(windows)]
 use windows_sys::Win32::System::WindowsProgramming::DRIVE_FIXED;
@@ -30,6 +35,11 @@ const MAX_VERSION_RESOURCE_BYTES: usize = 128 * 1024;
 const MAX_WINDOWS_APP_ENTRIES: usize = 256;
 const MAX_SCOOP_ENTRIES: usize = 64;
 const MAX_SCOOP_VERSIONS_PER_APP: usize = 16;
+const MAX_CODEX_LOCAL_ENTRIES: usize = 64;
+const MAX_CODEX_LOCAL_VERSION_DIRS: usize = 16;
+const CODEX_CLI_0111_SIZE: u64 = 336_011_568;
+const CODEX_CLI_0111_SHA256: &str =
+    "e757246b4de87359e660647fa9514955a0971ff6a30affdd8c145d1d5ece7b84";
 const MAX_PATH_CHARS: usize = 32_767;
 const MAX_MANUAL_FILES: usize = 32;
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
@@ -253,13 +263,25 @@ impl DiscoveryManager {
                     continue;
                 }
             };
-            if report.installations.len() >= MAX_CANDIDATES {
+            if report_contains_executable(&report, revalidated.kind, &revalidated.executable_path) {
+                if revalidated.version.is_some() {
+                    let existing_index = report.installations.iter().position(|installation| {
+                        installation.client_kind == revalidated.kind
+                            && report.paths.get(&installation.installation_id).is_some_and(
+                                |candidate| {
+                                    path_key(candidate) == path_key(&revalidated.executable_path)
+                                },
+                            )
+                    });
+                    if let Some(index) = existing_index {
+                        if report.installations[index].version.is_none() {
+                            report.installations[index].version = revalidated.version.clone();
+                        }
+                    }
+                }
+            } else if report.installations.len() >= MAX_CANDIDATES {
                 report.warnings.insert("candidate_limit_reached");
-            } else if !report_contains_executable(
-                &report,
-                revalidated.kind,
-                &revalidated.executable_path,
-            ) {
+            } else {
                 let id = Uuid::new_v4().to_string();
                 report
                     .paths
@@ -268,7 +290,7 @@ impl DiscoveryManager {
                     installation_id: id,
                     client_kind: revalidated.kind,
                     surface: revalidated.surface,
-                    version: None,
+                    version: revalidated.version.clone(),
                     source: "manual_file",
                     location_label: "Selected file",
                     status: "detected",
@@ -354,7 +376,7 @@ impl DiscoveryManager {
             );
             return snapshot_reply(request_id, &state);
         }
-        let already_discovered = state.installations.iter().any(|installation| {
+        let discovered_index = state.installations.iter().position(|installation| {
             installation.client_kind == client_kind
                 && state
                     .paths
@@ -364,7 +386,12 @@ impl DiscoveryManager {
         if state.manual_candidates.len() >= MAX_MANUAL_FILES {
             return error_reply(&request_id, ErrorCode::ValidationFailed);
         }
-        if already_discovered {
+        if let Some(index) = discovered_index {
+            if candidate.version.is_some() {
+                if state.installations[index].version.is_none() {
+                    state.installations[index].version = candidate.version.clone();
+                }
+            }
             state.manual_candidates.push(candidate);
             discovery_trace!(
                 "event=select_duplicate manual_count={} generation={}",
@@ -382,7 +409,7 @@ impl DiscoveryManager {
             installation_id: id.clone(),
             client_kind,
             surface: "cli",
-            version: None,
+            version: candidate.version.clone(),
             source: "manual_file",
             location_label: "Selected file",
             status: "detected",
@@ -504,10 +531,19 @@ fn manual_candidate(
         PathCheckError::Unsafe => ManualRejectReason::Unsafe,
         PathCheckError::Unavailable => ManualRejectReason::Unavailable,
     })?;
+    let version = if client_kind == "codex"
+        && path
+            .extension()
+            .is_some_and(|extension| extension.eq_ignore_ascii_case("exe"))
+    {
+        verified_codex_cli_version(&executable)
+    } else {
+        None
+    };
     Ok(Candidate {
         kind: client_kind,
         surface: "cli",
-        version: None,
+        version,
         source: "manual_file",
         location_label: "Selected file",
         identity_path: executable.clone(),
@@ -585,6 +621,7 @@ pub(super) struct DiscoveryInputs {
     pub(super) path_entries: Vec<PathBuf>,
     pub(super) path_was_truncated: bool,
     pub(super) npm_roots: Vec<PathBuf>,
+    pub(super) local_app_data: Option<PathBuf>,
     pub(super) user_profile: Option<PathBuf>,
     pub(super) program_files: Option<PathBuf>,
 }
@@ -605,6 +642,7 @@ impl DiscoveryInputs {
             inputs.npm_roots.push(PathBuf::from(app_data).join("npm"));
         }
         if let Some(local_app_data) = env::var_os("LOCALAPPDATA") {
+            inputs.local_app_data = Some(PathBuf::from(&local_app_data));
             inputs
                 .npm_roots
                 .push(PathBuf::from(local_app_data).join("npm"));
@@ -681,6 +719,15 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
             candidate_count += 1;
             add_npm_candidate(npm_root, product, &mut candidates, &mut warnings);
         }
+    }
+
+    if let Some(local_app_data) = inputs.local_app_data.as_deref() {
+        add_codex_local_candidates(
+            local_app_data,
+            &mut candidates,
+            &mut warnings,
+            &mut candidate_count,
+        );
     }
 
     if let Some(user_profile) = inputs.user_profile.as_deref() {
@@ -974,6 +1021,86 @@ fn add_user_native_candidates(
                 },
             );
         }
+    }
+}
+
+fn add_codex_local_candidates(
+    local_app_data: &Path,
+    candidates: &mut HashMap<String, Candidate>,
+    warnings: &mut BTreeSet<&'static str>,
+    candidate_count: &mut usize,
+) {
+    let bin_root = local_app_data.join("OpenAI/Codex/bin");
+    if is_network_or_device_path(&bin_root) {
+        warnings.insert("network_location_skipped");
+        return;
+    }
+    let Some(bin_root) = checked_existing_path(&bin_root, PathKind::Directory, warnings) else {
+        return;
+    };
+    let entries = match fs::read_dir(&bin_root) {
+        Ok(entries) => entries,
+        Err(_) => {
+            warnings.insert("candidate_location_unavailable");
+            return;
+        }
+    };
+    let mut entry_count = 0usize;
+    let mut version_dir_count = 0usize;
+    for entry in entries {
+        if entry_count >= MAX_CODEX_LOCAL_ENTRIES {
+            warnings.insert("candidate_limit_reached");
+            break;
+        }
+        entry_count += 1;
+        let entry = match entry {
+            Ok(entry) => entry,
+            Err(_) => {
+                warnings.insert("candidate_location_unavailable");
+                continue;
+            }
+        };
+        let file_type = match entry.file_type() {
+            Ok(file_type) => file_type,
+            Err(_) => {
+                warnings.insert("candidate_location_unavailable");
+                continue;
+            }
+        };
+        if file_type.is_symlink() || !file_type.is_dir() {
+            continue;
+        }
+        if version_dir_count >= MAX_CODEX_LOCAL_VERSION_DIRS {
+            warnings.insert("candidate_limit_reached");
+            break;
+        }
+        let Some(version_dir) = checked_existing_path(&entry.path(), PathKind::Directory, warnings)
+        else {
+            continue;
+        };
+        version_dir_count += 1;
+        if *candidate_count >= MAX_CANDIDATES {
+            warnings.insert("candidate_limit_reached");
+            break;
+        }
+        *candidate_count += 1;
+        let Some(executable) =
+            checked_existing_path(&version_dir.join("codex.exe"), PathKind::File, warnings)
+        else {
+            continue;
+        };
+        insert_candidate(
+            candidates,
+            Candidate {
+                kind: "codex",
+                surface: "cli",
+                version: verified_codex_cli_version(&executable),
+                source: "user_local_native",
+                location_label: "User-local install",
+                identity_path: executable.clone(),
+                executable_path: executable,
+            },
+        );
     }
 }
 
@@ -1282,6 +1409,83 @@ fn is_reparse_point(_metadata: &fs::Metadata) -> bool {
 
 fn path_key(path: &Path) -> String {
     path.to_string_lossy().to_lowercase()
+}
+
+pub(super) fn codex_cli_version_from_digest(file_size: u64, digest_hex: &str) -> Option<String> {
+    (file_size == CODEX_CLI_0111_SIZE && digest_hex == CODEX_CLI_0111_SHA256)
+        .then(|| "0.163.0-alpha.11.1".to_owned())
+}
+
+fn verified_codex_cli_version(path: &Path) -> Option<String> {
+    let canonical_path = check_existing_path(path, PathKind::File).ok()?;
+    let mut options = OpenOptions::new();
+    options.read(true);
+    #[cfg(windows)]
+    options.share_mode(FILE_SHARE_READ);
+    let mut file = options.open(&canonical_path).ok()?;
+    let initial_metadata = file.metadata().ok()?;
+    if !initial_metadata.is_file() || initial_metadata.len() != CODEX_CLI_0111_SIZE {
+        return None;
+    }
+    let initial_identity = file_identity(&file)?;
+
+    let mut hasher = Sha256::new();
+    let mut bytes_read = 0u64;
+    let mut buffer = [0u8; 64 * 1024];
+    loop {
+        let count = file.read(&mut buffer).ok()?;
+        if count == 0 {
+            break;
+        }
+        bytes_read = bytes_read.checked_add(count as u64)?;
+        if bytes_read > CODEX_CLI_0111_SIZE {
+            return None;
+        }
+        hasher.update(&buffer[..count]);
+    }
+    if bytes_read != CODEX_CLI_0111_SIZE {
+        return None;
+    }
+    let final_handle_metadata = file.metadata().ok()?;
+    if final_handle_metadata.len() != CODEX_CLI_0111_SIZE
+        || file_identity(&file)? != initial_identity
+    {
+        return None;
+    }
+    let final_path = check_existing_path(&canonical_path, PathKind::File).ok()?;
+    if path_key(&final_path) != path_key(&canonical_path) {
+        return None;
+    }
+    let mut final_path_options = OpenOptions::new();
+    final_path_options.read(true);
+    #[cfg(windows)]
+    final_path_options.share_mode(FILE_SHARE_READ);
+    let final_path_file = final_path_options.open(&final_path).ok()?;
+    if file_identity(&final_path_file)? != initial_identity {
+        return None;
+    }
+
+    codex_cli_version_from_digest(bytes_read, &format!("{:x}", hasher.finalize()))
+}
+
+#[cfg(windows)]
+fn file_identity(file: &File) -> Option<(u32, u64)> {
+    let mut information = BY_HANDLE_FILE_INFORMATION::default();
+    if unsafe { GetFileInformationByHandle(file.as_raw_handle(), &mut information) } == 0
+        || information.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT)
+            != 0
+    {
+        return None;
+    }
+    Some((
+        information.dwVolumeSerialNumber,
+        ((information.nFileIndexHigh as u64) << 32) | information.nFileIndexLow as u64,
+    ))
+}
+
+#[cfg(not(windows))]
+fn file_identity(_file: &File) -> Option<(u32, u64)> {
+    None
 }
 
 #[cfg(windows)]

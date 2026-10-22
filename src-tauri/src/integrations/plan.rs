@@ -9,6 +9,8 @@ use std::path::Path;
 
 const PLAN_LIFETIME_SECONDS: u64 = 300;
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
+pub(super) const CODEX_FIXTURE_CLI_VERSIONS: &[&str] =
+    &["0.163.0-alpha.10.2", "0.163.0-alpha.11.1"];
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum ClientKind {
@@ -326,7 +328,7 @@ pub(crate) fn preview_config_with_presence(
 
 pub(super) fn supported_version(kind: ClientKind, version: &str) -> bool {
     match kind {
-        ClientKind::Codex => version == "0.163.0-alpha.10.2",
+        ClientKind::Codex => CODEX_FIXTURE_CLI_VERSIONS.contains(&version),
         ClientKind::ClaudeCode => version == "2.1.158",
         ClientKind::OpenCodeV1 => version == "1.19.3",
     }

@@ -15,9 +15,19 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
+#[path = "config_io/codex.rs"]
+mod codex;
 #[path = "connection_actions.rs"]
 mod connection_actions;
 
+#[cfg(test)]
+#[path = "config_io/codex_tests.rs"]
+mod codex_tests;
+
+pub(crate) use codex::{
+    connection_status as codex_connection_status, failure_reply as codex_status_failure_reply,
+    CodexStatusReply, CodexStatusRequest,
+};
 pub(crate) use connection_actions::{
     ApplyConnectionRequest, ConnectionActionReply, OwnershipSnapshotRequest, UndoConnectionRequest,
 };

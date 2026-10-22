@@ -3,8 +3,9 @@ mod runtime;
 mod state;
 
 use integrations::config_io::{
-    ApplyConnectionRequest, ConnectionActionReply, OwnershipSnapshotRequest, PlanManager,
-    PlanReply, PreviewRequest, UndoConnectionRequest,
+    codex_connection_status, codex_status_failure_reply, ApplyConnectionRequest, CodexStatusReply,
+    CodexStatusRequest, ConnectionActionReply, OwnershipSnapshotRequest, PlanManager, PlanReply,
+    PreviewRequest, UndoConnectionRequest,
 };
 use integrations::discovery::{DiscoveryManager, DiscoveryReply};
 use integrations::picker;
@@ -196,6 +197,22 @@ async fn get_connection_ownership(
 }
 
 #[tauri::command]
+async fn get_codex_connection_status(
+    plans: tauri::State<'_, Arc<PlanManager>>,
+    runtime: tauri::State<'_, RuntimeManager>,
+    request: CodexStatusRequest,
+) -> Result<CodexStatusReply, CodexStatusReply> {
+    let manager = Arc::clone(plans.inner());
+    let runtime = runtime.inner().clone();
+    let failure_id = request.request_id.clone();
+    Ok(tauri::async_runtime::spawn_blocking(move || {
+        codex_connection_status(&manager, &runtime, request)
+    })
+    .await
+    .unwrap_or_else(|_| codex_status_failure_reply(failure_id)))
+}
+
+#[tauri::command]
 async fn select_client_file(
     window: tauri::WebviewWindow,
     state: tauri::State<'_, DiscoveryManager>,
@@ -261,7 +278,8 @@ fn main() {
             preview_connection_plan,
             apply_connection_plan,
             undo_connection,
-            get_connection_ownership
+            get_connection_ownership,
+            get_codex_connection_status
         ])
         .build(tauri::generate_context!())
         .expect("failed to build Headroom desktop");

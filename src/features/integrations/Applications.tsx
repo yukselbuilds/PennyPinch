@@ -11,6 +11,7 @@ import {
 } from "../../lib/integrations";
 import type { PreferenceLanguage } from "../../lib/preferences";
 import { ConnectDialog } from "./ConnectDialog";
+import { ConnectionStatus } from "./ConnectionStatus";
 
 type Copy = {
   intro: string;
@@ -277,6 +278,13 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
         />;
       })}
     </div>
+
+    {snapshot?.status === "partial" && !mutationPending && snapshot.installations.some((item) => item.client_kind === "codex") && <ConnectionStatus
+      key={`${snapshot.scan_generation}:${snapshot.installations.filter((item) => item.client_kind === "codex").map((item) => `${item.installation_id}-${item.surface}-${item.version ?? "unknown"}`).join(",")}`}
+      language={language}
+      installations={snapshot.installations.filter((item) => item.client_kind === "codex")}
+      scanGeneration={snapshot.scan_generation}
+    />}
 
     {connectionClient && <ConnectDialog
       language={language}

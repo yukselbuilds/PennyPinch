@@ -138,7 +138,8 @@ function decodeInstallation(value: unknown): InstallationSummary | null {
   if (source === "windows_app_package") {
     if (client_kind !== "codex" || surface !== "desktop") return null;
   } else if (surface !== "cli") return null;
-  if (source === "manual_file" && version !== null) return null;
+  if (source === "manual_file" && version !== null &&
+      !(client_kind === "codex" && version === "0.163.0-alpha.11.1")) return null;
 
   return {
     installation_id,

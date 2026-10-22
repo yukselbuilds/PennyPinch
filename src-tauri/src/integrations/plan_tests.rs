@@ -78,6 +78,46 @@ fn codex_user_config_plan_targets_only_stable_ingress_and_preserves_declared_mod
 }
 
 #[test]
+fn codex_fixture_versions_are_exact_and_neighbor_versions_remain_blocked() {
+    for version in ["0.163.0-alpha.10.2", "0.163.0-alpha.11.1"] {
+        let mut context = context(ClientKind::Codex);
+        context.version = Some(version.to_owned());
+        let plan = preview_config(&context, CODEX_CONFIG).unwrap();
+        assert_eq!(plan.status, PlanStatus::Preview, "{version}");
+        assert!(plan.blockers.is_empty(), "{version}");
+        assert_eq!(plan.endpoint_field.before, EndpointBefore::Missing);
+        assert!(plan.endpoint_field.after_headroom);
+        assert_eq!(plan.model, DeclarationState::Present);
+        assert_eq!(plan.reasoning, DeclarationState::Present);
+        assert!(plan.model_unchanged && plan.reasoning_unchanged && plan.auth_unchanged);
+    }
+
+    for version in [
+        "0.163.0-alpha.11.0",
+        "0.163.0-alpha.11.2",
+        "0.163.0-alpha.10.3",
+    ] {
+        let mut context = context(ClientKind::Codex);
+        context.version = Some(version.to_owned());
+        let plan = preview_config(&context, CODEX_CONFIG).unwrap();
+        assert_eq!(plan.status, PlanStatus::Blocked, "{version}");
+        assert!(!plan.endpoint_field.after_headroom);
+        assert!(plan
+            .blockers
+            .contains(&PlanBlocker::UnsupportedClientVersion));
+    }
+
+    let mut desktop = context(ClientKind::Codex);
+    desktop.surface = "desktop".to_owned();
+    desktop.version = Some("0.163.0-alpha.11.1".to_owned());
+    let plan = preview_config(&desktop, CODEX_CONFIG).unwrap();
+    assert_eq!(plan.status, PlanStatus::Blocked);
+    assert!(plan
+        .blockers
+        .contains(&PlanBlocker::UnsupportedClientSurface));
+}
+
+#[test]
 fn claude_json_plan_summarizes_auth_and_hooks_without_returning_config_literals() {
     let fixture = br#"{
       "model": "claude-opus-4-6",

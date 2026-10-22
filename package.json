@@ -13,7 +13,8 @@
     "test:integrations": "node --experimental-strip-types --test tests/app/integrations.test.mjs",
     "test:connection-plan": "node --experimental-strip-types --test tests/app/connection-plan.test.mjs",
     "test:connection-actions": "node --experimental-strip-types --test tests/app/connection-actions.test.mjs",
-    "test:app": "node --experimental-strip-types --test tests/app/snapshot.test.mjs tests/app/preferences.test.mjs tests/app/integrations.test.mjs tests/app/connection-plan.test.mjs tests/app/connection-plan-view.test.mjs tests/app/connection-actions.test.mjs",
+    "test:codex-status": "node --experimental-strip-types --test tests/app/codex-status.test.mjs",
+    "test:app": "node --experimental-strip-types --test tests/app/snapshot.test.mjs tests/app/preferences.test.mjs tests/app/integrations.test.mjs tests/app/connection-plan.test.mjs tests/app/connection-plan-view.test.mjs tests/app/connection-actions.test.mjs tests/app/codex-status.test.mjs",
     "tauri": "tauri",
     "tauri:dev": "tauri dev --config src-tauri/tauri.dev.conf.json"
   },

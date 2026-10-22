@@ -182,6 +182,18 @@ pub(crate) struct ReadyStableEndpoint {
     pub(crate) port: u16,
 }
 
+pub(crate) struct CodexRuntimeObservation {
+    pub(crate) endpoint_status: &'static str,
+    pub(crate) endpoint_id: Option<String>,
+    pub(crate) endpoint_port: Option<u16>,
+    pub(crate) endpoint_ready: bool,
+    pub(crate) engine_status: &'static str,
+    pub(crate) engine_ready: bool,
+    pub(crate) runtime_generation: Option<String>,
+    pub(crate) active_connection_count: Option<u64>,
+    pub(crate) error_code: Option<&'static str>,
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum StableEndpointAccessError {
     Unavailable,
@@ -3447,6 +3459,71 @@ impl RuntimeManager {
             .unwrap_or_else(|poisoned| poisoned.into_inner());
         expire_stale_ready_view(&mut runtime, now);
         ingress.ready_stable_endpoint(&runtime, now)
+    }
+
+    pub(crate) fn codex_connection_observation(&self) -> CodexRuntimeObservation {
+        let now = Instant::now();
+        let ingress = {
+            let mut ingress = self
+                .ingress_view
+                .write()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            expire_stale_ingress_endpoint(&mut ingress, now);
+            ingress.clone()
+        };
+        let mut runtime = self
+            .view
+            .write()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        expire_stale_ready_view(&mut runtime, now);
+        match ingress.snapshot(Uuid::new_v4().to_string(), &runtime) {
+            IngressReply::Snapshot(snapshot) => {
+                let endpoint_ready = snapshot.endpoint.status == "ready"
+                    && snapshot.endpoint.error_code.is_none()
+                    && snapshot
+                        .endpoint
+                        .endpoint_id
+                        .as_deref()
+                        .is_some_and(valid_request_id)
+                    && snapshot.endpoint.address.as_ref().is_some_and(|address| {
+                        address.host == "127.0.0.1" && (1..=u16::MAX).contains(&address.port)
+                    });
+                let engine_ready = endpoint_ready
+                    && snapshot.backend.status == "ready"
+                    && snapshot.backend.error_code.is_none()
+                    && snapshot
+                        .backend
+                        .generation
+                        .as_deref()
+                        .is_some_and(valid_generation);
+                CodexRuntimeObservation {
+                    endpoint_status: snapshot.endpoint.status,
+                    endpoint_id: snapshot.endpoint.endpoint_id,
+                    endpoint_port: snapshot
+                        .endpoint
+                        .address
+                        .filter(|address| address.host == "127.0.0.1" && address.port != 0)
+                        .map(|address| address.port),
+                    endpoint_ready,
+                    engine_status: snapshot.backend.status,
+                    engine_ready,
+                    runtime_generation: snapshot.backend.generation,
+                    active_connection_count: snapshot.active_connection_count,
+                    error_code: snapshot.backend.error_code.or(snapshot.endpoint.error_code),
+                }
+            }
+            IngressReply::Error(error) => CodexRuntimeObservation {
+                endpoint_status: "unknown",
+                endpoint_id: None,
+                endpoint_port: None,
+                endpoint_ready: false,
+                engine_status: "unknown",
+                engine_ready: false,
+                runtime_generation: None,
+                active_connection_count: None,
+                error_code: Some(error.error.code),
+            },
+        }
     }
 
     pub fn start_engine(&self, request_id: String) -> RuntimeReply {
