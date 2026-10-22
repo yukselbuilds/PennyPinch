@@ -5,7 +5,7 @@
 
 ## Decision
 
-GitHub work must remain free-only. The repository's default visibility is private, and the first import is source-only. Repository creation and publishing are to be done in GitHub Desktop using its existing sign-in flow. Local Git history and commits do not require a GitHub CLI token; the invalid CLI token will not be refreshed for this task. This preparation has not created or published a repository.
+GitHub work must remain free-only. The repository is private, and the first import is source-only. [Protocol272/headroom-desktop](https://github.com/Protocol272/headroom-desktop) was created/published in GitHub Desktop using its existing sign-in flow on22 October2026; the browser Private label was independently observed. Local Git history and commits do not require a GitHub CLI token; the invalid CLI token was not refreshed. [H046 acceptance](../proofs/repository-import.md).
 
 Until H047 verifies the applicable free allowance and a no-charge stop, do not add or run GitHub Actions. If H047 verifies those conditions, standard GitHub-hosted runners within the included allowance are permitted for manually dispatched (`workflow_dispatch`) checks. This can include macOS/Linux native jobs; a local Mac/Linux host is not required. Paid or larger runners, overage spending, new payment methods, metered caches, Codespaces, and a separate cloud-macOS subscription remain prohibited. No payment method, workflow, or account billing setting was changed here. CI has not been configured or run.
 

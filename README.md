@@ -22,6 +22,6 @@ Consequently, a fresh clone is not engine-ready. The current runtime proof is li
 
 ## GitHub and evidence
 
-The first GitHub import is planned as a private, source-only repository through GitHub Desktop. No CI workflow is configured or has been run. The free-only CI decision and gates are recorded in [decision 006](docs/decisions/006-free-ci.md); automated checks remain deferred until H047 verifies the account's applicable quota and hard-stop conditions.
+The project is maintained in the private, source-only [Protocol272/headroom-desktop](https://github.com/Protocol272/headroom-desktop) repository. The first import was published through GitHub Desktop; [H046 evidence](docs/proofs/repository-import.md) records the scope. No CI workflow is configured or has been run. The free-only CI decision and gates are recorded in [decision 006](docs/decisions/006-free-ci.md); automated checks remain deferred until H047 verifies the account's applicable quota and hard-stop conditions.
 
 Some proof documents link to files beneath `work/`. Those paths refer to local development evidence and are intentionally ignored; the evidence files themselves are not part of the initial source import. Generated builds, downloaded engine payloads, temporary runs, and visual outputs are excluded from Git.
