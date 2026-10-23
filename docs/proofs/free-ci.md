@@ -4,6 +4,8 @@
 
 ## A — Account gate, read-only
 
+**Later refresh:** [23 October source CI](free-ci-refresh-2026-10-23.md) passed64 tests/build on commit7722777; one additional included minute, account2/2000 and$0 billable. The original acceptance below remains historical.
+
 Root used the existing GitHub browser session for Protocol272. The repository remains private. Billing Overview showed **GitHub Free**, Actions **0 min used / 2,000 min included**, and Actions storage **0 GB used / 0.5 GB included**. The displayed Actions billable amount after discounts was **$0**. This is an observation of account-wide remaining allowance, not a reservation for Headroom.
 
 Budgets and alerts already contained an account-scoped **Actions $0.00** budget with **Usage blocked** displayed. Its edit form showed budget amount **0**, **Stop usage when budget limit is reached checked**, and **Spending won't exceed your set budget**. It also required a valid payment method before creating/adjusting the budget. Root inspected the existing values and exited with Cancel; no budget, payment, auth, subscription or other repository setting changed. The budget applies to paid usage; actual availability of an included-quota job is checked separately by H047-c, without increasing the budget if GitHub blocks the run.

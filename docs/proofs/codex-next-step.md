@@ -18,4 +18,6 @@ The next open H019 work remains a real request-correlation/live-verification pat
 
 QA workspace: `work/proofs/codex-next-step/`. Synthetic discovery metadata is not a real client/version-support claim. The user's sign-in deferral and free-only boundary remain in force.
 
+Supplemental source CI: [23 October refresh](free-ci-refresh-2026-10-23.md) passed64 tests and frontend build on Ubuntu for commit7722777. Local product acceptance and live-auth limits above remain unchanged.
+
 Publication completed23 October after the user renewed the normal GitHub Desktop sign-in. Source commit `00ad5a8` and checkpoint commit `5e8637a` were pushed through Desktop3.6.7; root observed `push complete`/Fetch origin, matching local/tracking refs and `update by push`. The previous invalidated-token blocker is closed. CLI tokens, SSH and credential storage were not changed; no CI was dispatched. `work/proofs/codex-next-step/publication.json` retains fixed acknowledgment metadata only.
