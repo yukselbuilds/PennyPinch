@@ -39,6 +39,14 @@ Unsupported surfaces/versions, inaccessible ownership, absent ownership, unsafe/
 
 The compact localized guidance appears in the existing status panel. Its useful output is the next corrective step, rather than another table of readiness facts. Backend/protocol/auth behavior remains unchanged. Acceptance covers a blocker-priority test matrix, the final frontend/build candidate and real native UI/IPC with isolated fixture config; it cannot close H019 or replace deferred real-provider validation.
 
+## H019-d3 — Recheck current route eligibility
+
+23 October 2026. Root found a readiness gap: the owned endpoint can still match after the user adds provider/profile/alternate-route configuration that the existing connection planner would reject. Endpoint text alone cannot establish the local prerequisites for that tested route.
+
+Reuse the planner's existing Codex route/schema checks against the same safe, pinned current-config read. Do not duplicate eligibility rules or infer effective settings in an already-open process. A parsed present config outside that planner coverage returns the fixed setting observation `unsupported_route`, which prevents local-ready guidance even when the stored endpoint string matches and the engine is ready. Missing files remain missing; malformed/unreadable configs remain unavailable; no ownership and unsupported-installation shortcuts continue to avoid reading config.
+
+This expands the existing fixed setting-state enum without a new request, response field, auth read, process execution, config write or automatic provider change. The UI describes the current route as outside the tested configuration scope and asks the user to review it. Source/model/reasoning declarations are preserved. Regression acceptance covers route changes with an unchanged endpoint, allowed ordinary model/reasoning edits, shared planner behavior, strict decoding and actual native observations. H019 remains open; transport, real request completion and live auth/agents are not proved by this correction.
+
 ## Sources checked
 
 Current official [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference) and [advanced configuration](https://learn.chatgpt.com/docs/config-file/config-advanced) describe `openai_base_url` for the built-in provider and exclude provider/auth overrides from project config. The [authentication guide](https://learn.chatgpt.com/docs/auth) separates subscription and usage-billed API-key access. Documentation describes possibilities; the installed client and pinned Headroom runtime still require their own route proof. The existing gateway/Sign-in-with-ChatGPT integration examples do not authorize copying the user's existing tokens or changing their provider.

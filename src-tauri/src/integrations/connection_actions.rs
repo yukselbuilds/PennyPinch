@@ -273,6 +273,12 @@ fn classify_codex_config(
     else {
         return CurrentConfigValue::Unavailable;
     };
+    let Some(root) = document.as_object() else {
+        return CurrentConfigValue::Unavailable;
+    };
+    if !super::super::plan::codex_route_supported(root) {
+        return CurrentConfigValue::UnsupportedRoute;
+    }
     match document.get("openai_base_url") {
         None => CurrentConfigValue::Missing,
         Some(serde_json::Value::String(value)) => {

@@ -283,6 +283,24 @@ fn current_codex_value(
     manager.codex_config_observation(&selected, generation).1
 }
 
+fn current_codex_value_label(
+    manager: &PlanManager,
+    installation_id: &str,
+    generation: u64,
+) -> &'static str {
+    let selected = selected_codex(manager, installation_id, generation);
+    let (ownership, current) = manager.codex_config_observation(&selected, generation);
+    build_snapshot(
+        Uuid::new_v4().to_string(),
+        selected,
+        ownership,
+        runtime(false),
+        current,
+    )
+    .ownership
+    .current_config_value
+}
+
 #[test]
 fn active_owned_codex_value_matches_even_when_engine_is_stopped_and_other_fields_change() {
     let fixture = Fixture::new();
@@ -323,6 +341,74 @@ fn active_owned_codex_value_matches_even_when_engine_is_stopped_and_other_fields
     );
     assert!(!snapshot.runtime.engine_ready);
     assert_eq!(snapshot.coverage.traffic_verification, "not_verified");
+}
+
+#[test]
+fn active_codex_route_overrides_do_not_report_a_matching_owned_endpoint() {
+    let fixture = Fixture::new();
+    let (config, manager, installation_id, generation) = active_codex_fixture(&fixture);
+    let route_overrides = [
+        ("custom provider", "model_provider = \"custom\"\n"),
+        (
+            "populated model providers",
+            "model_providers = { fixture = { name = \"private\" } }\n",
+        ),
+        ("single profile", "profile = \"work\"\n"),
+        (
+            "profile table",
+            "profiles = { work = { model_provider = \"openai\" } }\n",
+        ),
+        (
+            "realtime websocket route",
+            "experimental_realtime_ws_base_url = \"https://route.invalid\"\n",
+        ),
+        (
+            "provider table with wrong type",
+            "model_providers = \"invalid\"\n",
+        ),
+        ("provider selector with wrong type", "model_provider = 42\n"),
+    ];
+
+    for (description, override_text) in route_overrides {
+        let contents = format!(
+            "model = \"fixture-model\"\nopenai_base_url = \"http://127.0.0.1:41731/v1\"\n{override_text}"
+        );
+        fs::write(&config, contents.as_bytes()).expect("write fixture route override");
+        assert_eq!(
+            current_codex_value_label(&manager, &installation_id, generation),
+            "unsupported_route",
+            "{description} must take precedence over an equal endpoint value"
+        );
+    }
+
+    let allowed_route_fields = [
+        (
+            "built-in provider selector",
+            "model_provider = \"openai\"\n",
+        ),
+        ("empty custom provider table", "model_providers = {}\n"),
+    ];
+    for (description, route_field) in allowed_route_fields {
+        let contents = format!(
+            "model = \"fixture-model\"\nopenai_base_url = \"http://127.0.0.1:41731/v1\"\n{route_field}"
+        );
+        fs::write(&config, contents.as_bytes()).expect("write allowed built-in route field");
+        assert_eq!(
+            current_codex_value_label(&manager, &installation_id, generation),
+            "matches_owned_endpoint",
+            "{description} remains within the planner's supported route"
+        );
+    }
+
+    fs::write(
+        &config,
+        b"model = \"user-model\"\nmodel_reasoning_effort = \"high\"\nopenai_base_url = \"http://127.0.0.1:41731/v1\"\n",
+    )
+    .expect("write allowed model and reasoning edits");
+    assert_eq!(
+        current_codex_value_label(&manager, &installation_id, generation),
+        "matches_owned_endpoint"
+    );
 }
 
 #[test]

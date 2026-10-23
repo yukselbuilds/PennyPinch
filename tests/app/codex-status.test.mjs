@@ -183,7 +183,7 @@ test("limits local API fixture scope to exact CLI versions, never Desktop or nei
 
 test("decodes disk setting states only when consistent with ownership and fixture scope", () => {
   assert.ok(api);
-  for (const currentValue of ["matches_owned_endpoint", "missing", "different", "unavailable"]) {
+  for (const currentValue of ["matches_owned_endpoint", "missing", "different", "unavailable", "unsupported_route"]) {
     const snapshot = makeSnapshot({
       ownership: { ...makeSnapshot().ownership, current_config_value: currentValue },
     });
@@ -231,6 +231,33 @@ test("decodes disk setting states only when consistent with ownership and fixtur
     ...makeSnapshot(),
     ownership: { ...makeSnapshot().ownership, current_config_value: "not_rechecked" },
   }, expected()), null);
+
+  for (const ineligible of [
+    {
+      ...unsupportedCli,
+      ownership: { ...unsupportedCli.ownership, current_config_value: "unsupported_route" },
+    },
+    {
+      ...makeSnapshot({
+        installation: { ...makeSnapshot().installation, surface: "desktop", compatibility: "not_tested" },
+        auth_scope: { ...makeSnapshot().auth_scope, api_key_auth: "not_tested" },
+        ownership: { ...makeSnapshot().ownership, current_config_value: "unsupported_route" },
+      }),
+    },
+    {
+      ...makeSnapshot({
+        ownership: { ...makeSnapshot().ownership, state: "none", endpoint_binding: "not_owned", config_source: null, endpoint_id: null, endpoint_port: null, current_config_value: "unsupported_route" },
+      }),
+    },
+    {
+      ...makeSnapshot({
+        ownership: { ...makeSnapshot().ownership, state: "released", endpoint_binding: "not_owned", current_config_value: "unsupported_route" },
+      }),
+    },
+  ]) {
+    const surface = ineligible.installation.surface;
+    assert.equal(api.decodeCodexStatusReply(ineligible, expected({ surface })), null);
+  }
 });
 
 test("presents disk-setting outcomes without turning no ownership into a warning", () => {
@@ -239,6 +266,7 @@ test("presents disk-setting outcomes without turning no ownership into a warning
   assert.deepEqual(api.presentCodexSetting("missing"), { key: "missing", tone: "caution" });
   assert.deepEqual(api.presentCodexSetting("different"), { key: "different", tone: "caution" });
   assert.deepEqual(api.presentCodexSetting("unavailable"), { key: "unavailable", tone: "caution" });
+  assert.deepEqual(api.presentCodexSetting("unsupported_route"), { key: "unsupported_route", tone: "caution" });
   assert.deepEqual(api.presentCodexSetting("not_rechecked"), { key: "not_rechecked", tone: "muted" });
   assert.deepEqual(api.presentCodexSetting("not_owned"), { key: "not_owned", tone: "quiet" });
 });
@@ -251,6 +279,30 @@ test("rejects unknown current-config observation codes", () => {
     ownership: { ...base.ownership, current_config_value: "verified_by_magic" },
   };
   assert.equal(api.decodeCodexStatusReply(hostile, expected()), null);
+});
+
+test("unsupported route is a caution and blocks local-ready diagnosis", () => {
+  assert.ok(api);
+  const ready = makeSnapshot({
+    ownership: { ...makeSnapshot().ownership, current_config_value: "unsupported_route" },
+    runtime: {
+      ...makeSnapshot().runtime,
+      engine_status: "ready",
+      engine_ready: true,
+      runtime_generation: "0123456789abcdef0123456789abcdef",
+    },
+  });
+  const decoded = api.decodeCodexStatusReply(ready, expected());
+  assert.equal(decoded.kind, "snapshot");
+  assert.deepEqual(api.diagnoseCodexNextAction(decoded.snapshot), {
+    code: "inspect_codex_setting",
+    state: "action_required",
+  });
+  assert.equal(decoded.snapshot.coverage.traffic_verification, "not_verified");
+  assert.equal(decoded.snapshot.policy.runtime_effective, "unknown");
+  assert.equal(decoded.snapshot.auth_scope.current_method, "not_read");
+  assert.equal(decoded.snapshot.coverage.main_agent, "unknown");
+  assert.equal(decoded.snapshot.coverage.subagent, "not_tested");
 });
 
 test("diagnoses safe next steps from decoded snapshots without inferring traffic", () => {

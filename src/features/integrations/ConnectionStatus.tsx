@@ -87,7 +87,9 @@ const copy: Record<PreferenceLanguage, Copy> = {
     currentValue: "Codex ayarındaki değer", diskSetting: "Diskteki Codex ayarı",
     diskState: {
       matches: "Kayıtlı adresle eşleşiyor", missing: "Codex ayarında Headroom adresi yok",
-      different: "Codex ayarında farklı bir adres var", unavailable: "Codex ayarı güvenle okunamadı",
+      different: "Codex ayarında farklı bir adres var",
+      unsupported_route: "Codex ayar yapısı mevcut yerel rota kapsamının dışında. Sağlayıcı, model veya profil değiştirilmedi.",
+      unavailable: "Codex ayarı güvenle okunamadı",
       not_owned: "Headroom'a ait bir ayar kaydı yok", not_rechecked: "Disk ayarı yeniden kontrol edilmedi",
     },
     diskObservationLimit: "Bu, dosyanın anlık gözlemidir; çalışan Codex sürecinin bu ayarı kullandığını doğrulamaz.",
@@ -135,7 +137,9 @@ const copy: Record<PreferenceLanguage, Copy> = {
     currentValue: "Value in Codex settings", diskSetting: "Codex setting on disk",
     diskState: {
       matches: "Matches saved address", missing: "No Headroom address in Codex settings",
-      different: "Codex settings contain a different address", unavailable: "Codex settings could not be read safely",
+      different: "Codex settings contain a different address",
+      unsupported_route: "The Codex settings structure is outside current local route coverage. No provider, model, or profile was changed.",
+      unavailable: "Codex settings could not be read safely",
       not_owned: "No setting record is owned by Headroom", not_rechecked: "Disk setting was not rechecked",
     },
     diskObservationLimit: "This is a point-in-time file observation; it does not verify that the running Codex process uses this setting.",

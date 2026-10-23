@@ -382,11 +382,24 @@ fn analyze_codex(
     target: &str,
     blockers: &mut Vec<PlanBlocker>,
 ) -> (EndpointField, EndpointBefore) {
+    blockers.extend(codex_route_blockers(root));
+    (
+        EndpointField::CodexOpenaiBaseUrl,
+        endpoint_before(root.get("openai_base_url"), target),
+    )
+}
+
+pub(super) fn codex_route_supported(root: &serde_json::Map<String, Value>) -> bool {
+    codex_route_blockers(root).is_empty()
+}
+
+fn codex_route_blockers(root: &serde_json::Map<String, Value>) -> Vec<PlanBlocker> {
+    let mut blockers = Vec::new();
     if let Some(provider) = root.get("model_provider") {
         match provider.as_str() {
             Some("openai") => {}
-            Some(_) => add_blocker(blockers, PlanBlocker::CustomGateway),
-            None => add_blocker(blockers, PlanBlocker::UnsupportedRoute),
+            Some(_) => add_blocker(&mut blockers, PlanBlocker::CustomGateway),
+            None => add_blocker(&mut blockers, PlanBlocker::UnsupportedRoute),
         }
     }
     if root
@@ -394,24 +407,21 @@ fn analyze_codex(
         .and_then(Value::as_object)
         .is_some_and(|providers| !providers.is_empty())
     {
-        add_blocker(blockers, PlanBlocker::CustomGateway);
+        add_blocker(&mut blockers, PlanBlocker::CustomGateway);
     }
     if root
         .get("model_providers")
         .is_some_and(|providers| !providers.is_object())
     {
-        add_blocker(blockers, PlanBlocker::UnsupportedSchema);
+        add_blocker(&mut blockers, PlanBlocker::UnsupportedSchema);
     }
     if root.contains_key("profile")
         || root.contains_key("profiles")
         || root.contains_key("experimental_realtime_ws_base_url")
     {
-        add_blocker(blockers, PlanBlocker::UnsupportedRoute);
+        add_blocker(&mut blockers, PlanBlocker::UnsupportedRoute);
     }
-    (
-        EndpointField::CodexOpenaiBaseUrl,
-        endpoint_before(root.get("openai_base_url"), target),
-    )
+    blockers
 }
 
 fn analyze_claude(

@@ -6,6 +6,7 @@ export type CodexCurrentConfigValue =
   | "matches_owned_endpoint"
   | "missing"
   | "different"
+  | "unsupported_route"
   | "unavailable"
   | "not_owned"
   | "not_rechecked";
@@ -211,7 +212,7 @@ function decodeSnapshot(value: unknown, expected: ExpectedReply): CodexStatusSna
     || !(ownership.config_source === null || ownership.config_source === "codex_toml")
     || !(ownership.endpoint_id === null || isCanonicalUuid(ownership.endpoint_id))
     || !(ownership.endpoint_port === null || (Number.isInteger(ownership.endpoint_port) && (ownership.endpoint_port as number) >= 1 && (ownership.endpoint_port as number) <= 65_535))
-    || !( ["matches_owned_endpoint", "missing", "different", "unavailable", "not_owned", "not_rechecked"] as unknown[]).includes(ownership.current_config_value)) return null;
+    || !( ["matches_owned_endpoint", "missing", "different", "unsupported_route", "unavailable", "not_owned", "not_rechecked"] as unknown[]).includes(ownership.current_config_value)) return null;
 
   const ownerHasEndpoint = ownership.config_source === "codex_toml" && ownership.endpoint_id !== null && ownership.endpoint_port !== null;
   if ((ownership.state === "active" && (!ownerHasEndpoint || !["same", "different", "unknown"].includes(ownership.endpoint_binding as string)))
@@ -222,7 +223,7 @@ function decodeSnapshot(value: unknown, expected: ExpectedReply): CodexStatusSna
   const currentConfigValue = ownership.current_config_value as CodexCurrentConfigValue;
   const isFixtureCli = expected.surface === "cli" && fixtureScope;
   if ((ownership.state === "active" && (isFixtureCli
-      ? !["matches_owned_endpoint", "missing", "different", "unavailable"].includes(currentConfigValue)
+      ? !["matches_owned_endpoint", "missing", "different", "unsupported_route", "unavailable"].includes(currentConfigValue)
       : currentConfigValue !== "not_rechecked"))
     || ((ownership.state === "released" || ownership.state === "none") && currentConfigValue !== "not_owned")
     || (ownership.state === "unavailable" && currentConfigValue !== "unavailable")) return null;
@@ -300,6 +301,7 @@ export type CodexSettingPresentationKey =
   | "matches"
   | "missing"
   | "different"
+  | "unsupported_route"
   | "unavailable"
   | "not_owned"
   | "not_rechecked";
@@ -312,6 +314,7 @@ export function presentCodexSetting(value: CodexCurrentConfigValue): {
     case "matches_owned_endpoint": return { key: "matches", tone: "positive" };
     case "missing": return { key: "missing", tone: "caution" };
     case "different": return { key: "different", tone: "caution" };
+    case "unsupported_route": return { key: "unsupported_route", tone: "caution" };
     case "unavailable": return { key: "unavailable", tone: "caution" };
     case "not_owned": return { key: "not_owned", tone: "quiet" };
     case "not_rechecked": return { key: "not_rechecked", tone: "muted" };
