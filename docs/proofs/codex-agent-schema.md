@@ -1,0 +1,19 @@
+# H019-d5 — Pinned CLI schema investigation
+
+23 October2026. This is **offline fixture evidence**, not live provider, subagent-route or product acceptance. The exact installed `.11.2` CLI/336,134,960B/SHA `c81ed464e5e7cafd09a5fa26af390c480bed8e9fab2a87a54b285fbd56e7122a` was used.
+
+The installed help exposes exec JSONL but no exec-event schema generator. App-server's generator describes a different JSON-RPC protocol and was not promoted to exec evidence. The current [official non-interactive documentation](https://learn.chatgpt.com/docs/non-interactive-mode) gives dotted events and ephemeral-history behavior; the preceding normal-profile live probe actually emitted underscore events. Both documentation and the installed run's scope must be kept distinct.
+
+The sole worker created an ignored synthetic Responses fixture at `work/proofs/codex-agent-check/schema_probe.py`, reviewed by root. Its CLI used a fresh project-contained CODEX_HOME/profile, fake API key and loopback-only custom provider. No existing auth/config was copied or manually read, no real provider key/call was used. HTTP bodies and CLI content were processed only in memory; proof output retains bounded schema names, validated UUID hashes and fixed outcome booleans.
+
+The first attempt (`42088bc4-f613-4f52-a0d8-ea8f31c4f044`) ended before report generation because the collector summary referenced six attributes omitted from its initializer. That is a probe defect, not a CLI/provider failure. A focused regression failed before the fix and passed afterward. Its directory was preserved; raw error output was not stored.
+
+The corrected synthetic run `0e213ce5-4672-4b40-99a5-7933e252d1c7` exited CLI0 with one fixture Responses request and no real provider calls. Its safe summary SHA256 is `6a58cd26129929c3de048f804dab4943ad577f3042462b16d0fa6765630b514b`. It observed `agent_message` fields `id,text,type` and a fixed marker. The fixture tool inventory was empty, so there was **no spawn/wait/child evidence**. Empty event-type counts are inconclusive because the probe's enum-name filter rejects dotted names; four JSONL records were read. This run cannot establish a collaboration schema or normal-profile agent availability.
+
+The known metadata header `x-codex-turn-metadata` was present. Only its key names and validated UUID hashes were retained. Keys included `session_id`, `thread_id`, `turn_id` and other context fields; optional/extra fields must not erase a valid thread identity. Static binary strings also mention `x-codex-parent-thread-id`, but static presence alone does not prove its wire semantics.
+
+Prior probe source/test remain byte-identical under `work/proofs/codex-agent-check/ignored-history/d5-v1/` with their documented hashes. The schema probe/test fix has hashes `86260292bd2fccd5756961f4a0a169262ffb56de19a4bd0bdbe54cbc6746af3b` and `2ec965d420d071121e10308867a5e17ae6105199ca34c4671fd9e59149f50031` at this checkpoint; later candidates require their own match.
+
+The next narrow implementation uses the **already observed real native rollout schema** from the user's explicitly supplied `.11.2` test. A new root-operated test may use normal CLI persistence, then read only that new thread's exact UUID/workspace-bound metadata. The CLI's ordinary private history is not exported as proof; extra plaintext TUI logging remains off. This avoids inventing omitted child lifecycle fields in exec JSONL. Auth/global config/model selection are unchanged. Live child UUID→transport matching remains open; H019-d5/main H019 are not complete.
+
+Later on23 October, [the normal-history proof](codex-agent-native-route.md) isolated the auxiliary non-UUID turn field and accepted H019-d5's exact native-child-to-wire comparison. This earlier synthetic fixture remains partial; it was not retroactively promoted into live/model evidence. Main H019 remains open.
