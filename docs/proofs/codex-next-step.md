@@ -17,3 +17,5 @@ Local evidence: `work/proofs/codex-next-step/acceptance.json`, `frontend-quality
 The next open H019 work remains a real request-correlation/live-verification path and its auth/provider/agent acceptance. A read-only diagnosis does not implement that executor. Windows11, other operating systems, actual client/auth and historical manual-picker/rescan acceptance remain outside this proof. No CI dispatch was made.
 
 QA workspace: `work/proofs/codex-next-step/`. Synthetic discovery metadata is not a real client/version-support claim. The user's sign-in deferral and free-only boundary remain in force.
+
+Source commit `00ad5a8` is local. Publication is pending: GitHub Desktop3.6.7 displayed `Invalidated account token` and reported the account signed out when opened for push. Root did not reauthenticate, change credentials or obtain a successful push acknowledgment. Last published tracking ref remains `73eb02b`; no CI was dispatched. `work/proofs/codex-next-step/publication.json` records only this fixed blocker metadata.
