@@ -25,6 +25,8 @@ No paid API call/key acquisition, existing credential copying, provider switch, 
 
 The user deferred sign-in; both isolated login attempts were stopped without creating an auth file. A generic continuation does not revoke that decision. Independent implementation and fixture/native checks may continue, while real auth/provider acceptance stays open.
 
+23 October update: the user explicitly requested testing through the currently signed-in CLI. A bounded normal-CLI auth smoke and a process-scoped route override through the owned native ingress completed with a real response, without another login or manually reading/copying credentials. This specific request authorizes normal existing-auth use for that probe; it does not authorize credential extraction or alter the separate-login deferral. [Measured scope](../proofs/codex-existing-auth.md). Product Verify, Desktop and separately correlated main/subagent acceptance remain open.
+
 ## H019-d1 — Read-only current setting observation
 
 The next independent prerequisite is to recheck the currently owned Codex endpoint setting. A saved ownership record and a matching runtime endpoint do not establish that the current config still contains that endpoint. Reuse H018's safe config-root resolution, bounded reads, ownership path binding and transaction/rollback rules. Observe the record and config consistently; stale scope, busy access, unsafe paths and unreadable/invalid files must not report a match. Never fall back to another config or credential store.
