@@ -262,6 +262,7 @@ flowchart TD
 - **Kabul:** Masaüstü/CLI kapsamı doğru; uygun ana/subagent yolu ve model korunur; ikinci açılış yeniden kurulum istemez.
 - **Ek kabul:** Doğrulama mevcut bir konuşmayı gizlice başka provider'a taşımaz. Yeni süreç/oturum kapsamı ve yeniden başlatma gereği açık; ChatGPT ile API-key rotaları aynı destek satırına indirgenmez.
 - **Kapsam kabulü:** Bağlanan Codex kapsamındaki desteklenen modeller ve ana/alt ajan yolları tek bağlantıya dahildir; per-model/per-agent kurulum yok. Kısmi/bilinmeyen alt ajan yolu arayüzde görünür; H008 kanıtından daha geniş destek iddia edilmez.
+- **Model bağımsızlığı kabulü —23 Ekim netleştirmesi:** Geliştirici çalışanının model tercihi ürünün zorunlu modeli değildir. Ana ajan modelA/alt ajan modelB, istemcide A→C model değişimi ve aynı protokolde yeni model adı için rota/`model`/reasoning korunması sınanır. Model adına göre bağlantı filtresi, yeniden kurulum veya sessiz model/efor değişimi olmaz. Fixture matrisi keyfi model adlarıyla çalışır; canlı denemelerde kullanıcının seçili modelleri kullanılır ve yalnız ölçülen kombinasyon kabul edilir. Tek bir model çiftinin PASS'i tüm modellerin/ajan yollarının kanıtı sayılmaz.
 - **Doğrulama:** Adaptör fixture'ları + H008'de doğrulanan ortamda tek doğal/küçük gerçek akış.
 - **Bağımlılık / boyut:** H018 / M.
 - **Dosyalar:** `src-tauri/src/integrations/codex.rs`, `src-tauri/src/integrations/codex_tests.rs`, `src/features/integrations/ConnectionStatus.tsx`.

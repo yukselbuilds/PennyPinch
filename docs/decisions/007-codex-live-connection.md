@@ -14,6 +14,8 @@ The backend derives a Codex-specific snapshot from trusted discovery, config own
 
 The UI distinguishes CLI from Desktop and ChatGPT from API-key evidence. Coverage of the main agent and subagents remains unknown/not tested until observed. A shared endpoint or matching model alone is insufficient. No per-model or per-agent setup is introduced. No live verifier exists yet; never manufacture a verified state from counters, config application or a local fixture.
 
+23 October clarification: the development worker's selected model is an internal implementation preference, not a product requirement or a mandatory subagent test model. Headroom targets every model carried by a supported client/protocol route, including different user-selected models for main/subagents and model changes between turns or conversations. No model-name allowlist, per-model connection or silent model/reasoning substitution is introduced. Parameterized fixtures must cover arbitrary model identifiers and mixed main/subagent models; live probes preserve user selections. Model-field preservation and request/agent route correlation are separate assertions. Representative passes cannot establish every model feature or every agent route.
+
 ## Ordered acceptance
 
 1. Backend state and focused tests, including wrong version/surface, missing or conflicting ownership, stopped/wrong endpoint and unverified traffic.

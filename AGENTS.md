@@ -13,6 +13,7 @@
 - Ana ajan kullanıcının seçili modeli ve reasoning ayarıyla koordinasyon, kapsam, karar, inceleme ve sonuçlandırmadan sorumludur. Ana model ayarı değiştirilmez.
 - Anlamlı uygulama işleri tam bir çalışan ajana verilir: **GPT-6 Luna, xhigh**. Aynı anda ikinci çalışan veya alt çalışan açılmaz.
 - Başlangıç parametreleri: `model="gpt-6-luna"`, `reasoning_effort="xhigh"`, `fork_turns="none"`.
+- Bu model/efor tercihi yalnız bu depoyu geliştiren çalışan ajana aittir; ürün desteği veya kullanıcının diğer sohbetlerindeki ajan modelleri için koşul değildir. Headroom model adından bağımsız tasarlanır. Ürün doğrulaması farklı ana/alt ajan modellerini ve model değişimini kapsar; geliştirici çalışanının modeli zorunlu test modeli olarak sunulmaz.
 - Çalışan ajan başka ajan açmaz. Ana ajan aynı uygulamayı paralel yeniden yazmaz.
 - Aynı çalışan somut, sıralı görevlerde yeniden kullanılır. Sırf gecikme/timeout nedeniyle yeni ajan açılmaz.
 - Her devir görev kimliği, sınırlı amaç, kabul koşulları, ilgili dosyalar, izinli değişiklikler ve odaklı doğrulamayı içerir. Tüm sohbet geçmişi kopyalanmaz.

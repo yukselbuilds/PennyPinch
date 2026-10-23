@@ -107,7 +107,9 @@ Sabit model listesi, zorunlu düşük efor veya otomatik ucuz model seçimi bağ
 
 Codex'in güncel belgeleri, proje `.codex/config.toml` dosyasındaki sağlayıcı ve base URL ayarlarının yok sayıldığını söylüyor. Bu nedenle Codex adaptörü böyle bir proje ayarını çalışan bağlantı olarak sunamaz; desteklenen kullanıcı veya süreç kapsamını açıkça kullanır. [Resmî Codex yapılandırması](https://learn.chatgpt.com/docs/config-file/config-advanced#project-config-files-codexconfigtoml).
 
-Kullanıcı farklı ana modeller ve örneğin tek **GPT-6 Luna xhigh** çalışanı kullanabilir. Uygulama ajan sayısı veya modeli belirlemez. Ana ve alt ajan isteklerinin aynı yolu kullandığı ayrı doğrulanır; yalnız model adından ajan kimliği çıkarılmaz.
+Kullanıcı ana ajanına ve her alt ajanına istediği farklı modeli ve reasoning düzeyini atayabilir; başka sohbetlerde bunları değiştirebilir. Uygulama ajan sayısı veya modeli belirlemez ve model/ajan başına yeniden bağlantı istemez. Bu projeyi geliştiren çalışanın model tercihi ürünün destek koşulu değildir. Ana ve alt ajan isteklerinin aynı yolu kullandığı ayrı doğrulanır; yalnız model adından ajan kimliği çıkarılmaz.
+
+Model kapsamı kabulünde farklı ana/alt ajan modelleri, bağlı istemcide model değişimi ve aynı protokolde yeni model adının korunması sınanır. Model adına dayanan sabit izin listesi bağlantı koşulu olamaz. Protokol veya özellik uyumsuzluğu model değiştirilerek gizlenmez; ölçülen kapsam gösterilir. Temsili testler bütün modellerin bütün özelliklerinin doğrulandığı şeklinde sunulmaz.
 
 ### Claude Code için bağlayıcı karar
 
