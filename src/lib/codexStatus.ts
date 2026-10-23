@@ -318,6 +318,53 @@ export function presentCodexSetting(value: CodexCurrentConfigValue): {
   }
 }
 
+export type CodexNextActionCode =
+  | "unsupported_installation"
+  | "refresh_status"
+  | "manage_connection"
+  | "inspect_codex_setting"
+  | "review_connection"
+  | "inspect_ingress"
+  | "start_engine"
+  | "wait_for_engine"
+  | "inspect_runtime"
+  | "local_prerequisites_ready";
+
+export type CodexNextAction = {
+  code: CodexNextActionCode;
+  state: "action_required" | "local_only";
+};
+
+/** Gives one bounded, read-only next step from a fresh local snapshot. It never verifies client traffic. */
+export function diagnoseCodexNextAction(snapshot: CodexStatusSnapshot): CodexNextAction {
+  const { installation, ownership, runtime } = snapshot;
+  if (installation.surface !== "cli" || installation.version === null || !fixtureCliVersions.has(installation.version)) {
+    return { code: "unsupported_installation", state: "action_required" };
+  }
+  if (ownership.state === "unavailable") return { code: "refresh_status", state: "action_required" };
+  if (ownership.state === "none" || ownership.state === "released") {
+    return { code: "manage_connection", state: "action_required" };
+  }
+  if (ownership.current_config_value !== "matches_owned_endpoint") {
+    return { code: "inspect_codex_setting", state: "action_required" };
+  }
+  if (ownership.endpoint_binding !== "same") return { code: "review_connection", state: "action_required" };
+  if (!runtime.stable_ingress_ready || runtime.ingress_status !== "ready") {
+    return { code: "inspect_ingress", state: "action_required" };
+  }
+  if (runtime.error_code !== null) return { code: "inspect_runtime", state: "action_required" };
+  if (runtime.engine_status === "stopped" && !runtime.engine_ready) {
+    return { code: "start_engine", state: "action_required" };
+  }
+  if ((runtime.engine_status === "starting" || runtime.engine_status === "draining") && !runtime.engine_ready) {
+    return { code: "wait_for_engine", state: "action_required" };
+  }
+  if (runtime.engine_status !== "ready" || !runtime.engine_ready || runtime.runtime_generation === null) {
+    return { code: "inspect_runtime", state: "action_required" };
+  }
+  return { code: "local_prerequisites_ready", state: "local_only" };
+}
+
 function decodeError(value: unknown, expected: ExpectedReply): CodexStatusError | null {
   if (!isRecord(value) || !isRecord(value.error) || !isCanonicalUuid(expected.requestId)
     || !isCanonicalUuid(expected.installationId) || !isPositiveSafeInteger(expected.scanGeneration)

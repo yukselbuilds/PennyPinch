@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   codexStatusClient,
   CodexStatusRequestSequence,
+  diagnoseCodexNextAction,
   isCodexStatusAvailable,
   presentCodexSetting,
   visibleRuntimeStatus,
@@ -9,6 +10,7 @@ import {
   type CodexStatusResult,
   type CodexStatusSnapshot,
   type CodexSettingPresentationKey,
+  type CodexNextActionCode,
 } from "../../lib/codexStatus";
 import type { InstallationSummary } from "../../lib/integrations";
 import type { PreferenceLanguage } from "../../lib/preferences";
@@ -38,6 +40,8 @@ type Copy = {
   diskSetting: string;
   diskState: Record<CodexSettingPresentationKey, string>;
   diskObservationLimit: string;
+  nextStep: string;
+  nextAction: Record<CodexNextActionCode, string>;
   configScope: string;
   userConfig: string;
   policy: string;
@@ -87,6 +91,19 @@ const copy: Record<PreferenceLanguage, Copy> = {
       not_owned: "Headroom'a ait bir ayar kaydı yok", not_rechecked: "Disk ayarı yeniden kontrol edilmedi",
     },
     diskObservationLimit: "Bu, dosyanın anlık gözlemidir; çalışan Codex sürecinin bu ayarı kullandığını doğrulamaz.",
+    nextStep: "Sonraki adım",
+    nextAction: {
+      unsupported_installation: "Bu Codex yüzeyi veya sürümü yerel test kapsamına alınmadı; canlı doğrulama yapılamıyor.",
+      refresh_status: "Yerel durumu yeniden oku; kayıt şu anda güvenle okunamadı.",
+      manage_connection: "Bağlantıyı yönet üzerinden önizlemeyi açıp ayarları gözden geçir.",
+      inspect_codex_setting: "Bağlantıyı yönet üzerinden Codex ayarını ve kaydı incele; otomatik düzeltme yapılmadı.",
+      review_connection: "Bağlantıyı yönet üzerinden mevcut eşleşmeyi incele; ayarı otomatik değiştirme.",
+      inspect_ingress: "Durumu güncelle; sorun sürerse Genel Bakış'taki motor durumunu incele.",
+      start_engine: "Genel Bakış'tan Headroom motorunu başlat, sonra durumu yeniden oku.",
+      wait_for_engine: "Motor işlemi tamamlanana kadar bekle, ardından durumu yeniden oku.",
+      inspect_runtime: "Genel Bakış'taki motor durumunu incele, sonra bu panelde durumu güncelle.",
+      local_prerequisites_ready: "Yerel önkoşullar hazır. Bu kontrol Codex isteği göndermez; bu sürümde canlı test yok ve istemci trafiği doğrulanmadı.",
+    },
     policy: "Ayar kapsamı", auth: "Kimlik doğrulama kapsamı",
     configScope: "Kapsam", userConfig: "Kullanıcı ayarları",
     agents: "Ajan kapsamı", agentsValue: "Ana ajan: bilinmiyor; alt ajan: sınanmadı.",
@@ -122,6 +139,19 @@ const copy: Record<PreferenceLanguage, Copy> = {
       not_owned: "No setting record is owned by Headroom", not_rechecked: "Disk setting was not rechecked",
     },
     diskObservationLimit: "This is a point-in-time file observation; it does not verify that the running Codex process uses this setting.",
+    nextStep: "Next step",
+    nextAction: {
+      unsupported_installation: "This Codex surface or version is outside local test coverage; live verification is unavailable.",
+      refresh_status: "Refresh local status; the record could not be read safely.",
+      manage_connection: "Open Manage connection to review the preview and settings.",
+      inspect_codex_setting: "Use Manage connection to review the Codex setting and record; no automatic repair was made.",
+      review_connection: "Use Manage connection to review the current match; the setting was not changed automatically.",
+      inspect_ingress: "Update status; if the issue remains, inspect the engine state on Overview.",
+      start_engine: "Start the Headroom engine from Overview, then refresh status.",
+      wait_for_engine: "Wait for the engine operation to finish, then refresh status.",
+      inspect_runtime: "Inspect the engine state on Overview, then update status in this panel.",
+      local_prerequisites_ready: "Local prerequisites are ready. This check sends no Codex request; live testing is unavailable in this version, and client traffic remains unverified.",
+    },
     configScope: "Scope", userConfig: "User config",
     policy: "Settings scope", auth: "Authentication scope", agents: "Agent coverage",
     agentsValue: "Main agent: unknown; subagent: not tested.", currentMethodNotRead: "Current method was not read.",
@@ -226,6 +256,7 @@ function StatusDetails({ snapshot, text }: { snapshot: CodexStatusSnapshot; text
   const installation = snapshot.installation;
   const ownership = snapshot.ownership;
   const runtime = snapshot.runtime;
+  const nextAction = diagnoseCodexNextAction(snapshot);
   const compatibility = installation.compatibility === "fixture_only" ? text.fixtureOnly :
     installation.compatibility === "not_tested" ? text.notTested : text.notVerified;
   const diskSetting = presentCodexSetting(ownership.current_config_value);
@@ -267,6 +298,9 @@ function StatusDetails({ snapshot, text }: { snapshot: CodexStatusSnapshot; text
     {ownership.state === "active" && <p className="connection-dialog__detail-note">{text.diskObservationLimit}</p>}
     <p className="connection-dialog__detail-note">
       {text.liveCoverage}: {text.chatgptUntested} · {apiKey} · {text.agentsValue}
+    </p>
+    <p className="connection-dialog__detail-note" role="status">
+      <strong>{text.nextStep}:</strong> {text.nextAction[nextAction.code]}
     </p>
     <details className="connection-status__details">
       <summary>{text.more}</summary>

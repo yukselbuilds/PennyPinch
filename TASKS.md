@@ -1,6 +1,7 @@
 # Headroom Desktop — Görev Listesi
 
-**Tarih:** 22 Ekim 2026  
+**Tarih:** 23 Ekim 2026
+
 **Kaynak:** [Ürün spesifikasyonu 0.4](HEADROOM_DESKTOP_SPEC.md)  
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
 **Durum:** H001–H005, H007, H013–H018, H040, H046 ve **H047 tamamlandı: 15/49. H019 etkin;15/49 tamam.** H047 ücretsiz hesap kapısı, temiz kaynak/frontend kontrolü ve manuel Ubuntu CI kabulüdür; native motor veya platform desteği kabulü değildir. H048/H049, H019 Windows ilk çalışan dilimini bekler. H006/H008–H012'nin açık kapsamları, canlı istemci/auth/subagent, pause, Windows11/temiz kurulum ve yayın kapıları sürüyor. Tek GPT-6 Luna xhigh çalışan düzeni korundu; henüz kurulabilir üretim uygulaması yok.
@@ -253,6 +254,7 @@ flowchart TD
 - [x] **H019-c alt kabul —22 Ekim:** CLI.11.1→pinned0.41.0→loopback SSE PASS; model/efor/sentinel/config korunuyor, listener kapandı.17 plan/8 status/20 discovery Rust focused PASS; bounded exact size+SHA keşfi ve native otomatik tespit kabul. Yalnız yerel fixture kapsamı; gerçek auth/provider/ajan kanıtı değil.
 - [ ] **H019-d açık:** Native izole Apply→reopen→Undo geçti; model/efor ve config byte'ları korundu. Ürün canlı doğrulama eylemi henüz yok; kullanıcı ChatGPT girişini erteledi, gerçek auth/provider/ana-alt ajan kabulü açık. Elle dosya seçimi/rescan native kabulü dialog/foreground araç sınırında bekliyor. İlk tam Rust koşusunun tek hatası açıklanamadı; aynı kaynakta tanı tekrarı173 PASS/3 ignored. Son build/format PASS; anomali çözülmüş sayılmaz.
 - [x] **H019-d1 alt kabul —22 Ekim:** Sahipli Codex ayarının salt okunur, pinli gözlemi ve görünür TR/EN sonucu.184 Rust/62 Node, format/frontend/embedded build PASS; gerçek native IPC'de altı izole gözlem, okuma sırasında config/kayıt/tercih unchanged; Undo başlangıç byte'larına döndü, normal exit0/PID0/listener0. Disk eşleşmesi canlı trafik kanıtı değildir; auth/model isteği ve otomatik onarım yok. [Kanıt](docs/proofs/codex-setting-check.md). Ana H019 açık.
+- [x] **H019-d2 alt kabul —23 Ekim:** Gerçek güncel durumdan sıralı sonraki-adım yönlendirmesi;64 Node ve frontend/embedded build PASS, değişmeyen184 Rust/format kanıtı fingerprint ile yeniden kullanıldı. Native IPC'de yedi ayar/yönlendirme gözlemi; gerçek motor Ready iken trafik Not verified kaldı. Okumalar config/kayıt/tercihleri korudu; Undo restore/normal exit0, sahipli GUI/motor/listener0. Yeni auth/Codex isteği/otomatik onarım yok. [Kanıt](docs/proofs/codex-next-step.md). Ana H019 açık.
 - **Karar/kanıt:** `docs/decisions/007-codex-live-connection.md`, `docs/proofs/codex-connection.md`. Ücretli API/key yaratma yok; mevcut konuşma/provider/model/reasoning/ajan sayısı değişmez.
 - **Kabul:** Masaüstü/CLI kapsamı doğru; uygun ana/subagent yolu ve model korunur; ikinci açılış yeniden kurulum istemez.
 - **Ek kabul:** Doğrulama mevcut bir konuşmayı gizlice başka provider'a taşımaz. Yeni süreç/oturum kapsamı ve yeniden başlatma gereği açık; ChatGPT ile API-key rotaları aynı destek satırına indirgenmez.

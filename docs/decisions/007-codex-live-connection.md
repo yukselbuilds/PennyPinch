@@ -31,6 +31,14 @@ The next independent prerequisite is to recheck the currently owned Codex endpoi
 
 Return only fixed redacted setting-state codes. Do not return a path, URL, config content, model/auth literal, parse error or credential. Released/absent ownership and unsupported installation surfaces remain distinct from an active matching setting. A matching setting is a point-in-time disk observation, not effective adoption by an open Codex process, auth support, traffic verification or agent coverage. This operation neither changes files nor launches a client/provider request. The UI must explain changed/missing/unreadable settings without automatically repairing them.
 
+## H019-d2 — Ordered next-step guidance
+
+23 October 2026. Use the existing fresh, strictly decoded status snapshot to give one actionable next step. This is a read-only diagnosis, not a live-verification executor or an authorization to send a request. Reuse the current update action and request/selection invalidation; introduce no ticket, timer, polling, extra IPC or unused future verifier state.
+
+Unsupported surfaces/versions, inaccessible ownership, absent ownership, unsafe/changed/missing settings, mismatched endpoints, unavailable ingress and an unready engine must each prevent a local-ready recommendation. Config differences require reviewing the existing setting/record while preserving user edits; do not recommend blind overwrite or automatic repair. Only a supported fixture CLI with active ownership, matched disk setting, matching endpoint and verified ingress/engine readiness can report that local prerequisites are ready. TCP counts never affect this decision. Even then, traffic, process adoption, auth and main/subagent coverage remain unverified and the product live-test action remains unavailable.
+
+The compact localized guidance appears in the existing status panel. Its useful output is the next corrective step, rather than another table of readiness facts. Backend/protocol/auth behavior remains unchanged. Acceptance covers a blocker-priority test matrix, the final frontend/build candidate and real native UI/IPC with isolated fixture config; it cannot close H019 or replace deferred real-provider validation.
+
 ## Sources checked
 
 Current official [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference) and [advanced configuration](https://learn.chatgpt.com/docs/config-file/config-advanced) describe `openai_base_url` for the built-in provider and exclude provider/auth overrides from project config. The [authentication guide](https://learn.chatgpt.com/docs/auth) separates subscription and usage-billed API-key access. Documentation describes possibilities; the installed client and pinned Headroom runtime still require their own route proof. The existing gateway/Sign-in-with-ChatGPT integration examples do not authorize copying the user's existing tokens or changing their provider.

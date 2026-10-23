@@ -243,6 +243,125 @@ test("presents disk-setting outcomes without turning no ownership into a warning
   assert.deepEqual(api.presentCodexSetting("not_owned"), { key: "not_owned", tone: "quiet" });
 });
 
+test("rejects unknown current-config observation codes", () => {
+  assert.ok(api);
+  const base = makeSnapshot();
+  const hostile = {
+    ...base,
+    ownership: { ...base.ownership, current_config_value: "verified_by_magic" },
+  };
+  assert.equal(api.decodeCodexStatusReply(hostile, expected()), null);
+});
+
+test("diagnoses safe next steps from decoded snapshots without inferring traffic", () => {
+  assert.ok(api);
+  const base = makeSnapshot();
+  const decoded = (changes = {}) => {
+    const installation = { ...base.installation, ...changes.installation };
+    const raw = {
+      ...base,
+      ...changes,
+      installation,
+      ownership: { ...base.ownership, ...changes.ownership },
+      runtime: {
+        ...base.runtime,
+        ingress_status: "ready",
+        stable_ingress_ready: true,
+        engine_status: "ready",
+        engine_ready: true,
+        runtime_generation: "0123456789abcdef0123456789abcdef",
+        active_connection_count: 17,
+        error_code: null,
+        ...changes.runtime,
+      },
+      policy: { ...base.policy, ...changes.policy },
+      auth_scope: { ...base.auth_scope, ...changes.auth_scope },
+      coverage: { ...base.coverage, ...changes.coverage },
+    };
+    const result = api.decodeCodexStatusReply(raw, expected({ surface: installation.surface }));
+    assert.equal(result.kind, "snapshot", "scenario must be a valid decoded DTO");
+    return result.snapshot;
+  };
+  const diagnose = (snapshot) => api.diagnoseCodexNextAction(snapshot);
+  const assertAction = (snapshot, code) => assert.deepEqual(diagnose(snapshot), { code, state: "action_required" });
+
+  const unsupportedDesktop = decoded({
+    installation: { surface: "desktop", compatibility: "not_tested" },
+    ownership: { state: "none", endpoint_binding: "not_owned", config_source: null, endpoint_id: null, endpoint_port: null, current_config_value: "not_owned" },
+    auth_scope: { api_key_auth: "not_tested" },
+  });
+  assertAction(unsupportedDesktop, "unsupported_installation");
+  const unsupportedVersion = decoded({
+    installation: { version: "0.163.0-alpha.99", compatibility: "not_verified" },
+    ownership: { current_config_value: "not_rechecked" },
+    auth_scope: { api_key_auth: "not_tested" },
+  });
+  assertAction(unsupportedVersion, "unsupported_installation");
+
+  assertAction(decoded({
+    ownership: { state: "unavailable", endpoint_binding: "unknown", config_source: null, endpoint_id: null, endpoint_port: null, current_config_value: "unavailable" },
+  }), "refresh_status");
+  assertAction(decoded({
+    ownership: { state: "none", endpoint_binding: "not_owned", config_source: null, endpoint_id: null, endpoint_port: null, current_config_value: "not_owned" },
+  }), "manage_connection");
+  assertAction(decoded({
+    ownership: { state: "released", endpoint_binding: "not_owned", current_config_value: "not_owned" },
+  }), "manage_connection");
+
+  for (const currentConfigValue of ["missing", "different", "unavailable"]) {
+    assertAction(decoded({ ownership: { current_config_value: currentConfigValue } }), "inspect_codex_setting");
+  }
+  for (const endpointBinding of ["different", "unknown"]) {
+    assertAction(decoded({ ownership: { endpoint_binding: endpointBinding } }), "review_connection");
+  }
+  assertAction(decoded({
+    runtime: { ingress_status: "unknown", stable_ingress_ready: false, engine_status: "ready", engine_ready: false },
+  }), "inspect_ingress");
+  assertAction(decoded({
+    runtime: { engine_status: "stopped", engine_ready: false, runtime_generation: null },
+  }), "start_engine");
+  for (const engineStatus of ["starting", "draining"]) {
+    assertAction(decoded({
+      runtime: { engine_status: engineStatus, engine_ready: false, runtime_generation: null },
+    }), "wait_for_engine");
+  }
+  for (const engineStatus of ["failed", "unavailable", "unknown"]) {
+    assertAction(decoded({
+      runtime: { engine_status: engineStatus, engine_ready: false, runtime_generation: null, error_code: "timeout" },
+    }), "inspect_runtime");
+  }
+  assertAction(decoded({
+    runtime: { engine_status: "starting", engine_ready: false, runtime_generation: null, error_code: "timeout" },
+  }), "inspect_runtime");
+  assertAction(decoded({
+    runtime: { engine_status: "ready", engine_ready: false },
+  }), "inspect_runtime");
+
+  const readyCounts = [null, 0, 17].map((activeConnectionCount) => decoded({
+    runtime: { active_connection_count: activeConnectionCount },
+  }));
+  for (const snapshot of readyCounts) {
+    const before = structuredClone(snapshot);
+    assert.deepEqual(diagnose(snapshot), { code: "local_prerequisites_ready", state: "local_only" });
+    assert.deepEqual(snapshot, before, "diagnosis must not mutate the snapshot");
+    assert.deepEqual(snapshot.coverage, { traffic_verification: "not_verified", main_agent: "unknown", subagent: "not_tested" });
+  }
+  assert.deepEqual(readyCounts.map((snapshot) => diagnose(snapshot).code), Array(3).fill("local_prerequisites_ready"));
+
+  const stoppedCounts = [null, 0, 17].map((activeConnectionCount) => decoded({
+    runtime: { engine_status: "stopped", engine_ready: false, runtime_generation: null, active_connection_count: activeConnectionCount },
+  }));
+  for (const snapshot of stoppedCounts) {
+    const before = structuredClone(snapshot);
+    assertAction(snapshot, "start_engine");
+    assert.deepEqual(snapshot, before, "diagnosis must not mutate the snapshot");
+    assert.deepEqual(snapshot.policy, base.policy);
+    assert.deepEqual(snapshot.auth_scope, base.auth_scope);
+    assert.deepEqual(snapshot.coverage, base.coverage);
+  }
+  assert.deepEqual(stoppedCounts.map((snapshot) => diagnose(snapshot).code), Array(3).fill("start_engine"));
+});
+
 test("decodes only the correlated fixed error envelope", () => {
   assert.ok(api);
   const error = {
