@@ -1,4 +1,4 @@
-use crate::integrations::plan::{ClientKind, ConfigPresence, ConfigSource};
+use crate::integrations::plan::{ClientKind, ConfigPresence, ConfigScope, ConfigSource};
 use crate::integrations::transaction::{PatchReceipt, PatchReceiptMetadata};
 use crate::integrations::transaction_fs::{
     FileSnapshot, FileToken, FileTransaction, TransactionFsError,
@@ -79,7 +79,34 @@ impl OwnershipRecord {
         after_config: &[u8],
         receipt: &PatchReceipt,
     ) -> Result<Self, OwnershipError> {
+        Self::active_from_scoped_patch(
+            owner_id,
+            endpoint_id,
+            config_path,
+            revision,
+            updated_at_unix_seconds,
+            before_config,
+            after_config,
+            receipt,
+            ConfigScope::UserConfig,
+        )
+    }
+
+    pub(crate) fn active_from_scoped_patch(
+        owner_id: &str,
+        endpoint_id: &str,
+        config_path: &Path,
+        revision: u64,
+        updated_at_unix_seconds: u64,
+        before_config: &[u8],
+        after_config: &[u8],
+        receipt: &PatchReceipt,
+        scope: ConfigScope,
+    ) -> Result<Self, OwnershipError> {
         let metadata = receipt.metadata();
+        if !scope_matches_client(metadata.client_kind, scope) {
+            return Err(OwnershipError::Invalid);
+        }
         let binding = config_path_binding(config_path)?;
         let stored = StoredOwnership {
             schema_version: SCHEMA_VERSION,
@@ -88,7 +115,7 @@ impl OwnershipRecord {
             owner_id: owner_id.to_owned(),
             endpoint_id: endpoint_id.to_owned(),
             client_kind: client_kind_code(metadata.client_kind).to_owned(),
-            scope: SCOPE.to_owned(),
+            scope: scope_code(scope).to_owned(),
             config_source: config_source_code(metadata.config_source).to_owned(),
             config_presence: if metadata.config_was_missing {
                 "missing".to_owned()
@@ -150,6 +177,10 @@ impl OwnershipRecord {
         parse_config_source(&self.stored.config_source)
     }
 
+    pub(crate) fn config_scope(&self) -> Option<ConfigScope> {
+        parse_scope(&self.stored.scope)
+    }
+
     pub(crate) fn endpoint_port(&self) -> u16 {
         self.stored.endpoint_port
     }
@@ -197,6 +228,7 @@ impl OwnershipRecord {
     fn validate(&self) -> Result<(), OwnershipError> {
         let stored = &self.stored;
         let kind = parse_client_kind(&stored.client_kind).ok_or(OwnershipError::Invalid)?;
+        let scope = parse_scope(&stored.scope).ok_or(OwnershipError::Invalid)?;
         let source = parse_config_source(&stored.config_source).ok_or(OwnershipError::Invalid)?;
         let presence = parse_presence(&stored.config_presence).ok_or(OwnershipError::Invalid)?;
         let state = match stored.state.as_str() {
@@ -210,7 +242,7 @@ impl OwnershipRecord {
             || stored.owner_tag != OWNER_TAG
             || !canonical_uuid(&stored.owner_id)
             || !canonical_uuid(&stored.endpoint_id)
-            || stored.scope != SCOPE
+            || !scope_matches_client(kind, scope)
             || !source_matches(kind, source, presence)
             || stored.endpoint_host != "127.0.0.1"
             || stored.endpoint_port == 0
@@ -617,6 +649,31 @@ fn same_owner_and_target(old: &StoredOwnership, new: &StoredOwnership) -> bool {
         && old.endpoint_port == new.endpoint_port
         && old.config_source == new.config_source
         && old.scope == new.scope
+}
+
+fn scope_code(scope: ConfigScope) -> &'static str {
+    match scope {
+        ConfigScope::UserConfig => SCOPE,
+        ConfigScope::ProjectLocalConfig => "project_local_config",
+    }
+}
+
+fn parse_scope(value: &str) -> Option<ConfigScope> {
+    match value {
+        SCOPE => Some(ConfigScope::UserConfig),
+        "project_local_config" => Some(ConfigScope::ProjectLocalConfig),
+        _ => None,
+    }
+}
+
+fn scope_matches_client(kind: ClientKind, scope: ConfigScope) -> bool {
+    matches!(
+        (kind, scope),
+        (ClientKind::Codex, ConfigScope::UserConfig)
+            | (ClientKind::ClaudeCode, ConfigScope::UserConfig)
+            | (ClientKind::ClaudeCode, ConfigScope::ProjectLocalConfig)
+            | (ClientKind::OpenCodeV1, ConfigScope::UserConfig)
+    )
 }
 
 fn source_matches(kind: ClientKind, source: ConfigSource, presence: ConfigPresence) -> bool {

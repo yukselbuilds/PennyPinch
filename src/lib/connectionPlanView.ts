@@ -14,3 +14,10 @@ export function isConnectionPlanExpired(
   const deadline = plan.expires_at_unix_seconds * 1_000;
   return Number.isSafeInteger(deadline) && deadline <= nowMilliseconds;
 }
+
+type ConnectionScope = "user_config" | "project_local_config";
+type ScopeOwnership = { scope: ConnectionScope; state: "active" | "released" } | null;
+
+export function canApplyForConnectionScope(planScope: ConnectionScope, ownership: ScopeOwnership): boolean {
+  return ownership?.state !== "active" || ownership.scope === planScope;
+}

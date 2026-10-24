@@ -1,7 +1,7 @@
 # Headroom Desktop — Ürün ve Özellik Spesifikasyonu
 
-**Tarih:** 20 Ekim 2026  
-**Belge sürümü:** 0.4  
+**Tarih:** 24 Ekim 2026\
+**Belge sürümü:** 0.5\
 **Durum:** Geliştirme kapsamı; uygulanmış özelliklerin kanıtlı durumu `TASKS.md` içindedir.  
 **Proje kökü:** `D:\Projeler\Headroom`  
 **Çalışma adı:** Headroom Desktop. Bu, Headroom motorunu kullanan bağımsız masaüstü yönetici projesinin geçici adıdır.
@@ -180,6 +180,18 @@ Bağlantı, motor ve sıkıştırma durumları ayrı tutulur. Arayüzde tek “a
 2. **Uygulamalar:** Codex, Claude Code, OpenCode bağlantıları; sürüm, kapsam, son doğrulama ve bağlan/kaldır eylemleri.
 3. **Etkinlik:** İçerik göstermeyen istek listesi; model, istemci, süre, sıkıştırma sonucu ve hata. Filtreler ve ayrıntı paneli.
 4. **Ayarlar:** Tema, dil, arka planda çalışma, veri saklama ve sade sıkıştırma tercihleri. Gelişmiş ayrıntılar isteğe bağlı açılır.
+
+### 24 Ekim kullanıcı yönü — sade kullanım ve oturumlar
+
+Bu bölüm hedef davranıştır; uygulanmış durum TASKS.md ile sınırlıdır. Ana deneyim iki soruyu cevaplar: **Hangi platform/modelde ne kadar kullandım ve tasarruf ettim? Hangi hesaplarım bağlı ve hangi sohbetlerim açık/çalışıyor?** Graphite görsel yönü korunur.
+
+- Genel bakış, platform → model kırılımında kullanılan token, tasarruf edilen token ve aynı temelden tasarruf yüzdesini gösterir. Maliyet resmî kullanım/fatura verisine dayanıyorsa ölçülen, sürümlü fiyat hesabına dayanıyorsa tahmini olarak etiketlenir; abonelik kotası token maliyetine çevrilmez. Veri yokluğu sıfır sayılmaz.
+- Bağlantının normal görünümü kapsam, kısa etki özeti ve Bağlan/Geri al eylemidir. Ayar katmanları, protokol/sahiplik metadata ve tanı bilgisi Gelişmiş altında isteğe bağlı açılır; değişecek hedef ve kritik çatışmalar işlemden önce anlaşılır kalır.
+- Oturumlar iki ayrı grup içerir: hesap bağlantıları/giriş durumu ve açık sohbetler/çalışan görevler. Birinin açık olması diğerinin açık olduğu anlamına gelmez. Giriş, desteklenen istemcinin resmî akışıyla açılır; Headroom şifre/kod istemez, mevcut auth sırlarını kopyalamaz. Yeni hesap/abonelik zorunluluğu yoktur.
+- Sohbet listesi yalnız gereken metadata ile çalışır. Açık, çalışıyor, son trafik gözlendi, sona erdi ve bilinmiyor durumları birbirine dönüştürülmez. Süreç bulunması, dosyanın varlığı veya uzun süre trafik olmaması tek başına etkin sohbet kanıtı değildir. Desteklenen resmî aç/resume yolu varsa kullanıcı eylemiyle kullanılır; içerik toplama veya gizli provider/model değişimi yapılmaz.
+- Ayrı model ve alt ajanlar rota/kimlik kanıtı varsa aynı platform altında görünür; model başına kurulum/seçim zorunluluğu yoktur. Atanamayan kullanım görünür kalır. Proxy'den geçmeyen trafik bütün kullanım olarak sunulmaz.
+
+Uygulama sırası: H022 sade bağlantı, H023–H026 gerçek ölçümler/kırılımlar, H050 hesap bağlantıları ve H051 sohbet metadata/açma akışı. Mevcut H020 teknik kabul ekranı son kullanıcı deneyiminin tamamlanmış hâli değildir.
 
 Genel bakış yerleşimi:
 

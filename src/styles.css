@@ -195,6 +195,23 @@ h1 { margin-bottom: 7px; font-size: clamp(26px, 2.4vw, 33px); font-weight: 570; 
 .connection-dialog__close:hover { color: var(--text); }
 .connection-dialog__body { overflow-y: auto; overscroll-behavior: contain; padding: 17px 22px 20px; }
 .connection-dialog__scope-note { max-width: 680px; color: var(--muted); font-size: 11px; line-height: 1.55; margin: 0 0 17px; }
+.claude-scope { padding: 13px 14px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 9px; }
+.claude-scope__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.claude-scope__heading h3, .claude-scope__subheading { margin: 0; color: var(--text); font-size: 12px; font-weight: 620; }
+.claude-scope__controls { display: flex; flex-wrap: wrap; gap: 7px; justify-content: flex-end; }
+.claude-scope__controls .button { min-height: 31px; padding-inline: 10px; }
+.claude-scope__location { margin: 11px 0 0; color: var(--muted); font-size: 11.5px; line-height: 1.5; overflow-wrap: anywhere; }
+.claude-scope__location code { color: var(--text); font-size: 11px; }
+.claude-scope__subheading { margin-top: 15px; }
+.claude-scope__layers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 9px; }
+.claude-scope__layer { min-width: 0; padding: 9px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; }
+.claude-scope__layer h5 { margin: 0 0 7px; color: var(--text); font-size: 11px; font-weight: 600; }
+.claude-scope__layer dl { display: grid; gap: 4px; margin: 0; }
+.claude-scope__layer dl > div { display: grid; grid-template-columns: minmax(100px, 43%) minmax(0, 1fr); gap: 7px; }
+.claude-scope__layer dt { color: var(--quiet); font-size: 10px; }
+.claude-scope__layer dd { margin: 0; color: var(--muted); font-size: 10.5px; line-height: 1.35; overflow-wrap: anywhere; }
+.claude-scope__aggregate { margin-top: 9px; }
+.claude-scope > .connection-dialog__detail-note { margin-top: 8px; }
 .connection-dialog__ownership { margin: 0 0 19px; padding: 13px 14px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 9px; }
 .connection-dialog__ownership-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .connection-dialog__ownership-head h3 { margin: 0; color: var(--text); font-size: 12px; font-weight: 620; }
@@ -283,6 +300,9 @@ h1 { margin-bottom: 7px; font-size: clamp(26px, 2.4vw, 33px); font-weight: 570; 
   .connection-dialog__endpoint { grid-template-columns: 1fr; }
   .connection-dialog__details > div { grid-template-columns: minmax(100px, 40%) minmax(0, 1fr); gap: 9px; }
   .connection-dialog__ownership-meta { grid-template-columns: 1fr; }
+  .claude-scope__heading { flex-direction: column; }
+  .claude-scope__controls { justify-content: flex-start; }
+  .claude-scope__layers { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

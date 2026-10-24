@@ -19,6 +19,15 @@ fn missing_plan(kind: ClientKind) -> ConnectionPlan {
 }
 
 fn plan_with_presence(kind: ClientKind, config: &[u8], presence: ConfigPresence) -> ConnectionPlan {
+    plan_with_scope(kind, config, presence, ConfigScope::UserConfig)
+}
+
+fn plan_with_scope(
+    kind: ClientKind,
+    config: &[u8],
+    presence: ConfigPresence,
+    scope: ConfigScope,
+) -> ConnectionPlan {
     let context = PlanContext {
         request_id: "019a0000-0000-7000-8000-000000000101".to_owned(),
         installation_id: "019a0000-0000-7000-8000-000000000102".to_owned(),
@@ -40,7 +49,7 @@ fn plan_with_presence(kind: ClientKind, config: &[u8], presence: ConfigPresence)
             }
             .to_owned(),
         ),
-        scope: ConfigScope::UserConfig,
+        scope,
         scan_generation: 7,
         endpoint: StableEndpoint {
             endpoint_id: "019a0000-0000-7000-8000-000000000103".to_owned(),
@@ -95,6 +104,39 @@ fn claude_json_patch_and_undo_keep_unicode_and_string_escapes_byte_exact() {
     assert!(updated
         .windows(b"line\\\\nvalue".len())
         .any(|window| window == b"line\\\\nvalue"));
+    assert_eq!(undo_owned_endpoint(&receipt, &updated).unwrap(), original);
+}
+
+#[test]
+fn claude_project_local_endpoint_patch_and_undo_preserve_other_settings() {
+    let original = r#"{
+  "model": "claude-sonnet",
+  "effortLevel": "high",
+  "env": {"ANTHROPIC_API_KEY": "fixture-secret"},
+  "apiKeyHelper": "fixture-auth-helper",
+  "theme": "München",
+  "hooks": {"PreToolUse": [{"command": "fixture-hook"}]}
+}"#
+    .as_bytes();
+    let project_plan = plan_with_scope(
+        ClientKind::ClaudeCode,
+        original,
+        ConfigPresence::Present,
+        ConfigScope::ProjectLocalConfig,
+    );
+
+    let (updated, receipt) = patched(
+        apply_missing_endpoint(&project_plan, original)
+            .expect("Claude project-local endpoint patch should succeed"),
+    );
+    let updated_text = std::str::from_utf8(&updated).unwrap();
+    assert!(updated_text.contains("\"ANTHROPIC_BASE_URL\": \"http://127.0.0.1:41731\""));
+    assert!(updated_text.contains("\"model\": \"claude-sonnet\""));
+    assert!(updated_text.contains("\"effortLevel\": \"high\""));
+    assert!(updated_text.contains("\"ANTHROPIC_API_KEY\": \"fixture-secret\""));
+    assert!(updated_text.contains("\"apiKeyHelper\": \"fixture-auth-helper\""));
+    assert!(updated_text.contains("\"theme\": \"München\""));
+    assert!(updated_text.contains("\"command\": \"fixture-hook\""));
     assert_eq!(undo_owned_endpoint(&receipt, &updated).unwrap(), original);
 }
 
@@ -257,6 +299,20 @@ fn blocked_or_inconsistent_plan_metadata_never_patches() {
     wrong_source.config_source = ConfigSource::CodexToml;
     assert_eq!(
         apply_missing_endpoint(&wrong_source, original),
+        Err(TransactionError::InvalidPlan)
+    );
+
+    let mut codex_project_scope = plan(ClientKind::Codex, b"model = \"gpt-5\"\n");
+    codex_project_scope.scope = "project_local_config";
+    assert_eq!(
+        apply_missing_endpoint(&codex_project_scope, b"model = \"gpt-5\"\n"),
+        Err(TransactionError::InvalidPlan)
+    );
+
+    let mut opencode_project_scope = plan(ClientKind::OpenCodeV1, b"{}");
+    opencode_project_scope.scope = "project_local_config";
+    assert_eq!(
+        apply_missing_endpoint(&opencode_project_scope, b"{}"),
         Err(TransactionError::InvalidPlan)
     );
 }

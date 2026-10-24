@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   candidateSelectionKey,
+  canApplyForConnectionScope,
   initialInstallationSelection,
   isConnectionPlanExpired,
 } from "../../src/lib/connectionPlanView.ts";
@@ -25,4 +26,20 @@ test("preview expires at its five-minute deadline, not before it", () => {
   const plan = { expires_at_unix_seconds: 1_800_000_300 };
   assert.equal(isConnectionPlanExpired(plan, 1_800_000_299_999), false);
   assert.equal(isConnectionPlanExpired(plan, 1_800_000_300_000), true);
+});
+
+test("released ownership does not block applying a different Claude scope", () => {
+  assert.equal(canApplyForConnectionScope("project_local_config", {
+    scope: "user_config",
+    state: "released",
+  }), true);
+  assert.equal(canApplyForConnectionScope("project_local_config", {
+    scope: "user_config",
+    state: "active",
+  }), false);
+  assert.equal(canApplyForConnectionScope("project_local_config", {
+    scope: "project_local_config",
+    state: "active",
+  }), true);
+  assert.equal(canApplyForConnectionScope("project_local_config", null), true);
 });

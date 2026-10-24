@@ -1,4 +1,5 @@
 export type ConnectionPlanStatus = "preview" | "blocked";
+export type ConnectionScope = "user_config" | "project_local_config";
 
 export interface ConnectionPlan {
   schema_version: 1;
@@ -7,7 +8,7 @@ export interface ConnectionPlan {
   expires_at_unix_seconds: number;
   installation_id: string;
   client_kind: "codex" | "claude_code" | "opencode_v1";
-  scope: "user_config";
+  scope: ConnectionScope;
   scan_generation: number;
   config_fingerprint: string;
   config_presence: "present" | "missing";
@@ -105,6 +106,7 @@ export type ConnectionActionRequest =
 
 export interface ConnectionOwnership {
   state: "active" | "released";
+  scope: ConnectionScope;
   owner_id: string;
   revision: number;
   record_fingerprint: string;

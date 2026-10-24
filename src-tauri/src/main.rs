@@ -3,10 +3,13 @@ mod runtime;
 mod state;
 
 use integrations::config_io::{
-    codex_connection_status, codex_status_failure_reply, codex_verify_failure_reply,
-    ApplyConnectionRequest, CodexStatusReply, CodexStatusRequest, CodexVerifyManager,
-    CodexVerifyReply, CodexVerifyRequest, ConnectionActionReply, OwnershipSnapshotRequest,
-    PlanManager, PlanReply, PreviewRequest, UndoConnectionRequest,
+    claude_context_failure_reply, claude_settings_snapshot_failure_reply, codex_connection_status,
+    codex_status_failure_reply, codex_verify_failure_reply, ApplyConnectionRequest,
+    ClaudeContextReply, ClaudeContextSnapshotRequest, ClaudeScopeSelectionRequest,
+    ClaudeSettingsSnapshotReply, ClaudeSettingsSnapshotRequest, CodexStatusReply,
+    CodexStatusRequest, CodexVerifyManager, CodexVerifyReply, CodexVerifyRequest,
+    ConnectionActionReply, OwnershipSnapshotRequest, PlanManager, PlanReply, PreviewRequest,
+    UndoConnectionRequest,
 };
 use integrations::discovery::{DiscoveryManager, DiscoveryReply};
 use integrations::picker;
@@ -232,6 +235,52 @@ async fn verify_codex_connection(
 }
 
 #[tauri::command]
+async fn get_claude_context_snapshot(
+    state: tauri::State<'_, Arc<PlanManager>>,
+    request: ClaudeContextSnapshotRequest,
+) -> Result<ClaudeContextReply, ClaudeContextReply> {
+    let manager = Arc::clone(state.inner());
+    let failure_id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || manager.claude_context_snapshot(request))
+            .await
+            .unwrap_or_else(|_| claude_context_failure_reply(failure_id)),
+    )
+}
+
+#[tauri::command]
+async fn select_claude_scope(
+    window: tauri::WebviewWindow,
+    state: tauri::State<'_, Arc<PlanManager>>,
+    request: ClaudeScopeSelectionRequest,
+) -> Result<ClaudeContextReply, ClaudeContextReply> {
+    if window.label() != "main" {
+        return Ok(claude_context_failure_reply(request.request_id));
+    }
+    let manager = Arc::clone(state.inner());
+    let failure_id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || manager.select_claude_scope(request))
+            .await
+            .unwrap_or_else(|_| claude_context_failure_reply(failure_id)),
+    )
+}
+
+#[tauri::command]
+async fn get_claude_settings_snapshot(
+    state: tauri::State<'_, Arc<PlanManager>>,
+    request: ClaudeSettingsSnapshotRequest,
+) -> Result<ClaudeSettingsSnapshotReply, ClaudeSettingsSnapshotReply> {
+    let manager = Arc::clone(state.inner());
+    let failure_id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || manager.claude_settings_snapshot(request))
+            .await
+            .unwrap_or_else(|_| claude_settings_snapshot_failure_reply(failure_id)),
+    )
+}
+
+#[tauri::command]
 async fn select_client_file(
     window: tauri::WebviewWindow,
     state: tauri::State<'_, DiscoveryManager>,
@@ -270,13 +319,26 @@ fn main() {
             let app_data_dir = app.path().app_data_dir().ok();
             let runtime = RuntimeManager::new(resource_dir, app_data_dir);
             let discovery = DiscoveryManager::new();
+            let claude_picker_owner = app
+                .get_webview_window("main")
+                .and_then(|window| window.hwnd().ok())
+                .map(|hwnd| hwnd.0 as usize);
             let ownership_store = integrations::config_io::ownership_store_for_app_local_data(
                 app.path().app_local_data_dir().ok(),
             )
             .ok();
             let plans = Arc::new(
                 PlanManager::new(discovery.clone(), runtime.clone())
-                    .with_optional_ownership_store(ownership_store),
+                    .with_optional_ownership_store(ownership_store)
+                    .with_claude_project_picker(move || {
+                        let owner_hwnd = claude_picker_owner.ok_or(())?;
+                        std::thread::Builder::new()
+                            .name("headroom-claude-folder-picker-sta".to_owned())
+                            .spawn(move || picker::select_project_directory(owner_hwnd))
+                            .map_err(|_| ())?
+                            .join()
+                            .map_err(|_| ())?
+                    }),
             );
             let codex_verifier = CodexVerifyManager::new(app.path().app_local_data_dir().ok());
             app.manage(runtime);
@@ -300,6 +362,9 @@ fn main() {
             apply_connection_plan,
             undo_connection,
             get_connection_ownership,
+            get_claude_context_snapshot,
+            select_claude_scope,
+            get_claude_settings_snapshot,
             get_codex_connection_status,
             verify_codex_connection
         ])

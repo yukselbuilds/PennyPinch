@@ -4,6 +4,7 @@ import type {
   ConnectionPlanError,
   ConnectionPlanErrorCode,
   ConnectionPlanResult,
+  ConnectionScope,
 } from "./contracts.ts";
 import type { ClientKind as DiscoveredClientKind } from "./integrations.ts";
 
@@ -38,6 +39,7 @@ const errorRetryable: Record<ConnectionPlanErrorCode, boolean> = {
 };
 
 const clientKinds = ["codex", "claude_code", "opencode_v1"] as const;
+const connectionScopes = ["user_config", "project_local_config"] as const;
 const configSources = ["codex_toml", "claude_json", "opencode_json", "opencode_jsonc", "opencode_missing"] as const;
 const presences = ["present", "missing"] as const;
 const endpointBefores = ["missing", "same_stable_endpoint", "other_configured_redacted", "unknown"] as const;
@@ -114,6 +116,10 @@ function plannedClientKind(clientKind: DiscoveredClientKind): ConnectionPlan["cl
   }
 }
 
+function scopeMatchesClient(clientKind: ConnectionPlan["client_kind"], scope: ConnectionScope): boolean {
+  return scope === "user_config" || clientKind === "claude_code";
+}
+
 function sourceMatches(
   clientKind: ConnectionPlan["client_kind"],
   source: ConnectionPlan["config_source"],
@@ -132,6 +138,7 @@ function decodePlan(
     installationId: string;
     scanGeneration: number;
     clientKind: ConnectionPlan["client_kind"];
+    scope: ConnectionScope;
   },
 ): ConnectionPlan | null {
   if (!record(value) || !exactKeys(value, planKeys)) return null;
@@ -144,7 +151,9 @@ function decodePlan(
     || value.scan_generation !== expected.scanGeneration
     || !enumValue(value.client_kind, clientKinds)
     || value.client_kind !== expected.clientKind
-    || value.scope !== "user_config"
+    || !enumValue(value.scope, connectionScopes)
+    || value.scope !== expected.scope
+    || !scopeMatchesClient(value.client_kind, value.scope)
     || typeof value.config_fingerprint !== "string"
     || !hashPattern.test(value.config_fingerprint)
     || !enumValue(value.config_presence, presences)
@@ -201,7 +210,7 @@ function decodePlan(
     expires_at_unix_seconds: value.expires_at_unix_seconds,
     installation_id: value.installation_id,
     client_kind: value.client_kind,
-    scope: "user_config",
+    scope: value.scope,
     scan_generation: value.scan_generation,
     config_fingerprint: value.config_fingerprint,
     config_presence: value.config_presence,
@@ -238,11 +247,15 @@ export function decodeConnectionPlanReply(
     installationId: string;
     scanGeneration: number;
     clientKind: DiscoveredClientKind;
+    scope: ConnectionScope;
   },
 ): Extract<ConnectionPlanResult, { kind: "preview" | "plan_error" }> | null {
   if (!isCanonicalUuid(expected.requestId)
     || !isCanonicalUuid(expected.installationId)
     || !safePositiveInteger(expected.scanGeneration)
+    || !enumValue(expected.clientKind, ["codex", "claude_code", "opencode"] as const)
+    || !enumValue(expected.scope, connectionScopes)
+    || !scopeMatchesClient(plannedClientKind(expected.clientKind), expected.scope)
     || !record(value)
     || value.schema_version !== 1
     || value.request_id !== expected.requestId) return null;
@@ -264,7 +277,7 @@ export function createConnectionPlanClient(options: {
   isNative: () => boolean;
   createRequestId: () => string;
   invoke: InvokeFunction;
-}): { preview(input: { installationId: string; scanGeneration: number; clientKind: DiscoveredClientKind }): Promise<ConnectionPlanResult> } {
+}): { preview(input: { installationId: string; scanGeneration: number; clientKind: DiscoveredClientKind; scope?: ConnectionScope }): Promise<ConnectionPlanResult> } {
   return {
     async preview(input) {
       try {
@@ -274,9 +287,12 @@ export function createConnectionPlanClient(options: {
       }
       if (!isCanonicalUuid(input.installationId)
         || !safePositiveInteger(input.scanGeneration)
-        || !enumValue(input.clientKind, ["codex", "claude_code", "opencode"] as const)) {
+        || !enumValue(input.clientKind, ["codex", "claude_code", "opencode"] as const)
+        || (input.scope !== undefined && !enumValue(input.scope, connectionScopes))) {
         return { kind: "invalid_request" };
       }
+      const scope = input.scope ?? "user_config";
+      if (!scopeMatchesClient(plannedClientKind(input.clientKind), scope)) return { kind: "invalid_request" };
       let requestId: string;
       try {
         requestId = options.createRequestId();
@@ -290,7 +306,7 @@ export function createConnectionPlanClient(options: {
         request_id: requestId,
         installation_id: input.installationId,
         scan_generation: input.scanGeneration,
-        scope: "user_config",
+        scope,
       } as const;
       try {
         const reply = await options.invoke("preview_connection_plan", { request });
@@ -299,6 +315,7 @@ export function createConnectionPlanClient(options: {
           installationId: input.installationId,
           scanGeneration: input.scanGeneration,
           clientKind: input.clientKind,
+          scope,
         }) ?? { kind: "invalid_response" };
       } catch {
         return { kind: "request_failed" };

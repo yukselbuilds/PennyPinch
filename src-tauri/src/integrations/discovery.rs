@@ -43,6 +43,9 @@ const CODEX_CLI_0111_SHA256: &str =
 const CODEX_CLI_0112_SIZE: u64 = 336_134_960;
 const CODEX_CLI_0112_SHA256: &str =
     "c81ed464e5e7cafd09a5fa26af390c480bed8e9fab2a87a54b285fbd56e7122a";
+const CLAUDE_CODE_CLI_2158_SIZE: u64 = 236_306_080;
+const CLAUDE_CODE_CLI_2158_SHA256: &str =
+    "10fa305545b20baf6e074a086762bd252b89dfe7035848a5d41385503b1a6c74";
 const MAX_PATH_CHARS: usize = 32_767;
 const MAX_MANUAL_FILES: usize = 32;
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
@@ -555,6 +558,12 @@ fn manual_candidate(
             .is_some_and(|extension| extension.eq_ignore_ascii_case("exe"))
     {
         verified_codex_cli_version(&executable)
+    } else if client_kind == "claude_code"
+        && executable
+            .extension()
+            .is_some_and(|extension| extension.eq_ignore_ascii_case("exe"))
+    {
+        verified_claude_code_cli_version(&executable)
     } else {
         None
     };
@@ -793,7 +802,11 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
                         Candidate {
                             kind: product.kind,
                             surface: "cli",
-                            version: None,
+                            version: if product.kind == "claude_code" && extension == "exe" {
+                                verified_claude_code_cli_version(&canonical_exe)
+                            } else {
+                                None
+                            },
                             source: "path",
                             location_label: "PATH",
                             identity_path: canonical_exe.clone(),
@@ -1031,7 +1044,11 @@ fn add_user_native_candidates(
                 Candidate {
                     kind,
                     surface: "cli",
-                    version: None,
+                    version: if kind == "claude_code" {
+                        verified_claude_code_cli_version(&executable)
+                    } else {
+                        None
+                    },
                     source: "user_local_native",
                     location_label: "User-local install",
                     identity_path: executable.clone(),
@@ -1435,6 +1452,67 @@ pub(super) fn codex_cli_version_from_digest(file_size: u64, digest_hex: &str) ->
         (CODEX_CLI_0112_SIZE, CODEX_CLI_0112_SHA256) => Some("0.163.0-alpha.11.2".to_owned()),
         _ => None,
     }
+}
+
+pub(super) fn claude_code_cli_version_from_digest(
+    file_size: u64,
+    digest_hex: &str,
+) -> Option<String> {
+    (file_size == CLAUDE_CODE_CLI_2158_SIZE && digest_hex == CLAUDE_CODE_CLI_2158_SHA256)
+        .then(|| "2.1.158".to_owned())
+}
+
+fn verified_claude_code_cli_version(path: &Path) -> Option<String> {
+    let canonical_path = check_existing_path(path, PathKind::File).ok()?;
+    let mut options = OpenOptions::new();
+    options.read(true);
+    #[cfg(windows)]
+    options.share_mode(FILE_SHARE_READ);
+    let mut file = options.open(&canonical_path).ok()?;
+    let initial_metadata = file.metadata().ok()?;
+    let expected_size = initial_metadata.len();
+    if !initial_metadata.is_file() || expected_size != CLAUDE_CODE_CLI_2158_SIZE {
+        return None;
+    }
+    let initial_identity = file_identity(&file)?;
+
+    let mut hasher = Sha256::new();
+    let mut bytes_read = 0u64;
+    let mut buffer = [0u8; 64 * 1024];
+    loop {
+        let remaining_with_growth_check =
+            expected_size.saturating_sub(bytes_read).saturating_add(1);
+        let read_size = remaining_with_growth_check.min(buffer.len() as u64) as usize;
+        let count = file.read(&mut buffer[..read_size]).ok()?;
+        if count == 0 {
+            break;
+        }
+        bytes_read = bytes_read.checked_add(count as u64)?;
+        if bytes_read > expected_size {
+            return None;
+        }
+        hasher.update(&buffer[..count]);
+    }
+    if bytes_read != expected_size {
+        return None;
+    }
+    if file.metadata().ok()?.len() != expected_size || file_identity(&file)? != initial_identity {
+        return None;
+    }
+    let final_path = check_existing_path(&canonical_path, PathKind::File).ok()?;
+    if path_key(&final_path) != path_key(&canonical_path) {
+        return None;
+    }
+    let mut final_path_options = OpenOptions::new();
+    final_path_options.read(true);
+    #[cfg(windows)]
+    final_path_options.share_mode(FILE_SHARE_READ);
+    let final_path_file = final_path_options.open(&final_path).ok()?;
+    if file_identity(&final_path_file)? != initial_identity {
+        return None;
+    }
+
+    claude_code_cli_version_from_digest(bytes_read, &format!("{:x}", hasher.finalize()))
 }
 
 fn is_known_codex_cli_size(file_size: u64) -> bool {

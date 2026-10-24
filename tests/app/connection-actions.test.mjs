@@ -58,6 +58,7 @@ function makeOwnership(overrides = {}) {
     config_source: "codex_toml",
     endpoint_id: endpointId,
     endpoint_port: 41731,
+    scope: "user_config",
     ...overrides,
   };
 }
@@ -147,6 +148,7 @@ test("apply rejects mismatched identity, client, source, endpoint, status, and s
     success("applied", makeOwnership(), { request_id: "019a0000-0000-7000-8000-000000000099" }),
     success("applied", makeOwnership(), { schema_version: 2 }),
     success("applied", makeOwnership(), { client_kind: "claude_code" }),
+    success("applied", makeOwnership({ scope: "project_local_config" })),
     success("applied", makeOwnership({ config_source: "claude_json" })),
     success("applied", makeOwnership({ endpoint_port: 0 })),
     success("applied", makeOwnership({ endpoint_id: "019a0000-0000-7000-8000-000000000099" })),
@@ -164,6 +166,44 @@ test("apply rejects mismatched identity, client, source, endpoint, status, and s
 test("unchanged active ownership must match the preview route", async () => {
   const reply = success("unchanged", makeOwnership({ endpoint_port: 41732 }));
   assert.equal((await createClient(async () => reply).apply(makePlan())).kind, "invalid_response");
+});
+
+test("Claude project ownership is correlated to project-scoped apply and undo", async () => {
+  const projectPlan = makePlan({
+    client_kind: "claude_code",
+    config_source: "claude_json",
+    scope: "project_local_config",
+    endpoint_field: {
+      field: "claude_anthropic_base_url",
+      before: "missing",
+      proposed_value: "http://127.0.0.1:41731",
+      after_headroom: true,
+    },
+  });
+  const projectOwnership = makeOwnership({ config_source: "claude_json", scope: "project_local_config" });
+  const applied = await createClient(async () => success("applied", projectOwnership, { client_kind: "claude_code" }))
+    .apply(projectPlan);
+  assert.equal(applied.kind, "success");
+  assert.equal(applied.reply.ownership.scope, "project_local_config");
+
+  const mismatchedApply = await createClient(async () => success("applied", makeOwnership({ config_source: "claude_json" }), { client_kind: "claude_code" }))
+    .apply(projectPlan);
+  assert.equal(mismatchedApply.kind, "invalid_response");
+
+  const released = await createClient(async () => success("released", makeOwnership({
+    config_source: "claude_json",
+    scope: "project_local_config",
+    state: "released",
+    revision: 2,
+  }), { client_kind: "claude_code" })).undo("claude_code", projectOwnership);
+  assert.equal(released.kind, "success");
+  const mismatchedUndo = await createClient(async () => success("released", makeOwnership({
+    config_source: "claude_json",
+    scope: "user_config",
+    state: "released",
+    revision: 2,
+  }), { client_kind: "claude_code" })).undo("claude_code", projectOwnership);
+  assert.equal(mismatchedUndo.kind, "invalid_response");
 });
 
 test("undo sends only owner metadata and accepts exactly the next released revision", async () => {
@@ -255,6 +295,7 @@ test("invalid client kinds and ownership records never reach native IPC", async 
   const client = createClient(async () => { calls += 1; return success("snapshot", null); });
   assert.equal((await client.snapshot("unknown")).kind, "invalid_request");
   assert.equal((await client.undo(clientKind, { ...makeOwnership(), record_fingerprint: "NOT-A-HASH" })).kind, "invalid_request");
+  assert.equal((await client.undo(clientKind, { ...makeOwnership({ scope: "project_local_config" }), record_fingerprint: recordFingerprint })).kind, "invalid_request");
   assert.equal((await client.apply(makePlan({ endpoint_field: null }))).kind, "invalid_request");
   assert.equal(calls, 0);
 });

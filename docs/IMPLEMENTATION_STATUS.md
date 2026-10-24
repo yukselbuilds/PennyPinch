@@ -1,28 +1,29 @@
 # Uygulama devir noktası
 
-24 Ekim 2026; kabul testleri 23 Ekim. Kanonik kök: D:\Projeler\Headroom. Yetkili kapsam/sıra: TASKS.md; ayrıntılar docs/proofs/codex-product-verification.md ve docs/reviews/H019.md.
+24 Ekim 2026. Kanonik kök: D:\Projeler\Headroom. Kapsam/sıra: TASKS.md; son kabul docs/proofs/claude-product.md ve docs/reviews/H020.md.
 
-## Tamamlanan ana görev ve durma noktası
+## Sonuç ve sıradaki görev
 
-- **H019 tamamlandı;16/49.** İlk Windows10 Codex CLI config/yanıt ürünü kabul edildi. Ana görev sonrası duruldu; kullanıcı devam derse sıradaki H020. H020/H048/H049 başlamadı.
-- Tek çalışan /root/luna_worker GPT-6 Luna xhigh; boşta. İkinci çalışan/alt çalışan açılmaz. Bu geliştirici tercihi ürün modeli değildir; model/efor/auth/provider/ajan sayısı sessizce değiştirilmez.
-- Gerçek yeni CLI sürecinin yanıtı doğrulandı;2 ek sınıflandırılmamış CLI hatası ayrı amber `response_verified_cli_errors` durumunda görünür. Temiz `passed` sonucu değildir. Hata kaynağı ve genel protokol/araç sağlığı bilinmiyor; H008 takibinde açık. İzole failing-MCP denemesi aynı hata olaylarını üretmedi, neden varsayılmaz.
+- **H020 tamamlandı;17/51.** Claude Code2.1.158 native keşif, user/project-local ortak Preview→Apply→Undo, güvenilir native klasör seçimi, scoped ownership ve bounded katman/env guard kabul. Son gerçek UI→config→CLI→owned engine0.41.0→yerel SSE fixture PASS. H021 OpenCode sıradaki ana görev; H021/H048/H049 başlamadı. Ana görev bitince durulur, kullanıcı devam mesajı beklenir.
+- Kullanıcı Claude girişini reddetti. Gerçek sağlayıcı/OAuth/gerçek API key/araç/ana-alt ajan/CCR/Desktop/Win11/macOS/Linux/installer/yayın bu kabulde not_tested. Yerel dosya bildirimi effective-runtime/remote/registry policy veya başka oturumun kanıtı değildir. Ürün model adından bağımsız; geliştirici çalışan modeli ürün koşulu değil.
+- Tek çalışan /root/luna_worker GPT-6 Luna xhigh yeniden kullanıldı ve idle. Yeni çalışan/alt çalışan yok. Root review: directory identity replacement, aggregate tutarlılığı, scope decode, released ownership UI engeli ve seçim/lease invalidasyonu düzeltildi. Focused kanıtlar work/proofs/claude-product/; kaynak incelemeleri docs/reviews/H020.md.
 
 ## Geçerli son kanıt
 
-- work/proofs/codex-product-final/final-quality.json:201 Rust PASS/3 ignored, fmt ve embedded build PASS; frontend-quality.json:73 Node/TypeScript/frontend build PASS.64 kaynak/config ve dist/binary fingerprint native testten sonra eşleşti. Node25.2.1/pnpm11.25.0/Rust-Cargo1.92.0. İlgili kaynak/config/toolchain/ortam değişmeden başarılı kontrol tekrarlanmaz.
-- Binary work/caches/cargo-target/debug/headroom-desktop.exe:16,264,192 byte; SHA25668f972ba81c645ae207b5fc6cc1ac831147088cb89f0cbbff7d84f37ee39e943.
-- native-acceptance.json: normal cached profilde UI Start→Ready→Verify; exact nonce1/terminal1/exit0/owned CLI-ingress peer/unchanged seçim-config-runtime, CLI error count2. Update status eski sonucu temizledi; UI Stop→Stopped→normal close exit0; prefs unchanged; owned tree/listeners0. Son GUI25516 kapalı, sürekli izleme yok.
-- İzole native run91107d68: Preview/Apply→normal close→reopen→active record/address match→UI Undo ve byte-exact restore. OpenCode picker Cancel/Add empty opencode.cmd/Scan again retention geçti. Dosya çalıştırılmadı. Config/discovery kodu aynı; warning CSS dışında eski stylesheet hash'i eşleşiyor.
-- Son tek output-bearing row: input22,108→22,108, output27, saved0/0%.0-output warmup ve actor/session toplamları hariç. Ürün geliştirmesinin token tasarrufu ölçülmedi; yüzde uydurulmaz.
-- Ayrı D5 child native UUID→wire thread_id kanıtı docs/proofs/codex-agent-native-route.md; unchanged transport/engine/CLI kapsamıyla reuse. Ürün Verify yeni ana süreçle sınırlı; genel auth/alt ajan/saved config adoption doğrulanmış sayılmaz.
+- work/proofs/claude-product/frontend-quality.json:90 Node PASS, TypeScript/frontend build PASS. final-quality.json: fmt,224 Rust PASS/3 ignored, embedded native build PASS. Son inceleme/fix sonrası tam kapı bir kez çalıştı; test launcher/helper düzeltmeleri uygulama kapısını geçersiz kılmadı. Node25.2.1/pnpm11.25.0/Rust-Cargo1.92.0; proje içi cache/target.70 source/config+3 dist artifact ve binary fingerprint native QA sonrası eşleşti; aynı PASS sebepsiz tekrarlanmaz.
+- Binary work/caches/cargo-target/debug/headroom-desktop.exe:16,627,200 byte; SHA256 fbce4c822a40a0a23a6995b9189bbc1ce03a1f68885a2b65ba1485de6dbbe3b3.
+- native-acceptance.json/run4dc29937: gerçek user Apply/Undo→project Apply→normal close exit0→reopen/original project reselect→CLI config adoption/stream PASS→project Undo→Stop/Stopped→normal close exit0. Tüm3 fixture config byte-exact, prefs ve owned workspace settings geri alındı. Son GUI13808 ve önceki22516 kapalı; son owned tree/listeners0/0, fixture kapalı. Sürekli izleme yok.
+- Gerçek CLI2.1.158 request model claude-opus-4-6/effort high/sentetik auth/tools0/stream, tek POST, partial önce/terminal sonra, final marker/success/exit0. CLI endpoint/model/efor/auth parametre override yok. Engine upstream yalnız owned workspace settings üzerinden geçici loopback fixture; manifest/pin/env allowlist değişmedi. İlk launcher --tools arg hatası request0 iken düzeltildi; tarihsel cli-result.json yerine cli-result-02.json geçerli.
+- İzole shell ilk klasör konumu uyarısı ve QA helper ANSI/clear-text hatası bounded tanıyla giderildi; gerçek seçilen Unicode proje yolu UI'da görüldü. Fiziksel mouse/global input veya screenshot görsel kabulü iddia edilmez. Picker başlangıç/fallback kullanılabilirliği H022 takibinde.
+- Tek sentetik request row87→87/saved0/0%; fixture terminal usage12/4. Gerçek kullanıcı/billing tasarrufu veya bu geliştirme sohbetinin tasarrufu değildir. Yüzde uydurulmaz.
+- H019 tarihsel Codex kanıtı korunur: gerçek yeni CLI final yanıtı+2 sınıflandırılmamış ek hata amber response_verified_cli_errors; temiz passed değildir, neden H008'de açık. Son output-bearing row22,108→22,108, output27/saved0. Önceki Codex native belge/proofleri H020'nin yeni frontend/native kapısı yerine geçmez; transport/engine kaynağı değişmedi. Native child UUID→wire thread_id kanıtı docs/proofs/codex-agent-native-route.md kapsamıyla sınırlı.
 
-## Sınırlar ve sonraki iş
+## Kullanıcının yeni arayüz yönü — planlandı, uygulanmadı
 
-- Windows10 Pro22H2/build19045 x64 yerel kapsam. Desktop/gelecek CLI/diğer auth-provider-model-ajan yolları, Win11, macOS-Linux native, temiz kurulum/installer/yayın burada not_tested. H019 bunların tamamlandığı anlamına gelmez.
-- Fatal/tool/malformed/eksik veya çoklu marker/terminal ek generic error ardından da başarısız kalır. Ek CLI hataları çözülmüş veya zararsız sayılmaz. Tarihsel unnamed Rust failure, partial short exporter/header-diagnostic belirsizlikleri eski kanıtlarda korunur.
-- Global client config/auth manuel okunmadı/kopyalanmadı/yazılmadı; normal profilde Apply yapılmadı; yalnız yeni CLI endpoint override. Yeni login/API key/aktif chat resume yok. Ham CLI/HTTP/error/secret proof olarak saklanmadı. Screenshot foreground yakaladığı için kanıt sayılmadı; native aksiyonlar own PID UIA/OS dialog kontrolüdür.
-- H019 kaynak/kanıt/checkpoint aynı yerel kapanış commit'inin parçasıdır; önceki HEAD705078e. Bu kapanışta CI/push yok. Her yeni CI dispatch öncesi canlı ücretsiz kota/hard-stop kontrolü gerekir; ücretli Win11 doğrulaması atlandı/not_tested.
+- Graphite korunacak; ana ekran platform→model bazlı kullanım, tasarruf token/% ve güvenilir kaynağı varsa ölçülen/tahmini maliyet gösterecek. Teknik ayar katmanları/tanı Gelişmiş'e alınacak; gerekli kapsam/hedef/etki işlem öncesinde görünür kalacak. H022/H025/H026 kabul koşulları güncellendi; spec0.5.
+- Kullanıcı hem hesap bağlantıları/giriş durumunu hem açık sohbetler/çalışan görevleri istedi. H050 resmî istemci giriş akışı/auth metadata; H051 içeriksiz sohbet metadata/durum ve desteklenen aç/resume yolu eklendi. Başlamadılar. Hesap açık≠sohbet çalışıyor; proxy dışı veya kimliği bilinmeyen trafik atanmış gibi gösterilmez. Şifre/kod/token kopyalama veya otomatik ücretli doğrulama yok.
+- Bir Claude hedefi aktif; güvenli mevcut .claude ebeveyni gerekir. Proje seçimi bellekte; restart sonrası Undo için ilk klasör yeniden seçilir. Genel ebeveyn oluşturma/hatırlama/sade bağlantı H022, metrikler H023–H026. Bunlar H020 tamamlandı diye yapılmış sayılmaz.
+- Global auth/client config veya diğer projelerin oturumları değiştirilmedi. H020 gerçek kullanıcı profiline Apply yapmadı. Raw CLI/HTTP/error/secret çıktı saklanmadı. H020 kapanış commit'i yerel; CI/push yok. Her yeni CI dispatch için ücretsiz kota/hard-stop canlı kontrol gerekir; ücretli Win11 doğrulaması not_tested kalır.
 
 ## Korunan işlem sınırları
 

@@ -258,6 +258,289 @@ fn present_toml_is_bounded_fingerprinted_and_read_without_mutation() {
 }
 
 #[test]
+fn claude_context_request_is_correlated_and_rejects_renderer_paths() {
+    use super::config_io::{ClaudeContextSnapshotRequest, ClaudeScopeSelectionRequest};
+
+    let manager = PlanManager::with_test_sources(
+        DiscoveryManager::new(),
+        ConfigRootInputs::default(),
+        Err(StableEndpointAccessError::Unavailable),
+    );
+    let snapshot = manager.claude_context_snapshot(ClaudeContextSnapshotRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+    });
+    let value = serde_json::to_value(snapshot).unwrap();
+    assert_eq!(value["status"], "snapshot");
+    assert_eq!(value["scope"], "user_config");
+    assert_eq!(value["project_directory"], serde_json::Value::Null);
+    assert_eq!(value["request_id"], REQUEST_ID);
+    assert_eq!(
+        value
+            .as_object()
+            .unwrap()
+            .keys()
+            .map(String::as_str)
+            .collect::<std::collections::BTreeSet<_>>(),
+        [
+            "project_directory",
+            "request_id",
+            "schema_version",
+            "scope",
+            "status"
+        ]
+        .into_iter()
+        .collect()
+    );
+
+    let invalid = manager.claude_context_snapshot(ClaudeContextSnapshotRequest {
+        schema_version: 2,
+        request_id: REQUEST_ID.to_owned(),
+    });
+    let invalid = serde_json::to_value(invalid).unwrap();
+    assert_eq!(invalid["status"], "error");
+    assert_eq!(invalid["error"]["code"], "validation_failed");
+
+    let raw_path = format!(
+        r#"{{"schema_version":1,"request_id":"{REQUEST_ID}","scope":"project_local_config","project_directory":"D:\\private"}}"#
+    );
+    assert!(serde_json::from_str::<ClaudeScopeSelectionRequest>(&raw_path).is_err());
+
+    let unsupported = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        scope: "machine_config".to_owned(),
+    });
+    let unsupported = serde_json::to_value(unsupported).unwrap();
+    assert_eq!(unsupported["error"]["code"], "unsupported_scope");
+    assert_eq!(unsupported["request_id"], REQUEST_ID);
+}
+
+#[cfg(windows)]
+#[test]
+fn claude_scope_cancel_and_invalid_picker_results_preserve_selected_context() {
+    use super::config_io::ClaudeScopeSelectionRequest;
+    use std::sync::{Arc, Mutex};
+
+    let mut fixture = Fixture::new();
+    let project = fixture.path("project-ø");
+    fs::create_dir(&project).unwrap();
+    let invalid_file = fixture.path("not-a-directory.txt");
+    fs::write(&invalid_file, b"fixture only").unwrap();
+    let selected_path = Arc::new(Mutex::new(Some(project.clone())));
+    let selected_path_for_picker = Arc::clone(&selected_path);
+    let manager = PlanManager::with_test_sources(
+        DiscoveryManager::new(),
+        ConfigRootInputs::default(),
+        Err(StableEndpointAccessError::Unavailable),
+    )
+    .with_claude_project_picker(move || Ok(selected_path_for_picker.lock().unwrap().clone()));
+
+    let selected = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        scope: "project_local_config".to_owned(),
+    });
+    let selected = serde_json::to_value(selected).unwrap();
+    assert_eq!(selected["status"], "selected");
+    assert_eq!(selected["scope"], "project_local_config");
+    assert_eq!(
+        path_key(Path::new(selected["project_directory"].as_str().unwrap())),
+        path_key(&project)
+    );
+    assert!(!project.join(".claude").exists());
+
+    for invalid_path in [
+        PathBuf::from("relative-project"),
+        PathBuf::from(r"\\server\share\project"),
+        invalid_file,
+    ] {
+        *selected_path.lock().unwrap() = Some(invalid_path);
+        let invalid = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+            schema_version: 1,
+            request_id: REQUEST_ID.to_owned(),
+            scope: "project_local_config".to_owned(),
+        });
+        let invalid = serde_json::to_value(invalid).unwrap();
+        assert_eq!(invalid["status"], "error");
+        assert_eq!(invalid["error"]["code"], "unsafe_project_directory");
+    }
+    let retained =
+        manager.claude_context_snapshot(super::config_io::ClaudeContextSnapshotRequest {
+            schema_version: 1,
+            request_id: REQUEST_ID.to_owned(),
+        });
+    let retained = serde_json::to_value(retained).unwrap();
+    assert_eq!(retained["scope"], "project_local_config");
+    assert_eq!(retained["project_directory"], selected["project_directory"]);
+
+    *selected_path.lock().unwrap() = None;
+    let cancelled = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        scope: "project_local_config".to_owned(),
+    });
+    let cancelled = serde_json::to_value(cancelled).unwrap();
+    assert_eq!(cancelled["status"], "cancelled");
+    assert_eq!(cancelled["scope"], "project_local_config");
+    assert_eq!(
+        cancelled["project_directory"],
+        selected["project_directory"]
+    );
+    fixture.cleanup();
+}
+
+#[cfg(windows)]
+#[test]
+fn claude_scope_changes_invalidate_plans_and_preview_selected_project_local_file() {
+    use super::config_io::{ClaudeScopeSelectionRequest, PlanReply};
+    use super::plan::PlanStatus;
+
+    let mut fixture = Fixture::new();
+    let (discovery, installation_id, scan_generation) =
+        scanned_client(&fixture, "claude_code", "claude.cmd");
+    let claude_root = fixture.path("claude-context-config");
+    write_file(&claude_root.join("settings.json"), b"{}");
+    let project = fixture.path("selected-project");
+    fs::create_dir(&project).unwrap();
+    write_file(&project.join(".claude/settings.local.json"), b"{}");
+    let picker_path = std::sync::Arc::new(std::sync::Mutex::new(None));
+    let picker_path_for_manager = std::sync::Arc::clone(&picker_path);
+    let manager = PlanManager::with_test_sources(
+        discovery,
+        ConfigRootInputs {
+            claude_config_dir: Some(claude_root),
+            ..ConfigRootInputs::default()
+        },
+        Ok(endpoint()),
+    )
+    .with_claude_project_picker(move || Ok(picker_path_for_manager.lock().unwrap().clone()));
+
+    let first_plan =
+        preview_plan(manager.preview(request(installation_id.clone(), scan_generation)));
+    assert_eq!(first_plan.status, PlanStatus::Blocked);
+    let cancelled = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        scope: "project_local_config".to_owned(),
+    });
+    let cancelled = serde_json::to_value(cancelled).unwrap();
+    assert_eq!(cancelled["status"], "cancelled");
+    assert_eq!(cancelled["scope"], "user_config");
+    let retained_plan_action = manager.apply_connection(super::config_io::ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        plan_id: first_plan.plan_id,
+        expected_config_fingerprint: first_plan.config_fingerprint,
+    });
+    let retained_plan_action = serde_json::to_value(retained_plan_action).unwrap();
+    assert_eq!(retained_plan_action["error"]["code"], "config_conflict");
+
+    let second_plan =
+        preview_plan(manager.preview(request(installation_id.clone(), scan_generation)));
+    *picker_path.lock().unwrap() = Some(project);
+    let selected = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        scope: "project_local_config".to_owned(),
+    });
+    assert_eq!(
+        serde_json::to_value(selected).unwrap()["status"],
+        "selected"
+    );
+
+    let stale_action = manager.apply_connection(super::config_io::ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        plan_id: second_plan.plan_id,
+        expected_config_fingerprint: second_plan.config_fingerprint,
+    });
+    let stale_action = serde_json::to_value(stale_action).unwrap();
+    assert_eq!(stale_action["error"]["code"], "not_found");
+
+    let project_preview = manager.preview(PreviewRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        installation_id: installation_id.clone(),
+        scan_generation,
+        scope: "project_local_config".to_owned(),
+    });
+    let PlanReply::Preview(project_preview) = project_preview else {
+        panic!("selected project config should be previewable");
+    };
+    assert_eq!(project_preview.plan.scope, "project_local_config");
+    assert_eq!(
+        project_preview.plan.config_presence,
+        ConfigPresence::Present
+    );
+
+    let selected_user = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        scope: "user_config".to_owned(),
+    });
+    let selected_user = serde_json::to_value(selected_user).unwrap();
+    assert_eq!(selected_user["status"], "selected");
+    assert_eq!(selected_user["scope"], "user_config");
+    assert_eq!(selected_user["project_directory"], serde_json::Value::Null);
+    assert!(matches!(
+        manager.preview(request(installation_id, scan_generation)),
+        PlanReply::Preview(_)
+    ));
+    fixture.cleanup();
+}
+
+#[cfg(windows)]
+#[test]
+fn claude_scope_picker_serializes_with_preview_and_mutation_gate() {
+    use super::config_io::ClaudeScopeSelectionRequest;
+    use std::sync::{mpsc, Arc, Mutex};
+    use std::time::Duration;
+
+    let mut fixture = Fixture::new();
+    let (discovery, installation_id, scan_generation) =
+        scanned_client(&fixture, "claude_code", "claude.cmd");
+    let (entered_tx, entered_rx) = mpsc::channel();
+    let (release_tx, release_rx) = mpsc::sync_channel(1);
+    let release_rx = Arc::new(Mutex::new(release_rx));
+    let picker_release = Arc::clone(&release_rx);
+    let manager = Arc::new(
+        PlanManager::with_test_sources(
+            discovery,
+            ConfigRootInputs::default(),
+            Err(StableEndpointAccessError::Unavailable),
+        )
+        .with_claude_project_picker(move || {
+            entered_tx.send(()).expect("signal picker start");
+            picker_release
+                .lock()
+                .unwrap()
+                .recv_timeout(Duration::from_secs(3))
+                .expect("bounded picker release");
+            Ok(None)
+        }),
+    );
+    let worker_manager = Arc::clone(&manager);
+    let worker = std::thread::spawn(move || {
+        worker_manager.select_claude_scope(ClaudeScopeSelectionRequest {
+            schema_version: 1,
+            request_id: "c26a9113-8537-4d84-9b62-2ab48dc1dc52".to_owned(),
+            scope: "project_local_config".to_owned(),
+        })
+    });
+    entered_rx
+        .recv_timeout(Duration::from_secs(3))
+        .expect("scope selection reached picker");
+
+    let busy = manager.preview(request(installation_id, scan_generation));
+    assert_eq!(error_code(busy), "busy");
+    release_tx.send(()).expect("release picker");
+    let cancelled = serde_json::to_value(worker.join().expect("scope worker")).unwrap();
+    assert_eq!(cancelled["status"], "cancelled");
+    fixture.cleanup();
+}
+
+#[test]
 fn missing_user_config_plans_report_only_default_declarations() {
     let mut fixture = Fixture::new();
 
@@ -500,6 +783,24 @@ fn config_reader_rejects_a_real_junction_without_touching_its_target() {
         )
     };
     assert_ne!(set, 0, "fixture mount-point reparse creation is required");
+
+    let picker_home = home.clone();
+    let context_manager = PlanManager::with_test_sources(
+        DiscoveryManager::new(),
+        ConfigRootInputs::default(),
+        Err(StableEndpointAccessError::Unavailable),
+    )
+    .with_claude_project_picker(move || Ok(Some(picker_home.clone())));
+    let context =
+        context_manager.select_claude_scope(super::config_io::ClaudeScopeSelectionRequest {
+            schema_version: 1,
+            request_id: REQUEST_ID.to_owned(),
+            scope: "project_local_config".to_owned(),
+        });
+    assert_eq!(
+        serde_json::to_value(context).unwrap()["error"]["code"],
+        "unsafe_project_directory"
+    );
 
     assert_eq!(
         read_user_config(

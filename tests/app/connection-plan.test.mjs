@@ -73,12 +73,13 @@ function makeError(overrides = {}) {
   };
 }
 
-function decode(value, expectedRequestId = requestId, clientKind = "codex") {
+function decode(value, expectedRequestId = requestId, clientKind = "codex", scope = "user_config") {
   return decodeConnectionPlanReply(value, {
     requestId: expectedRequestId,
     installationId,
     scanGeneration: 7,
     clientKind,
+    scope,
   });
 }
 
@@ -158,6 +159,23 @@ test("validates client-specific endpoint and config source pairs", () => {
   });
   assert.equal(decode(makePreview(opencode), requestId, "opencode").kind, "preview");
   assert.equal(decode(makePreview({ ...opencode, config_presence: "missing" }), requestId, "opencode"), null);
+});
+
+test("project scope is correlated and permitted only for Claude Code", () => {
+  const claudeProject = makePlan({
+    client_kind: "claude_code",
+    scope: "project_local_config",
+    config_source: "claude_json",
+    endpoint_field: {
+      field: "claude_anthropic_base_url",
+      before: "missing",
+      proposed_value: "http://127.0.0.1:41731",
+      after_headroom: true,
+    },
+  });
+  assert.equal(decode(makePreview(claudeProject), requestId, "claude_code", "project_local_config").kind, "preview");
+  assert.equal(decode(makePreview(claudeProject), requestId, "claude_code", "user_config"), null);
+  assert.equal(decode(makePreview(makePlan({ scope: "project_local_config" })), requestId, "codex", "project_local_config"), null);
 });
 
 test("missing config plans carry only the default-preserving declarations", () => {
@@ -242,4 +260,53 @@ test("native client sends only the typed preview request and returns fixed failu
   assert.deepEqual(await failed.preview({ installationId, scanGeneration: 7, clientKind: "codex" }), {
     kind: "request_failed",
   });
+});
+
+test("native Claude preview sends and correlates project scope without accepting it for another client", async () => {
+  let invoked = null;
+  const projectPlan = makePlan({
+    client_kind: "claude_code",
+    scope: "project_local_config",
+    config_source: "claude_json",
+    endpoint_field: {
+      field: "claude_anthropic_base_url",
+      before: "missing",
+      proposed_value: "http://127.0.0.1:41731",
+      after_headroom: true,
+    },
+  });
+  const client = createConnectionPlanClient({
+    isNative: () => true,
+    createRequestId: () => requestId,
+    invoke: async (command, args) => {
+      invoked = { command, args };
+      return makePreview(projectPlan);
+    },
+  });
+  const result = await client.preview({
+    installationId,
+    scanGeneration: 7,
+    clientKind: "claude_code",
+    scope: "project_local_config",
+  });
+  assert.equal(result.kind, "preview");
+  assert.deepEqual(invoked, {
+    command: "preview_connection_plan",
+    args: { request: {
+      schema_version: 1,
+      request_id: requestId,
+      installation_id: installationId,
+      scan_generation: 7,
+      scope: "project_local_config",
+    } },
+  });
+
+  let calls = 0;
+  const codex = createConnectionPlanClient({
+    isNative: () => true,
+    createRequestId: () => requestId,
+    invoke: async () => { calls += 1; return makePreview(projectPlan); },
+  });
+  assert.deepEqual(await codex.preview({ installationId, scanGeneration: 7, clientKind: "codex", scope: "project_local_config" }), { kind: "invalid_request" });
+  assert.equal(calls, 0);
 });

@@ -1,6 +1,6 @@
 use super::discovery::{
-    codex_cli_version_from_digest, DiscoveryInputs, DiscoveryManager, DiscoveryReply,
-    InstallationSelectionError,
+    claude_code_cli_version_from_digest, codex_cli_version_from_digest, DiscoveryInputs,
+    DiscoveryManager, DiscoveryReply, InstallationSelectionError,
 };
 use std::fs;
 use std::path::{Component, Path, PathBuf};
@@ -897,4 +897,62 @@ fn scan_and_picker_share_the_mutation_lock_while_snapshot_reads_remain_available
     let after = snapshot(manager.list_snapshot(REQUEST_ID.to_owned()));
     assert_eq!(after.status, "not_scanned");
     assert_eq!(after.scan_generation, 0);
+}
+
+#[test]
+fn bundled_claude_version_requires_both_exact_size_and_sha256() {
+    const HASH: &str = "10fa305545b20baf6e074a086762bd252b89dfe7035848a5d41385503b1a6c74";
+    assert_eq!(
+        claude_code_cli_version_from_digest(236_306_080, HASH).as_deref(),
+        Some("2.1.158")
+    );
+    assert_eq!(
+        claude_code_cli_version_from_digest(236_306_079, HASH),
+        None,
+        "matching digest at any other size must remain unknown"
+    );
+    assert_eq!(
+        claude_code_cli_version_from_digest(
+            236_306_080,
+            "20fa305545b20baf6e074a086762bd252b89dfe7035848a5d41385503b1a6c74"
+        ),
+        None,
+        "matching size with any other digest must remain unknown"
+    );
+    assert_eq!(
+        claude_code_cli_version_from_digest(0, HASH),
+        None,
+        "an unknown size must not trigger version identification"
+    );
+}
+
+#[test]
+fn unknown_claude_exe_stays_unversioned_on_path_and_manual_selection() {
+    let mut fixture = Fixture::new();
+    let path_dir = fixture.at("path-install");
+    let path_exe = path_dir.join("claude.exe");
+    write_file(&path_exe, b"small synthetic Claude executable");
+    let mut inputs = DiscoveryInputs::default();
+    inputs.path_entries.push(path_dir);
+    let path_result =
+        snapshot(DiscoveryManager::new().scan_with_inputs(REQUEST_ID.to_owned(), inputs));
+    let path_install = path_result
+        .installations
+        .iter()
+        .find(|item| item.client_kind == "claude_code")
+        .expect("the synthetic PATH candidate should be discovered");
+    assert_eq!(path_install.source, "path");
+    assert_eq!(path_install.version, None);
+
+    let manual_exe = fixture.at("manual/claude.exe");
+    write_file(&manual_exe, b"small synthetic Claude executable");
+    let manual_result = snapshot(select_fixture(
+        &DiscoveryManager::new(),
+        "claude_code",
+        manual_exe,
+    ));
+    assert_eq!(manual_result.installations.len(), 1);
+    assert_eq!(manual_result.installations[0].source, "manual_file");
+    assert_eq!(manual_result.installations[0].version, None);
+    fixture.cleanup();
 }

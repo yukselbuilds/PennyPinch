@@ -168,7 +168,6 @@ pub(crate) fn undo_owned_endpoint(
 
 fn validate_plan(plan: &ConnectionPlan) -> Result<(), TransactionError> {
     if plan.schema_version != 1
-        || plan.scope != "user_config"
         || plan.status != PlanStatus::Preview
         || !plan.blockers.is_empty()
         || !plan.restart_required
@@ -184,6 +183,18 @@ fn validate_plan(plan: &ConnectionPlan) -> Result<(), TransactionError> {
         return Err(TransactionError::InvalidPlan);
     }
     let kind = client_kind(plan.client_kind).ok_or(TransactionError::InvalidPlan)?;
+    let scope_matches_client = matches!(
+        (kind, plan.scope),
+        (ClientKind::Codex, "user_config")
+            | (
+                ClientKind::ClaudeCode,
+                "user_config" | "project_local_config"
+            )
+            | (ClientKind::OpenCodeV1, "user_config")
+    );
+    if !scope_matches_client {
+        return Err(TransactionError::InvalidPlan);
+    }
     let source_presence_matches = match (kind, plan.config_source, plan.config_presence) {
         (ClientKind::Codex, ConfigSource::CodexToml, _) => true,
         (ClientKind::ClaudeCode, ConfigSource::ClaudeJson, _) => true,

@@ -15,7 +15,7 @@ mod windows_picker {
     use windows::Win32::UI::Shell::{
         FileOpenDialog, IFileOpenDialog, FOS_DONTADDTORECENT, FOS_FILEMUSTEXIST,
         FOS_FORCEFILESYSTEM, FOS_NOCHANGEDIR, FOS_NODEREFERENCELINKS, FOS_PATHMUSTEXIST,
-        SIGDN_FILESYSPATH,
+        FOS_PICKFOLDERS, SIGDN_FILESYSPATH,
     };
 
     const MAX_PATH_UNITS: usize = 32_767;
@@ -129,6 +129,65 @@ mod windows_picker {
             Ok(Some(PathBuf::from(path)))
         }
     }
+
+    pub(super) fn select_project_directory(owner_hwnd: usize) -> Result<Option<PathBuf>, ()> {
+        if owner_hwnd == 0 {
+            return Err(());
+        }
+        let _apartment = ComApartment::initialize()?;
+        let dialog: IFileOpenDialog = unsafe {
+            CoCreateInstance(&FileOpenDialog, None, CLSCTX_INPROC_SERVER).map_err(|_| ())?
+        };
+        let title: Vec<u16> = "Select Claude Code project folder"
+            .encode_utf16()
+            .chain(Some(0))
+            .collect();
+        let options = FOS_FORCEFILESYSTEM
+            | FOS_PATHMUSTEXIST
+            | FOS_NOCHANGEDIR
+            | FOS_NODEREFERENCELINKS
+            | FOS_DONTADDTORECENT
+            | FOS_PICKFOLDERS;
+
+        unsafe {
+            dialog.SetOptions(options).map_err(|_| ())?;
+            dialog.SetTitle(PCWSTR(title.as_ptr())).map_err(|_| ())?;
+            let owner = HWND(owner_hwnd as *mut c_void);
+            if let Err(error) = dialog.Show(Some(owner)) {
+                return if error.code() == HRESULT_CANCELLED {
+                    Ok(None)
+                } else {
+                    Err(())
+                };
+            }
+
+            let item = dialog.GetResult().map_err(|_| ())?;
+            let display_name = item.GetDisplayName(SIGDN_FILESYSPATH).map_err(|_| ())?;
+            let memory = TaskMemory(display_name);
+            let raw = memory.0 .0;
+            if raw.is_null() {
+                return Err(());
+            }
+            let mut length = None;
+            for index in 0..=MAX_PATH_UNITS {
+                if raw.add(index).read() == 0 {
+                    length = Some(index);
+                    break;
+                }
+            }
+            let Some(length) = length else {
+                return Err(());
+            };
+            if length == 0 {
+                return Err(());
+            }
+            let path = OsString::from_wide(std::slice::from_raw_parts(raw, length));
+            if path.is_empty() {
+                return Err(());
+            }
+            Ok(Some(PathBuf::from(path)))
+        }
+    }
 }
 
 #[cfg(windows)]
@@ -136,7 +195,17 @@ pub fn select_file(owner_hwnd: usize, client_kind: &str) -> Result<Option<PathBu
     windows_picker::select_file(owner_hwnd, client_kind)
 }
 
+#[cfg(windows)]
+pub fn select_project_directory(owner_hwnd: usize) -> Result<Option<PathBuf>, ()> {
+    windows_picker::select_project_directory(owner_hwnd)
+}
+
 #[cfg(not(windows))]
 pub fn select_file(_owner_hwnd: usize, _client_kind: &str) -> Result<Option<PathBuf>, ()> {
+    Err(())
+}
+
+#[cfg(not(windows))]
+pub fn select_project_directory(_owner_hwnd: usize) -> Result<Option<PathBuf>, ()> {
     Err(())
 }

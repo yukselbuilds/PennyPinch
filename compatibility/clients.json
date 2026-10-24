@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "last_updated": "2026-10-19",
+  "last_updated": "2026-10-24",
   "purpose": "Observed compatibility combinations only. A local fixture result does not imply live auth, desktop, subagent, or release support.",
   "allowed_statuses": [
     "not_tested",
@@ -214,6 +214,69 @@
       },
       "evidence": ["docs/proofs/opencode.md"],
       "evidence_date": "2026-10-19"
+    },
+    {
+      "id": "claude-code-native-product-scoped-fixture",
+      "product": "Claude Code CLI",
+      "version": "2.1.158",
+      "surface": "Native Headroom UI; common scoped Apply/Undo; CLI print with tools disabled",
+      "platform": "Windows 10 Pro 22H2 x64 (10.0.19045)",
+      "auth": "Synthetic API key from isolated user settings; no sign-in or real credentials",
+      "protocol": "Anthropic Messages API",
+      "transport": "Owned stable IPv4 ingress to pinned Headroom 0.41.0 to local Anthropic SSE fixture",
+      "status": "local_fixture_pass",
+      "capabilities": {
+        "native_readonly_discovery": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/claude-product.md"
+        },
+        "user_config_apply_undo": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/claude-product.md"
+        },
+        "explicit_project_local_apply_reopen_reselect_undo": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/claude-product.md"
+        },
+        "project_config_model_effort_auth_route_loading_and_sse": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/claude-product.md"
+        },
+        "observed_layers_and_stale_plan_guards": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/claude-product.md"
+        },
+        "effective_registry_remote_or_other_session_settings": {
+          "status": "unknown",
+          "evidence": "docs/proofs/claude-product.md"
+        },
+        "live_oauth_or_real_api_key_provider": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/claude-product.md"
+        },
+        "tools_hooks_mcp_plugins_subagents_and_ccr": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/claude-product.md"
+        },
+        "all_models_and_providers": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/claude-product.md"
+        },
+        "windows_11_macos_linux_and_installer": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/claude-product.md"
+        }
+      },
+      "limits": [
+        "One active Claude target; existing safe parent required; project selection is memory-only and must be reselected after restart for Undo.",
+        "Metadata declarations are not effective-setting or traffic verification. CLI acceptance used only one controlled project with synthetic auth/tools off.",
+        "Fixture token counts do not establish real token or billing savings."
+      ],
+      "evidence": [
+        "docs/proofs/claude-product.md",
+        "docs/reviews/H020.md"
+      ],
+      "evidence_date": "2026-10-24"
     }
   ],
   "product_capabilities": [

@@ -1,7 +1,9 @@
+use super::claude_layers::{self, ClaudeLayersObservation};
 use super::codex::CurrentConfigValue;
 use super::*;
 use crate::integrations::plan::{
-    ClientKind, ConfigPresence, ConfigSource, ConnectionPlan, EndpointBefore, PlanStatus,
+    ClientKind, ConfigPresence, ConfigScope, ConfigSource, ConnectionPlan, EndpointBefore,
+    PlanStatus,
 };
 use crate::integrations::transaction::{
     apply_missing_endpoint, undo_owned_endpoint, ApplyResult, TransactionError,
@@ -61,12 +63,24 @@ pub(crate) struct ConnectionActionSuccess {
     pub request_id: String,
     pub status: &'static str,
     pub client_kind: &'static str,
-    pub ownership: Option<OwnershipSummary>,
+    pub ownership: Option<ActionOwnershipSummary>,
 }
 
 #[derive(Clone, Debug, Serialize)]
 pub(crate) struct OwnershipSummary {
     pub state: &'static str,
+    pub owner_id: String,
+    pub revision: u64,
+    pub record_fingerprint: String,
+    pub config_source: &'static str,
+    pub endpoint_id: String,
+    pub endpoint_port: u16,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub(crate) struct ActionOwnershipSummary {
+    pub state: &'static str,
+    pub scope: &'static str,
     pub owner_id: String,
     pub revision: u64,
     pub record_fingerprint: String,
@@ -108,6 +122,13 @@ impl PlanManager {
         request: OwnershipSnapshotRequest,
     ) -> ConnectionActionReply {
         ownership_snapshot(self, request)
+    }
+
+    pub(crate) fn claude_settings_snapshot(
+        &self,
+        request: ClaudeSettingsSnapshotRequest,
+    ) -> ClaudeSettingsSnapshotReply {
+        claude_settings_snapshot(self, request)
     }
 
     pub(super) fn codex_config_observation(
@@ -351,7 +372,7 @@ fn success_reply(
     request_id: String,
     status: &'static str,
     kind: ClientKind,
-    ownership: Option<OwnershipSummary>,
+    ownership: Option<ActionOwnershipSummary>,
 ) -> ConnectionActionReply {
     ConnectionActionReply::Success(ConnectionActionSuccess {
         schema_version: 1,
@@ -424,6 +445,24 @@ fn summary(record: &OwnershipRecord, fingerprint: String) -> Result<OwnershipSum
     })
 }
 
+fn action_summary(
+    record: &OwnershipRecord,
+    fingerprint: String,
+) -> Result<ActionOwnershipSummary, ActionFault> {
+    let summary = summary(record, fingerprint)?;
+    let scope = record.config_scope().ok_or(ActionFault::Unavailable)?;
+    Ok(ActionOwnershipSummary {
+        state: summary.state,
+        scope: scope_code(scope),
+        owner_id: summary.owner_id,
+        revision: summary.revision,
+        record_fingerprint: summary.record_fingerprint,
+        config_source: summary.config_source,
+        endpoint_id: summary.endpoint_id,
+        endpoint_port: summary.endpoint_port,
+    })
+}
+
 fn map_transaction(error: TransactionFsError) -> ActionFault {
     match error {
         TransactionFsError::Conflict => ActionFault::Conflict,
@@ -465,6 +504,15 @@ fn map_config_io_error(error: ConfigIoError) -> ActionFault {
         ConfigIoError::Unavailable => ActionFault::Unavailable,
         ConfigIoError::TooLarge => ActionFault::InvalidConfig,
         ConfigIoError::Ambiguous => ActionFault::Conflict,
+    }
+}
+
+fn map_claude_layers_error(error: claude_layers::ClaudeLayersError) -> ActionFault {
+    match error {
+        claude_layers::ClaudeLayersError::Io(error) => map_config_io_error(error),
+        claude_layers::ClaudeLayersError::TooLarge
+        | claude_layers::ClaudeLayersError::InvalidDocument
+        | claude_layers::ClaudeLayersError::DuplicateKey => ActionFault::InvalidConfig,
     }
 }
 
@@ -514,7 +562,13 @@ fn apply_connection(
         Ok(value) => value,
         Err(error) => return error_reply(correlation, error),
     };
-    let roots = (manager.roots_provider)();
+    let (roots, current_scope) = match manager.config_roots_for_context(kind) {
+        Ok(value) => value,
+        Err(error) => return error_reply(correlation, map_config_io_error(error)),
+    };
+    if scope_code(current_scope) != lease.plan.scope {
+        return error_reply(correlation, ActionFault::Conflict);
+    }
     let (target_path, alternate_path) =
         match target_for_plan(&roots, kind, lease.plan.config_source) {
             Ok(value) => value,
@@ -531,6 +585,14 @@ fn apply_connection(
     {
         return error_reply(correlation, ActionFault::Conflict);
     }
+    let claude_layers_observation = if kind == ClientKind::ClaudeCode {
+        match observe_leased_claude_layers(&lease, &roots, current_scope) {
+            Ok(value) => Some(value),
+            Err(error) => return error_reply(correlation, error),
+        }
+    } else {
+        None
+    };
 
     let mut transaction = match FileTransaction::begin() {
         Ok(value) => value,
@@ -584,6 +646,11 @@ fn apply_connection(
         if let Err(error) = validate_live_plan(manager, &lease) {
             return error_reply(correlation, error);
         }
+        if let Some(observation) = &claude_layers_observation {
+            if let Err(error) = validate_current_claude_layers(manager, &lease, observation) {
+                return error_reply(correlation, error);
+            }
+        }
         return unchanged_apply(correlation, kind, ownership, &lease.plan);
     }
     if ownership
@@ -628,7 +695,11 @@ fn apply_connection(
         None => 1,
     };
     let owner_id = Uuid::new_v4().to_string();
-    let record = match OwnershipRecord::active_from_patch(
+    let scope = match parse_scope(&lease.plan.scope) {
+        Some(value) => value,
+        None => return error_reply(correlation, ActionFault::Conflict),
+    };
+    let record = match OwnershipRecord::active_from_scoped_patch(
         &owner_id,
         &lease.plan.endpoint_id,
         binding_path,
@@ -637,6 +708,7 @@ fn apply_connection(
         &before,
         &after,
         &receipt,
+        scope,
     ) {
         Ok(value) => value,
         Err(error) => return error_reply(correlation, map_ownership(error)),
@@ -645,7 +717,7 @@ fn apply_connection(
         Ok(value) => value,
         Err(error) => return error_reply(correlation, map_ownership(error)),
     };
-    let ownership_summary = match summary(&record, fingerprint) {
+    let ownership_summary = match action_summary(&record, fingerprint) {
         Ok(value) => Some(value),
         Err(error) => return error_reply(correlation, error),
     };
@@ -654,6 +726,11 @@ fn apply_connection(
     }
     if let Err(error) = validate_live_plan(manager, &lease) {
         return error_reply(correlation, error);
+    }
+    if let Some(observation) = &claude_layers_observation {
+        if let Err(error) = validate_current_claude_layers(manager, &lease, observation) {
+            return error_reply(correlation, error);
+        }
     }
     #[cfg(test)]
     if manager.fail_action_before_commit {
@@ -664,6 +741,11 @@ fn apply_connection(
     }
     if let Err(error) = validate_live_plan(manager, &lease) {
         return error_reply(correlation, error);
+    }
+    if let Some(observation) = &claude_layers_observation {
+        if let Err(error) = validate_current_claude_layers(manager, &lease, observation) {
+            return error_reply(correlation, error);
+        }
     }
     if let Err(error) = transaction.commit() {
         return error_reply(correlation, map_transaction(error));
@@ -696,7 +778,10 @@ fn undo_connection(manager: &PlanManager, request: UndoConnectionRequest) -> Con
     let Some(store) = manager.ownership_store.as_ref() else {
         return error_reply(correlation, ActionFault::Unavailable);
     };
-    let roots = (manager.roots_provider)();
+    let (roots, current_scope) = match manager.config_roots_for_context(kind) {
+        Ok(value) => value,
+        Err(error) => return error_reply(correlation, map_config_io_error(error)),
+    };
     let first_config = match read_user_config(kind, &roots) {
         Ok(value) if value.presence == ConfigPresence::Present => value,
         Ok(_) => return error_reply(correlation, ActionFault::Conflict),
@@ -757,6 +842,7 @@ fn undo_connection(manager: &PlanManager, request: UndoConnectionRequest) -> Con
         || ownership.record_fingerprint() != Some(request.expected_record_fingerprint.as_str())
         || record.client_kind() != Some(kind)
         || record.config_source() != Some(first_config.source)
+        || record.config_scope() != Some(current_scope)
     {
         return error_reply(correlation, ActionFault::Conflict);
     }
@@ -783,19 +869,14 @@ fn undo_connection(manager: &PlanManager, request: UndoConnectionRequest) -> Con
         Ok(value) => value,
         Err(error) => return error_reply(correlation, map_ownership(error)),
     };
-    let ownership_summary = match summary(&released, fingerprint) {
+    let ownership_summary = match action_summary(&released, fingerprint) {
         Ok(value) => Some(value),
         Err(error) => return error_reply(correlation, error),
     };
     if let Err(error) = store.stage_in_transaction(&mut transaction, ownership, &released) {
         return error_reply(correlation, map_ownership(error));
     }
-    if !same_target_roots(
-        &roots,
-        &(manager.roots_provider)(),
-        kind,
-        first_config.source,
-    ) {
+    if !same_current_target(manager, &roots, current_scope, kind, first_config.source) {
         return error_reply(correlation, ActionFault::Conflict);
     }
     #[cfg(test)]
@@ -805,12 +886,7 @@ fn undo_connection(manager: &PlanManager, request: UndoConnectionRequest) -> Con
     if let Err(error) = transaction.seal() {
         return error_reply(correlation, map_transaction(error));
     }
-    if !same_target_roots(
-        &roots,
-        &(manager.roots_provider)(),
-        kind,
-        first_config.source,
-    ) {
+    if !same_current_target(manager, &roots, current_scope, kind, first_config.source) {
         return error_reply(correlation, ActionFault::Conflict);
     }
     if let Err(error) = transaction.commit() {
@@ -854,13 +930,75 @@ fn ownership_snapshot(
         return error_reply(correlation, map_transaction(error));
     }
     let ownership = match snapshot {
-        Some(value) => match summary(&value.record, value.record_fingerprint) {
+        Some(value) => match action_summary(&value.record, value.record_fingerprint) {
             Ok(value) => Some(value),
             Err(error) => return error_reply(correlation, error),
         },
         None => None,
     };
     success_reply(correlation, "snapshot", kind, ownership)
+}
+
+fn claude_settings_snapshot(
+    manager: &PlanManager,
+    request: ClaudeSettingsSnapshotRequest,
+) -> ClaudeSettingsSnapshotReply {
+    let correlation = request_id(&request.request_id);
+    if !valid_uuid(&request.request_id) {
+        return snapshot_error_reply(correlation, ActionFault::Validation);
+    }
+    if request.schema_version != 1 {
+        return snapshot_error_reply(correlation, ActionFault::UnsupportedSchema);
+    }
+    let Some(_guard) = PreviewGuard::try_acquire(&manager.preview_in_flight) else {
+        return snapshot_error_reply(correlation, ActionFault::Busy);
+    };
+    let requested_scope = match parse_scope(&request.scope) {
+        Some(value) => value,
+        None => return snapshot_error_reply(correlation, ActionFault::Validation),
+    };
+    let (roots, selected_scope) = match manager.config_roots_for_context(ClientKind::ClaudeCode) {
+        Ok(value) => value,
+        Err(error) => return snapshot_error_reply(correlation, map_config_io_error(error)),
+    };
+    if selected_scope != requested_scope {
+        return snapshot_error_reply(correlation, ActionFault::Conflict);
+    }
+    let target = match read_user_config(ClientKind::ClaudeCode, &roots) {
+        Ok(value) => value,
+        Err(error) => return snapshot_error_reply(correlation, map_config_io_error(error)),
+    };
+    let endpoint = match (manager.endpoint_provider)() {
+        Ok(value) => value,
+        Err(_) => return snapshot_error_reply(correlation, ActionFault::Unavailable),
+    };
+    let context = PlanContext {
+        request_id: correlation.clone(),
+        installation_id: ZERO_UUID.to_owned(),
+        client_kind: ClientKind::ClaudeCode,
+        config_source: ConfigSource::ClaudeJson,
+        surface: "cli".to_owned(),
+        version: Some("2.1.158".to_owned()),
+        scope: selected_scope,
+        scan_generation: 1,
+        endpoint: crate::integrations::plan::StableEndpoint {
+            endpoint_id: endpoint.endpoint_id,
+            host: endpoint.host.to_owned(),
+            port: endpoint.port,
+        },
+        now_unix_seconds: unix_seconds().unwrap_or(MAX_SAFE_INTEGER),
+    };
+    match claude_layers::observe(&roots, selected_scope, Some(&target), &context) {
+        Ok(observation) => ClaudeSettingsSnapshotReply::Snapshot(observation.snapshot),
+        Err(error) => snapshot_error_reply(correlation, map_claude_layers_error(error)),
+    }
+}
+
+fn snapshot_error_reply(request_id: String, fault: ActionFault) -> ClaudeSettingsSnapshotReply {
+    match error_reply(request_id, fault) {
+        ConnectionActionReply::Error(error) => ClaudeSettingsSnapshotReply::Error(error),
+        ConnectionActionReply::Success(_) => unreachable!("error helper returned success"),
+    }
 }
 
 fn applicable_plan(
@@ -882,7 +1020,7 @@ fn applicable_plan(
         && plan.installation_id == installation.installation_id
         && plan.client_kind == client_kind_code(kind)
         && parse_client_kind(installation.client_kind) == Some(kind)
-        && plan.scope == "user_config"
+        && scope_matches_client(kind, &plan.scope)
         && plan.scan_generation > 0
         && plan.scan_generation <= MAX_SAFE_INTEGER
         && plan.status == PlanStatus::Preview
@@ -925,11 +1063,85 @@ fn validate_live_plan(manager: &PlanManager, lease: &PlanLease) -> Result<(), Ac
         return Err(ActionFault::Conflict);
     }
     let kind = config_kind(plan)?;
-    let current_roots = (manager.roots_provider)();
-    if !same_target_roots(&lease.roots, &current_roots, kind, plan.config_source) {
+    let (current_roots, current_scope) = manager
+        .config_roots_for_context(kind)
+        .map_err(map_config_io_error)?;
+    if scope_code(current_scope) != plan.scope
+        || !same_target_roots(&lease.roots, &current_roots, kind, plan.config_source)
+    {
         return Err(ActionFault::Conflict);
     }
     Ok(())
+}
+
+fn observe_leased_claude_layers(
+    lease: &PlanLease,
+    roots: &ConfigRootInputs,
+    scope: ConfigScope,
+) -> Result<ClaudeLayersObservation, ActionFault> {
+    if scope != ConfigScope::ProjectLocalConfig && scope != ConfigScope::UserConfig {
+        return Err(ActionFault::Conflict);
+    }
+    let expected = lease
+        .claude_layers_fingerprint
+        .as_deref()
+        .ok_or(ActionFault::Conflict)?;
+    let context = lease_plan_context(lease)?;
+    let observation =
+        claude_layers::observe(roots, scope, None, &context).map_err(map_claude_layers_error)?;
+    if observation.fingerprint != expected {
+        return Err(ActionFault::Conflict);
+    }
+    Ok(observation)
+}
+
+fn validate_current_claude_layers(
+    manager: &PlanManager,
+    lease: &PlanLease,
+    held: &ClaudeLayersObservation,
+) -> Result<(), ActionFault> {
+    held.validate_pins().map_err(map_config_io_error)?;
+    let (roots, scope) = manager
+        .config_roots_for_context(ClientKind::ClaudeCode)
+        .map_err(map_config_io_error)?;
+    if scope_code(scope) != lease.plan.scope
+        || !same_target_roots(
+            &lease.roots,
+            &roots,
+            ClientKind::ClaudeCode,
+            lease.plan.config_source,
+        )
+    {
+        return Err(ActionFault::Conflict);
+    }
+    let context = lease_plan_context(lease)?;
+    let current =
+        claude_layers::observe(&roots, scope, None, &context).map_err(map_claude_layers_error)?;
+    if lease.claude_layers_fingerprint.as_deref() != Some(current.fingerprint.as_str()) {
+        return Err(ActionFault::Conflict);
+    }
+    current.validate_pins().map_err(map_config_io_error)
+}
+
+fn lease_plan_context(lease: &PlanLease) -> Result<PlanContext, ActionFault> {
+    let kind = config_kind(&lease.plan)?;
+    let scope = parse_scope(&lease.plan.scope).ok_or(ActionFault::Conflict)?;
+    Ok(PlanContext {
+        request_id: lease.plan.request_id.clone(),
+        installation_id: lease.plan.installation_id.clone(),
+        client_kind: kind,
+        config_source: lease.plan.config_source,
+        surface: lease.installation.surface.to_owned(),
+        version: lease.installation.version.clone(),
+        scope,
+        scan_generation: lease.plan.scan_generation,
+        endpoint: crate::integrations::plan::StableEndpoint {
+            endpoint_id: lease.endpoint.endpoint_id.clone(),
+            host: lease.endpoint.host.to_owned(),
+            port: lease.endpoint.port,
+        },
+        now_unix_seconds: unix_seconds().unwrap_or(MAX_SAFE_INTEGER),
+    })
 }
 
 fn target_for_plan(
@@ -982,6 +1194,48 @@ fn same_optional_path(left: Option<&Path>, right: Option<&Path>) -> bool {
     }
 }
 
+fn scope_code(scope: ConfigScope) -> &'static str {
+    match scope {
+        ConfigScope::UserConfig => "user_config",
+        ConfigScope::ProjectLocalConfig => "project_local_config",
+    }
+}
+
+fn parse_scope(scope: &str) -> Option<ConfigScope> {
+    match scope {
+        "user_config" => Some(ConfigScope::UserConfig),
+        "project_local_config" => Some(ConfigScope::ProjectLocalConfig),
+        _ => None,
+    }
+}
+
+fn scope_matches_client(kind: ClientKind, scope: &str) -> bool {
+    matches!(
+        (kind, scope),
+        (ClientKind::Codex, "user_config")
+            | (
+                ClientKind::ClaudeCode,
+                "user_config" | "project_local_config"
+            )
+            | (ClientKind::OpenCodeV1, "user_config")
+    )
+}
+
+fn same_current_target(
+    manager: &PlanManager,
+    expected_roots: &ConfigRootInputs,
+    expected_scope: ConfigScope,
+    kind: ClientKind,
+    source: ConfigSource,
+) -> bool {
+    manager
+        .config_roots_for_context(kind)
+        .is_ok_and(|(current_roots, current_scope)| {
+            current_scope == expected_scope
+                && same_target_roots(expected_roots, &current_roots, kind, source)
+        })
+}
+
 fn open_config_for_apply(
     transaction: &mut FileTransaction,
     path: &Path,
@@ -1030,7 +1284,8 @@ fn unchanged_apply(
         Some(record)
             if record.state() == OwnershipState::Active
                 && record.endpoint_id() == plan.endpoint_id
-                && record.endpoint_port() == plan.endpoint_port =>
+                && record.endpoint_port() == plan.endpoint_port
+                && record.config_scope().map(scope_code) == Some(&plan.scope[..]) =>
         {
             if record.config_source() != Some(plan.config_source) {
                 return error_reply(request_id, ActionFault::Conflict);
@@ -1039,7 +1294,7 @@ fn unchanged_apply(
                 .record_fingerprint()
                 .unwrap_or_default()
                 .to_owned();
-            match summary(record, fingerprint) {
+            match action_summary(record, fingerprint) {
                 Ok(summary) => success_reply(request_id, "unchanged", kind, Some(summary)),
                 Err(error) => error_reply(request_id, error),
             }

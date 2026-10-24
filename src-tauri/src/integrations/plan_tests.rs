@@ -147,6 +147,32 @@ fn claude_json_plan_summarizes_auth_and_hooks_without_returning_config_literals(
 }
 
 #[test]
+fn project_local_scope_is_only_planned_for_claude_and_is_reported_exactly() {
+    let mut project_claude = context(ClientKind::ClaudeCode);
+    project_claude.scope = ConfigScope::ProjectLocalConfig;
+    let plan = preview_config(&project_claude, br#"{"model":"claude-sonnet"}"#)
+        .expect("Claude project-local config should be previewable");
+    assert_eq!(plan.scope, "project_local_config");
+    assert_eq!(plan.status, PlanStatus::Preview);
+    assert_eq!(plan.endpoint_field.before, EndpointBefore::Missing);
+    assert_eq!(plan.endpoint_field.proposed_value, "http://127.0.0.1:41731");
+    assert!(plan.endpoint_field.after_headroom);
+    assert!(plan.model_unchanged && plan.reasoning_unchanged && plan.auth_unchanged);
+
+    for kind in [ClientKind::Codex, ClientKind::OpenCodeV1] {
+        let mut unsupported = context(kind);
+        unsupported.scope = ConfigScope::ProjectLocalConfig;
+        assert!(
+            matches!(
+                preview_config(&unsupported, b"{}"),
+                Err(PlanError::InvalidContext)
+            ),
+            "{kind:?} project-local scope must stay unsupported"
+        );
+    }
+}
+
+#[test]
 fn opencode_v1_jsonc_comments_and_trailing_comma_plan_preserves_provider_auth() {
     let fixture = br#"{
       // JSONC comments and trailing commas are accepted for the V1 profile.

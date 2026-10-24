@@ -8,6 +8,7 @@ import type {
   ConnectionActionSuccess,
   ConnectionOwnership,
   ConnectionPlan,
+  ConnectionScope,
   OwnershipSnapshotRequest,
   UndoConnectionRequest,
 } from "./contracts.ts";
@@ -26,7 +27,7 @@ const topSuccessKeys = ["schema_version", "request_id", "status", "client_kind",
 const topErrorKeys = ["schema_version", "request_id", "status", "error"] as const;
 const errorKeys = ["code", "retryable", "message_key", "diagnostic_id"] as const;
 const ownershipKeys = [
-  "state", "owner_id", "revision", "record_fingerprint", "config_source", "endpoint_id", "endpoint_port",
+  "state", "scope", "owner_id", "revision", "record_fingerprint", "config_source", "endpoint_id", "endpoint_port",
 ] as const;
 
 const errorContracts: Record<ConnectionActionErrorCode, { retryable: boolean; messageKey: string }> = {
@@ -70,6 +71,14 @@ function isClientKind(value: unknown): value is ClientKind {
   return typeof value === "string" && (clientKinds as readonly string[]).includes(value);
 }
 
+function isConnectionScope(value: unknown): value is ConnectionScope {
+  return value === "user_config" || value === "project_local_config";
+}
+
+function scopeMatchesClient(kind: ClientKind, scope: ConnectionScope): boolean {
+  return scope === "user_config" || kind === "claude_code";
+}
+
 function sourceMatches(kind: ClientKind, source: unknown): source is ConnectionPlan["config_source"] {
   if (kind === "codex") return source === "codex_toml";
   if (kind === "claude_code") return source === "claude_json";
@@ -84,6 +93,8 @@ function sourceMatchesPresence(plan: ConnectionPlan): boolean {
 function decodeOwnership(value: unknown, kind: ClientKind): ConnectionOwnership | null {
   if (!isRecord(value) || !exactKeys(value, ownershipKeys)
     || (value.state !== "active" && value.state !== "released")
+    || !isConnectionScope(value.scope)
+    || !scopeMatchesClient(kind, value.scope)
     || !isCanonicalUuid(value.owner_id)
     || !isSafePositive(value.revision)
     || !isHash(value.record_fingerprint)
@@ -94,6 +105,7 @@ function decodeOwnership(value: unknown, kind: ClientKind): ConnectionOwnership 
 
   return {
     state: value.state,
+    scope: value.scope,
     owner_id: value.owner_id,
     revision: value.revision,
     record_fingerprint: value.record_fingerprint,
@@ -130,7 +142,8 @@ function planIsApplicable(plan: ConnectionPlan): boolean {
     || !isCanonicalUuid(plan.endpoint_id) || !isSafePositive(plan.scan_generation)
     || !isHash(plan.config_fingerprint) || !isClientKind(plan.client_kind)
     || !sourceMatches(plan.client_kind, plan.config_source) || !sourceMatchesPresence(plan)
-    || plan.scope !== "user_config" || plan.status !== "preview" || plan.blockers.length !== 0
+    || !isConnectionScope(plan.scope) || !scopeMatchesClient(plan.client_kind, plan.scope)
+    || plan.status !== "preview" || plan.blockers.length !== 0
     || plan.endpoint_host !== "127.0.0.1" || !isSafePositive(plan.endpoint_port)
     || plan.endpoint_port > 65_535 || !plan.endpoint_field.after_headroom
     || !plan.restart_required || plan.runtime_effective !== "unknown"
@@ -156,7 +169,8 @@ function planIsApplicable(plan: ConnectionPlan): boolean {
 }
 
 function planMatchesOwnership(plan: ConnectionPlan, ownership: ConnectionOwnership): boolean {
-  return ownership.config_source === plan.config_source
+  return ownership.scope === plan.scope
+    && ownership.config_source === plan.config_source
     && ownership.endpoint_id === plan.endpoint_id
     && ownership.endpoint_port === plan.endpoint_port;
 }
@@ -191,6 +205,7 @@ function decodeSuccess(
       || prior.state !== "active" || ownership.owner_id !== prior.owner_id
       || ownership.revision !== prior.revision + 1 || !isSafePositive(ownership.revision)
       || ownership.config_source !== prior.config_source
+      || ownership.scope !== prior.scope
       || ownership.endpoint_id !== prior.endpoint_id
       || ownership.endpoint_port !== prior.endpoint_port) return null;
   } else if (value.status !== "snapshot") {

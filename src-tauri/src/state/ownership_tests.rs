@@ -188,6 +188,15 @@ fn config_source(kind: ClientKind, presence: ConfigPresence) -> ConfigSource {
 }
 
 fn preview(kind: ClientKind, presence: ConfigPresence, bytes: &[u8]) -> ConnectionPlan {
+    preview_with_scope(kind, presence, bytes, ConfigScope::UserConfig)
+}
+
+fn preview_with_scope(
+    kind: ClientKind,
+    presence: ConfigPresence,
+    bytes: &[u8],
+    scope: ConfigScope,
+) -> ConnectionPlan {
     preview_config_with_presence(
         &PlanContext {
             request_id: "019a0000-0000-7000-8000-d00000000001".to_owned(),
@@ -203,7 +212,7 @@ fn preview(kind: ClientKind, presence: ConfigPresence, bytes: &[u8]) -> Connecti
                 }
                 .to_owned(),
             ),
-            scope: ConfigScope::UserConfig,
+            scope,
             scan_generation: 7,
             endpoint: StableEndpoint {
                 endpoint_id: "019a0000-0000-7000-8000-d00000000003".to_owned(),
@@ -220,6 +229,23 @@ fn preview(kind: ClientKind, presence: ConfigPresence, bytes: &[u8]) -> Connecti
 
 fn patched(kind: ClientKind, presence: ConfigPresence, original: &[u8]) -> (Vec<u8>, PatchReceipt) {
     match apply_missing_endpoint(&preview(kind, presence, original), original).unwrap() {
+        ApplyResult::Patched { bytes, receipt } => (bytes, receipt),
+        ApplyResult::Unchanged => panic!("fixture requires a missing endpoint"),
+    }
+}
+
+fn patched_with_scope(
+    kind: ClientKind,
+    presence: ConfigPresence,
+    original: &[u8],
+    scope: ConfigScope,
+) -> (Vec<u8>, PatchReceipt) {
+    match apply_missing_endpoint(
+        &preview_with_scope(kind, presence, original, scope),
+        original,
+    )
+    .unwrap()
+    {
         ApplyResult::Patched { bytes, receipt } => (bytes, receipt),
         ApplyResult::Unchanged => panic!("fixture requires a missing endpoint"),
     }
@@ -244,6 +270,31 @@ fn active_record(
         before,
         after,
         receipt,
+    )
+    .expect("valid legacy user-config fixture ownership record")
+}
+
+fn active_record_with_scope(
+    owner_id: &str,
+    endpoint_id: &str,
+    config_path: &Path,
+    before: &[u8],
+    after: &[u8],
+    receipt: &PatchReceipt,
+    revision: u64,
+    updated_at: u64,
+    scope: ConfigScope,
+) -> OwnershipRecord {
+    OwnershipRecord::active_from_scoped_patch(
+        owner_id,
+        endpoint_id,
+        config_path,
+        revision,
+        updated_at,
+        before,
+        after,
+        receipt,
+        scope,
     )
     .expect("valid fixture ownership record")
 }
@@ -350,26 +401,51 @@ fn commit_active(
     kind: ClientKind,
     original: &[u8],
 ) -> OwnershipRecord {
+    commit_active_with_scope(fixture, store, kind, original, ConfigScope::UserConfig)
+}
+
+fn commit_active_with_scope(
+    fixture: &Fixture,
+    store: &OwnershipStore,
+    kind: ClientKind,
+    original: &[u8],
+    scope: ConfigScope,
+) -> OwnershipRecord {
     let config_path = fixture.path("client-config.json");
     fs::write(&config_path, original).unwrap();
     let binding = config_path_binding(&config_path).unwrap();
     store.prepare_for_apply().unwrap();
     let mut transaction = FileTransaction::begin().unwrap();
     let (config_token, snapshot) = transaction.open_existing(&config_path, 256 * 1024).unwrap();
-    let (after, receipt) = patched(kind, ConfigPresence::Present, &snapshot.bytes);
+    let (after, receipt) =
+        patched_with_scope(kind, ConfigPresence::Present, &snapshot.bytes, scope);
     let ownership_read = store
         .read_in_transaction(&mut transaction, kind, &binding)
         .unwrap();
-    let record = active_record(
-        "019a0000-0000-7000-8000-d00000000011",
-        "019a0000-0000-7000-8000-d00000000012",
-        &config_path,
-        &snapshot.bytes,
-        &after,
-        &receipt,
-        1,
-        1_800_000_000,
-    );
+    let record = if scope == ConfigScope::UserConfig {
+        active_record(
+            "019a0000-0000-7000-8000-d00000000011",
+            "019a0000-0000-7000-8000-d00000000012",
+            &config_path,
+            &snapshot.bytes,
+            &after,
+            &receipt,
+            1,
+            1_800_000_000,
+        )
+    } else {
+        active_record_with_scope(
+            "019a0000-0000-7000-8000-d00000000011",
+            "019a0000-0000-7000-8000-d00000000012",
+            &config_path,
+            &snapshot.bytes,
+            &after,
+            &receipt,
+            1,
+            1_800_000_000,
+            scope,
+        )
+    };
     store
         .stage_in_transaction(&mut transaction, ownership_read, &record)
         .unwrap();
@@ -500,10 +576,159 @@ fn config_and_secret_free_ownership_commit_and_reload_together() {
     assert_eq!(current.endpoint_id(), record.endpoint_id());
     assert_eq!(current.endpoint_port(), 41731);
     assert_eq!(current.revision(), 1);
+    assert_eq!(current.config_scope(), Some(ConfigScope::UserConfig));
+    let legacy_shape: serde_json::Value = serde_json::from_slice(&encoded).unwrap();
+    assert_eq!(legacy_shape["schema_version"], 1);
+    assert_eq!(legacy_shape["scope"], "user_config");
     assert_eq!(
         current.patch_receipt().unwrap().metadata(),
         record.patch_receipt().unwrap().metadata()
     );
+    drop(transaction);
+    fixture.cleanup().unwrap();
+}
+
+#[test]
+fn claude_project_local_ownership_roundtrips_and_release_preserves_scope() {
+    let mut fixture = Fixture::new();
+    let original = br#"{"model":"fixture-project-only-secret"}"#;
+    let store = fixture.store();
+    let record = commit_active_with_scope(
+        &fixture,
+        &store,
+        ClientKind::ClaudeCode,
+        original,
+        ConfigScope::ProjectLocalConfig,
+    );
+    assert_eq!(record.config_scope(), Some(ConfigScope::ProjectLocalConfig));
+
+    let config_path = fixture.path("client-config.json");
+    let binding = config_path_binding(&config_path).unwrap();
+    let slot = store.file_path_for_test(ClientKind::ClaudeCode);
+    let encoded = fs::read(&slot).unwrap();
+    let stored: serde_json::Value = serde_json::from_slice(&encoded).unwrap();
+    assert_eq!(stored["schema_version"], 1);
+    assert_eq!(stored["scope"], "project_local_config");
+    assert!(!encoded
+        .windows(original.len())
+        .any(|window| window == original));
+    assert!(!encoded
+        .windows(config_path.to_string_lossy().len())
+        .any(|window| window == config_path.to_string_lossy().as_bytes()));
+
+    let reloaded_store = fixture.store();
+    let mut read_transaction = FileTransaction::begin().unwrap();
+    let reloaded = reloaded_store
+        .read_in_transaction(&mut read_transaction, ClientKind::ClaudeCode, &binding)
+        .unwrap()
+        .current()
+        .cloned()
+        .unwrap();
+    assert_eq!(
+        reloaded.config_scope(),
+        Some(ConfigScope::ProjectLocalConfig)
+    );
+    drop(read_transaction);
+
+    let mut conflict_transaction = FileTransaction::begin().unwrap();
+    let current = reloaded_store
+        .read_in_transaction(&mut conflict_transaction, ClientKind::ClaudeCode, &binding)
+        .unwrap();
+    let config_after = fs::read(&config_path).unwrap();
+    let user_scoped = active_record_with_scope(
+        reloaded.owner_id(),
+        reloaded.endpoint_id(),
+        &config_path,
+        original,
+        &config_after,
+        &reloaded.patch_receipt().unwrap(),
+        reloaded.revision() + 1,
+        1_800_000_001,
+        ConfigScope::UserConfig,
+    );
+    assert!(matches!(
+        reloaded_store.stage_in_transaction(&mut conflict_transaction, current, &user_scoped),
+        Err(OwnershipError::Conflict)
+    ));
+    drop(conflict_transaction);
+
+    let mut release_transaction = FileTransaction::begin().unwrap();
+    let current = reloaded_store
+        .read_in_transaction(&mut release_transaction, ClientKind::ClaudeCode, &binding)
+        .unwrap();
+    let released = current.current().unwrap().released(1_800_000_001).unwrap();
+    assert_eq!(
+        released.config_scope(),
+        Some(ConfigScope::ProjectLocalConfig)
+    );
+    reloaded_store
+        .stage_in_transaction(&mut release_transaction, current, &released)
+        .unwrap();
+    release_transaction.seal().unwrap();
+    release_transaction.commit().unwrap();
+
+    let mut final_transaction = FileTransaction::begin().unwrap();
+    let final_record = reloaded_store
+        .read_in_transaction(&mut final_transaction, ClientKind::ClaudeCode, &binding)
+        .unwrap()
+        .current()
+        .cloned()
+        .unwrap();
+    assert_eq!(final_record.state(), OwnershipState::Released);
+    assert_eq!(
+        final_record.config_scope(),
+        Some(ConfigScope::ProjectLocalConfig)
+    );
+    assert_eq!(final_record.revision(), 2);
+    drop(final_transaction);
+    fixture.cleanup().unwrap();
+}
+
+#[test]
+fn project_local_ownership_scope_is_rejected_for_other_clients() {
+    let mut fixture = Fixture::new();
+    for (kind, original) in [
+        (ClientKind::Codex, b"model = \"fixture\"\n".as_slice()),
+        (
+            ClientKind::OpenCodeV1,
+            br#"{"model":"openai/fixture"}"#.as_slice(),
+        ),
+    ] {
+        let config_path = fixture.path(match kind {
+            ClientKind::Codex => "codex-config.toml",
+            ClientKind::OpenCodeV1 => "opencode-config.json",
+            ClientKind::ClaudeCode => unreachable!(),
+        });
+        fs::write(&config_path, original).unwrap();
+        let (after, receipt) = patched(kind, ConfigPresence::Present, original);
+        let result = OwnershipRecord::active_from_scoped_patch(
+            "019a0000-0000-7000-8000-d00000000071",
+            "019a0000-0000-7000-8000-d00000000072",
+            &config_path,
+            1,
+            1_800_000_000,
+            original,
+            &after,
+            &receipt,
+            ConfigScope::ProjectLocalConfig,
+        );
+        assert!(matches!(result, Err(OwnershipError::Invalid)), "{kind:?}");
+    }
+
+    let codex_store = fixture.store();
+    let codex_original = b"model = \"fixture\"\n";
+    commit_active(&fixture, &codex_store, ClientKind::Codex, codex_original);
+    let codex_path = fixture.path("client-config.json");
+    let binding = config_path_binding(&codex_path).unwrap();
+    let slot = codex_store.file_path_for_test(ClientKind::Codex);
+    let mut stored: serde_json::Value = serde_json::from_slice(&fs::read(&slot).unwrap()).unwrap();
+    stored["scope"] = serde_json::json!("project_local_config");
+    fs::write(&slot, serde_json::to_vec(&stored).unwrap()).unwrap();
+    let mut transaction = FileTransaction::begin().unwrap();
+    assert!(matches!(
+        codex_store.read_in_transaction(&mut transaction, ClientKind::Codex, &binding),
+        Err(OwnershipError::Invalid)
+    ));
     drop(transaction);
     fixture.cleanup().unwrap();
 }
@@ -733,6 +958,7 @@ fn invalid_schema_ids_hashes_masks_and_duplicate_keys_fail_closed() {
     let mut invalid_cases = Vec::new();
     for (field, value) in [
         ("schema_version", serde_json::json!(2)),
+        ("scope", serde_json::json!("unknown_scope")),
         ("owner_id", serde_json::json!("not-a-uuid")),
         (
             "config_path_binding_sha256",

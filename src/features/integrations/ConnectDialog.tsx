@@ -2,6 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { connectionPlanClient } from "../../lib/connectionPlan";
 import { connectionActionClient } from "../../lib/connectionActions";
 import {
+  createNativeClaudeContextClient,
+  type ClaudeContextScope,
+  type ClaudeContextState,
+  type ClaudeSettingsSnapshot,
+} from "../../lib/claudeContext";
+import { ClaudeScopeSection } from "./ClaudeScopeSection";
+import {
+  canApplyForConnectionScope,
   candidateSelectionKey,
   initialInstallationSelection,
   isConnectionPlanExpired,
@@ -98,6 +106,12 @@ type Copy = {
   sources: Record<ConnectionPlan["config_source"], string>;
   installationSources: Record<InstallationSource, string>;
   endpointBefores: Record<ConnectionPlan["endpoint_field"]["before"], string>;
+  targetModel: string;
+  targetReasoning: string;
+  targetAuth: string;
+  claudeUserScope: string;
+  claudeProjectScope: string;
+  refreshClaude: string;
 };
 
 const copy: Record<PreferenceLanguage, Copy> = {
@@ -155,6 +169,8 @@ const copy: Record<PreferenceLanguage, Copy> = {
     sources: { codex_toml: "Codex TOML", claude_json: "Claude JSON", opencode_json: "OpenCode JSON", opencode_jsonc: "OpenCode JSONC", opencode_missing: "OpenCode yapılandırması eksik" },
     installationSources: { path: "PATH", user_local_npm: "Kullanıcıya ait npm", user_local_native: "Kullanıcıya ait kurulum", scoop: "Scoop", windows_app_package: "Windows uygulama paketi", manual_file: "Seçilen dosya" },
     endpointBefores: { missing: "Eksik", same_stable_endpoint: "Aynı yerel endpoint", other_configured_redacted: "Başka bir değer yapılandırılmış (gizli)", unknown: "Bilinmiyor" },
+    targetModel: "Hedef dosyadaki model bildirimi", targetReasoning: "Hedef dosyadaki reasoning bildirimi", targetAuth: "Hedef dosyadaki kimlik doğrulama bildirimi",
+    claudeUserScope: "Kapsam: kullanıcı ayarları", claudeProjectScope: "Kapsam: proje ayarları", refreshClaude: "Bağlamı ve kayıtları yenile",
   },
   en: {
     title: "Connection preview", close: "Close", scope: "Scope: user configuration",
@@ -210,6 +226,8 @@ const copy: Record<PreferenceLanguage, Copy> = {
     sources: { codex_toml: "Codex TOML", claude_json: "Claude JSON", opencode_json: "OpenCode JSON", opencode_jsonc: "OpenCode JSONC", opencode_missing: "OpenCode configuration missing" },
     installationSources: { path: "PATH", user_local_npm: "User-local npm", user_local_native: "User-local install", scoop: "Scoop", windows_app_package: "Windows app package", manual_file: "Selected file" },
     endpointBefores: { missing: "Missing", same_stable_endpoint: "Same local endpoint", other_configured_redacted: "Another value is configured (redacted)", unknown: "Unknown" },
+    targetModel: "Target-file model declaration", targetReasoning: "Target-file reasoning declaration", targetAuth: "Target-file authentication declaration",
+    claudeUserScope: "Scope: user settings", claudeProjectScope: "Scope: project settings", refreshClaude: "Refresh context and records",
   },
 };
 
@@ -220,7 +238,7 @@ const endpointLabels: Record<ConnectionPlan["endpoint_field"]["field"], string> 
   opencode_v1_openai_base_url: "provider.openai.options.baseURL",
 };
 
-type PreviewContext = { scanGeneration: number; installationIdsKey: string };
+type PreviewContext = { scanGeneration: number; installationIdsKey: string; scope: ConnectionPlan["scope"] };
 type PreviewState = { context: PreviewContext; result: ConnectionPlanResult };
 type OwnershipView =
   | { kind: "loading" }
@@ -276,6 +294,8 @@ function planResultMessage(result: ConnectionPlanResult, text: Copy): string {
   }
 }
 
+const claudeContextClient = createNativeClaudeContextClient();
+
 export function ConnectDialog({
   language,
   clientKind,
@@ -298,8 +318,10 @@ export function ConnectDialog({
   const mounted = useRef(false);
   const requestSequence = useRef(0);
   const ownershipSequence = useRef(0);
-  const ownershipReadLock = useRef(false);
+  const claudeSequence = useRef(0);
+  const bridgeLock = useRef(false);
   const mutationLock = useRef(false);
+  const scopePickerLock = useRef(false);
   const pendingAction = useRef<"apply" | "undo" | null>(null);
   const idsKey = candidateSelectionKey(installations);
   const [selectedId, setSelectedId] = useState(() => initialInstallationSelection(installations));
@@ -307,13 +329,25 @@ export function ConnectDialog({
   const [busyContext, setBusyContext] = useState<PreviewContext | null>(null);
   const [ownershipView, setOwnershipView] = useState<OwnershipView>({ kind: "loading" });
   const [ownershipLoading, setOwnershipLoading] = useState(false);
+  const [bridgePending, setBridgePending] = useState(false);
+  const [claudeContext, setClaudeContext] = useState<ClaudeContextState | null>(null);
+  const claudeContextRef = useRef<ClaudeContextState | null>(null);
+  const [claudeSettings, setClaudeSettings] = useState<ClaudeSettingsSnapshot | null>(null);
+  const [claudeLoading, setClaudeLoading] = useState(false);
+  const [claudePickerPending, setClaudePickerPending] = useState(false);
+  const [claudeError, setClaudeError] = useState<string | null>(null);
   const [mutationPending, setMutationPending] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<ActionFeedback | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const currentContext = { scanGeneration, installationIdsKey: idsKey };
+  const isClaude = clientKind === "claude_code";
+  const currentScope: ConnectionPlan["scope"] = isClaude
+    ? claudeContext?.scope ?? "user_config"
+    : "user_config";
   const result = previewState
     && previewState.context.scanGeneration === currentContext.scanGeneration
     && previewState.context.installationIdsKey === currentContext.installationIdsKey
+    && previewState.context.scope === currentScope
     ? previewState.result : null;
   const busy = busyContext !== null
     && busyContext.scanGeneration === currentContext.scanGeneration
@@ -326,7 +360,10 @@ export function ConnectDialog({
   const activeOwnership = ownership?.state === "active" ? ownership : null;
   const nativeAvailable = isDiscoveryAvailable();
   const canApply = Boolean(plan && plan.status === "preview" && !expired
-    && ownershipView.kind === "ready" && !ownershipLoading && nativeAvailable && !mutationPending);
+    && plan.scope === currentScope
+    && canApplyForConnectionScope(plan.scope, ownership)
+    && (!isClaude || (claudeContext !== null && claudeError === null && claudeSettings !== null))
+    && ownershipView.kind === "ready" && !ownershipLoading && nativeAvailable && !mutationPending && !bridgePending);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -335,7 +372,8 @@ export function ConnectDialog({
     restoreFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     if (!dialog.open) dialog.showModal();
     (installations.length > 1 ? selectRef.current : selected ? previewRef.current : closeRef.current)?.focus();
-    void readOwnership();
+    if (isClaude) void refreshClaudeState();
+    else void readOwnership();
     const keepTabInside = (event: KeyboardEvent) => {
       if (event.key !== "Tab") return;
       const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
@@ -373,7 +411,7 @@ export function ConnectDialog({
       mounted.current = false;
       requestSequence.current += 1;
       ownershipSequence.current += 1;
-      ownershipReadLock.current = false;
+      claudeSequence.current += 1;
       window.clearInterval(timer);
       document.removeEventListener("keydown", keepTabInside, true);
       if (dialog.open) dialog.close();
@@ -389,9 +427,12 @@ export function ConnectDialog({
   }, [scanGeneration, idsKey]);
 
   async function createPreview() {
-    if (mutationLock.current || busy || !selected || selected.client_kind !== clientKind) return;
+    if (bridgeLock.current || mutationLock.current || busy || !selected || selected.client_kind !== clientKind
+      || (isClaude && (!claudeContextRef.current || claudeError !== null))) return;
+    bridgeLock.current = true;
+    setBridgePending(true);
     const sequence = ++requestSequence.current;
-    const context = { scanGeneration, installationIdsKey: idsKey };
+    const context = { scanGeneration, installationIdsKey: idsKey, scope: currentScope };
     setBusyContext(context);
     setPreviewState(null);
     let next: ConnectionPlanResult;
@@ -400,26 +441,24 @@ export function ConnectDialog({
         installationId: selected.installation_id,
         scanGeneration,
         clientKind,
+        scope: currentScope,
       });
     } catch {
       next = { kind: "request_failed" };
     }
-    if (!mounted.current || requestSequence.current !== sequence) return;
-    setPreviewState({ context, result: next });
-    setBusyContext(null);
-    setActionFeedback(null);
+    if (mounted.current && requestSequence.current === sequence) {
+      setPreviewState({ context, result: next });
+      setBusyContext(null);
+      setActionFeedback(null);
+    }
+    bridgeLock.current = false;
+    if (mounted.current) setBridgePending(false);
   }
 
-  async function readOwnership() {
-    if (mutationLock.current || ownershipReadLock.current || ownershipLoading || !nativeAvailable) {
-      if (!nativeAvailable) setOwnershipView({ kind: "error", message: text.desktopUnavailable });
-      return;
-    }
-    ownershipReadLock.current = true;
-    const sequence = ++ownershipSequence.current;
+  async function readOwnershipUnlocked(sequence: number, clearFeedback = true) {
     setOwnershipLoading(true);
     setOwnershipView({ kind: "loading" });
-    setActionFeedback(null);
+    if (clearFeedback) setActionFeedback(null);
     try {
       const next = await connectionActionClient.snapshot(actionClientKind(clientKind));
       if (!mounted.current || ownershipSequence.current !== sequence) return;
@@ -435,14 +474,153 @@ export function ConnectDialog({
         setOwnershipView({ kind: "error", message: text.ownershipReadError });
       }
     } finally {
-      if (ownershipSequence.current === sequence) ownershipReadLock.current = false;
       if (mounted.current && ownershipSequence.current === sequence) setOwnershipLoading(false);
     }
   }
 
+  async function loadClaudeLayersUnlocked(scope: ClaudeContextScope, sequence: number) {
+    const next = await claudeContextClient.settingsSnapshot(scope);
+    if (!mounted.current || claudeSequence.current !== sequence) return;
+    if (next.kind === "snapshot" && next.snapshot.scope === scope) {
+      setClaudeSettings(next.snapshot);
+      setClaudeError(null);
+    } else {
+      setClaudeSettings(null);
+      setClaudeError(next.kind === "action_error" ? text.actionErrors[next.error.code]
+        : next.kind === "desktop_unavailable" ? text.desktopUnavailable : text.ownershipReadError);
+    }
+  }
+
+  async function loadClaudeStateUnlocked(sequence: number, preserveFeedback = false) {
+    setClaudeLoading(true);
+    const contextResult = await claudeContextClient.context();
+    if (!mounted.current || claudeSequence.current !== sequence) return;
+    let nextContext: ClaudeContextState | null = null;
+    if (contextResult.kind === "state") {
+      nextContext = contextResult.state;
+      const previous = claudeContextRef.current;
+      const changed = previous !== null && (previous.scope !== nextContext.scope
+        || previous.project_directory !== nextContext.project_directory);
+      claudeContextRef.current = nextContext;
+      setClaudeContext(nextContext);
+      setClaudeError(null);
+      if (changed) {
+        requestSequence.current += 1;
+        setPreviewState(null);
+        setBusyContext(null);
+        if (!preserveFeedback) setActionFeedback(null);
+      }
+    } else {
+      setClaudeContext(null);
+      claudeContextRef.current = null;
+      setClaudeSettings(null);
+      setClaudeError(contextResult.kind === "context_error" ? text.errors[contextResult.error.code as ConnectionPlanErrorCode] ?? text.ownershipReadError
+        : contextResult.kind === "desktop_unavailable" ? text.desktopUnavailable : text.ownershipReadError);
+      requestSequence.current += 1;
+      setPreviewState(null);
+      setBusyContext(null);
+    }
+
+    const ownerSequence = ++ownershipSequence.current;
+    await readOwnershipUnlocked(ownerSequence, !preserveFeedback);
+    if (!mounted.current || claudeSequence.current !== sequence) return;
+    if (nextContext) await loadClaudeLayersUnlocked(nextContext.scope, sequence);
+    if (mounted.current && claudeSequence.current === sequence) setClaudeLoading(false);
+  }
+
+  async function refreshClaudeState(preserveFeedback = false) {
+    if (bridgeLock.current || mutationLock.current) return;
+    bridgeLock.current = true;
+    setBridgePending(true);
+    const sequence = ++claudeSequence.current;
+    try {
+      await loadClaudeStateUnlocked(sequence, preserveFeedback);
+    } catch {
+      if (mounted.current && claudeSequence.current === sequence) {
+        setClaudeSettings(null);
+        setClaudeError(text.ownershipReadError);
+        setClaudeLoading(false);
+      }
+    } finally {
+      bridgeLock.current = false;
+      if (mounted.current) setBridgePending(false);
+    }
+  }
+
+  async function selectClaudeScope(scope: ClaudeContextScope) {
+    if (!isClaude || bridgeLock.current || mutationLock.current || !nativeAvailable) return;
+    bridgeLock.current = true;
+    scopePickerLock.current = scope === "project_local_config";
+    setBridgePending(true);
+    setClaudePickerPending(scopePickerLock.current);
+    setClaudeLoading(true);
+    const sequence = ++claudeSequence.current;
+    try {
+      const selectedScope = await claudeContextClient.selectScope(scope);
+      if (!mounted.current || claudeSequence.current !== sequence) return;
+      if (selectedScope.kind === "state" && selectedScope.state.status === "cancelled") {
+        setClaudeLoading(false);
+        return;
+      }
+      if (selectedScope.kind !== "state" || selectedScope.state.status !== "selected") {
+        setClaudeError(selectedScope.kind === "context_error" ? text.ownershipReadError
+          : selectedScope.kind === "desktop_unavailable" ? text.desktopUnavailable : text.ownershipReadError);
+        setClaudeLoading(false);
+        return;
+      }
+      const nextContext = selectedScope.state;
+      claudeContextRef.current = nextContext;
+      setClaudeContext(nextContext);
+      setClaudeError(null);
+      requestSequence.current += 1;
+      setPreviewState(null);
+      setBusyContext(null);
+      setActionFeedback(null);
+      const ownerSequence = ++ownershipSequence.current;
+      await readOwnershipUnlocked(ownerSequence, true);
+      if (!mounted.current || claudeSequence.current !== sequence) return;
+      await loadClaudeLayersUnlocked(nextContext.scope, sequence);
+      if (mounted.current && claudeSequence.current === sequence) setClaudeLoading(false);
+    } catch {
+      if (mounted.current && claudeSequence.current === sequence) {
+        setClaudeError(text.ownershipReadError);
+        setClaudeLoading(false);
+      }
+    } finally {
+      scopePickerLock.current = false;
+      if (mounted.current) {
+        setClaudePickerPending(false);
+        setBridgePending(false);
+      }
+      bridgeLock.current = false;
+    }
+  }
+
+  async function readOwnership() {
+    if (isClaude) {
+      await refreshClaudeState();
+      return;
+    }
+    if (bridgeLock.current || mutationLock.current || ownershipLoading || !nativeAvailable) {
+      if (!nativeAvailable) setOwnershipView({ kind: "error", message: text.desktopUnavailable });
+      return;
+    }
+    bridgeLock.current = true;
+    setBridgePending(true);
+    const sequence = ++ownershipSequence.current;
+    try {
+      await readOwnershipUnlocked(sequence);
+    } finally {
+      bridgeLock.current = false;
+      if (mounted.current) setBridgePending(false);
+    }
+  }
+
   async function applyPlan() {
-    if (mutationLock.current || !canApply || !plan) return;
+    if (bridgeLock.current || mutationLock.current || !canApply || !plan) return;
+    bridgeLock.current = true;
     mutationLock.current = true;
+    setBridgePending(true);
     pendingAction.current = "apply";
     setMutationPending(true);
     setActionFeedback(null);
@@ -460,6 +638,7 @@ export function ConnectDialog({
           message: next.reply.status === "applied" ? text.applySuccess
             : next.reply.ownership?.state === "active" ? text.ownershipActive : text.unchangedSuccess,
         });
+        if (isClaude) await loadClaudeStateUnlocked(++claudeSequence.current, true);
       } else {
         const outcome = actionResultMessage(next, text);
         setOwnershipView({ kind: "refresh_required" });
@@ -472,14 +651,21 @@ export function ConnectDialog({
       }
     } finally {
       mutationLock.current = false;
+      bridgeLock.current = false;
       pendingAction.current = null;
-      if (mounted.current) setMutationPending(false);
+      if (mounted.current) {
+        setMutationPending(false);
+        setBridgePending(false);
+      }
     }
   }
 
   async function undoOwnership() {
-    if (mutationLock.current || mutationPending || !activeOwnership || !nativeAvailable) return;
+    if (bridgeLock.current || mutationLock.current || mutationPending || !activeOwnership || !nativeAvailable
+      || (isClaude && (!claudeContextRef.current || activeOwnership.scope !== claudeContextRef.current.scope))) return;
+    bridgeLock.current = true;
     mutationLock.current = true;
+    setBridgePending(true);
     pendingAction.current = "undo";
     setMutationPending(true);
     setActionFeedback(null);
@@ -492,6 +678,7 @@ export function ConnectDialog({
       if (next.kind === "success" && next.reply.status === "released") {
         setOwnershipView({ kind: "ready", ownership: next.reply.ownership });
         setActionFeedback({ kind: "success", message: text.undoSuccess });
+        if (isClaude) await loadClaudeStateUnlocked(++claudeSequence.current, true);
       } else {
         const outcome = actionResultMessage(next, text);
         setOwnershipView({ kind: "refresh_required" });
@@ -504,15 +691,20 @@ export function ConnectDialog({
       }
     } finally {
       mutationLock.current = false;
+      bridgeLock.current = false;
       pendingAction.current = null;
-      if (mounted.current) setMutationPending(false);
+      if (mounted.current) {
+        setMutationPending(false);
+        setBridgePending(false);
+      }
     }
   }
 
   function close() {
-    if (mutationLock.current) return;
+    if (mutationLock.current || scopePickerLock.current) return;
     requestSequence.current += 1;
     ownershipSequence.current += 1;
+    claudeSequence.current += 1;
     onClose();
   }
 
@@ -521,24 +713,37 @@ export function ConnectDialog({
     className="connection-dialog"
     aria-labelledby="connection-dialog-title"
     tabIndex={-1}
-    onCancel={(event) => { event.preventDefault(); if (!mutationLock.current) close(); }}
-    onClick={(event) => { if (event.target === event.currentTarget && !mutationLock.current) close(); }}
+    onCancel={(event) => { event.preventDefault(); if (!mutationLock.current && !scopePickerLock.current) close(); }}
+    onClick={(event) => { if (event.target === event.currentTarget && !mutationLock.current && !scopePickerLock.current) close(); }}
   >
     <div className="connection-dialog__frame">
       <header className="connection-dialog__header">
         <div>
-          <div className="panel-kicker">{text.scope}</div>
+          <div className="panel-kicker">{isClaude
+            ? currentScope === "project_local_config" ? text.claudeProjectScope : text.claudeUserScope
+            : text.scope}</div>
           <h2 id="connection-dialog-title">{text.title} · {clientTitles[clientKind]}</h2>
         </div>
-        <button ref={closeRef} className="connection-dialog__close" type="button" disabled={mutationPending} onClick={close} aria-label={text.close}>×</button>
+        <button ref={closeRef} className="connection-dialog__close" type="button" disabled={mutationPending || claudePickerPending} onClick={close} aria-label={text.close}>×</button>
       </header>
       <div className="connection-dialog__body">
-        <p className="connection-dialog__scope-note">{text.scopeNote}</p>
+        {isClaude
+          ? <ClaudeScopeSection
+            language={language}
+            context={claudeContext}
+            settings={claudeSettings}
+            loading={claudeLoading}
+            pickerPending={claudePickerPending}
+            disabled={!nativeAvailable || bridgePending || mutationPending}
+            error={claudeError}
+            onSelectScope={(scope) => void selectClaudeScope(scope)}
+          />
+          : <p className="connection-dialog__scope-note">{text.scopeNote}</p>}
         <section className="connection-dialog__ownership" aria-labelledby="connection-ownership-title">
           <div className="connection-dialog__ownership-head">
             <h3 id="connection-ownership-title">{text.ownershipTitle}</h3>
-            <button className="button" type="button" disabled={!nativeAvailable || ownershipLoading || mutationPending} onClick={() => void readOwnership()}>
-              {ownershipLoading ? text.reloadingOwnership : text.reloadOwnership}
+            <button className="button" type="button" disabled={!nativeAvailable || ownershipLoading || mutationPending || bridgePending} onClick={() => void readOwnership()}>
+              {ownershipLoading ? text.reloadingOwnership : isClaude ? text.refreshClaude : text.reloadOwnership}
             </button>
           </div>
           {ownershipView.kind === "loading" && <p className="connection-dialog__notice" role="status"><span className="applications-spinner" aria-hidden="true" />{text.ownershipLoading}</p>}
@@ -547,12 +752,13 @@ export function ConnectDialog({
           {ownershipView.kind === "ready" && !ownership && <p className="connection-dialog__notice" role="status">{text.ownershipNone}</p>}
           {ownershipView.kind === "ready" && ownership?.state === "released" && <p className="connection-dialog__notice" role="status">{text.ownershipReleased}</p>}
           {ownershipView.kind === "ready" && activeOwnership && <>
-            <p className="connection-dialog__notice" role="status">{text.ownershipActive}</p>
+            <p className="connection-dialog__notice" role="status">{text.ownershipActive}{isClaude && activeOwnership.scope === "project_local_config" ? ` ${language === "tr" ? "Bu kayıt başka bir proje klasörüne ait olabilir; geri almak için ilk seçilen klasörü yeniden seçin." : "This record may belong to another project folder; reselect the original folder before undoing."}` : ""}</p>
             <dl className="connection-dialog__ownership-meta">
               <div><dt>{text.ownershipSource}</dt><dd>{text.sources[activeOwnership.config_source]}</dd></div>
+              {isClaude && <div><dt>{text.scope}</dt><dd>{activeOwnership.scope === "project_local_config" ? text.claudeProjectScope : text.claudeUserScope}</dd></div>}
               <div><dt>{text.ownershipPort}</dt><dd>127.0.0.1:{activeOwnership.endpoint_port}</dd></div>
             </dl>
-            <button className="button connection-dialog__undo" type="button" disabled={mutationPending || !nativeAvailable} onClick={() => void undoOwnership()}>
+            <button className="button connection-dialog__undo" type="button" disabled={mutationPending || bridgePending || !nativeAvailable || (isClaude && (!claudeContext || activeOwnership.scope !== currentScope))} onClick={() => void undoOwnership()}>
               {mutationPending ? (pendingAction.current === "undo" ? text.undoing : text.applying) : text.undo}
             </button>
           </>}
@@ -562,13 +768,13 @@ export function ConnectDialog({
           {mutationPending && !actionFeedback && <p className="connection-dialog__action-feedback" role="status" aria-live="polite">{pendingAction.current === "undo" ? text.undoing : text.applying}</p>}
         </section>
         <label className="connection-dialog__field" htmlFor="connection-installation">{text.installation}
-          <select
+            <select
             ref={selectRef}
             id="connection-installation"
             value={selectedId}
-            disabled={busy || mutationPending || installations.length <= 1}
+            disabled={busy || bridgePending || mutationPending || installations.length <= 1}
             onChange={(event) => {
-              if (mutationLock.current) return;
+              if (bridgeLock.current || mutationLock.current) return;
               requestSequence.current += 1;
               setSelectedId(event.currentTarget.value);
               setPreviewState(null);
@@ -606,10 +812,10 @@ export function ConnectDialog({
             <dl className="connection-dialog__details">
               <div><dt>{text.source}</dt><dd>{text.sources[plan.config_source]}</dd></div>
               <div><dt>{text.presence}</dt><dd>{plan.config_presence === "present" ? text.present : text.missing}</dd></div>
-              <div><dt>{text.model}</dt><dd>{declarationLabel(plan.model, text)} · {text.unchanged}</dd></div>
-              <div><dt>{text.reasoning}</dt><dd>{declarationLabel(plan.reasoning, text)} · {text.unchanged}</dd></div>
+              <div><dt>{isClaude ? text.targetModel : text.model}</dt><dd>{declarationLabel(plan.model, text)} · {text.unchanged}</dd></div>
+              <div><dt>{isClaude ? text.targetReasoning : text.reasoning}</dt><dd>{declarationLabel(plan.reasoning, text)} · {text.unchanged}</dd></div>
               <div><dt>{text.provider}</dt><dd>{text.unchanged}</dd></div>
-              <div><dt>{text.auth}</dt><dd>{authLabel(plan.auth, text)} · {text.unchanged}</dd></div>
+              <div><dt>{isClaude ? text.targetAuth : text.auth}</dt><dd>{authLabel(plan.auth, text)} · {text.unchanged}</dd></div>
               <div><dt>{text.agentCount}</dt><dd>{text.unchanged}</dd></div>
               <div><dt>{text.hookShell}</dt><dd>{plan.hook_shell === "absent" ? text.hookAbsent : plan.hook_shell === "present_unchanged" ? text.hookPresent : text.unknown}</dd></div>
               <div><dt>{text.runtimeEffective}</dt><dd>{text.unknown}</dd></div>
@@ -627,8 +833,8 @@ export function ConnectDialog({
       <footer className="connection-dialog__footer">
         <div className="connection-dialog__apply-note"><span>{text.applyUnavailable}</span></div>
         <div className="connection-dialog__actions">
-          <button className="button" type="button" disabled={mutationPending} onClick={close}>{text.close}</button>
-          <button ref={previewRef} className="button" type="button" disabled={busy || mutationPending || !selected || !previewAvailable || !nativeAvailable} onClick={() => void createPreview()}>
+          <button className="button" type="button" disabled={mutationPending || claudePickerPending} onClick={close}>{text.close}</button>
+          <button ref={previewRef} className="button" type="button" disabled={busy || bridgePending || mutationPending || !selected || !previewAvailable || !nativeAvailable || (isClaude && (!claudeContext || claudeError !== null))} onClick={() => void createPreview()}>
             {busy ? text.refreshing : plan ? text.refresh : text.preview}
           </button>
           <button className="button button-primary" type="button" disabled={!canApply} onClick={() => void applyPlan()}>{mutationPending && pendingAction.current === "apply" ? text.applying : text.apply}</button>

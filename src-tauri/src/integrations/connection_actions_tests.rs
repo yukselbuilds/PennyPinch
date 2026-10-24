@@ -212,6 +212,26 @@ where
     R: Fn() -> ConfigRootInputs + Send + Sync + 'static,
     E: Fn() -> Result<ReadyStableEndpoint, StableEndpointAccessError> + Send + Sync + 'static,
 {
+    manager_with_providers_and_project_picker(
+        fixture,
+        client,
+        roots_provider,
+        endpoint_provider,
+        None,
+    )
+}
+
+fn manager_with_providers_and_project_picker<R, E>(
+    fixture: &Fixture,
+    client: &str,
+    roots_provider: R,
+    endpoint_provider: E,
+    project_picker: Option<Arc<Mutex<Option<PathBuf>>>>,
+) -> (PlanManager, String, u64)
+where
+    R: Fn() -> ConfigRootInputs + Send + Sync + 'static,
+    E: Fn() -> Result<ReadyStableEndpoint, StableEndpointAccessError> + Send + Sync + 'static,
+{
     let (package_name, package_version, bin_name, discovery_kind, bin_file) = match client {
         "codex" => (
             "@openai/codex",
@@ -272,6 +292,12 @@ where
             OwnershipStore::new(&fixture.root, Path::new("state/ownership"))
                 .expect("passive ownership store"),
         );
+    let manager = match project_picker {
+        Some(project_picker) => {
+            manager.with_claude_project_picker(move || Ok(project_picker.lock().unwrap().clone()))
+        }
+        None => manager,
+    };
     (
         manager,
         selected.installation_id.clone(),
@@ -284,16 +310,34 @@ fn preview(
     installation_id: String,
     scan_generation: u64,
 ) -> super::plan::ConnectionPlan {
+    preview_with_scope(manager, installation_id, scan_generation, "user_config")
+}
+
+fn preview_with_scope(
+    manager: &PlanManager,
+    installation_id: String,
+    scan_generation: u64,
+    scope: &str,
+) -> super::plan::ConnectionPlan {
     match manager.preview(PreviewRequest {
         schema_version: 1,
         request_id: Uuid::new_v4().to_string(),
         installation_id,
         scan_generation,
-        scope: "user_config".to_owned(),
+        scope: scope.to_owned(),
     }) {
         PlanReply::Preview(reply) => reply.plan,
         PlanReply::Error(_) => panic!("fixture plan should be previewable"),
     }
+}
+
+fn select_claude_project(manager: &PlanManager) {
+    let reply = manager.select_claude_scope(super::config_io::ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        scope: "project_local_config".to_owned(),
+    });
+    assert_eq!(serde_json::to_value(reply).unwrap()["status"], "selected");
 }
 
 fn success(reply: ConnectionActionReply) -> super::config_io::ConnectionActionSuccess {
@@ -325,7 +369,7 @@ fn apply(
 fn undo(
     manager: &PlanManager,
     kind: &str,
-    owned: &super::config_io::OwnershipSummary,
+    owned: &super::config_io::ActionOwnershipSummary,
 ) -> ConnectionActionReply {
     manager.undo_connection(UndoConnectionRequest {
         schema_version: 1,
@@ -358,6 +402,616 @@ fn exercise_format(client: &str, relative_config: &str, original: &[u8], expecte
     let released = success(undo(&manager, kind, &owned));
     assert_eq!(released.status, "released");
     assert_eq!(fs::read(&config).unwrap(), original);
+}
+
+#[test]
+fn claude_project_scope_applies_only_local_leaf_and_undoes_exact_bytes() {
+    let fixture = Fixture::new();
+    let user_root = fixture.path("claude-user");
+    fs::create_dir(&user_root).unwrap();
+    let user_settings = user_root.join("settings.json");
+    let user_original = br#"{"model":"arbitrary-user-model","effortLevel":"user-effort","apiKeyHelper":"user-helper","env":{"KEEP":"user"}}"#;
+    fs::write(&user_settings, user_original).unwrap();
+
+    let project = fixture.path("project-a");
+    let project_claude = project.join(".claude");
+    fs::create_dir_all(&project_claude).unwrap();
+    let shared_settings = project_claude.join("settings.json");
+    let shared_original =
+        br#"{"model":"arbitrary-shared-model","effortLevel":"xhigh","env":{"ANTHROPIC_API_KEY":"shared-secret"}}"#;
+    fs::write(&shared_settings, shared_original).unwrap();
+    let project_settings = project_claude.join("settings.local.json");
+    let project_original =
+        b"{\r\n  \"model\": \"project-model\",\r\n  \"effortLevel\": \"project-effort\",\r\n  \"env\": {\"KEEP\": \"project\"}\r\n}\r\n";
+    fs::write(&project_settings, project_original).unwrap();
+
+    let selected_path = Arc::new(Mutex::new(Some(project.clone())));
+    let roots = root_inputs("claude_code", &user_settings);
+    let roots_for_manager = roots.clone();
+    let (manager, installation_id, scan_generation) = manager_with_providers_and_project_picker(
+        &fixture,
+        "claude_code",
+        move || roots_for_manager.clone(),
+        || stable_endpoint(41731),
+        Some(selected_path),
+    );
+    select_claude_project(&manager);
+
+    let plan = preview_with_scope(
+        &manager,
+        installation_id,
+        scan_generation,
+        "project_local_config",
+    );
+    assert_eq!(plan.scope, "project_local_config");
+    assert_eq!(plan.config_source, super::plan::ConfigSource::ClaudeJson);
+    let applied = manager.apply_connection(ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        plan_id: plan.plan_id.clone(),
+        expected_config_fingerprint: plan.config_fingerprint.clone(),
+    });
+    let applied_json = serde_json::to_value(&applied).unwrap();
+    assert_eq!(applied_json["ownership"]["scope"], "project_local_config");
+    let applied = success(applied);
+    let ownership = applied.ownership.expect("project ownership summary");
+    assert_eq!(ownership.state, "active");
+    let changed = fs::read(&project_settings).unwrap();
+    assert!(String::from_utf8_lossy(&changed).contains("http://127.0.0.1:41731\""));
+    assert!(String::from_utf8_lossy(&changed).contains("project-model"));
+    assert_eq!(fs::read(&user_settings).unwrap(), user_original);
+    assert_eq!(fs::read(&shared_settings).unwrap(), shared_original);
+
+    let released = success(undo(&manager, "claude_code", &ownership));
+    assert_eq!(released.status, "released");
+    assert_eq!(
+        serde_json::to_value(released).unwrap()["ownership"]["scope"],
+        "project_local_config"
+    );
+    assert_eq!(fs::read(&project_settings).unwrap(), project_original);
+    assert_eq!(fs::read(&user_settings).unwrap(), user_original);
+    assert_eq!(fs::read(&shared_settings).unwrap(), shared_original);
+}
+
+#[test]
+fn claude_project_apply_rejects_changed_non_target_route_layer() {
+    let fixture = Fixture::new();
+    let user_root = fixture.path("claude-user");
+    fs::create_dir(&user_root).unwrap();
+    let user_settings = user_root.join("settings.json");
+    fs::write(&user_settings, b"{}").unwrap();
+
+    let project = fixture.path("project-a");
+    let project_claude = project.join(".claude");
+    fs::create_dir_all(&project_claude).unwrap();
+    let shared_settings = project_claude.join("settings.json");
+    let local_settings = project_claude.join("settings.local.json");
+    fs::write(&shared_settings, b"{}").unwrap();
+    fs::write(&local_settings, b"{}").unwrap();
+
+    let selected_path = Arc::new(Mutex::new(Some(project.clone())));
+    let roots = root_inputs("claude_code", &user_settings);
+    let roots_for_manager = roots.clone();
+    let (manager, installation_id, scan_generation) = manager_with_providers_and_project_picker(
+        &fixture,
+        "claude_code",
+        move || roots_for_manager.clone(),
+        || stable_endpoint(41731),
+        Some(selected_path),
+    );
+    select_claude_project(&manager);
+    let plan = preview_with_scope(
+        &manager,
+        installation_id,
+        scan_generation,
+        "project_local_config",
+    );
+    assert_eq!(plan.status, super::plan::PlanStatus::Preview);
+
+    fs::write(
+        &shared_settings,
+        br#"{"env":{"ANTHROPIC_BASE_URL":"https://gateway.example"}}"#,
+    )
+    .unwrap();
+    let reply = manager.apply_connection(ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        plan_id: plan.plan_id,
+        expected_config_fingerprint: plan.config_fingerprint,
+    });
+
+    assert_eq!(error_code(reply), "config_conflict");
+    assert_eq!(fs::read(&local_settings).unwrap(), b"{}");
+    assert_eq!(fs::read(&user_settings).unwrap(), b"{}");
+}
+
+#[test]
+fn claude_local_managed_route_blocks_preview_and_layer_snapshot_is_redacted() {
+    let fixture = Fixture::new();
+    let user_root = fixture.path("claude-user");
+    fs::create_dir(&user_root).unwrap();
+    let user_settings = user_root.join("settings.json");
+    fs::write(&user_settings, b"{}").unwrap();
+
+    let project = fixture.path("project-a");
+    let project_claude = project.join(".claude");
+    fs::create_dir_all(&project_claude).unwrap();
+    fs::write(project_claude.join("settings.json"), b"{}").unwrap();
+    let target = project_claude.join("settings.local.json");
+    fs::write(&target, b"{}").unwrap();
+    let managed = fixture.path("managed-settings.json");
+    fs::write(
+        &managed,
+        br#"{"env":{"ANTHROPIC_BASE_URL":"https://user:secret@gateway.example","ANTHROPIC_API_KEY":"private-token"},"model":"private-model"}"#,
+    )
+    .unwrap();
+
+    let selected_path = Arc::new(Mutex::new(Some(project)));
+    let mut roots = root_inputs("claude_code", &user_settings);
+    roots.claude_test_managed_settings = Some(managed);
+    roots.claude_test_route_environment = Some(Vec::new());
+    let roots_for_manager = roots.clone();
+    let (manager, installation_id, scan_generation) = manager_with_providers_and_project_picker(
+        &fixture,
+        "claude_code",
+        move || roots_for_manager.clone(),
+        || stable_endpoint(41731),
+        Some(selected_path),
+    );
+    select_claude_project(&manager);
+
+    let plan = preview_with_scope(
+        &manager,
+        installation_id,
+        scan_generation,
+        "project_local_config",
+    );
+    assert_eq!(plan.status, super::plan::PlanStatus::Blocked);
+    assert!(plan
+        .blockers
+        .contains(&super::plan::PlanBlocker::CustomGateway));
+    assert_eq!(fs::read(&target).unwrap(), b"{}");
+
+    let snapshot =
+        manager.claude_settings_snapshot(super::config_io::ClaudeSettingsSnapshotRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            scope: "project_local_config".to_owned(),
+        });
+    let encoded = serde_json::to_string(&snapshot).unwrap();
+    for secret in [
+        "gateway.example",
+        "private-token",
+        "private-model",
+        "https://user:",
+    ] {
+        assert!(!encoded.contains(secret));
+    }
+    assert!(encoded.contains("local_managed_settings"));
+    assert!(encoded.contains("project_local_config"));
+    assert!(encoded.contains("\"model_declared_in_observed_files\":\"present\""));
+    assert!(encoded.contains("\"reasoning_declared_in_observed_files\":\"absent\""));
+    assert!(encoded.contains("\"auth_declared_in_observed_files\":\"secret_configured\""));
+    assert!(encoded.contains("\"hooks_declared_in_observed_files\":\"absent\""));
+    assert!(encoded.contains("\"remote_managed_policy\":\"unknown\""));
+}
+
+#[test]
+fn claude_route_environment_drift_after_preview_conflicts() {
+    let fixture = Fixture::new();
+    let user_root = fixture.path("claude-user");
+    fs::create_dir(&user_root).unwrap();
+    let user_settings = user_root.join("settings.json");
+    fs::write(&user_settings, b"{}").unwrap();
+    let project = fixture.path("project-a");
+    fs::create_dir_all(project.join(".claude")).unwrap();
+    let target = project.join(".claude/settings.local.json");
+    fs::write(&target, b"{}").unwrap();
+
+    let selected_path = Arc::new(Mutex::new(Some(project)));
+    let mut roots = root_inputs("claude_code", &user_settings);
+    roots.claude_test_route_environment = Some(Vec::new());
+    let roots = Arc::new(Mutex::new(roots));
+    let roots_for_manager = Arc::clone(&roots);
+    let (manager, installation_id, scan_generation) = manager_with_providers_and_project_picker(
+        &fixture,
+        "claude_code",
+        move || roots_for_manager.lock().unwrap().clone(),
+        || stable_endpoint(41731),
+        Some(selected_path),
+    );
+    select_claude_project(&manager);
+    let plan = preview_with_scope(
+        &manager,
+        installation_id,
+        scan_generation,
+        "project_local_config",
+    );
+
+    roots.lock().unwrap().claude_test_route_environment = Some(vec![(
+        "ANTHROPIC_BASE_URL".to_owned(),
+        "https://gateway.example".to_owned(),
+    )]);
+    let reply = manager.apply_connection(ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        plan_id: plan.plan_id,
+        expected_config_fingerprint: plan.config_fingerprint,
+    });
+
+    assert_eq!(error_code(reply), "config_conflict");
+    assert_eq!(fs::read(&target).unwrap(), b"{}");
+}
+
+#[test]
+fn claude_project_switch_invalidates_old_lease_and_active_other_project_conflicts() {
+    let fixture = Fixture::new();
+    let user_root = fixture.path("claude-user");
+    fs::create_dir(&user_root).unwrap();
+    let user_settings = user_root.join("settings.json");
+    fs::write(&user_settings, b"{}").unwrap();
+    let project_a = fixture.path("project-a");
+    let project_b = fixture.path("project-b");
+    for project in [&project_a, &project_b] {
+        fs::create_dir_all(project.join(".claude")).unwrap();
+        fs::write(project.join(".claude/settings.local.json"), b"{}").unwrap();
+    }
+
+    let selected_path = Arc::new(Mutex::new(Some(project_a.clone())));
+    let roots = root_inputs("claude_code", &user_settings);
+    let roots_for_manager = roots.clone();
+    let (manager, installation_id, scan_generation) = manager_with_providers_and_project_picker(
+        &fixture,
+        "claude_code",
+        move || roots_for_manager.clone(),
+        || stable_endpoint(41731),
+        Some(Arc::clone(&selected_path)),
+    );
+    let wrong_scope = manager.preview(PreviewRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        installation_id: installation_id.clone(),
+        scan_generation,
+        scope: "project_local_config".to_owned(),
+    });
+    assert_eq!(
+        serde_json::to_value(wrong_scope).unwrap()["error"]["code"],
+        "unsupported_scope",
+        "project preview requires a selected project context"
+    );
+
+    select_claude_project(&manager);
+    let plan_a = preview_with_scope(
+        &manager,
+        installation_id.clone(),
+        scan_generation,
+        "project_local_config",
+    );
+    let applied_a = apply(&manager, &plan_a);
+    let owned_a = applied_a.ownership.expect("first project ownership");
+
+    *selected_path.lock().unwrap() = Some(project_b.clone());
+    select_claude_project(&manager);
+    assert_eq!(
+        error_code(manager.apply_connection(ApplyConnectionRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            plan_id: plan_a.plan_id,
+            expected_config_fingerprint: plan_a.config_fingerprint,
+        })),
+        "not_found",
+        "selection change invalidates leases"
+    );
+    let plan_b = preview_with_scope(
+        &manager,
+        installation_id,
+        scan_generation,
+        "project_local_config",
+    );
+    assert_eq!(
+        error_code(manager.apply_connection(ApplyConnectionRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            plan_id: plan_b.plan_id,
+            expected_config_fingerprint: plan_b.config_fingerprint,
+        })),
+        "config_conflict",
+        "an active record for another project cannot be replaced"
+    );
+    assert!(String::from_utf8_lossy(
+        &fs::read(project_a.join(".claude/settings.local.json")).unwrap()
+    )
+    .contains("http://127.0.0.1:41731\""));
+    assert_eq!(
+        fs::read(project_b.join(".claude/settings.local.json")).unwrap(),
+        b"{}"
+    );
+    assert_eq!(owned_a.scope, "project_local_config");
+}
+
+#[test]
+fn claude_project_undo_works_after_manager_reopen_and_reselection() {
+    let fixture = Fixture::new();
+    let user_root = fixture.path("claude-user");
+    fs::create_dir(&user_root).unwrap();
+    let user_settings = user_root.join("settings.json");
+    let user_original = b"{\"env\":{\"KEEP\":\"user\"}}";
+    fs::write(&user_settings, user_original).unwrap();
+    let project = fixture.path("project-a");
+    fs::create_dir_all(project.join(".claude")).unwrap();
+    let project_settings = project.join(".claude/settings.local.json");
+    let project_original = b"{\"env\":{\"KEEP\":\"project\"}}";
+    fs::write(&project_settings, project_original).unwrap();
+    let selected_path = Arc::new(Mutex::new(Some(project.clone())));
+    let roots = root_inputs("claude_code", &user_settings);
+    let roots_for_first = roots.clone();
+    let (first_manager, installation_id, scan_generation) =
+        manager_with_providers_and_project_picker(
+            &fixture,
+            "claude_code",
+            move || roots_for_first.clone(),
+            || stable_endpoint(41731),
+            Some(Arc::clone(&selected_path)),
+        );
+    select_claude_project(&first_manager);
+    let plan = preview_with_scope(
+        &first_manager,
+        installation_id,
+        scan_generation,
+        "project_local_config",
+    );
+    let ownership = apply(&first_manager, &plan)
+        .ownership
+        .expect("active project record");
+    drop(first_manager);
+
+    let roots_for_second = roots.clone();
+    let (second_manager, _, _) = manager_with_providers_and_project_picker(
+        &fixture,
+        "claude_code",
+        move || roots_for_second.clone(),
+        || stable_endpoint(41731),
+        Some(selected_path),
+    );
+    select_claude_project(&second_manager);
+    let released = success(undo(&second_manager, "claude_code", &ownership));
+    assert_eq!(released.status, "released");
+    assert_eq!(
+        serde_json::to_value(released).unwrap()["ownership"]["scope"],
+        "project_local_config"
+    );
+    assert_eq!(fs::read(&project_settings).unwrap(), project_original);
+    assert_eq!(fs::read(&user_settings).unwrap(), user_original);
+}
+
+#[test]
+fn deleting_selected_claude_project_after_preview_fails_closed() {
+    let fixture = Fixture::new();
+    let user_root = fixture.path("claude-user");
+    fs::create_dir(&user_root).unwrap();
+    let user_settings = user_root.join("settings.json");
+    fs::write(&user_settings, b"{}").unwrap();
+    let project = fixture.path("project-a");
+    fs::create_dir_all(project.join(".claude")).unwrap();
+    let project_settings = project.join(".claude/settings.local.json");
+    let original = b"{\"env\":{\"KEEP\":\"project\"}}";
+    fs::write(&project_settings, original).unwrap();
+    let selected_path = Arc::new(Mutex::new(Some(project.clone())));
+    let roots = root_inputs("claude_code", &user_settings);
+    let roots_for_manager = roots.clone();
+    let (manager, installation_id, scan_generation) = manager_with_providers_and_project_picker(
+        &fixture,
+        "claude_code",
+        move || roots_for_manager.clone(),
+        || stable_endpoint(41731),
+        Some(selected_path),
+    );
+    select_claude_project(&manager);
+    let plan = preview_with_scope(
+        &manager,
+        installation_id.clone(),
+        scan_generation,
+        "project_local_config",
+    );
+    fs::remove_dir_all(&project).unwrap();
+    let reply = manager.apply_connection(ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        plan_id: plan.plan_id,
+        expected_config_fingerprint: plan.config_fingerprint,
+    });
+    assert!(matches!(reply, ConnectionActionReply::Error(_)));
+    assert!(!fixture.path("state").exists());
+    assert!(!project_settings.exists());
+}
+
+#[test]
+fn replacing_selected_missing_claude_project_directory_rejects_old_plan() {
+    let fixture = Fixture::new();
+    let user_root = fixture.path("claude-user");
+    fs::create_dir(&user_root).unwrap();
+    let user_settings = user_root.join("settings.json");
+    fs::write(&user_settings, b"{}").unwrap();
+
+    let project = fixture.path("project-a");
+    fs::create_dir_all(project.join(".claude")).unwrap();
+    let project_settings = project.join(".claude/settings.local.json");
+    let replacement = fixture.path("project-a-original");
+    let selected_path = Arc::new(Mutex::new(Some(project.clone())));
+    let roots = root_inputs("claude_code", &user_settings);
+    let roots_for_manager = roots.clone();
+    let (manager, installation_id, scan_generation) = manager_with_providers_and_project_picker(
+        &fixture,
+        "claude_code",
+        move || roots_for_manager.clone(),
+        || stable_endpoint(41731),
+        Some(selected_path),
+    );
+    select_claude_project(&manager);
+    let plan = preview_with_scope(
+        &manager,
+        installation_id.clone(),
+        scan_generation,
+        "project_local_config",
+    );
+    assert_eq!(plan.config_presence, super::plan::ConfigPresence::Missing);
+
+    fs::rename(&project, &replacement).unwrap();
+    fs::create_dir_all(project.join(".claude")).unwrap();
+    let reply = manager.apply_connection(ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        plan_id: plan.plan_id,
+        expected_config_fingerprint: plan.config_fingerprint,
+    });
+
+    assert!(matches!(reply, ConnectionActionReply::Error(_)));
+    assert!(!project_settings.exists());
+    assert!(!fixture.path("state").exists());
+    assert!(replacement.join(".claude").is_dir());
+
+    select_claude_project(&manager);
+    let refreshed_plan = preview_with_scope(
+        &manager,
+        installation_id,
+        scan_generation,
+        "project_local_config",
+    );
+    assert_eq!(
+        apply(&manager, &refreshed_plan).status,
+        "applied",
+        "a new explicit selection binds the replacement directory identity"
+    );
+    assert!(project_settings.exists());
+    assert_eq!(fs::read(&user_settings).unwrap(), b"{}");
+}
+
+#[cfg(windows)]
+#[test]
+fn replacing_selected_claude_project_with_junction_fails_closed() {
+    use std::os::windows::ffi::OsStrExt;
+    use std::os::windows::io::{FromRawHandle, OwnedHandle, RawHandle};
+    use std::ptr::{null, null_mut};
+    use windows_sys::Win32::Foundation::GENERIC_WRITE;
+    use windows_sys::Win32::Storage::FileSystem::{
+        CreateDirectoryW, CreateFileW, RemoveDirectoryW, FILE_FLAG_BACKUP_SEMANTICS,
+        FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_EXISTING,
+    };
+    use windows_sys::Win32::System::Ioctl::FSCTL_SET_REPARSE_POINT;
+    use windows_sys::Win32::System::SystemServices::IO_REPARSE_TAG_MOUNT_POINT;
+    use windows_sys::Win32::System::IO::DeviceIoControl;
+
+    let fixture = Fixture::new();
+    let user_root = fixture.path("claude-user");
+    fs::create_dir(&user_root).unwrap();
+    fs::write(user_root.join("settings.json"), b"{}").unwrap();
+
+    let project = fixture.path("project-a");
+    fs::create_dir_all(project.join(".claude")).unwrap();
+    fs::write(
+        project.join(".claude/settings.local.json"),
+        b"{\"env\":{\"KEEP\":\"project\"}}",
+    )
+    .unwrap();
+    let replacement = fixture.path("replacement-project");
+    fs::create_dir_all(replacement.join(".claude")).unwrap();
+    let replacement_settings = replacement.join(".claude/settings.local.json");
+    let replacement_original = b"{\"env\":{\"KEEP\":\"replacement\"}}";
+    fs::write(&replacement_settings, replacement_original).unwrap();
+
+    let selected_path = Arc::new(Mutex::new(Some(project.clone())));
+    let roots = root_inputs("claude_code", &user_root.join("settings.json"));
+    let roots_for_manager = roots.clone();
+    let (manager, installation_id, scan_generation) = manager_with_providers_and_project_picker(
+        &fixture,
+        "claude_code",
+        move || roots_for_manager.clone(),
+        || stable_endpoint(41731),
+        Some(selected_path),
+    );
+    select_claude_project(&manager);
+    let plan = preview_with_scope(
+        &manager,
+        installation_id,
+        scan_generation,
+        "project_local_config",
+    );
+
+    fs::rename(&project, fixture.path("project-a-original")).unwrap();
+    let mut link_wide: Vec<u16> = project.as_os_str().encode_wide().chain(Some(0)).collect();
+    let target_text = replacement.to_string_lossy();
+    let substitute = format!(r"\??\{target_text}");
+    let substitute_wide: Vec<u16> = substitute.encode_utf16().collect();
+    let print_wide: Vec<u16> = target_text.encode_utf16().collect();
+    let mut path_buffer = Vec::new();
+    path_buffer.extend(substitute_wide.iter().copied());
+    path_buffer.push(0);
+    path_buffer.extend(print_wide.iter().copied());
+    path_buffer.push(0);
+    let substitute_len = (substitute_wide.len() * 2) as u16;
+    let print_offset = ((substitute_wide.len() + 1) * 2) as u16;
+    let print_len = (print_wide.len() * 2) as u16;
+    let mut reparse = Vec::with_capacity(20 + path_buffer.len() * 2);
+    reparse.extend_from_slice(&IO_REPARSE_TAG_MOUNT_POINT.to_le_bytes());
+    reparse.extend_from_slice(&(8u16 + (path_buffer.len() * 2) as u16).to_le_bytes());
+    reparse.extend_from_slice(&0u16.to_le_bytes());
+    reparse.extend_from_slice(&0u16.to_le_bytes());
+    reparse.extend_from_slice(&substitute_len.to_le_bytes());
+    reparse.extend_from_slice(&print_offset.to_le_bytes());
+    reparse.extend_from_slice(&print_len.to_le_bytes());
+    for unit in path_buffer {
+        reparse.extend_from_slice(&unit.to_le_bytes());
+    }
+
+    let created = unsafe { CreateDirectoryW(link_wide.as_mut_ptr(), null()) };
+    assert_ne!(
+        created, 0,
+        "fixture junction directory creation is required"
+    );
+    let raw = unsafe {
+        CreateFileW(
+            link_wide.as_ptr(),
+            GENERIC_WRITE,
+            FILE_SHARE_READ | FILE_SHARE_WRITE,
+            null(),
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+            null_mut(),
+        )
+    };
+    assert!(!raw.is_null());
+    let junction_handle = unsafe { OwnedHandle::from_raw_handle(raw as RawHandle) };
+    let mut returned = 0u32;
+    let set = unsafe {
+        DeviceIoControl(
+            raw,
+            FSCTL_SET_REPARSE_POINT,
+            reparse.as_ptr().cast(),
+            reparse.len() as u32,
+            null_mut(),
+            0,
+            &mut returned,
+            null_mut(),
+        )
+    };
+    assert_ne!(set, 0, "fixture mount-point reparse creation is required");
+
+    let reply = manager.apply_connection(ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        plan_id: plan.plan_id,
+        expected_config_fingerprint: plan.config_fingerprint,
+    });
+    drop(junction_handle);
+    let removed = unsafe { RemoveDirectoryW(link_wide.as_ptr()) };
+
+    assert_ne!(removed, 0, "remove only the fixture junction itself");
+    assert!(matches!(reply, ConnectionActionReply::Error(_)));
+    assert_eq!(
+        fs::read(&replacement_settings).unwrap(),
+        replacement_original
+    );
+    assert!(!fixture.path("state").exists());
 }
 
 #[test]

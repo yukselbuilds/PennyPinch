@@ -27,6 +27,28 @@ pub(crate) enum ClientKind {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum ConfigScope {
     UserConfig,
+    ProjectLocalConfig,
+}
+
+impl ConfigScope {
+    fn code(self) -> &'static str {
+        match self {
+            Self::UserConfig => "user_config",
+            Self::ProjectLocalConfig => "project_local_config",
+        }
+    }
+
+    fn matches_client(self, kind: ClientKind) -> bool {
+        matches!(
+            (kind, self),
+            (ClientKind::Codex, Self::UserConfig)
+                | (
+                    ClientKind::ClaudeCode,
+                    Self::UserConfig | Self::ProjectLocalConfig
+                )
+                | (ClientKind::OpenCodeV1, Self::UserConfig)
+        )
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -219,7 +241,7 @@ pub(crate) fn preview_config_with_presence(
     if !valid_uuid(&context.request_id)
         || !valid_uuid(&context.installation_id)
         || !valid_uuid(&context.endpoint.endpoint_id)
-        || context.scope != ConfigScope::UserConfig
+        || !context.scope.matches_client(context.client_kind)
         || !context.config_source.matches_client(context.client_kind)
         || context.scan_generation == 0
         || context.scan_generation > MAX_SAFE_INTEGER
@@ -301,7 +323,7 @@ pub(crate) fn preview_config_with_presence(
         expires_at_unix_seconds: context.now_unix_seconds + PLAN_LIFETIME_SECONDS,
         installation_id: context.installation_id.clone(),
         client_kind: client_name(context.client_kind),
-        scope: "user_config",
+        scope: context.scope.code(),
         scan_generation: context.scan_generation,
         config_fingerprint,
         config_presence,

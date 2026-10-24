@@ -1,12 +1,12 @@
 # Headroom Desktop — Görev Listesi
 
-**Tarih:** 23 Ekim 2026
+**Tarih:** 24 Ekim 2026
 
-**Kaynak:** [Ürün spesifikasyonu 0.4](HEADROOM_DESKTOP_SPEC.md)  
+**Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007, H013–H019, H040, H046 ve **H047 tamamlandı:16/49.** H019 ilk Windows10 Codex CLI yanıt/config dilimi kabulüdür;2 ek CLI hatası görünür ve kaynağı H008 kapsamında açık. H020/H048/H049 başlamadı. H006/H008–H012, diğer istemci/auth/ajan yolları, ölçüm/pause, Win11/temiz kurulum ve yayın kapıları sürüyor; henüz kurulabilir üretim uygulaması yok. Tek GPT-6 Luna xhigh çalışan düzeni korundu.
+**Durum:** H001–H005, H007, H013–H020, H040, H046 ve **H047 tamamlandı:17/51.** H020 Windows10 native Claude kullanıcı/proje bağlantısı ve CLI/yerel SSE fixture kabulüdür; canlı auth/alt ajan kapsamı değildir. H019'un2 ek CLI hatası H008'de açık. H021 sıradaki ana görev; H048/H049 başlamadı. Kullanıcının sade platform/model tasarruf ekranı ve hesap + açık sohbet talepleri H022/H025/H026 ve yeni H050/H051'e işlendi. Henüz kurulabilir üretim uygulaması yok. Tek GPT-6 Luna xhigh çalışan düzeni korundu.
 
-**Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırındaki **16/49** değeridir. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
+**Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırındaki **17/51** değeridir. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
 ## Çalışma kuralları
 
@@ -37,6 +37,7 @@
 | Günlük kullanım | H027–H033 | Etkinlik, güvenli duraklatma, tepsi, ayarlar ve dışa aktarma |
 | Yayın adayı | H034–H039 ve H042 | Erişilebilirlik, Windows testleri, paket, imzalı güncelleme ve son kalite kapısı |
 | Sonraki isteğe bağlı sürüm | H043–H045 | Kanıtlı RTK entegrasyonu ve içeriksiz yerel öneriler |
+| Hesaplar ve sohbetler | H050–H051 | Resmî hesap bağlantısı ve güvenilir açık/çalışan sohbet metadata görünümü |
 | Kaynak deposu ve ücretsiz CI hazırlığı | H046–H047 | Private, source-only GitHub importu; kota ve masraf durdurma kanıtı |
 | Ek platformlar | H048–H049 | macOS/Linux native port ve kabul; Windows ilk dilimi ve H047 sonrasında |
 
@@ -260,7 +261,7 @@ flowchart TD
 - **Ek kabul:** Doğrulama mevcut bir konuşmayı gizlice başka provider'a taşımaz. Yeni süreç/oturum kapsamı ve yeniden başlatma gereği açık; ChatGPT ile API-key rotaları aynı destek satırına indirgenmez.
 - **Kapsam kabulü:** Bağlanan Codex kapsamındaki desteklenen modeller ve ana/alt ajan yolları tek bağlantıya dahildir; per-model/per-agent kurulum yok. Kısmi/bilinmeyen alt ajan yolu arayüzde görünür; H008 kanıtından daha geniş destek iddia edilmez.
 - **Model bağımsızlığı kabulü —23 Ekim netleştirmesi:** Geliştirici çalışanının model tercihi ürünün zorunlu modeli değildir. Ana ajan modelA/alt ajan modelB, istemcide A→C model değişimi ve aynı protokolde yeni model adı için rota/`model`/reasoning korunması sınanır. Model adına göre bağlantı filtresi, yeniden kurulum veya sessiz model/efor değişimi olmaz. Fixture matrisi keyfi model adlarıyla çalışır; canlı denemelerde kullanıcının seçili modelleri kullanılır ve yalnız ölçülen kombinasyon kabul edilir. Tek bir model çiftinin PASS'i tüm modellerin/ajan yollarının kanıtı sayılmaz.
-- **Bağımlılık / boyut:** H018 / M. H020/H048/H049 başlatılmadı; ana görev tamamlandığından kullanıcı devam mesajı beklenir.
+- **Bağımlılık / boyut:** H018 / M. H019 kapanış anında H020/H048/H049 başlamamıştı; güncel sıra üstteki durum satırındadır.
 - **Dosyalar:** `src-tauri/src/integrations/config_io/codex_verify.rs`, `src-tauri/src/integrations/discovery.rs`, `src-tauri/src/integrations/plan.rs`, `src-tauri/src/main.rs`, `src-tauri/src/runtime/ingress.rs`, `src/features/integrations/ConnectionStatus.tsx`, `src/lib/codexStatus.ts`.
 
 **Kontrol noktası K4 — H013–H019:** Kullanıcı Codex'i masaüstü panelinden bağlayabilir; gerçek runtime, model koruması ve geri alma çalışır. Demo sayacı üretim sayacı olarak kullanılamaz.
@@ -268,12 +269,25 @@ flowchart TD
 ## Diğer istemciler ve doğru tasarruf ekranı
 
 ### H020 — Claude Code'u bağlama
-- [ ] H009 kanıtındaki kapsam üretim adaptörüne taşınır.
+- [x] H009 kanıtındaki sınırlı CLI/yerel fixture kapsamı ortak üretim adaptörüne taşındı; native kabul tamamlandı.
+- **Tamamlandı —24 Ekim:** Ortak user/project-local Preview→Apply→Undo, native picker ve katman metadata; gerçek CLI2.1.158→owned engine0.41.0→yerel Anthropic SSE fixture PASS.90 Node+224 Rust PASS/3 ignored; fmt/frontend/embedded build PASS. Reopen/reselect/Undo ve byte-exact restore, cleanup0/0. [Kanıt](docs/proofs/claude-product.md), [inceleme](docs/reviews/H020.md). Canlı auth/bütün model/alt ajan/diğer OS desteği değildir.
+- **Sıralı dilimler:** a) native CLI sürümünü salt okunur pinle tanı; b) seçili bağlam/etkin ayar katmanı ve rota korumaları; c) dar proje kapsamını ortak sahiplik/Apply/Undo boyunca tutarlı bağla; d) native UI→config→CLI→motor fixture kontrolü ve uyumluluk kaydı. Alt dilim kabulü ana görev tamamlandı anlamına gelmez. [Karar008](docs/decisions/008-claude-connection.md).
+- [x] **H020-a —24 Ekim:** Native Claude Code2.1.158 yalnız236.306.080 bayt+ölçülen SHA256 eşleşmesinde PATH/bilinen dizin/elle seçimde tanınır; bilinmeyen dosya sürümü bilinmiyor kalır.22 odaklı discovery testi PASS/1 ignored, fmt PASS. Ana inceleme kabul; gerçek CLI çalıştırılmadı, auth/config okunmadı. `work/proofs/claude-product/discovery-a.json`.
+- [x] **H020-b/c/d:** Seçili bağlam, gözlenen ayar katmanları/rota guard, ortak UI/native kabul ve katalog tamamlandı. Runtime effective/remote policy/diğer oturum bilgisi bilinmiyor kalır.
+- [x] **H020-b1 —24 Ekim:** `project_local_config` yalnız Claude plan/patch çekirdeğinde kabul; Codex/OpenCode reddi ve endpoint dışındaki alanlar/byte-exact Undo korundu.18 plan+10 transaction focused PASS; root kaynak incelemesi kabul. Henüz proje hedefi/IO/üretim UI'sı değil. [İnceleme](docs/reviews/H020.md).
+- [x] **H020-b2 —24 Ekim:** Claude scoped ownership v1/legacy user_config round-trip, Released scope koruması ve aktif scope/path conflict;18 focused ownership PASS, root incelemesi kabul. Üretim action henüz bağlanmadı.
+- [x] **H020-b3 —24 Ekim:** PlanManager'da strict, bellekte scope/project seçimi; native picker closure'ı dışında raw yol yok, Cancel/hata seçimi korur, değişiklik eski lease'leri temizler, canonical fixed-volume/reparse korumaları.21 focused config-IO PASS; root incelemesi kabul. Native picker/Tauri/UI henüz bağlanmadı; project preview şu aşamada kapalı.
+- [x] **H020-b4 —24 Ekim:** Seçili project target→lease→atomic Apply/Undo/scoped ownership bağlandı; başka proje kaydı çatışma ve reopen/reselect/Undo geçti. Root'un bulduğu aynı yolda normal klasör değişimi RED ile üretildi; bellekte volume/file-index doğrulamasıyla düzeltildi. Son action19/IO21 focused PASS, root incelemesi kabul; `context-b4-identity-fix.json`. Mevcut güvenli `.claude` ebeveyni gerekir; native UI/E2E henüz değil.
+- [x] **H020-b5 —24 Ekim:** Bounded user/shared/local/sabit yerel managed gözlemi ve yalnız route ortam allowlist'i; hassas değer yerine layer/declaration metadata. Non-target pin/fingerprint ve preview sonrası layer/env değişiminde Apply conflict; Undo bağımsız. RED shared gateway drift üretildi, son Claude focused29 PASS; root kaynak incelemesi kabul. Dosya gözlemi runtime/gerçek CLI önceliği PASS'i değildir; remote/başka süreç unknown. B5 kısa fingerprint kaydı çalışan tarafından tamamlanıyor.
+- [x] **H020-c1 —24 Ekim:** Ana pencereye ait native klasör seçici, strict Tauri scope/settings komutları ve TS istemci bağlandı. Root incelemesi sonrası çelişkili layer toplamı ve kontrol karakterli yol reddi eklendi;13 focused Node PASS, typecheck PASS. Native compile/fmt PASS; interaktif picker kabulü henüz değil. `context-c1-aggregate-fix.json`.
+- [x] **H020-c2 —24 Ekim:** Ortak plan/action TS sözleşmesi Claude proje kapsamını ve zorunlu scoped ownership yanıtlarını doğrular; yanlış istemci/kapsam/Apply/Undo eşleşmesi reddedilir.8 plan+12 action focused PASS, typecheck PASS; root kaynak incelemesi kabul. `scope-c2.json`.
+- [x] **H020-c3 —24 Ekim:** Ortak Graphite/TR/EN ekranında Claude kapsam/picker/katman metadata, seri IPC ve mutasyon korumaları. Root review düzeltmesiyle released kayıt yeni kapsamı engellemez; başarılı seçim eski önizlemeyi temizler, Cancel korur.4 focused view testi/typecheck PASS; kaynak incelemesi kabul. `ui-c3.json`.
+- [x] **H020-d —24 Ekim:** Son aday tam kapısı ve gerçek native UI→user/project config→CLI→owned motor→fixture akışı kabul. İlk test launcher parametre hatası istek öncesi giderildi; uygulama kaynağı değişmedi, kapı tekrarlanmadı. Unicode proje, Cancel, user Undo→project Apply, reopen/reselect/project Undo, prefs/workspace restore ve süreç/port0 kanıtlı; katalog güncellendi. Kullanıcı giriş yapmadı; canlı sağlayıcı/ajan yolları not_tested.
 - **Kabul:** Etkin ayar katmanı doğru; mevcut auth/model korunur; bağlantı ve kaldırma ortak akıştan çalışır.
 - **Kapsam kabulü:** Claude ana/alt ajan ve farklı model seçimleri H009'da doğrulanan yollar için tek bağlantıda kapsanır. Ayrı provider/süreç/eklenti/bulut yolu sessizce dahil sayılmaz.
 - **Doğrulama:** Claude fixture'ları ve desteklenen yüzeyde küçük gerçek uçtan uca kontrol.
 - **Bağımlılık / boyut:** H019 / M.
-- **Dosyalar:** `src-tauri/src/integrations/claude.rs`, `src-tauri/src/integrations/claude_tests.rs`, `compatibility/clients.json`.
+- **Dosyalar:** Mevcut ortak `src-tauri/src/integrations/{discovery,plan,config_io,connection_actions}.rs`, Claude kapsamı için gerekli sınırlı modüller/testler, ortak bağlantı arayüzü ve `compatibility/clients.json`. Ayrı config yazıcısı oluşturulmaz.
 
 ### H021 — OpenCode'u bağlama
 - [ ] H010 kanıtındaki model koruması ve config davranışı üretim adaptörüne taşınır.
@@ -285,7 +299,9 @@ flowchart TD
 
 ### H022 — İlk açılış ve hatırlanan bağlantılar
 - [ ] Otomatik tarama ve bir defalık Bağlan akışı sadeleştirilir.
+- **H020 takibi:** Yeni Claude projesinde `.claude` ayar klasörü yoksa güvenli, sahipliği belli oluşturma akışı tasarlanıp doğrulanır. H020 ilk proje kapsamı mevcut güvenli ebeveynle sınırlı; transaction dışı gizli klasör yaratılmaz. Proje seçimini yeniden açılışta hatırlama ve yanlış projede Undo'yu önleyen kapsam açıklaması burada tamamlanır.
 - **Kabul:** Önceki seçimler hatırlanır; sonradan bulunan istemci kendiliğinden bağlanmaz; her açılışta ücretli doğrulama yoktur.
+- **24 Ekim sade arayüz kabulü:** Normal görünüm kısa etki/kapsam/target ve Bağlan/Geri al; ayar katmanları ve tanı metadata Gelişmiş altında. İlk klasör seçicide geçersiz shell başlangıç konumu gözlendi; güvenli başlangıç/fallback ayrıca doğrulanır. Teknik detaylar ana eylemleri uzun kart listelerinin arkasına itmez.
 - **Ek kabul:** Bulundu/config uygulandı/gerçek trafik görüldü ayrı adımlardır. Eksik runtime, disk alanı, indirmenin kesilmesi ve tekrar deneme anlaşılır; temel motor/isteğe bağlı ağır araçlar ayrı gösterilir. Hazır engine ama trafik yok durumu başarı diye kapatılmaz. Yeni hesap/abonelik zorunluluğu eklenmez.
 - **Kapsam kabulü:** Sihirbaz varsayılanı “desteklenen modeller + ana ve alt ajanlar”dır; kullanıcıdan zorunlu model/ajan listesi seçimi istenmez. Bilinen ayrı yollar ve yeniden başlatma gereği aynı bağlantı önizlemesinde açıklanır.
 - **Doğrulama:** İlk kullanıcı, yeniden açılış ve yeni istemci senaryoları.
@@ -309,6 +325,7 @@ flowchart TD
 - **Dosyalar:** `src-tauri/src/metrics/store.rs`, `src-tauri/src/metrics/store_tests.rs`, `src-tauri/src/metrics/query.rs`.
 
 ### H025 — Gerçek Genel bakış ekranı
+- **24 Ekim ürün yönü:** Varsayılan görünüm platform → model satırlarında kullanılan token, tasarruf token/% ve kaynağı varsa maliyet. Resmî harcama/tahmin ayrı; abonelik kotasından tutar uydurulmaz. Teknik yönlendirme ayrıntıları Gelişmiş altında; hesap ve sohbet durumları H050/H051 ile kısa özetlenir.
 - [ ] Graphite Genel bakış ekranında **tasarruf yüzdesi ve tasarruf edilen token miktarı birlikte** yerel kayıt üzerinden gösterilir; grafik aynı kapsamı kullanır.
 - **Kabul:** Dönem filtresi gerçek sorgu; veri kaynağı/zamanı ve ölçüm kapsamı görünür. Örneğin `%37,5 · 45.000 token` yanında sıkıştırma öncesi/sonrası değerler ayrıntıda görülebilir; yüzde Türkçe/İngilizce locale'e uygun biçimlenir. Veri yoksa `— / Veri bekleniyor` gösterilir; artış varsa oran gizlenmez ve “token artışı” olarak anlatılır. Bu oran Headroom'un girdi azalmasıdır; abonelik kotası/fatura indirimi sayılmaz.
 - **Ek kabul:** Aktif motor, gözlenen trafik ve ölçülebilir fayda ayrı sinyaldir; hazır motorla sıfır trafik veya eksik kapsama uydurma kazanç üretmez. Yaklaşık%50 veya2x ürün vaadi örnek projeden taşınmaz.
@@ -317,6 +334,7 @@ flowchart TD
 - **Dosyalar:** `src/features/overview/Overview.tsx`, `src/features/overview/SavingsChart.tsx`, `src/features/overview/Overview.test.tsx`, `src/lib/metrics.ts`.
 
 ### H026 — Model ve ajan kapsamının gösterimi
+- **24 Ekim ürün yönü:** Platform/model/sohbet/ajan ilişkisinde yalnız kanıtlı atama kullanılır; atanamayan trafik ayrı kalır. H051 sohbet listesiyle ortak metadata sözleşmesi gerekir; yalnız aynı model adı kimlik kanıtı değildir.
 - [ ] İstemci/model kırılımı ve mevcutsa ajan kimliği gösterilir.
 - **Kabul:** Modelden ajan kimliği türetilmez; ayrı bulut/sağlayıcı yolu kapsanmış sayılmaz; bilinmeyen atama ayrı görünür.
 - **Ek kabul:** Ana/alt ajan kapsamı doğrulandı/kısmi/bilinmiyor olarak, gerçek route kanıtıyla gösterilir. Proxy toplamı vardır ama rol metadata'sı yoksa ajan bazlı tam kapsama iddiası üretilmez. Bu alanlar optimizasyonu yalnız ana ajanla sınırlayan filtreye dönüşmez.
@@ -531,6 +549,22 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 - **Bağımlılık / boyut:** H019, H047 / L; Windows ilk çalışan diliminden sonra.
 - **Dosyalar:** Platforma özgü runtime/packaging/test ve `docs/validation/linux.md` (planlanan).
 
+## Hesaplar ve sohbetler — 24 Ekim kullanıcı isteği
+
+### H050 — Hesap bağlantıları ve resmî giriş akışı
+- [ ] Codex, Claude Code ve OpenCode için desteklenen hesap/provider bağlantıları sade biçimde listelenir; kullanıcı eylemiyle resmî giriş akışı açılır.
+- **Kabul:** Kurulu istemci, hesaba giriş, Headroom yönlendirmesi ve doğrulanmış trafik ayrı durumlar. Desteklenen sürüm/yüzeyde güvenilir salt okunur auth metadata kullanılır; desteklenmiyorsa bilinmiyor. Şifre/kod Headroom'da toplanmaz, mevcut token/auth dosyaları kopyalanmaz; otomatik yeni giriş/abonelik veya ücretli model çağrısı yok. İstemcinin yönetmediği provider hesapları bağlıymış gibi gösterilmez.
+- **Doğrulama:** Sürüme bağlı resmî kaynak incelemesi; giriş var/yok/bilinmiyor, iptal/başarısızlık ve yeniden açılış. Kullanıcının giriş yapmama tercihi korunur; fixture ile canlı hesap kanıtı ayrıdır.
+- **Bağımlılık / boyut:** H022 / M; auth capability araştırması, dar adapter ve sade UI sıralı dilimler.
+- **Dosyalar:** `src-tauri/src/integrations/` içindeki sürümlü account adapter'ları, ortak tip sözleşmesi, `src/features/integrations/Accounts.tsx`, odaklı testler (planlanan).
+
+### H051 — Açık sohbetler ve çalışan görevler
+- [ ] Hesap bağlantılarından ayrı, desteklenen istemcilerde sohbet metadata'sı ve güvenilir etkinlik durumu listelenir; resmî aç/resume yolu varsa kullanıcı eylemiyle açılır.
+- **Kabul:** Açık/çalışıyor/son trafik/sona erdi/bilinmiyor ayrı; süreç veya kayıt dosyası tek başına çalışan sohbet sayılmaz. İçerik toplama yok; gerekli en az kimlik/platform/proje/zaman/durum metadata'sı. Platform/model kullanım ve tasarrufu yalnız aynı istek/sohbet bağı kanıtlıysa bağlanır; bilinmeyen atama ve proxy dışı kullanım kapsamı açık. Model/reasoning/provider sessiz değişmez, eski konuşma gizlice taşınmaz; gizli resume/otomatik mesaj gönderimi yok.
+- **Doğrulama:** Birden çok sohbet, aynı modeli kullanan iki sohbet, ana/alt ajan, sessiz ama açık sohbet, kapanmış süreç, stale metadata ve desteklenmeyen istemci fixture'ları; desteklenen yüzeyde gerçek aç/resume ve lifecycle kontrolü.
+- **Bağımlılık / boyut:** H050, H026 / M; metadata kabiliyeti, yaşam döngüsü/atama, liste/açma ayrı dilimler.
+- **Dosyalar:** Sürümlü session metadata adapter'ları, `src/features/integrations/Sessions.tsx`, ortak attribution/query sözleşmesi ve odaklı testler (planlanan).
+
 ## İlk sürüm sonrasına bırakılanlar
 
 - İçerik türüne göre ayrıntılı kazanç görünümü ve sağlayıcıya gitmeyen yerel önizleme.
@@ -553,4 +587,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**H019 tamamlandı;16/49.** İlk Windows10 CLI config/yanıt ürünü kabul edildi; temiz genel uyumluluk iddiası yok. Ek CLI hataları H008 açık takibinde. Ana görev sonrası duruldu; kullanıcı devam derse sıradaki H020, H048/H049 başlamadı. Ücretsiz kota/hard-stop canlı kontrol edilmeden yeni CI dispatch edilmez; bu kapanışta CI/push yok. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.
+**17/51 tamam; H020 kapandı.** H021 OpenCode sıradaki ana görev; kullanıcı devam mesajı beklenir. H050/H051 yeni hesap/sohbet işleri planlandı, başlamadı. Sade Graphite deneyimi H022/H025/H026 ile birlikte yürütülecek. H019 ek CLI hataları H008 açık takibinde; H048/H049 başlamadı. Ücretsiz kota/hard-stop canlı kontrol edilmeden yeni CI dispatch edilmez. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.
