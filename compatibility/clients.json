@@ -277,6 +277,62 @@
         "docs/reviews/H020.md"
       ],
       "evidence_date": "2026-10-24"
+    },
+    {
+      "id": "opencode-v1-native-product-provider-routes-win10",
+      "product": "OpenCode V1",
+      "version": "1.19.3 native Windows x64 baseline; exact measured SHA pin",
+      "surface": "Headroom native UI to saved user JSONC; three eligible provider aliases",
+      "platform": "Windows 10 Pro 22H2 x64 (10.0.19045)",
+      "auth": "Synthetic API-key sentinel via isolated environment; no live account",
+      "protocol": "OpenAI Responses and OpenAI-compatible Chat Completions",
+      "transport": "HTTP SSE through GUI-owned ingress and Headroom0.41.0 to local fixture",
+      "status": "local_fixture_pass",
+      "capabilities": {
+        "exact_native_discovery": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/opencode-product.md"
+        },
+        "multi_alias_saved_config_adoption": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/opencode-product.md"
+        },
+        "selector_to_wire_model_preservation": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/opencode-product.md"
+        },
+        "two_protocol_final_response_and_usage": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/opencode-product.md"
+        },
+        "atomic_ownership_reopen_byte_exact_undo": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/opencode-product.md"
+        },
+        "live_auth_and_provider_model_features": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/opencode-product.md"
+        },
+        "actual_main_subagent_attribution": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/opencode-product.md"
+        },
+        "client_side_ccr": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/opencode-product.md"
+        },
+        "desktop_v2_and_other_os": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/opencode-product.md"
+        }
+      },
+      "scope_limits": "Built-in openai Responses and explicit ordinary @ai-sdk/openai-compatible aliases with canonical standard OpenAI original base only. Excluded/custom upstreams are unchanged. Static selected-file coverage is not another process runtime or universal model/agent support.",
+      "savings": "Fixture usage12/4 is synthetic. Raw engine saved0/%0 is not real user/billing or development-chat savings; mixed before/after measurement bases must not be subtracted.",
+      "evidence": [
+        "docs/proofs/opencode-product.md",
+        "docs/reviews/H021.md"
+      ],
+      "evidence_date": "2026-10-24"
     }
   ],
   "product_capabilities": [

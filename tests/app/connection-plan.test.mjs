@@ -58,6 +58,20 @@ function makePreview(plan = makePlan()) {
   };
 }
 
+function makeOpenCodeCoverage(overrides = {}) {
+  return {
+    eligible_count: 3,
+    excluded_count: 1,
+    already_same_count: 1,
+    responses_count: 2,
+    chat_completions_count: 1,
+    partial: true,
+    configured_default_route: "covered",
+    runtime_effective: "unknown",
+    ...overrides,
+  };
+}
+
 function makeError(overrides = {}) {
   return {
     schema_version: 1,
@@ -150,15 +164,83 @@ test("validates client-specific endpoint and config source pairs", () => {
     client_kind: "opencode_v1",
     config_source: "opencode_jsonc",
     config_presence: "present",
+    opencode_coverage: makeOpenCodeCoverage(),
     endpoint_field: {
       field: "opencode_v1_openai_base_url",
-      before: "missing",
+      before: "provider_routes",
       proposed_value: "http://127.0.0.1:41731/v1",
       after_headroom: true,
     },
   });
   assert.equal(decode(makePreview(opencode), requestId, "opencode").kind, "preview");
   assert.equal(decode(makePreview({ ...opencode, config_presence: "missing" }), requestId, "opencode"), null);
+  const opencodeOnCodex = makePlan({ opencode_coverage: makeOpenCodeCoverage() });
+  assert.equal(decode(makePreview(opencodeOnCodex)), null);
+});
+
+test("OpenCode plans require exact internally consistent multi-route coverage", () => {
+  const valid = makePlan({
+    client_kind: "opencode_v1",
+    config_source: "opencode_json",
+    endpoint_field: {
+      field: "opencode_v1_openai_base_url",
+      before: "provider_routes",
+      proposed_value: "http://127.0.0.1:41731/v1",
+      after_headroom: true,
+    },
+    opencode_coverage: makeOpenCodeCoverage(),
+  });
+  const decoded = decode(makePreview(valid), requestId, "opencode");
+  assert.equal(decoded.kind, "preview");
+  assert.deepEqual(decoded.plan.opencode_coverage, makeOpenCodeCoverage());
+
+  const invalidCoverage = [
+    makeOpenCodeCoverage({ eligible_count: 0 }),
+    makeOpenCodeCoverage({ excluded_count: 33 }),
+    makeOpenCodeCoverage({ already_same_count: 4 }),
+    makeOpenCodeCoverage({ responses_count: 1 }),
+    makeOpenCodeCoverage({ partial: false }),
+    makeOpenCodeCoverage({ configured_default_route: "covered", eligible_count: 0, excluded_count: 0, already_same_count: 0, responses_count: 0, chat_completions_count: 0, partial: false }),
+    makeOpenCodeCoverage({ runtime_effective: "ready" }),
+    { ...makeOpenCodeCoverage(), private_provider_key: "secret-route" },
+  ];
+  for (const coverage of invalidCoverage) {
+    assert.equal(decode(makePreview({ ...valid, opencode_coverage: coverage }), requestId, "opencode"), null);
+  }
+  assert.equal(decode(makePreview({ ...valid, endpoint_field: { ...valid.endpoint_field, before: "missing" } }), requestId, "opencode"), null);
+  assert.equal(decode(makePreview({ ...valid, opencode_coverage: undefined }), requestId, "opencode"), null);
+  assert.equal(decode(makePreview({ ...valid, opencode_coverage: makeOpenCodeCoverage({ partial: true, excluded_count: 0 }) }), requestId, "opencode").kind, "preview");
+
+  const zeroRoute = makePlan({
+    client_kind: "opencode_v1",
+    config_source: "opencode_missing",
+    config_presence: "missing",
+    model: "absent",
+    reasoning: "unknown",
+    auth: "unknown",
+    hook_shell: "absent",
+    endpoint_field: {
+      field: "opencode_v1_openai_base_url",
+      before: "unknown",
+      proposed_value: "http://127.0.0.1:41731/v1",
+      after_headroom: false,
+    },
+    status: "blocked",
+    blockers: ["unsupported_route"],
+    opencode_coverage: makeOpenCodeCoverage({
+      eligible_count: 0, excluded_count: 0, already_same_count: 0,
+      responses_count: 0, chat_completions_count: 0, partial: false,
+      configured_default_route: "unknown",
+    }),
+  });
+  assert.equal(decode(makePreview(zeroRoute), requestId, "opencode").kind, "preview");
+  assert.equal(decode(makePreview({ ...zeroRoute, endpoint_field: { ...zeroRoute.endpoint_field, before: "missing" } }), requestId, "opencode"), null);
+
+  const { opencode_coverage: _omittedCoverage, ...analysisError } = zeroRoute;
+  assert.equal(decode(makePreview(analysisError), requestId, "opencode").kind, "preview");
+
+  assert.equal(decode(makePreview({ ...valid, opencode_coverage: makeOpenCodeCoverage(), client_kind: "codex" })), null);
+  assert.equal(decode(makePreview({ ...valid, opencode_coverage: makeOpenCodeCoverage(), client_kind: "claude_code" }), requestId, "claude_code"), null);
 });
 
 test("project scope is correlated and permitted only for Claude Code", () => {
@@ -205,12 +287,17 @@ test("missing config plans carry only the default-preserving declarations", () =
     hook_shell: "absent",
     endpoint_field: {
       field: "opencode_v1_openai_base_url",
-      before: "missing",
+      before: "unknown",
       proposed_value: "http://127.0.0.1:41731/v1",
       after_headroom: false,
     },
     status: "blocked",
-    blockers: ["client_version_unknown"],
+    blockers: ["unsupported_route"],
+    opencode_coverage: makeOpenCodeCoverage({
+      eligible_count: 0, excluded_count: 0, already_same_count: 0,
+      responses_count: 0, chat_completions_count: 0, partial: false,
+      configured_default_route: "unknown",
+    }),
   });
   assert.equal(decode(makePreview(missingOpenCode), requestId, "opencode").kind, "preview");
   assert.equal(decode(makePreview({ ...missingOpenCode, reasoning: "absent" }), requestId, "opencode"), null);

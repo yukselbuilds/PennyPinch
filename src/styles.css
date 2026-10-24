@@ -237,6 +237,18 @@ h1 { margin-bottom: 7px; font-size: clamp(26px, 2.4vw, 33px); font-weight: 570; 
 .connection-dialog__blockers { display: grid; gap: 5px; padding-left: 18px; margin: 8px 0 0; color: var(--muted); }
 .connection-dialog__result p { margin: 6px 0 0; }
 .connection-dialog__expired { margin: 13px 0 0; padding: 9px 11px; color: var(--warning); background: color-mix(in srgb, var(--warning) 6%, var(--surface)); border: 1px solid; border-radius: 7px; font-size: 11px; }
+.connection-dialog__coverage { margin-top: 16px; padding: 13px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 8px; }
+.connection-dialog__coverage h3 { margin: 0 0 10px; color: var(--text); font-size: 12px; font-weight: 620; }
+.connection-dialog__coverage-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin: 0; }
+.connection-dialog__coverage-grid > div { min-width: 0; padding: 8px 9px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+.connection-dialog__coverage-grid dt { color: var(--quiet); font-size: 10px; line-height: 1.35; }
+.connection-dialog__coverage-grid dd { margin: 3px 0 0; color: var(--text); font-size: 12px; line-height: 1.35; overflow-wrap: anywhere; }
+.connection-dialog__coverage-note { margin: 9px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+.connection-dialog__coverage-note--warning { color: var(--warning); }
+.connection-dialog__advanced { margin-top: 15px; border-top: 1px solid var(--border); }
+.connection-dialog__advanced summary { width: fit-content; padding: 11px 2px 2px; color: var(--accent); cursor: pointer; font-size: 11px; font-weight: 600; }
+.connection-dialog__advanced summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.connection-dialog__advanced-body > .connection-dialog__section:first-child { margin-top: 12px; }
 .connection-dialog__section { margin-top: 18px; padding-top: 15px; border-top: 1px solid var(--border); }
 .connection-dialog__section h3 { margin: 0 0 10px; color: var(--text); font-size: 12px; font-weight: 620; }
 .connection-dialog__endpoint { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
@@ -299,6 +311,7 @@ h1 { margin-bottom: 7px; font-size: clamp(26px, 2.4vw, 33px); font-weight: 570; 
   .connection-dialog__actions .button { min-width: 0; padding-inline: 6px; font-size: 9px; }
   .connection-dialog__endpoint { grid-template-columns: 1fr; }
   .connection-dialog__details > div { grid-template-columns: minmax(100px, 40%) minmax(0, 1fr); gap: 9px; }
+  .connection-dialog__coverage-grid { grid-template-columns: 1fr; }
   .connection-dialog__ownership-meta { grid-template-columns: 1fr; }
   .claude-scope__heading { flex-direction: column; }
   .claude-scope__controls { justify-content: flex-start; }

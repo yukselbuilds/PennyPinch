@@ -1,6 +1,7 @@
 pub(crate) mod config_document;
 pub(crate) mod config_io;
 pub mod discovery;
+pub(crate) mod opencode_routes;
 pub mod picker;
 pub(crate) mod plan;
 pub(crate) mod transaction;
@@ -11,6 +12,9 @@ mod discovery_tests;
 
 #[cfg(test)]
 mod plan_tests;
+
+#[cfg(test)]
+mod opencode_routes_tests;
 
 #[cfg(test)]
 mod config_io_tests;

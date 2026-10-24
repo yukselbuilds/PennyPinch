@@ -1,5 +1,5 @@
 use crate::integrations::plan::{ClientKind, ConfigPresence, ConfigScope, ConfigSource};
-use crate::integrations::transaction::{PatchReceipt, PatchReceiptMetadata};
+use crate::integrations::transaction::{OpenCodeRouteReceipt, PatchReceipt, PatchReceiptMetadata};
 use crate::integrations::transaction_fs::{
     FileSnapshot, FileToken, FileTransaction, TransactionFsError,
 };
@@ -39,6 +39,8 @@ struct StoredReceipt {
     endpoint_port: u16,
     created_ancestor_mask: u8,
     config_was_missing: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    opencode_routes: Option<Vec<OpenCodeRouteReceipt>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -272,6 +274,7 @@ impl StoredReceipt {
             endpoint_port: metadata.endpoint_port,
             created_ancestor_mask: metadata.created_ancestor_mask,
             config_was_missing: metadata.config_was_missing,
+            opencode_routes: metadata.opencode_routes,
         }
     }
 
@@ -285,6 +288,7 @@ impl StoredReceipt {
             endpoint_port: self.endpoint_port,
             created_ancestor_mask: self.created_ancestor_mask,
             config_was_missing: self.config_was_missing,
+            opencode_routes: self.opencode_routes.clone(),
         })
         .map_err(|_| OwnershipError::Invalid)
     }
@@ -994,6 +998,17 @@ mod codec_tests {
     use super::*;
 
     #[test]
+    fn legacy_opencode_receipt_without_optional_route_rows_decodes() {
+        let legacy = r#"{"client_kind":"opencode_v1","config_source":"opencode_jsonc","endpoint_port":45231,"created_ancestor_mask":0,"config_was_missing":false}"#;
+        let stored: StoredReceipt = serde_json::from_str(legacy).unwrap();
+        let metadata = stored.to_receipt().unwrap().metadata();
+        assert_eq!(metadata.client_kind, ClientKind::OpenCodeV1);
+        assert!(metadata.opencode_routes.is_none());
+        let encoded = serde_json::to_value(stored).unwrap();
+        assert!(encoded.get("opencode_routes").is_none());
+    }
+
+    #[test]
     fn patch_receipt_metadata_rejects_opencode_missing_present_combination() {
         assert!(PatchReceipt::from_metadata(PatchReceiptMetadata {
             client_kind: ClientKind::OpenCodeV1,
@@ -1001,6 +1016,7 @@ mod codec_tests {
             endpoint_port: 45231,
             created_ancestor_mask: 7,
             config_was_missing: false,
+            opencode_routes: None,
         })
         .is_err());
     }

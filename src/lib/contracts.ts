@@ -1,5 +1,15 @@
 export type ConnectionPlanStatus = "preview" | "blocked";
 export type ConnectionScope = "user_config" | "project_local_config";
+export interface OpenCodeRouteCoverage {
+  eligible_count: number;
+  excluded_count: number;
+  already_same_count: number;
+  responses_count: number;
+  chat_completions_count: number;
+  partial: boolean;
+  configured_default_route: "covered" | "excluded" | "unknown";
+  runtime_effective: "unknown";
+}
 
 export interface ConnectionPlan {
   schema_version: 1;
@@ -18,10 +28,11 @@ export interface ConnectionPlan {
   endpoint_port: number;
   endpoint_field: {
     field: "codex_openai_base_url" | "claude_anthropic_base_url" | "opencode_v1_openai_base_url";
-    before: "missing" | "same_stable_endpoint" | "other_configured_redacted" | "unknown";
+    before: "missing" | "same_stable_endpoint" | "other_configured_redacted" | "unknown" | "provider_routes";
     proposed_value: string;
     after_headroom: boolean;
   };
+  opencode_coverage?: OpenCodeRouteCoverage;
   status: ConnectionPlanStatus;
   model: "present" | "absent" | "unknown";
   reasoning: "present" | "absent" | "unknown";

@@ -106,6 +106,20 @@ type Copy = {
   sources: Record<ConnectionPlan["config_source"], string>;
   installationSources: Record<InstallationSource, string>;
   endpointBefores: Record<ConnectionPlan["endpoint_field"]["before"], string>;
+  opencodeEndpointLabel: string;
+  advancedDetails: string;
+  routeCoverageTitle: string;
+  routeEligible: string;
+  routeExcluded: string;
+  routeResponses: string;
+  routeChatCompletions: string;
+  routeConfiguredDefault: string;
+  routeDefaultCovered: string;
+  routeDefaultExcluded: string;
+  routeDefaultUnknown: string;
+  routeDefaultExcludedNote: string;
+  routePartialNote: string;
+  routeRuntimeUnknown: string;
   targetModel: string;
   targetReasoning: string;
   targetAuth: string;
@@ -168,7 +182,21 @@ const copy: Record<PreferenceLanguage, Copy> = {
     },
     sources: { codex_toml: "Codex TOML", claude_json: "Claude JSON", opencode_json: "OpenCode JSON", opencode_jsonc: "OpenCode JSONC", opencode_missing: "OpenCode yapılandırması eksik" },
     installationSources: { path: "PATH", user_local_npm: "Kullanıcıya ait npm", user_local_native: "Kullanıcıya ait kurulum", scoop: "Scoop", windows_app_package: "Windows uygulama paketi", manual_file: "Seçilen dosya" },
-    endpointBefores: { missing: "Eksik", same_stable_endpoint: "Aynı yerel endpoint", other_configured_redacted: "Başka bir değer yapılandırılmış (gizli)", unknown: "Bilinmiyor" },
+    endpointBefores: { missing: "Eksik", same_stable_endpoint: "Aynı yerel endpoint", other_configured_redacted: "Başka bir değer yapılandırılmış (gizli)", unknown: "Bilinmiyor", provider_routes: "Uygun yapılandırılmış sağlayıcı rotaları" },
+    opencodeEndpointLabel: "Uygun sağlayıcıların options.baseURL alanları",
+    advancedDetails: "Gelişmiş ayrıntılar",
+    routeCoverageTitle: "Bu önizlemenin kapsadığı rotalar",
+    routeEligible: "Uygun rota sayısı",
+    routeExcluded: "Dışarıda kalan rota sayısı",
+    routeResponses: "Responses API",
+    routeChatCompletions: "Chat Completions",
+    routeConfiguredDefault: "Yapılandırılmış varsayılan rota",
+    routeDefaultCovered: "Kapsanıyor",
+    routeDefaultExcluded: "Dışarıda",
+    routeDefaultUnknown: "Bilinmiyor",
+    routeDefaultExcludedNote: "Yapılandırılmış varsayılan modelin trafiği bu dosya değişikliğiyle Headroom üzerinden yönlendirilmez.",
+    routePartialNote: "Kapsam kısmi; dışarıda kalan veya gözlenmeyen rotalar değiştirilmez.",
+    routeRuntimeUnknown: "Dosya gözlemi, mevcut sürecin etkin rotasını doğrulamaz.",
     targetModel: "Hedef dosyadaki model bildirimi", targetReasoning: "Hedef dosyadaki reasoning bildirimi", targetAuth: "Hedef dosyadaki kimlik doğrulama bildirimi",
     claudeUserScope: "Kapsam: kullanıcı ayarları", claudeProjectScope: "Kapsam: proje ayarları", refreshClaude: "Bağlamı ve kayıtları yenile",
   },
@@ -225,7 +253,21 @@ const copy: Record<PreferenceLanguage, Copy> = {
     },
     sources: { codex_toml: "Codex TOML", claude_json: "Claude JSON", opencode_json: "OpenCode JSON", opencode_jsonc: "OpenCode JSONC", opencode_missing: "OpenCode configuration missing" },
     installationSources: { path: "PATH", user_local_npm: "User-local npm", user_local_native: "User-local install", scoop: "Scoop", windows_app_package: "Windows app package", manual_file: "Selected file" },
-    endpointBefores: { missing: "Missing", same_stable_endpoint: "Same local endpoint", other_configured_redacted: "Another value is configured (redacted)", unknown: "Unknown" },
+    endpointBefores: { missing: "Missing", same_stable_endpoint: "Same local endpoint", other_configured_redacted: "Another value is configured (redacted)", unknown: "Unknown", provider_routes: "Eligible configured provider routes" },
+    opencodeEndpointLabel: "Eligible provider options.baseURL fields",
+    advancedDetails: "Advanced details",
+    routeCoverageTitle: "Routes covered by this preview",
+    routeEligible: "Eligible routes",
+    routeExcluded: "Excluded routes",
+    routeResponses: "Responses API",
+    routeChatCompletions: "Chat Completions",
+    routeConfiguredDefault: "Configured default route",
+    routeDefaultCovered: "Covered",
+    routeDefaultExcluded: "Excluded",
+    routeDefaultUnknown: "Unknown",
+    routeDefaultExcludedNote: "Traffic for the configured default model will not use Headroom through this file change.",
+    routePartialNote: "Coverage is partial; excluded or unobserved routes are left unchanged.",
+    routeRuntimeUnknown: "File observations do not verify the route used by a running process.",
     targetModel: "Target-file model declaration", targetReasoning: "Target-file reasoning declaration", targetAuth: "Target-file authentication declaration",
     claudeUserScope: "Scope: user settings", claudeProjectScope: "Scope: project settings", refreshClaude: "Refresh context and records",
   },
@@ -235,7 +277,7 @@ const clientTitles: Record<ClientKind, string> = { codex: "Codex", claude_code: 
 const endpointLabels: Record<ConnectionPlan["endpoint_field"]["field"], string> = {
   codex_openai_base_url: "openai_base_url",
   claude_anthropic_base_url: "env.ANTHROPIC_BASE_URL",
-  opencode_v1_openai_base_url: "provider.openai.options.baseURL",
+  opencode_v1_openai_base_url: "provider options.baseURL",
 };
 
 type PreviewContext = { scanGeneration: number; installationIdsKey: string; scope: ConnectionPlan["scope"] };
@@ -341,6 +383,7 @@ export function ConnectDialog({
   const [nowMs, setNowMs] = useState(() => Date.now());
   const currentContext = { scanGeneration, installationIdsKey: idsKey };
   const isClaude = clientKind === "claude_code";
+  const isOpenCode = clientKind === "opencode";
   const currentScope: ConnectionPlan["scope"] = isClaude
     ? claudeContext?.scope ?? "user_config"
     : "user_config";
@@ -354,6 +397,7 @@ export function ConnectDialog({
     && busyContext.installationIdsKey === currentContext.installationIdsKey;
   const selected = installations.find((item) => item.installation_id === selectedId);
   const plan = result?.kind === "preview" ? result.plan : null;
+  const openCodeCoverage = plan?.client_kind === "opencode_v1" ? plan.opencode_coverage : undefined;
   const expired = plan !== null && isConnectionPlanExpired(plan, nowMs);
   const previewAvailable = installations.length > 0;
   const ownership = ownershipView.kind === "ready" ? ownershipView.ownership : null;
@@ -364,6 +408,31 @@ export function ConnectDialog({
     && canApplyForConnectionScope(plan.scope, ownership)
     && (!isClaude || (claudeContext !== null && claudeError === null && claudeSettings !== null))
     && ownershipView.kind === "ready" && !ownershipLoading && nativeAvailable && !mutationPending && !bridgePending);
+
+  const planTechnicalDetails = plan && <>
+    <section className="connection-dialog__section" aria-label={text.endpoint}>
+      <h3>{text.endpoint}</h3>
+      <dl className="connection-dialog__endpoint">
+        <div><dt>{text.current}</dt><dd>{text.endpointBefores[plan.endpoint_field.before]}</dd></div>
+        <div><dt>{text.proposed}</dt><dd><code>{isOpenCode ? text.opencodeEndpointLabel : endpointLabels[plan.endpoint_field.field]}</code><code>{plan.endpoint_field.proposed_value}</code></dd></div>
+      </dl>
+    </section>
+    <section className="connection-dialog__section">
+      <h3>{text.source}</h3>
+      <dl className="connection-dialog__details">
+        <div><dt>{text.source}</dt><dd>{text.sources[plan.config_source]}</dd></div>
+        <div><dt>{text.presence}</dt><dd>{plan.config_presence === "present" ? text.present : text.missing}</dd></div>
+        <div><dt>{isClaude ? text.targetModel : text.model}</dt><dd>{declarationLabel(plan.model, text)} · {text.unchanged}</dd></div>
+        <div><dt>{isClaude ? text.targetReasoning : text.reasoning}</dt><dd>{declarationLabel(plan.reasoning, text)} · {text.unchanged}</dd></div>
+        <div><dt>{text.provider}</dt><dd>{text.unchanged}</dd></div>
+        <div><dt>{isClaude ? text.targetAuth : text.auth}</dt><dd>{authLabel(plan.auth, text)} · {text.unchanged}</dd></div>
+        <div><dt>{text.agentCount}</dt><dd>{text.unchanged}</dd></div>
+        <div><dt>{text.hookShell}</dt><dd>{plan.hook_shell === "absent" ? text.hookAbsent : plan.hook_shell === "present_unchanged" ? text.hookPresent : text.unknown}</dd></div>
+        <div><dt>{text.runtimeEffective}</dt><dd>{text.unknown}</dd></div>
+      </dl>
+      {plan.config_presence === "missing" && <p className="connection-dialog__detail-note">{text.newFile}</p>}
+    </section>
+  </>;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -800,28 +869,28 @@ export function ConnectDialog({
         </div>}
         {plan && <>
           {expired && <p className="connection-dialog__expired" role="alert">{text.expired}</p>}
-          <section className="connection-dialog__section" aria-label={text.endpoint}>
-            <h3>{text.endpoint}</h3>
-            <dl className="connection-dialog__endpoint">
-              <div><dt>{text.current}</dt><dd>{text.endpointBefores[plan.endpoint_field.before]}</dd></div>
-              <div><dt>{text.proposed}</dt><dd><code>{endpointLabels[plan.endpoint_field.field]}</code><code>{plan.endpoint_field.proposed_value}</code></dd></div>
+          {isOpenCode && openCodeCoverage && <section className="connection-dialog__coverage" aria-labelledby="connection-dialog-coverage-title">
+            <h3 id="connection-dialog-coverage-title">{text.routeCoverageTitle}</h3>
+            <dl className="connection-dialog__coverage-grid">
+              <div><dt>{text.routeEligible}</dt><dd>{openCodeCoverage.eligible_count}</dd></div>
+              <div><dt>{text.routeExcluded}</dt><dd>{openCodeCoverage.excluded_count}</dd></div>
+              <div><dt>{text.routeResponses}</dt><dd>{openCodeCoverage.responses_count}</dd></div>
+              <div><dt>{text.routeChatCompletions}</dt><dd>{openCodeCoverage.chat_completions_count}</dd></div>
+              <div><dt>{text.routeConfiguredDefault}</dt><dd>{text[
+                openCodeCoverage.configured_default_route === "covered" ? "routeDefaultCovered"
+                  : openCodeCoverage.configured_default_route === "excluded" ? "routeDefaultExcluded" : "routeDefaultUnknown"
+              ]}</dd></div>
             </dl>
-          </section>
-          <section className="connection-dialog__section">
-            <h3>{text.source}</h3>
-            <dl className="connection-dialog__details">
-              <div><dt>{text.source}</dt><dd>{text.sources[plan.config_source]}</dd></div>
-              <div><dt>{text.presence}</dt><dd>{plan.config_presence === "present" ? text.present : text.missing}</dd></div>
-              <div><dt>{isClaude ? text.targetModel : text.model}</dt><dd>{declarationLabel(plan.model, text)} · {text.unchanged}</dd></div>
-              <div><dt>{isClaude ? text.targetReasoning : text.reasoning}</dt><dd>{declarationLabel(plan.reasoning, text)} · {text.unchanged}</dd></div>
-              <div><dt>{text.provider}</dt><dd>{text.unchanged}</dd></div>
-              <div><dt>{isClaude ? text.targetAuth : text.auth}</dt><dd>{authLabel(plan.auth, text)} · {text.unchanged}</dd></div>
-              <div><dt>{text.agentCount}</dt><dd>{text.unchanged}</dd></div>
-              <div><dt>{text.hookShell}</dt><dd>{plan.hook_shell === "absent" ? text.hookAbsent : plan.hook_shell === "present_unchanged" ? text.hookPresent : text.unknown}</dd></div>
-              <div><dt>{text.runtimeEffective}</dt><dd>{text.unknown}</dd></div>
-            </dl>
-            {plan.config_presence === "missing" && <p className="connection-dialog__detail-note">{text.newFile}</p>}
-          </section>
+            {openCodeCoverage.configured_default_route === "excluded" && <p className="connection-dialog__coverage-note connection-dialog__coverage-note--warning">{text.routeDefaultExcludedNote}</p>}
+            {openCodeCoverage.partial && <p className="connection-dialog__coverage-note">{text.routePartialNote}</p>}
+            <p className="connection-dialog__coverage-note">{text.routeRuntimeUnknown}</p>
+          </section>}
+          {isOpenCode
+            ? <details className="connection-dialog__advanced">
+              <summary>{text.advancedDetails}</summary>
+              <div className="connection-dialog__advanced-body">{planTechnicalDetails}</div>
+            </details>
+            : planTechnicalDetails}
           <section className="connection-dialog__section connection-dialog__limits">
             <h3>{text.sessionEffects}</h3>
             <p>{text.sessionRestart}</p>

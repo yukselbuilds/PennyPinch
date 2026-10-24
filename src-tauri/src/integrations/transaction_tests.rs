@@ -165,6 +165,138 @@ fn opencode_jsonc_patch_and_undo_preserve_comments_trailing_commas_and_add_ances
 }
 
 #[test]
+fn opencode_routes_already_at_the_stable_endpoint_are_an_unowned_noop() {
+    let original = br#"{
+  "model": "lab-a/selector",
+  "provider": {
+    "lab-a": {"npm": "@ai-sdk/openai-compatible", "models": {"selector": {"id": "wire-a"}}, "options": {"baseURL": "http://127.0.0.1:41731/v1"}},
+    "openai": {"npm": "@ai-sdk/openai", "models": {"responses": {"id": "wire-responses"}}, "options": {"baseURL": "http://127.0.0.1:41731/v1"}}
+  }
+}"#;
+    let opencode_plan = plan(ClientKind::OpenCodeV1, original);
+    assert_eq!(opencode_plan.status, PlanStatus::Preview);
+    assert_eq!(
+        apply_missing_endpoint(&opencode_plan, original).unwrap(),
+        ApplyResult::Unchanged
+    );
+}
+
+#[test]
+fn opencode_routes_patch_and_undo_all_eligible_aliases_without_changing_models() {
+    let original = r#"{
+  // Route-specific wire IDs and credentials are user data.
+  "model": "lab-a/selector",
+  "provider": {
+    "lab-a": {
+      "npm": "@ai-sdk/openai-compatible",
+      "models": {"selector": {"id": "wire-a"}},
+      "options": {"apiKey": "fixture-secret-marker", "baseURL": "https:\/\/api.openai.com\/v1"}
+    },
+    "lab-b": {
+      "npm": "@ai-sdk/openai-compatible",
+      "models": {"other": {"id": "wire-b"}},
+      "options": {"baseURL": "http://127.0.0.1:41731/v1"}
+    },
+    "openai": {
+      "npm": "@ai-sdk/openai",
+      "models": {"responses": {"id": "wire-responses"}}
+    },
+    "anthropic": {"npm": "@ai-sdk/anthropic"}
+  }
+}
+"#
+    .as_bytes();
+    let opencode_plan = plan(ClientKind::OpenCodeV1, original);
+    assert_eq!(opencode_plan.status, PlanStatus::Preview);
+
+    let (updated, receipt) = patched(apply_missing_endpoint(&opencode_plan, original).unwrap());
+    let text = std::str::from_utf8(&updated).unwrap();
+    assert!(text.contains("// Route-specific wire IDs and credentials are user data."));
+    assert!(text.contains("\"model\": \"lab-a/selector\""));
+    assert!(text.contains("\"id\": \"wire-a\""));
+    assert!(text.contains("\"id\": \"wire-b\""));
+    assert!(text.contains("\"id\": \"wire-responses\""));
+    assert!(text.contains("\"apiKey\": \"fixture-secret-marker\""));
+    assert!(text.contains("\"baseURL\": \"http://127.0.0.1:41731/v1\""));
+
+    let parsed = super::config_document::parse_document(ClientKind::OpenCodeV1, &updated).unwrap();
+    assert_eq!(
+        parsed["provider"]["lab-a"]["options"]["baseURL"],
+        "http://127.0.0.1:41731/v1"
+    );
+    assert_eq!(
+        parsed["provider"]["lab-b"]["options"]["baseURL"],
+        "http://127.0.0.1:41731/v1"
+    );
+    assert_eq!(
+        parsed["provider"]["openai"]["options"]["baseURL"],
+        "http://127.0.0.1:41731/v1"
+    );
+    assert_eq!(
+        parsed["provider"]["anthropic"]["options"]["baseURL"],
+        serde_json::Value::Null
+    );
+
+    let mut unrelated_route_edit =
+        super::config_document::parse_document(ClientKind::OpenCodeV1, &updated).unwrap();
+    unrelated_route_edit["provider"]["lab-b"]["options"]["baseURL"] =
+        serde_json::json!("https://user.example/v1");
+    let unrelated_route_edit = serde_json::to_vec(&unrelated_route_edit).unwrap();
+    let restored_with_edit = undo_owned_endpoint(&receipt, &unrelated_route_edit).unwrap();
+    let restored_value =
+        super::config_document::parse_document(ClientKind::OpenCodeV1, &restored_with_edit)
+            .unwrap();
+    assert_eq!(
+        restored_value["provider"]["lab-a"]["options"]["baseURL"],
+        "https://api.openai.com/v1"
+    );
+    assert_eq!(
+        restored_value["provider"]["lab-b"]["options"]["baseURL"],
+        "https://user.example/v1"
+    );
+    assert!(restored_value["provider"]["openai"]
+        .get("options")
+        .is_none());
+
+    let mut missing_owned_route =
+        super::config_document::parse_document(ClientKind::OpenCodeV1, &updated).unwrap();
+    missing_owned_route["provider"]
+        .as_object_mut()
+        .unwrap()
+        .remove("lab-a");
+    let missing_owned_route = serde_json::to_vec(&missing_owned_route).unwrap();
+    assert_eq!(
+        undo_owned_endpoint(&receipt, &missing_owned_route),
+        Err(TransactionError::Conflict)
+    );
+
+    let conflicting_edit = text.replacen("http://127.0.0.1:41731/v1", "https://user.example/v1", 1);
+    assert_eq!(
+        undo_owned_endpoint(&receipt, conflicting_edit.as_bytes()),
+        Err(TransactionError::Conflict)
+    );
+    assert_eq!(undo_owned_endpoint(&receipt, &updated).unwrap(), original);
+}
+
+#[test]
+fn opencode_route_drift_after_preview_conflicts_before_returning_a_patch() {
+    let original = br#"{
+  "model": "lab-a/selector",
+  "provider": {
+    "lab-a": {"npm": "@ai-sdk/openai-compatible", "models": {"selector": {"id": "wire-a"}}, "options": {"baseURL": "https://api.openai.com/v1"}}
+  }
+}"#;
+    let opencode_plan = plan(ClientKind::OpenCodeV1, original);
+    let changed = std::str::from_utf8(original)
+        .unwrap()
+        .replace("https://api.openai.com/v1", "https://user.example/v1");
+    assert_eq!(
+        apply_missing_endpoint(&opencode_plan, changed.as_bytes()),
+        Err(TransactionError::Conflict)
+    );
+}
+
+#[test]
 fn undo_preserves_unrelated_user_edits_and_conflicts_if_owned_value_changed() {
     let original = br#"{"model":"claude-opus-4-6"}"#;
     let plan = plan(ClientKind::ClaudeCode, original);

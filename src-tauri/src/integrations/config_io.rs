@@ -25,6 +25,8 @@ mod codex;
 mod codex_verify;
 #[path = "connection_actions.rs"]
 mod connection_actions;
+#[path = "config_io/opencode_environment.rs"]
+pub(super) mod opencode_environment;
 
 pub(crate) use claude_context::{
     ClaudeContextErrorDetail, ClaudeContextErrorReply, ClaudeContextReply,
@@ -1047,6 +1049,7 @@ struct PlanLease {
     endpoint: ReadyStableEndpoint,
     roots: ConfigRootInputs,
     claude_layers_fingerprint: Option<String>,
+    opencode_environment_fingerprint: Option<String>,
 }
 
 pub(crate) struct PlanManager {
@@ -1055,6 +1058,7 @@ pub(crate) struct PlanManager {
     roots_provider: Arc<dyn Fn() -> ConfigRootInputs + Send + Sync>,
     endpoint_provider:
         Arc<dyn Fn() -> Result<ReadyStableEndpoint, StableEndpointAccessError> + Send + Sync>,
+    opencode_environment_provider: Arc<dyn Fn() -> opencode_environment::Snapshot + Send + Sync>,
     leases: Mutex<HashMap<String, PlanLease>>,
     preview_in_flight: AtomicBool,
     ownership_store: Option<crate::state::ownership::OwnershipStore>,
@@ -1075,6 +1079,7 @@ impl PlanManager {
             claude_context: claude_context::ClaudeContextManager::new(),
             roots_provider: Arc::new(ConfigRootInputs::from_environment),
             endpoint_provider: Arc::new(move || runtime.ready_stable_endpoint()),
+            opencode_environment_provider: Arc::new(opencode_environment::Snapshot::from_process),
             leases: Mutex::new(HashMap::new()),
             preview_in_flight: AtomicBool::new(false),
             ownership_store: None,
@@ -1112,6 +1117,9 @@ impl PlanManager {
             claude_context: claude_context::ClaudeContextManager::new(),
             roots_provider: Arc::new(move || roots.clone()),
             endpoint_provider: Arc::new(endpoint_provider),
+            opencode_environment_provider: Arc::new(|| {
+                opencode_environment::Snapshot::from_values([None, None, None])
+            }),
             leases: Mutex::new(HashMap::new()),
             preview_in_flight: AtomicBool::new(false),
             ownership_store: None,
@@ -1137,6 +1145,9 @@ impl PlanManager {
             claude_context: claude_context::ClaudeContextManager::new(),
             roots_provider: Arc::new(roots_provider),
             endpoint_provider: Arc::new(endpoint_provider),
+            opencode_environment_provider: Arc::new(|| {
+                opencode_environment::Snapshot::from_values([None, None, None])
+            }),
             leases: Mutex::new(HashMap::new()),
             preview_in_flight: AtomicBool::new(false),
             ownership_store: None,
@@ -1163,6 +1174,9 @@ impl PlanManager {
             claude_context: claude_context::ClaudeContextManager::new(),
             roots_provider: Arc::new(move || roots.clone()),
             endpoint_provider: Arc::new(endpoint_provider),
+            opencode_environment_provider: Arc::new(|| {
+                opencode_environment::Snapshot::from_values([None, None, None])
+            }),
             leases: Mutex::new(HashMap::new()),
             preview_in_flight: AtomicBool::new(false),
             ownership_store: None,
@@ -1171,6 +1185,15 @@ impl PlanManager {
             fail_action_before_commit: false,
             fail_undo_before_commit: false,
         }
+    }
+
+    #[cfg(test)]
+    pub(super) fn with_test_opencode_environment_provider<F>(mut self, provider: F) -> Self
+    where
+        F: Fn() -> opencode_environment::Snapshot + Send + Sync + 'static,
+    {
+        self.opencode_environment_provider = Arc::new(provider);
+        self
     }
 
     pub(crate) fn preview(&self, request: PreviewRequest) -> PlanReply {
@@ -1217,6 +1240,8 @@ impl PlanManager {
             Ok(value) => value,
             Err(_) => return error_reply(request_id, ReplyError::EndpointUnavailable),
         };
+        let first_opencode_environment =
+            (kind == ClientKind::OpenCodeV1).then(|| (self.opencode_environment_provider)());
         let first_read = match read_user_config(kind, &roots) {
             Ok(value) => value,
             Err(error) => return error_reply(request_id, map_config_error(error)),
@@ -1268,6 +1293,20 @@ impl PlanManager {
                 plan.endpoint_field.after_headroom = false;
             }
         }
+        if first_opencode_environment
+            .as_ref()
+            .is_some_and(|snapshot| snapshot.has_override)
+        {
+            if !plan
+                .blockers
+                .contains(&super::plan::PlanBlocker::UnsupportedRoute)
+            {
+                plan.blockers
+                    .push(super::plan::PlanBlocker::UnsupportedRoute);
+            }
+            plan.status = PlanStatus::Blocked;
+            plan.endpoint_field.after_headroom = false;
+        }
 
         #[cfg(test)]
         if let Some(hook) = &self.after_first_read {
@@ -1277,6 +1316,8 @@ impl PlanManager {
             Ok(value) => value,
             Err(error) => return error_reply(request_id, map_config_error(error)),
         };
+        let second_opencode_environment =
+            (kind == ClientKind::OpenCodeV1).then(|| (self.opencode_environment_provider)());
         let second_claude_layers = if kind == ClientKind::ClaudeCode {
             match claude_layers::observe(&roots, selected_scope, Some(&second_read), &context) {
                 Ok(value) => Some(value),
@@ -1289,6 +1330,12 @@ impl PlanManager {
         if second_read.presence != first_read.presence
             || second_read.source != first_read.source
             || second_read.fingerprint != first_read.fingerprint
+            || first_opencode_environment
+                .as_ref()
+                .map(|value| &value.fingerprint)
+                != second_opencode_environment
+                    .as_ref()
+                    .map(|value| &value.fingerprint)
             || first_claude_layers.as_ref().map(|value| &value.fingerprint)
                 != second_claude_layers
                     .as_ref()
@@ -1316,6 +1363,7 @@ impl PlanManager {
             &endpoint,
             &roots,
             first_claude_layers.map(|layers| layers.fingerprint),
+            first_opencode_environment.map(|environment| environment.fingerprint),
         ) {
             return error_reply(request_id, ReplyError::PlanCapacity);
         }
@@ -1416,6 +1464,7 @@ impl PlanManager {
         endpoint: &ReadyStableEndpoint,
         roots: &ConfigRootInputs,
         claude_layers_fingerprint: Option<String>,
+        opencode_environment_fingerprint: Option<String>,
     ) -> bool {
         let Ok(mut leases) = self.leases.lock() else {
             return false;
@@ -1434,6 +1483,7 @@ impl PlanManager {
                 endpoint: endpoint.clone(),
                 roots: roots.clone(),
                 claude_layers_fingerprint,
+                opencode_environment_fingerprint,
             },
         );
         true

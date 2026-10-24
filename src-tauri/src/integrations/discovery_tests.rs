@@ -1,6 +1,7 @@
 use super::discovery::{
-    claude_code_cli_version_from_digest, codex_cli_version_from_digest, DiscoveryInputs,
-    DiscoveryManager, DiscoveryReply, InstallationSelectionError,
+    claude_code_cli_version_from_digest, codex_cli_version_from_digest,
+    opencode_v1_cli_version_from_digest, DiscoveryInputs, DiscoveryManager, DiscoveryReply,
+    InstallationSelectionError,
 };
 use std::fs;
 use std::path::{Component, Path, PathBuf};
@@ -738,6 +739,81 @@ fn bundled_codex_version_requires_both_exact_size_and_sha256() {
         None,
         "the new size with a different digest must remain unknown"
     );
+}
+
+#[test]
+fn bundled_opencode_v1_version_requires_both_exact_size_and_sha256() {
+    const HASH: &str = "cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375";
+    assert_eq!(
+        opencode_v1_cli_version_from_digest(180_982_664, HASH).as_deref(),
+        Some("1.19.3")
+    );
+    assert_eq!(
+        opencode_v1_cli_version_from_digest(180_982_663, HASH),
+        None,
+        "the exact digest at a different size must remain unknown"
+    );
+    assert_eq!(
+        opencode_v1_cli_version_from_digest(
+            180_982_664,
+            "dbb0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375"
+        ),
+        None,
+        "the exact size with a different digest must remain unknown"
+    );
+}
+
+#[test]
+fn unknown_opencode_exes_remain_unversioned_on_path_native_and_manual_sources() {
+    let mut fixture = Fixture::new();
+    let path_bin = fixture.at("path-bin");
+    let path_exe = path_bin.join("opencode.exe");
+    let profile = fixture.at("profile");
+    let native_exe = profile.join(".local/bin/opencode.exe");
+    let manual_exe = fixture.at("manual/opencode.exe");
+    for path in [&path_exe, &native_exe, &manual_exe] {
+        write_file(path, b"small unknown executable fixture");
+    }
+
+    let path_snapshot = snapshot(DiscoveryManager::new().scan_with_inputs(
+        REQUEST_ID.to_owned(),
+        DiscoveryInputs {
+            path_entries: vec![path_bin],
+            ..DiscoveryInputs::default()
+        },
+    ));
+    let path_candidate = path_snapshot
+        .installations
+        .iter()
+        .find(|item| item.client_kind == "opencode")
+        .expect("PATH OpenCode executable is detected");
+    assert_eq!(path_candidate.source, "path");
+    assert_eq!(path_candidate.version, None);
+
+    let native_snapshot = snapshot(DiscoveryManager::new().scan_with_inputs(
+        REQUEST_ID.to_owned(),
+        DiscoveryInputs {
+            user_profile: Some(profile),
+            ..DiscoveryInputs::default()
+        },
+    ));
+    let native_candidate = native_snapshot
+        .installations
+        .iter()
+        .find(|item| item.client_kind == "opencode")
+        .expect("user-local native OpenCode executable is detected");
+    assert_eq!(native_candidate.source, "user_local_native");
+    assert_eq!(native_candidate.version, None);
+
+    let manual_snapshot = snapshot(select_fixture(
+        &DiscoveryManager::new(),
+        "opencode",
+        manual_exe,
+    ));
+    assert_eq!(manual_snapshot.installations.len(), 1);
+    assert_eq!(manual_snapshot.installations[0].source, "manual_file");
+    assert_eq!(manual_snapshot.installations[0].version, None);
+    fixture.cleanup();
 }
 
 #[test]

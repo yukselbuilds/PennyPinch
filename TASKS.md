@@ -4,7 +4,7 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007, H013–H020, H040, H046 ve **H047 tamamlandı:17/51.** H020 Windows10 native Claude kullanıcı/proje bağlantısı ve CLI/yerel SSE fixture kabulüdür; canlı auth/alt ajan kapsamı değildir. H019'un2 ek CLI hatası H008'de açık. H021 sıradaki ana görev; H048/H049 başlamadı. Kullanıcının sade platform/model tasarruf ekranı ve hesap + açık sohbet talepleri H022/H025/H026 ve yeni H050/H051'e işlendi. Henüz kurulabilir üretim uygulaması yok. Tek GPT-6 Luna xhigh çalışan düzeni korundu.
+**Durum:** H001–H005, H007, H013–H021, H040, H046 ve **H047 tamamlandı:18/51.** H021 Windows10 native OpenCode kullanıcı dosyası/çoklu alias ve iki CLI protokolü yerel fixture kabulüdür; evrensel model/ajan/canlı auth desteği değildir. H019 ek CLI hataları H008’de açık. Sıradaki H022; kullanıcı devamı bekleniyor. H048/H049 başlamadı. Sade platform/model tasarruf ve hesap + açık sohbet talepleri H022/H025/H026/H050/H051’de planlı. Henüz kurulabilir üretim uygulaması yok; tek Luna çalışan düzeni korundu.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırındaki **17/51** değeridir. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
@@ -290,12 +290,21 @@ flowchart TD
 - **Dosyalar:** Mevcut ortak `src-tauri/src/integrations/{discovery,plan,config_io,connection_actions}.rs`, Claude kapsamı için gerekli sınırlı modüller/testler, ortak bağlantı arayüzü ve `compatibility/clients.json`. Ayrı config yazıcısı oluşturulmaz.
 
 ### H021 — OpenCode'u bağlama
-- [ ] H010 kanıtındaki model koruması ve config davranışı üretim adaptörüne taşınır.
+- [x] H010 kanıtındaki model koruması ve config davranışı üretim adaptörüne taşınır.
+- **Tamamlandı —24 Ekim:** [Karar009](docs/decisions/009-opencode-provider-routes.md); tek planla uygun provider alias yolları, açık kısmi kapsam ve ortak atomik yazım/Undo. H010 custom-compatible ile builtin OpenAI Responses aynı protokol sayılmaz.
+- [x] **H021-a1:** Exact native1.19.3 size/SHA pin PATH/manual/user-native keşfe bağlandı;24 discovery PASS/1 ignored ve scoped fmt. Root incelemesi kabul; CLI çalıştırılmadı, route desteği iddiası yok. `work/proofs/opencode-product/discovery-a1.json`.
+- [x] **H021-b1:** Bounded private sağlayıcı/protokol analizi kabul;9 focused PASS, nested override/depth/model ID ve açık custom base korumaları. Plan/yazma/UI sonraki kabul edilen dilimlerde bağlandı.
+- [x] **H021-b2:** Native-private çoklu rota planı ve redakte kapsam özeti;21 plan +1 resolver PASS. Codex/Claude sözleşmesi korundu.
+- [x] **H021-b3:** Ortak AST çoklu patch/Undo ve schema1 legacy receipt kabul;13 transaction,4 receipt,19 ownership,2 codec PASS (+1 son assertion). Kullanıcı değişikliği/çatışma ve sahiplenilmeyen rota korunur.
+- [x] **H021-b/c:** Provider envanteri/ortak plan/çoklu patch/legacy receipt Undo ve native süreç-env lease guard kabul.21 config-IO +28 action +1 env PASS; son çatışmalı Undo kontrolü1 PASS. UI/gerçek CLI kabulü aşağıda ayrıca tamamlandı.
+- [x] **H021-d1:** Strict redakte kapsam/Apply sözleşmesi;9 plan +13 action Node PASS, minimal native istek.
+- [x] **H021-d/e:** Strict istemci/kısa scope + Advanced UI, son kalite kapısı92 Node/252 Rust PASS (3 ignored), embedded build ve iki protokolde3 gerçek native CLI fixture kabulü. Reopen/byte-exact Undo ve owned cleanup PASS; katalog güncellendi.
+- **Sonuç:** [Kanıt](docs/proofs/opencode-product.md), [inceleme](docs/reviews/H021.md). Win10/exact native1.19.3/user JSONC,3 uygun +1 excluded rota; model/selector/wire/auth korunur. Diğer OS/live provider/actual subagent kapsamı not_tested. Son owned süreç/port0; sonraki ana görev başlamadı.
 - **Kabul:** Model varsayılanla değişmez; JSONC yorumları/kullanıcı alanları korunur; sağlayıcı takma adı ile gerçek model ayrılır.
 - **Kapsam kabulü:** OpenCode ana/alt ajanlarının desteklenen çoklu provider/model yolları tek bağlantı planında gösterilir; yalnız bir provider'ı bağlamak bütün provider'ları doğrulanmış yapmaz.
 - **Doğrulama:** JSON/JSONC fixture'ları ve desteklenen yüzeyde küçük gerçek kontrol.
 - **Bağımlılık / boyut:** H020 / M.
-- **Dosyalar:** `src-tauri/src/integrations/opencode.rs`, `src-tauri/src/integrations/opencode_tests.rs`, `compatibility/clients.json`.
+- **Dosyalar:** Ortak discovery/plan/transaction/config_io/connection_actions ve state/ownership yolları; `opencode_routes`/`config_io/opencode_environment`, strict frontend sözleşmesi/ConnectDialog, ilgili focused testler ve `compatibility/clients.json`. Ayrı config yazıcısı yok.
 
 ### H022 — İlk açılış ve hatırlanan bağlantılar
 - [ ] Otomatik tarama ve bir defalık Bağlan akışı sadeleştirilir.
@@ -311,6 +320,7 @@ flowchart TD
 ### H023 — Sayaç normalizasyonu
 - [ ] Motor kaynakları tek, açık ölçüm sözleşmesine çevrilir.
 - **Ön inceleme:** Pinned 0.41.0 kaynaklarında wire/novel/new-input/active oranları farklı temellere dayanıyor; alan eşlemesi, tamlık ve içeriksiz adaptör gereklilikleri [metrik kaynak notunda](docs/research/metrics-0.41.0.md). Ana kartın öncesi/sonrası çifti aynı tokenizer temelinden alınır; raw `/stats` yüzdesi doğrudan kopyalanmaz.
+- **H021 somut regresyon:** Gerçek CLI/yerel fixture Chat satırlarında original2306 ve provider kullanımından optimized12 birlikte görünürken saved0/%0 döndü. Farklı temellerden tasarruf türetilmez; H021 `traffic.json`/kanıtı normalizasyon için regresyon girdisidir. Sentetik12/4 kullanım gerçek kazanç değildir.
 - **Katman kabulü:** RTK/Headroom/cache/output değerleri temelleri ve aynı olay/kapsam bağları kanıtlanmadan toplanmaz; input azalması output tahminiyle karışmaz. Evrensel cache indirimi veya negatifleri sıfıra kırpan yardımcı ana metriğe uygulanmaz. Tahmini maliyet için model/fiyat/kapsama kaynağı gerekir.
 - **Kabul:** Proxy/MCP çift sayımı yok; bilinmeyen sıfır olmaz; artış, restart ve farklı tokenizer temelleri korunur. Token farkı ve **yüzdelik girdi token azalması** aynı ölçülebilir öncesi/sonrası çiftinden hesaplanır: `100 × (B − A) / B`. `B=0` veya eksik/birbiriyle karşılaştırılamayan ölçümde yüzde bilinmiyor kalır; gerçek sıfır tasarruf `%0` olarak ayırt edilir.
 - **Doğrulama:** Boş, eksik, sıfır taban, gerçek sıfır tasarruf, negatif fark, yinelenen event ve runtime restart fixture'ları; `120.000 → 75.000` girdide `45.000 token / %37,5` örneği.
@@ -587,4 +597,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**17/51 tamam; H020 kapandı.** H021 OpenCode sıradaki ana görev; kullanıcı devam mesajı beklenir. H050/H051 yeni hesap/sohbet işleri planlandı, başlamadı. Sade Graphite deneyimi H022/H025/H026 ile birlikte yürütülecek. H019 ek CLI hataları H008 açık takibinde; H048/H049 başlamadı. Ücretsiz kota/hard-stop canlı kontrol edilmeden yeni CI dispatch edilmez. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.
+**18/51 tamam; H021 kapandı.** Sıradaki H022; kullanıcı devam mesajı bekleniyor, başlamadı. H021 kanıt/katalog/görev listesi güncel; Win10 yerel fixture kabulü canlı/diğer OS/yayın desteği değildir. H050/H051 hesap/sohbet işleri planlı. H019 ek CLI hataları H008’de açık; H048/H049 başlamadı. Yeni CI dispatch için ücretsiz kota/hard-stop canlı kontrol gerekir. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.

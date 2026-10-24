@@ -186,15 +186,114 @@ fn opencode_v1_jsonc_comments_and_trailing_comma_plan_preserves_provider_auth() 
     let serialized = serde_json::to_string(&plan).unwrap();
 
     assert_eq!(plan.status, PlanStatus::Preview);
-    assert_eq!(plan.endpoint_field.before, EndpointBefore::Missing);
+    assert_eq!(plan.endpoint_field.before, EndpointBefore::ProviderRoutes);
     assert_eq!(
         plan.endpoint_field.proposed_value,
         "http://127.0.0.1:41731/v1"
     );
     assert_eq!(plan.auth, AuthDeclaration::SecretConfigured);
     assert_eq!(plan.runtime_effective, DeclarationState::Unknown);
+    let coverage = plan
+        .opencode_coverage
+        .expect("OpenCode plan should include bounded route coverage");
+    assert_eq!(coverage.eligible_count, 1);
+    assert_eq!(coverage.excluded_count, 0);
+    assert_eq!(coverage.responses_count, 1);
+    assert_eq!(coverage.chat_completions_count, 0);
+    assert!(!coverage.partial);
+    assert_eq!(
+        coverage.configured_default_route,
+        super::opencode_routes::OpenCodeDefaultRouteCoverage::Covered
+    );
     assert!(!serialized.contains("opencode-fixture-secret"));
     assert!(!serialized.contains("gpt-5-codex"));
+}
+
+#[test]
+fn opencode_plan_covers_multiple_provider_routes_without_serializing_route_keys() {
+    let fixture = br#"{
+      "model":"openai/selected-wire-id",
+      "provider":{
+        "openai":{"options":{"baseURL":"https://api.openai.com/v1"}},
+        "team-alias":{"npm":"@ai-sdk/openai-compatible","options":{"baseURL":"https://api.openai.com/v1"},"models":{"friendly":{"id":"vendor/wire-id"}}},
+        "anthropic":{"npm":"@ai-sdk/anthropic"}
+      }
+    }"#;
+
+    let plan = preview_config(&context(ClientKind::OpenCodeV1), fixture).unwrap();
+    let serialized = serde_json::to_string(&plan).unwrap();
+    let debug = format!("{plan:?}");
+    let coverage = plan.opencode_coverage.unwrap();
+
+    assert_eq!(plan.status, PlanStatus::Preview);
+    assert_eq!(plan.endpoint_field.before, EndpointBefore::ProviderRoutes);
+    assert_eq!(coverage.eligible_count, 2);
+    assert_eq!(coverage.excluded_count, 1);
+    assert_eq!(coverage.already_same_count, 0);
+    assert_eq!(coverage.responses_count, 1);
+    assert_eq!(coverage.chat_completions_count, 1);
+    assert!(coverage.partial);
+    assert_eq!(
+        coverage.configured_default_route,
+        super::opencode_routes::OpenCodeDefaultRouteCoverage::Covered
+    );
+    assert!(!serialized.contains("team-alias"));
+    assert!(!serialized.contains("selected-wire-id"));
+    assert!(!serialized.contains("vendor/wire-id"));
+    assert!(!serialized.contains("https://api.openai.com/v1"));
+    assert!(!debug.contains("team-alias"));
+    assert!(!debug.contains("selected-wire-id"));
+}
+
+#[test]
+fn opencode_zero_routes_and_analysis_errors_block_with_fixed_coverage_behavior() {
+    let custom = br#"{
+      "model":"gateway/custom-model",
+      "provider":{"gateway":{"npm":"@ai-sdk/openai-compatible","options":{"baseURL":"https://gateway.example/private"},"models":{"custom":{}}}}
+    }"#;
+    let zero_routes = preview_config(&context(ClientKind::OpenCodeV1), custom).unwrap();
+    assert_eq!(zero_routes.status, PlanStatus::Blocked);
+    assert_eq!(zero_routes.endpoint_field.before, EndpointBefore::Unknown);
+    assert!(zero_routes
+        .blockers
+        .contains(&PlanBlocker::UnsupportedRoute));
+    let coverage = zero_routes.opencode_coverage.unwrap();
+    assert_eq!(coverage.eligible_count, 0);
+    assert_eq!(coverage.excluded_count, 1);
+    assert_eq!(
+        coverage.configured_default_route,
+        super::opencode_routes::OpenCodeDefaultRouteCoverage::Excluded
+    );
+
+    let malformed = br#"{"provider":{"openai":{"options":true}}}"#;
+    let malformed_plan = preview_config(&context(ClientKind::OpenCodeV1), malformed).unwrap();
+    assert_eq!(malformed_plan.status, PlanStatus::Blocked);
+    assert!(malformed_plan
+        .blockers
+        .contains(&PlanBlocker::UnsupportedSchema));
+    assert!(!malformed_plan
+        .blockers
+        .contains(&PlanBlocker::UnsupportedRoute));
+    assert!(malformed_plan.opencode_coverage.is_none());
+
+    let v2 = br#"{"providers":{"openai":{}}}"#;
+    let v2_plan = preview_config(&context(ClientKind::OpenCodeV1), v2).unwrap();
+    assert_eq!(v2_plan.status, PlanStatus::Blocked);
+    assert!(v2_plan.blockers.contains(&PlanBlocker::UnsupportedRoute));
+    assert!(v2_plan.opencode_coverage.is_none());
+}
+
+#[test]
+fn non_opencode_plans_keep_the_legacy_serialized_contract() {
+    for (kind, config) in [
+        (ClientKind::Codex, CODEX_CONFIG),
+        (ClientKind::ClaudeCode, br#"{"model":"fixture-model"}"#),
+    ] {
+        let plan = preview_config(&context(kind), config).unwrap();
+        let value = serde_json::to_value(plan).unwrap();
+        assert!(value.get("opencode_coverage").is_none());
+        assert_eq!(value.as_object().unwrap().len(), 28);
+    }
 }
 
 #[test]

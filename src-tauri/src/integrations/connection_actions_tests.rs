@@ -1302,6 +1302,259 @@ fn opencode_alternate_config_appearing_after_preview_conflicts() {
     assert!(!fixture.path("state").exists());
 }
 
+fn opencode_three_route_fixture() -> &'static [u8] {
+    br#"{
+  // All three aliases are in scope; selector IDs remain untouched.
+  "model": "lab-a/slot-a",
+  "enabled_providers": ["openai", "lab-a", "lab-b"],
+  "provider": {
+    "openai": {"npm": "@ai-sdk/openai", "options": {}, "models": {"slot": {"id": "wire-responses"}}},
+    "lab-a": {"npm": "@ai-sdk/openai-compatible", "options": {"baseURL": "https://api.openai.com/v1"}, "models": {"slot-a": {"id": "wire-a"}}},
+    "lab-b": {"npm": "@ai-sdk/openai-compatible", "options": {"baseURL": "https://api.openai.com/v1"}, "models": {"slot-b": {"id": "wire-b"}}}
+  }
+}
+"#
+}
+
+fn set_opencode_environment(
+    manager: PlanManager,
+    state: Arc<Mutex<super::config_io::opencode_environment::Snapshot>>,
+) -> PlanManager {
+    manager.with_test_opencode_environment_provider(move || state.lock().unwrap().clone())
+}
+
+#[test]
+fn opencode_process_overrides_block_preview_without_echoing_values() {
+    let fixture = Fixture::new();
+    let config = fixture.path("xdg-home/opencode/opencode.jsonc");
+    write_file(&config, opencode_three_route_fixture());
+    let (manager, installation_id, scan_generation) =
+        manager(&fixture, "opencode_v1", config.clone());
+    let raw = "fixture-private-opencode-content";
+    let state = Arc::new(Mutex::new(
+        super::config_io::opencode_environment::Snapshot::from_test_values(None, Some(raw), None),
+    ));
+    let manager = set_opencode_environment(manager, state);
+    let plan = preview(&manager, installation_id, scan_generation);
+    assert_eq!(plan.status, super::plan::PlanStatus::Blocked);
+    assert!(plan
+        .blockers
+        .contains(&super::plan::PlanBlocker::UnsupportedRoute));
+    assert!(!plan.endpoint_field.after_headroom);
+    assert!(!serde_json::to_string(&plan).unwrap().contains(raw));
+    assert_eq!(fs::read(&config).unwrap(), opencode_three_route_fixture());
+}
+
+#[test]
+fn opencode_environment_drift_after_preview_refuses_apply_without_ownership() {
+    let fixture = Fixture::new();
+    let config = fixture.path("xdg-home/opencode/opencode.jsonc");
+    write_file(&config, opencode_three_route_fixture());
+    let (manager, installation_id, scan_generation) =
+        manager(&fixture, "opencode_v1", config.clone());
+    let state = Arc::new(Mutex::new(
+        super::config_io::opencode_environment::Snapshot::from_test_values(None, None, None),
+    ));
+    let manager = set_opencode_environment(manager, Arc::clone(&state));
+    let plan = preview(&manager, installation_id, scan_generation);
+    *state.lock().unwrap() = super::config_io::opencode_environment::Snapshot::from_test_values(
+        None,
+        Some("new-process-override"),
+        None,
+    );
+
+    assert_eq!(
+        error_code(manager.apply_connection(ApplyConnectionRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            plan_id: plan.plan_id,
+            expected_config_fingerprint: plan.config_fingerprint,
+        })),
+        "config_conflict"
+    );
+    assert_eq!(fs::read(&config).unwrap(), opencode_three_route_fixture());
+    let snapshot = success(manager.ownership_snapshot(OwnershipSnapshotRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        client_kind: "opencode_v1".to_owned(),
+    }));
+    assert!(snapshot.ownership.is_none());
+}
+
+#[test]
+fn opencode_environment_drift_between_preview_reads_rejects_plan() {
+    let fixture = Fixture::new();
+    let config = fixture.path("xdg-home/opencode/opencode.jsonc");
+    let original = opencode_three_route_fixture();
+    write_file(&config, original);
+    let (manager, installation_id, scan_generation) =
+        manager(&fixture, "opencode_v1", config.clone());
+    let calls = Arc::new(AtomicUsize::new(0));
+    let calls_for_provider = Arc::clone(&calls);
+    let manager = manager.with_test_opencode_environment_provider(move || {
+        if calls_for_provider.fetch_add(1, Ordering::SeqCst) == 0 {
+            super::config_io::opencode_environment::Snapshot::from_test_values(None, None, None)
+        } else {
+            super::config_io::opencode_environment::Snapshot::from_test_values(
+                None,
+                Some("preview-read-drift"),
+                None,
+            )
+        }
+    });
+    let reply = manager.preview(PreviewRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        installation_id,
+        scan_generation,
+        scope: "user_config".to_owned(),
+    });
+
+    let PlanReply::Error(error) = reply else {
+        panic!("environment drift should reject the preview");
+    };
+    assert_eq!(error.error.code, "config_conflict");
+    assert_eq!(fs::read(&config).unwrap(), original);
+    assert!(!fixture.path("state/ownership").exists());
+}
+
+#[test]
+fn opencode_environment_drift_at_final_guard_rolls_back_both_files() {
+    let fixture = Fixture::new();
+    let config = fixture.path("xdg-home/opencode/opencode.jsonc");
+    let original = opencode_three_route_fixture();
+    write_file(&config, original);
+    let (manager, installation_id, scan_generation) =
+        manager(&fixture, "opencode_v1", config.clone());
+    let calls = Arc::new(AtomicUsize::new(0));
+    let calls_for_provider = Arc::clone(&calls);
+    let manager = manager.with_test_opencode_environment_provider(move || {
+        let call = calls_for_provider.fetch_add(1, Ordering::SeqCst);
+        if call >= 3 {
+            super::config_io::opencode_environment::Snapshot::from_test_values(
+                None,
+                Some("late-process-override"),
+                None,
+            )
+        } else {
+            super::config_io::opencode_environment::Snapshot::from_test_values(None, None, None)
+        }
+    });
+    let plan = preview(&manager, installation_id, scan_generation);
+    calls.store(0, Ordering::SeqCst);
+
+    assert_eq!(
+        error_code(manager.apply_connection(ApplyConnectionRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            plan_id: plan.plan_id,
+            expected_config_fingerprint: plan.config_fingerprint,
+        })),
+        "config_conflict"
+    );
+    assert_eq!(calls.load(Ordering::SeqCst), 4);
+    assert_eq!(fs::read(&config).unwrap(), original);
+    let snapshot = success(manager.ownership_snapshot(OwnershipSnapshotRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        client_kind: "opencode_v1".to_owned(),
+    }));
+    assert!(snapshot.ownership.is_none());
+}
+
+#[test]
+fn opencode_multi_route_apply_undo_is_atomic_and_preserves_wire_models() {
+    let fixture = Fixture::new();
+    let config = fixture.path("xdg-home/opencode/opencode.jsonc");
+    let original = opencode_three_route_fixture();
+    write_file(&config, original);
+    let (manager, installation_id, scan_generation) =
+        manager(&fixture, "opencode_v1", config.clone());
+    let plan = preview(&manager, installation_id, scan_generation);
+    assert_eq!(
+        plan.endpoint_field.before,
+        super::plan::EndpointBefore::ProviderRoutes
+    );
+    assert_eq!(plan.opencode_coverage.unwrap().eligible_count, 3);
+    let applied = apply(&manager, &plan);
+    let owned = applied.ownership.expect("active OpenCode owner");
+    let changed = fs::read(&config).unwrap();
+    let changed_text = String::from_utf8(changed).unwrap();
+    assert_eq!(changed_text.matches("http://127.0.0.1:41731/v1").count(), 3);
+    assert!(changed_text.contains("\"id\": \"wire-responses\""));
+    assert!(changed_text.contains("\"id\": \"wire-a\""));
+    assert!(changed_text.contains("\"id\": \"wire-b\""));
+
+    let snapshot = success(manager.ownership_snapshot(OwnershipSnapshotRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        client_kind: "opencode_v1".to_owned(),
+    }));
+    assert_eq!(
+        snapshot.ownership.as_ref().unwrap().owner_id,
+        owned.owner_id
+    );
+    let ownership_path = fixture.path("state/ownership/opencode_v1.json");
+    let active_ownership_bytes = fs::read(&ownership_path).expect("persisted active receipt");
+    let user_changed_route =
+        changed_text.replacen("http://127.0.0.1:41731/v1", "http://127.0.0.1:41732/v1", 1);
+    fs::write(&config, user_changed_route.as_bytes()).unwrap();
+    assert_eq!(
+        error_code(undo(&manager, "opencode_v1", &owned)),
+        "config_conflict"
+    );
+    assert_eq!(fs::read(&config).unwrap(), user_changed_route.as_bytes());
+    assert_eq!(
+        fs::read(&ownership_path).unwrap(),
+        active_ownership_bytes,
+        "a conflicting route must leave active ownership byte-exact"
+    );
+
+    // Restore only bytes written by this test's own Apply before checking the
+    // normal exact Undo path.
+    fs::write(&config, changed_text.as_bytes()).unwrap();
+    assert_eq!(
+        success(undo(&manager, "opencode_v1", &owned)).status,
+        "released"
+    );
+    assert_eq!(fs::read(&config).unwrap(), original);
+}
+
+#[test]
+fn opencode_changed_route_after_preview_keeps_user_bytes_and_no_owner() {
+    let fixture = Fixture::new();
+    let config = fixture.path("xdg-home/opencode/opencode.jsonc");
+    write_file(&config, opencode_three_route_fixture());
+    let (manager, installation_id, scan_generation) =
+        manager(&fixture, "opencode_v1", config.clone());
+    let plan = preview(&manager, installation_id, scan_generation);
+    let changed = String::from_utf8(opencode_three_route_fixture().to_vec())
+        .unwrap()
+        .replace(
+            "https://api.openai.com/v1",
+            "https://user-gateway.invalid/v1",
+        )
+        .into_bytes();
+    fs::write(&config, &changed).unwrap();
+
+    assert_eq!(
+        error_code(manager.apply_connection(ApplyConnectionRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            plan_id: plan.plan_id,
+            expected_config_fingerprint: plan.config_fingerprint,
+        })),
+        "config_conflict"
+    );
+    assert_eq!(fs::read(&config).unwrap(), changed);
+    let snapshot = success(manager.ownership_snapshot(OwnershipSnapshotRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        client_kind: "opencode_v1".to_owned(),
+    }));
+    assert!(snapshot.ownership.is_none());
+}
+
 #[test]
 fn claude_json_and_opencode_jsonc_apply_and_undo_preserve_original_bytes() {
     exercise_format(

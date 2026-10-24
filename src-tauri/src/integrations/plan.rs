@@ -6,6 +6,7 @@ use serde::Serialize;
 #[cfg(windows)]
 use std::os::windows::ffi::OsStrExt;
 use std::path::Path;
+use std::{fmt, fmt::Formatter};
 
 const PLAN_LIFETIME_SECONDS: u64 = 300;
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
@@ -110,6 +111,7 @@ pub(crate) enum EndpointBefore {
     Missing,
     SameStableEndpoint,
     OtherConfiguredRedacted,
+    ProviderRoutes,
     Unknown,
 }
 
@@ -186,7 +188,7 @@ impl ConfigSource {
     }
 }
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Serialize)]
 pub(crate) struct ConnectionPlan {
     pub schema_version: u8,
     pub request_id: String,
@@ -203,6 +205,10 @@ pub(crate) struct ConnectionPlan {
     pub endpoint_host: &'static str,
     pub endpoint_port: u16,
     pub endpoint_field: PlannedEndpointField,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub opencode_coverage: Option<super::opencode_routes::OpenCodeRouteCoverage>,
+    #[serde(skip)]
+    pub(crate) opencode_routes: Option<super::opencode_routes::OpenCodeRouteAnalysis>,
     pub status: PlanStatus,
     pub model: DeclarationState,
     pub reasoning: DeclarationState,
@@ -216,6 +222,50 @@ pub(crate) struct ConnectionPlan {
     pub hook_shell: HookShellEffect,
     pub restart_required: bool,
     pub blockers: Vec<PlanBlocker>,
+}
+
+impl fmt::Debug for ConnectionPlan {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("ConnectionPlan")
+            .field("schema_version", &self.schema_version)
+            .field("request_id", &self.request_id)
+            .field("plan_id", &self.plan_id)
+            .field("expires_at_unix_seconds", &self.expires_at_unix_seconds)
+            .field("installation_id", &self.installation_id)
+            .field("client_kind", &self.client_kind)
+            .field("scope", &self.scope)
+            .field("scan_generation", &self.scan_generation)
+            .field("config_fingerprint", &self.config_fingerprint)
+            .field("config_presence", &self.config_presence)
+            .field("config_source", &self.config_source)
+            .field("endpoint_id", &self.endpoint_id)
+            .field("endpoint_host", &self.endpoint_host)
+            .field("endpoint_port", &self.endpoint_port)
+            .field("endpoint_field", &self.endpoint_field)
+            .field("status", &self.status)
+            .field("model", &self.model)
+            .field("reasoning", &self.reasoning)
+            .field("model_unchanged", &self.model_unchanged)
+            .field("provider_unchanged", &self.provider_unchanged)
+            .field("reasoning_unchanged", &self.reasoning_unchanged)
+            .field("auth_unchanged", &self.auth_unchanged)
+            .field("agent_count_unchanged", &self.agent_count_unchanged)
+            .field("runtime_effective", &self.runtime_effective)
+            .field("auth", &self.auth)
+            .field("hook_shell", &self.hook_shell)
+            .field("restart_required", &self.restart_required)
+            .field("blockers", &self.blockers)
+            .field("opencode_coverage", &self.opencode_coverage)
+            .field(
+                "opencode_route_count",
+                &self
+                    .opencode_routes
+                    .as_ref()
+                    .map(|analysis| analysis.routes.len()),
+            )
+            .finish()
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -256,9 +306,15 @@ pub(crate) fn preview_config_with_presence(
     let root = config.as_object().ok_or(PlanError::InvalidConfig)?;
     let proposed_value = proposed_endpoint_value(context.client_kind, &context.endpoint);
     let mut blockers = Vec::new();
-    let (field, before) = match context.client_kind {
-        ClientKind::Codex => analyze_codex(root, &proposed_value, &mut blockers),
-        ClientKind::ClaudeCode => analyze_claude(root, &proposed_value, &mut blockers),
+    let (field, before, opencode_routes) = match context.client_kind {
+        ClientKind::Codex => {
+            let (field, before) = analyze_codex(root, &proposed_value, &mut blockers);
+            (field, before, None)
+        }
+        ClientKind::ClaudeCode => {
+            let (field, before) = analyze_claude(root, &proposed_value, &mut blockers);
+            (field, before, None)
+        }
         ClientKind::OpenCodeV1 => analyze_opencode_v1(root, &proposed_value, &mut blockers),
     };
 
@@ -294,10 +350,12 @@ pub(crate) fn preview_config_with_presence(
         ),
     };
 
-    if before == EndpointBefore::OtherConfiguredRedacted {
-        add_blocker(&mut blockers, PlanBlocker::CustomGateway);
-    } else if before == EndpointBefore::Unknown {
-        add_blocker(&mut blockers, PlanBlocker::UnsupportedRoute);
+    if context.client_kind != ClientKind::OpenCodeV1 {
+        if before == EndpointBefore::OtherConfiguredRedacted {
+            add_blocker(&mut blockers, PlanBlocker::CustomGateway);
+        } else if before == EndpointBefore::Unknown {
+            add_blocker(&mut blockers, PlanBlocker::UnsupportedRoute);
+        }
     }
 
     let status = if blockers.is_empty() {
@@ -337,6 +395,8 @@ pub(crate) fn preview_config_with_presence(
             proposed_value,
             after_headroom,
         },
+        opencode_coverage: opencode_routes.as_ref().map(|routes| routes.coverage),
+        opencode_routes,
         status,
         model,
         reasoning,
@@ -478,59 +538,42 @@ fn analyze_opencode_v1(
     root: &serde_json::Map<String, Value>,
     target: &str,
     blockers: &mut Vec<PlanBlocker>,
-) -> (EndpointField, EndpointBefore) {
-    if root.contains_key("providers") || root.contains_key("settings") {
-        add_blocker(blockers, PlanBlocker::UnsupportedRoute);
-    }
-    let model_provider = root
-        .get("model")
-        .and_then(Value::as_str)
-        .and_then(|model| model.split_once('/').map(|(provider, _)| provider));
-    if model_provider != Some("openai") {
-        add_blocker(blockers, PlanBlocker::UnsupportedRoute);
-    }
+) -> (
+    EndpointField,
+    EndpointBefore,
+    Option<super::opencode_routes::OpenCodeRouteAnalysis>,
+) {
+    let analysis = match super::opencode_routes::analyze_opencode_v1_routes(root, target) {
+        Ok(analysis) => analysis,
+        Err(error) => {
+            match error {
+                super::opencode_routes::OpenCodeRouteAnalysisError::InvalidSchema
+                | super::opencode_routes::OpenCodeRouteAnalysisError::LimitExceeded => {
+                    add_blocker(blockers, PlanBlocker::UnsupportedSchema);
+                }
+                super::opencode_routes::OpenCodeRouteAnalysisError::InvalidEndpoint
+                | super::opencode_routes::OpenCodeRouteAnalysisError::UnsupportedConfig => {
+                    add_blocker(blockers, PlanBlocker::UnsupportedRoute);
+                }
+            }
+            return (
+                EndpointField::OpenCodeV1OpenAiBaseUrl,
+                EndpointBefore::Unknown,
+                None,
+            );
+        }
+    };
 
-    let provider_map = root.get("provider").and_then(Value::as_object);
-    if root.get("provider").is_some() && provider_map.is_none() {
-        add_blocker(blockers, PlanBlocker::UnsupportedSchema);
-    }
-    if provider_map.is_some_and(|providers| providers.keys().any(|name| name != "openai")) {
+    let before = if analysis.routes.is_empty() {
         add_blocker(blockers, PlanBlocker::UnsupportedRoute);
-    }
-    let openai_provider = provider_map
-        .and_then(|providers| providers.get("openai"))
-        .and_then(Value::as_object);
-    if provider_map.is_some_and(|providers| providers.contains_key("openai"))
-        && openai_provider.is_none()
-    {
-        add_blocker(blockers, PlanBlocker::UnsupportedSchema);
-    }
-    if openai_provider.is_some_and(|provider| {
-        provider.get("npm").is_some_and(|npm| !npm.is_null())
-            || provider.get("models").is_some_and(|models| match models {
-                Value::Object(models) => !models.is_empty(),
-                Value::Null => false,
-                _ => true,
-            })
-    }) {
-        add_blocker(blockers, PlanBlocker::UnsupportedRoute);
-    }
-    if root.contains_key("agent") || root.contains_key("agents") {
-        add_blocker(blockers, PlanBlocker::UnsupportedRoute);
-    }
-    let options = openai_provider
-        .and_then(|provider| provider.get("options"))
-        .and_then(Value::as_object);
-    if openai_provider.is_some_and(|provider| provider.contains_key("options")) && options.is_none()
-    {
-        add_blocker(blockers, PlanBlocker::UnsupportedSchema);
-    }
-    if options.is_some_and(|options| options.contains_key("headers")) {
-        add_blocker(blockers, PlanBlocker::UnsupportedRoute);
-    }
+        EndpointBefore::Unknown
+    } else {
+        EndpointBefore::ProviderRoutes
+    };
     (
         EndpointField::OpenCodeV1OpenAiBaseUrl,
-        endpoint_before(options.and_then(|options| options.get("baseURL")), target),
+        before,
+        Some(analysis),
     )
 }
 

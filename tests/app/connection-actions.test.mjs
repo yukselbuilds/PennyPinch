@@ -74,6 +74,31 @@ function success(status, ownership, overrides = {}) {
   };
 }
 
+function makeOpenCodePlan(overrides = {}) {
+  return makePlan({
+    client_kind: "opencode_v1",
+    config_source: "opencode_jsonc",
+    config_presence: "present",
+    endpoint_field: {
+      field: "opencode_v1_openai_base_url",
+      before: "provider_routes",
+      proposed_value: "http://127.0.0.1:41731/v1",
+      after_headroom: true,
+    },
+    opencode_coverage: {
+      eligible_count: 2,
+      excluded_count: 1,
+      already_same_count: 1,
+      responses_count: 1,
+      chat_completions_count: 1,
+      partial: true,
+      configured_default_route: "covered",
+      runtime_effective: "unknown",
+    },
+    ...overrides,
+  });
+}
+
 function error(code = "config_conflict", overrides = {}) {
   const contracts = {
     validation_failed: [false, "connection.validation_failed"],
@@ -140,6 +165,35 @@ test("apply accepts an unchanged result with no ownership and rejects blocked or
   assert.equal(activeNoop.kind, "success");
   assert.equal((await client.apply(makePlan({ status: "blocked", blockers: ["custom_gateway"] }))).kind, "invalid_request");
   assert.equal((await client.apply(makePlan({ expires_at_unix_seconds: 1 }))).kind, "invalid_request");
+  assert.equal(calls, 1);
+});
+
+test("OpenCode apply requires analyzed routes and sends no route metadata to native IPC", async () => {
+  let calls = 0;
+  const client = createClient(async (command, args) => {
+    calls += 1;
+    assert.equal(command, "apply_connection_plan");
+    assert.deepEqual(args, { request: {
+      schema_version: 1,
+      request_id: requestId,
+      plan_id: planId,
+      expected_config_fingerprint: fingerprint,
+    } });
+    return success("applied", makeOwnership({ config_source: "opencode_jsonc" }), { client_kind: "opencode_v1" });
+  });
+  const applied = await client.apply(makeOpenCodePlan());
+  assert.equal(applied.kind, "success");
+
+  for (const invalidPlan of [
+    makeOpenCodePlan({ opencode_coverage: undefined }),
+    makeOpenCodePlan({ opencode_coverage: { ...makeOpenCodePlan().opencode_coverage, eligible_count: 0 } }),
+    makeOpenCodePlan({ opencode_coverage: { ...makeOpenCodePlan().opencode_coverage, private_route: "hidden" } }),
+    makeOpenCodePlan({ endpoint_field: { ...makeOpenCodePlan().endpoint_field, before: "missing" } }),
+    makeOpenCodePlan({ config_presence: "missing", config_source: "opencode_missing" }),
+    makePlan({ client_kind: "codex", opencode_coverage: makeOpenCodePlan().opencode_coverage }),
+  ]) {
+    assert.equal((await client.apply(invalidPlan)).kind, "invalid_request");
+  }
   assert.equal(calls, 1);
 });
 

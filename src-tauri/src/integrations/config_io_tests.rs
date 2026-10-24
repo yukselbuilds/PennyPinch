@@ -596,7 +596,7 @@ fn missing_user_config_plans_report_only_default_declarations() {
     assert_eq!(opencode_plan.reasoning, DeclarationState::Unknown);
     assert_eq!(opencode_plan.auth, AuthDeclaration::Unknown);
     assert_eq!(opencode_plan.hook_shell, HookShellEffect::Absent);
-    assert_eq!(opencode_plan.endpoint_field.before, EndpointBefore::Missing);
+    assert_eq!(opencode_plan.endpoint_field.before, EndpointBefore::Unknown);
 
     fixture.cleanup();
 }

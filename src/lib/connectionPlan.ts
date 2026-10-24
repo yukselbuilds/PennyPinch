@@ -4,6 +4,7 @@ import type {
   ConnectionPlanError,
   ConnectionPlanErrorCode,
   ConnectionPlanResult,
+  OpenCodeRouteCoverage,
   ConnectionScope,
 } from "./contracts.ts";
 import type { ClientKind as DiscoveredClientKind } from "./integrations.ts";
@@ -22,7 +23,12 @@ const planKeys = [
   "reasoning_unchanged", "auth_unchanged", "agent_count_unchanged", "runtime_effective",
   "auth", "hook_shell", "restart_required", "blockers",
 ] as const;
+const openCodePlanKeys = [...planKeys, "opencode_coverage"] as const;
 const endpointFieldKeys = ["field", "before", "proposed_value", "after_headroom"] as const;
+const openCodeCoverageKeys = [
+  "eligible_count", "excluded_count", "already_same_count", "responses_count",
+  "chat_completions_count", "partial", "configured_default_route", "runtime_effective",
+] as const;
 
 const errorRetryable: Record<ConnectionPlanErrorCode, boolean> = {
   validation_failed: false,
@@ -42,7 +48,7 @@ const clientKinds = ["codex", "claude_code", "opencode_v1"] as const;
 const connectionScopes = ["user_config", "project_local_config"] as const;
 const configSources = ["codex_toml", "claude_json", "opencode_json", "opencode_jsonc", "opencode_missing"] as const;
 const presences = ["present", "missing"] as const;
-const endpointBefores = ["missing", "same_stable_endpoint", "other_configured_redacted", "unknown"] as const;
+const endpointBefores = ["missing", "same_stable_endpoint", "other_configured_redacted", "unknown", "provider_routes"] as const;
 const endpointFields = ["codex_openai_base_url", "claude_anthropic_base_url", "opencode_v1_openai_base_url"] as const;
 const declarationStates = ["present", "absent", "unknown"] as const;
 const authStates = ["unknown", "method_declared", "secret_configured", "helper_declared"] as const;
@@ -73,6 +79,38 @@ function enumValue<const T extends readonly string[]>(value: unknown, values: T)
 
 function safePositiveInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value > 0 && value <= maxSafeInteger;
+}
+
+function safeCount(value: unknown, maximum: number): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 && value <= maximum;
+}
+
+export function decodeOpenCodeRouteCoverage(value: unknown): OpenCodeRouteCoverage | null {
+  if (!record(value) || !exactKeys(value, openCodeCoverageKeys)
+    || !safeCount(value.eligible_count, 16)
+    || !safeCount(value.excluded_count, 32)
+    || !safeCount(value.already_same_count, 16)
+    || value.already_same_count > value.eligible_count
+    || !safeCount(value.responses_count, 16)
+    || !safeCount(value.chat_completions_count, 16)
+    || value.responses_count + value.chat_completions_count !== value.eligible_count
+    || value.eligible_count + value.excluded_count > 32
+    || typeof value.partial !== "boolean"
+    || (value.excluded_count > 0 && !value.partial)
+    || !enumValue(value.configured_default_route, ["covered", "excluded", "unknown"] as const)
+    || value.runtime_effective !== "unknown"
+    || (value.eligible_count === 0 && value.configured_default_route === "covered")) return null;
+
+  return {
+    eligible_count: value.eligible_count,
+    excluded_count: value.excluded_count,
+    already_same_count: value.already_same_count,
+    responses_count: value.responses_count,
+    chat_completions_count: value.chat_completions_count,
+    partial: value.partial,
+    configured_default_route: value.configured_default_route,
+    runtime_effective: "unknown",
+  };
 }
 
 function safeDateSeconds(value: unknown): value is number {
@@ -141,7 +179,16 @@ function decodePlan(
     scope: ConnectionScope;
   },
 ): ConnectionPlan | null {
-  if (!record(value) || !exactKeys(value, planKeys)) return null;
+  if (!record(value)
+    || !enumValue(value.client_kind, clientKinds)
+    || value.client_kind !== expected.clientKind) return null;
+  const openCode = value.client_kind === "opencode_v1";
+  if (openCode
+    ? (!exactKeys(value, planKeys) && !exactKeys(value, openCodePlanKeys))
+    : !exactKeys(value, planKeys)) return null;
+  const hasOpenCodeCoverage = Object.hasOwn(value, "opencode_coverage");
+  const openCodeCoverage = hasOpenCodeCoverage ? decodeOpenCodeRouteCoverage(value.opencode_coverage) : null;
+  if (hasOpenCodeCoverage && (!openCode || openCodeCoverage === null)) return null;
   if (value.schema_version !== 1
     || value.request_id !== expected.requestId
     || value.installation_id !== expected.installationId
@@ -189,6 +236,20 @@ function decodePlan(
     || typeof endpointField.proposed_value !== "string"
     || typeof endpointField.after_headroom !== "boolean") return null;
 
+  if (openCode) {
+    if (openCodeCoverage) {
+      if (openCodeCoverage.eligible_count > 0) {
+        if (endpointField.before !== "provider_routes") return null;
+      } else if (value.status !== "blocked" || endpointField.before !== "unknown") {
+        return null;
+      }
+    } else if (value.status !== "blocked" || endpointField.before !== "unknown") {
+      return null;
+    }
+  } else if (endpointField.before === "provider_routes") {
+    return null;
+  }
+
   const suffix = value.client_kind === "claude_code" ? "" : "/v1";
   const proposed = `http://127.0.0.1:${value.endpoint_port}${suffix}`;
   if (endpointField.proposed_value !== proposed) return null;
@@ -198,10 +259,11 @@ function decodePlan(
     || (!shouldApply && value.blockers.length === 0)) return null;
   if (value.config_presence === "missing"
     && (value.model !== "absent"
-      || value.reasoning !== (value.client_kind === "opencode_v1" ? "unknown" : "absent")
+      || value.reasoning !== (openCode ? "unknown" : "absent")
       || value.auth !== "unknown"
       || value.hook_shell !== "absent"
-      || endpointField.before !== "missing")) return null;
+      || endpointField.before !== (openCode ? "unknown" : "missing")
+      || (openCode && value.status !== "blocked"))) return null;
 
   return {
     schema_version: 1,
@@ -224,6 +286,7 @@ function decodePlan(
       proposed_value: proposed,
       after_headroom: shouldApply,
     },
+    ...(openCodeCoverage ? { opencode_coverage: openCodeCoverage } : {}),
     status: value.status,
     model: value.model,
     reasoning: value.reasoning,

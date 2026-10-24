@@ -589,6 +589,63 @@ fn config_and_secret_free_ownership_commit_and_reload_together() {
 }
 
 #[test]
+fn opencode_multi_route_ownership_persists_only_bounded_route_receipt_metadata() {
+    let mut fixture = Fixture::new();
+    let original = r#"{
+  "model": "lab-a/selector",
+  "provider": {
+    "lab-a": {"npm": "@ai-sdk/openai-compatible", "models": {"selector": {"id": "wire-a-private"}}, "options": {"apiKey": "fixture-auth-secret", "baseURL": "https:\/\/api.openai.com\/v1"}},
+    "openai": {"npm": "@ai-sdk/openai", "models": {"responses": {"id": "wire-responses-private"}}}
+  }
+}"#
+    .as_bytes();
+    let store = fixture.store();
+    let record = commit_active(&fixture, &store, ClientKind::OpenCodeV1, original);
+    let config_path = fixture.path("client-config.json");
+    let binding = config_path_binding(&config_path).unwrap();
+    let slot = store.file_path_for_test(ClientKind::OpenCodeV1);
+    let encoded = fs::read(&slot).unwrap();
+    assert!(encoded.len() <= 16 * 1024);
+    for private in [
+        b"lab-a".as_slice(),
+        b"wire-a-private".as_slice(),
+        b"wire-responses-private".as_slice(),
+        b"fixture-auth-secret".as_slice(),
+    ] {
+        assert!(!encoded
+            .windows(private.len())
+            .any(|window| window == private));
+    }
+    let value: serde_json::Value = serde_json::from_slice(&encoded).unwrap();
+    let rows = value["patch_receipt"]["opencode_routes"]
+        .as_array()
+        .expect("multi-route receipt is persisted");
+    assert_eq!(rows.len(), 2);
+    let mut masks: Vec<u8> = rows
+        .iter()
+        .map(|row| row["created_ancestor_mask"].as_u64().unwrap() as u8)
+        .collect();
+    masks.sort_unstable();
+    assert_eq!(masks, [0, 4]);
+
+    let reloaded_store = fixture.store();
+    let mut transaction = FileTransaction::begin().unwrap();
+    let reloaded = reloaded_store
+        .read_in_transaction(&mut transaction, ClientKind::OpenCodeV1, &binding)
+        .unwrap()
+        .current()
+        .cloned()
+        .unwrap();
+    let restored_metadata = reloaded.patch_receipt().unwrap().metadata();
+    assert_eq!(
+        restored_metadata,
+        record.patch_receipt().unwrap().metadata()
+    );
+    drop(transaction);
+    fixture.cleanup().unwrap();
+}
+
+#[test]
 fn claude_project_local_ownership_roundtrips_and_release_preserves_scope() {
     let mut fixture = Fixture::new();
     let original = br#"{"model":"fixture-project-only-secret"}"#;
@@ -902,6 +959,7 @@ fn opencode_receipts_preserve_supported_presence_and_source_masks() {
         endpoint_port: 41731,
         created_ancestor_mask: 7,
         config_was_missing: true,
+        opencode_routes: None,
     })
     .expect("valid codec-only missing-source receipt");
     assert!(!missing_path.exists());

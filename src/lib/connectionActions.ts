@@ -12,6 +12,7 @@ import type {
   OwnershipSnapshotRequest,
   UndoConnectionRequest,
 } from "./contracts.ts";
+import { decodeOpenCodeRouteCoverage } from "./connectionPlan.ts";
 
 type UnknownRecord = Record<string, unknown>;
 type InvokeFunction = (command: string, args?: Record<string, unknown>) => Promise<unknown>;
@@ -150,8 +151,17 @@ function planIsApplicable(plan: ConnectionPlan): boolean {
     || plan.model_unchanged !== true || plan.provider_unchanged !== true
     || plan.reasoning_unchanged !== true || plan.auth_unchanged !== true
     || plan.agent_count_unchanged !== true
-    || plan.endpoint_field.after_headroom !== true
-    || !["missing", "same_stable_endpoint"].includes(plan.endpoint_field.before)) return false;
+    || plan.endpoint_field.after_headroom !== true) return false;
+  if (plan.client_kind === "opencode_v1") {
+    const coverage = decodeOpenCodeRouteCoverage(plan.opencode_coverage);
+    if (!Object.hasOwn(plan, "opencode_coverage") || !coverage
+      || coverage.eligible_count === 0 || plan.endpoint_field.before !== "provider_routes"
+      || plan.config_presence !== "present"
+      || (plan.config_source !== "opencode_json" && plan.config_source !== "opencode_jsonc")) return false;
+  } else if (Object.hasOwn(plan, "opencode_coverage")
+    || (plan.endpoint_field.before !== "missing" && plan.endpoint_field.before !== "same_stable_endpoint")) {
+    return false;
+  }
   const expectedField = plan.client_kind === "codex"
     ? "codex_openai_base_url"
     : plan.client_kind === "claude_code"

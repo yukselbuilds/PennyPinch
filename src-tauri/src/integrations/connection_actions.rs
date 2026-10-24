@@ -1028,10 +1028,7 @@ fn applicable_plan(
         && plan.restart_required
         && plan.runtime_effective == super::super::plan::DeclarationState::Unknown
         && plan.endpoint_field.after_headroom
-        && matches!(
-            plan.endpoint_field.before,
-            EndpointBefore::Missing | EndpointBefore::SameStableEndpoint
-        )
+        && endpoint_before_is_applicable(plan, kind)
         && plan.endpoint_host == endpoint.host
         && plan.endpoint_port == endpoint.port
         && plan.endpoint_id == endpoint.endpoint_id
@@ -1040,6 +1037,25 @@ fn applicable_plan(
         && installation.surface == "cli"
         && supported_version
         && installation.status == "detected"
+}
+
+fn endpoint_before_is_applicable(plan: &ConnectionPlan, kind: ClientKind) -> bool {
+    if kind != ClientKind::OpenCodeV1 {
+        return matches!(
+            plan.endpoint_field.before,
+            EndpointBefore::Missing | EndpointBefore::SameStableEndpoint
+        );
+    }
+    let Some(analysis) = plan.opencode_routes.as_ref() else {
+        return false;
+    };
+    let Some(coverage) = plan.opencode_coverage else {
+        return false;
+    };
+    plan.endpoint_field.before == EndpointBefore::ProviderRoutes
+        && coverage.eligible_count > 0
+        && analysis.coverage == coverage
+        && analysis.routes.len() == usize::from(coverage.eligible_count)
 }
 
 fn validate_live_plan(manager: &PlanManager, lease: &PlanLease) -> Result<(), ActionFault> {
@@ -1070,6 +1086,16 @@ fn validate_live_plan(manager: &PlanManager, lease: &PlanLease) -> Result<(), Ac
         || !same_target_roots(&lease.roots, &current_roots, kind, plan.config_source)
     {
         return Err(ActionFault::Conflict);
+    }
+    if kind == ClientKind::OpenCodeV1 {
+        let expected = lease
+            .opencode_environment_fingerprint
+            .as_deref()
+            .ok_or(ActionFault::Conflict)?;
+        let current = (manager.opencode_environment_provider)();
+        if current.has_override || current.fingerprint != expected {
+            return Err(ActionFault::Conflict);
+        }
     }
     Ok(())
 }
