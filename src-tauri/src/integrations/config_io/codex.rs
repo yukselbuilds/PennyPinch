@@ -1,5 +1,5 @@
 use super::super::discovery::{InstallationSelectionError, InstallationSummary};
-use super::super::plan::CODEX_FIXTURE_CLI_VERSIONS;
+use super::super::plan::CODEX_API_KEY_FIXTURE_CLI_VERSIONS;
 use super::connection_actions::OwnershipSummary;
 use super::PlanManager;
 use crate::runtime::manager::{CodexRuntimeObservation, RuntimeManager};
@@ -213,7 +213,7 @@ pub(super) fn build_snapshot(
         && installation
             .version
             .as_deref()
-            .is_some_and(|version| CODEX_FIXTURE_CLI_VERSIONS.contains(&version));
+            .is_some_and(|version| CODEX_API_KEY_FIXTURE_CLI_VERSIONS.contains(&version));
     let compatibility = if installation.surface == "desktop" {
         "not_tested"
     } else if fixture_scope {

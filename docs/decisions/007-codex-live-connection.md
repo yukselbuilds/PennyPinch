@@ -1,6 +1,6 @@
 # Decision 007 — Codex connection status and live verification
 
-22 October 2026. **H019 active; implementation and acceptance pending.**
+22 October 2026; accepted 23 October 2026. **H019 first Windows CLI slice accepted.** The actual completed-response result retains two unclassified CLI errors; error-free/general compatibility is not claimed. See the [final product proof](../proofs/codex-product-verification.md).
 
 ## Scope and evidence boundary
 
@@ -12,7 +12,17 @@ H008 is partial fixture evidence for Codex CLI `0.163.0-alpha.10.2`; no real pro
 
 The backend derives a Codex-specific snapshot from trusted discovery, config ownership and ingress state. Bind status to the selected installation/config/endpoint; stale or conflicting state cannot produce success. Keep config ownership, runtime readiness, new-process/restart scope and traffic verification separate. Preserve model/reasoning/provider/auth declarations without exposing secrets. Unknown effective values remain unknown.
 
-The UI distinguishes CLI from Desktop and ChatGPT from API-key evidence. Coverage of the main agent and subagents remains unknown/not tested until observed. A shared endpoint or matching model alone is insufficient. No per-model or per-agent setup is introduced. No live verifier exists yet; never manufacture a verified state from counters, config application or a local fixture.
+The UI distinguishes CLI from Desktop and ChatGPT from API-key evidence. Coverage of the main agent and subagents remains unknown/not tested until observed. A shared endpoint or matching model alone is insufficient. No per-model or per-agent setup is introduced. The bounded live verifier is a separate new-process action; counters, config application or a local fixture cannot manufacture a verified state.
+
+## Final H019 implementation scope —23 October
+
+The user explicitly requested completion of the main task after H019-d5's actual child-to-wire proof. Finish the Windows Codex CLI vertical slice: recognize the measured `.11.2` executable by exact size/hash; expose a real, bounded Verify action through UI→manager→owned runtime→selected CLI; retain the tested atomic Apply/Undo and reopen behavior. Desktop, other auth/provider routes, future versions and unmeasured agent paths stay visibly untested. They are not silently promoted to support and do not require expanding this first CLI slice into universal compatibility certification.
+
+Verify starts one fresh read-only, ephemeral CLI test, with its normal profile/login and a process-only local endpoint override. No model, reasoning, provider/auth declaration or agent-count override is introduced; the test itself does not spawn a child. The UI states before the click that this small test uses the normal account and may count toward usage. Saved settings need not be applied for this separate process test; its result cannot establish adoption by existing chats or a saved configuration.
+
+The request accepts only the selected installation identity and scan generation. The backend rechecks the trusted executable, eligible built-in-provider config and ready owned runtime. Success requires an exact random marker, completed CLI turn, exit0, an observed exact CLI-PID→owned-ingress/server-PID connection and unchanged selection/runtime generation. A counter or open socket alone never succeeds. Concurrency, stale state, malformed/oversized output, unsupported routes and process failure produce fixed redacted failures. Raw stdout/stderr, prompts, secrets and auth stores are not proof/state data. Bound process lifetime, output and owned-process cleanup.
+
+Final acceptance includes focused failure tests, one reviewed final application gate, real native UI action with the existing normal login, and isolated native Apply→reopen→Undo/manual-file rescan checks. User config/auth and active conversations remain unchanged during QA. H019-d5 supplies the separately measured child route/model proof; Verify's own UI correctly limits its result to the newly created main test process. A historical unidentified failure is retained as historical uncertainty, not falsely relabeled resolved by a later pass.
 
 23 October clarification: the development worker's selected model is an internal implementation preference, not a product requirement or a mandatory subagent test model. Headroom targets every model carried by a supported client/protocol route, including different user-selected models for main/subagents and model changes between turns or conversations. No model-name allowlist, per-model connection or silent model/reasoning substitution is introduced. Parameterized fixtures must cover arbitrary model identifiers and mixed main/subagent models; live probes preserve user selections. Model-field preservation and request/agent route correlation are separate assertions. Representative passes cannot establish every model feature or every agent route.
 
@@ -56,6 +66,14 @@ This expands the existing fixed setting-state enum without a new request, respon
 The user asked to continue and whether they can test in a new chat. Prepare a local development launcher for a separate interactive CLI chat using its normal cached login and a process-scoped base-URL override. A newly opened desktop chat is not automatically routed by that action. The launcher requires an already-ready, identified native Headroom instance on loopback; it must reject foreign listeners, avoid global config/auth edits and never choose a model or reasoning level. It does not implement the product verifier or promote Desktop/new-version/agent coverage.
 
 CheckOnly performs guard/readiness checks without launching a CLI/model call. Any retained report is an explicit allowlist of request/model/token metadata; raw content, auth, tags, errors and config are not exported. Request records without trusted actor correlation remain unattributed. Model choices and subagent delegation come from the user in their test chat. The user can change models and compare observed requests, but model counts alone do not prove agent identity. No automatic benchmark or paid API/key setup is added. The existing build/quality evidence is reused only while its relevant fingerprints match; new launcher guard/redaction checks are independent.
+
+## Completed response versus CLI error notifications
+
+The real normal-profile CLI produced model responses but also generic JSONL error notifications. Their source remains unknown. An isolated failing-MCP fixture did not reproduce these notifications; no MCP, transport or authentication cause is inferred from that test.
+
+Ordinary `passed` remains error-free. A distinct `response_verified_cli_errors` result may establish only the completed response route: it requires the exact unpredictable marker once, exactly one terminal success, exit 0, owned-peer evidence and every unchanged-state guard, while retaining a bounded error-notification count and an explicit visible warning. It does not call those errors benign, unrelated or resolved, and does not establish general protocol/tool health. This is narrower than a clean verification result and must never be rendered as one.
+
+Fatal tracking is independent of generic notification order. A later failed/aborted turn, tool invocation, malformed or unknown item, missing/duplicate marker or missing/duplicate terminal always fails, even if an earlier generic error was already observed. Generic error notifications alone cannot establish any route result. The product stores fixed diagnostic categories and counts, never raw error text or CLI content. Final native acceptance demonstrated the completed-response/error-count2 state with the full guard path. The error source stays unknown and is tracked under H008; H019 closes only the first CLI response/config product slice.
 
 ## Sources checked
 

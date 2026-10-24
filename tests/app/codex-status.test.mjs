@@ -131,7 +131,7 @@ test("enforces fixed scope labels and runtime ownership invariants", () => {
   assert.equal(api.decodeCodexStatusReply(badPort, expected()), null);
 
   const unsupportedFixtureClaim = makeSnapshot({
-    installation: { ...makeSnapshot().installation, version: "0.163.0-alpha.11.2", compatibility: "fixture_only" },
+    installation: { ...makeSnapshot().installation, version: "0.163.0-alpha.99", compatibility: "fixture_only" },
     auth_scope: { ...makeSnapshot().auth_scope, api_key_auth: "fixture_only" },
   });
   assert.equal(api.decodeCodexStatusReply(unsupportedFixtureClaim, expected()), null);
@@ -147,7 +147,18 @@ test("limits local API fixture scope to exact CLI versions, never Desktop or nei
     assert.equal(api.decodeCodexStatusReply(fixtureCli, expected()).kind, "snapshot");
   }
 
-  for (const version of ["0.163.0-alpha.11.0", "0.163.0-alpha.11.2", "0.163.0-alpha.10.3"]) {
+  const verifyOnlyCli = makeSnapshot({
+    installation: { ...makeSnapshot().installation, version: "0.163.0-alpha.11.2", compatibility: "not_verified" },
+    auth_scope: { ...makeSnapshot().auth_scope, api_key_auth: "not_tested" },
+    ownership: { ...makeSnapshot().ownership, current_config_value: "matches_owned_endpoint" },
+  });
+  const verifyOnlyDecoded = api.decodeCodexStatusReply(verifyOnlyCli, expected());
+  assert.equal(verifyOnlyDecoded.kind, "snapshot");
+  assert.equal(verifyOnlyDecoded.snapshot.installation.compatibility, "not_verified");
+  assert.equal(verifyOnlyDecoded.snapshot.auth_scope.api_key_auth, "not_tested");
+  assert.equal(api.diagnoseCodexNextAction(verifyOnlyDecoded.snapshot).code, "start_engine");
+
+  for (const version of ["0.163.0-alpha.11.0", "0.163.0-alpha.11.3", "0.163.0-alpha.10.3"]) {
     const neighborCli = makeSnapshot({
       installation: { ...makeSnapshot().installation, version, compatibility: "not_verified" },
       auth_scope: { ...makeSnapshot().auth_scope, api_key_auth: "not_tested" },
@@ -161,7 +172,7 @@ test("limits local API fixture scope to exact CLI versions, never Desktop or nei
     }, expected()), null);
   }
 
-  for (const version of ["0.163.0-alpha.10.2", "0.163.0-alpha.11.1"]) {
+  for (const version of ["0.163.0-alpha.10.2", "0.163.0-alpha.11.1", "0.163.0-alpha.11.2"]) {
     const desktop = makeSnapshot({
       installation: { ...makeSnapshot().installation, surface: "desktop", version, compatibility: "not_tested" },
       auth_scope: { ...makeSnapshot().auth_scope, api_key_auth: "not_tested" },

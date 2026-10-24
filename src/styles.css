@@ -132,6 +132,7 @@ h1 { margin-bottom: 7px; font-size: clamp(26px, 2.4vw, 33px); font-weight: 570; 
 .applications-notice strong { display: block; color: var(--text); font-size: 11px; font-weight: 600; }
 .applications-notice p { margin: 4px 0 0; color: var(--muted); }
 .applications-notice--error { border-color: color-mix(in srgb, var(--warning) 30%, var(--border)); }
+.applications-notice--warning { border-color: color-mix(in srgb, var(--warning) 55%, var(--border)); background: color-mix(in srgb, var(--warning) 8%, var(--surface-soft)); box-shadow: inset 3px 0 var(--warning); }
 .applications-notice__mark, .applications-scope__mark { display: grid; place-items: center; width: 20px; height: 20px; border: 1px solid var(--quiet); border-radius: 50%; color: var(--muted); font-size: 11px; font-weight: 700; flex: 0 0 auto; }
 .applications-notice--error .applications-notice__mark { border-color: var(--warning); color: var(--warning); }
 .applications-scope { min-height: auto; color: var(--muted); border-color: color-mix(in srgb, var(--warning) 19%, var(--border)); }
@@ -163,6 +164,7 @@ h1 { margin-bottom: 7px; font-size: clamp(26px, 2.4vw, 33px); font-weight: 570; 
 .connection-status-panel__header { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-bottom: 11px; border-bottom: 1px solid var(--border); }
 .connection-status-panel__header h2 { margin: 0; color: var(--text); font-size: 13px; font-weight: 600; }
 .connection-status-panel__header .button { min-height: 34px; flex: 0 0 auto; }
+.connection-status-panel__actions { display: flex; flex-wrap: wrap; gap: 7px; }
 .connection-status-panel__facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0; }
 .connection-status-panel__facts > div { display: grid; align-content: start; gap: 5px; min-width: 0; padding: 11px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 8px; }
 .connection-status-panel__facts dt { color: var(--muted); font-size: 10px; line-height: 1.35; }
@@ -270,7 +272,7 @@ h1 { margin-bottom: 7px; font-size: clamp(26px, 2.4vw, 33px); font-weight: 570; 
   .applications { gap: 12px; }.applications-toolbar { align-items: flex-start; flex-direction: column; padding: 15px; gap: 13px; }.applications-scan { width: 100%; }
   .applications-grid { grid-template-columns: 1fr; gap: 9px; }.application-card { min-height: 222px; padding: 15px; }
   .connection-status-panel { padding: 14px; }.connection-status-panel__header { align-items: flex-start; flex-direction: column; }
-  .connection-status-panel__header .button { width: 100%; }
+  .connection-status-panel__actions { width: 100%; }.connection-status-panel__actions .button { width: 100%; }
   .connection-dialog__header, .connection-dialog__body { padding-inline: 15px; }
   .connection-dialog__footer { align-items: stretch; flex-direction: column-reverse; padding: 12px 15px; }
   .connection-dialog__actions { justify-content: flex-end; }

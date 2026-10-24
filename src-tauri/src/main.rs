@@ -3,9 +3,10 @@ mod runtime;
 mod state;
 
 use integrations::config_io::{
-    codex_connection_status, codex_status_failure_reply, ApplyConnectionRequest, CodexStatusReply,
-    CodexStatusRequest, ConnectionActionReply, OwnershipSnapshotRequest, PlanManager, PlanReply,
-    PreviewRequest, UndoConnectionRequest,
+    codex_connection_status, codex_status_failure_reply, codex_verify_failure_reply,
+    ApplyConnectionRequest, CodexStatusReply, CodexStatusRequest, CodexVerifyManager,
+    CodexVerifyReply, CodexVerifyRequest, ConnectionActionReply, OwnershipSnapshotRequest,
+    PlanManager, PlanReply, PreviewRequest, UndoConnectionRequest,
 };
 use integrations::discovery::{DiscoveryManager, DiscoveryReply};
 use integrations::picker;
@@ -213,6 +214,24 @@ async fn get_codex_connection_status(
 }
 
 #[tauri::command]
+async fn verify_codex_connection(
+    plans: tauri::State<'_, Arc<PlanManager>>,
+    runtime: tauri::State<'_, RuntimeManager>,
+    verifier: tauri::State<'_, CodexVerifyManager>,
+    request: CodexVerifyRequest,
+) -> Result<CodexVerifyReply, CodexVerifyReply> {
+    let plans = Arc::clone(plans.inner());
+    let runtime = runtime.inner().clone();
+    let verifier = verifier.inner().clone();
+    let failure_id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || verifier.verify(&plans, &runtime, request))
+            .await
+            .unwrap_or_else(|_| codex_verify_failure_reply(failure_id)),
+    )
+}
+
+#[tauri::command]
 async fn select_client_file(
     window: tauri::WebviewWindow,
     state: tauri::State<'_, DiscoveryManager>,
@@ -259,10 +278,12 @@ fn main() {
                 PlanManager::new(discovery.clone(), runtime.clone())
                     .with_optional_ownership_store(ownership_store),
             );
+            let codex_verifier = CodexVerifyManager::new(app.path().app_local_data_dir().ok());
             app.manage(runtime);
             app.manage(PreferenceStore::new(app.path().app_data_dir().ok()));
             app.manage(discovery);
             app.manage(plans);
+            app.manage(codex_verifier);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -279,7 +300,8 @@ fn main() {
             apply_connection_plan,
             undo_connection,
             get_connection_ownership,
-            get_codex_connection_status
+            get_codex_connection_status,
+            verify_codex_connection
         ])
         .build(tauri::generate_context!())
         .expect("failed to build Headroom desktop");
@@ -293,7 +315,10 @@ fn main() {
             if action.start_stop {
                 let app_handle = app_handle.clone();
                 std::thread::spawn(move || {
-                    let clean = app_handle.state::<RuntimeManager>().shutdown();
+                    let verifier_clean =
+                        app_handle.state::<CodexVerifyManager>().inner().shutdown();
+                    let runtime_clean = app_handle.state::<RuntimeManager>().shutdown();
+                    let clean = verifier_clean && runtime_clean;
                     let exit_code = if clean { code.unwrap_or(0) } else { 1 };
                     EXIT_GATE.complete();
                     app_handle.exit(exit_code);

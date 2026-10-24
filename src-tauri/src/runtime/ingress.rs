@@ -450,6 +450,113 @@ pub fn verify_backend_peer(
     }
 }
 
+/// Verify that a specific child process has an established IPv4 loopback
+/// connection to the application-owned stable listener. This is a transport
+/// ownership check only; it does not inspect HTTP or request content.
+pub(crate) fn verify_cli_connection_to_owned_ingress(
+    port: u16,
+    cli_pid: u32,
+    app_pid: u32,
+) -> Result<(), IngressError> {
+    use std::mem::size_of;
+    use windows_sys::Win32::Foundation::{ERROR_INSUFFICIENT_BUFFER, NO_ERROR};
+    use windows_sys::Win32::NetworkManagement::IpHelper::{
+        GetExtendedTcpTable, MIB_TCPROW_OWNER_PID, MIB_TCP_STATE_ESTAB, MIB_TCP_STATE_LISTEN,
+        TCP_TABLE_OWNER_PID_ALL,
+    };
+
+    if port == 0 || cli_pid == 0 || app_pid == 0 || cli_pid == app_pid {
+        return Err(IngressError::PeerOwnerUnknown);
+    }
+    const MAX_TABLE_BYTES: usize = 4 * 1024 * 1024;
+    let table = (|| {
+        for _ in 0..3 {
+            let mut size = 0u32;
+            // SAFETY: null buffer with a size pointer is the documented query.
+            let first = unsafe {
+                GetExtendedTcpTable(
+                    std::ptr::null_mut(),
+                    &mut size,
+                    0,
+                    2,
+                    TCP_TABLE_OWNER_PID_ALL,
+                    0,
+                )
+            };
+            if first != ERROR_INSUFFICIENT_BUFFER || size as usize > MAX_TABLE_BYTES {
+                return Err(IngressError::PeerOwnerTableUnavailable);
+            }
+            let mut buffer = vec![0usize; (size as usize).div_ceil(size_of::<usize>())];
+            // SAFETY: buffer is aligned and bounded by the preceding size query.
+            let result = unsafe {
+                GetExtendedTcpTable(
+                    buffer.as_mut_ptr().cast(),
+                    &mut size,
+                    0,
+                    2,
+                    TCP_TABLE_OWNER_PID_ALL,
+                    0,
+                )
+            };
+            if result == ERROR_INSUFFICIENT_BUFFER {
+                continue;
+            }
+            if result != NO_ERROR || size as usize > buffer.len() * size_of::<usize>() {
+                return Err(IngressError::PeerOwnerTableUnavailable);
+            }
+            let bytes = buffer.as_ptr().cast::<u8>();
+            let count = unsafe { bytes.cast::<u32>().read_unaligned() } as usize;
+            let rows_bytes = count
+                .checked_mul(size_of::<MIB_TCPROW_OWNER_PID>())
+                .ok_or(IngressError::PeerOwnerTableUnavailable)?;
+            if size_of::<u32>() + rows_bytes > size as usize {
+                return Err(IngressError::PeerOwnerTableUnavailable);
+            }
+            let rows = unsafe {
+                std::slice::from_raw_parts(
+                    bytes.add(size_of::<u32>()).cast::<MIB_TCPROW_OWNER_PID>(),
+                    count,
+                )
+            };
+            return Ok(rows.to_vec());
+        }
+        Err(IngressError::PeerOwnerTableUnavailable)
+    })()?;
+
+    let loopback = u32::from_ne_bytes(Ipv4Addr::LOCALHOST.octets());
+    let mut listener_count = 0usize;
+    let mut client_connection_found = false;
+    for row in table {
+        let local_port = u16::from_be(row.dwLocalPort as u16);
+        let remote_port = u16::from_be(row.dwRemotePort as u16);
+        if row.dwState == MIB_TCP_STATE_LISTEN as u32 && local_port == port {
+            listener_count += 1;
+            if row.dwLocalAddr != loopback || row.dwOwningPid != app_pid {
+                return Err(IngressError::PeerOwnerMismatch);
+            }
+        }
+        if row.dwState == MIB_TCP_STATE_ESTAB as u32
+            && row.dwOwningPid == cli_pid
+            && row.dwLocalAddr == loopback
+            && row.dwRemoteAddr == loopback
+            && remote_port == port
+        {
+            client_connection_found = true;
+        }
+    }
+    if listener_count != 1 {
+        return Err(if listener_count == 0 {
+            IngressError::PeerOwnerMissing
+        } else {
+            IngressError::PeerOwnerAmbiguous
+        });
+    }
+    if !client_connection_found {
+        return Err(IngressError::PeerOwnerMissing);
+    }
+    Ok(())
+}
+
 #[cfg(windows)]
 fn query_established_owner(
     local: SocketAddrV4,

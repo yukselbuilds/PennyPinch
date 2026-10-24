@@ -121,7 +121,8 @@ type ExpectedReply = {
 };
 
 const maxSafeInteger = Number.MAX_SAFE_INTEGER;
-const fixtureCliVersions = new Set(["0.163.0-alpha.10.2", "0.163.0-alpha.11.1"]);
+const apiKeyFixtureCliVersions = new Set(["0.163.0-alpha.10.2", "0.163.0-alpha.11.1"]);
+const supportedCliVersions = new Set([...apiKeyFixtureCliVersions, "0.163.0-alpha.11.2"]);
 const errorContracts: Record<CodexStatusErrorCode, { retryable: boolean; messageKey: string }> = {
   validation_failed: { retryable: false, messageKey: "codex.status.validation_failed" },
   stale_selection: { retryable: true, messageKey: "codex.status.stale_selection" },
@@ -203,7 +204,7 @@ function decodeSnapshot(value: unknown, expected: ExpectedReply): CodexStatusSna
     || !(installation.version === null || isVersion(installation.version))) return null;
 
   const fixtureScope = expected.surface === "cli" && installation.version !== null
-    && fixtureCliVersions.has(installation.version);
+    && apiKeyFixtureCliVersions.has(installation.version);
   const expectedCompatibility = expected.surface === "desktop" ? "not_tested" : fixtureScope ? "fixture_only" : "not_verified";
   if (installation.compatibility !== expectedCompatibility) return null;
 
@@ -221,8 +222,9 @@ function decodeSnapshot(value: unknown, expected: ExpectedReply): CodexStatusSna
     || (ownership.state === "unavailable" && (ownership.config_source !== null || ownership.endpoint_id !== null || ownership.endpoint_port !== null || ownership.endpoint_binding !== "unknown"))) return null;
 
   const currentConfigValue = ownership.current_config_value as CodexCurrentConfigValue;
-  const isFixtureCli = expected.surface === "cli" && fixtureScope;
-  if ((ownership.state === "active" && (isFixtureCli
+  const supportsConfigObservation = expected.surface === "cli" && installation.version !== null
+    && supportedCliVersions.has(installation.version);
+  if ((ownership.state === "active" && (supportsConfigObservation
       ? !["matches_owned_endpoint", "missing", "different", "unsupported_route", "unavailable"].includes(currentConfigValue)
       : currentConfigValue !== "not_rechecked"))
     || ((ownership.state === "released" || ownership.state === "none") && currentConfigValue !== "not_owned")
@@ -341,7 +343,7 @@ export type CodexNextAction = {
 /** Gives one bounded, read-only next step from a fresh local snapshot. It never verifies client traffic. */
 export function diagnoseCodexNextAction(snapshot: CodexStatusSnapshot): CodexNextAction {
   const { installation, ownership, runtime } = snapshot;
-  if (installation.surface !== "cli" || installation.version === null || !fixtureCliVersions.has(installation.version)) {
+  if (installation.surface !== "cli" || installation.version === null || !supportedCliVersions.has(installation.version)) {
     return { code: "unsupported_installation", state: "action_required" };
   }
   if (ownership.state === "unavailable") return { code: "refresh_status", state: "action_required" };
@@ -476,3 +478,286 @@ export function isCodexStatusAvailable(): boolean {
     return false;
   }
 }
+
+export type CodexVerifyFailureCode =
+  | "unsupported_installation"
+  | "runtime_unavailable"
+  | "config_unavailable"
+  | "route_unsupported"
+  | "workspace_unavailable"
+  | "process_ownership_unavailable"
+  | "process_start_failed"
+  | "process_ownership_lost"
+  | "process_output_invalid"
+  | "process_cancelled"
+  | "process_timeout"
+  | "process_wait_failed"
+  | "transport_unverified"
+  | "selection_changed"
+  | "runtime_changed"
+  | "process_failed"
+  | "config_changed"
+  | "state_changed";
+
+export type CodexVerifyOutputDiagnostic =
+  | "reader_timeout"
+  | "reader_failed"
+  | "output_oversize"
+  | "line_or_event_limit"
+  | "invalid_json"
+  | "invalid_shape"
+  | "unexpected_error"
+  | "unexpected_tool"
+  | "unexpected_item"
+  | "unexpected_event"
+  | "marker_missing"
+  | "marker_multiple"
+  | "terminal_missing"
+  | "terminal_multiple";
+
+export type CodexVerifyErrorCode =
+  | "validation_failed"
+  | "stale_selection"
+  | "not_found"
+  | "busy"
+  | "unavailable"
+  | "unsupported_platform";
+
+export interface CodexVerifySelection {
+  installation_id: string;
+  client_kind: "codex";
+  surface: CodexSurface;
+  version: string | null;
+}
+
+export interface CodexVerifySnapshot {
+  schema_version: 1;
+  request_id: string;
+  status: "snapshot";
+  installation_id: string;
+  scan_generation: number;
+  probe_status: "blocked" | "failed" | "passed" | "response_verified_cli_errors";
+  failure_code: CodexVerifyFailureCode | null;
+  output_diagnostic: CodexVerifyOutputDiagnostic | null;
+  cli_error_count: number;
+  scope: "new_process_only";
+  endpoint_id: string | null;
+  runtime_generation: string | null;
+  route_eligible: boolean;
+  process_completed: boolean;
+  marker_received: boolean;
+  ingress_peer_observed: boolean;
+  selection_unchanged: boolean;
+  runtime_generation_unchanged: boolean;
+  saved_config_adoption: "unknown";
+  auth_general: "not_tested";
+  subagent: "not_tested";
+}
+
+export interface CodexVerifyError {
+  schema_version: 1;
+  request_id: string;
+  status: "error";
+  error: {
+    code: CodexVerifyErrorCode;
+    retryable: boolean;
+    message_key: string;
+    diagnostic_id: null;
+  };
+}
+
+export type CodexVerifyResult =
+  | { kind: "snapshot"; snapshot: CodexVerifySnapshot }
+  | { kind: "verify_error"; error: CodexVerifyError }
+  | { kind: "desktop_unavailable" }
+  | { kind: "unsupported_installation" }
+  | { kind: "invalid_request" }
+  | { kind: "invalid_response" }
+  | { kind: "request_failed" };
+
+type VerifyExpected = { requestId: string; installationId: string; scanGeneration: number };
+
+const verifyFailureCodes = [
+  "unsupported_installation", "runtime_unavailable", "config_unavailable", "route_unsupported",
+  "workspace_unavailable", "process_ownership_unavailable", "process_start_failed",
+  "process_ownership_lost", "process_output_invalid", "process_cancelled", "process_timeout",
+  "process_wait_failed", "transport_unverified", "selection_changed", "runtime_changed",
+  "process_failed", "config_changed", "state_changed",
+] as const;
+const verifyOutputDiagnostics = [
+  "reader_timeout", "reader_failed", "output_oversize", "line_or_event_limit", "invalid_json",
+  "invalid_shape", "unexpected_error", "unexpected_tool", "unexpected_item", "unexpected_event",
+  "marker_missing", "marker_multiple", "terminal_missing", "terminal_multiple",
+] as const;
+const MAX_VERIFY_EVENTS = 2048;
+const verifyErrorContracts: Record<CodexVerifyErrorCode, { retryable: boolean; messageKey: string }> = {
+  validation_failed: { retryable: false, messageKey: "codex.verify.validation_failed" },
+  stale_selection: { retryable: true, messageKey: "codex.verify.stale_selection" },
+  not_found: { retryable: false, messageKey: "codex.verify.not_found" },
+  busy: { retryable: true, messageKey: "codex.verify.busy" },
+  unavailable: { retryable: true, messageKey: "codex.verify.unavailable" },
+  unsupported_platform: { retryable: false, messageKey: "codex.verify.unsupported_platform" },
+};
+
+function decodeCodexVerifySnapshot(value: unknown, expected: VerifyExpected): CodexVerifySnapshot | null {
+  if (!isRecord(value) || !hasExactKeys(value, [
+    "schema_version", "request_id", "status", "installation_id", "scan_generation", "probe_status",
+    "failure_code", "output_diagnostic", "cli_error_count", "scope", "endpoint_id", "runtime_generation", "route_eligible", "process_completed",
+    "marker_received", "ingress_peer_observed", "selection_unchanged", "runtime_generation_unchanged",
+    "saved_config_adoption", "auth_general", "subagent",
+  ])) return null;
+  if (value.schema_version !== 1 || value.request_id !== expected.requestId || value.status !== "snapshot"
+    || value.installation_id !== expected.installationId || value.scan_generation !== expected.scanGeneration
+    || !isCanonicalUuid(expected.requestId) || !isCanonicalUuid(expected.installationId)
+    || !isPositiveSafeInteger(expected.scanGeneration)
+    || !(value.probe_status === "blocked" || value.probe_status === "failed" || value.probe_status === "passed"
+      || value.probe_status === "response_verified_cli_errors")
+    || !(value.failure_code === null || (typeof value.failure_code === "string" && (verifyFailureCodes as readonly string[]).includes(value.failure_code)))
+    || !(value.output_diagnostic === null || (typeof value.output_diagnostic === "string"
+      && (verifyOutputDiagnostics as readonly string[]).includes(value.output_diagnostic)))
+    || !Number.isSafeInteger(value.cli_error_count) || (value.cli_error_count as number) < 0
+    || (value.cli_error_count as number) > MAX_VERIFY_EVENTS
+    || ((value.cli_error_count as number) > 0 && value.output_diagnostic === null)
+    || value.scope !== "new_process_only"
+    || !(value.endpoint_id === null || isCanonicalUuid(value.endpoint_id))
+    || !(value.runtime_generation === null || isCanonicalUuid(value.runtime_generation))
+    || typeof value.route_eligible !== "boolean" || typeof value.process_completed !== "boolean"
+    || typeof value.marker_received !== "boolean" || typeof value.ingress_peer_observed !== "boolean"
+    || typeof value.selection_unchanged !== "boolean" || typeof value.runtime_generation_unchanged !== "boolean"
+    || value.saved_config_adoption !== "unknown" || value.auth_general !== "not_tested" || value.subagent !== "not_tested") return null;
+
+  const proofFlags = ["route_eligible", "process_completed", "marker_received", "ingress_peer_observed", "selection_unchanged", "runtime_generation_unchanged"] as const;
+  if (value.probe_status === "passed") {
+    if (value.failure_code !== null || value.output_diagnostic !== null || value.cli_error_count !== 0
+      || value.endpoint_id === null || value.runtime_generation === null
+      || proofFlags.some((key) => value[key] !== true)) return null;
+  } else if (value.probe_status === "response_verified_cli_errors") {
+    if (value.failure_code !== null || value.output_diagnostic !== "unexpected_error" || value.cli_error_count === 0
+      || value.endpoint_id === null || value.runtime_generation === null
+      || proofFlags.some((key) => value[key] !== true)) return null;
+  } else if (value.failure_code === null || (value.probe_status === "blocked"
+    && (value.output_diagnostic !== null || value.cli_error_count !== 0))) {
+    return null;
+  }
+
+  return {
+    schema_version: 1,
+    request_id: expected.requestId,
+    status: "snapshot",
+    installation_id: expected.installationId,
+    scan_generation: expected.scanGeneration,
+    probe_status: value.probe_status,
+    failure_code: value.failure_code as CodexVerifyFailureCode | null,
+    output_diagnostic: value.output_diagnostic as CodexVerifyOutputDiagnostic | null,
+    cli_error_count: value.cli_error_count as number,
+    scope: "new_process_only",
+    endpoint_id: value.endpoint_id as string | null,
+    runtime_generation: value.runtime_generation as string | null,
+    route_eligible: value.route_eligible,
+    process_completed: value.process_completed,
+    marker_received: value.marker_received,
+    ingress_peer_observed: value.ingress_peer_observed,
+    selection_unchanged: value.selection_unchanged,
+    runtime_generation_unchanged: value.runtime_generation_unchanged,
+    saved_config_adoption: "unknown",
+    auth_general: "not_tested",
+    subagent: "not_tested",
+  };
+}
+
+function decodeCodexVerifyError(value: unknown, expected: VerifyExpected): CodexVerifyError | null {
+  if (!isRecord(value) || !isRecord(value.error)
+    || !hasExactKeys(value, ["schema_version", "request_id", "status", "error"])
+    || !hasExactKeys(value.error, ["code", "retryable", "message_key", "diagnostic_id"])
+    || !isCanonicalUuid(expected.requestId) || !isCanonicalUuid(expected.installationId)
+    || !isPositiveSafeInteger(expected.scanGeneration)) return null;
+  const code = value.error.code;
+  if (typeof code !== "string" || !Object.hasOwn(verifyErrorContracts, code)) return null;
+  const contract = verifyErrorContracts[code as CodexVerifyErrorCode];
+  if (value.schema_version !== 1 || value.request_id !== expected.requestId || value.status !== "error"
+    || value.error.retryable !== contract.retryable || value.error.message_key !== contract.messageKey
+    || value.error.diagnostic_id !== null) return null;
+  return {
+    schema_version: 1,
+    request_id: expected.requestId,
+    status: "error",
+    error: { code: code as CodexVerifyErrorCode, retryable: contract.retryable, message_key: contract.messageKey, diagnostic_id: null },
+  };
+}
+
+export function decodeCodexVerifyReply(value: unknown, expected: VerifyExpected):
+  | { kind: "snapshot"; snapshot: CodexVerifySnapshot }
+  | { kind: "verify_error"; error: CodexVerifyError }
+  | null {
+  const snapshot = decodeCodexVerifySnapshot(value, expected);
+  if (snapshot) return { kind: "snapshot", snapshot };
+  const error = decodeCodexVerifyError(value, expected);
+  return error ? { kind: "verify_error", error } : null;
+}
+
+export function codexVerifyGenerationChanged(
+  snapshotGeneration: string | null,
+  generationAtStart: string | null,
+): boolean {
+  if (snapshotGeneration === null) return false;
+  return compactRuntimeGeneration(snapshotGeneration) !== compactRuntimeGeneration(generationAtStart);
+}
+
+function compactRuntimeGeneration(value: string | null): string | null {
+  return value?.replaceAll("-", "") ?? null;
+}
+
+export function isCodexVerifySelectionSupported(selection: CodexVerifySelection): boolean {
+  return selection.client_kind === "codex" && selection.surface === "cli"
+    && selection.version === "0.163.0-alpha.11.2";
+}
+
+export function createCodexVerifyClient(options: {
+  isNative: () => boolean;
+  createRequestId: () => string | null;
+  invoke: InvokeFunction;
+}): {
+  verify(selection: CodexVerifySelection, scanGeneration: number): Promise<CodexVerifyResult>;
+} {
+  return {
+    async verify(selection, scanGeneration) {
+      try {
+        if (!options.isNative()) return { kind: "desktop_unavailable" };
+      } catch {
+        return { kind: "desktop_unavailable" };
+      }
+      if (!selection || !isCanonicalUuid(selection.installation_id)
+        || !["cli", "desktop"].includes(selection.surface)
+        || !isPositiveSafeInteger(scanGeneration)) return { kind: "invalid_request" };
+      if (!isCodexVerifySelectionSupported(selection)) return { kind: "unsupported_installation" };
+
+      let requestId: string | null;
+      try {
+        requestId = options.createRequestId();
+      } catch {
+        return { kind: "request_failed" };
+      }
+      if (!isCanonicalUuid(requestId)) return { kind: "request_failed" };
+      const expected = { requestId, installationId: selection.installation_id, scanGeneration };
+      try {
+        const raw = await options.invoke("verify_codex_connection", {
+          request: {
+            schema_version: 1,
+            request_id: requestId,
+            installation_id: selection.installation_id,
+            scan_generation: scanGeneration,
+          },
+        });
+        return decodeCodexVerifyReply(raw, expected) ?? { kind: "invalid_response" };
+      } catch {
+        return { kind: "request_failed" };
+      }
+    },
+  };
+}
+
+export const codexVerifyClient = createCodexVerifyClient({
+  isNative: isTauri,
+  createRequestId: () => crypto.randomUUID(),
+  invoke,
+});

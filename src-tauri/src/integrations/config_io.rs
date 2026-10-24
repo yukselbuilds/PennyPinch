@@ -17,6 +17,8 @@ use uuid::Uuid;
 
 #[path = "config_io/codex.rs"]
 mod codex;
+#[path = "config_io/codex_verify.rs"]
+mod codex_verify;
 #[path = "connection_actions.rs"]
 mod connection_actions;
 
@@ -27,6 +29,10 @@ mod codex_tests;
 pub(crate) use codex::{
     connection_status as codex_connection_status, failure_reply as codex_status_failure_reply,
     CodexStatusReply, CodexStatusRequest,
+};
+pub(crate) use codex_verify::{
+    failure_reply as codex_verify_failure_reply, CodexVerifyManager, CodexVerifyReply,
+    CodexVerifyRequest,
 };
 pub(crate) use connection_actions::{
     ApplyConnectionRequest, ConnectionActionReply, OwnershipSnapshotRequest, UndoConnectionRequest,

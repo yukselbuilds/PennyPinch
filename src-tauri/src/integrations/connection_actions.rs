@@ -175,14 +175,14 @@ fn codex_config_observation(
         return (Ok(Some(owner)), CurrentConfigValue::NotOwned);
     }
 
-    let supported_fixture = expected_installation.surface == "cli"
+    let supported_cli = expected_installation.surface == "cli"
         && expected_installation
             .version
             .as_deref()
             .is_some_and(|version| {
-                super::super::plan::CODEX_FIXTURE_CLI_VERSIONS.contains(&version)
+                super::super::plan::supported_version(ClientKind::Codex, version)
             });
-    if !supported_fixture {
+    if !supported_cli {
         if transaction.rollback().is_err()
             || !current_codex_selection(manager, expected_installation, scan_generation)
         {

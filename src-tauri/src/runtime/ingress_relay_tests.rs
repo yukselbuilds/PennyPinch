@@ -849,7 +849,7 @@ fn lifetime_deadline_closes_connection_despite_recent_activity() {
     client
         .set_read_timeout(Some(Duration::from_secs(2)))
         .unwrap();
-    let mut sent = Vec::new();
+    let mut acknowledged = Vec::new();
     let started = Instant::now();
     while started.elapsed() < Duration::from_millis(340) {
         if client.write_all(b"x").is_err() {
@@ -859,7 +859,7 @@ fn lifetime_deadline_closes_connection_despite_recent_activity() {
         if client.read_exact(&mut ack).is_err() {
             break;
         }
-        sent.push(b'x');
+        acknowledged.push(b'x');
         thread::sleep(Duration::from_millis(35));
     }
     let _ = client.shutdown(Shutdown::Write);
@@ -870,8 +870,9 @@ fn lifetime_deadline_closes_connection_despite_recent_activity() {
     let failure = relay.last_fixed_failure();
     let shutdown = relay.shutdown(Duration::from_secs(1));
     fixture.cleanup();
-    assert!(!sent.is_empty());
-    assert_eq!(captured, sent);
+    assert!(!acknowledged.is_empty());
+    assert!(captured.starts_with(&acknowledged));
+    assert!(captured.len() <= acknowledged.len() + 1);
     assert_eq!(failure, Some(super::RelayError::LifetimeTimeout));
     assert!(backend_joined && shutdown.complete);
 }

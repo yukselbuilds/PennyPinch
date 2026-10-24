@@ -1,14 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   codexStatusClient,
+  codexVerifyClient,
+  codexVerifyGenerationChanged,
   CodexStatusRequestSequence,
   diagnoseCodexNextAction,
   isCodexStatusAvailable,
+  isCodexVerifySelectionSupported,
   presentCodexSetting,
   visibleRuntimeStatus,
   type CodexStatusErrorCode,
   type CodexStatusResult,
   type CodexStatusSnapshot,
+  type CodexVerifyErrorCode,
+  type CodexVerifyFailureCode,
+  type CodexVerifyResult,
   type CodexSettingPresentationKey,
   type CodexNextActionCode,
 } from "../../lib/codexStatus";
@@ -21,6 +27,22 @@ type Copy = {
   chooseInstallation: string;
   update: string;
   updating: string;
+  verify: string;
+  verifying: string;
+  verifyScope: string;
+  verifyUsage: string;
+  verifyNeedsReady: string;
+  verifyUnsupported: string;
+  verifyPassed: string;
+  verifyCompletedWithErrors: string;
+  verifyBlocked: string;
+  verifyFailed: string;
+  verifyRouteUnsupported: string;
+  verifyRuntimeUnavailable: string;
+  verifyConfigUnavailable: string;
+  verifyStale: string;
+  verifyProcessFailed: string;
+  verifyError: Record<CodexVerifyErrorCode, string>;
   desktopRequired: string;
   scanFirst: string;
   loading: string;
@@ -76,6 +98,25 @@ const copy: Record<PreferenceLanguage, Copy> = {
   tr: {
     title: "Codex bağlantı durumu", choose: "Kurulum seç",
     chooseInstallation: "Bir Codex kurulumu seç", update: "Durumu güncelle", updating: "Güncelleniyor…",
+    verify: "Yeni süreçte doğrula", verifying: "Test isteği sürüyor…",
+    verifyScope: "Bu kontrol yalnızca yeni ve salt okunur bir Codex süreci için geçerlidir. Kayıtlı ayarların kullanıldığını veya ana/alt ajan kapsamını doğrulamaz.",
+    verifyUsage: "Geçerli Codex oturum açma yöntemini ve normal model seçimini kullanarak gerçek bir test isteği gönderir; hesap kullanımına yansıyabilir. Yalnız bu yeni sürecin endpoint'i değiştirilir; kayıtlı ayarlar değişmez.",
+    verifyNeedsReady: "Doğrulama için desteklenen CLI kurulumu ve hazır Headroom motoru gerekir.",
+    verifyUnsupported: "Bu Codex yüzeyi veya sürümü bu yerel testte desteklenmiyor.",
+    verifyPassed: "Yeni Codex süreci test isteğini Headroom üzerinden tamamladı. Kayıtlı ayarların benimsenmesi ve ajan kapsamı doğrulanmadı.",
+    verifyCompletedWithErrors: "Bu yanıt Headroom üzerinden tamamlandı; {count} ek, sınıflandırılmamış CLI hatası bildirildi. Yalnız bu yanıtın rotası doğrulandı; genel protokol ve araç durumu bilinmiyor.",
+    verifyBlocked: "Yerel test başlamadı. Durumu güncelle ve gösterilen yerel gereksinimleri kontrol et.",
+    verifyFailed: "Yerel test doğrulanamadı. Durumu güncelleyip motoru kontrol edebilirsin.",
+    verifyRouteUnsupported: "Mevcut Codex rota ayarları bu test kapsamının dışında; hiçbir ayar değiştirilmedi.",
+    verifyRuntimeUnavailable: "Headroom motoru hazır değil. Genel Bakış'ta motoru başlatıp durumu güncelle.",
+    verifyConfigUnavailable: "Codex rota ayarı güvenle okunamadı; dosya değiştirilmedi.",
+    verifyStale: "Kurulum veya motor değişti. Durumu güncellemeden sonucu kullanma.",
+    verifyProcessFailed: "Yeni Codex süreci tamamlanmadı. Tekrar denemeden önce durumu güncelle.",
+    verifyError: {
+      validation_failed: "Doğrulama isteği geçersiz.", stale_selection: "Kurulum listesi değişti; yeniden tara.",
+      not_found: "Seçilen kurulum artık listede değil.", busy: "Başka bir yerel işlem sürüyor; durum güncellendikten sonra yeniden dene.",
+      unavailable: "Yerel doğrulama şu anda kullanılamıyor.", unsupported_platform: "Bu işletim sisteminde doğrulama desteklenmiyor.",
+    },
     desktopRequired: "Bu yerel durum masaüstü uygulamasında kullanılabilir.",
     scanFirst: "Önce yerel kurulumları tara.", loading: "Seçilen kurulumun yerel durumu okunuyor…",
     noSelection: "Durum görmek için bir Codex kurulumu seç.",
@@ -104,7 +145,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
       start_engine: "Genel Bakış'tan Headroom motorunu başlat, sonra durumu yeniden oku.",
       wait_for_engine: "Motor işlemi tamamlanana kadar bekle, ardından durumu yeniden oku.",
       inspect_runtime: "Genel Bakış'taki motor durumunu incele, sonra bu panelde durumu güncelle.",
-      local_prerequisites_ready: "Yerel önkoşullar hazır. Bu kontrol Codex isteği göndermez; bu sürümde canlı test yok ve istemci trafiği doğrulanmadı.",
+      local_prerequisites_ready: "Yerel önkoşullar hazır. Bu durum okuması istemci trafiğini doğrulamaz.",
     },
     policy: "Ayar kapsamı", auth: "Kimlik doğrulama kapsamı",
     configScope: "Kapsam", userConfig: "Kullanıcı ayarları",
@@ -126,6 +167,25 @@ const copy: Record<PreferenceLanguage, Copy> = {
   en: {
     title: "Codex connection status", choose: "Choose installation",
     chooseInstallation: "Choose a Codex installation", update: "Update status", updating: "Updating…",
+    verify: "Test in a new process", verifying: "Test request running…",
+    verifyScope: "This check applies only to a new read-only Codex process. It does not verify saved-setting adoption or main/subagent coverage.",
+    verifyUsage: "Sends a real test request using your current Codex sign-in and normal model selection; it may count toward account usage. Only this new process gets an endpoint override; saved settings are not changed.",
+    verifyNeedsReady: "Verification needs a supported CLI installation and a ready Headroom engine.",
+    verifyUnsupported: "This Codex surface or version is not supported by this local test.",
+    verifyPassed: "The new Codex process completed the test request through Headroom. Saved-setting adoption and agent coverage remain unverified.",
+    verifyCompletedWithErrors: "This response completed through Headroom; {count} additional, unclassified CLI errors were reported. Only this response route was verified; general protocol and tool status remain unknown.",
+    verifyBlocked: "The local test did not start. Update status and check the local requirements shown here.",
+    verifyFailed: "The local test could not be verified. You can update status and inspect the engine.",
+    verifyRouteUnsupported: "The current Codex route settings are outside this test's scope; no settings were changed.",
+    verifyRuntimeUnavailable: "The Headroom engine is not ready. Start it from Overview, then update status.",
+    verifyConfigUnavailable: "Codex route settings could not be read safely; no file was changed.",
+    verifyStale: "The installation or engine changed. Refresh status before relying on this result.",
+    verifyProcessFailed: "The new Codex process did not complete. Update status before trying again.",
+    verifyError: {
+      validation_failed: "The verification request is invalid.", stale_selection: "The installation list changed; scan again.",
+      not_found: "The selected installation is no longer listed.", busy: "Another local operation is running; refresh status before trying again.",
+      unavailable: "Local verification is temporarily unavailable.", unsupported_platform: "Verification is not supported on this operating system.",
+    },
     desktopRequired: "This local status is available in the desktop app.",
     scanFirst: "Scan for local installations first.", loading: "Reading local status for the selected installation…",
     noSelection: "Choose a Codex installation to view its status.",
@@ -154,7 +214,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
       start_engine: "Start the Headroom engine from Overview, then refresh status.",
       wait_for_engine: "Wait for the engine operation to finish, then refresh status.",
       inspect_runtime: "Inspect the engine state on Overview, then update status in this panel.",
-      local_prerequisites_ready: "Local prerequisites are ready. This check sends no Codex request; live testing is unavailable in this version, and client traffic remains unverified.",
+      local_prerequisites_ready: "Local prerequisites are ready. This status read does not verify client traffic.",
     },
     configScope: "Scope", userConfig: "User config",
     policy: "Settings scope", auth: "Authentication scope", agents: "Agent coverage",
@@ -181,6 +241,8 @@ type LocalState =
   | { kind: "snapshot"; value: CodexStatusSnapshot }
   | { kind: "failed"; result: CodexStatusResult };
 
+type VerificationState = { kind: "idle" } | { kind: "running" } | { kind: "stale" } | { kind: "result"; result: CodexVerifyResult };
+
 export function ConnectionStatus({
   language,
   installations,
@@ -193,12 +255,21 @@ export function ConnectionStatus({
   const text = copy[language];
   const [selectedId, setSelectedId] = useState(() => installations.length === 1 ? installations[0].installation_id : "");
   const [state, setState] = useState<LocalState>({ kind: "idle" });
+  const [verification, setVerification] = useState<VerificationState>({ kind: "idle" });
   const sequence = useRef(new CodexStatusRequestSequence());
+  const verifySequence = useRef(new CodexStatusRequestSequence());
+  const verifyInFlight = useRef(false);
   const mounted = useRef(false);
   const selected = installations.find((item) => item.installation_id === selectedId);
   const available = isCodexStatusAvailable();
+  const runtimeGeneration = state.kind === "snapshot" ? state.value.runtime.runtime_generation : null;
+  const verifyContext = `${selectedId}:${scanGeneration}:${runtimeGeneration ?? "unavailable"}`;
+  const currentVerifyContext = useRef(verifyContext);
+  currentVerifyContext.current = verifyContext;
 
   const load = useCallback(async (installation: InstallationSummary) => {
+    verifySequence.current.invalidate();
+    setVerification({ kind: "idle" });
     const token = sequence.current.next();
     setState({ kind: "loading" });
     const result = await codexStatusClient.load(installation, scanGeneration);
@@ -211,6 +282,7 @@ export function ConnectionStatus({
     return () => {
       mounted.current = false;
       sequence.current.invalidate();
+      verifySequence.current.invalidate();
     };
   }, []);
 
@@ -218,27 +290,69 @@ export function ConnectionStatus({
     if (selected) void load(selected);
     else {
       sequence.current.invalidate();
+      verifySequence.current.invalidate();
+      setVerification({ kind: "idle" });
       setState({ kind: "idle" });
     }
   }, [selectedId, scanGeneration, load]);
 
   function chooseInstallation(installationId: string) {
     sequence.current.invalidate();
+    verifySequence.current.invalidate();
+    setVerification({ kind: "idle" });
     setState({ kind: "idle" });
     setSelectedId(installationId);
   }
 
+  async function verifySelectedInstallation() {
+    if (!selected || selected.client_kind !== "codex" || state.kind !== "snapshot"
+      || !isCodexVerifySelectionSupported({ ...selected, client_kind: "codex" })
+      || !state.value.runtime.engine_ready || !state.value.runtime.stable_ingress_ready
+      || verifyInFlight.current) return;
+    verifyInFlight.current = true;
+    const token = verifySequence.current.next();
+    const context = verifyContext;
+    const runtimeGenerationAtStart = state.value.runtime.runtime_generation;
+    setVerification({ kind: "running" });
+    try {
+      const result = await codexVerifyClient.verify({
+        installation_id: selected.installation_id,
+        client_kind: "codex",
+        surface: selected.surface,
+        version: selected.version,
+      }, scanGeneration);
+      if (!mounted.current || !verifySequence.current.isCurrent(token) || currentVerifyContext.current !== context) return;
+      if (result.kind === "snapshot"
+        && codexVerifyGenerationChanged(result.snapshot.runtime_generation, runtimeGenerationAtStart)) {
+        setVerification({ kind: "stale" });
+        return;
+      }
+      setVerification({ kind: "result", result });
+    } finally {
+      verifyInFlight.current = false;
+    }
+  }
+
   const busy = state.kind === "loading";
+  const verificationBusy = verification.kind === "running";
+  const supportedSelection = Boolean(selected && selected.client_kind === "codex"
+    && isCodexVerifySelectionSupported({ ...selected, client_kind: "codex" }));
+  const runtimeReady = state.kind === "snapshot" && state.value.runtime.engine_ready && state.value.runtime.stable_ingress_ready;
+  const canVerify = available && supportedSelection && runtimeReady && verification.kind !== "stale";
   const failure = state.kind === "failed" ? failureText(state.result, text) : null;
   return <section className="connection-status-panel" aria-label={text.title}>
     <div className="connection-status-panel__header">
       <h2>{text.title}</h2>
-      <button className="button" type="button" disabled={!available || !selected || busy}
-        onClick={() => selected && void load(selected)}>{busy ? text.updating : text.update}</button>
+      <div className="connection-status-panel__actions">
+        <button className="button" type="button" disabled={!available || !selected || busy || verificationBusy}
+          onClick={() => selected && void load(selected)}>{busy ? text.updating : text.update}</button>
+        {selected && <button className="button button-primary" type="button" disabled={!canVerify || busy || verificationBusy}
+          onClick={() => void verifySelectedInstallation()}>{verificationBusy ? text.verifying : text.verify}</button>}
+      </div>
     </div>
     {installations.length > 1 && <label className="connection-dialog__field">
       {text.choose}
-      <select value={selectedId} onChange={(event) => chooseInstallation(event.currentTarget.value)}>
+      <select disabled={busy || verificationBusy} value={selectedId} onChange={(event) => chooseInstallation(event.currentTarget.value)}>
         <option value="">{text.chooseInstallation}</option>
         {installations.map((installation) => <option key={installation.installation_id} value={installation.installation_id}>
           {installation.surface === "desktop" ? "Desktop" : "CLI"} · {installation.version ?? text.unknown}
@@ -253,9 +367,24 @@ export function ConnectionStatus({
     </p>}
     {available && failure && <p className="applications-notice applications-notice--error" role="alert">{failure}</p>}
     {available && state.kind === "snapshot" && <StatusDetails snapshot={state.value} text={text} />}
+    {selected && <>
+      <p className="applications-scope" role="note">{supportedSelection ? text.verifyScope : text.verifyUnsupported}</p>
+      {supportedSelection && <p className="applications-scope" role="note">{text.verifyUsage}</p>}
+      {supportedSelection && state.kind === "snapshot" && !runtimeReady && <p className="applications-notice" role="status">{text.verifyNeedsReady}</p>}
+      {verificationBusy && <p className="applications-notice" role="status" aria-live="polite">
+        <span className="applications-spinner" aria-hidden="true" />{text.verifying}
+      </p>}
+      {verification.kind === "stale" && <p className="applications-notice applications-notice--error" role="status">{text.verifyStale}</p>}
+      {verification.kind === "result" && <p className={`applications-notice ${verification.result.kind === "snapshot"
+        ? verification.result.snapshot.probe_status === "response_verified_cli_errors"
+          ? "applications-notice--warning"
+          : verification.result.snapshot.probe_status === "passed" ? "" : "applications-notice--error"
+        : ""}`} role="status" aria-live="polite">
+        {verificationMessage(verification.result, text)}
+      </p>}
+    </>}
   </section>;
 }
-
 function StatusDetails({ snapshot, text }: { snapshot: CodexStatusSnapshot; text: Copy }) {
   const installation = snapshot.installation;
   const ownership = snapshot.ownership;
@@ -333,4 +462,41 @@ function failureText(result: CodexStatusResult, text: Copy): string {
   if (result.kind === "desktop_unavailable") return text.desktopRequired;
   if (result.kind === "invalid_response") return text.invalidResponse;
   return text.readFailure;
+}
+
+function verificationMessage(result: CodexVerifyResult, text: Copy): string {
+  if (result.kind === "verify_error") return text.verifyError[result.error.error.code];
+  if (result.kind === "desktop_unavailable") return text.desktopRequired;
+  if (result.kind === "unsupported_installation") return text.verifyUnsupported;
+  if (result.kind !== "snapshot") return text.verifyFailed;
+  const snapshot = result.snapshot;
+  if (snapshot.probe_status === "passed") return text.verifyPassed;
+  if (snapshot.probe_status === "response_verified_cli_errors") {
+    return text.verifyCompletedWithErrors.replace("{count}", String(snapshot.cli_error_count));
+  }
+  let message: string;
+  switch (snapshot.failure_code as CodexVerifyFailureCode | null) {
+    case "unsupported_installation": message = text.verifyUnsupported; break;
+    case "runtime_unavailable": message = text.verifyRuntimeUnavailable; break;
+    case "route_unsupported": message = text.verifyRouteUnsupported; break;
+    case "config_unavailable":
+    case "config_changed": message = text.verifyConfigUnavailable; break;
+    case "selection_changed":
+    case "runtime_changed":
+    case "state_changed": message = text.verifyStale; break;
+    case "process_start_failed":
+    case "process_cancelled":
+    case "process_timeout":
+    case "process_wait_failed":
+    case "process_failed": message = text.verifyProcessFailed; break;
+    case "process_ownership_unavailable":
+    case "process_ownership_lost":
+    case "process_output_invalid":
+    case "transport_unverified":
+    case "workspace_unavailable": message = text.verifyFailed; break;
+    default: message = snapshot.probe_status === "blocked" ? text.verifyBlocked : text.verifyFailed;
+  }
+  const safeReasons = [snapshot.failure_code, snapshot.output_diagnostic]
+    .flatMap((value) => value === null ? [] : [value]);
+  return safeReasons.length > 0 ? `${message} (${safeReasons.join(" · ")})` : message;
 }

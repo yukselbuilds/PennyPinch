@@ -703,9 +703,14 @@ fn local_codex_scan_is_bounded_to_sixteen_direct_version_directories() {
 #[test]
 fn bundled_codex_version_requires_both_exact_size_and_sha256() {
     const HASH: &str = "e757246b4de87359e660647fa9514955a0971ff6a30affdd8c145d1d5ece7b84";
+    const NEXT_HASH: &str = "c81ed464e5e7cafd09a5fa26af390c480bed8e9fab2a87a54b285fbd56e7122a";
     assert_eq!(
         codex_cli_version_from_digest(336_011_568, HASH).as_deref(),
         Some("0.163.0-alpha.11.1")
+    );
+    assert_eq!(
+        codex_cli_version_from_digest(336_134_960, NEXT_HASH).as_deref(),
+        Some("0.163.0-alpha.11.2")
     );
     assert_eq!(
         codex_cli_version_from_digest(336_011_567, HASH),
@@ -719,6 +724,19 @@ fn bundled_codex_version_requires_both_exact_size_and_sha256() {
         ),
         None,
         "matching size with a different digest must remain unknown"
+    );
+    assert_eq!(
+        codex_cli_version_from_digest(336_134_959, NEXT_HASH),
+        None,
+        "the new digest at a different size must remain unknown"
+    );
+    assert_eq!(
+        codex_cli_version_from_digest(
+            336_134_960,
+            "d81ed464e5e7cafd09a5fa26af390c480bed8e9fab2a87a54b285fbd56e7122a"
+        ),
+        None,
+        "the new size with a different digest must remain unknown"
     );
 }
 

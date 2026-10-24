@@ -40,6 +40,9 @@ const MAX_CODEX_LOCAL_VERSION_DIRS: usize = 16;
 const CODEX_CLI_0111_SIZE: u64 = 336_011_568;
 const CODEX_CLI_0111_SHA256: &str =
     "e757246b4de87359e660647fa9514955a0971ff6a30affdd8c145d1d5ece7b84";
+const CODEX_CLI_0112_SIZE: u64 = 336_134_960;
+const CODEX_CLI_0112_SHA256: &str =
+    "c81ed464e5e7cafd09a5fa26af390c480bed8e9fab2a87a54b285fbd56e7122a";
 const MAX_PATH_CHARS: usize = 32_767;
 const MAX_MANUAL_FILES: usize = 32;
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
@@ -184,6 +187,15 @@ impl DiscoveryManager {
         installation_id: &str,
         expected_scan_generation: u64,
     ) -> Result<InstallationSummary, InstallationSelectionError> {
+        self.select_installation_with_path(installation_id, expected_scan_generation)
+            .map(|(summary, _)| summary)
+    }
+
+    pub(crate) fn select_installation_with_path(
+        &self,
+        installation_id: &str,
+        expected_scan_generation: u64,
+    ) -> Result<(InstallationSummary, PathBuf), InstallationSelectionError> {
         if !valid_request_id(installation_id) {
             return Err(InstallationSelectionError::InvalidInstallationId);
         }
@@ -204,12 +216,18 @@ impl DiscoveryManager {
         if expected_scan_generation != state.generation {
             return Err(InstallationSelectionError::StaleScanGeneration);
         }
-        state
+        let installation = state
             .installations
             .iter()
             .find(|installation| installation.installation_id == installation_id)
             .cloned()
-            .ok_or(InstallationSelectionError::InstallationNotFound)
+            .ok_or(InstallationSelectionError::InstallationNotFound)?;
+        let path = state
+            .paths
+            .get(installation_id)
+            .cloned()
+            .ok_or(InstallationSelectionError::InstallationNotFound)?;
+        Ok((installation, path))
     }
 
     pub fn scan(&self, request_id: String) -> DiscoveryReply {
@@ -1412,11 +1430,30 @@ fn path_key(path: &Path) -> String {
 }
 
 pub(super) fn codex_cli_version_from_digest(file_size: u64, digest_hex: &str) -> Option<String> {
-    (file_size == CODEX_CLI_0111_SIZE && digest_hex == CODEX_CLI_0111_SHA256)
-        .then(|| "0.163.0-alpha.11.1".to_owned())
+    match (file_size, digest_hex) {
+        (CODEX_CLI_0111_SIZE, CODEX_CLI_0111_SHA256) => Some("0.163.0-alpha.11.1".to_owned()),
+        (CODEX_CLI_0112_SIZE, CODEX_CLI_0112_SHA256) => Some("0.163.0-alpha.11.2".to_owned()),
+        _ => None,
+    }
+}
+
+fn is_known_codex_cli_size(file_size: u64) -> bool {
+    matches!(file_size, CODEX_CLI_0111_SIZE | CODEX_CLI_0112_SIZE)
 }
 
 fn verified_codex_cli_version(path: &Path) -> Option<String> {
+    verified_codex_cli_file(path).map(|(version, _)| version)
+}
+
+/// Pins an exact known Codex CLI file while its path is used to start a
+/// verification process. The shared read-only handle prevents ordinary
+/// replacement or writes between hashing and CreateProcess.
+pub(crate) fn pin_verified_codex_cli(path: &Path, expected_version: &str) -> Option<File> {
+    let (version, file) = verified_codex_cli_file(path)?;
+    (version == expected_version).then_some(file)
+}
+
+fn verified_codex_cli_file(path: &Path) -> Option<(String, File)> {
     let canonical_path = check_existing_path(path, PathKind::File).ok()?;
     let mut options = OpenOptions::new();
     options.read(true);
@@ -1424,7 +1461,8 @@ fn verified_codex_cli_version(path: &Path) -> Option<String> {
     options.share_mode(FILE_SHARE_READ);
     let mut file = options.open(&canonical_path).ok()?;
     let initial_metadata = file.metadata().ok()?;
-    if !initial_metadata.is_file() || initial_metadata.len() != CODEX_CLI_0111_SIZE {
+    let expected_size = initial_metadata.len();
+    if !initial_metadata.is_file() || !is_known_codex_cli_size(expected_size) {
         return None;
     }
     let initial_identity = file_identity(&file)?;
@@ -1433,23 +1471,24 @@ fn verified_codex_cli_version(path: &Path) -> Option<String> {
     let mut bytes_read = 0u64;
     let mut buffer = [0u8; 64 * 1024];
     loop {
-        let count = file.read(&mut buffer).ok()?;
+        let remaining_with_growth_check =
+            expected_size.saturating_sub(bytes_read).saturating_add(1);
+        let read_size = remaining_with_growth_check.min(buffer.len() as u64) as usize;
+        let count = file.read(&mut buffer[..read_size]).ok()?;
         if count == 0 {
             break;
         }
         bytes_read = bytes_read.checked_add(count as u64)?;
-        if bytes_read > CODEX_CLI_0111_SIZE {
+        if bytes_read > expected_size {
             return None;
         }
         hasher.update(&buffer[..count]);
     }
-    if bytes_read != CODEX_CLI_0111_SIZE {
+    if bytes_read != expected_size {
         return None;
     }
     let final_handle_metadata = file.metadata().ok()?;
-    if final_handle_metadata.len() != CODEX_CLI_0111_SIZE
-        || file_identity(&file)? != initial_identity
-    {
+    if final_handle_metadata.len() != expected_size || file_identity(&file)? != initial_identity {
         return None;
     }
     let final_path = check_existing_path(&canonical_path, PathKind::File).ok()?;
@@ -1465,7 +1504,8 @@ fn verified_codex_cli_version(path: &Path) -> Option<String> {
         return None;
     }
 
-    codex_cli_version_from_digest(bytes_read, &format!("{:x}", hasher.finalize()))
+    let version = codex_cli_version_from_digest(bytes_read, &format!("{:x}", hasher.finalize()))?;
+    Some((version, file))
 }
 
 #[cfg(windows)]

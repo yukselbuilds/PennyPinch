@@ -139,7 +139,7 @@ function decodeInstallation(value: unknown): InstallationSummary | null {
     if (client_kind !== "codex" || surface !== "desktop") return null;
   } else if (surface !== "cli") return null;
   if (source === "manual_file" && version !== null &&
-      !(client_kind === "codex" && version === "0.163.0-alpha.11.1")) return null;
+      !(client_kind === "codex" && ["0.163.0-alpha.11.1", "0.163.0-alpha.11.2"].includes(version))) return null;
 
   return {
     installation_id,

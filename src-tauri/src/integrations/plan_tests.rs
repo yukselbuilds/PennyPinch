@@ -79,7 +79,11 @@ fn codex_user_config_plan_targets_only_stable_ingress_and_preserves_declared_mod
 
 #[test]
 fn codex_fixture_versions_are_exact_and_neighbor_versions_remain_blocked() {
-    for version in ["0.163.0-alpha.10.2", "0.163.0-alpha.11.1"] {
+    for version in [
+        "0.163.0-alpha.10.2",
+        "0.163.0-alpha.11.1",
+        "0.163.0-alpha.11.2",
+    ] {
         let mut context = context(ClientKind::Codex);
         context.version = Some(version.to_owned());
         let plan = preview_config(&context, CODEX_CONFIG).unwrap();
@@ -94,7 +98,7 @@ fn codex_fixture_versions_are_exact_and_neighbor_versions_remain_blocked() {
 
     for version in [
         "0.163.0-alpha.11.0",
-        "0.163.0-alpha.11.2",
+        "0.163.0-alpha.11.3",
         "0.163.0-alpha.10.3",
     ] {
         let mut context = context(ClientKind::Codex);
@@ -109,7 +113,7 @@ fn codex_fixture_versions_are_exact_and_neighbor_versions_remain_blocked() {
 
     let mut desktop = context(ClientKind::Codex);
     desktop.surface = "desktop".to_owned();
-    desktop.version = Some("0.163.0-alpha.11.1".to_owned());
+    desktop.version = Some("0.163.0-alpha.11.2".to_owned());
     let plan = preview_config(&desktop, CODEX_CONFIG).unwrap();
     assert_eq!(plan.status, PlanStatus::Blocked);
     assert!(plan
