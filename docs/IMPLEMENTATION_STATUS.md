@@ -2,6 +2,12 @@
 
 24 Ekim2026. Kanonik kök D:\Projeler\Headroom. Kapsam/sıra TASKS.md. Son kabul [H021 kanıtı](proofs/opencode-product.md), [inceleme](reviews/H021.md); önceki H020 kanıtı korunur.
 
+## CodeGraph geliştirme kurulumu — 25 Ekim
+
+- **Tamamlandı.** Kullanıcı isteğiyle resmî CodeGraph 1.6.2 Windows x64 paketi yayıncı checksum'ı doğrulanarak proje içine kuruldu. Bundled Node 24.16.0; `codegraph.json` ve `scripts/codegraph.ps1` hazır. Global Node/PATH/npm/Codex/model ayarı değişmedi. `.codegraph/` ve makineye özel `.codex/config.toml` ignored. [Kullanım ve sınırlar](development/codegraph.md).
+- CLI init/status ve dar Rust+TS sorguları PASS: 76 dosya, 3.539 düğüm, 11.456 ilişki. Launcher ortam/dizin geri yüklemesi PS5.1 ve PS7'de geçti. Yerel MCP `--path` + `CODEGRAPH_NO_DAEMON=1` + tek `codegraph_explore` ile initialize/list/call PASS; exit 0, kalan kendi Node süreci 0. Güncel Codex CLI proje kaydını doğru args/cwd/env ile okudu. `--path` varsayılandır, sandbox değildir. Önceki paylaşımlı servis denemeleri temizlendi; upstream patch/supervisor gerekmedi.
+- Kanıtlar `work/proofs/codegraph-setup/`; son MCP sonucu `direct-mcp-acceptance.json`. Bu sohbetin araç listesi yenilenmezse CLI kullanılabilir; başka sohbeti/uygulamayı yeniden başlatma gerekmez. Ham kaynak/araç çıktısı saklanmadı; geliştirme token tasarrufu ölçülmedi. Ürünün 73 mevcut gate girdisi değişmediği için tam ürün gate'i tekrarlanmadı. Ana görev sayımı **18/51**; **H022 başlamadı**. Tek Luna çalışan idle; yeni CI/push/release yok.
+
 ## Sonuç ve sıradaki görev
 
 - **H021 tamamlandı;18/51.** OpenCode exact native1.19.3 read-only keşif, user JSON/JSONC bounded provider envanteri, ortak çoklu Preview→atomic Apply/ownership→conflict-preserving Undo, süreç-env lease guard, strict scope DTO ve kısa Graphite/Advanced UI kabul edildi.

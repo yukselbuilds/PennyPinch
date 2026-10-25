@@ -51,3 +51,11 @@
 - Uygulama davranışı, UI eylemi → yönetici → motor/istemci yolu üzerinden incelenir; yalnız buton veya mock testi yeterli sayılmaz.
 - TASKS ve checkpoint'te tamamlanan/aktif iş, kanıt, bilinmeyenler ve bir sonraki adım kısa tutulur.
 - Gerçek uyumluluk durumu, yerel geliştirme başarısı ve yayın adayı birbirinden açıkça ayrılır.
+
+## Proje içi CodeGraph
+
+- CodeGraph geliştirme desteği `scripts/codegraph.ps1` üzerinden sağlanır; yerel runtime yoksa `rg`/doğrudan okumayla ilerle. Ana ajan ve tek çalışan aynı proje indeksini kullanabilir; model adı koşulu yoktur. Komutlar ve doğrulanmış sınırlar `docs/development/codegraph.md` içindedir.
+- Çağıranlar, bağımlılıklar, değişiklik etkisi ve ilgili sembolleri bulmak için dar graph sorgularını kullan. Bilinen küçük dosya/satır için ek graph çağrısı yapma; `rg`/doğrudan okuma uygundur. Büyük graf/bağlam dökümleri yerine gereken küçük sonuç kümesini iste.
+- MCP sunucusu yalnız proje `.codex/config.toml` kaydındadır. Bu sohbette araç görünmüyorsa aynı launcher üzerinden CLI kullan; global Codex ayarı değiştirme veya diğer sohbetleri yeniden başlatma.
+- Launcher proje kökünde çalışır; telemetry/update-check opt-out ve `.codegraph` dizini süreç bazlıdır. Kaynak/test/script kapsamını `codegraph.json` sınırlar; work/cache, gerçek auth/state, makineye özel ayarlar ve indeks/derleme artefaktları indekslenmez ve graph DB Git'e girmez.
+- Graph çıktısı keşif kanıtıdır; dinamik Tauri IPC, gerçek istemci trafiği, alt ajan sahipliği, çalışma zamanı davranışı veya test PASS kanıtı sayılmaz. Kaynak değişmiş/eski indeks varsa belgelenen güncellemeyi yap; graf bozuk/eksikse kaynak ve `rg` ile ilerle. Gerçek ölçüm olmadan token tasarruf yüzdesi raporlama.
