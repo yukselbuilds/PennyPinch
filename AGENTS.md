@@ -59,3 +59,10 @@
 - MCP sunucusu yalnız proje `.codex/config.toml` kaydındadır. Bu sohbette araç görünmüyorsa aynı launcher üzerinden CLI kullan; global Codex ayarı değiştirme veya diğer sohbetleri yeniden başlatma.
 - Launcher proje kökünde çalışır; telemetry/update-check opt-out ve `.codegraph` dizini süreç bazlıdır. Kaynak/test/script kapsamını `codegraph.json` sınırlar; work/cache, gerçek auth/state, makineye özel ayarlar ve indeks/derleme artefaktları indekslenmez ve graph DB Git'e girmez.
 - Graph çıktısı keşif kanıtıdır; dinamik Tauri IPC, gerçek istemci trafiği, alt ajan sahipliği, çalışma zamanı davranışı veya test PASS kanıtı sayılmaz. Kaynak değişmiş/eski indeks varsa belgelenen güncellemeyi yap; graf bozuk/eksikse kaynak ve `rg` ile ilerle. Gerçek ölçüm olmadan token tasarruf yüzdesi raporlama.
+
+## Ponytail ve görev kabulü
+
+- Ortak araç seçimi, kısa çalışan devri, gerçek yerel kalite kapısı ve ana görev bitiş ölçütleri `docs/development/WORKFLOW.md` içindedir. Görev satırının kabul koşullarıyla birlikte uygulanır.
+- Projedeki `.agents/skills/ponytail/SKILL.md` kodlama/düzeltmede `full` seviyesinde kullanılır. Ana ajan değişiklik kabulünde `.agents/skills/ponytail-review/SKILL.md` okur; mevcut kalite incelemesiyle tek inceleme yapar. `.agents/skills/ponytail-audit/SKILL.md` belirlenmiş eski kod denetimi içindir; her görevde bütün depoyu tekrar tarama.
+- Raporlar Türkçedir. Ponytail yeni model/ajan, yayın veya ayar değiştirme yetkisi vermez. En küçük değişiklik; sahiplik, atomik yazım, çatışmayı koruyan geri alma, güvenlik, hata yönetimi, erişilebilirlik ve gerekli testleri koruyarak görevi tamamen bitirir.
+- Her bulgu somut koşul + dosya/satır + kullanıcı etkisi + küçük düzeltme içerir. Kod azaldı diye görev tamamlanmaz; aynı kapsamda gerçek token ölçümü yoksa tasarruf oranı verilmez.

@@ -1,14 +1,35 @@
 # Headroom Desktop — Görev Listesi
 
-**Tarih:** 25 Ekim 2026
+**Tarih:** 26 Ekim 2026
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007, H013–H021, H040, H046 ve **H047 tamamlandı:18/51.** H021 Windows10 native OpenCode kullanıcı dosyası/çoklu alias ve iki CLI protokolü yerel fixture kabulüdür; evrensel model/ajan/canlı auth desteği değildir. H019 ek CLI hataları H008’de açık. Sıradaki H022; kullanıcı devamı bekleniyor. H048/H049 başlamadı. Sade platform/model tasarruf ve hesap + açık sohbet talepleri H022/H025/H026/H050/H051’de planlı. Henüz kurulabilir üretim uygulaması yok; tek Luna çalışan düzeni korundu.
+**Durum:** H001–H005, H007, H013–H021, H040, H046 ve **H047 tamamlandı:18/51.** H021 Windows10 native OpenCode kullanıcı dosyası/çoklu alias ve iki CLI protokolü yerel fixture kabulüdür; evrensel model/ajan/canlı auth desteği değildir. H019 ek CLI hataları H008’de açık. Ürün sırası H022; DEV001 araç/kabul düzeni tamamlandı, önce DEV002 denetimi için kullanıcı devamı bekleniyor. H048/H049 başlamadı. Sade platform/model tasarruf ve hesap + açık sohbet talepleri H022/H025/H026/H050/H051’de planlı. Henüz kurulabilir üretim uygulaması yok; tek Luna çalışan düzeni korundu.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırındaki **18/51** değeridir. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
+## Geliştirme araçları ve çalışma düzeni
+
+Bu işler 51 ürün görevine eklenmez. Ürün sırası H022'dir; DEV001 tamamlanınca durulur. Önce geçmiş kodu değerlendirmek için DEV002 planlıdır; H022 henüz başlamadı.
+
+### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
+- [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
+- [x] Ponytail kodlama/audit/review becerileri yalnız projeye, sabit kaynak ve lisans/hash kaydıyla kurulmuş.
+- [x] Ana ajan/tek çalışan kullanımı, gerçek kontrol komutları ve görev bitiş kabulü belgelenmiş; kurulum ve belge incelemesi geçmiş.
+- **Kabul:** [Ortak akış](docs/development/WORKFLOW.md) ile yerel araçlar tutarlı; global ayar yazımı yok; ürün görev sayımı değişmez. Kurulu talimat, otomatik skill keşfi ve gerçek davranış doğrulaması ayrı belirtilir.
+- **Kanıt:** `work/proofs/dev-tools/`; kısa kalıcı özet `docs/proofs/dev-tools.md`. Yeni ürün gate'i gerektirmeyen araç/belge kapsamı.
+- **Durum:** Tamamlandı; [kabul kanıtı](docs/proofs/dev-tools.md). Sonraki DEV002 başlamadı.
+
+### DEV002 — Mevcut kodun ilk Ponytail denetimi
+- [ ] Config/Apply/Undo ve sahiplik, runtime/proxy, UI bağlantı yolları önceliklendirilerek eski kod raporlanmış.
+- **Kabul:** Her gerçek bulgu koşul, dosya/satır, kullanıcı etkisi, en küçük çözüm ve doğrulama önerisi içerir. Bulgular ilgili açık göreve veya gerekli küçük düzeltmeye bağlanır; kapsam dışı alanlar yazılır. Rapor üretmek düzeltmelerin yapıldığı anlamına gelmez.
+- **Doğrulama:** CodeGraph ile keşfedilen yollar gerçek kaynakta okunur; mevcut kanıt fingerprint'leri değerlendirilir. Yeni koşul olmadan aynı başarılı ürün testleri tekrarlanmaz.
+- **Dosyalar:** `docs/reviews/ponytail-baseline.md`, gerekirse ilgili görev notları.
+- **Durum:** Planlı; başlamadı. Kod düzeltmeleri rapor kabulünden sonra sırayla ele alınır.
+
 ## Çalışma kuralları
+
+**Ortak bitiş kabulü:** Görevin kendi kabul maddeleri ile [WORKFLOW.md içindeki beş koşul](docs/development/WORKFLOW.md#bir-görevin-bitiş-kabulü) birlikte sağlanır. Davranış, ilgili hata/kapsam senaryoları, ana ajan incelemesi, geçerli son kanıt ve kayıt/durma adımı eksikse ana kutu açık kalır.
 
 **25 Ekim geliştirme aracı notu:** Kullanıcı isteğiyle CodeGraph 1.6.2 yalnız bu projeye kuruldu; CLI ve proje MCP sorgusu doğrulandı. Telemetry kapalı, global ayarlar değişmedi; sorgu ve süreç kapanışı PASS. [Kullanım/kanıt sınırları](docs/development/codegraph.md). Bu geliştirme aracı ana görevlere eklenmez; **18/51** ve sıradaki **H022** değişmedi.
 
@@ -315,7 +336,8 @@ flowchart TD
 - **24 Ekim sade arayüz kabulü:** Normal görünüm kısa etki/kapsam/target ve Bağlan/Geri al; ayar katmanları ve tanı metadata Gelişmiş altında. İlk klasör seçicide geçersiz shell başlangıç konumu gözlendi; güvenli başlangıç/fallback ayrıca doğrulanır. Teknik detaylar ana eylemleri uzun kart listelerinin arkasına itmez.
 - **Ek kabul:** Bulundu/config uygulandı/gerçek trafik görüldü ayrı adımlardır. Eksik runtime, disk alanı, indirmenin kesilmesi ve tekrar deneme anlaşılır; temel motor/isteğe bağlı ağır araçlar ayrı gösterilir. Hazır engine ama trafik yok durumu başarı diye kapatılmaz. Yeni hesap/abonelik zorunluluğu eklenmez.
 - **Kapsam kabulü:** Sihirbaz varsayılanı “desteklenen modeller + ana ve alt ajanlar”dır; kullanıcıdan zorunlu model/ajan listesi seçimi istenmez. Bilinen ayrı yollar ve yeniden başlatma gereği aynı bağlantı önizlemesinde açıklanır.
-- **Doğrulama:** İlk kullanıcı, yeniden açılış ve yeni istemci senaryoları.
+- **Somut kabul senaryoları:** (1) Temiz durum → açılış/tarama → keşif görülür, kullanıcı Bağlan demeden ayar yazılmaz. (2) Seçim/bağlantı → kapat/aç → doğru istemci/proje hatırlanır; Geri al kendi kapsamını gösterir, başka proje/drift varsa işlemi engeller. (3) Yeni istemci veya geçersiz klasör → tekrar tarama/seçici iptali → kendiliğinden bağlantı/ücretli doğrulama yapılmaz; güvenli başlangıç ve anlaşılır hata vardır. Yeni `.claude` klasörünün sahiplik/geri alma koşulları ilgili transaction senaryosuyla kanıtlanır.
+- **Doğrulama:** Bu senaryoların UI → native → dosya/işlem sonucu kaydedilir; yeniden açılış gerçek uygulama süreciyle yapılır. Odaklı testler ve son adayın ortak yerel kapısı geçer.
 - **Bağımlılık / boyut:** H019, H020, H021 / M.
 - **Dosyalar:** `src/features/onboarding/Setup.tsx`, `src/features/onboarding/Setup.test.tsx`, `src/lib/preferences.ts`.
 
@@ -457,7 +479,8 @@ flowchart TD
 - [ ] Son aday incelenir; düzeltmeler tamamlandıktan sonra tam yerel kapı bir kez çalıştırılır.
 - [ ] H016'da önceki adayda bildirilen manuel aday kaybı için, debug trace kapalı paketlenmiş son adayda dosyadan ekle → art arda yeniden tara → ekran değiştir akışı gerçek native ortamda tekrarlanır. Tekrar kayıp varsa yayın kabulü açık kalır; debug gözlemindeki başarı yayın kanıtı yerine geçmez.
 - **Kabul:** Kabul koşullarının kanıtı mevcut; iki Windows sonucu ayrı; destek ve ölçüm iddiaları gerçek sonuçla tutarlı.
-- **Doğrulama:** `pnpm lint`, `pnpm typecheck`, `pnpm test -- --run`, `pnpm test:e2e`, `cargo test --manifest-path src-tauri/Cargo.toml`, `pnpm tauri build`; sonuçlar son aday fingerprint'iyle kaydedilir.
+- **İnceleme:** `ponytail-review` ile son değişiklik ve bağlı akışlar mevcut kalite incelemesine dahil edilir; kabulü bozan somut bulgular kapanır. Bütün depo denetimi yalnız yeni risk veya açık kapsam gerektiriyorsa tekrarlanır.
+- **Doğrulama:** Son adayda gerçekten mevcut [yerel kapı komutları](docs/development/WORKFLOW.md#bugün-çalışabilen-yerel-ürün-kapısı), gerekli native/UI senaryoları ve H038'de tanımlanan paket/release derlemesi çalıştırılır; sonuçlar son aday fingerprint'iyle kaydedilir. `lint`, `test`, `test:e2e` scriptleri bugün mevcut değildir; eklendikleri görevde kapıya alınır. Eksik veya çalıştırılmamış komut PASS sayılmaz.
 - **Bağımlılık / boyut:** H038, H040, H041, H042 / M; yeni kapsam çıkarsa ayrı düzeltme dilimi. Sonraki sürümün opsiyonel H043–H045 işleri ilk sürüm kabulünü tamamlanmış saydırmaz veya zorunlu kurulum parçası olmaz.
 - **Dosyalar:** `docs/validation/release-candidate.md`, `docs/USER_GUIDE.md`, `TASKS.md`.
 

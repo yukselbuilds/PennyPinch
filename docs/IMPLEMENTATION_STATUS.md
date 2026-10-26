@@ -1,6 +1,12 @@
 # Uygulama devir noktası
 
-24 Ekim2026. Kanonik kök D:\Projeler\Headroom. Kapsam/sıra TASKS.md. Son kabul [H021 kanıtı](proofs/opencode-product.md), [inceleme](reviews/H021.md); önceki H020 kanıtı korunur.
+26 Ekim 2026. Kanonik kök D:\Projeler\Headroom. Kapsam/sıra TASKS.md. Son kabul [H021 kanıtı](proofs/opencode-product.md), [inceleme](reviews/H021.md); önceki H020 kanıtı korunur.
+
+## DEV001 — araçlar ve kabul düzeni
+
+- **Tamamlandı.** [Kabul kanıtı](proofs/dev-tools.md), [ortak akış](development/WORKFLOW.md). CodeGraph 1.6.2 korundu; `.agents/` dışlaması sonrası kapsam ve bu sohbetten gerçek MCP sorgusu PASS. Ponytail kodlama/audit/review üçlüsü yalnız projeye, `09c434ab73ca43761c5d8b0c5d341926c2fba710` pin/lisans/hash ile kuruldu. `full`, Türkçe rapor ve mevcut tek çalışan düzeni geçerli.
+- TASKS ortak bitiş kabulü beş koşula bağlandı; H022 gözlenebilir senaryoları ve H039 gerçek komutları netleşti. Mevcut 73 ürün gate girdisi aynı; yeni ürün gate'i/CI/push/release yok. `work/proofs/dev-tools/` kurulum, canlı MCP ve belge kanıtını içerir. Otomatik skill tetiklenmesi gözlemlenmedi; bu tur review dosyası doğrudan kullanıldı. Token tasarrufu ölçülmedi.
+- **Sıradaki DEV002 mevcut kod denetimi; başlamadı.** DEV001 sonunda durulur. Ürün sayımı **18/51**, ürün sırası **H022; başlamadı**. Tek Luna çalışan idle. Korumalı işlem sınırları aynen geçerlidir.
 
 ## CodeGraph geliştirme kurulumu — 25 Ekim
 
@@ -11,7 +17,7 @@
 ## Sonuç ve sıradaki görev
 
 - **H021 tamamlandı;18/51.** OpenCode exact native1.19.3 read-only keşif, user JSON/JSONC bounded provider envanteri, ortak çoklu Preview→atomic Apply/ownership→conflict-preserving Undo, süreç-env lease guard, strict scope DTO ve kısa Graphite/Advanced UI kabul edildi.
-- **Sıradaki H022; başlamadı.** Her ana görev sonrası durma talimatı gereği kullanıcı devam mesajı beklenir. H048/H049 başlamadı; yeni CI/push/release yok. Tek /root/luna_worker GPT-6 Luna xhigh d2 sonrası frozen/idle; ikinci çalışan/alt çalışan yok. Ana model değiştirilmedi.
+- **Sıradaki ürün görevi H022; başlamadı.** Önce DEV002 geliştirme denetimi planlı. Her ana görev sonrası durma talimatı gereği kullanıcı devam mesajı beklenir. H048/H049 başlamadı; yeni CI/push/release yok. Tek /root/luna_worker GPT-6 Luna xhigh d2 sonrası frozen/idle; ikinci çalışan/alt çalışan yok. Ana model değiştirilmedi.
 - Kapsam model adından bağımsızdır. Builtin openai Responses ve explicit ordinary @ai-sdk/openai-compatible/canonical standard OpenAI upstream Chat Completions desteklenen yerel profillerdir. Diğer host/SDK/override rotaları untouched/partial; sıfır uygun rota Apply yapmaz. Static file coverage ≠ başka süreçte runtime/actual subagent adoption.
 - Karar009 ve official source commit e3c4eb242585dcd77be1a867391b7c25fd47ce52 pinleri work/proofs/opencode-product/source-pin.json içinde. Receipt schema1 legacy alanı korur; ham alias/auth/custom host saklanmaz. OPENCODE_CONFIG/CONTENT/DIR yalnız memory hash; override/drift Apply’ı engeller. Global auth/user client veya diğer proje sohbet ayarları değişmedi.
 

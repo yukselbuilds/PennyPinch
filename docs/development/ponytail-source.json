@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "upstream_repository": "DietrichGebert/ponytail",
+  "pinned_commit": "09c434ab73ca43761c5d8b0c5d341926c2fba710",
+  "install_target": ".agents/skills",
+  "installer": "Codex skill-installer helper",
+  "method": "download",
+  "install_arguments": [
+    "--repo",
+    "DietrichGebert/ponytail",
+    "--path",
+    "skills/ponytail",
+    "skills/ponytail-audit",
+    "skills/ponytail-review",
+    "--ref",
+    "09c434ab73ca43761c5d8b0c5d341926c2fba710",
+    "--dest",
+    ".agents/skills",
+    "--method",
+    "download"
+  ],
+  "skills": [
+    {
+      "name": "ponytail",
+      "source_path": "skills/ponytail/SKILL.md",
+      "installed_path": ".agents/skills/ponytail/SKILL.md",
+      "source_git_blob": "d64edd32265ba21cbf5270158f04e97d96925f27",
+      "source_sha256": "9badd22a32e19cb884e46dfa8d3aae82bb81dfa5484105b8b4f0262df823a509",
+      "installed_sha256": "9badd22a32e19cb884e46dfa8d3aae82bb81dfa5484105b8b4f0262df823a509",
+      "byte_exact": true,
+      "bytes": 3496
+    },
+    {
+      "name": "ponytail-audit",
+      "source_path": "skills/ponytail-audit/SKILL.md",
+      "installed_path": ".agents/skills/ponytail-audit/SKILL.md",
+      "source_git_blob": "ff9a95480700600fe2664d2d0906a4d750b2da0b",
+      "source_sha256": "2b3223a02c386d1263e1b08343cb8eb3a53e444cdafb1d79e26c8ec2a8fcad28",
+      "installed_sha256": "2b3223a02c386d1263e1b08343cb8eb3a53e444cdafb1d79e26c8ec2a8fcad28",
+      "byte_exact": true,
+      "bytes": 5417
+    },
+    {
+      "name": "ponytail-review",
+      "source_path": "skills/ponytail-review/SKILL.md",
+      "installed_path": ".agents/skills/ponytail-review/SKILL.md",
+      "source_git_blob": "a50e3ac6ded6fccc9edae34ce37877bbce11e3fa",
+      "source_sha256": "33fe4ebe22a460924e5d4a261e223df22e409cc94ab76182bee9fb91a3ef022e",
+      "installed_sha256": "33fe4ebe22a460924e5d4a261e223df22e409cc94ab76182bee9fb91a3ef022e",
+      "byte_exact": true,
+      "bytes": 5143
+    }
+  ],
+  "license": {
+    "source": "LICENSE",
+    "installed": "docs/development/ponytail-LICENSE.txt",
+    "source_sha256": "fb1bc6909ac3ef82d5c22106e32ef682b0cff66788fa915fb9b53b15c9d2f3ab",
+    "installed_sha256": "fb1bc6909ac3ef82d5c22106e32ef682b0cff66788fa915fb9b53b15c9d2f3ab",
+    "byte_exact": true,
+    "bytes": 1071
+  }
+}

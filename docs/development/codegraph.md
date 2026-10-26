@@ -12,6 +12,8 @@
 
 ## Günlük kullanım
 
+26 Ekim güncellemesi: `.agents/` dışlaması eklendi; sync/status/files kapsam kontrolünde 76 kaynak girdisi ve sıfır skill klasörü girdisi görüldü. Bu sohbetin gerçek CodeGraph MCP aracı da sembol/kaynak sorgusuyla doğrulandı. Tek dosyalık bu sorgu 15.331 karakter döndürdü; dosya sınırı yanıtın kısa olacağı garantisi değildir. Günlük araç seçimi ve kabul düzeni [WORKFLOW.md](WORKFLOW.md), güncel kanıt [DEV001](../proofs/dev-tools.md) içindedir.
+
 PowerShell, bu repo kökünde:
 
 ```powershell
