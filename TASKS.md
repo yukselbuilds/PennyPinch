@@ -4,13 +4,13 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007, H013–H021, H040, H046 ve **H047 tamamlandı:18/51.** H021 Windows10 native OpenCode kullanıcı dosyası/çoklu alias ve iki CLI protokolü yerel fixture kabulüdür; evrensel model/ajan/canlı auth desteği değildir. H019 ek CLI hataları H008’de açık. Ürün sırası H022; DEV001 araç/kabul düzeni tamamlandı, önce DEV002 denetimi için kullanıcı devamı bekleniyor. H048/H049 başlamadı. Sade platform/model tasarruf ve hesap + açık sohbet talepleri H022/H025/H026/H050/H051’de planlı. Henüz kurulabilir üretim uygulaması yok; tek Luna çalışan düzeni korundu.
+**Durum:** H001–H005, H007, H013–H021, H040, H046 ve **H047 tamamlandı:18/51.** H021 Windows10 native OpenCode kullanıcı dosyası/çoklu alias ve iki CLI protokolü yerel fixture kabulüdür; evrensel model/ajan/canlı auth desteği değildir. H019 ek CLI hataları H008’de açık. DEV001/DEV002 tamamlandı. Sıradaki ürün görevi H022; kullanıcı devamı bekleniyor. H048/H049 başlamadı. Sade platform/model tasarruf ve hesap + açık sohbet talepleri H022/H025/H026/H050/H051’de planlı. Henüz kurulabilir üretim uygulaması yok; tek Luna çalışan düzeni korundu.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırındaki **18/51** değeridir. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
 ## Geliştirme araçları ve çalışma düzeni
 
-Bu işler 51 ürün görevine eklenmez. Ürün sırası H022'dir; DEV001 tamamlanınca durulur. Önce geçmiş kodu değerlendirmek için DEV002 planlıdır; H022 henüz başlamadı.
+Bu işler 51 ürün görevine eklenmez. DEV001 ve DEV002 tamamlandı. Ürün sırası H022'dir; DEV002 sonunda durulur, H022 için kullanıcı devamı beklenir.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -18,14 +18,14 @@ Bu işler 51 ürün görevine eklenmez. Ürün sırası H022'dir; DEV001 tamamla
 - [x] Ana ajan/tek çalışan kullanımı, gerçek kontrol komutları ve görev bitiş kabulü belgelenmiş; kurulum ve belge incelemesi geçmiş.
 - **Kabul:** [Ortak akış](docs/development/WORKFLOW.md) ile yerel araçlar tutarlı; global ayar yazımı yok; ürün görev sayımı değişmez. Kurulu talimat, otomatik skill keşfi ve gerçek davranış doğrulaması ayrı belirtilir.
 - **Kanıt:** `work/proofs/dev-tools/`; kısa kalıcı özet `docs/proofs/dev-tools.md`. Yeni ürün gate'i gerektirmeyen araç/belge kapsamı.
-- **Durum:** Tamamlandı; [kabul kanıtı](docs/proofs/dev-tools.md). Sonraki DEV002 başlamadı.
+- **Durum:** Tamamlandı; [kabul kanıtı](docs/proofs/dev-tools.md). DEV002 ayrı denetim görevi olarak tamamlandı.
 
 ### DEV002 — Mevcut kodun ilk Ponytail denetimi
-- [ ] Config/Apply/Undo ve sahiplik, runtime/proxy, UI bağlantı yolları önceliklendirilerek eski kod raporlanmış.
+- [x] Config/Apply/Undo ve sahiplik, runtime/proxy, UI bağlantı yolları önceliklendirilerek eski kod raporlanmış.
 - **Kabul:** Her gerçek bulgu koşul, dosya/satır, kullanıcı etkisi, en küçük çözüm ve doğrulama önerisi içerir. Bulgular ilgili açık göreve veya gerekli küçük düzeltmeye bağlanır; kapsam dışı alanlar yazılır. Rapor üretmek düzeltmelerin yapıldığı anlamına gelmez.
 - **Doğrulama:** CodeGraph ile keşfedilen yollar gerçek kaynakta okunur; mevcut kanıt fingerprint'leri değerlendirilir. Yeni koşul olmadan aynı başarılı ürün testleri tekrarlanmaz.
 - **Dosyalar:** `docs/reviews/ponytail-baseline.md`, gerekirse ilgili görev notları.
-- **Durum:** Planlı; başlamadı. Kod düzeltmeleri rapor kabulünden sonra sırayla ele alınır.
+- **Durum:** Tamamlandı; [denetim raporu](docs/reviews/ponytail-baseline.md). Bir düşük öncelikli belge bulgusu DEV002-D01, H022’ye bağlandı. İncelenen öncelikli akışlarda kesin yeni ürün hatası doğrulanmadı; kapsam dışı alanlar raporda. Ürün kodu değiştirilmedi.
 
 ## Çalışma kuralları
 
@@ -330,6 +330,7 @@ flowchart TD
 - **Dosyalar:** Ortak discovery/plan/transaction/config_io/connection_actions ve state/ownership yolları; `opencode_routes`/`config_io/opencode_environment`, strict frontend sözleşmesi/ConnectDialog, ilgili focused testler ve `compatibility/clients.json`. Ayrı config yazıcısı yok.
 
 ### H022 — İlk açılış ve hatırlanan bağlantılar
+- **DEV002-D01 belge takibi:** README Current state özeti TASKS/checkpoint ile güncellenir; H019’un amber sınırı korunur. `test:app` için sabit “six” sayısı yerine komutun gerçek kapsamı anlatılır; tarihsel ilk CI sonucu değiştirilmez.
 - [ ] Otomatik tarama ve bir defalık Bağlan akışı sadeleştirilir.
 - **H020 takibi:** Yeni Claude projesinde `.claude` ayar klasörü yoksa güvenli, sahipliği belli oluşturma akışı tasarlanıp doğrulanır. H020 ilk proje kapsamı mevcut güvenli ebeveynle sınırlı; transaction dışı gizli klasör yaratılmaz. Proje seçimini yeniden açılışta hatırlama ve yanlış projede Undo'yu önleyen kapsam açıklaması burada tamamlanır.
 - **Kabul:** Önceki seçimler hatırlanır; sonradan bulunan istemci kendiliğinden bağlanmaz; her açılışta ücretli doğrulama yoktur.
