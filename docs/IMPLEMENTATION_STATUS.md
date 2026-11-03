@@ -1,6 +1,15 @@
 # Headroom Desktop — güncel devir
 3 Kasım 2026.
 
+## 3 Kasım — H008 Desktop izole WebSocket kabulü
+- Sahte sağlayıcıdaki eksik kimlik alanı penceresiz koşuda ayrıldı. Düzeltme sonrası pinli motor üzerinden yerel Responses WebSocket terminali doğrulandı.
+- Kullanıcıya açılıştan önce bilgi verildi. İzole kurulu Desktop arayüzü kayıtlı uç noktayı kullandı ve Headroom üzerinden yerel tamamlanmış yanıtı gösterdi. Test penceresi ve portlar kapandı. Normal Codex ayar hash'i eşleşti. [Kanıt](proofs/codex-current-diagnostics.md).
+- H008 açık ve 20/51 aynı. Kalan doğrulama gerçek Desktop hesabı ve mevcut sohbet yönlendirmesi, güncel farklı model/efor ve diğer auth/transport kapsamı. Ürün kaynağı değişmedi. H024 bekliyor.
+
+## 3 Kasım — H008 paketli Desktop ara kanıtı
+- Windows paket içi tanı komutu kurulu uygulamayı ayrı Codex/Electron profiliyle açtı. İlk koşuda Desktop test sohbeti kayıtlı yerel uç noktadan pinli motora WebSocket trafiği gönderdi. Yerel sahte upstream bağlantısı tamamlanmadı. İkinci koşu arayüz tanısı sırasında kapatıldı. İki test uygulaması, motor ve fixture kapandı.
+- Sonraki adım GUI açmadan yerel upstream WebSocket adresi ve handshake sorununu ayrı doğrulamak. H008 açık ve toplam 20/51. [Kanıt](proofs/codex-current-diagnostics.md).
+
 ## 3 Kasım — H008 tanı ve güncel CLI rol kanıtı
 - Önceki 10 commit GitHub main dalına gönderildi. H008 açık, 20/51 aynı ve H024 bekliyor. [Tanı kanıtı](proofs/codex-current-diagnostics.md).
 - Ana ajan bildirim ve sahipli kapanış tanısını yürüttü. Mevcut tek Luna yalnız kapanış kaydı ve eski yardımcı sözleşmesini salt okunur inceledi. Yapılandırma uyarısı normal kullanıcı ayarındaki `mcp` anahtarına kadar ayrıldı. Sahipliği doğrulanan iki kapanış exit 0 verdi.
