@@ -4,13 +4,13 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007, H013–H021, H040, H046 ve **H047 tamamlandı:18/51.** H021 Windows10 native OpenCode kullanıcı dosyası/çoklu alias ve iki CLI protokolü yerel fixture kabulüdür; evrensel model/ajan/canlı auth desteği değildir. H019 ek CLI hataları H008’de açık. DEV001/DEV002 tamamlandı. Sıradaki ürün görevi H022; kullanıcı devamı bekleniyor. H048/H049 başlamadı. Sade platform/model tasarruf ve hesap + açık sohbet talepleri H022/H025/H026/H050/H051’de planlı. Henüz kurulabilir üretim uygulaması yok; tek Luna çalışan düzeni korundu.
+**Durum:** H001–H005, H007, H013–H023, H040, H046 ve **H047 tamamlandı:20/51.** H023 içeriksiz normalizasyon/adaptör kabulüdür; canlı dashboard değildir. H008 güncel CLI/Desktop keşif ve bağlantı düzeltmesi yerelde kabul edildi; CLI0.166 gerçek yanıtı Headroom üzerinden tamamladı. İki CLI bildirimi ve canlı Desktop/alt ajan adoption hâlâ açık; H008 ana kutusu kapanmadı. H024 bekliyor, başlamadı. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
 
-**Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırındaki **18/51** değeridir. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
+**Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
 ## Geliştirme araçları ve çalışma düzeni
 
-Bu işler 51 ürün görevine eklenmez. DEV001 ve DEV002 tamamlandı. Ürün sırası H022'dir; DEV002 sonunda durulur, H022 için kullanıcı devamı beklenir.
+Bu işler 51 ürün görevine eklenmez. DEV001/DEV002 ve H023 kabul edildi. Sıradaki ürün görevi H024; kullanıcı devam mesajı bekleniyor.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -36,7 +36,7 @@ Bu işler 51 ürün görevine eklenmez. DEV001 ve DEV002 tamamlandı. Ürün sı
 **20 Ekim geliştirme aracı notu:** Kullanıcı isteğiyle Open Computer Use ayrı Codex MCP/skill olarak kuruldu; Windows10'da Notepad ve Headroom gerçek screenshot/fare denemesi geçti. [Kurulum ve sınırlar](docs/research/computer-use-2026-10-20.md). Bu20 Ekim notu tarihseldir; araç kurulumu ürün kabulüne eklenmez. Güncel görev sayımı üstteki durum satırındadır.
 
 - `[x]` yalnız belirtilen çıktısı tamamlanan işi gösterir. Tasarım önizlemesi gerçek motor veya istemci doğrulamasının kanıtı değildir.
-- Görevler bağımlılık sırasıyla alınır. Her uygulama dilimi S/M boyutundadır: yaklaşık 1–5 dosya; büyürse aynı amaç altında alt görevlere bölünür.
+- Görevler bağımlılık sırasıyla alınır. Her uygulama dilimi S/M boyutunda tek davranış ve birlikte doğrulanabilir kabul ölçütleriyle sınırlanır. Yaklaşık 1–5 dosya devir rehberidir; dosya sayısı zorunlu bölme eşiği değildir. Bağımsız amaçlar aynı ana görev altında sırayla ayrılır.
 - Kullanıcı tercihi: etkin ana görev tamamlanmadan sonraki ana göreve geçilmez; bu dosya ilerledikçe güncellenir. Her ana görev tamamlanınca kullanıcıya bildirilir ve çalışma durur; sonraki ana görev için kullanıcının devam mesajı beklenir. Alt dilim kabulü ayrıca belirtilir.
 - Her görevde kabul koşulu ve kanıt bulunur. Kanıtta komut, kaynak/config ve araç zinciri fingerprint'i ile sonuç birlikte kaydedilir; sırlar ve ham hata çıktıları kalıcı tutulmaz.
 - Uygulama sırasında odaklı kontroller kullanılır. İnceleme/düzeltme bitince son adayın tam kalite kapısı bir kez çalıştırılır. Geçerli PASS gerekçesiz tekrarlanmaz.
@@ -149,6 +149,7 @@ flowchart TD
 **Kontrol noktası K1 — H005–H007:** Runtime yaklaşımı ve protokol kanıtı incelenir. Paketleme veya retrieval engeli gizlenerek üretim UI'sına geçilmez.
 
 ### H008 — Codex masaüstü ve CLI kanıtı
+- **3 Kasım yerel kullanım düzeltmesi kabulü (ana görev değil):** Geçerli OpenAI imzası + bounded sürüm sorgusu + dosya pin'i, yerel standalone junction çözümü, kayıtlı Windows paket API'si, gerçek GUI executable seçimi ve uzun PATH önceliği uygulandı. CLI0.166.0, backend0.166.0-alpha.5.1 ve Desktop26.1027.3384.0 tanınıyor. İki yüzey gerçek keşif→plan→atomik Apply/Undo testini izole config üzerinde geçti. Verifier workspace'i app-state'e taşındı; CodeGraph proje config'i kullanıcı ayarına dokunmadan testin dışında kalır. UI→native verifier→owned runtime→normal mevcut ChatGPT hesabı CLI yanıtı doğrulandı,2 ek sınıflandırılmamış CLI bildirimi sürüyor. [Kanıt](docs/proofs/codex-current.md), [karar011](docs/decisions/011-current-codex.md), [inceleme](docs/reviews/H008-current.md).289 Rust/98 frontend PASS; fmt ve embedded build PASS. Açık Desktop sohbeti/gerçek alt ajan/genel auth desteği kabul edilmedi; H008 ana kutusu açık,20/51 aynı.
 - **H019 sonrası açık protokol takibi —23 Ekim:** Normal `.11.2` CLI gerçek yanıtı tamamlıyor, fakat2 ek JSONL error bildiriminin kaynağı bilinmiyor. Ürün yanıt rotası kanıtını bu hatalardan ayrı gösterir; genel protokol/araç sağlığı veya hataların çözümü kabul edilmez. İzole failing-MCP testi bu error olaylarını üretmedi; MCP/transport nedeni varsayılmaz. [Son kanıt](docs/proofs/codex-product-verification.md). H008 ana kutusu açık kalır.
 - [ ] Kurulu Codex yüzeylerinin gerçek yönlendirme yolu belirlenir; küçük gerçek trafikle doğrulanır.
 - **Yerel ara kanıt:** A2 mesaj-only turu/exit0 geçti; `update_plan` ilan edilmedi. A3 farklı salt okunur `get_goal` çağrısında doğru callback/call_id, iki POST, upstream terminalinden önce mesaj item'ı, son marker/turn.completed/exit0 görüldü; tool sonucu unclassified text olduğundan semantik başarı sayılmaz. [Kanıt](docs/proofs/codex.md), [inceleme](docs/reviews/H008.md).
@@ -330,29 +331,47 @@ flowchart TD
 - **Dosyalar:** Ortak discovery/plan/transaction/config_io/connection_actions ve state/ownership yolları; `opencode_routes`/`config_io/opencode_environment`, strict frontend sözleşmesi/ConnectDialog, ilgili focused testler ve `compatibility/clients.json`. Ayrı config yazıcısı yok.
 
 ### H022 — İlk açılış ve hatırlanan bağlantılar
+- **Durum:** Tamamlandı —27 Ekim 2026. (a) Güvenli Claude ebeveyni; (b) doğrulanan seçimlerin kalıcılığı; (c) sade bağlantı akışı; (d) inceleme, son tam kapı ve gerçek yeniden açılış kabul edildi. [Son kanıt](docs/proofs/onboarding.md), [inceleme](docs/reviews/H022.md).
 - **DEV002-D01 belge takibi:** README Current state özeti TASKS/checkpoint ile güncellenir; H019’un amber sınırı korunur. `test:app` için sabit “six” sayısı yerine komutun gerçek kapsamı anlatılır; tarihsel ilk CI sonucu değiştirilmez.
-- [ ] Otomatik tarama ve bir defalık Bağlan akışı sadeleştirilir.
+- [x] Otomatik tarama ve bir defalık Bağlan akışı sadeleştirildi.
+- [x] **Alt dilim H022-a1:** Eksik `.claude` ile salt okunur Preview/katman gözlemi; üç regresyon, 12 odaklı PASS. `work/proofs/onboarding/a1-preview.json`. Apply/Undo ve kalıcılık henüz tamamlanmadı.
+- [x] **Alt dilim H022-a3:** TxF oluşturma/abort/Drop → gerçek Apply/ownership/Undo yolu incelendi; `claude_` ara adayında 38 odaklı PASS. Son validator/import düzeltmeleri final 273 Rust PASS/3 ignored kapısına dahil. Geri alma Headroom yönlendirmesini kaldırır, kullanıcı eklerini korur; boş ayar dosyası/klasörü kalabilir. Kullanılmayan dizin silme API'si çıkarıldı; şema değişmedi. `work/proofs/onboarding/a3-actions.json`.
+- [x] **Alt dilim H022-b1:** İstemci başına sınırlı seçimler, Claude kapsamı, pasif okuma ve atomik güncelleme deposu. Root boundary write-order bulgusu regresyonla düzeltildi; 5 odaklı PASS. `work/proofs/onboarding/choices-b1-reviewfix.json`. Keşif/proje yöneticilerine b2a/b2b dilimlerinde bağlandı.
+- [x] **Alt dilim H022-b2a:** Native keşif, açık tercih kaydı, fresh tarama UUID'sine path/identity eşleştirme ve app-local factory bağlandı. Discovery 27 PASS/1 ignored; son iki test değişikliği ayrı PASS. `work/proofs/onboarding/choices-b2a.json`. Client ayarı/model doğrulaması otomatik çalışmaz. Raw constructor reparse düzeltmesi için yeni exact test 1 PASS; `work/proofs/onboarding/reparse-boundary.json`, eski B1 hash'i bunun yerine kullanılmadı.
+- [x] **Alt dilim H022-b2b:** Aynı depoyla Claude scope/proje hatırlama, yol+dizin kimliği doğrulama, iptal/kayıt hatasında koruma ve native SetFolder. 41 odaklı PASS; güvenli başlangıç yoksa MRU'ya düşmeyi engelleyen son picker düzeltmesinde offline cargo check/fmt/diff PASS. `work/proofs/onboarding/claude-choice-b2b.json` iki aday fingerprint'ini ayırır; native GUI son kabulde doğrulandı.
+- [x] **Alt dilim H022-b2c:** Strict TS seçim istemcisi; request/client/status/generation/ID doğrulaması, native olmayan modda IPC yok ve sessiz kurulum değiştirmeyen çözücü. Son adayda 5 odaklı PASS; `work/proofs/onboarding/choices-b2c.json`. UI c1/c2 ile bağlandı.
+- [x] **Alt dilim H022-c1:** Üç istemcide remember → Ready/Start → fresh Preview → Apply tek açık Bağlan eylemi; seçim/context stale guard ve native sahiplik korunur. Katman/metadata/kapsam sayıları Gelişmiş'te; kısa etki ve kritik uyarılar görünür. Son aday typecheck/diff PASS; `work/proofs/onboarding/ui-c1.json`. Native kabul tamamlandı.
+- [x] **Alt dilim H022-c2 kaynak kabulü:** Sade istemci kartları, açılış taraması, salt okunur sıralı sahiplik gözlemi, lazy Advanced ve Genel bakış erişimi/kurtarma açıklamaları incelendi. Son aday typecheck/scoped diff PASS; `work/proofs/onboarding/ui-c2.json`. Son tam yerel kapı ve native kabul tamamlandı.
+- [x] **H022-d son kabul:** Frozen adayda 97 Node, 273 Rust PASS/3 ignored; fmt, frontend ve custom-protocol build PASS. Win10 native üç normal kapanış; iptal, Unicode proje, otomatik motor başlatan açık Bağlan, seçimlerin yeniden açılışı, yanlış projede Undo çatışması, kullanıcı eklerini koruyan Undo ve yeni istemcide rescan kabul. Tercihler/fixture ayarları geri yüklendi; sahip olunan süreç/listener yok. `work/proofs/onboarding/acceptance.json`.
 - **H020 takibi:** Yeni Claude projesinde `.claude` ayar klasörü yoksa güvenli, sahipliği belli oluşturma akışı tasarlanıp doğrulanır. H020 ilk proje kapsamı mevcut güvenli ebeveynle sınırlı; transaction dışı gizli klasör yaratılmaz. Proje seçimini yeniden açılışta hatırlama ve yanlış projede Undo'yu önleyen kapsam açıklaması burada tamamlanır.
 - **Kabul:** Önceki seçimler hatırlanır; sonradan bulunan istemci kendiliğinden bağlanmaz; her açılışta ücretli doğrulama yoktur.
 - **24 Ekim sade arayüz kabulü:** Normal görünüm kısa etki/kapsam/target ve Bağlan/Geri al; ayar katmanları ve tanı metadata Gelişmiş altında. İlk klasör seçicide geçersiz shell başlangıç konumu gözlendi; güvenli başlangıç/fallback ayrıca doğrulanır. Teknik detaylar ana eylemleri uzun kart listelerinin arkasına itmez.
 - **Ek kabul:** Bulundu/config uygulandı/gerçek trafik görüldü ayrı adımlardır. Eksik runtime, disk alanı, indirmenin kesilmesi ve tekrar deneme anlaşılır; temel motor/isteğe bağlı ağır araçlar ayrı gösterilir. Hazır engine ama trafik yok durumu başarı diye kapatılmaz. Yeni hesap/abonelik zorunluluğu eklenmez.
+- **Kurtarma sınırı:** H022 mevcut runtime hata kodları için paket/disk/izin kontrolü, durumu yeniden okuma ve Başlat ile yeniden denemeyi açıklar; eksik bileşeni indirdiğini veya kesilen aktarımı sürdürdüğünü iddia etmez. Gerçek indirme/devam/onarım uygulaması ve kesinti kanıtı H037/H042'de kalır.
 - **Kapsam kabulü:** Sihirbaz varsayılanı “desteklenen modeller + ana ve alt ajanlar”dır; kullanıcıdan zorunlu model/ajan listesi seçimi istenmez. Bilinen ayrı yollar ve yeniden başlatma gereği aynı bağlantı önizlemesinde açıklanır.
 - **Somut kabul senaryoları:** (1) Temiz durum → açılış/tarama → keşif görülür, kullanıcı Bağlan demeden ayar yazılmaz. (2) Seçim/bağlantı → kapat/aç → doğru istemci/proje hatırlanır; Geri al kendi kapsamını gösterir, başka proje/drift varsa işlemi engeller. (3) Yeni istemci veya geçersiz klasör → tekrar tarama/seçici iptali → kendiliğinden bağlantı/ücretli doğrulama yapılmaz; güvenli başlangıç ve anlaşılır hata vardır. Yeni `.claude` klasörünün sahiplik/geri alma koşulları ilgili transaction senaryosuyla kanıtlanır.
 - **Doğrulama:** Bu senaryoların UI → native → dosya/işlem sonucu kaydedilir; yeniden açılış gerçek uygulama süreciyle yapılır. Odaklı testler ve son adayın ortak yerel kapısı geçer.
 - **Bağımlılık / boyut:** H019, H020, H021 / M.
-- **Dosyalar:** `src/features/onboarding/Setup.tsx`, `src/features/onboarding/Setup.test.tsx`, `src/lib/preferences.ts`.
+- **Dosyalar:** `src/App.tsx`, `src/features/integrations/{Applications,ConnectDialog,ClaudeScopeSection}.tsx`, `src/lib/installationChoices.ts`, `src/styles.css`; native discovery/picker/connection actions/transaction ve `state/choices.rs`, ilgili testler ile `package.json`. Ayrı sihirbaz/bağımlılık eklenmedi.
 
 ### H023 — Sayaç normalizasyonu
-- [ ] Motor kaynakları tek, açık ölçüm sözleşmesine çevrilir.
+- **Durum:** Tamamlandı —3 Kasım 2026. Uygulayıcı ana ajan; H012-a ve pinned kaynak notu temelinde saf API/içeriksiz0.41.0 adaptörü kabul edildi. [Karar010](docs/decisions/010-metrics-normalization.md), [kanıt](docs/proofs/metrics-normalization.md), [inceleme](docs/reviews/H023.md). H012 dış kabiliyetleri tamamlanmış sayılmaz.
+- **Plan/kapsam:** İçeriksiz, sınırlı normalizasyon ve 0.41.0 snapshot adaptörü. Kalıcı kayıt/dönem sorgusu H024, ekran H025; auth/model/rota/aktif süreçler değişmez.
+- **Kritik karar:** Açık tokenizer kimliği olmayan eski çiftler gözlem olarak korunur, karşılaştırılabilir sayılmaz. Katman/sağlayıcı/aggregate değerlerinden ana girdi farkı türetilmez.
+- **Üç senaryo:** (1) Kanıtlı aynı temel: 120.000→75.000, sıfır, B=0 ve artış doğru. (2) Eksik/uyumsuz temel ve H021 2306/12 örneği: bilinmiyor; payload/tags dışarı çıkmaz. (3) Aynı kökenin proxy/MCP tekrarı tek, çatışma görünür, farklı runtime nesilleri ayrı; polling pencere kapsamı tam trafik sayılmaz.
+- [x] Motor metadata kaynakları tek, açık normalizasyon sözleşmesine çevrildi; temeli belirsiz legacy çiftler miktar/yüzde üretmez.
 - **Ön inceleme:** Pinned 0.41.0 kaynaklarında wire/novel/new-input/active oranları farklı temellere dayanıyor; alan eşlemesi, tamlık ve içeriksiz adaptör gereklilikleri [metrik kaynak notunda](docs/research/metrics-0.41.0.md). Ana kartın öncesi/sonrası çifti aynı tokenizer temelinden alınır; raw `/stats` yüzdesi doğrudan kopyalanmaz.
 - **H021 somut regresyon:** Gerçek CLI/yerel fixture Chat satırlarında original2306 ve provider kullanımından optimized12 birlikte görünürken saved0/%0 döndü. Farklı temellerden tasarruf türetilmez; H021 `traffic.json`/kanıtı normalizasyon için regresyon girdisidir. Sentetik12/4 kullanım gerçek kazanç değildir.
 - **Katman kabulü:** RTK/Headroom/cache/output değerleri temelleri ve aynı olay/kapsam bağları kanıtlanmadan toplanmaz; input azalması output tahminiyle karışmaz. Evrensel cache indirimi veya negatifleri sıfıra kırpan yardımcı ana metriğe uygulanmaz. Tahmini maliyet için model/fiyat/kapsama kaynağı gerekir.
 - **Kabul:** Proxy/MCP çift sayımı yok; bilinmeyen sıfır olmaz; artış, restart ve farklı tokenizer temelleri korunur. Token farkı ve **yüzdelik girdi token azalması** aynı ölçülebilir öncesi/sonrası çiftinden hesaplanır: `100 × (B − A) / B`. `B=0` veya eksik/birbiriyle karşılaştırılamayan ölçümde yüzde bilinmiyor kalır; gerçek sıfır tasarruf `%0` olarak ayırt edilir.
 - **Doğrulama:** Boş, eksik, sıfır taban, gerçek sıfır tasarruf, negatif fark, yinelenen event ve runtime restart fixture'ları; `120.000 → 75.000` girdide `45.000 token / %37,5` örneği.
+- **Son doğrulama:**12 odaklı PASS; inceleme regresyonu önce red, düzeltmede green. Final285 Rust PASS/3 ignored, fmt/custom-protocol build PASS; H022 frontend97/build fingerprint eşleştiği için tekrarlanmadı. `work/proofs/metrics-normalization/acceptance.json`.
+- **Sınır:** Canlı karşılaştırılabilir toplayıcı, polling/upsert/gap ve UI burada açılmadı.0.41.0 tokenizer/bileşen kimliği taşımadığı için raw saved/% güvenilir sayılmaz. Fixture %37,5 gerçek kullanım kazancı değildir.
 - **Bağımlılık / boyut:** H019, H012 / M.
-- **Dosyalar:** `src-tauri/src/metrics/normalize.rs`, `src-tauri/src/metrics/normalize_tests.rs`, `tests/fixtures/metrics/`.
+- **Dosyalar:** `src-tauri/src/metrics/{mod,normalize,normalize_tests}.rs`, `tests/fixtures/metrics/`, `src-tauri/src/main.rs`, `src-tauri/Cargo.toml`; mevcut time parsing özelliği, lock aynı.
 
 ### H024 — Oturum ve dönem kaydı
+- **H023 devir sözleşmesi:** schema1 `event_id` upsert, `origin_id` istek grubu, `main_metric_eligible` + aynı temel/bileşen filtresi korunur. Legacy rolling snapshot ve aggregate kayıtları tam trafik/ölçülmüş tasarruf sayılmaz; eksik provenance kendiliğinden yükseltilmez. Canlı kıyaslanabilir toplayıcı kanıtı henüz yoktur.
 - [ ] Normalize event'ler tekrar sayılmadan yerelde saklanır ve dönem toplamları hesaplanır.
 - **Kabul:** Oturum/bugün/7 gün kapsamları ayrı; yerel saat ve yeniden açılış doğru; saklama süresi görünür. Seçili kapsamın tasarruf yüzdesi `100 × (ΣB − ΣA) / ΣB` ile hesaplanır; istek yüzdeleri ortalanmaz. Eksik kayıtlar için ölçüm kapsamı gösterilir; ölçülebilen alt toplam bütün trafikmiş gibi sunulmaz.
 - **Doğrulama:** Zaman sınırı, tekrar event ve yeniden başlatma odaklı testleri; ağırlıklı yüzde hesabı (`1.000 → 500` ve `9.000 → 8.100` toplamında `%14`); kısmi ölçüm kapsamı.
@@ -360,6 +379,8 @@ flowchart TD
 - **Dosyalar:** `src-tauri/src/metrics/store.rs`, `src-tauri/src/metrics/store_tests.rs`, `src-tauri/src/metrics/query.rs`.
 
 ### H025 — Gerçek Genel bakış ekranı
+- **3 Kasım UI/UX kabulü:** [İnceleme](docs/reviews/UX-2026-11-03.md). Graphite korunur; ilk kullanımda kısa etki özetiyle Bağla ve başlat, sonraki kullanımda hatırlanan bağlantıyla Başlat. Aynı etkin ayar kapsamı ve desteklenen rota kanıtlı CLI/Desktop adayları tek mantıksal uygulama satırıdır; farklı profil/proje/çatışmada anlamlı seçim korunur. H022'nin tarihsel kabulü bu yeni hedefin tamamlandığı anlamına gelmez.
+- [ ] Normal ekranda teknik ikili/sürüm seçimi gerekmez; gerçek kayıt/trafik durumları ve tek sonraki eylem görünür. Salt Gelişmiş okuması tarama/bağlantıyı kilitlemez; gerçek işlemin eşzamanlılık koruması sürer. Tek boş durum, okunur metin, erişilir gezinme ve klavye/ölçekleme kabulü uygulanır.
 - **24 Ekim ürün yönü:** Varsayılan görünüm platform → model satırlarında kullanılan token, tasarruf token/% ve kaynağı varsa maliyet. Resmî harcama/tahmin ayrı; abonelik kotasından tutar uydurulmaz. Teknik yönlendirme ayrıntıları Gelişmiş altında; hesap ve sohbet durumları H050/H051 ile kısa özetlenir.
 - [ ] Graphite Genel bakış ekranında **tasarruf yüzdesi ve tasarruf edilen token miktarı birlikte** yerel kayıt üzerinden gösterilir; grafik aynı kapsamı kullanır.
 - **Kabul:** Dönem filtresi gerçek sorgu; veri kaynağı/zamanı ve ölçüm kapsamı görünür. Örneğin `%37,5 · 45.000 token` yanında sıkıştırma öncesi/sonrası değerler ayrıntıda görülebilir; yüzde Türkçe/İngilizce locale'e uygun biçimlenir. Veri yoksa `— / Veri bekleniyor` gösterilir; artış varsa oran gizlenmez ve “token artışı” olarak anlatılır. Bu oran Headroom'un girdi azalmasıdır; abonelik kotası/fatura indirimi sayılmaz.
@@ -390,6 +411,7 @@ flowchart TD
 - **Dosyalar:** `src/features/activity/Activity.tsx`, `src/features/activity/RequestDetails.tsx`, `src/features/activity/Activity.test.tsx`.
 
 ### H028 — Güvenli Başlat/Duraklat
+- **3 Kasım UI/UX kabulü:** Günlük ana kontrol duruma göre Başlat veya Duraklat/Devam et olur; motor kapanışı ve bağlantıyı kaldırma farklı etkilerle yönetilir. Uygulanmamış eylem çalışıyormuş gibi sunulmaz; hazır motor tek başına bağlı istemci/tasarruf anlamına gelmez.
 - [ ] H011'de kanıtlanan davranış gerçek UI ve runtime'a bağlanır.
 - **Kabul:** Eylem bitmeden durum başarı sayılmaz; stream ve CCR sürer; başka motor grubunun ayarı değişmez.
 - **Ek kabul:** Pause otomatik client config kaldırma veya Codex thread provider retag işlemi değildir. Aynı konuşmada pause→CCR→resume ve cached-prefix korunumu sınanır; stream ortasında yeniden POST/düz iletime geçiş yapılmaz.
@@ -406,6 +428,7 @@ flowchart TD
 - **Dosyalar:** `src/features/integrations/DisconnectDialog.tsx`, `src/features/integrations/DisconnectDialog.test.tsx`, `src-tauri/src/integrations/disconnect.rs`.
 
 ### H030 — Sistem tepsisi ve kapanış
+- **3 Kasım UI/UX kabulü:** Pencereyi kapatma, tepside çalışma ve tamamen çıkış günlük dilde açıklanır. Endpoint kayıtlıyken motorun kapanmasının istemciyi etkileyebileceği gizlenmez; otomatik doğrudan bağlantıya dönüş kanıtsız vaat edilmez.
 - [ ] Pencere kapanışı ile runtime kapanışı ayrılır.
 - **Kabul:** Tepsi durum ve temel eylemleri gösterir; aktif bağlantı sessiz kesilmez; yalnız sahip olunan süreçler yönetilir.
 - **Ek kabul:** H040'ın istemci giriş noktası/backend nesli ayrımı korunur. Pencere kapatma/çıkış/bypass ve config geri alma farklı eylemlerdir; crash toparlama sınırlıdır, yabancı listener'a müdahale edilmez.
@@ -623,4 +646,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**18/51 tamam; H021 kapandı.** Sıradaki H022; kullanıcı devam mesajı bekleniyor, başlamadı. H021 kanıt/katalog/görev listesi güncel; Win10 yerel fixture kabulü canlı/diğer OS/yayın desteği değildir. H050/H051 hesap/sohbet işleri planlı. H019 ek CLI hataları H008’de açık; H048/H049 başlamadı. Yeni CI dispatch için ücretsiz kota/hard-stop canlı kontrol gerekir. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.
+**20/51 tamam; H023 kapandı.**12 odaklı ve285 tam Rust PASS/3 ignored; fmt/embedded build PASS. Değişmeyen97 frontend/build kanıtı fingerprint eşleşmesiyle yeniden kullanıldı. [Kanıt](docs/proofs/metrics-normalization.md), [inceleme](docs/reviews/H023.md). Öncelik H008 güncel Codex CLI/Desktop kullanım engeli; H024 bekliyor, başlamadı. H008 CLI bildirimleri, önceki kapanış gözlemleri ve canlı Desktop/alt ajan kapsamı; H012 dış kabiliyetleri açık. Yeni CI/push/release yok. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.

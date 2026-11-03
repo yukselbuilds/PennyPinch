@@ -39,13 +39,15 @@ Windows 10 desteği sonraki sürüme ertelenmez. Windows 10 22H2 ilk doğrulama 
 ## 3. Kullanıcı açısından temel akış
 
 1. **Aç:** Uygulama desteklenen istemcileri, sürümlerini ve önceki bağlantı tercihlerini otomatik bulur.
-2. **Bir kez bağla:** Kullanıcı istediği istemcide **Bağlan** seçer. Aynı ekranda kapsam ve varsa yeniden başlatma ihtiyacı görünür; gerekli hazırlık, ayar ve geri alma kaydı otomatik yapılır.
-3. **Başlat:** Kullanıcı sıkıştırmayı etkinleştirir ve kendi kodlama aracında normal çalışmasına devam eder. Sonraki açılışlarda bağlantı seçimini yeniden yapmaz; isteğe bağlı otomatik başlatma ayrıca sunulur.
+2. **Bir kez bağla ve başlat:** Bulunan uygulamalar sade bir listede gösterilir. Kullanıcı bağlanacak uygulamaları ve kısa etki özetini görüp **Bağla ve başlat** eylemini seçer; gerekli hazırlık, motor başlatma, ayar ve geri alma kaydı aynı akışta yapılır. Gereken istemci yeniden açılışı açıkça belirtilir; uygulamaların kısmi başarısı ayrı gösterilir.
+3. **Sonraki kullanımlarda Başlat:** Önceki bağlantılar korunur; kullanıcı **Başlat** ile çalışmasına devam eder. Kurulum, CLI/Desktop veya model seçimini yeniden yapmaz; isteğe bağlı otomatik başlatma ayrıca sunulur. Henüz bağlanmamış bir istemciyi motoru başlatmak tek başına yönlendirmez.
 4. **İzle:** Yeni gerçek istekler üzerinden bağlantı arka planda doğrulanır ve tasarruf gösterilir. Önceden bağlanmış bir istemci için her açılışta kurulum veya ücretli doğrulama isteği tekrarlanmaz.
 
 Otomatik tarama, bilinen kurulum/yapılandırma konumları ve erişilebilen istemci sürüm bilgileriyle sınırlıdır. Bulunan bütün istemciler kendiliğinden bağlanmaz. Kullanıcının bir defalık seçimi, hangi programların ayarlarının değişebileceğini belirler. Sonradan kurulan yeni bir istemci de kullanıcı seçmeden bağlanmaz.
 
 Kullanıcıdan terminal komutu, manuel port ayarı, config düzenleme veya sırf bu ürün için yeni API anahtarı oluşturması beklenmez. Desteklenen mevcut giriş yöntemi korunur. Otomatik algılama başarısızsa **Uygulamayı seç** alternatifi sunulur. Mevcut giriş yöntemi adaptörce desteklenmiyorsa farklı ve ücretli bir sağlayıcıya sessiz geçiş yapılmaz.
+
+**Tek mantıksal bağlantı:** Aynı etkin ayar kapsamını ve desteklenen yönlendirmeyi kullandığı doğrulanan CLI/Desktop kurulumları normal akışta tek uygulama bağlantısı olarak gösterilir; ikili dosya ve sürüm ayrıntıları Gelişmiş'tedir. Farklı profil/proje/rota, eski veya kayıp kurulum ve ayar çatışmasında anlamlı seçim/kurtarma korunur; yalnız sürüme bakarak otomatik ikili seçilmez. Bir yüzeyin trafik doğrulaması diğer yüzeyin kanıtı sayılmaz. [3 Kasım UI/UX değerlendirmesi](docs/reviews/UX-2026-11-03.md) bu hedefin mevcut uygulamadan farkını ve ilgili görevleri açıklar; hedef akış henüz tamamlanmış sayılmaz.
 
 **Bağlantıyı doğrula** ayrıca sorun giderme eylemi olarak bulunur. Kullanıcı hemen test etmek isterse küçük bir gerçek doğrulama isteği başlatabilir; bunun hesap kullanımına dahil olabileceği eylemde belirtilir. Normal çalışmada zaten geçen isteklerin kullanılması tercih edilir.
 
