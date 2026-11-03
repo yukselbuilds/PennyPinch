@@ -28,4 +28,4 @@ Tek Luna'nın üretim controller→helper→pinli0.41 motor koşumu CLI ve app-s
 
 ## Açık kalanlar
 
-İki gerçek CLI bildiriminin kaynağı, açık Desktop sohbetlerinin kayıtlı config'i devralması, canlı ana/alt ajan ayrımı, API-key/genel auth ve WS kapsamı H008'de açıktır. Aynı backend/endpoint/model bu kabiliyetlerin kanıtı değildir. Win11/macOS/Linux veya temiz makine/installer bu dilimde sınanmadı. Yeni hesap/anahtar veya mevcut sohbet restart'ı yapılmadı. Model adı izin listesi ve per-model/per-agent bağlantı eklenmedi. Token tasarrufu/yüzdesi bu geliştirme çalışması için ölçülmedi.
+[Sonraki tanı](codex-current-diagnostics.md), CLI bildirimini sınıflandırır ve güncel CLI ana/alt ajan trafiğini ayrı kimliklerle doğrular. Açık Desktop sohbetlerinin kayıtlı config'i devralması, farklı model/efor, API-key/genel auth ve geniş WS kapsamı H008'de açıktır. Aynı backend/endpoint/model bu kabiliyetlerin kanıtı değildir. Win11/macOS/Linux veya temiz makine/installer bu dilimde sınanmadı. Yeni hesap/anahtar veya mevcut sohbet restart'ı yapılmadı. Model adı izin listesi ve per-model/per-agent bağlantı eklenmedi. Token tasarrufu/yüzdesi bu geliştirme çalışması için ölçülmedi.

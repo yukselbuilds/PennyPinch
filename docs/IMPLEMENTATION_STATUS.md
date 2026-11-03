@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 3 Kasım 2026.
 
+## 3 Kasım — H008 tanı ve güncel CLI rol kanıtı
+- Önceki 10 commit GitHub main dalına gönderildi. H008 açık, 20/51 aynı ve H024 bekliyor. [Tanı kanıtı](proofs/codex-current-diagnostics.md).
+- Ana ajan bildirim ve sahipli kapanış tanısını yürüttü. Mevcut tek Luna yalnız kapanış kaydı ve eski yardımcı sözleşmesini salt okunur inceledi. Yapılandırma uyarısı normal kullanıcı ayarındaki `mcp` anahtarına kadar ayrıldı. Sahipliği doğrulanan iki kapanış exit 0 verdi.
+- İlk güncel rol koşusu sağlayıcı kotasında durdu. Yenilenme saatinden sonra CLI 0.166.0 ile ana ve varsayılan alt ajan ayrı sohbet kimlikleriyle Headroom girişinde doğrulandı. Test varsayılan model ve eforu kullandı.
+- Sonraki adım paketli Desktop için izole, resmî başlatma yolu ve kayıtlı ayarın gerçek GUI trafiğine yansıması. Doğrudan başlatma WinError 5 verdi. Önceki kapanış beklemesinin nedeni ve farklı model/efor ile diğer auth/transport kapsamları takipte. Ürün kodu ve test girdileri aynı kaldı.
+
 ## 3 Kasım — Git commit checkpoint
 - Kullanıcı commitleri istedi; ana ajan mevcut inceleme ve eşleşen kanıtı kullanarak çalışmayı kapsamlarına ayırdı. `fc665a2`: geliştirme/kanıt/devir kuralları; `cb8d527`: H023 içeriksiz ölçüm normalizasyonu; `152da1f`: hatırlanan bağlantılar ve H008 güncel Codex dilimi. UI/UX spec, görev kabulü ve bu checkpoint ayrı son belge commitinde kaydedilir. Önceki altı commit korunur.
 - Git kaydından önce101 kaynak/config fingerprint'i, araç zinciri ve Win10 ortamı eşleşti; değişen41 ürün girdisinin tamamı aynı kanıtta.289 Rust PASS/5 ignored ve98 frontend PASS ile build/fmt sonuçları yeniden kullanıldı; test/sağlayıcı çağrısı tekrarlanmadı.60 aday dosyanın sır örüntüsü/büyük binary kontrolünde aday yok; bu kontrol kapsamlı güvenlik denetimi değildir. Git işlemleri ürün kaynaklarını değiştirmedi.
