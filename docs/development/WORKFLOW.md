@@ -1,6 +1,6 @@
 # Geliştirme akışı ve görev kabulü
 
-26 Ekim 2026. Bu sözleşme `TASKS.md` içindeki görevleri ve geliştirme araçları işlerini yönetir. Ürün kapsamı spesifikasyonda, değişmez sınırlar `AGENTS.md` içindedir. Buradaki kurallar sonraki kabullere uygulanır; tarihsel kanıtın kapsamını genişletmez.
+3 Kasım 2026. Bu sözleşme `TASKS.md` içindeki görevleri ve geliştirme araçları işlerini yönetir. Ürün kapsamı spesifikasyonda, değişmez sınırlar `AGENTS.md` içindedir. Buradaki kurallar sonraki kabullere uygulanır; tarihsel kanıtın kapsamını genişletmez. Yönerge bakımı ürün görevi başlatmaz veya tamamlamaz.
 
 ## Araç seçimi
 
@@ -19,20 +19,25 @@ Ponytail kuralları ana ajan ve mevcut tek çalışan için geçerlidir. Rapor d
 
 ## Göreve giriş
 
-1. `TASKS.md` ve kısa checkpoint'ten aktif kimliği, son kanıtı ve sıradaki eksik davranışı bul. İlgili kabul koşulu için gerekmedikçe tüm spec/geçmiş çıktıları yeniden yükleme.
-2. Başlamadan sonucu en fazla üç gözlenebilir senaryoyla tarif et: başlangıç durumu → eylem → beklenen sonuç. Etkilenen dosyaları ve odaklı doğrulamayı seç. Ana görev büyükse mevcut kimlik altında 1–5 kaynak dosyalık dilimlere ayır.
-3. Çalışana aşağıdaki kısa devir ver. Ana ajan aynı uygulamayı paralel yazmaz; bağımsız inceleme ve belge işini yürütür.
+1. `TASKS.md` ve kısa checkpoint'ten aktif kimliği, son kanıtı ve sıradaki eksik davranışı bul. Bağlamdaki güncel kaynak/belgeyi tekrar okuma; değişim, eksik bağlam veya somut belirsizlik varsa ilgili kısmı yenile.
+2. Mevcut plan/spec bölümünde amaç/kapsam dışını, korunacak sözleşmeleri, kritik varsayımları ve doğrulama yollarını kontrol et; yalnız eksik/çelişen kararı güncelle. Normal/hata/sınır davranışını en fazla üç gözlenebilir senaryoyla tarif et: başlangıç → eylem → beklenen sonuç. Yeni plan dosyası her görevde zorunlu değildir.
+3. Uygulayıcıyı kısa gerekçeyle seç. Kritik auth/rota/sahiplik, ölçüm veya kurtarma kararı ve belirsiz performans kök nedenini ana ajan üstlenir. Davranışı/doğrulaması net ve devir maliyetini karşılayan işleri tek Luna xhigh çalışanına ver; küçük işi sırf devir için bölme.
+4. Dilimi tek davranış ve birlikte doğrulanabilir kabulle sınırla; 1–5 dosya yaklaşık devir rehberidir, zorunlu bölme eşiği değildir. Luna seçildiyse aşağıdaki kısa devri ver. Aynı alanda tek ajan yazar; ana ajan devralmadan çalışanı durdurur ve durduğunu doğrular.
 
 ```text
 Kimlik / amaç:
+Uygulayıcı / kısa gerekçe:
 Başlangıç ve beklenen davranış:
-İzinli dosyalar / korunacak sınırlar:
+Dosya sahipliği / kapsam dışı / korunacak sözleşmeler:
 Kabul senaryoları:
-Odaklı kontrol ve yeniden kullanılacak kanıt:
+Kritik varsayımlar / ilgili kaynaklar:
+Mevcut doğrulama komutları / yeniden kullanılacak kanıt:
 Dönüş: değişiklik, sonuç/fingerprint, bilinmeyen, sonraki adım.
 ```
 
-Uygulamada önce mevcut yardımcı/standart yapı kullanılır. Yeni bağımlılık, soyutlama veya ayar ancak görevin somut ihtiyacını karşılıyorsa eklenir. Kod düzeltmesi ve geniş temizlik aynı dilimde birleştirilmez.
+Uygulayıcı kodlamadan etkilenen gerçek arayüz/kayıt/ölçüm ve UI → yönetici → motor/istemci sözleşmesini kontrol eder. Önce mevcut yardımcı/standart yapı kullanılır. Yeni bağımlılık, soyutlama veya ayar ancak görevin somut ihtiyacını karşılıyorsa eklenir. Kod düzeltmesi ve geniş temizlik aynı dilimde birleştirilmez.
+
+Çalışan çelişen sözleşme, yeni kanıt üretmeyen tekrar veya kabulü zayıflatma gereğinde gözlem/denenen yaklaşım/gereken kararı ana ajana taşır ve karara bağlı yazmayı durdurur. Ana ajan tek düzeltme paketi verir; engel sürerse devralır veya kabulü koruyarak işi yeniden sınırlar. Timeout yeni çalışan veya model değişikliği gerekçesi değildir; gerçek oturum sonu/handle kaybında checkpoint'ten tek yeni Luna açılabilir. İnceleme çalışan özetine dayanmaz; ana ajan farkı ve kritik bağlı akışı okur. Kozmetik tercihler yeni tur üretmez.
 
 ## Bir görevin bitiş kabulü
 
@@ -41,12 +46,12 @@ Aşağıdakilerin hepsi sağlanmadan ana görev `[x]` olmaz:
 1. **Davranış:** Görevin bütün kabul senaryolarında beklenen sonuç gösterilmiş; kullanıcı arayüzü değişiyorsa ilgili UI → yönetici → motor/istemci yolu incelenmiş. Mock yalnız test kapsamını kanıtlar.
 2. **Hata ve kapsam:** Değişikliğin etkilediği iptal, hata, çatışma veya yeniden açılış senaryoları doğrulanmış. Değişmeyen yollar için gereksiz yeni test üretilmez. Model, auth, proje ve süreç sahipliği sınırları korunmuş.
 3. **İnceleme:** Ana ajan değişikliği ve ilgili çağıranları incelemiş. Kabulü bozan somut bulgular giderilmiş. İsteğe bağlı temizlik, kanıtlı hata gibi sunulmamış.
-4. **Doğrulama:** Odaklı kontroller geçmiş. Ürün kodunda, inceleme düzeltmeleri bittikten sonra son adayın tam yerel kapısı bir kez geçmiş. Belge/skill/araç ayarı işinde bunun yerine ilgili kurulum, yapılandırma ve bağlantı kontrolleri yeterli. Beklenen kritik dış ortam kanıtı eksikse görev kısmi kalır.
+4. **Doğrulama:** Plandaki mevcut komut; plan yoksa TASKS kabulü ve aşağıdaki yerel kapı kullanılmış, komutun varlığı doğrulanmış. Odaklı kontroller geçmiş. Ürün kodunda, inceleme düzeltmeleri bittikten sonra ana görevin son adayının tam yerel kapısı bir kez geçmiş; her ara dilimde tekrarlanmamış. Belge/skill/araç ayarı işinde ilgili kurulum, yapılandırma ve bağlantı kontrolleri yeterli; yalnız yönerge bakımında ürün testleri tekrar çalıştırılmaz. Beklenen kritik dış ortam kanıtı eksikse görev kısmi kalır.
 5. **Kayıt ve durma:** TASKS/checkpoint'te durum, kanıt, sınırlar ve sonraki adım tutarlı. Ana görev tamamlandı kullanıcıya açıkça söylenir ve çalışma durur. Alt dilim bittiğinde ana görev tamamlandı denmez.
 
-Kanıt satırı kısa tutulur: **senaryo | beklenen | gözlenen | kanıt yolu | kaynak/config + araç/ortam fingerprint'i | sınır**. Ham prompt, auth, HTTP gövdesi veya hata dökümü kalıcılaştırılmaz.
+Kanıt satırı kısa tutulur: **senaryo | beklenen | gözlenen | kanıt yolu | kaynak/config + araç/ortam fingerprint'i | sınır**. Sonuç ve ilgili önce/sonra fingerprint'leri aynı doğrulama adımında programatik kaydedilir; hash elle kopyalanmaz, ölçüm altyapısı yoksa sınır yazılır. Ham prompt, auth, HTTP gövdesi veya hata dökümü kalıcılaştırılmaz.
 
-PASS ancak ilgili dosya/config, bağımlılık/araç zinciri, komut ve ortam eşleşiyorsa yeniden kullanılır. Aynı başarılı kontrolü yinelemek için önce somut değişim nedeni yazılır. Compact, yeni gün veya kredi kesintisi geçersizleşme nedeni değildir. Yeni düzeltme ilgili kanıtı geçersiz kılar; etkilenmeyen kanıt korunur.
+PASS ancak çalışma alanı, ilgili kaynak/test/config, bağımlılık/araç zinciri, komut ve ortam eşleşiyorsa yeniden kullanılır. Aynı başarılı kontrolü yinelemek için önce somut değişim nedeni yazılır. Compact, yeni gün veya kredi kesintisi geçersizleşme nedeni değildir. Yeni düzeltme ilgili kanıtı geçersiz kılar; etkilenmeyen kanıt korunur. Canlı bağlantı/CI/dağıtım/migration/veritabanı/üretim kontrolü kendi aşamasında yenilenir. Kısa koşu uzun süreli kararlılık sayılmaz; performans verisi, çalışma durumu, yük, süre ve eşik önceden belirlenir. Başarısızlığı gizlemek için kabul gevşetilmez.
 
 ## Durumların anlamı
 
@@ -57,7 +62,7 @@ PASS ancak ilgili dosya/config, bağımlılık/araç zinciri, komut ve ortam eş
 | Kısmi / dış kanıt bekliyor | Tamamlanan yerel dilim yazılır; eksik kabul açık kalır. Bağımsız ilerleme sürer. |
 | Tamamlandı | Bütün görev kapsamı ve ortak bitiş kabulü karşılandı. |
 
-Hesap eksikliği veya ikinci işletim sisteminin yokluğu destek durumu olarak kaydedilir. Yerel başarı, sağlayıcı doğrulaması, Windows 11/macOS/Linux başarısı ve yayın adayı birbirinin yerine kullanılmaz. Denetimde bulunan her konu yeni ana görev olmaz: ilgili açık göreve bağlanır; bağımsız somut hata gerekiyorsa küçük düzeltme maddesi açılır.
+Hesap eksikliği veya ikinci işletim sisteminin yokluğu destek durumu olarak kaydedilir. `not_tested` veya bilinmiyor, çalışmıyor/uyumsuz demek değildir. Yerel başarı, sağlayıcı doğrulaması, Windows 11/macOS/Linux başarısı ve yayın adayı birbirinin yerine kullanılmaz. Denetim salt okunurdur; düzeltme ayrı sınırlı iştir ve kritik doğruluk/veri kaybı bulgusu kapanmadan bağımlı işe geçilmez. Başlamamış özellik hata sayılmaz. Her bulgu yeni ana görev olmaz: ilgili açık göreve bağlanır; bağımsız somut hata gerekiyorsa küçük düzeltme maddesi açılır.
 
 ## Bugün çalışabilen yerel ürün kapısı
 
