@@ -392,6 +392,393 @@ fn claude_scope_cancel_and_invalid_picker_results_preserve_selected_context() {
 
 #[cfg(windows)]
 #[test]
+fn persisted_claude_project_context_reopens_with_same_directory_identity() {
+    use super::config_io::{ClaudeContextSnapshotRequest, ClaudeScopeSelectionRequest};
+
+    let mut fixture = Fixture::new();
+    let project = fixture.path("remembered-claude-project");
+    fs::create_dir(&project).unwrap();
+    let store = crate::state::choices::ChoiceStore::new(
+        fixture.path.clone(),
+        PathBuf::from("app-state").join("onboarding"),
+    )
+    .unwrap();
+    let selected_project = project.clone();
+    let manager = PlanManager::with_test_sources(
+        DiscoveryManager::new(),
+        ConfigRootInputs::default(),
+        Err(StableEndpointAccessError::Unavailable),
+    )
+    .with_claude_choice_store(Some(store.clone()))
+    .with_claude_project_picker(move || Ok(Some(selected_project.clone())));
+
+    let selected = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        scope: "project_local_config".to_owned(),
+    });
+    assert_eq!(
+        serde_json::to_value(selected).unwrap()["status"],
+        "selected"
+    );
+    assert!(!project.join(".claude").exists());
+    assert_eq!(
+        store.read().unwrap().claude.unwrap().availability,
+        crate::state::choices::ChoiceAvailability::Available
+    );
+    drop(manager);
+
+    // Install the store before the test picker: either builder order must retain it.
+    let reopened = PlanManager::with_test_sources(
+        DiscoveryManager::new(),
+        ConfigRootInputs::default(),
+        Err(StableEndpointAccessError::Unavailable),
+    );
+    let observed_hint = std::sync::Arc::new(std::sync::Mutex::new(None));
+    let observed_for_picker = std::sync::Arc::clone(&observed_hint);
+    let project_for_picker = project.clone();
+    let reopened = reopened
+        .with_claude_choice_store(Some(store))
+        .with_claude_project_picker_hint(move |hint| {
+            *observed_for_picker.lock().unwrap() = hint;
+            Ok(Some(project_for_picker.clone()))
+        });
+    let snapshot = reopened.claude_context_snapshot(ClaudeContextSnapshotRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+    });
+    let snapshot = serde_json::to_value(snapshot).unwrap();
+    assert_eq!(snapshot["status"], "snapshot");
+    assert_eq!(snapshot["scope"], "project_local_config");
+    assert_eq!(
+        path_key(Path::new(snapshot["project_directory"].as_str().unwrap())),
+        path_key(&project.canonicalize().unwrap())
+    );
+    let selected_again = reopened.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        scope: "project_local_config".to_owned(),
+    });
+    assert_eq!(
+        serde_json::to_value(selected_again).unwrap()["status"],
+        "selected"
+    );
+    assert_eq!(
+        path_key(observed_hint.lock().unwrap().as_ref().unwrap()),
+        path_key(&project.canonicalize().unwrap())
+    );
+    assert!(!project.join(".claude").exists());
+    fixture.cleanup();
+}
+
+#[cfg(windows)]
+#[test]
+fn claude_picker_cancel_preserves_saved_bytes_and_failed_save_preserves_context() {
+    use super::config_io::{ClaudeContextSnapshotRequest, ClaudeScopeSelectionRequest};
+    use std::sync::{Arc, Mutex};
+
+    let mut fixture = Fixture::new();
+    let project = fixture.path("saved-claude-project");
+    fs::create_dir(&project).unwrap();
+    let store = crate::state::choices::ChoiceStore::new(
+        fixture.path.clone(),
+        PathBuf::from("app-state").join("onboarding"),
+    )
+    .unwrap();
+    let picker_path = Arc::new(Mutex::new(Some(project.clone())));
+    let picker_for_manager = Arc::clone(&picker_path);
+    let manager = PlanManager::with_test_sources(
+        DiscoveryManager::new(),
+        ConfigRootInputs::default(),
+        Err(StableEndpointAccessError::Unavailable),
+    )
+    .with_claude_project_picker(move || Ok(picker_for_manager.lock().unwrap().clone()))
+    .with_claude_choice_store(Some(store.clone()));
+    let default = manager.claude_context_snapshot(ClaudeContextSnapshotRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+    });
+    assert_eq!(
+        serde_json::to_value(default).unwrap()["scope"],
+        "user_config"
+    );
+    assert!(!fixture.path.join("app-state").exists());
+    manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        scope: "project_local_config".to_owned(),
+    });
+    let store_file = fixture.path.join("app-state/onboarding/selections.json");
+    let saved_bytes = fs::read(&store_file).unwrap();
+
+    *picker_path.lock().unwrap() = None;
+    let cancelled = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        scope: "project_local_config".to_owned(),
+    });
+    assert_eq!(
+        serde_json::to_value(cancelled).unwrap()["status"],
+        "cancelled"
+    );
+    assert_eq!(fs::read(&store_file).unwrap(), saved_bytes);
+    assert!(!project.join(".claude").exists());
+
+    // A malformed app-owned record makes the explicit save fail closed; the live
+    // in-memory selection remains the previously validated project.
+    let malformed = b"invalid app-owned fixture bytes";
+    fs::write(&store_file, malformed).unwrap();
+    let rejected = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        scope: "user_config".to_owned(),
+    });
+    let rejected = serde_json::to_value(rejected).unwrap();
+    assert_eq!(rejected["status"], "error");
+    assert_eq!(rejected["error"]["code"], "unavailable");
+    assert_eq!(fs::read(&store_file).unwrap(), malformed);
+    let current = manager.claude_context_snapshot(ClaudeContextSnapshotRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+    });
+    let current = serde_json::to_value(current).unwrap();
+    assert_eq!(current["scope"], "project_local_config");
+    assert_eq!(
+        path_key(Path::new(current["project_directory"].as_str().unwrap())),
+        path_key(&project.canonicalize().unwrap())
+    );
+    drop(manager);
+    let corrupt_reopen = PlanManager::with_test_sources(
+        DiscoveryManager::new(),
+        ConfigRootInputs::default(),
+        Err(StableEndpointAccessError::Unavailable),
+    )
+    .with_claude_choice_store(Some(store));
+    let unavailable = corrupt_reopen.claude_context_snapshot(ClaudeContextSnapshotRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+    });
+    let unavailable = serde_json::to_value(unavailable).unwrap();
+    assert_eq!(unavailable["status"], "error");
+    assert_eq!(unavailable["error"]["code"], "unavailable");
+    assert!(unavailable.get("scope").is_none());
+    fixture.cleanup();
+}
+
+#[cfg(windows)]
+#[test]
+fn replaced_saved_claude_project_is_unavailable_until_explicit_reselection() {
+    use super::config_io::{ClaudeContextSnapshotRequest, ClaudeScopeSelectionRequest};
+
+    let mut fixture = Fixture::new();
+    let project = fixture.path("claude-project-slot");
+    let original = fixture.path("claude-project-original");
+    fs::create_dir(&project).unwrap();
+    let store = crate::state::choices::ChoiceStore::new(
+        fixture.path.clone(),
+        PathBuf::from("app-state").join("onboarding"),
+    )
+    .unwrap();
+    let selected_project = project.clone();
+    let manager = PlanManager::with_test_sources(
+        DiscoveryManager::new(),
+        ConfigRootInputs::default(),
+        Err(StableEndpointAccessError::Unavailable),
+    )
+    .with_claude_choice_store(Some(store.clone()))
+    .with_claude_project_picker(move || Ok(Some(selected_project.clone())));
+    manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        scope: "project_local_config".to_owned(),
+    });
+    drop(manager);
+
+    fs::rename(&project, &original).unwrap();
+    let reopened = PlanManager::with_test_sources(
+        DiscoveryManager::new(),
+        ConfigRootInputs::default(),
+        Err(StableEndpointAccessError::Unavailable),
+    )
+    .with_claude_choice_store(Some(store))
+    .with_claude_project_picker({
+        let project = project.clone();
+        move || Ok(Some(project.clone()))
+    });
+    let unavailable = reopened.claude_context_snapshot(ClaudeContextSnapshotRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+    });
+    let unavailable = serde_json::to_value(unavailable).unwrap();
+    assert_eq!(unavailable["status"], "error");
+    assert_eq!(unavailable["error"]["code"], "unavailable");
+    assert!(unavailable.get("scope").is_none());
+
+    fs::create_dir(&project).unwrap();
+    let selected = reopened.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+        scope: "project_local_config".to_owned(),
+    });
+    let selected = serde_json::to_value(selected).unwrap();
+    assert_eq!(selected["status"], "selected");
+    let current = reopened.claude_context_snapshot(ClaudeContextSnapshotRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.to_owned(),
+    });
+    let current = serde_json::to_value(current).unwrap();
+    assert_eq!(current["scope"], "project_local_config");
+    assert!(!project.join(".claude").exists());
+    fixture.cleanup();
+}
+
+#[cfg(windows)]
+#[test]
+fn claude_project_preview_without_claude_directory_is_read_only() {
+    use super::config_io::{ClaudeScopeSelectionRequest, PlanReply};
+
+    let mut fixture = Fixture::new();
+    let (discovery, installation_id, scan_generation) =
+        scanned_client(&fixture, "claude_code", "claude.cmd");
+    let claude_root = fixture.path("claude-user-config");
+    fs::create_dir(&claude_root).unwrap();
+    let project = fixture.path("project-without-claude");
+    fs::create_dir(&project).unwrap();
+    let claude_dir = project.join(".claude");
+    let selected_project = project.clone();
+    let manager = PlanManager::with_test_sources(
+        discovery,
+        ConfigRootInputs {
+            claude_config_dir: Some(claude_root),
+            ..ConfigRootInputs::default()
+        },
+        Ok(endpoint()),
+    )
+    .with_claude_project_picker(move || Ok(Some(selected_project.clone())));
+
+    let selected = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        scope: "project_local_config".to_owned(),
+    });
+    assert_eq!(
+        serde_json::to_value(selected).unwrap()["status"],
+        "selected"
+    );
+    assert!(!claude_dir.exists());
+
+    let mut request = request(installation_id, scan_generation);
+    request.scope = "project_local_config".to_owned();
+    let PlanReply::Preview(preview) = manager.preview(request) else {
+        panic!("a selected project without .claude should still produce a preview");
+    };
+    assert_eq!(preview.plan.config_presence, ConfigPresence::Missing);
+    assert_eq!(preview.plan.scope, "project_local_config");
+    assert!(!claude_dir.exists());
+    fixture.cleanup();
+}
+
+#[cfg(windows)]
+#[test]
+fn claude_project_layer_snapshot_reports_missing_directory_without_creation() {
+    use super::config_io::{
+        ClaudeScopeSelectionRequest, ClaudeSettingsSnapshotReply, ClaudeSettingsSnapshotRequest,
+    };
+
+    let mut fixture = Fixture::new();
+    let (discovery, _, _) = scanned_client(&fixture, "claude_code", "claude.cmd");
+    let claude_root = fixture.path("claude-user-config");
+    fs::create_dir(&claude_root).unwrap();
+    let project = fixture.path("project-without-claude");
+    fs::create_dir(&project).unwrap();
+    let claude_dir = project.join(".claude");
+    let selected_project = project.clone();
+    let manager = PlanManager::with_test_sources(
+        discovery,
+        ConfigRootInputs {
+            claude_config_dir: Some(claude_root),
+            ..ConfigRootInputs::default()
+        },
+        Ok(endpoint()),
+    )
+    .with_claude_project_picker(move || Ok(Some(selected_project.clone())));
+
+    let selected = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        scope: "project_local_config".to_owned(),
+    });
+    assert_eq!(
+        serde_json::to_value(selected).unwrap()["status"],
+        "selected"
+    );
+
+    let reply = manager.claude_settings_snapshot(ClaudeSettingsSnapshotRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        scope: "project_local_config".to_owned(),
+    });
+    let ClaudeSettingsSnapshotReply::Snapshot(snapshot) = reply else {
+        panic!("missing project layers should be observable");
+    };
+    let snapshot = serde_json::to_value(snapshot).unwrap();
+    for source in ["shared_project_settings", "local_project_settings"] {
+        let layer = snapshot["layers"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|layer| layer["source"] == source)
+            .expect("project layer is included in the snapshot");
+        assert_eq!(layer["availability"], "missing");
+    }
+    assert!(!claude_dir.exists());
+    fixture.cleanup();
+}
+
+#[cfg(windows)]
+#[test]
+fn claude_project_regular_file_instead_of_directory_remains_unsafe() {
+    use super::config_io::ClaudeScopeSelectionRequest;
+
+    let mut fixture = Fixture::new();
+    let (discovery, installation_id, scan_generation) =
+        scanned_client(&fixture, "claude_code", "claude.cmd");
+    let claude_root = fixture.path("claude-user-config");
+    fs::create_dir(&claude_root).unwrap();
+    let project = fixture.path("project-invalid-claude-parent");
+    fs::create_dir(&project).unwrap();
+    let claude_dir = project.join(".claude");
+    fs::write(&claude_dir, b"fixture file, not a directory").unwrap();
+    let selected_project = project.clone();
+    let manager = PlanManager::with_test_sources(
+        discovery,
+        ConfigRootInputs {
+            claude_config_dir: Some(claude_root),
+            ..ConfigRootInputs::default()
+        },
+        Ok(endpoint()),
+    )
+    .with_claude_project_picker(move || Ok(Some(selected_project.clone())));
+
+    let selected = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        scope: "project_local_config".to_owned(),
+    });
+    assert_eq!(
+        serde_json::to_value(selected).unwrap()["status"],
+        "selected"
+    );
+    let mut request = request(installation_id, scan_generation);
+    request.scope = "project_local_config".to_owned();
+    let reply = serde_json::to_value(manager.preview(request)).unwrap();
+    assert_eq!(reply["error"]["code"], "config_unsafe");
+    assert!(claude_dir.is_file());
+    fixture.cleanup();
+}
+
+#[cfg(windows)]
+#[test]
 fn claude_scope_changes_invalidate_plans_and_preview_selected_project_local_file() {
     use super::config_io::{ClaudeScopeSelectionRequest, PlanReply};
     use super::plan::PlanStatus;

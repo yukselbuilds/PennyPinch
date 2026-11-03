@@ -122,7 +122,14 @@ type ExpectedReply = {
 
 const maxSafeInteger = Number.MAX_SAFE_INTEGER;
 const apiKeyFixtureCliVersions = new Set(["0.163.0-alpha.10.2", "0.163.0-alpha.11.1"]);
-const supportedCliVersions = new Set([...apiKeyFixtureCliVersions, "0.163.0-alpha.11.2"]);
+/** Config capability is separate from fixture/live traffic coverage. */
+export function isCodexConfigSupported(surface: string, version: string | null): boolean {
+  if (version === null || version.length > 64) return false;
+  if (surface === "desktop" && /^(?:0|[1-9]\d{0,4})(?:\.(?:0|[1-9]\d{0,4})){3}$/.test(version)) return true;
+  const match = /^(0|[1-9]\d{0,4})\.(0|[1-9]\d{0,4})\.(0|[1-9]\d{0,4})(?:-[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*)?$/.exec(version);
+  if (!match) return false;
+  return surface === "desktop" || (surface === "cli" && match[1] === "0" && Number(match[2]) >= 163);
+}
 const errorContracts: Record<CodexStatusErrorCode, { retryable: boolean; messageKey: string }> = {
   validation_failed: { retryable: false, messageKey: "codex.status.validation_failed" },
   stale_selection: { retryable: true, messageKey: "codex.status.stale_selection" },
@@ -222,8 +229,7 @@ function decodeSnapshot(value: unknown, expected: ExpectedReply): CodexStatusSna
     || (ownership.state === "unavailable" && (ownership.config_source !== null || ownership.endpoint_id !== null || ownership.endpoint_port !== null || ownership.endpoint_binding !== "unknown"))) return null;
 
   const currentConfigValue = ownership.current_config_value as CodexCurrentConfigValue;
-  const supportsConfigObservation = expected.surface === "cli" && installation.version !== null
-    && supportedCliVersions.has(installation.version);
+  const supportsConfigObservation = isCodexConfigSupported(expected.surface, installation.version as string | null);
   if ((ownership.state === "active" && (supportsConfigObservation
       ? !["matches_owned_endpoint", "missing", "different", "unsupported_route", "unavailable"].includes(currentConfigValue)
       : currentConfigValue !== "not_rechecked"))
@@ -343,7 +349,7 @@ export type CodexNextAction = {
 /** Gives one bounded, read-only next step from a fresh local snapshot. It never verifies client traffic. */
 export function diagnoseCodexNextAction(snapshot: CodexStatusSnapshot): CodexNextAction {
   const { installation, ownership, runtime } = snapshot;
-  if (installation.surface !== "cli" || installation.version === null || !supportedCliVersions.has(installation.version)) {
+  if (!isCodexConfigSupported(installation.surface, installation.version)) {
     return { code: "unsupported_installation", state: "action_required" };
   }
   if (ownership.state === "unavailable") return { code: "refresh_status", state: "action_required" };
@@ -709,7 +715,7 @@ function compactRuntimeGeneration(value: string | null): string | null {
 
 export function isCodexVerifySelectionSupported(selection: CodexVerifySelection): boolean {
   return selection.client_kind === "codex" && selection.surface === "cli"
-    && selection.version === "0.163.0-alpha.11.2";
+    && isCodexConfigSupported(selection.surface, selection.version);
 }
 
 export function createCodexVerifyClient(options: {

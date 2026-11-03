@@ -12,11 +12,6 @@ const PLAN_LIFETIME_SECONDS: u64 = 300;
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 pub(super) const CODEX_API_KEY_FIXTURE_CLI_VERSIONS: &[&str] =
     &["0.163.0-alpha.10.2", "0.163.0-alpha.11.1"];
-pub(super) const CODEX_SUPPORTED_CLI_VERSIONS: &[&str] = &[
-    "0.163.0-alpha.10.2",
-    "0.163.0-alpha.11.1",
-    "0.163.0-alpha.11.2",
-];
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum ClientKind {
@@ -318,12 +313,16 @@ pub(crate) fn preview_config_with_presence(
         ClientKind::OpenCodeV1 => analyze_opencode_v1(root, &proposed_value, &mut blockers),
     };
 
-    if context.surface != "cli" {
+    if context.surface != "cli"
+        && !(context.client_kind == ClientKind::Codex && context.surface == "desktop")
+    {
         add_blocker(&mut blockers, PlanBlocker::UnsupportedClientSurface);
     }
     match context.version.as_deref() {
         None => add_blocker(&mut blockers, PlanBlocker::ClientVersionUnknown),
-        Some(version) if !supported_version(context.client_kind, version) => {
+        Some(version)
+            if !supported_installation(context.client_kind, &context.surface, Some(version)) =>
+        {
             add_blocker(&mut blockers, PlanBlocker::UnsupportedClientVersion);
         }
         Some(_) => {}
@@ -415,9 +414,21 @@ pub(crate) fn preview_config_with_presence(
 
 pub(super) fn supported_version(kind: ClientKind, version: &str) -> bool {
     match kind {
-        ClientKind::Codex => CODEX_SUPPORTED_CLI_VERSIONS.contains(&version),
+        ClientKind::Codex => super::codex_binary::cli_config_supported(version),
         ClientKind::ClaudeCode => version == "2.1.158",
         ClientKind::OpenCodeV1 => version == "1.19.3",
+    }
+}
+
+pub(super) fn supported_installation(
+    kind: ClientKind,
+    surface: &str,
+    version: Option<&str>,
+) -> bool {
+    if kind == ClientKind::Codex {
+        super::codex_binary::config_supported(surface, version)
+    } else {
+        surface == "cli" && version.is_some_and(|v| supported_version(kind, v))
     }
 }
 

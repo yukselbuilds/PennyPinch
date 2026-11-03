@@ -1,4 +1,8 @@
-use serde::Serialize;
+use crate::integrations::transaction_fs::FileIdentity;
+use crate::state::choices::{
+    ChoiceAvailability, ChoiceClient, ChoiceOrigin, ChoiceStore, ChoiceSurface, InstallationChoice,
+};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -73,6 +77,7 @@ pub struct DiscoveryManager {
 struct DiscoveryInner {
     state: RwLock<DiscoveryState>,
     scanning: AtomicBool,
+    choice_store: Option<ChoiceStore>,
 }
 
 #[derive(Clone, Default)]
@@ -81,8 +86,21 @@ struct DiscoveryState {
     generation: u64,
     installations: Vec<InstallationSummary>,
     paths: HashMap<String, PathBuf>,
-    manual_candidates: Vec<Candidate>,
+    observations: HashMap<String, InstallationObservation>,
+    manual_candidates: Vec<ManualCandidate>,
     warnings: Vec<&'static str>,
+}
+
+#[derive(Clone, Copy, Eq, PartialEq)]
+struct InstallationObservation {
+    identity: FileIdentity,
+    size_bytes: u64,
+}
+
+#[derive(Clone)]
+struct ManualCandidate {
+    candidate: Candidate,
+    observation: Option<InstallationObservation>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -120,6 +138,40 @@ pub struct InstallationSummary {
     pub location_label: &'static str,
     pub status: &'static str,
     pub connection_status: &'static str,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SavedInstallationChoiceRequest {
+    pub schema_version: u8,
+    pub request_id: String,
+    pub client_kind: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RememberInstallationChoiceRequest {
+    pub schema_version: u8,
+    pub request_id: String,
+    pub scan_generation: u64,
+    pub installation_id: String,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(untagged)]
+pub enum SavedInstallationChoiceReply {
+    Snapshot(SavedInstallationChoiceSnapshot),
+    Error(DiscoveryError),
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct SavedInstallationChoiceSnapshot {
+    pub schema_version: u8,
+    pub request_id: String,
+    pub status: &'static str,
+    pub client_kind: &'static str,
+    pub scan_generation: Option<u64>,
+    pub installation_id: Option<String>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -170,10 +222,15 @@ impl ErrorCode {
 
 impl DiscoveryManager {
     pub fn new() -> Self {
+        Self::with_choice_store(None)
+    }
+
+    pub(crate) fn with_choice_store(choice_store: Option<ChoiceStore>) -> Self {
         Self {
             inner: Arc::new(DiscoveryInner {
                 state: RwLock::new(DiscoveryState::default()),
                 scanning: AtomicBool::new(false),
+                choice_store,
             }),
         }
     }
@@ -236,6 +293,195 @@ impl DiscoveryManager {
         Ok((installation, path))
     }
 
+    pub(crate) fn saved_installation_choice(
+        &self,
+        request: SavedInstallationChoiceRequest,
+    ) -> SavedInstallationChoiceReply {
+        let Some(client) = choice_client_kind(&request.client_kind) else {
+            return saved_choice_error(&request.request_id, ErrorCode::ValidationFailed);
+        };
+        if request.schema_version != SCHEMA_VERSION || !valid_request_id(&request.request_id) {
+            return saved_choice_error(&request.request_id, ErrorCode::ValidationFailed);
+        }
+        if self
+            .inner
+            .scanning
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            .is_err()
+        {
+            return saved_choice_error(&request.request_id, ErrorCode::Busy);
+        }
+        let _guard = ScanGuard(&self.inner.scanning);
+        let Some(store) = self.inner.choice_store.as_ref() else {
+            return saved_choice_error(&request.request_id, ErrorCode::EnvironmentBlocked);
+        };
+        let choices = match store.read() {
+            Ok(choices) => choices,
+            Err(_) => {
+                return saved_choice_error(&request.request_id, ErrorCode::EnvironmentBlocked)
+            }
+        };
+        let state = self
+            .inner
+            .state
+            .read()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let saved = choices
+            .installations
+            .iter()
+            .find(|choice| choice.client == client);
+        let Some(saved) = saved else {
+            return SavedInstallationChoiceReply::Snapshot(SavedInstallationChoiceSnapshot {
+                schema_version: SCHEMA_VERSION,
+                request_id: request.request_id,
+                status: "not_selected",
+                client_kind: client_kind_name(client),
+                scan_generation: state.scanned.then_some(state.generation),
+                installation_id: None,
+            });
+        };
+        if saved.availability != ChoiceAvailability::Available {
+            return SavedInstallationChoiceReply::Snapshot(SavedInstallationChoiceSnapshot {
+                schema_version: SCHEMA_VERSION,
+                request_id: request.request_id,
+                status: "unavailable",
+                client_kind: client_kind_name(client),
+                scan_generation: state.scanned.then_some(state.generation),
+                installation_id: None,
+            });
+        }
+        if !state.scanned {
+            return SavedInstallationChoiceReply::Snapshot(SavedInstallationChoiceSnapshot {
+                schema_version: SCHEMA_VERSION,
+                request_id: request.request_id,
+                status: "not_scanned",
+                client_kind: client_kind_name(client),
+                scan_generation: None,
+                installation_id: None,
+            });
+        }
+        let installation_id = state
+            .installations
+            .iter()
+            .find(|installation| {
+                installation.client_kind == client_kind_name(client)
+                    && installation.surface == surface_name(saved.surface)
+                    && state
+                        .paths
+                        .get(&installation.installation_id)
+                        .is_some_and(|path| path_key(path) == path_key(&saved.executable_path))
+                    && state
+                        .observations
+                        .get(&installation.installation_id)
+                        .is_some_and(|observed| {
+                            observed.identity == saved.identity
+                                && observed.size_bytes == saved.size_bytes
+                        })
+            })
+            .map(|installation| installation.installation_id.clone());
+        SavedInstallationChoiceReply::Snapshot(SavedInstallationChoiceSnapshot {
+            schema_version: SCHEMA_VERSION,
+            request_id: request.request_id,
+            status: if installation_id.is_some() {
+                "available"
+            } else {
+                "unavailable"
+            },
+            client_kind: client_kind_name(client),
+            scan_generation: Some(state.generation),
+            installation_id,
+        })
+    }
+
+    pub(crate) fn remember_installation_choice(
+        &self,
+        request: RememberInstallationChoiceRequest,
+    ) -> SavedInstallationChoiceReply {
+        if request.schema_version != SCHEMA_VERSION
+            || !valid_request_id(&request.request_id)
+            || !valid_request_id(&request.installation_id)
+            || request.scan_generation == 0
+            || request.scan_generation > MAX_SAFE_INTEGER
+        {
+            return saved_choice_error(&request.request_id, ErrorCode::ValidationFailed);
+        }
+        if self
+            .inner
+            .scanning
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            .is_err()
+        {
+            return saved_choice_error(&request.request_id, ErrorCode::Busy);
+        }
+        let _guard = ScanGuard(&self.inner.scanning);
+        let Some(store) = self.inner.choice_store.as_ref() else {
+            return saved_choice_error(&request.request_id, ErrorCode::EnvironmentBlocked);
+        };
+        let (summary, path, observed) = {
+            let state = self
+                .inner
+                .state
+                .read()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            if !state.scanned || state.generation != request.scan_generation {
+                return saved_choice_error(&request.request_id, ErrorCode::ValidationFailed);
+            }
+            let Some(summary) = state
+                .installations
+                .iter()
+                .find(|item| item.installation_id == request.installation_id)
+                .cloned()
+            else {
+                return saved_choice_error(&request.request_id, ErrorCode::ValidationFailed);
+            };
+            let Some(path) = state.paths.get(&request.installation_id).cloned() else {
+                return saved_choice_error(&request.request_id, ErrorCode::ValidationFailed);
+            };
+            let Some(observed) = state.observations.get(&request.installation_id).copied() else {
+                return saved_choice_error(&request.request_id, ErrorCode::EnvironmentBlocked);
+            };
+            (summary, path, observed)
+        };
+        let Some(client) = choice_client_kind(summary.client_kind) else {
+            return saved_choice_error(&request.request_id, ErrorCode::ValidationFailed);
+        };
+        let Some(surface) = choice_surface(summary.surface) else {
+            return saved_choice_error(&request.request_id, ErrorCode::ValidationFailed);
+        };
+        let Some(origin) = choice_origin(summary.source) else {
+            return saved_choice_error(&request.request_id, ErrorCode::ValidationFailed);
+        };
+        let choice = match ChoiceStore::capture_installation(
+            client,
+            surface,
+            origin,
+            path.clone(),
+            summary.version.clone(),
+        ) {
+            Ok(choice) => choice,
+            Err(_) => {
+                return saved_choice_error(&request.request_id, ErrorCode::EnvironmentBlocked)
+            }
+        };
+        if choice.identity != observed.identity
+            || choice.size_bytes != observed.size_bytes
+            || path_key(&choice.executable_path) != path_key(&path)
+        {
+            return saved_choice_error(&request.request_id, ErrorCode::ValidationFailed);
+        }
+        if store.save_installation(choice).is_err() {
+            return saved_choice_error(&request.request_id, ErrorCode::EnvironmentBlocked);
+        }
+        SavedInstallationChoiceReply::Snapshot(SavedInstallationChoiceSnapshot {
+            schema_version: SCHEMA_VERSION,
+            request_id: request.request_id,
+            status: "saved",
+            client_kind: client_kind_name(client),
+            scan_generation: Some(request.scan_generation),
+            installation_id: Some(request.installation_id),
+        })
+    }
+
     pub fn scan(&self, request_id: String) -> DiscoveryReply {
         self.scan_from_inputs(request_id, DiscoveryInputs::from_environment())
     }
@@ -277,7 +523,8 @@ impl DiscoveryManager {
         let mut report = discover(inputs);
         let mut retained_manual = Vec::with_capacity(previous_manual.len());
         let mut manual_rejected = 0usize;
-        for candidate in previous_manual {
+        for previous in previous_manual {
+            let candidate = previous.candidate;
             let revalidated = match manual_candidate(candidate.kind, &candidate.executable_path) {
                 Ok(candidate) => candidate,
                 Err(reason) => {
@@ -287,6 +534,12 @@ impl DiscoveryManager {
                     continue;
                 }
             };
+            let current_observation = observe_candidate(&revalidated);
+            if previous.observation.is_some() && previous.observation != current_observation {
+                report.warnings.insert("candidate_location_unavailable");
+                manual_rejected += 1;
+                continue;
+            }
             if report_contains_executable(&report, revalidated.kind, &revalidated.executable_path) {
                 if revalidated.version.is_some() {
                     let existing_index = report.installations.iter().position(|installation| {
@@ -321,8 +574,21 @@ impl DiscoveryManager {
                     connection_status: "not_verified",
                 });
             }
-            retained_manual.push(revalidated);
+            retained_manual.push(ManualCandidate {
+                candidate: revalidated,
+                observation: current_observation,
+            });
         }
+        if let Some(store) = self.inner.choice_store.as_ref() {
+            if let Ok(choices) = store.read() {
+                append_saved_manual_candidates(
+                    choices.installations,
+                    &mut report,
+                    &mut retained_manual,
+                );
+            }
+        }
+        let observations = collect_observations(&report.installations, &report.paths);
         let manual_retained = retained_manual.len();
         let installation_count = report.installations.len();
         {
@@ -334,6 +600,7 @@ impl DiscoveryManager {
             state.generation = state.generation.saturating_add(1);
             state.installations = report.installations;
             state.paths = report.paths;
+            state.observations = observations;
             state.manual_candidates = retained_manual;
             state.warnings = report.warnings.into_iter().collect();
             discovery_trace!(
@@ -383,6 +650,7 @@ impl DiscoveryManager {
                 return error_reply(&request_id, ErrorCode::ValidationFailed);
             }
         };
+        let observation = observe_candidate(&candidate);
 
         let mut state = match self.inner.state.write() {
             Ok(state) => state,
@@ -390,7 +658,8 @@ impl DiscoveryManager {
         };
         let key = path_key(&candidate.executable_path);
         let already_manual = state.manual_candidates.iter().any(|existing| {
-            existing.kind == client_kind && path_key(&existing.executable_path) == key
+            existing.candidate.kind == client_kind
+                && path_key(&existing.candidate.executable_path) == key
         });
         if already_manual {
             discovery_trace!(
@@ -416,7 +685,10 @@ impl DiscoveryManager {
                     state.installations[index].version = candidate.version.clone();
                 }
             }
-            state.manual_candidates.push(candidate);
+            state.manual_candidates.push(ManualCandidate {
+                candidate,
+                observation,
+            });
             discovery_trace!(
                 "event=select_duplicate manual_count={} generation={}",
                 state.manual_candidates.len(),
@@ -439,8 +711,16 @@ impl DiscoveryManager {
             status: "detected",
             connection_status: "not_verified",
         });
-        state.paths.insert(id, candidate.executable_path.clone());
-        state.manual_candidates.push(candidate);
+        state
+            .paths
+            .insert(id.clone(), candidate.executable_path.clone());
+        if let Some(observation) = observation {
+            state.observations.insert(id, observation);
+        }
+        state.manual_candidates.push(ManualCandidate {
+            candidate,
+            observation,
+        });
         if !state.scanned {
             state.scanned = true;
             state.warnings = vec!["absence_is_not_unsupported", "scope_partial"];
@@ -456,6 +736,10 @@ impl DiscoveryManager {
 
     pub fn failure_reply(request_id: String) -> DiscoveryReply {
         error_reply(&request_id, ErrorCode::EnvironmentBlocked)
+    }
+
+    pub(crate) fn saved_choice_failure_reply(request_id: String) -> SavedInstallationChoiceReply {
+        saved_choice_error(&request_id, ErrorCode::EnvironmentBlocked)
     }
 
     #[cfg(test)]
@@ -522,6 +806,57 @@ fn error_reply(request_id: &str, code: ErrorCode) -> DiscoveryReply {
     })
 }
 
+fn saved_choice_error(request_id: &str, code: ErrorCode) -> SavedInstallationChoiceReply {
+    match error_reply(request_id, code) {
+        DiscoveryReply::Error(error) => SavedInstallationChoiceReply::Error(error),
+        _ => unreachable!("error_reply always returns an error"),
+    }
+}
+
+fn choice_client_kind(value: &str) -> Option<ChoiceClient> {
+    match value {
+        "codex" => Some(ChoiceClient::Codex),
+        "claude_code" => Some(ChoiceClient::ClaudeCode),
+        "opencode" => Some(ChoiceClient::OpenCode),
+        _ => None,
+    }
+}
+
+fn client_kind_name(value: ChoiceClient) -> &'static str {
+    match value {
+        ChoiceClient::Codex => "codex",
+        ChoiceClient::ClaudeCode => "claude_code",
+        ChoiceClient::OpenCode => "opencode",
+    }
+}
+
+fn choice_surface(value: &str) -> Option<ChoiceSurface> {
+    match value {
+        "cli" => Some(ChoiceSurface::Cli),
+        "desktop" => Some(ChoiceSurface::Desktop),
+        _ => None,
+    }
+}
+
+fn surface_name(value: ChoiceSurface) -> &'static str {
+    match value {
+        ChoiceSurface::Cli => "cli",
+        ChoiceSurface::Desktop => "desktop",
+    }
+}
+
+fn choice_origin(value: &str) -> Option<ChoiceOrigin> {
+    match value {
+        "manual_file" => Some(ChoiceOrigin::ManualFile),
+        "path" => Some(ChoiceOrigin::Path),
+        "scoop" => Some(ChoiceOrigin::Scoop),
+        "user_local_native" => Some(ChoiceOrigin::UserLocalNative),
+        "user_local_npm" => Some(ChoiceOrigin::UserLocalNpm),
+        "windows_app_package" => Some(ChoiceOrigin::WindowsAppPackage),
+        _ => None,
+    }
+}
+
 fn cancelled_reply(request_id: String) -> DiscoveryReply {
     DiscoveryReply::Cancelled(DiscoveryCancelled {
         schema_version: SCHEMA_VERSION,
@@ -550,7 +885,16 @@ fn manual_candidate(
     if !manual_filename_matches(client_kind, path) {
         return Err(ManualRejectReason::Filename);
     }
-    let executable = check_existing_path(path, PathKind::File).map_err(|error| match error {
+    let executable = (if client_kind == "codex"
+        && path
+            .extension()
+            .is_some_and(|e| e.eq_ignore_ascii_case("exe"))
+    {
+        resolve_codex_executable(path)
+    } else {
+        check_existing_path(path, PathKind::File)
+    })
+    .map_err(|error| match error {
         PathCheckError::Missing => ManualRejectReason::Missing,
         PathCheckError::Unsafe => ManualRejectReason::Unsafe,
         PathCheckError::Unavailable => ManualRejectReason::Unavailable,
@@ -632,6 +976,97 @@ fn report_contains_executable(report: &DiscoveryReport, client_kind: &str, path:
     })
 }
 
+fn observe_candidate(candidate: &Candidate) -> Option<InstallationObservation> {
+    let choice = ChoiceStore::capture_installation(
+        choice_client_kind(candidate.kind)?,
+        choice_surface(candidate.surface)?,
+        choice_origin(candidate.source)?,
+        candidate.executable_path.clone(),
+        candidate.version.clone(),
+    )
+    .ok()?;
+    Some(InstallationObservation {
+        identity: choice.identity,
+        size_bytes: choice.size_bytes,
+    })
+}
+
+fn collect_observations(
+    installations: &[InstallationSummary],
+    paths: &HashMap<String, PathBuf>,
+) -> HashMap<String, InstallationObservation> {
+    let mut observations = HashMap::new();
+    for installation in installations {
+        let Some(path) = paths.get(&installation.installation_id) else {
+            continue;
+        };
+        let candidate = Candidate {
+            kind: installation.client_kind,
+            surface: installation.surface,
+            version: installation.version.clone(),
+            source: installation.source,
+            location_label: installation.location_label,
+            identity_path: path.clone(),
+            executable_path: path.clone(),
+        };
+        if let Some(observation) = observe_candidate(&candidate) {
+            observations.insert(installation.installation_id.clone(), observation);
+        }
+    }
+    observations
+}
+
+fn append_saved_manual_candidates(
+    saved_choices: Vec<InstallationChoice>,
+    report: &mut DiscoveryReport,
+    retained_manual: &mut Vec<ManualCandidate>,
+) {
+    for choice in saved_choices {
+        if choice.origin != ChoiceOrigin::ManualFile
+            || choice.surface != ChoiceSurface::Cli
+            || choice.availability != ChoiceAvailability::Available
+        {
+            continue;
+        }
+        let kind = client_kind_name(choice.client);
+        let Ok(candidate) = manual_candidate(kind, &choice.executable_path) else {
+            continue;
+        };
+        let Some(observation) = observe_candidate(&candidate) else {
+            continue;
+        };
+        if observation.identity != choice.identity
+            || observation.size_bytes != choice.size_bytes
+            || path_key(&candidate.executable_path) != path_key(&choice.executable_path)
+            || report_contains_executable(report, kind, &candidate.executable_path)
+        {
+            continue;
+        }
+        if report.installations.len() >= MAX_CANDIDATES {
+            report.warnings.insert("candidate_limit_reached");
+            continue;
+        }
+        let id = Uuid::new_v4().to_string();
+        report
+            .paths
+            .insert(id.clone(), candidate.executable_path.clone());
+        report.installations.push(InstallationSummary {
+            installation_id: id,
+            client_kind: candidate.kind,
+            surface: candidate.surface,
+            version: candidate.version.clone(),
+            source: "manual_file",
+            location_label: "Selected file",
+            status: "detected",
+            connection_status: "not_verified",
+        });
+        retained_manual.push(ManualCandidate {
+            candidate,
+            observation: Some(observation),
+        });
+    }
+}
+
 fn valid_request_id(request_id: &str) -> bool {
     if request_id.len() != 36 || !request_id.is_ascii() {
         return false;
@@ -660,11 +1095,17 @@ pub(super) struct DiscoveryInputs {
     pub(super) local_app_data: Option<PathBuf>,
     pub(super) user_profile: Option<PathBuf>,
     pub(super) program_files: Option<PathBuf>,
+    pub(super) registered_codex_packages: Vec<PathBuf>,
 }
 
 impl DiscoveryInputs {
     fn from_environment() -> Self {
         let mut inputs = Self::default();
+        inputs.registered_codex_packages = super::codex_binary::registered_desktop_roots();
+        discovery_trace!(
+            "event=registered_packages count={}",
+            inputs.registered_codex_packages.len()
+        );
         if let Some(path) = env::var_os("PATH") {
             for entry in env::split_paths(&path) {
                 if inputs.path_entries.len() == MAX_PATH_ENTRIES {
@@ -781,11 +1222,50 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
         );
     }
 
+    for package in inputs.registered_codex_packages.iter().take(16) {
+        add_codex_desktop_package(
+            package,
+            &mut candidates,
+            &mut warnings,
+            &mut candidate_count,
+        );
+    }
+    if inputs.registered_codex_packages.is_empty() {
+        if let Some(program_files) = inputs.program_files.as_deref() {
+            add_codex_desktop_candidates(
+                program_files,
+                &mut candidates,
+                &mut warnings,
+                &mut candidate_count,
+            );
+        }
+    }
+
     let mut path_entries = HashSet::new();
     for entry in inputs.path_entries.into_iter().take(MAX_PATH_ENTRIES) {
         if is_network_or_device_path(&entry) {
             warnings.insert("network_location_skipped");
             continue;
+        }
+        // Official standalone installs use local junctions for their current bin directory.
+        if candidate_count < MAX_CANDIDATES {
+            if let Ok(executable) = resolve_codex_executable(&entry.join("codex.exe")) {
+                if let Some(version) = verified_codex_cli_version(&executable) {
+                    candidate_count += 1;
+                    insert_candidate(
+                        &mut candidates,
+                        Candidate {
+                            kind: "codex",
+                            surface: "cli",
+                            version: Some(version),
+                            source: "path",
+                            location_label: "PATH",
+                            identity_path: executable.clone(),
+                            executable_path: executable,
+                        },
+                    );
+                }
+            }
         }
         let Some(canonical_dir) = checked_existing_path(&entry, PathKind::Directory, &mut warnings)
         else {
@@ -827,15 +1307,6 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
                 }
             }
         }
-    }
-
-    if let Some(program_files) = inputs.program_files.as_deref() {
-        add_codex_desktop_candidates(
-            program_files,
-            &mut candidates,
-            &mut warnings,
-            &mut candidate_count,
-        );
     }
 
     let mut candidate_list: Vec<_> = candidates.into_values().collect();
@@ -1262,39 +1733,61 @@ fn add_codex_desktop_candidates(
         if !folder.to_ascii_lowercase().starts_with("openai.codex_") {
             continue;
         }
-        if *candidate_count >= MAX_CANDIDATES {
-            warnings.insert("candidate_limit_reached");
-            return;
-        }
-        *candidate_count += 1;
-        let Some(package_root) =
-            checked_existing_path(&entry.path(), PathKind::Directory, warnings)
-        else {
-            continue;
-        };
-        let executable_path = package_root.join("app/Codex.exe");
-        let Some(executable) = checked_existing_path(&executable_path, PathKind::File, warnings)
-        else {
-            continue;
-        };
-        let Some(version) = verified_codex_desktop_version(&executable) else {
-            warnings.insert("desktop_metadata_untrusted");
-            continue;
-        };
-        let identity_path = package_root;
-        insert_candidate(
-            candidates,
-            Candidate {
-                kind: "codex",
-                surface: "desktop",
-                version,
-                source: "windows_app_package",
-                location_label: "Windows app package",
-                identity_path,
-                executable_path: executable,
-            },
-        );
+        add_codex_desktop_package(&entry.path(), candidates, warnings, candidate_count);
     }
+}
+
+fn add_codex_desktop_package(
+    path: &Path,
+    candidates: &mut HashMap<String, Candidate>,
+    warnings: &mut BTreeSet<&'static str>,
+    candidate_count: &mut usize,
+) {
+    let Some(folder) = path.file_name().and_then(|v| v.to_str()) else {
+        return;
+    };
+    if !folder.to_ascii_lowercase().starts_with("openai.codex_") {
+        return;
+    }
+    if *candidate_count >= MAX_CANDIDATES {
+        warnings.insert("candidate_limit_reached");
+        return;
+    }
+    *candidate_count += 1;
+    let Some(package_root) = checked_existing_path(path, PathKind::Directory, warnings) else {
+        return;
+    };
+    let found = ["app/Codex.exe", "app/ChatGPT.exe"]
+        .iter()
+        .filter_map(|name| {
+            checked_existing_path(&package_root.join(name), PathKind::File, warnings)
+        })
+        .find_map(|executable| {
+            verified_codex_desktop_version(&executable).map(|version| (executable, version))
+        });
+    let Some((executable, binary_version)) = found else {
+        warnings.insert("desktop_metadata_untrusted");
+        return;
+    };
+    let version = folder
+        .split('_')
+        .nth(1)
+        .filter(|v| super::codex_binary::desktop_version_supported(v))
+        .map(str::to_owned)
+        .or(binary_version);
+    let identity_path = package_root;
+    insert_candidate(
+        candidates,
+        Candidate {
+            kind: "codex",
+            surface: "desktop",
+            version,
+            source: "windows_app_package",
+            location_label: "Windows app package",
+            identity_path,
+            executable_path: executable,
+        },
+    );
 }
 
 fn insert_candidate(candidates: &mut HashMap<String, Candidate>, candidate: Candidate) {
@@ -1339,6 +1832,56 @@ enum PathCheckError {
     Missing,
     Unsafe,
     Unavailable,
+}
+
+fn resolve_codex_executable(path: &Path) -> Result<PathBuf, PathCheckError> {
+    let mut pending = path.to_owned();
+    for _ in 0..8 {
+        if is_network_or_device_path(&pending)
+            || !pending.is_absolute()
+            || !is_local_fixed_volume(&pending)
+            || pending.as_os_str().len() > MAX_PATH_CHARS
+        {
+            return Err(PathCheckError::Unsafe);
+        }
+        let mut current = PathBuf::new();
+        let components: Vec<_> = pending.components().collect();
+        let mut redirected = false;
+        for (index, component) in components.iter().enumerate() {
+            if matches!(component, Component::CurDir | Component::ParentDir) {
+                return Err(PathCheckError::Unsafe);
+            }
+            current.push(component.as_os_str());
+            if matches!(component, Component::Prefix(_)) {
+                continue;
+            }
+            let metadata = fs::symlink_metadata(&current).map_err(|error| {
+                if error.kind() == std::io::ErrorKind::NotFound {
+                    PathCheckError::Missing
+                } else {
+                    PathCheckError::Unavailable
+                }
+            })?;
+            if is_reparse_point(&metadata) || metadata.file_type().is_symlink() {
+                let target = fs::read_link(&current).map_err(|_| PathCheckError::Unsafe)?;
+                let mut target =
+                    normalize_local_canonical_path(target).ok_or(PathCheckError::Unsafe)?;
+                if !target.is_absolute() || !is_local_fixed_volume(&target) {
+                    return Err(PathCheckError::Unsafe);
+                }
+                for rest in &components[index + 1..] {
+                    target.push(rest.as_os_str());
+                }
+                pending = target;
+                redirected = true;
+                break;
+            }
+        }
+        if !redirected {
+            return check_existing_path(&pending, PathKind::File);
+        }
+    }
+    Err(PathCheckError::Unsafe)
 }
 
 fn check_existing_path(path: &Path, expected: PathKind) -> Result<PathBuf, PathCheckError> {
@@ -1555,15 +2098,11 @@ fn verified_bounded_cli_version(
     version_from_digest(bytes_read, &format!("{:x}", hasher.finalize()))
 }
 
-fn is_known_codex_cli_size(file_size: u64) -> bool {
-    matches!(file_size, CODEX_CLI_0111_SIZE | CODEX_CLI_0112_SIZE)
-}
-
-fn verified_codex_cli_version(path: &Path) -> Option<String> {
+pub(super) fn verified_codex_cli_version(path: &Path) -> Option<String> {
     verified_codex_cli_file(path).map(|(version, _)| version)
 }
 
-/// Pins an exact known Codex CLI file while its path is used to start a
+/// Pins a recognized Codex CLI file while its path is used to start a
 /// verification process. The shared read-only handle prevents ordinary
 /// replacement or writes between hashing and CreateProcess.
 pub(crate) fn pin_verified_codex_cli(path: &Path, expected_version: &str) -> Option<File> {
@@ -1572,7 +2111,7 @@ pub(crate) fn pin_verified_codex_cli(path: &Path, expected_version: &str) -> Opt
 }
 
 fn verified_codex_cli_file(path: &Path) -> Option<(String, File)> {
-    let canonical_path = check_existing_path(path, PathKind::File).ok()?;
+    let canonical_path = resolve_codex_executable(path).ok()?;
     let mut options = OpenOptions::new();
     options.read(true);
     #[cfg(windows)]
@@ -1580,7 +2119,7 @@ fn verified_codex_cli_file(path: &Path) -> Option<(String, File)> {
     let mut file = options.open(&canonical_path).ok()?;
     let initial_metadata = file.metadata().ok()?;
     let expected_size = initial_metadata.len();
-    if !initial_metadata.is_file() || !is_known_codex_cli_size(expected_size) {
+    if !initial_metadata.is_file() || !(1024 * 1024..=1024 * 1024 * 1024).contains(&expected_size) {
         return None;
     }
     let initial_identity = file_identity(&file)?;
@@ -1622,7 +2161,12 @@ fn verified_codex_cli_file(path: &Path) -> Option<(String, File)> {
         return None;
     }
 
-    let version = codex_cli_version_from_digest(bytes_read, &format!("{:x}", hasher.finalize()))?;
+    let digest = format!("{:x}", hasher.finalize());
+    let version = codex_cli_version_from_digest(bytes_read, &digest)
+        .or_else(|| super::codex_binary::signed_version(&canonical_path, &file, &digest))?;
+    if file_identity(&file)? != initial_identity || file.metadata().ok()?.len() != expected_size {
+        return None;
+    }
     Some((version, file))
 }
 
@@ -1648,9 +2192,17 @@ fn file_identity(_file: &File) -> Option<(u32, u64)> {
 
 #[cfg(windows)]
 fn verified_codex_desktop_version(path: &Path) -> Option<Option<String>> {
+    let mut options = OpenOptions::new();
+    options.read(true).share_mode(FILE_SHARE_READ);
+    let file = options.open(path).ok()?;
+    if !super::codex_binary::openai_signature(path, &file) {
+        discovery_trace!("event=desktop_signature trusted=0");
+        return None;
+    }
     let wide_path: Vec<u16> = path.as_os_str().encode_wide().chain(Some(0)).collect();
     let mut ignored_handle = 0u32;
     let size = unsafe { GetFileVersionInfoSizeW(wide_path.as_ptr(), &mut ignored_handle) } as usize;
+    discovery_trace!("event=desktop_resource bytes={size}");
     if size == 0 || size > MAX_VERSION_RESOURCE_BYTES {
         return None;
     }
@@ -1676,6 +2228,12 @@ fn verified_codex_desktop_version(path: &Path) -> Option<Option<String>> {
         file_version =
             file_version.or_else(|| version_string(&bytes, language, code_page, "FileVersion"));
     }
+    discovery_trace!(
+        "event=desktop_resource_keys company={} product={} version={}",
+        company.is_some() as u8,
+        product.is_some() as u8,
+        file_version.is_some() as u8
+    );
     let company = company?;
     let product = product?;
     if !company.to_ascii_lowercase().contains("openai")

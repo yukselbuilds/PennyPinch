@@ -78,11 +78,48 @@ fn codex_user_config_plan_targets_only_stable_ingress_and_preserves_declared_mod
 }
 
 #[test]
-fn codex_fixture_versions_are_exact_and_neighbor_versions_remain_blocked() {
+fn codex_current_versions_and_desktop_use_the_same_guarded_config_contract() {
+    for (surface, version) in [
+        ("cli", "0.166.0"),
+        ("cli", "0.166.0-alpha.5.1"),
+        ("cli", "0.167.0"),
+        ("desktop", "26.1103.1"),
+        ("desktop", "26.1027.3384.0"),
+    ] {
+        let mut context = context(ClientKind::Codex);
+        context.surface = surface.to_owned();
+        context.version = Some(version.to_owned());
+        let plan = preview_config(&context, CODEX_CONFIG).unwrap();
+        assert_eq!(plan.status, PlanStatus::Preview, "{surface}/{version}");
+        assert!(plan.model_unchanged && plan.reasoning_unchanged && plan.auth_unchanged);
+        assert!(plan.restart_required);
+        assert_eq!(plan.runtime_effective, DeclarationState::Unknown);
+    }
+    for version in ["0.162.0", "1.0.0", "0.166.0 --other", "0.166"] {
+        let mut context = context(ClientKind::Codex);
+        context.version = Some(version.to_owned());
+        let plan = preview_config(&context, CODEX_CONFIG).unwrap();
+        assert!(plan
+            .blockers
+            .contains(&PlanBlocker::UnsupportedClientVersion));
+    }
+    let mut context = context(ClientKind::Codex);
+    context.surface = "unknown".to_owned();
+    assert!(preview_config(&context, CODEX_CONFIG)
+        .unwrap()
+        .blockers
+        .contains(&PlanBlocker::UnsupportedClientSurface));
+}
+
+#[test]
+fn codex_config_contract_accepts_known_and_neighbor_versions_without_claiming_traffic() {
     for version in [
         "0.163.0-alpha.10.2",
         "0.163.0-alpha.11.1",
         "0.163.0-alpha.11.2",
+        "0.163.0-alpha.11.0",
+        "0.163.0-alpha.11.3",
+        "0.163.0-alpha.10.3",
     ] {
         let mut context = context(ClientKind::Codex);
         context.version = Some(version.to_owned());
@@ -96,11 +133,7 @@ fn codex_fixture_versions_are_exact_and_neighbor_versions_remain_blocked() {
         assert!(plan.model_unchanged && plan.reasoning_unchanged && plan.auth_unchanged);
     }
 
-    for version in [
-        "0.163.0-alpha.11.0",
-        "0.163.0-alpha.11.3",
-        "0.163.0-alpha.10.3",
-    ] {
+    for version in ["0.162.0", "1.0.0", "unrecognized"] {
         let mut context = context(ClientKind::Codex);
         context.version = Some(version.to_owned());
         let plan = preview_config(&context, CODEX_CONFIG).unwrap();
@@ -115,8 +148,8 @@ fn codex_fixture_versions_are_exact_and_neighbor_versions_remain_blocked() {
     desktop.surface = "desktop".to_owned();
     desktop.version = Some("0.163.0-alpha.11.2".to_owned());
     let plan = preview_config(&desktop, CODEX_CONFIG).unwrap();
-    assert_eq!(plan.status, PlanStatus::Blocked);
-    assert!(plan
+    assert_eq!(plan.status, PlanStatus::Preview);
+    assert!(!plan
         .blockers
         .contains(&PlanBlocker::UnsupportedClientSurface));
 }
@@ -497,7 +530,7 @@ fn opencode_multiple_providers_and_route_overrides_are_blocked() {
 fn unknown_version_and_surface_block_a_parseable_preview_without_erasing_it() {
     let mut context = context(ClientKind::Codex);
     context.version = None;
-    context.surface = "desktop".to_owned();
+    context.surface = "unknown".to_owned();
 
     let plan = preview_config(&context, CODEX_CONFIG).unwrap();
     assert_eq!(plan.status, PlanStatus::Blocked);

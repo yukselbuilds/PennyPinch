@@ -12,9 +12,13 @@ use integrations::config_io::{
     ConnectionActionReply, OwnershipSnapshotRequest, PlanManager, PlanReply, PreviewRequest,
     UndoConnectionRequest,
 };
-use integrations::discovery::{DiscoveryManager, DiscoveryReply};
+use integrations::discovery::{
+    DiscoveryManager, DiscoveryReply, RememberInstallationChoiceRequest,
+    SavedInstallationChoiceReply, SavedInstallationChoiceRequest,
+};
 use integrations::picker;
 use runtime::manager::{IngressReply, RuntimeManager, RuntimeReply};
+use state::choices::ChoiceStore;
 use state::store::{PreferenceStore, PreferencesReply};
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::Arc;
@@ -143,6 +147,34 @@ async fn scan_discovery(
         tauri::async_runtime::spawn_blocking(move || manager.scan(request_id))
             .await
             .unwrap_or_else(|_| DiscoveryManager::failure_reply(failure_id)),
+    )
+}
+
+#[tauri::command]
+async fn get_saved_installation_choice(
+    state: tauri::State<'_, DiscoveryManager>,
+    request: SavedInstallationChoiceRequest,
+) -> Result<SavedInstallationChoiceReply, SavedInstallationChoiceReply> {
+    let manager = state.inner().clone();
+    let failure_id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || manager.saved_installation_choice(request))
+            .await
+            .unwrap_or_else(|_| DiscoveryManager::saved_choice_failure_reply(failure_id)),
+    )
+}
+
+#[tauri::command]
+async fn remember_installation_choice(
+    state: tauri::State<'_, DiscoveryManager>,
+    request: RememberInstallationChoiceRequest,
+) -> Result<SavedInstallationChoiceReply, SavedInstallationChoiceReply> {
+    let manager = state.inner().clone();
+    let failure_id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || manager.remember_installation_choice(request))
+            .await
+            .unwrap_or_else(|_| DiscoveryManager::saved_choice_failure_reply(failure_id)),
     )
 }
 
@@ -318,30 +350,35 @@ fn main() {
         .setup(|app| {
             let resource_dir = app.path().resource_dir().ok();
             let app_data_dir = app.path().app_data_dir().ok();
+            let app_local_data_dir = app.path().app_local_data_dir().ok();
             let runtime = RuntimeManager::new(resource_dir, app_data_dir);
-            let discovery = DiscoveryManager::new();
+            let choice_store = ChoiceStore::for_app_local_data(app_local_data_dir.clone()).ok();
+            let discovery = DiscoveryManager::with_choice_store(choice_store.clone());
             let claude_picker_owner = app
                 .get_webview_window("main")
                 .and_then(|window| window.hwnd().ok())
                 .map(|hwnd| hwnd.0 as usize);
             let ownership_store = integrations::config_io::ownership_store_for_app_local_data(
-                app.path().app_local_data_dir().ok(),
+                app_local_data_dir.clone(),
             )
             .ok();
             let plans = Arc::new(
                 PlanManager::new(discovery.clone(), runtime.clone())
                     .with_optional_ownership_store(ownership_store)
-                    .with_claude_project_picker(move || {
+                    .with_claude_choice_store(choice_store)
+                    .with_claude_project_picker_hint(move |initial_directory| {
                         let owner_hwnd = claude_picker_owner.ok_or(())?;
                         std::thread::Builder::new()
                             .name("headroom-claude-folder-picker-sta".to_owned())
-                            .spawn(move || picker::select_project_directory(owner_hwnd))
+                            .spawn(move || {
+                                picker::select_project_directory(owner_hwnd, initial_directory)
+                            })
                             .map_err(|_| ())?
                             .join()
                             .map_err(|_| ())?
                     }),
             );
-            let codex_verifier = CodexVerifyManager::new(app.path().app_local_data_dir().ok());
+            let codex_verifier = CodexVerifyManager::new(app_local_data_dir);
             app.manage(runtime);
             app.manage(PreferenceStore::new(app.path().app_data_dir().ok()));
             app.manage(discovery);
@@ -358,6 +395,8 @@ fn main() {
             save_preferences,
             get_discovery_snapshot,
             scan_discovery,
+            get_saved_installation_choice,
+            remember_installation_choice,
             select_client_file,
             preview_connection_plan,
             apply_connection_plan,
@@ -373,20 +412,57 @@ fn main() {
         .expect("failed to build Headroom desktop");
 
     app.run(|app_handle, event| {
+        #[cfg(debug_assertions)]
+        if matches!(
+            &event,
+            tauri::RunEvent::WindowEvent {
+                event: tauri::WindowEvent::CloseRequested { .. },
+                ..
+            }
+        ) {
+            eprintln!("headroom_exit event=window_close");
+        }
         if let tauri::RunEvent::ExitRequested { code, api, .. } = event {
             let action = EXIT_GATE.request();
+            #[cfg(debug_assertions)]
+            eprintln!(
+                "headroom_exit event=exit_requested prevent={} start={}",
+                action.prevent as u8, action.start_stop as u8
+            );
             if action.prevent {
                 api.prevent_exit();
             }
             if action.start_stop {
                 let app_handle = app_handle.clone();
                 std::thread::spawn(move || {
+                    #[cfg(debug_assertions)]
+                    let exit_start = std::time::Instant::now();
+                    #[cfg(debug_assertions)]
+                    eprintln!("headroom_exit event=verifier_begin");
                     let verifier_clean =
                         app_handle.state::<CodexVerifyManager>().inner().shutdown();
+                    #[cfg(debug_assertions)]
+                    eprintln!(
+                        "headroom_exit event=verifier_done clean={} elapsed_ms={}",
+                        verifier_clean as u8,
+                        exit_start.elapsed().as_millis()
+                    );
                     let runtime_clean = app_handle.state::<RuntimeManager>().shutdown();
+                    #[cfg(debug_assertions)]
+                    eprintln!(
+                        "headroom_exit event=runtime_done clean={} elapsed_ms={}",
+                        runtime_clean as u8,
+                        exit_start.elapsed().as_millis()
+                    );
                     let clean = verifier_clean && runtime_clean;
                     let exit_code = if clean { code.unwrap_or(0) } else { 1 };
                     EXIT_GATE.complete();
+                    #[cfg(debug_assertions)]
+                    eprintln!(
+                        "headroom_exit event=dispatch code={} elapsed_ms={}",
+                        exit_code,
+                        exit_start.elapsed().as_millis()
+                    );
                     app_handle.exit(exit_code);
                 });
             }

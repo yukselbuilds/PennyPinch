@@ -12,6 +12,8 @@ import {
 import type { PreferenceLanguage } from "../../lib/preferences";
 import { ConnectDialog } from "./ConnectDialog";
 import { ConnectionStatus } from "./ConnectionStatus";
+import { connectionActionClient } from "../../lib/connectionActions";
+import type { ConnectionActionResult, ConnectionOwnership, ConnectionPlan } from "../../lib/contracts";
 
 type Copy = {
   intro: string;
@@ -30,6 +32,7 @@ type Copy = {
   previousResults: string;
   partialScope: string;
   sessionOnly: string;
+  advancedLockNote: string;
   pickerCancelled: string;
   pickerBlocked: string;
   pickerInvalid: string;
@@ -39,8 +42,18 @@ type Copy = {
   detected: string;
   notFound: string;
   found: string;
+  installationSummary: string;
   unknownVersion: string;
-  connectionUnverified: string;
+  recordLabel: string;
+  trafficUnknown: string;
+  recordStates: Record<OwnershipCardState, string>;
+  refreshRecords: string;
+  refreshingRecords: string;
+  advanced: string;
+  installationDetails: string;
+  version: string;
+  source: string;
+  fileNames: string;
   connect: string;
   addFile: string;
   selectingFile: string;
@@ -61,19 +74,25 @@ const copy: Record<PreferenceLanguage, Copy> = {
     blocked: "Yerel keşif bu ortamda kullanılamıyor.", validation: "Keşif isteği doğrulanamadı.",
     previousResults: "İşlem başarısız oldu; son tamamlanan taramanın sonuçları korunuyor.",
     partialScope: "Tarama bilinen yerel konumlarla sınırlıdır. Yokluk, desteklenmediği anlamına gelmez.",
-    sessionOnly: "Dosyadan seçilen kurulumlar Headroom kapanana kadar bellekte tutulur. Bağlantı doğrulanmaz.",
+    sessionOnly: "Dosyadan ekleme yalnızca kurulum keşfeder. Seçim, kurulumu açıkça kaydettiğinde veya Bağlan'ı seçtiğinde hatırlanır; ayar yalnız Bağlan'da değişir. İsteğe bağlı araçlar normal bağlantı için gerekmez.",
+    advancedLockNote: "Tarama veya bağlantıyı yönetmek için gelişmiş ayrıntıları kapat.",
     pickerCancelled: "Dosya seçimi iptal edildi; mevcut sonuçlar korundu.",
     pickerBlocked: "Dosya seçici açılamadı. İstemciye ait komut dosyasını yerel sabit diskten seç.",
     pickerInvalid: "Yanıt doğrulanamadı. İstemciye ait komut dosyasını yerel sabit diskten seç.",
     fileGuide: "Kabul edilen dosya adları: {files}. Yerel sabit diskten bir dosya seç.",
     notScanned: "Tarama henüz tamamlanmadı.", noResult: "Sonuç alınamadı", detected: "Kurulum bulundu",
-    notFound: "Bilinen konumlarda bulunamadı", found: "Bulunan kurulumlar", unknownVersion: "Sürüm bilinmiyor",
-    connectionUnverified: "Bağlantı doğrulanmadı", connect: "Bağlantıyı yönet", addFile: "Dosyadan ekle",
+    notFound: "Bilinen konumlarda bulunamadı", found: "Bulunan kurulumlar", installationSummary: "{count} kurulum", unknownVersion: "Sürüm bilinmiyor",
+    recordLabel: "Headroom ayar kaydı",
+    trafficUnknown: "Kayıt, çalışan ayarın kullanıldığını göstermez; trafik doğrulanmadı.",
+    recordStates: { loading: "Okunuyor…", active: "Etkin kayıt", released: "Geri alınmış", none: "Etkin kayıt yok", unknown: "Durum bilinmiyor" },
+    refreshRecords: "Kayıtları yenile", refreshingRecords: "Kayıtlar okunuyor…", advanced: "Gelişmiş ayrıntılar",
+    installationDetails: "Kurulum ayrıntıları", version: "Sürüm", source: "Kaynak", fileNames: "Kabul edilen dosya adları",
+    connect: "Bağlantıyı yönet", addFile: "Dosyadan ekle",
     selectingFile: "Dosya seçiliyor…", actionUnavailable: "Bu işlem henüz kullanılamıyor.",
     trCli: "Komut satırı", trDesktop: "Masaüstü",
     sources: {
       path: "PATH", user_local_npm: "Kullanıcıya ait npm", user_local_native: "Kullanıcıya ait kurulum",
-      scoop: "Scoop", windows_app_package: "Windows uygulama paketi", manual_file: "Selected file",
+      scoop: "Scoop", windows_app_package: "Windows uygulama paketi", manual_file: "Dosyadan eklenen",
     },
   },
   en: {
@@ -86,19 +105,25 @@ const copy: Record<PreferenceLanguage, Copy> = {
     blocked: "Local discovery is unavailable in this environment.", validation: "The discovery request could not be validated.",
     previousResults: "The operation failed; results from the last completed scan are preserved.",
     partialScope: "Scanning is limited to known local locations. Absence here does not mean unsupported.",
-    sessionOnly: "Files selected here stay in memory until Headroom closes. A connection is not verified.",
+    sessionOnly: "Add from file only discovers an installation. A choice is remembered only after you explicitly save an installation choice or connect; settings change only on connect. Optional tools are not required for a normal connection.",
+    advancedLockNote: "Close Advanced details to scan or manage a connection.",
     pickerCancelled: "File selection was cancelled; current results were kept.",
     pickerBlocked: "The file picker could not open. Choose the client command file from a local fixed drive.",
     pickerInvalid: "The response could not be validated. Choose the client command file from a local fixed drive.",
     fileGuide: "Accepted file names: {files}. Choose a file on a local fixed drive.",
     notScanned: "The scan has not completed yet.", noResult: "No result available", detected: "Installation found",
-    notFound: "Not found in known locations", found: "Detected installations", unknownVersion: "Version unknown",
-    connectionUnverified: "Connection not verified", connect: "Manage connection", addFile: "Add from file",
+    notFound: "Not found in known locations", found: "Detected installations", installationSummary: "{count} installations", unknownVersion: "Version unknown",
+    recordLabel: "Headroom settings record",
+    trafficUnknown: "The record does not show that a running setting is in use; traffic is not verified.",
+    recordStates: { loading: "Reading…", active: "Active record", released: "Undone", none: "No active record", unknown: "Status unknown" },
+    refreshRecords: "Refresh records", refreshingRecords: "Reading records…", advanced: "Advanced details",
+    installationDetails: "Installation details", version: "Version", source: "Source", fileNames: "Accepted file names",
+    connect: "Manage connection", addFile: "Add from file",
     selectingFile: "Selecting file…", actionUnavailable: "This action is not available yet.",
     trCli: "Command line", trDesktop: "Desktop",
     sources: {
       path: "PATH", user_local_npm: "User-local npm", user_local_native: "User-local install",
-      scoop: "Scoop", windows_app_package: "Windows app package", manual_file: "Selected file",
+      scoop: "Scoop", windows_app_package: "Windows app package", manual_file: "Added from file",
     },
   },
 };
@@ -110,6 +135,20 @@ type ViewState =
   | { kind: "unavailable" }
   | { kind: "error"; issue: OperationIssue }
   | { kind: "ready"; snapshot: DiscoverySnapshot; issue?: OperationIssue };
+
+type OwnershipCardState = "loading" | "active" | "released" | "none" | "unknown";
+
+function actionClientKind(clientKind: ClientKind): ConnectionPlan["client_kind"] {
+  return clientKind === "opencode" ? "opencode_v1" : clientKind;
+}
+
+function ownershipCardState(ownership: ConnectionOwnership | null): OwnershipCardState {
+  return ownership === null ? "none" : ownership.state;
+}
+
+const initialOwnershipStates: Record<ClientKind, OwnershipCardState> = {
+  codex: "loading", claude_code: "loading", opencode: "loading",
+};
 
 const clients: { kind: ClientKind; title: string; mark: string }[] = [
   { kind: "codex", title: "Codex", mark: "C" },
@@ -129,10 +168,16 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
   const [refreshing, setRefreshing] = useState(false);
   const [selectingClient, setSelectingClient] = useState<ClientKind | null>(null);
   const [connectionClient, setConnectionClient] = useState<ClientKind | null>(null);
+  const [ownershipStates, setOwnershipStates] = useState<Record<ClientKind, OwnershipCardState>>(initialOwnershipStates);
+  const [ownershipRefreshing, setOwnershipRefreshing] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const advancedOpenRef = useRef(false);
   const [notice, setNotice] = useState<"picker_cancelled" | null>(null);
   const mounted = useRef(false);
   const actionLocked = useRef(false);
+  const advancedLock = useRef(false);
   const requests = useRef(new DiscoveryRequestSequence());
+  const ownershipSequence = useRef(0);
 
   function showResult(result: DiscoveryResult, preserveLastScan: boolean, source: OperationSource) {
     setNotice(null);
@@ -153,6 +198,41 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
     const result = await discoverySession.loadInitial();
     if (!mounted.current || !requests.current.isCurrent(request)) return;
     showResult(result, false, "initial");
+    await readOwnershipRecords();
+  }
+
+  async function readOwnershipRecords(lockAlreadyHeld = false) {
+    if (!mounted.current || advancedOpenRef.current || (actionLocked.current && !lockAlreadyHeld)) return;
+    const acquiredLock = !lockAlreadyHeld;
+    if (acquiredLock) actionLocked.current = true;
+    const sequence = ++ownershipSequence.current;
+    setOwnershipRefreshing(true);
+    setOwnershipStates({ codex: "loading", claude_code: "loading", opencode: "loading" });
+    try {
+      for (const client of clients) {
+        let result: ConnectionActionResult | null;
+        try {
+          result = await connectionActionClient.snapshot(actionClientKind(client.kind));
+        } catch {
+          result = null;
+        }
+        if (!mounted.current || ownershipSequence.current !== sequence) return;
+        const value = result?.kind === "success" && result.reply.status === "snapshot"
+          ? ownershipCardState(result.reply.ownership)
+          : "unknown";
+        setOwnershipStates((current) => ({ ...current, [client.kind]: value }));
+      }
+    } finally {
+      if (mounted.current && ownershipSequence.current === sequence) {
+        setOwnershipRefreshing(false);
+        if (acquiredLock) actionLocked.current = false;
+      }
+    }
+  }
+
+  async function refreshOwnershipRecords() {
+    if (actionLocked.current) return;
+    await readOwnershipRecords();
   }
 
   async function scanAgain() {
@@ -165,6 +245,7 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
       const result = await discoverySession.scanDiscovery();
       if (!mounted.current || !requests.current.isCurrent(request)) return;
       showResult(result, true, "scan");
+      await readOwnershipRecords(true);
     } finally {
       actionLocked.current = false;
       if (mounted.current && requests.current.isCurrent(request)) setRefreshing(false);
@@ -192,7 +273,7 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
   }
 
   function openConnectionPreview(clientKind: ClientKind) {
-    if (actionLocked.current || !isDiscoveryAvailable()) return;
+    if (actionLocked.current || advancedOpenRef.current || !isDiscoveryAvailable()) return;
     actionLocked.current = true;
     setConnectionClient(clientKind);
   }
@@ -200,6 +281,9 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
   function closeConnectionPreview() {
     actionLocked.current = false;
     setConnectionClient(null);
+    window.setTimeout(() => {
+      if (mounted.current) void readOwnershipRecords();
+    }, 0);
   }
 
   useEffect(() => {
@@ -213,6 +297,7 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
 
   const scanning = state.kind === "loading" || refreshing;
   const mutationPending = scanning || selectingClient !== null || connectionClient !== null;
+  const surfaceBusy = mutationPending || ownershipRefreshing || advancedOpen;
   const snapshot = state.kind === "ready" ? state.snapshot : null;
   const readyState = state.kind === "ready";
   const issue = state.kind === "error" ? state.issue : state.kind === "ready" ? state.issue : undefined;
@@ -223,16 +308,22 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
         <div className="panel-kicker">{language === "tr" ? "YEREL KEŞİF" : "LOCAL DISCOVERY"}</div>
         <p className="applications-intro">{text.intro}</p>
       </div>
-      <button className="button applications-scan" type="button" onClick={() => void scanAgain()}
-        disabled={!isDiscoveryAvailable() || mutationPending}
-        aria-label={scanning ? (refreshing ? text.scanning : text.loading) : snapshot ? text.scanAgain : text.scan}>
-        <span aria-hidden="true">⌕</span>{scanning ? (refreshing ? text.scanning : text.loading) : snapshot ? text.scanAgain : text.scan}
-      </button>
+      <div className="applications-toolbar__actions">
+        <button className="button applications-scan" type="button" onClick={() => void scanAgain()}
+          disabled={!isDiscoveryAvailable() || surfaceBusy}
+          aria-label={scanning ? (refreshing ? text.scanning : text.loading) : snapshot ? text.scanAgain : text.scan}>
+          <span aria-hidden="true">⌕</span>{scanning ? (refreshing ? text.scanning : text.loading) : snapshot ? text.scanAgain : text.scan}
+        </button>
+        <button className="button" type="button" disabled={!isDiscoveryAvailable() || surfaceBusy}
+          onClick={() => void refreshOwnershipRecords()}>
+          {ownershipRefreshing ? text.refreshingRecords : text.refreshRecords}
+        </button>
+      </div>
     </div>
 
-    <div className="applications-scope" role="note">
-      <span className="applications-scope__mark" aria-hidden="true">i</span>{text.sessionOnly}
-    </div>
+    {advancedOpen && <div className="applications-scope" role="note">
+      <span className="applications-scope__mark" aria-hidden="true">i</span>{text.advancedLockNote}
+    </div>}
 
     {notice === "picker_cancelled" && <div className="applications-notice" role="status" aria-live="polite">
       <span className="applications-notice__mark" aria-hidden="true">i</span><div>{text.pickerCancelled}</div>
@@ -270,8 +361,9 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
           client={client}
           found={found}
           state={currentState}
+          ownershipState={ownershipStates[client.kind]}
           text={text}
-          mutationPending={mutationPending}
+          mutationPending={surfaceBusy}
           selectingFile={selectingClient === client.kind}
           onAddFile={addFromFile}
           onConnect={openConnectionPreview}
@@ -279,12 +371,31 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
       })}
     </div>
 
-    {snapshot?.status === "partial" && !mutationPending && snapshot.installations.some((item) => item.client_kind === "codex") && <ConnectionStatus
-      key={`${snapshot.scan_generation}:${snapshot.installations.filter((item) => item.client_kind === "codex").map((item) => `${item.installation_id}-${item.surface}-${item.version ?? "unknown"}`).join(",")}`}
-      language={language}
-      installations={snapshot.installations.filter((item) => item.client_kind === "codex")}
-      scanGeneration={snapshot.scan_generation}
-    />}
+    {snapshot?.status === "partial" && snapshot.installations.some((item) => item.client_kind === "codex") && <details
+      className="applications-advanced" onToggle={(event) => {
+        const open = event.currentTarget.open;
+        if (open && actionLocked.current) {
+          event.currentTarget.open = false;
+          return;
+        }
+        advancedOpenRef.current = open;
+        if (open) {
+          advancedLock.current = true;
+          actionLocked.current = true;
+        } else if (advancedLock.current) {
+          advancedLock.current = false;
+          actionLocked.current = false;
+        }
+        setAdvancedOpen(open);
+      }}>
+      <summary>{text.advanced}</summary>
+      {advancedOpen && !mutationPending && !ownershipRefreshing && <ConnectionStatus
+        key={`${snapshot.scan_generation}:${snapshot.installations.filter((item) => item.client_kind === "codex").map((item) => `${item.installation_id}-${item.surface}-${item.version ?? "unknown"}`).join(",")}`}
+        language={language}
+        installations={snapshot.installations.filter((item) => item.client_kind === "codex")}
+        scanGeneration={snapshot.scan_generation}
+      />}
+    </details>}
 
     {connectionClient && <ConnectDialog
       language={language}
@@ -306,6 +417,7 @@ function ClientCard({
   client,
   found,
   state,
+  ownershipState,
   text,
   mutationPending,
   selectingFile,
@@ -315,6 +427,7 @@ function ClientCard({
   client: (typeof clients)[number];
   found: InstallationSummary[];
   state: "unavailable" | "pending" | "unknown" | "detected" | "not_found";
+  ownershipState: OwnershipCardState;
   text: Copy;
   mutationPending: boolean;
   selectingFile: boolean;
@@ -331,28 +444,42 @@ function ClientCard({
       <div className="application-card__heading"><h2>{client.title}</h2><span className={`application-card__status ${state === "detected" ? "is-detected" : ""}`}>{status}</span></div>
     </header>
     {state === "detected" ? <ul className="application-installations">
-      {found.map((installation) => <li key={installation.installation_id}>
-        <div className="application-installation__top"><span>{installation.surface === "desktop" ? text.trDesktop : text.trCli}</span>
-          <span className="application-version">{installation.version ?? text.unknownVersion}</span></div>
-        <div className="application-installation__source">{text.sources[installation.source]}</div>
-        <div className="application-connection"><span className="application-connection__dot" aria-hidden="true" />{text.connectionUnverified}</div>
-      </li>)}
+      <li>
+        <div className="application-installation__top">
+          <span>{text.installationSummary.replace("{count}", String(found.length))}</span>
+          <span className="application-version">{Array.from(new Set(found.map((installation) => installation.surface)))
+            .map((surface) => surface === "desktop" ? text.trDesktop : text.trCli).join(", ")}</span>
+        </div>
+      </li>
     </ul> : <p className="application-card__empty">
       {state === "not_found" ? text.notFound : state === "unavailable" ? text.unavailableBody :
         state === "unknown" ? text.noResult : text.loading}
     </p>}
+    <div className="application-record" role="status">
+      <span>{text.recordLabel}: {text.recordStates[ownershipState]}</span>
+      <small>{text.trafficUnknown}</small>
+    </div>
+    <details className="application-card__details">
+      <summary>{text.installationDetails}</summary>
+      {found.length > 0 && <ul className="application-card__metadata">{found.map((installation) => <li key={installation.installation_id}>
+        <span>{installation.surface === "desktop" ? text.trDesktop : text.trCli}</span>
+        <span>{text.version}: {installation.version ?? text.unknownVersion}</span>
+        <span>{text.source}: {text.sources[installation.source]}</span>
+      </li>)}</ul>}
+      <p>{text.sessionOnly}</p>
+      <p>{text.fileNames}: {fileGuide}</p>
+    </details>
     <div className="application-card__actions">
       <button className="button button-primary" type="button" disabled={connectDisabled} title={connectDisabled ? text.actionUnavailable : undefined} onClick={() => onConnect(client.kind)}>{text.connect}</button>
       <button
         className="button"
         type="button"
         disabled={!isDiscoveryAvailable() || mutationPending}
-        title={fileGuide}
+        title={text.addFile}
         aria-label={`${text.addFile}: ${client.title}`}
         onClick={() => onAddFile(client.kind)}
       >{selectingFile ? text.selectingFile : text.addFile}</button>
     </div>
-    <p className="application-card__file-hint">{fileGuide}</p>
   </article>;
 }
 

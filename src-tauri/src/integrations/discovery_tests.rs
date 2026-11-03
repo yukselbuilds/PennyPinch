@@ -1,14 +1,33 @@
 use super::discovery::{
     claude_code_cli_version_from_digest, codex_cli_version_from_digest,
     opencode_v1_cli_version_from_digest, DiscoveryInputs, DiscoveryManager, DiscoveryReply,
-    InstallationSelectionError,
+    InstallationSelectionError, RememberInstallationChoiceRequest, SavedInstallationChoiceReply,
+    SavedInstallationChoiceRequest,
 };
+#[cfg(windows)]
+use crate::state::choices::{ChoiceClient, ChoiceOrigin, ChoiceStore, ChoiceSurface};
 use std::fs;
 use std::path::{Component, Path, PathBuf};
 use uuid::Uuid;
 
 const REQUEST_ID: &str = "7132bced-3ce0-4c1b-8f48-d93d7b96f7ce";
 const RUNS_RELATIVE: &str = "work/proofs/discovery/runs";
+
+#[cfg(windows)]
+#[test]
+#[ignore = "opt-in read-only inspection of explicitly selected installed signed binaries"]
+fn codex_current_installed_binaries_are_recognized_and_pinned() {
+    for key in ["HEADROOM_TEST_CODEX_CLI", "HEADROOM_TEST_CODEX_BACKEND"] {
+        let path = PathBuf::from(std::env::var_os(key).expect("explicit installed test path"));
+        let version =
+            super::discovery::verified_codex_cli_version(&path).expect("recognized OpenAI binary");
+        assert!(super::codex_binary::cli_config_supported(&version));
+        let pin =
+            super::discovery::pin_verified_codex_cli(&path, &version).expect("same pinned version");
+        assert!(pin.metadata().unwrap().is_file());
+        assert!(super::discovery::pin_verified_codex_cli(&path, "0.0.0").is_none());
+    }
+}
 
 struct Fixture {
     project_root: PathBuf,
@@ -205,6 +224,158 @@ fn initial_state_is_not_scanned_and_absence_is_not_unsupported() {
         .warnings
         .iter()
         .any(|warning| *warning == "absence_is_not_unsupported"));
+}
+
+#[cfg(windows)]
+#[test]
+fn remembered_manual_installation_rebinds_to_fresh_scan_ids() {
+    let mut fixture = Fixture::new();
+    let executable = fixture.at("manual/codex.exe");
+    write_file(&executable, b"stable synthetic Codex executable");
+    let store = ChoiceStore::new(&fixture.path, "app-state/onboarding").unwrap();
+    let first_manager = DiscoveryManager::with_choice_store(Some(store.clone()));
+    let first = snapshot(first_manager.select_client_file_with(
+        REQUEST_ID.to_owned(),
+        "codex".to_owned(),
+        |_| Ok(Some(executable)),
+    ));
+    assert_eq!(first.installations.len(), 1);
+    assert_eq!(first.installations[0].source, "manual_file");
+    let first_id = first.installations[0].installation_id.clone();
+    let remembered =
+        first_manager.remember_installation_choice(RememberInstallationChoiceRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            scan_generation: first.scan_generation,
+            installation_id: first_id.clone(),
+        });
+    let SavedInstallationChoiceReply::Snapshot(remembered) = remembered else {
+        panic!("expected saved-choice response");
+    };
+    assert_eq!(remembered.status, "saved");
+
+    let reopened_manager = DiscoveryManager::with_choice_store(Some(store));
+    let reopened = snapshot(
+        reopened_manager.scan_with_inputs(REQUEST_ID.to_owned(), DiscoveryInputs::default()),
+    );
+    assert_eq!(reopened.installations.len(), 1);
+    assert_ne!(reopened.installations[0].installation_id, first_id);
+    let saved = reopened_manager.saved_installation_choice(SavedInstallationChoiceRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        client_kind: "codex".to_owned(),
+    });
+    let SavedInstallationChoiceReply::Snapshot(saved) = saved else {
+        panic!("expected saved-choice snapshot");
+    };
+    assert_eq!(saved.status, "available");
+    assert_eq!(
+        saved.installation_id.as_deref(),
+        Some(reopened.installations[0].installation_id.as_str())
+    );
+    fixture.cleanup();
+}
+
+#[cfg(windows)]
+#[test]
+fn replaced_remembered_manual_installation_does_not_select_another_candidate() {
+    let mut fixture = Fixture::new();
+    let executable = fixture.at("manual/codex.exe");
+    write_file(&executable, b"remembered synthetic executable");
+    let store = ChoiceStore::new(&fixture.path, "app-state/onboarding").unwrap();
+    let choice = ChoiceStore::capture_installation(
+        ChoiceClient::Codex,
+        ChoiceSurface::Cli,
+        ChoiceOrigin::ManualFile,
+        executable.clone(),
+        None,
+    )
+    .unwrap();
+    store.save_installation(choice).unwrap();
+
+    let moved = fixture.at("manual/old-codex.exe");
+    fs::rename(&executable, &moved).unwrap();
+    write_file(&executable, b"replacement synthetic executable");
+    let alternate = fixture.at("path/codex.exe");
+    write_file(&alternate, b"different discovered executable");
+    let mut inputs = DiscoveryInputs::default();
+    inputs
+        .path_entries
+        .push(alternate.parent().unwrap().to_path_buf());
+
+    let manager = DiscoveryManager::with_choice_store(Some(store));
+    let scanned = snapshot(manager.scan_with_inputs(REQUEST_ID.to_owned(), inputs));
+    assert_eq!(scanned.installations.len(), 1);
+    assert_ne!(
+        test_path_key(
+            &manager
+                .installation_path(&scanned.installations[0].installation_id)
+                .unwrap()
+        ),
+        test_path_key(&executable)
+    );
+    let saved = manager.saved_installation_choice(SavedInstallationChoiceRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        client_kind: "codex".to_owned(),
+    });
+    let SavedInstallationChoiceReply::Snapshot(saved) = saved else {
+        panic!("expected saved-choice snapshot");
+    };
+    assert_eq!(saved.status, "unavailable");
+    assert_eq!(saved.installation_id, None);
+    fixture.cleanup();
+}
+
+#[cfg(windows)]
+#[test]
+fn remember_rejects_executable_identity_drift_after_scan() {
+    let mut fixture = Fixture::new();
+    let bin = fixture.at("path");
+    let executable = bin.join("codex.exe");
+    write_file(&executable, b"scanned synthetic executable");
+    let store = ChoiceStore::new(&fixture.path, "app-state/onboarding").unwrap();
+    let manager = DiscoveryManager::with_choice_store(Some(store.clone()));
+    let mut inputs = DiscoveryInputs::default();
+    inputs.path_entries.push(bin);
+    let scanned = snapshot(manager.scan_with_inputs(REQUEST_ID.to_owned(), inputs));
+    let installation = scanned
+        .installations
+        .iter()
+        .find(|item| item.client_kind == "codex")
+        .unwrap();
+
+    let stale = manager.remember_installation_choice(RememberInstallationChoiceRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        scan_generation: scanned.scan_generation + 1,
+        installation_id: installation.installation_id.clone(),
+    });
+    assert!(matches!(stale, SavedInstallationChoiceReply::Error(_)));
+    assert!(store.read().unwrap().installations.is_empty());
+
+    let unknown_field =
+        serde_json::from_value::<RememberInstallationChoiceRequest>(serde_json::json!({
+            "schema_version": 1,
+            "request_id": Uuid::new_v4().to_string(),
+            "scan_generation": scanned.scan_generation,
+            "installation_id": installation.installation_id,
+            "executable_path": "ignored"
+        }));
+    assert!(unknown_field.is_err());
+
+    let moved = fixture.at("path/old-codex.exe");
+    fs::rename(&executable, &moved).unwrap();
+    write_file(&executable, b"replacement executable after scan");
+    let reply = manager.remember_installation_choice(RememberInstallationChoiceRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        scan_generation: scanned.scan_generation,
+        installation_id: installation.installation_id.clone(),
+    });
+    assert!(matches!(reply, SavedInstallationChoiceReply::Error(_)));
+    assert!(store.read().unwrap().installations.is_empty());
+    fixture.cleanup();
 }
 
 #[test]

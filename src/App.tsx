@@ -20,6 +20,7 @@ import {
   type UserPreferences,
 } from "./lib/preferences";
 import { Applications } from "./features/integrations/Applications";
+import { discoverySession } from "./lib/integrations";
 
 type Screen = "overview" | "applications" | "activity" | "settings";
 type LifecycleAction = "start" | "stop";
@@ -37,7 +38,8 @@ const copy = {
     engineStarting: "Başlatılıyor", engineReady: "Hazır", engineStopping: "Durduruluyor", engineFailed: "Hata",
     metric: "Toplam tasarruf", awaiting: "Veri bekleniyor", amount: "Miktar", rate: "Oran",
     start: "Başlat", stop: "Durdur", starting: "Başlatılıyor…", stopping: "Durduruluyor…", pause: "Duraklat", connect: "Bağlan", unavailable: "Bu işlem henüz kullanılamıyor",
-    hintUnavailable: "Masaüstü motor denetimi kullanılamıyor.", hintReady: "Motor hazır. İstersen durdurabilirsin.",
+    hintUnavailable: "Masaüstü motor denetimi kullanılamıyor.", hintReady: "Motor hazır; istemci trafiği ayrıca doğrulanır.",
+    engineRequirement: "Temel motor gerekir; ağır ek araçlar normal bağlantı için isteğe bağlıdır.",
     hintStopped: "Motor durduruldu. Başlatma bu masaüstü oturumunda kullanılabilir.", hintStarting: "Motor başlatılıyor.",
     hintStopping: "Motor durduruluyor.", hintFailed: "Motor bir hata bildirdi. Sabit hata kodu aşağıda gösteriliyor.",
     hintUnknown: "Motor durumu henüz doğrulanmadı.", hintUnavailableEngine: "Motor bu ortamda kullanılamıyor.",
@@ -53,15 +55,15 @@ const copy = {
       config_conflict: "Tercihler başka bir işlemle değişti. Önce yeniden oku.",
     },
     bridgeUnavailable: "Masaüstü bağlantısı kullanılamıyor", invalidSnapshot: "Yerel durum yanıtı doğrulanamadı", snapshotFailed: "Yerel durum okunamadı",
-    nativeSnapshot: "Yerel durum güncel", refresh: "Yeniden dene", footer: "YEREL İSTATİSTİKLER",
+    nativeSnapshot: "Yerel durum güncel", refresh: "Durumu yenile", footer: "YEREL İSTATİSTİKLER",
     loading: "Yerel durum okunuyor", systemTheme: "Sistem tercihini izle veya sabit görünüm seç.", interfaceLanguage: "Arayüz dili.",
     commandErrors: {
       validation_failed: "Komut isteği doğrulanamadı.", unsupported_protocol: "Motor denetim protokolü desteklenmiyor.",
-      environment_blocked: "Motor denetimi bu ortamda kullanılamıyor.", busy: "Motor başka bir işlem yürütüyor. Biraz sonra yeniden dene.",
+      environment_blocked: "Headroom'un temel paketini, disk alanını ve yazma izinlerini kontrol et. Ardından motoru başlatıp uygulamayı yeniden açmayı dene; bu ileti kesin nedeni belirtmez.", busy: "Motor başka bir işlem yürütüyor. Biraz sonra yeniden dene.",
       port_conflict: "Motorun yerel bağlantı noktası kullanılamıyor. Biraz sonra yeniden dene.",
       engine_not_ready: "Motor hazır duruma geçmedi. Durumu yenileyip yeniden dene.", ownership_lost: "Motor sürecinin sahipliği doğrulanamadı.",
       timeout: "Motor denetimi zaman aşımına uğradı. Durumu yenileyip yeniden dene.", cleanup_failed: "Normal kapanış doğrulanamadı. Güncel motor durumunu kontrol et.",
-      config_conflict: "Motor yapılandırması beklenen profille eşleşmiyor.",
+      config_conflict: "Motor yapılandırması beklenen profille eşleşmiyor. Temel paketi, disk alanını ve yazma izinlerini kontrol edip motoru başlatmayı veya uygulamayı yeniden açmayı dene.",
     },
   },
   en: {
@@ -75,7 +77,8 @@ const copy = {
     engineStarting: "Starting", engineReady: "Ready", engineStopping: "Stopping", engineFailed: "Failed",
     metric: "Total savings", awaiting: "Waiting for data", amount: "Amount", rate: "Rate",
     start: "Start", stop: "Stop", starting: "Starting…", stopping: "Stopping…", pause: "Pause", connect: "Connect", unavailable: "This action is not available yet",
-    hintUnavailable: "Desktop engine control is unavailable.", hintReady: "The engine is ready. You can stop it here.",
+    hintUnavailable: "Desktop engine control is unavailable.", hintReady: "The engine is ready; client traffic is reported separately.",
+    engineRequirement: "The core engine is required; heavy optional tools are not needed for a normal connection.",
     hintStopped: "The engine is stopped. Start is available in this desktop session.", hintStarting: "The engine is starting.",
     hintStopping: "The engine is stopping.", hintFailed: "The engine reported an error. Its fixed error code is shown below.",
     hintUnknown: "The engine state has not been verified yet.", hintUnavailableEngine: "The engine is unavailable in this environment.",
@@ -91,15 +94,15 @@ const copy = {
       config_conflict: "Preferences changed elsewhere. Read them again before retrying.",
     },
     bridgeUnavailable: "Desktop bridge unavailable", invalidSnapshot: "Local state response could not be validated", snapshotFailed: "Local state could not be read",
-    nativeSnapshot: "Local state updated", refresh: "Retry", footer: "LOCAL STATISTICS",
+    nativeSnapshot: "Local state updated", refresh: "Refresh status", footer: "LOCAL STATISTICS",
     loading: "Reading local state", systemTheme: "Follow system preference or choose an appearance.", interfaceLanguage: "Interface language.",
     commandErrors: {
       validation_failed: "The engine command could not be validated.", unsupported_protocol: "The engine control protocol is unsupported.",
-      environment_blocked: "Engine control is unavailable in this environment.", busy: "The engine is handling another operation. Try again shortly.",
+      environment_blocked: "Check Headroom's core package, available disk space, and write permission. Then try starting the engine or reopening the app; this message does not identify a specific cause.", busy: "The engine is handling another operation. Try again shortly.",
       port_conflict: "The engine loopback port is unavailable. Try again shortly.",
       engine_not_ready: "The engine did not become ready. Refresh its state and try again.", ownership_lost: "Ownership of the engine process could not be verified.",
       timeout: "Engine control timed out. Refresh its state and try again.", cleanup_failed: "Engine shutdown was not verified. Check the current engine state.",
-      config_conflict: "The engine configuration does not match the required profile.",
+      config_conflict: "The engine configuration does not match the required profile. Check the core package, available disk space, and write permission, then try starting the engine or reopening the app.",
     },
   },
 } satisfies Record<PreferenceLanguage, Record<string, unknown>>;
@@ -327,6 +330,7 @@ export default function App() {
   useEffect(() => {
     mounted.current = true;
     void loadSnapshot();
+    void discoverySession.loadInitial().catch(() => undefined);
     void reloadPreferences();
     const timer = window.setInterval(() => {
       if (pollInFlight.current) return;
@@ -369,6 +373,7 @@ export default function App() {
     preferencesStatus,
     preferenceIssueMessage(preferencesIssue, labels),
     reloadPreferences,
+    () => setScreen("applications"),
   );
 
   return <div className="app-shell">
@@ -413,6 +418,7 @@ function renderScreen(
   preferencesStatus: PreferenceUiStatus,
   preferencesErrorMessage: string | null,
   onPreferencesRetry: () => void,
+  onOpenApplications: () => void,
 ) {
   if (screen === "overview") {
     const engineValue = snapshot ? engineLabel(snapshot.engine.status, labels) : labels.engineUnknown;
@@ -442,12 +448,12 @@ function renderScreen(
         <div className="empty-copy"><div className="panel-kicker">{language === "tr" ? "BAŞLANGIÇ DURUMU" : "INITIAL STATE"}</div><h2>{labels.overviewTitle}</h2><p>{labels.overviewBody}</p></div>
       </section>
       <section className="actions-panel">
-        <div><div className="panel-kicker">{language === "tr" ? "MOTOR KONTROLÜ" : "ENGINE CONTROL"}</div><p>{hint}</p></div>
+        <div><div className="panel-kicker">{language === "tr" ? "MOTOR KONTROLÜ" : "ENGINE CONTROL"}</div><p>{hint}</p><small className="engine-requirement">{labels.engineRequirement}</small></div>
         <div className="action-row">
           <button className="button button-primary" disabled={startDisabled} title={startDisabled ? labels.unavailable : undefined} onClick={() => runLifecycle("start")}><span aria-hidden="true">▶</span>{pending === "start" ? labels.starting : labels.start}</button>
           <button className="button" disabled={stopDisabled} title={stopDisabled ? labels.unavailable : undefined} onClick={() => runLifecycle("stop")}><span aria-hidden="true">■</span>{pending === "stop" ? labels.stopping : labels.stop}</button>
           <button className="button" disabled title={labels.unavailable}><span aria-hidden="true">Ⅱ</span>{labels.pause}</button>
-          <button className="button button-connect" disabled title={labels.unavailable}><span aria-hidden="true">↗</span>{labels.connect}</button>
+          <button className="button button-connect" onClick={onOpenApplications}><span aria-hidden="true">↗</span>{labels.connect}</button>
         </div>
       </section>
     </>;

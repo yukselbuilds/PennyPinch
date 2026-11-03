@@ -157,10 +157,15 @@ pub(super) fn observe(
                 .as_ref()
                 .ok_or(ConfigIoError::InvalidRoot)?;
             let claude_dir = project.join(".claude");
-            let metadata =
-                std::fs::symlink_metadata(&claude_dir).map_err(|_| ConfigIoError::Unavailable)?;
-            if !metadata.is_dir() || super::is_reparse(&metadata) {
-                return Err(ConfigIoError::UnsafePath.into());
+            match std::fs::symlink_metadata(&claude_dir) {
+                Ok(metadata) if metadata.is_dir() && !super::is_reparse(&metadata) => {
+                    fingerprint.update(b"project-claude-directory:present\0");
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                    fingerprint.update(b"project-claude-directory:missing\0");
+                }
+                Ok(_) => return Err(ConfigIoError::UnsafePath.into()),
+                Err(_) => return Err(ConfigIoError::Unavailable.into()),
             }
             let user = user_settings_path(roots)?;
             (

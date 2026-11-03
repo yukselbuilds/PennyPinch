@@ -105,11 +105,35 @@ impl OwnershipRecord {
         receipt: &PatchReceipt,
         scope: ConfigScope,
     ) -> Result<Self, OwnershipError> {
+        let binding = config_path_binding(config_path)?;
+        Self::active_from_scoped_patch_with_binding(
+            owner_id,
+            endpoint_id,
+            revision,
+            updated_at_unix_seconds,
+            before_config,
+            after_config,
+            receipt,
+            scope,
+            &binding,
+        )
+    }
+
+    pub(crate) fn active_from_scoped_patch_with_binding(
+        owner_id: &str,
+        endpoint_id: &str,
+        revision: u64,
+        updated_at_unix_seconds: u64,
+        before_config: &[u8],
+        after_config: &[u8],
+        receipt: &PatchReceipt,
+        scope: ConfigScope,
+        binding: &str,
+    ) -> Result<Self, OwnershipError> {
         let metadata = receipt.metadata();
-        if !scope_matches_client(metadata.client_kind, scope) {
+        if !scope_matches_client(metadata.client_kind, scope) || !valid_hash(binding) {
             return Err(OwnershipError::Invalid);
         }
-        let binding = config_path_binding(config_path)?;
         let stored = StoredOwnership {
             schema_version: SCHEMA_VERSION,
             owner_tag: OWNER_TAG.to_owned(),
@@ -124,7 +148,7 @@ impl OwnershipRecord {
             } else {
                 "present".to_owned()
             },
-            config_path_binding_sha256: binding,
+            config_path_binding_sha256: binding.to_owned(),
             endpoint_host: "127.0.0.1".to_owned(),
             endpoint_port: metadata.endpoint_port,
             revision,
@@ -780,6 +804,44 @@ pub(crate) fn config_path_binding(path: &Path) -> Result<String, OwnershipError>
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => absolute,
         Err(_) => return Err(OwnershipError::UnsafePath),
     };
+    hash_config_path_binding(&binding_path)
+}
+
+pub(crate) fn config_path_binding_for_claude_project_target(
+    project_root: &Path,
+    target_path: &Path,
+) -> Result<String, OwnershipError> {
+    let absolute_root = make_absolute(project_root)?;
+    validate_absolute_local_path(&absolute_root)?;
+    validate_existing_directory_chain(&absolute_root)?;
+    let canonical_root =
+        normalize_path(&fs::canonicalize(&absolute_root).map_err(|_| OwnershipError::UnsafePath)?);
+    if !same_path(&canonical_root, &absolute_root) {
+        return Err(OwnershipError::UnsafePath);
+    }
+
+    let expected_target = canonical_root.join(".claude").join("settings.local.json");
+    let absolute_target = make_absolute(target_path)?;
+    if !same_path(&absolute_target, &expected_target) {
+        return Err(OwnershipError::UnsafePath);
+    }
+
+    let claude_directory = canonical_root.join(".claude");
+    match fs::symlink_metadata(&claude_directory) {
+        Ok(metadata) => {
+            if !metadata.is_dir() || is_reparse(&metadata) {
+                return Err(OwnershipError::UnsafePath);
+            }
+            config_path_binding(&expected_target)
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            hash_config_path_binding(&expected_target)
+        }
+        Err(_) => Err(OwnershipError::UnsafePath),
+    }
+}
+
+fn hash_config_path_binding(binding_path: &Path) -> Result<String, OwnershipError> {
     let units: Vec<u16> = binding_path.as_os_str().encode_wide_compat();
     let mut digest = Sha256::new();
     digest.update(b"headroom-ownership-config-path/v1\0");

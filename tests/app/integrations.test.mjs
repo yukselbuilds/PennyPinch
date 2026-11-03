@@ -230,7 +230,7 @@ test("manual file candidates decode only with their fixed source metadata", () =
   assert.equal(decodeDiscoveryReply(snapshot({ installations: [installation({
     source: "manual_file",
     location_label: "Selected file",
-  })] }), requestId), null);
+  })] }), requestId)?.kind, "snapshot");
   assert.equal(decodeDiscoveryReply(snapshot({ installations: [installation({
     version: "0.163.0-alpha.11.1",
     source: "manual_file",
@@ -242,16 +242,16 @@ test("manual file candidates decode only with their fixed source metadata", () =
     location_label: "Selected file",
   })] }), requestId)?.kind, "snapshot");
   assert.equal(decodeDiscoveryReply(snapshot({ installations: [installation({
-    version: "0.163.0-alpha.11.3",
+    version: "0.166.0-alpha.5.1",
     source: "manual_file",
     location_label: "Selected file",
-  })] }), requestId), null);
+  })] }), requestId)?.kind, "snapshot");
   assert.equal(decodeDiscoveryReply(snapshot({ installations: [installation({
     client_kind: "claude_code",
-    version: "0.163.0-alpha.11.1",
+    version: "2.1.158",
     source: "manual_file",
     location_label: "Selected file",
-  })] }), requestId), null);
+  })] }), requestId)?.kind, "snapshot");
   assert.equal(decodeDiscoveryReply(snapshot({ installations: [installation({ ...manual, surface: "desktop" })] }), requestId), null);
   const overManualCap = Array.from({ length: 33 }, (_, index) => ({
     ...manual,

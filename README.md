@@ -4,7 +4,7 @@ Headroom Desktop is a local-first desktop application for managing a pinned Head
 
 ## Current state
 
-As of 22 October 2026, H018's configuration apply/undo path has local acceptance on the Windows 10 development host. H019, the first real Codex traffic path, has not started. This does not establish live provider compatibility, Windows 11 support, or a release-ready installer.
+As of 3 November 2026, H023 content-free metrics normalization and its pinned-engine metadata adapter are accepted in local Windows 10 development checks; unlabelled legacy measurement pairs remain unknown. The H008 current-Codex slice now recognizes signed CLI0.166.0, backend0.166.0-alpha.5.1 and Desktop26.1027.3384.0, and supports guarded CLI/Desktop user-config Apply/Undo. A native product-verifier CLI response completed through Headroom with existing ChatGPT auth and normal model selection; two extra CLI notices remain unclassified. The final native gate passed289 tests (5 ignored), format and embedded build;98 matching frontend tests/build are reused. See the [current Codex proof](docs/proofs/codex-current.md), [metrics proof](docs/proofs/metrics-normalization.md), [tasks](TASKS.md) and [checkpoint](docs/IMPLEMENTATION_STATUS.md). H008 remains open for the notices, earlier shutdown observations, actual Desktop adoption and agent/auth coverage. This is not a live-savings dashboard, universal-provider, additional-OS or installer release claim.
 
 The app uses Tauri 2, Rust, React, and TypeScript. The source-only frontend gate uses the checked-in package and lockfiles. Use Node.js 25.2.1 (recorded in `.node-version`) and pnpm 11.25.0:
 
@@ -14,7 +14,7 @@ pnpm test:app
 pnpm build
 ```
 
-`test:app` runs all six app test files; `build` includes the TypeScript project check before building the frontend. These commands check the frontend source only; they do not prove an engine is available or that a fresh clone can start the desktop runtime. The exact scope and external inputs are listed in [source checks](docs/validation/source-checks.md). The current engine package is a large, development-only payload. [`runtime/manifest.json`](runtime/manifest.json) points to `../work/proofs/packaging/artifacts/headroom-engine/runtime`, which is excluded from source import. The local H006 proof measured that payload at 523,394,231 bytes. The payload is not included in this repository, and no bootstrap or release-download flow is provided here.
+`test:app` runs the app contract tests listed in `package.json`; `build` includes the TypeScript project check before building the frontend. These commands check the frontend source only; they do not prove an engine is available or that a fresh clone can start the desktop runtime. The exact scope and external inputs are listed in [source checks](docs/validation/source-checks.md). The current engine package is a large, development-only payload. [`runtime/manifest.json`](runtime/manifest.json) points to `../work/proofs/packaging/artifacts/headroom-engine/runtime`, which is excluded from source import. The local H006 proof measured that payload at 523,394,231 bytes. The payload is not included in this repository, and no bootstrap or release-download flow is provided here.
 
 Historical protocol fixture helpers still import runner modules from ignored `/work/` paths, and the Windows runtime smoke requires the absent engine payload. They are outside the frontend gate and are not fresh-clone checks. No helper or payload was copied into this repository as part of H046.
 

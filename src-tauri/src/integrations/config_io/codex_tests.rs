@@ -554,7 +554,7 @@ fn unknown_cli_version_does_not_open_config_and_reports_not_rechecked() {
         .expect("hold fixture config without sharing");
     write_file(
         &fixture.path("npm/node_modules/@openai/codex/package.json"),
-        br#"{"name":"@openai/codex","version":"0.163.0-alpha.99","bin":{"codex":"bin/codex.js"}}"#,
+        br#"{"name":"@openai/codex","version":"1.0.0","bin":{"codex":"bin/codex.js"}}"#,
     );
     let scan = manager.rescan_with_test_inputs(
         Uuid::new_v4().to_string(),

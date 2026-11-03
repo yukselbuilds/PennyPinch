@@ -22,6 +22,12 @@ pub(crate) struct FileToken {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) struct ClaudeDirectoryToken {
+    transaction_id: u64,
+    entry_index: usize,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) struct FileIdentity {
     pub(crate) volume_serial: u32,
     pub(crate) file_index: u64,
@@ -36,8 +42,8 @@ pub(crate) struct FileSnapshot {
 #[cfg(windows)]
 mod windows_impl {
     use super::{
-        FileIdentity, FileSnapshot, FileToken, TransactionFsError, MAX_TRANSACTION_FILES,
-        MAX_TRANSACTION_FILE_BYTES,
+        ClaudeDirectoryToken, FileIdentity, FileSnapshot, FileToken, TransactionFsError,
+        MAX_TRANSACTION_FILES, MAX_TRANSACTION_FILE_BYTES,
     };
     use crate::integrations::config_io::{self, ConfigIoError, DirectoryPins};
     use std::fs;
@@ -53,13 +59,15 @@ mod windows_impl {
         ERROR_TRANSACTIONAL_CONFLICT, GENERIC_READ, GENERIC_WRITE, HANDLE, INVALID_HANDLE_VALUE,
     };
     use windows_sys::Win32::Storage::FileSystem::{
-        CommitTransaction, CreateFileTransactedW, CreateTransaction, FlushFileBuffers,
-        GetFileInformationByHandle, GetFileSizeEx, GetVolumeInformationByHandleW, ReadFile,
-        RollbackTransaction, SetEndOfFile, SetFilePointerEx, WriteFile, BY_HANDLE_FILE_INFORMATION,
-        CREATE_NEW, DELETE, FILE_ATTRIBUTE_DIRECTORY, FILE_ATTRIBUTE_ENCRYPTED,
-        FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY, FILE_ATTRIBUTE_REPARSE_POINT, FILE_BEGIN,
-        FILE_FLAG_DELETE_ON_CLOSE, FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ, FILE_SHARE_WRITE,
-        OPEN_EXISTING, TRANSACTION_DO_NOT_PROMOTE,
+        CommitTransaction, CreateDirectoryTransactedW, CreateFileTransactedW, CreateTransaction,
+        FlushFileBuffers, GetFileInformationByHandle, GetFileSizeEx, GetVolumeInformationByHandleW,
+        ReadFile, RollbackTransaction, SetEndOfFile, SetFilePointerEx, WriteFile,
+        BY_HANDLE_FILE_INFORMATION, CREATE_NEW, DELETE, FILE_ADD_FILE, FILE_ATTRIBUTE_DIRECTORY,
+        FILE_ATTRIBUTE_ENCRYPTED, FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY,
+        FILE_ATTRIBUTE_REPARSE_POINT, FILE_BEGIN, FILE_FLAG_BACKUP_SEMANTICS,
+        FILE_FLAG_DELETE_ON_CLOSE, FILE_FLAG_OPEN_REPARSE_POINT, FILE_LIST_DIRECTORY,
+        FILE_READ_ATTRIBUTES, FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_EXISTING, SYNCHRONIZE,
+        TRANSACTION_DO_NOT_PROMOTE,
     };
     use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_TRANSACTIONS;
 
@@ -80,11 +88,19 @@ mod windows_impl {
         canonical_path: PathBuf,
     }
 
+    struct DirectoryEntry {
+        handle: Option<OwnedHandle>,
+        canonical_path: PathBuf,
+        identity: FileIdentity,
+        volume_serial: u32,
+    }
+
     pub(crate) struct FileTransaction {
         transaction_id: u64,
         transaction: Option<OwnedHandle>,
         started: Instant,
         entries: Vec<Entry>,
+        directories: Vec<DirectoryEntry>,
         reservations: Vec<PathBuf>,
         pinned_directories: Vec<DirectoryPins>,
         paths: Vec<PathBuf>,
@@ -124,6 +140,7 @@ mod windows_impl {
                 transaction: Some(unsafe { OwnedHandle::from_raw_handle(raw as RawHandle) }),
                 started: Instant::now(),
                 entries: Vec::new(),
+                directories: Vec::new(),
                 reservations: Vec::new(),
                 pinned_directories: Vec::new(),
                 paths: Vec::new(),
@@ -248,6 +265,136 @@ mod windows_impl {
             Ok((token, identity))
         }
 
+        pub(crate) fn create_claude_directory(
+            &mut self,
+            project_root: &Path,
+        ) -> Result<(ClaudeDirectoryToken, FileIdentity), TransactionFsError> {
+            let result = self.create_claude_directory_inner(project_root);
+            if result.is_err() {
+                self.poisoned = true;
+            }
+            result
+        }
+
+        fn create_claude_directory_inner(
+            &mut self,
+            project_root: &Path,
+        ) -> Result<(ClaudeDirectoryToken, FileIdentity), TransactionFsError> {
+            self.ensure_mutable()?;
+            let target = prepare_target(&project_root.join(".claude"))?;
+            self.check_target(&target)?;
+            match fs::symlink_metadata(&target.canonical_path) {
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Ok(metadata) if metadata.is_dir() && !metadata_is_reparse(&metadata) => {
+                    return Err(TransactionFsError::Conflict);
+                }
+                Ok(_) => return Err(TransactionFsError::UnsafePath),
+                Err(_) => return Err(TransactionFsError::Io),
+            }
+
+            let wide = wide_path(&target.canonical_path)?;
+            let created = unsafe {
+                CreateDirectoryTransactedW(null(), wide.as_ptr(), null(), self.transaction_handle())
+            };
+            if created == 0 {
+                return Err(map_create_error(unsafe { GetLastError() }));
+            }
+
+            let handle =
+                open_transacted_directory(&target.canonical_path, self.transaction_handle())?;
+            let identity = validate_directory_info(
+                &file_information(handle.as_raw_handle() as HANDLE)?,
+                target.volume_serial,
+            )?;
+            verify_target_after_open(&target.canonical_path, &target)?;
+            let token = self.register_directory(target, handle, identity)?;
+            Ok((token, identity))
+        }
+
+        pub(crate) fn create_claude_settings_file(
+            &mut self,
+            directory: ClaudeDirectoryToken,
+            max_bytes: usize,
+        ) -> Result<(FileToken, FileIdentity), TransactionFsError> {
+            let result = self.create_claude_settings_file_inner(directory, max_bytes);
+            if result.is_err() {
+                self.poisoned = true;
+            }
+            result
+        }
+
+        fn create_claude_settings_file_inner(
+            &mut self,
+            directory: ClaudeDirectoryToken,
+            max_bytes: usize,
+        ) -> Result<(FileToken, FileIdentity), TransactionFsError> {
+            self.ensure_mutable()?;
+            validate_max_bytes(max_bytes)?;
+            if directory.transaction_id != self.transaction_id {
+                return Err(TransactionFsError::Conflict);
+            }
+            let directory_entry = self
+                .directories
+                .get(directory.entry_index)
+                .ok_or(TransactionFsError::Conflict)?;
+            let directory_path = directory_entry.canonical_path.clone();
+            let directory_identity = directory_entry.identity;
+            let directory_volume = directory_entry.volume_serial;
+            let directory_handle = directory_entry
+                .handle
+                .as_ref()
+                .ok_or(TransactionFsError::Conflict)?;
+            if validate_directory_info(
+                &file_information(directory_handle.as_raw_handle() as HANDLE)?,
+                directory_volume,
+            )? != directory_identity
+            {
+                return Err(TransactionFsError::Conflict);
+            }
+            self.validate_all_pins()?;
+
+            let path = directory_path.join("settings.local.json");
+            self.check_child_path(&path, directory_volume)?;
+            let wide = wide_path(&path)?;
+            let raw = unsafe {
+                CreateFileTransactedW(
+                    wide.as_ptr(),
+                    GENERIC_READ | GENERIC_WRITE,
+                    FILE_SHARE_READ,
+                    null(),
+                    CREATE_NEW,
+                    FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OPEN_REPARSE_POINT,
+                    null_mut(),
+                    self.transaction_handle(),
+                    null(),
+                    null(),
+                )
+            };
+            if is_invalid_handle(raw) {
+                return Err(map_create_error(unsafe { GetLastError() }));
+            }
+            let handle = unsafe { OwnedHandle::from_raw_handle(raw as RawHandle) };
+            let identity = validate_file_info(
+                &file_information(handle.as_raw_handle() as HANDLE)?,
+                directory_volume,
+            )?;
+            let current_directory = self
+                .directories
+                .get(directory.entry_index)
+                .and_then(|entry| entry.handle.as_ref())
+                .ok_or(TransactionFsError::Conflict)?;
+            if validate_directory_info(
+                &file_information(current_directory.as_raw_handle() as HANDLE)?,
+                directory_volume,
+            )? != directory_identity
+            {
+                return Err(TransactionFsError::Conflict);
+            }
+            self.validate_all_pins()?;
+            let token = self.register_child_entry(path, handle, max_bytes, directory_volume)?;
+            Ok((token, identity))
+        }
+
         pub(crate) fn reserve_absent(&mut self, path: &Path) -> Result<(), TransactionFsError> {
             let result = self.reserve_absent_inner(path);
             if result.is_err() {
@@ -358,7 +505,9 @@ mod windows_impl {
         fn seal_inner(&mut self) -> Result<(), TransactionFsError> {
             if self.poisoned
                 || self.finished
-                || self.entries.is_empty() && self.reservations.is_empty()
+                || self.entries.is_empty()
+                    && self.directories.is_empty()
+                    && self.reservations.is_empty()
             {
                 return Err(TransactionFsError::Conflict);
             }
@@ -366,6 +515,9 @@ mod windows_impl {
             self.validate_all_pins()?;
             for entry in &mut self.entries {
                 entry.handle.take();
+            }
+            for directory in &mut self.directories {
+                directory.handle.take();
             }
             self.validate_all_pins()?;
             self.sealed = true;
@@ -394,6 +546,9 @@ mod windows_impl {
             for entry in &mut self.entries {
                 entry.handle.take();
             }
+            for directory in &mut self.directories {
+                directory.handle.take();
+            }
             let handle = self.transaction_handle();
             if unsafe { RollbackTransaction(handle) } == 0 {
                 return Err(TransactionFsError::RollbackFailed);
@@ -412,6 +567,75 @@ mod windows_impl {
             let entry_index = self.entries.len();
             let canonical_path = target.canonical_path.clone();
             self.register_target_path(target)?;
+            self.entries.push(Entry {
+                handle: Some(handle),
+                max_bytes,
+                canonical_path,
+            });
+            Ok(FileToken {
+                transaction_id: self.transaction_id,
+                entry_index,
+            })
+        }
+
+        fn register_directory(
+            &mut self,
+            target: PreparedTarget,
+            handle: OwnedHandle,
+            identity: FileIdentity,
+        ) -> Result<ClaudeDirectoryToken, TransactionFsError> {
+            let entry_index = self.directories.len();
+            let canonical_path = target.canonical_path.clone();
+            let volume_serial = target.volume_serial;
+            self.register_target_path(target)?;
+            self.directories.push(DirectoryEntry {
+                handle: Some(handle),
+                canonical_path,
+                identity,
+                volume_serial,
+            });
+            Ok(ClaudeDirectoryToken {
+                transaction_id: self.transaction_id,
+                entry_index,
+            })
+        }
+
+        fn check_child_path(
+            &self,
+            path: &Path,
+            volume_serial: u32,
+        ) -> Result<(), TransactionFsError> {
+            self.check_deadline()?;
+            if self.paths.len() >= MAX_TRANSACTION_FILES {
+                return Err(TransactionFsError::TooManyFiles);
+            }
+            if self
+                .paths
+                .iter()
+                .any(|existing| config_io::same_path(existing, path))
+            {
+                return Err(TransactionFsError::Conflict);
+            }
+            if self
+                .volume_serial
+                .is_some_and(|serial| serial != volume_serial)
+            {
+                return Err(TransactionFsError::Unsupported);
+            }
+            Ok(())
+        }
+
+        fn register_child_entry(
+            &mut self,
+            canonical_path: PathBuf,
+            handle: OwnedHandle,
+            max_bytes: usize,
+            volume_serial: u32,
+        ) -> Result<FileToken, TransactionFsError> {
+            self.check_child_path(&canonical_path, volume_serial)?;
+            let entry_index = self.entries.len();
+            self.paths.push(canonical_path.clone());
+            self.volume_serial = Some(volume_serial);
             self.entries.push(Entry {
                 handle: Some(handle),
                 max_bytes,
@@ -474,6 +698,15 @@ mod windows_impl {
             for pins in &self.pinned_directories {
                 config_io::validate_pinned_directories(pins).map_err(map_config_io_error)?;
             }
+            for directory in &self.directories {
+                if let Some(handle) = directory.handle.as_ref() {
+                    let information = file_information(handle.as_raw_handle() as HANDLE)?;
+                    let identity = validate_directory_info(&information, directory.volume_serial)?;
+                    if identity != directory.identity {
+                        return Err(TransactionFsError::Conflict);
+                    }
+                }
+            }
             Ok(())
         }
 
@@ -507,6 +740,9 @@ mod windows_impl {
             }
             for entry in &mut self.entries {
                 entry.handle.take();
+            }
+            for directory in &mut self.directories {
+                directory.handle.take();
             }
             if let Some(transaction) = self.transaction.take() {
                 let _ = unsafe { RollbackTransaction(transaction.as_raw_handle() as HANDLE) };
@@ -598,6 +834,61 @@ mod windows_impl {
             return Err(TransactionFsError::UnsafePath);
         }
         config_io::validate_pinned_directories(&target.pins).map_err(map_config_io_error)
+    }
+
+    fn open_transacted_directory(
+        path: &Path,
+        transaction: HANDLE,
+    ) -> Result<OwnedHandle, TransactionFsError> {
+        let wide = wide_path(path)?;
+        let raw = unsafe {
+            CreateFileTransactedW(
+                wide.as_ptr(),
+                FILE_LIST_DIRECTORY | FILE_ADD_FILE | FILE_READ_ATTRIBUTES | SYNCHRONIZE,
+                FILE_SHARE_READ | FILE_SHARE_WRITE,
+                null(),
+                OPEN_EXISTING,
+                FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+                null_mut(),
+                transaction,
+                null(),
+                null(),
+            )
+        };
+        if is_invalid_handle(raw) {
+            return Err(map_open_error(unsafe { GetLastError() }));
+        }
+        Ok(unsafe { OwnedHandle::from_raw_handle(raw as RawHandle) })
+    }
+
+    fn validate_directory_info(
+        info: &BY_HANDLE_FILE_INFORMATION,
+        expected_volume: u32,
+    ) -> Result<FileIdentity, TransactionFsError> {
+        let attributes = info.dwFileAttributes;
+        if attributes & FILE_ATTRIBUTE_REPARSE_POINT != 0
+            || attributes & FILE_ATTRIBUTE_DIRECTORY == 0
+            || info.nNumberOfLinks != 1
+        {
+            return Err(TransactionFsError::UnsafePath);
+        }
+        if attributes & FILE_ATTRIBUTE_ENCRYPTED != 0 {
+            return Err(TransactionFsError::Unsupported);
+        }
+        file_identity_from_info(info, expected_volume)
+    }
+
+    fn file_identity_from_info(
+        info: &BY_HANDLE_FILE_INFORMATION,
+        expected_volume: u32,
+    ) -> Result<FileIdentity, TransactionFsError> {
+        if info.dwVolumeSerialNumber != expected_volume {
+            return Err(TransactionFsError::Unsupported);
+        }
+        Ok(FileIdentity {
+            volume_serial: expected_volume,
+            file_index: ((info.nFileIndexHigh as u64) << 32) | info.nFileIndexLow as u64,
+        })
     }
 
     fn validate_file_info(
@@ -776,6 +1067,21 @@ pub(crate) struct FileTransaction;
 #[cfg(not(windows))]
 impl FileTransaction {
     pub(crate) fn begin() -> Result<Self, TransactionFsError> {
+        Err(TransactionFsError::Unsupported)
+    }
+
+    pub(crate) fn create_claude_directory(
+        &mut self,
+        _project_root: &std::path::Path,
+    ) -> Result<(ClaudeDirectoryToken, FileIdentity), TransactionFsError> {
+        Err(TransactionFsError::Unsupported)
+    }
+
+    pub(crate) fn create_claude_settings_file(
+        &mut self,
+        _directory: ClaudeDirectoryToken,
+        _max_bytes: usize,
+    ) -> Result<(FileToken, FileIdentity), TransactionFsError> {
         Err(TransactionFsError::Unsupported)
     }
 

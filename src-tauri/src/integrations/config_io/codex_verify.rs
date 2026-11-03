@@ -12,7 +12,7 @@ use std::collections::HashSet;
 use std::fs;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
+use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 #[cfg(windows)]
 use std::sync::MutexGuard;
@@ -23,7 +23,6 @@ use uuid::Uuid;
 
 const SCHEMA_VERSION: u8 = 1;
 const ZERO_UUID: &str = "00000000-0000-0000-0000-000000000000";
-const CODEX_VERSION: &str = "0.163.0-alpha.11.2";
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 const MAX_OUTPUT_BYTES: usize = 4 * 1024 * 1024;
 const MAX_LINE_BYTES: usize = 64 * 1024;
@@ -125,17 +124,8 @@ struct VerifyInner {
 
 impl CodexVerifyManager {
     pub(crate) fn new(app_local_data_dir: Option<PathBuf>) -> Self {
-        let workspace_root = if cfg!(debug_assertions) {
-            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .parent()
-                .map(|root| {
-                    root.join("work")
-                        .join("app-state")
-                        .join("codex-verification")
-                })
-        } else {
-            app_local_data_dir.map(|root| root.join("codex-verification"))
-        };
+        // Keep verification outside the checkout and its project-level Codex config.
+        let workspace_root = app_local_data_dir.map(|root| root.join("codex-verification"));
         Self {
             inner: Arc::new(VerifyInner {
                 workspace_root,
@@ -227,7 +217,10 @@ impl CodexVerifyManager {
         if selected.client_kind != "codex"
             || selected.surface != "cli"
             || selected.status != "detected"
-            || selected.version.as_deref() != Some(CODEX_VERSION)
+            || !selected
+                .version
+                .as_deref()
+                .is_some_and(super::super::codex_binary::cli_config_supported)
         {
             result.failure_code = Some("unsupported_installation");
             return snapshot_reply(&request, result, None, None, false, false);
@@ -241,9 +234,10 @@ impl CodexVerifyManager {
             result.failure_code = Some("process_ownership_unavailable");
             return snapshot_reply(&request, result, None, None, false, false);
         };
-        let Some(_pinned_cli) =
-            crate::integrations::discovery::pin_verified_codex_cli(&executable, CODEX_VERSION)
-        else {
+        let Some(_pinned_cli) = crate::integrations::discovery::pin_verified_codex_cli(
+            &executable,
+            selected.version.as_deref().unwrap_or(""),
+        ) else {
             result.failure_code = Some("unsupported_installation");
             return snapshot_reply(&request, result, None, None, false, false);
         };
@@ -955,8 +949,10 @@ fn codex_route_eligible(
 ) -> bool {
     if selected.client_kind != "codex"
         || selected.surface != "cli"
-        || selected.version.as_deref() != Some(CODEX_VERSION)
-        || !super::super::plan::supported_version(ClientKind::Codex, CODEX_VERSION)
+        || !selected
+            .version
+            .as_deref()
+            .is_some_and(super::super::codex_binary::cli_config_supported)
     {
         return false;
     }
@@ -1417,91 +1413,7 @@ impl<'de> Visitor<'de> for UniqueValueVisitor {
 }
 
 #[cfg(windows)]
-struct OwnedJob(windows_sys::Win32::Foundation::HANDLE);
-
-#[cfg(windows)]
-unsafe impl Send for OwnedJob {}
-#[cfg(windows)]
-unsafe impl Sync for OwnedJob {}
-
-#[cfg(windows)]
-impl OwnedJob {
-    fn create() -> Result<Self, ()> {
-        use std::mem::size_of;
-        use std::ptr::null;
-        use windows_sys::Win32::System::JobObjects::{
-            CreateJobObjectW, JobObjectExtendedLimitInformation, SetInformationJobObject,
-            JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
-        };
-        let handle = unsafe { CreateJobObjectW(null(), std::ptr::null()) };
-        if handle.is_null() {
-            return Err(());
-        }
-        let mut information: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = unsafe { std::mem::zeroed() };
-        information.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-        let configured = unsafe {
-            SetInformationJobObject(
-                handle,
-                JobObjectExtendedLimitInformation,
-                &information as *const _ as *const _,
-                size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
-            )
-        };
-        if configured == 0 {
-            unsafe { windows_sys::Win32::Foundation::CloseHandle(handle) };
-            return Err(());
-        }
-        Ok(Self(handle))
-    }
-
-    fn assign(&self, child: &Child) -> Result<(), ()> {
-        use std::os::windows::io::AsRawHandle;
-        let assigned = unsafe {
-            windows_sys::Win32::System::JobObjects::AssignProcessToJobObject(
-                self.0,
-                child.as_raw_handle() as windows_sys::Win32::Foundation::HANDLE,
-            )
-        };
-        (assigned != 0).then_some(()).ok_or(())
-    }
-
-    fn terminate_and_wait_empty(&self, timeout: Duration) -> bool {
-        use std::mem::size_of;
-        use std::ptr::null_mut;
-        use windows_sys::Win32::System::JobObjects::{
-            JobObjectBasicAccountingInformation, QueryInformationJobObject, TerminateJobObject,
-            JOBOBJECT_BASIC_ACCOUNTING_INFORMATION,
-        };
-        unsafe { TerminateJobObject(self.0, 0xC000_013A) };
-        let deadline = Instant::now() + timeout;
-        loop {
-            let mut information = JOBOBJECT_BASIC_ACCOUNTING_INFORMATION::default();
-            let queried = unsafe {
-                QueryInformationJobObject(
-                    self.0,
-                    JobObjectBasicAccountingInformation,
-                    &mut information as *mut _ as *mut _,
-                    size_of::<JOBOBJECT_BASIC_ACCOUNTING_INFORMATION>() as u32,
-                    null_mut(),
-                )
-            };
-            if queried != 0 && information.ActiveProcesses == 0 {
-                return true;
-            }
-            if Instant::now() >= deadline {
-                return false;
-            }
-            thread::sleep(Duration::from_millis(20));
-        }
-    }
-}
-
-#[cfg(windows)]
-impl Drop for OwnedJob {
-    fn drop(&mut self) {
-        unsafe { windows_sys::Win32::Foundation::CloseHandle(self.0) };
-    }
-}
+use super::super::process::OwnedJob;
 
 #[cfg(test)]
 mod tests {
@@ -1510,6 +1422,20 @@ mod tests {
     };
     use crate::runtime::manager::ReadyStableEndpoint;
     use serde_json::json;
+
+    #[test]
+    fn codex_current_verifier_workspace_uses_application_state_outside_checkout() {
+        let app_state = std::path::PathBuf::from("C:/headroom-test-app-state");
+        let manager = super::CodexVerifyManager::new(Some(app_state.clone()));
+        assert_eq!(
+            manager.inner.workspace_root,
+            Some(app_state.join("codex-verification"))
+        );
+        assert!(super::CodexVerifyManager::new(None)
+            .inner
+            .workspace_root
+            .is_none());
+    }
     use std::sync::atomic::AtomicBool;
 
     const NONCE: &str = "HEADROOM_LOCAL_VERIFY_0123456789abcdef0123456789abcdef";
@@ -1768,18 +1694,26 @@ mod tests {
 
     #[cfg(windows)]
     #[test]
-    fn debug_manager_workspace_root_supports_initial_creation() {
+    fn application_state_workspace_root_supports_initial_creation() {
         use std::path::PathBuf;
 
-        let manager = super::CodexVerifyManager::new(None);
-        let Some(root) = manager.inner.workspace_root.clone() else {
-            panic!("debug workspace root must be configured");
-        };
-        let root_existed = std::fs::symlink_metadata(&root).is_ok();
         let project_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .parent()
             .expect("project root")
             .to_path_buf();
+        let app_state = project_root
+            .join("work")
+            .join("proofs")
+            .join("codex-current")
+            .join("workspace-initial-creation")
+            .join(uuid::Uuid::new_v4().to_string());
+        let manager = super::CodexVerifyManager::new(Some(app_state));
+        let root = manager
+            .inner
+            .workspace_root
+            .clone()
+            .expect("application state workspace root");
+        let root_existed = std::fs::symlink_metadata(&root).is_ok();
         let project_boundary = std::fs::canonicalize(&project_root).expect("project boundary");
         let created = super::create_run_workspace(&root);
         let created_ok = created.is_ok();
@@ -1815,7 +1749,7 @@ mod tests {
                 let _ = std::fs::remove_dir(&root);
             }
         }
-        assert!(created_ok, "manager debug workspace must be creatable");
+        assert!(created_ok, "application state workspace must be creatable");
     }
 
     #[test]

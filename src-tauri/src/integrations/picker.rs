@@ -4,7 +4,7 @@ use std::path::PathBuf;
 mod windows_picker {
     use super::PathBuf;
     use std::ffi::{c_void, OsString};
-    use std::os::windows::ffi::OsStringExt;
+    use std::os::windows::ffi::{OsStrExt, OsStringExt};
     use windows::core::{HRESULT, PCWSTR, PWSTR};
     use windows::Win32::Foundation::HWND;
     use windows::Win32::System::Com::{
@@ -13,9 +13,9 @@ mod windows_picker {
     };
     use windows::Win32::UI::Shell::Common::COMDLG_FILTERSPEC;
     use windows::Win32::UI::Shell::{
-        FileOpenDialog, IFileOpenDialog, FOS_DONTADDTORECENT, FOS_FILEMUSTEXIST,
-        FOS_FORCEFILESYSTEM, FOS_NOCHANGEDIR, FOS_NODEREFERENCELINKS, FOS_PATHMUSTEXIST,
-        FOS_PICKFOLDERS, SIGDN_FILESYSPATH,
+        FileOpenDialog, IFileOpenDialog, IShellItem, SHCreateItemFromParsingName,
+        FOS_DONTADDTORECENT, FOS_FILEMUSTEXIST, FOS_FORCEFILESYSTEM, FOS_NOCHANGEDIR,
+        FOS_NODEREFERENCELINKS, FOS_PATHMUSTEXIST, FOS_PICKFOLDERS, SIGDN_FILESYSPATH,
     };
 
     const MAX_PATH_UNITS: usize = 32_767;
@@ -130,7 +130,10 @@ mod windows_picker {
         }
     }
 
-    pub(super) fn select_project_directory(owner_hwnd: usize) -> Result<Option<PathBuf>, ()> {
+    pub(super) fn select_project_directory(
+        owner_hwnd: usize,
+        initial_directory: Option<PathBuf>,
+    ) -> Result<Option<PathBuf>, ()> {
         if owner_hwnd == 0 {
             return Err(());
         }
@@ -152,6 +155,19 @@ mod windows_picker {
         unsafe {
             dialog.SetOptions(options).map_err(|_| ())?;
             dialog.SetTitle(PCWSTR(title.as_ptr())).map_err(|_| ())?;
+            let initial_directory = initial_directory.ok_or(())?;
+            let folder_wide: Vec<u16> = initial_directory
+                .as_os_str()
+                .encode_wide()
+                .chain(Some(0))
+                .collect();
+            if folder_wide.len() > MAX_PATH_UNITS + 1 {
+                return Err(());
+            }
+            let folder =
+                SHCreateItemFromParsingName::<_, _, IShellItem>(PCWSTR(folder_wide.as_ptr()), None)
+                    .map_err(|_| ())?;
+            dialog.SetFolder(&folder).map_err(|_| ())?;
             let owner = HWND(owner_hwnd as *mut c_void);
             if let Err(error) = dialog.Show(Some(owner)) {
                 return if error.code() == HRESULT_CANCELLED {
@@ -196,8 +212,11 @@ pub fn select_file(owner_hwnd: usize, client_kind: &str) -> Result<Option<PathBu
 }
 
 #[cfg(windows)]
-pub fn select_project_directory(owner_hwnd: usize) -> Result<Option<PathBuf>, ()> {
-    windows_picker::select_project_directory(owner_hwnd)
+pub fn select_project_directory(
+    owner_hwnd: usize,
+    initial_directory: Option<PathBuf>,
+) -> Result<Option<PathBuf>, ()> {
+    windows_picker::select_project_directory(owner_hwnd, initial_directory)
 }
 
 #[cfg(not(windows))]
@@ -206,6 +225,9 @@ pub fn select_file(_owner_hwnd: usize, _client_kind: &str) -> Result<Option<Path
 }
 
 #[cfg(not(windows))]
-pub fn select_project_directory(_owner_hwnd: usize) -> Result<Option<PathBuf>, ()> {
+pub fn select_project_directory(
+    _owner_hwnd: usize,
+    _initial_directory: Option<PathBuf>,
+) -> Result<Option<PathBuf>, ()> {
     Err(())
 }

@@ -24,9 +24,11 @@ const copy = {
     project: "Proje klasörü seç",
     userTarget: "CLAUDE_CONFIG_DIR/settings.json veya %USERPROFILE%/.claude/settings.json",
     projectTarget: "Hedef dosya",
-    projectMissing: "Geri alma için aynı proje klasörünü yeniden seçin. Proje seçimi uygulama yeniden açıldığında saklanmaz.",
-    parentLimit: "İlk kurulumda .claude klasörü önceden var olmalıdır; uygulama klasör oluşturmaz.",
-    oneTarget: "Aynı anda yalnızca bir Claude hedefi yönetilir; hedefi değiştirmeden önce mevcut yönlendirmeyi geri alın.",
+    scopeUnknown: "Kapsam bilinmiyor; yeniden seçin.",
+    projectRemembered: "Proje klasörü yeniden açılışta hatırlanır ve yeniden doğrulanır.",
+    createdParent: "Bağlanırken eksik .claude klasörü güvenli biçimde oluşturulabilir; boş klasör veya ayar dosyası geri alma sonrasında kalabilir.",
+    oneTarget: "Aynı anda yalnızca bir Claude hedefi yönetilir. Hedefi değiştirmeden önce mevcut yönlendirmeyi geri alın.",
+    advanced: "Gelişmiş ayar ayrıntıları",
     loading: "Claude kapsamı ve ayar katmanları okunuyor…",
     error: "Claude kapsamı okunamadı.",
     picker: "Klasör seçici açık…",
@@ -56,9 +58,11 @@ const copy = {
     project: "Choose project folder",
     userTarget: "CLAUDE_CONFIG_DIR/settings.json or %USERPROFILE%/.claude/settings.json",
     projectTarget: "Target file",
-    projectMissing: "Select the same project folder again to undo. The project selection is not saved when the app closes.",
-    parentLimit: "The .claude folder must already exist for first setup; the app will not create it.",
-    oneTarget: "Only one Claude target is managed at a time; undo the current routing before changing targets.",
+    scopeUnknown: "Scope is unknown; select it again.",
+    projectRemembered: "The project folder is remembered and revalidated when the app reopens.",
+    createdParent: "Connect can safely create a missing .claude folder; an empty folder or settings file may remain after Undo.",
+    oneTarget: "Only one Claude target is managed at a time. Undo current routing before changing targets.",
+    advanced: "Advanced settings details",
     loading: "Reading Claude scope and settings layers…",
     error: "Claude scope could not be read.",
     picker: "Folder picker is open…",
@@ -131,10 +135,10 @@ function layerValue(layer: ClaudeLayerSummary, field: "availability" | "route" |
 
 export function ClaudeScopeSection({ language, context, settings, loading, pickerPending, disabled, error, onSelectScope }: Props) {
   const text = copy[language];
-  const scope = context?.scope ?? "user_config";
+  const scope = context?.scope ?? null;
   const target = scope === "project_local_config" && context?.project_directory
     ? `${context.project_directory}\\.claude\\settings.local.json`
-    : text.userTarget;
+    : scope === "user_config" ? text.userTarget : null;
   const rows: Array<[keyof Pick<ClaudeLayerSummary, "availability" | "route" | "model" | "reasoning" | "auth" | "hooks">, string]> = [
     ["availability", text.availability], ["route", text.route], ["model", text.model],
     ["reasoning", text.reasoning], ["auth", text.auth], ["hooks", text.hooks],
@@ -144,20 +148,21 @@ export function ClaudeScopeSection({ language, context, settings, loading, picke
     <div className="claude-scope__heading">
       <h3 id="claude-scope-title">{text.title}</h3>
       <div className="claude-scope__controls">
-        <button className="button" type="button" aria-pressed={scope === "user_config"} disabled={disabled || context?.scope === "user_config"} onClick={() => onSelectScope("user_config")}>{text.user}</button>
+        <button className="button" type="button" aria-pressed={context?.scope === "user_config"} disabled={disabled || context?.scope === "user_config"} onClick={() => onSelectScope("user_config")}>{text.user}</button>
         <button className="button" type="button" aria-pressed={scope === "project_local_config"} disabled={disabled || pickerPending} onClick={() => onSelectScope("project_local_config")}>{pickerPending ? text.picker : text.project}</button>
       </div>
     </div>
     {loading && <p className="connection-dialog__notice" role="status"><span className="applications-spinner" aria-hidden="true" />{text.loading}</p>}
     {error && <p className="connection-dialog__notice connection-dialog__notice--error" role="alert">{error || text.error}</p>}
+    {!loading && !context && <p className="connection-dialog__notice" role="status">{text.scopeUnknown}</p>}
     {!loading && context && <>
       <p className="claude-scope__location"><strong>{text.projectTarget}:</strong> <code>{target}</code></p>
       <p className="connection-dialog__detail-note">{text.oneTarget}</p>
-      {scope === "project_local_config" && <>
-        <p className="connection-dialog__detail-note">{text.projectMissing}</p>
-        <p className="connection-dialog__detail-note">{text.parentLimit}</p>
-      </>}
-      {settings && <>
+      {scope === "project_local_config" && <p className="connection-dialog__detail-note">{text.projectRemembered}</p>}
+      {settings && <details className="connection-dialog__advanced claude-scope__advanced">
+        <summary>{text.advanced}</summary>
+        <div className="connection-dialog__advanced-body">
+        {scope === "project_local_config" && <p className="connection-dialog__detail-note">{text.createdParent}</p>}
         <h4 className="claude-scope__subheading">{text.observed}</h4>
         <div className="claude-scope__layers">
           {settings.layers.map((layer) => <section className="claude-scope__layer" key={layer.source}>
@@ -174,9 +179,10 @@ export function ClaudeScopeSection({ language, context, settings, loading, picke
           <div><dt>{text.auth}</dt><dd>{settings.auth_declared_in_observed_files === "secret_configured" ? (language === "tr" ? "Kimlik bilgisi tanımlı" : "Credential declared") : settings.auth_declared_in_observed_files === "helper_declared" ? (language === "tr" ? "Yardımcı tanımlı" : "Helper declared") : text.unknown}</dd></div>
           <div><dt>{text.hooks}</dt><dd>{settings.hooks_declared_in_observed_files === "present_unchanged" ? text.hookPresent : settings.hooks_declared_in_observed_files === "absent" ? text.absent : text.unknown}</dd></div>
         </dl>
-      </>}
-      <p className="connection-dialog__detail-note">{text.runtime}</p>
-      {settings?.layers.some((layer) => layer.source === "process_environment") && <p className="connection-dialog__detail-note">{text.processEnv}</p>}
+        <p className="connection-dialog__detail-note">{text.runtime}</p>
+        {settings.layers.some((layer) => layer.source === "process_environment") && <p className="connection-dialog__detail-note">{text.processEnv}</p>}
+        </div>
+      </details>}
     </>}
   </section>;
 }

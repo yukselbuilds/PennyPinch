@@ -222,9 +222,7 @@ impl ConfigRootInputs {
                     match fs::symlink_metadata(&project_config_directory) {
                         Ok(metadata) if metadata.is_dir() && !is_reparse(&metadata) => {}
                         Ok(_) => return Err(ConfigIoError::UnsafePath),
-                        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                            return Err(ConfigIoError::Unavailable)
-                        }
+                        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
                         Err(_) => return Err(ConfigIoError::Unavailable),
                     }
                     return Ok(ConfigTarget::Single {
@@ -1399,7 +1397,23 @@ impl PlanManager {
     where
         F: Fn() -> Result<Option<PathBuf>, ()> + Send + Sync + 'static,
     {
-        self.claude_context = claude_context::ClaudeContextManager::with_picker(picker);
+        self.claude_context.set_picker(move |_| picker());
+        self
+    }
+
+    pub(crate) fn with_claude_project_picker_hint<F>(mut self, picker: F) -> Self
+    where
+        F: Fn(Option<PathBuf>) -> Result<Option<PathBuf>, ()> + Send + Sync + 'static,
+    {
+        self.claude_context.set_picker(picker);
+        self
+    }
+
+    pub(crate) fn with_claude_choice_store(
+        mut self,
+        store: Option<crate::state::choices::ChoiceStore>,
+    ) -> Self {
+        self.claude_context.set_choice_store(store);
         self
     }
 

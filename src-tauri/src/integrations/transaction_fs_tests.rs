@@ -699,4 +699,86 @@ mod tests {
     fn remove_junction(path: &Path) {
         assert_ne!(unsafe { RemoveDirectoryW(wide(path).as_ptr()) }, 0);
     }
+
+    fn claude_project_root(fixture: &Fixture) -> PathBuf {
+        let project = fixture.path("claude-project");
+        fs::create_dir(&project).unwrap();
+        project
+    }
+
+    #[test]
+    fn creates_claude_directory_and_settings_file_atomically() {
+        let fixture = Fixture::new();
+        let project = claude_project_root(&fixture);
+        let claude = project.join(".claude");
+        let settings = claude.join("settings.local.json");
+
+        let mut transaction = FileTransaction::begin().unwrap();
+        let (directory, directory_identity) =
+            transaction.create_claude_directory(&project).unwrap();
+        assert_ne!(directory_identity.file_index, 0);
+        assert!(!claude.exists());
+
+        let (file, _) = transaction
+            .create_claude_settings_file(directory, MAX_TRANSACTION_FILE_BYTES)
+            .unwrap();
+        transaction
+            .replace_contents(
+                file,
+                b"{\"env\":{\"ANTHROPIC_BASE_URL\":\"http://127.0.0.1:41731\"}}",
+            )
+            .unwrap();
+        assert!(!claude.exists());
+        transaction.commit().unwrap();
+
+        assert_eq!(
+            fs::read(&settings).unwrap(),
+            b"{\"env\":{\"ANTHROPIC_BASE_URL\":\"http://127.0.0.1:41731\"}}"
+        );
+        fixture.cleanup().expect("clean own UUID fixture");
+    }
+
+    #[test]
+    fn rollback_and_drop_keep_new_claude_directory_invisible() {
+        let fixture = Fixture::new();
+        let project = claude_project_root(&fixture);
+        let claude = project.join(".claude");
+
+        let mut transaction = FileTransaction::begin().unwrap();
+        let (directory, _) = transaction.create_claude_directory(&project).unwrap();
+        let (file, _) = transaction
+            .create_claude_settings_file(directory, MAX_TRANSACTION_FILE_BYTES)
+            .unwrap();
+        transaction.replace_contents(file, b"fixture").unwrap();
+        transaction.rollback().unwrap();
+        assert!(!claude.exists());
+
+        {
+            let mut transaction = FileTransaction::begin().unwrap();
+            let (directory, _) = transaction.create_claude_directory(&project).unwrap();
+            let (file, _) = transaction
+                .create_claude_settings_file(directory, MAX_TRANSACTION_FILE_BYTES)
+                .unwrap();
+            transaction.replace_contents(file, b"fixture").unwrap();
+        }
+        assert!(!claude.exists());
+        fixture.cleanup().expect("clean own UUID fixture");
+    }
+
+    #[test]
+    fn refuses_to_claim_existing_claude_directory() {
+        let fixture = Fixture::new();
+        let project = claude_project_root(&fixture);
+        let claude = project.join(".claude");
+        fs::create_dir(&claude).unwrap();
+
+        let mut transaction = FileTransaction::begin().unwrap();
+        assert_eq!(
+            transaction.create_claude_directory(&project),
+            Err(TransactionFsError::Conflict)
+        );
+        drop(transaction);
+        assert!(claude.is_dir());
+        fixture.cleanup().expect("clean UUID fixture");
+    }
 }

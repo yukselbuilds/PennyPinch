@@ -56,6 +56,26 @@ function makeSnapshot(overrides = {}) {
   };
 }
 
+test("current CLI and Desktop share config capability without inventing live coverage", () => {
+  assert.ok(api);
+  for (const [surface, version] of [["cli", "0.166.0"], ["cli", "0.166.0-alpha.5.1"], ["cli", "0.167.0"], ["desktop", "26.1103.1"], ["desktop", "26.1027.3384.0"]]) {
+    assert.equal(api.isCodexConfigSupported(surface, version), true);
+    assert.equal(api.isCodexVerifySelectionSupported({ client_kind: "codex", surface, version }), surface === "cli");
+    const snapshot = makeSnapshot({
+      installation: { ...makeSnapshot().installation, surface, version, compatibility: surface === "desktop" ? "not_tested" : "not_verified" },
+      auth_scope: { ...makeSnapshot().auth_scope, api_key_auth: "not_tested" },
+    });
+    const decoded = api.decodeCodexStatusReply(snapshot, expected({ surface }));
+    assert.equal(decoded.kind, "snapshot");
+    assert.equal(api.diagnoseCodexNextAction(decoded.snapshot).code, "start_engine");
+    assert.equal(decoded.snapshot.coverage.traffic_verification, "not_verified");
+  }
+  for (const version of [null, "0.162.0", "1.0.0", "0.166.0 --other", "0.166", "0.166.0\n", "0.166.0-a..b", "00.166.0"]) {
+    assert.equal(api.isCodexConfigSupported("cli", version), false);
+  }
+  assert.equal(api.isCodexConfigSupported("unknown", "0.166.0"), false);
+});
+
 function expected(overrides = {}) {
   return { requestId, installationId, surface: "cli", scanGeneration: 7, ...overrides };
 }
@@ -162,7 +182,7 @@ test("limits local API fixture scope to exact CLI versions, never Desktop or nei
     const neighborCli = makeSnapshot({
       installation: { ...makeSnapshot().installation, version, compatibility: "not_verified" },
       auth_scope: { ...makeSnapshot().auth_scope, api_key_auth: "not_tested" },
-      ownership: { ...makeSnapshot().ownership, current_config_value: "not_rechecked" },
+      ownership: { ...makeSnapshot().ownership, current_config_value: "matches_owned_endpoint" },
     });
     assert.equal(api.decodeCodexStatusReply(neighborCli, expected()).kind, "snapshot");
     assert.equal(api.decodeCodexStatusReply({
@@ -176,14 +196,14 @@ test("limits local API fixture scope to exact CLI versions, never Desktop or nei
     const desktop = makeSnapshot({
       installation: { ...makeSnapshot().installation, surface: "desktop", version, compatibility: "not_tested" },
       auth_scope: { ...makeSnapshot().auth_scope, api_key_auth: "not_tested" },
-      ownership: { ...makeSnapshot().ownership, current_config_value: "not_rechecked" },
+      ownership: { ...makeSnapshot().ownership, current_config_value: "matches_owned_endpoint" },
     });
     assert.equal(api.decodeCodexStatusReply(desktop, expected({ surface: "desktop" })).kind, "snapshot");
     const desktopClaimingDiskMatch = {
       ...desktop,
       ownership: { ...desktop.ownership, current_config_value: "matches_owned_endpoint" },
     };
-    assert.equal(api.decodeCodexStatusReply(desktopClaimingDiskMatch, expected({ surface: "desktop" })), null);
+    assert.equal(api.decodeCodexStatusReply(desktopClaimingDiskMatch, expected({ surface: "desktop" })).kind, "snapshot");
     assert.equal(api.decodeCodexStatusReply({
       ...desktop,
       installation: { ...desktop.installation, compatibility: "fixture_only" },
@@ -228,7 +248,7 @@ test("decodes disk setting states only when consistent with ownership and fixtur
   assert.equal(api.decodeCodexStatusReply(ownerUnavailable, expected()).kind, "snapshot");
 
   const unsupportedCli = makeSnapshot({
-    installation: { ...makeSnapshot().installation, version: "0.163.0-alpha.99", compatibility: "not_verified" },
+    installation: { ...makeSnapshot().installation, version: "1.0.0", compatibility: "not_verified" },
     ownership: { ...makeSnapshot().ownership, current_config_value: "not_rechecked" },
     auth_scope: { ...makeSnapshot().auth_scope, api_key_auth: "not_tested" },
   });
@@ -250,7 +270,7 @@ test("decodes disk setting states only when consistent with ownership and fixtur
     },
     {
       ...makeSnapshot({
-        installation: { ...makeSnapshot().installation, surface: "desktop", compatibility: "not_tested" },
+        installation: { ...makeSnapshot().installation, surface: "desktop", version: null, compatibility: "not_tested" },
         auth_scope: { ...makeSnapshot().auth_scope, api_key_auth: "not_tested" },
         ownership: { ...makeSnapshot().ownership, current_config_value: "unsupported_route" },
       }),
@@ -353,9 +373,9 @@ test("diagnoses safe next steps from decoded snapshots without inferring traffic
     ownership: { state: "none", endpoint_binding: "not_owned", config_source: null, endpoint_id: null, endpoint_port: null, current_config_value: "not_owned" },
     auth_scope: { api_key_auth: "not_tested" },
   });
-  assertAction(unsupportedDesktop, "unsupported_installation");
+  assertAction(unsupportedDesktop, "manage_connection");
   const unsupportedVersion = decoded({
-    installation: { version: "0.163.0-alpha.99", compatibility: "not_verified" },
+    installation: { version: "1.0.0", compatibility: "not_verified" },
     ownership: { current_config_value: "not_rechecked" },
     auth_scope: { api_key_auth: "not_tested" },
   });

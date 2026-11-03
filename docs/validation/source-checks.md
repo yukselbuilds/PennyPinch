@@ -12,7 +12,7 @@ pnpm test:app
 pnpm build
 ```
 
-`test:app` names all eight files explicitly so the command does not depend on PowerShell or shell glob expansion. The H019 candidate contains 73 Node tests; the final local result is recorded in its [product verification proof](../proofs/codex-product-verification.md). `build` runs `tsc -b` followed by Vite; a separate `pnpm typecheck` in the same gate would repeat the TypeScript check.
+`test:app` enumerates its contract-test files explicitly in `package.json`, so the command does not depend on PowerShell or shell glob expansion. Current local evidence is recorded in the [implementation checkpoint](../IMPLEMENTATION_STATUS.md). The historical H019 candidate contained 73 Node tests; the final local result is recorded in its [product verification proof](../proofs/codex-product-verification.md). `build` runs `tsc -b` followed by Vite; a separate `pnpm typecheck` in the same gate would repeat the TypeScript check.
 
 The test and build steps use the checked-in app sources, package manifest, and lockfile. Package installation requires the package registry. The steps do not use provider credentials, client configuration, a running engine, downloaded runtime payloads, proof-helper modules, or files beneath `work/` as inputs. The pnpm store path keeps downloaded packages inside the project workspace.
 

@@ -33,6 +33,7 @@ type Copy = {
   verifyUsage: string;
   verifyNeedsReady: string;
   verifyUnsupported: string;
+  desktopScope: string;
   verifyPassed: string;
   verifyCompletedWithErrors: string;
   verifyBlocked: string;
@@ -102,7 +103,8 @@ const copy: Record<PreferenceLanguage, Copy> = {
     verifyScope: "Bu kontrol yalnızca yeni ve salt okunur bir Codex süreci için geçerlidir. Kayıtlı ayarların kullanıldığını veya ana/alt ajan kapsamını doğrulamaz.",
     verifyUsage: "Geçerli Codex oturum açma yöntemini ve normal model seçimini kullanarak gerçek bir test isteği gönderir; hesap kullanımına yansıyabilir. Yalnız bu yeni sürecin endpoint'i değiştirilir; kayıtlı ayarlar değişmez.",
     verifyNeedsReady: "Doğrulama için desteklenen CLI kurulumu ve hazır Headroom motoru gerekir.",
-    verifyUnsupported: "Bu Codex yüzeyi veya sürümü bu yerel testte desteklenmiyor.",
+    verifyUnsupported: "Bu Codex yüzeyi veya sürümü için otomatik yanıt kontrolü kullanılamıyor.",
+    desktopScope: "Desktop ve CLI aynı kullanıcı bağlantı ayarını paylaşır. Desktop bağlantısını uyguladıktan sonra Codex’i yeniden aç. Buradaki otomatik yanıt kontrolü yalnız yeni CLI süreci içindir; açık Desktop sohbetinin rotası henüz doğrulanmaz.",
     verifyPassed: "Yeni Codex süreci test isteğini Headroom üzerinden tamamladı. Kayıtlı ayarların benimsenmesi ve ajan kapsamı doğrulanmadı.",
     verifyCompletedWithErrors: "Bu yanıt Headroom üzerinden tamamlandı; {count} ek, sınıflandırılmamış CLI hatası bildirildi. Yalnız bu yanıtın rotası doğrulandı; genel protokol ve araç durumu bilinmiyor.",
     verifyBlocked: "Yerel test başlamadı. Durumu güncelle ve gösterilen yerel gereksinimleri kontrol et.",
@@ -171,7 +173,8 @@ const copy: Record<PreferenceLanguage, Copy> = {
     verifyScope: "This check applies only to a new read-only Codex process. It does not verify saved-setting adoption or main/subagent coverage.",
     verifyUsage: "Sends a real test request using your current Codex sign-in and normal model selection; it may count toward account usage. Only this new process gets an endpoint override; saved settings are not changed.",
     verifyNeedsReady: "Verification needs a supported CLI installation and a ready Headroom engine.",
-    verifyUnsupported: "This Codex surface or version is not supported by this local test.",
+    verifyUnsupported: "The automatic response check is unavailable for this Codex surface or version.",
+    desktopScope: "Desktop and CLI share the user connection setting. Reopen Codex after applying the Desktop connection. The automatic response check here starts a new CLI process; it does not verify an open Desktop chat’s route.",
     verifyPassed: "The new Codex process completed the test request through Headroom. Saved-setting adoption and agent coverage remain unverified.",
     verifyCompletedWithErrors: "This response completed through Headroom; {count} additional, unclassified CLI errors were reported. Only this response route was verified; general protocol and tool status remain unknown.",
     verifyBlocked: "The local test did not start. Update status and check the local requirements shown here.",
@@ -368,7 +371,7 @@ export function ConnectionStatus({
     {available && failure && <p className="applications-notice applications-notice--error" role="alert">{failure}</p>}
     {available && state.kind === "snapshot" && <StatusDetails snapshot={state.value} text={text} />}
     {selected && <>
-      <p className="applications-scope" role="note">{supportedSelection ? text.verifyScope : text.verifyUnsupported}</p>
+      <p className="applications-scope" role="note">{selected.surface === "desktop" ? text.desktopScope : supportedSelection ? text.verifyScope : text.verifyUnsupported}</p>
       {supportedSelection && <p className="applications-scope" role="note">{text.verifyUsage}</p>}
       {supportedSelection && state.kind === "snapshot" && !runtimeReady && <p className="applications-notice" role="status">{text.verifyNeedsReady}</p>}
       {verificationBusy && <p className="applications-notice" role="status" aria-live="polite">

@@ -12,9 +12,11 @@ use crate::integrations::transaction_fs::{
     FileSnapshot, FileToken, FileTransaction, TransactionFsError, MAX_TRANSACTION_FILE_BYTES,
 };
 use crate::state::ownership::{
-    config_path_binding, OwnershipError, OwnershipRecord, OwnershipState,
+    config_path_binding, config_path_binding_for_claude_project_target, OwnershipError,
+    OwnershipRecord, OwnershipState,
 };
 use serde::{Deserialize, Serialize};
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
@@ -196,14 +198,12 @@ fn codex_config_observation(
         return (Ok(Some(owner)), CurrentConfigValue::NotOwned);
     }
 
-    let supported_cli = expected_installation.surface == "cli"
-        && expected_installation
-            .version
-            .as_deref()
-            .is_some_and(|version| {
-                super::super::plan::supported_version(ClientKind::Codex, version)
-            });
-    if !supported_cli {
+    let supported_config = super::super::plan::supported_installation(
+        ClientKind::Codex,
+        expected_installation.surface,
+        expected_installation.version.as_deref(),
+    );
+    if !supported_config {
         if transaction.rollback().is_err()
             || !current_codex_selection(manager, expected_installation, scan_generation)
         {
@@ -603,11 +603,15 @@ fn apply_connection(
             return error_reply(correlation, map_transaction(error));
         }
     }
-    let (config_token, before, identity, fingerprint_path) =
-        match open_config_for_apply(&mut transaction, &target_path, &lease.plan) {
-            Ok(value) => value,
-            Err(error) => return error_reply(correlation, error),
-        };
+    let (config_token, before, identity, fingerprint_path) = match open_config_for_apply(
+        &mut transaction,
+        &target_path,
+        &lease.plan,
+        roots.claude_project_directory.as_deref(),
+    ) {
+        Ok(value) => value,
+        Err(error) => return error_reply(correlation, error),
+    };
     let identity = identity.map(|value| {
         (
             value.volume_serial,
@@ -627,7 +631,20 @@ fn apply_connection(
         return error_reply(correlation, ActionFault::Conflict);
     }
     let binding_path = fingerprint_path.as_path();
-    let binding = match config_path_binding(binding_path) {
+    let path_binding = if kind == ClientKind::ClaudeCode
+        && lease.plan.config_source == ConfigSource::ClaudeJson
+        && lease.plan.scope == "project_local_config"
+        && lease.plan.config_presence == ConfigPresence::Missing
+    {
+        roots
+            .claude_project_directory
+            .as_deref()
+            .ok_or(OwnershipError::Conflict)
+            .and_then(|root| config_path_binding_for_claude_project_target(root, binding_path))
+    } else {
+        config_path_binding(binding_path)
+    };
+    let binding = match path_binding {
         Ok(value) => value,
         Err(error) => return error_reply(correlation, map_ownership(error)),
     };
@@ -699,16 +716,16 @@ fn apply_connection(
         Some(value) => value,
         None => return error_reply(correlation, ActionFault::Conflict),
     };
-    let record = match OwnershipRecord::active_from_scoped_patch(
+    let record = match OwnershipRecord::active_from_scoped_patch_with_binding(
         &owner_id,
         &lease.plan.endpoint_id,
-        binding_path,
         revision,
         now,
         &before,
         &after,
         &receipt,
         scope,
+        &binding,
     ) {
         Ok(value) => value,
         Err(error) => return error_reply(correlation, map_ownership(error)),
@@ -1009,10 +1026,11 @@ fn applicable_plan(
     let Some(kind) = parse_client_kind(plan.client_kind) else {
         return false;
     };
-    let supported_version = installation
-        .version
-        .as_deref()
-        .is_some_and(|version| super::super::plan::supported_version(kind, version));
+    let supported_installation = super::super::plan::supported_installation(
+        kind,
+        installation.surface,
+        installation.version.as_deref(),
+    );
     plan.schema_version == 1
         && valid_uuid(&plan.plan_id)
         && valid_uuid(&plan.installation_id)
@@ -1034,8 +1052,7 @@ fn applicable_plan(
         && plan.endpoint_id == endpoint.endpoint_id
         && endpoint.host == "127.0.0.1"
         && endpoint.port != 0
-        && installation.surface == "cli"
-        && supported_version
+        && supported_installation
         && installation.status == "detected"
 }
 
@@ -1266,6 +1283,7 @@ fn open_config_for_apply(
     transaction: &mut FileTransaction,
     path: &Path,
     plan: &ConnectionPlan,
+    claude_project_directory: Option<&Path>,
 ) -> Result<
     (
         FileToken,
@@ -1286,9 +1304,34 @@ fn open_config_for_apply(
             Ok((token, bytes, Some(identity), canonical))
         }
         ConfigPresence::Missing => {
-            let (token, _) = transaction
-                .create_missing(path, MAX_TRANSACTION_FILE_BYTES)
-                .map_err(map_transaction)?;
+            let is_claude_project_target = config_kind(plan)? == ClientKind::ClaudeCode
+                && plan.config_source == ConfigSource::ClaudeJson
+                && plan.scope == "project_local_config";
+            let (token, _) = if is_claude_project_target {
+                let project_root = claude_project_directory.ok_or(ActionFault::Conflict)?;
+                let expected_path = project_root.join(".claude").join("settings.local.json");
+                if !same_path(path, &expected_path) {
+                    return Err(ActionFault::Conflict);
+                }
+                match fs::symlink_metadata(project_root.join(".claude")) {
+                    Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                        let (directory, _) = transaction
+                            .create_claude_directory(project_root)
+                            .map_err(map_transaction)?;
+                        transaction
+                            .create_claude_settings_file(directory, MAX_TRANSACTION_FILE_BYTES)
+                            .map_err(map_transaction)?
+                    }
+                    Ok(_) => transaction
+                        .create_missing(path, MAX_TRANSACTION_FILE_BYTES)
+                        .map_err(map_transaction)?,
+                    Err(_) => return Err(ActionFault::Unavailable),
+                }
+            } else {
+                transaction
+                    .create_missing(path, MAX_TRANSACTION_FILE_BYTES)
+                    .map_err(map_transaction)?
+            };
             Ok((
                 token,
                 empty_document(config_kind(plan)?),

@@ -5,6 +5,7 @@ use super::{
 };
 use super::{ConfigIoError, PlanManager, PreviewGuard};
 use crate::integrations::plan::ConfigScope;
+use crate::state::choices::{ChoiceAvailability, ChoiceStore, ClaudeChoice, ClaudeChoiceScope};
 use serde::{Deserialize, Serialize};
 #[cfg(windows)]
 use std::fs;
@@ -109,11 +110,13 @@ impl ClaudeContextSelection {
     }
 }
 
-type ProjectDirectoryPicker = dyn Fn() -> Result<Option<PathBuf>, ()> + Send + Sync;
+type ProjectDirectoryPicker = dyn Fn(Option<PathBuf>) -> Result<Option<PathBuf>, ()> + Send + Sync;
 
 pub(super) struct ClaudeContextManager {
-    selected: std::sync::Mutex<ClaudeContextSelection>,
+    selected: std::sync::Mutex<Option<ClaudeContextSelection>>,
     picker: Arc<ProjectDirectoryPicker>,
+    choice_store: Option<ChoiceStore>,
+    choice_store_required: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -128,17 +131,25 @@ pub(super) enum ClaudeContextSelectionError {
 
 impl ClaudeContextManager {
     pub(super) fn new() -> Self {
-        Self::with_picker(|| Ok(None))
+        Self {
+            selected: std::sync::Mutex::new(Some(ClaudeContextSelection::user_config())),
+            picker: Arc::new(|_| Ok(None)),
+            choice_store: None,
+            choice_store_required: false,
+        }
     }
 
-    pub(super) fn with_picker<F>(picker: F) -> Self
+    pub(super) fn set_picker<F>(&mut self, picker: F)
     where
-        F: Fn() -> Result<Option<PathBuf>, ()> + Send + Sync + 'static,
+        F: Fn(Option<PathBuf>) -> Result<Option<PathBuf>, ()> + Send + Sync + 'static,
     {
-        Self {
-            selected: std::sync::Mutex::new(ClaudeContextSelection::user_config()),
-            picker: Arc::new(picker),
-        }
+        self.picker = Arc::new(picker);
+    }
+
+    pub(super) fn set_choice_store(&mut self, store: Option<ChoiceStore>) {
+        self.choice_store_required = true;
+        self.selected = std::sync::Mutex::new(store.as_ref().and_then(load_saved_selection));
+        self.choice_store = store;
     }
 
     pub(super) fn current(&self) -> Result<ClaudeContextSelection, ClaudeContextSelectionError> {
@@ -146,7 +157,8 @@ impl ClaudeContextManager {
             .selected
             .lock()
             .map_err(|_| ClaudeContextSelectionError::StateUnavailable)?
-            .clone();
+            .clone()
+            .ok_or(ClaudeContextSelectionError::StateUnavailable)?;
         if !selected.is_valid() {
             return Err(ClaudeContextSelectionError::StateUnavailable);
         }
@@ -168,7 +180,7 @@ impl ClaudeContextManager {
     ) -> Result<Option<ClaudeContextSelection>, ClaudeContextSelectionError> {
         match scope {
             "user_config" => Ok(Some(ClaudeContextSelection::user_config())),
-            "project_local_config" => match (self.picker)() {
+            "project_local_config" => match (self.picker)(self.preferred_picker_directory()) {
                 Ok(Some(path)) => validate_project_directory(&path)
                     .map(|project| {
                         ClaudeContextSelection::project_local(
@@ -196,9 +208,89 @@ impl ClaudeContextManager {
             .selected
             .lock()
             .map_err(|_| ClaudeContextSelectionError::StateUnavailable)?;
-        let changed = *current != selected;
-        *current = selected;
+        let changed = current.as_ref() != Some(&selected);
+        if self.choice_store_required {
+            let store = self
+                .choice_store
+                .as_ref()
+                .ok_or(ClaudeContextSelectionError::StateUnavailable)?;
+            let choice = ClaudeChoice {
+                scope: match selected.scope {
+                    ConfigScope::UserConfig => ClaudeChoiceScope::UserConfig,
+                    ConfigScope::ProjectLocalConfig => ClaudeChoiceScope::ProjectLocalConfig,
+                },
+                project_root: selected.project_directory.clone(),
+                project_identity: selected.project_identity.map(to_file_identity),
+                availability: ChoiceAvailability::Available,
+            };
+            store
+                .save_claude(choice)
+                .map_err(|_| ClaudeContextSelectionError::StateUnavailable)?;
+        }
+        *current = Some(selected);
         Ok(changed)
+    }
+
+    fn preferred_picker_directory(&self) -> Option<PathBuf> {
+        if let Ok(selected) = self.current() {
+            if selected.scope == ConfigScope::ProjectLocalConfig {
+                if let Some(path) = selected.project_directory {
+                    return Some(path);
+                }
+            }
+        }
+
+        let candidates = [
+            std::env::var_os("USERPROFILE").map(PathBuf::from),
+            std::env::current_dir().ok(),
+        ];
+        candidates.into_iter().flatten().find_map(|candidate| {
+            validate_project_directory(&candidate)
+                .ok()
+                .map(|validated| validated.canonical_path)
+        })
+    }
+}
+
+fn load_saved_selection(store: &ChoiceStore) -> Option<ClaudeContextSelection> {
+    let snapshot = store.read().ok()?;
+    let Some(choice) = snapshot.claude else {
+        return Some(ClaudeContextSelection::user_config());
+    };
+    match choice.scope {
+        ClaudeChoiceScope::UserConfig
+            if choice.project_root.is_none()
+                && choice.project_identity.is_none()
+                && choice.availability == ChoiceAvailability::Available =>
+        {
+            Some(ClaudeContextSelection::user_config())
+        }
+        ClaudeChoiceScope::ProjectLocalConfig
+            if choice.availability == ChoiceAvailability::Available =>
+        {
+            let path = choice.project_root?;
+            let identity = choice.project_identity?;
+            let current = validate_project_directory(&path).ok()?;
+            let expected = ProjectDirectoryIdentity {
+                volume: identity.volume_serial,
+                file_index_high: (identity.file_index >> 32) as u32,
+                file_index_low: identity.file_index as u32,
+            };
+            (current.canonical_path == path && current.identity == expected).then(|| {
+                ClaudeContextSelection::project_local(current.canonical_path, current.identity)
+            })
+        }
+        _ => None,
+    }
+}
+
+fn to_file_identity(
+    identity: ProjectDirectoryIdentity,
+) -> crate::integrations::transaction_fs::FileIdentity {
+    crate::integrations::transaction_fs::FileIdentity {
+        volume_serial: identity.volume,
+        file_index: (u64::from(identity.file_index_high) << 32)
+            | u64::from(identity.file_index_low),
     }
 }
 
