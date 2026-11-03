@@ -1,4 +1,5 @@
 mod integrations;
+pub mod metrics;
 mod runtime;
 mod state;
 

@@ -101,6 +101,19 @@ UI, grafik ve JSON/CSV aynı sorgu sonucunu kullanır; yuvarlama gösterimde yap
 
 Allowlist dışındaki raw log, `request_messages`, `compressed_messages`, auth, URL query/header ve serbest tags bu katmana alınmaz. Detaylar/fingerprint'ler [pinned metrik kaynak notunda](research/metrics-0.41.0.md).
 
+### H023 normalizasyon API'si
+
+`src-tauri/src/metrics/normalize.rs` içindeki saf API schema1 üretir. H023 UI veya polling açmaz; depolama/toplayıcı H024 ve görünüm H025 tarafından bağlanır.
+
+- `normalize` güvenilir toplayıcının `Observation` dizisini işler. `Reading` nullable token, local/provider/unknown türü, sürümlü **sayım yöntemi + tokenizer kimliği** ve bileşeni taşır. Sadece model adı veya etiketteki tokenizer adı karşılaştırılabilirlik kanıtı değildir. `before`/`after` aynı kanıtlı temeldeyse miktar ve pozitif tabanda yüzde türetilir.
+- `main_metric_eligible` yalnız tarihli, kökeni kanıtlı Headroom mesaj/bütün-girdi çiftinde true olur. Sıfır taban miktarı bilinse bile yüzde null'dır. RTK/tool-schema/novel/cache/output ayrı ölçümlerdir; provider kullanım alanları ana çifte eklenmez. Farklı tokenizer veya bileşenler tek toplam olamaz.
+- `origin_id` runtime nesli + istek kökeninin SHA-256 anahtarıdır. `event_id` sabit optimizer/bileşen slotunu da içerir. Aynı isteğin farklı katmanları ayrı event olabilir: istek sayısı event satırı sayısı değildir. Başlıca metrik yalnız eligible satırlardan ve aynı bileşen/temelden hesaplanır. Mesaj/bütün-girdi slotu ortak tutulduğu için örtüşen tekrar katkıları conflict olur.
+- `observed_via` yalnız gözlem kanallarını belirtir; MCP'nin güvenilir proxy köken eşlemesi yoksa ana toplama katkısı yoktur. İçerik/tag içindeki eşleme alanına güvenilmez. Canonical `Observation` bir renderer/ham engine giriş sözleşmesi değildir; native toplayıcı kökeni/temeli doğrular. Aynı payload tekrarı birleşir; çelişki miktar/yüzdeyi ve belirsiz temel/zamanı unknown yapar. Nesiller birbirinden ayrıdır. Pollingler arası upsert/retention H024'te aynı anahtarları kullanır.
+- `project_headroom_041` bounded JSON metadata adaptörüdür: `recent_requests` tercih edilir, yoksa `request_logs`; çift liste birden sayılmaz. Raw payload, ID, auth, model/ajan/proje çıkarımı, serbest tags ve lifetime değerleri çıkışa taşınmaz. Eski sayıların temeli/bileşeni bilinmiyorsa ham before/after gözlemi korunur; saved/% ve provider kullanım provenance'ı varsayılmaz.
+- `reported_request_count`, `unidentified_rows`, `rolling_window`, `aggregate_only` ve `complete_traffic=false` kaynak kapsamını açık tutar. Aggregate sayaç event toplamına eklenmez veya farklanmaz; reset/restart kazanç üretmez. Bilinmeyen toplam sıfıra çevrilmez; örneklerde görülen eski lifetime verisi güncel trafiğe taşınmaz. Gerçek polling gap/retention dönemleri H024'te izlenir.
+
+Sınırlar ve karar: [010](decisions/010-metrics-normalization.md). Sabit `NormalizeError` değerleri payload içermez. Yeni bağımlılık yok; mevcut `time` kütüphanesinin parsing özelliği kullanılır.
+
 ## 6. Uyumluluk kataloğu
 
 Her kayıt istemci sürüm aralığı, yüzey, auth yöntemi, protokol/transport, capability ve kanıt referansıyla tanımlanır. Katalog [`compatibility/clients.json`](../compatibility/clients.json) içindedir. Durumlar `not_tested | unknown | local_fixture_partial | local_fixture_pass | live_verified | unsupported | environment_blocked`; gerekçe ve ölçüm tarihi zorunludur. `unknown`, denenen sonucun semantiği sınıflandırılamadığında; `not_tested`, ilgili kombinasyon hiç denenmediğinde kullanılır. Policy/OS engeli `environment_blocked` olur ve uyumsuzluk iddiası değildir. Kısmi kanıtta hangi alt davranışın geçtiği ve hangisinin bilinmediği ayrı yazılır. Yerel PASS yalnız o sürüm/yüzey/auth/protokol satırına aittir, canlı desteğe otomatik yükselmez. `unsupported` yalnız somut uyumsuzluk kanıtıyla verilir.

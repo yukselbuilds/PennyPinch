@@ -1,0 +1,11 @@
+{
+  "requests": {"total": 3},
+  "tokens": {"input": 12, "saved": 99999, "savings_percent": 99.99},
+  "proxy_savings": {"lifetime_saved": 999999},
+  "recent_requests": [
+    {"request_id":"raw-request-id-chat-1","timestamp":"2026-11-03T12:00:00Z","input_tokens_original":2306,"input_tokens_optimized":12,"output_tokens":4,"tokens_saved":0,"savings_percent":0,"request_messages":[{"content":"DO_NOT_COPY"}],"compressed_messages":["DO_NOT_COPY"],"authorization":"DO_NOT_COPY","tags":{"tokenizer":"DO_NOT_COPY","origin":"DO_NOT_COPY"}},
+    {"request_id":"raw-request-id-chat-2","timestamp":"2026-11-03T12:00:01Z","input_tokens_original":2306,"input_tokens_optimized":12,"output_tokens":4,"tokens_saved":0,"savings_percent":0},
+    {"request_id":"raw-request-id-response","timestamp":"2026-11-03T12:00:02Z","input_tokens_original":12,"input_tokens_optimized":12,"output_tokens":4,"tokens_saved":0,"savings_percent":0}
+  ],
+  "request_logs": [{"request_id":"DO_NOT_COPY","request_messages":["DO_NOT_COPY"]}]
+}
