@@ -16,4 +16,6 @@
 
 - **Ayrı HTTP/SSE kontrolü.** Akışın kapanmasını beklemek yerine tamamlanma olayını okuyan penceresiz test, pinli motor üzerinden HTTP 200 ve beklenen terminal yanıtı aldı. Test motoru temiz kapandı. Kanıt `work/proofs/codex-current/desktop-headless-runs/3d8504db-a28d-4a6d-8436-71110a659d10/headless.json`.
 
-H008 açık. Gerçek Desktop hesabı ve mevcut sohbet yönlendirmesi, farklı model ve efor kombinasyonu ve diğer auth/transport kapsamı bekliyor. Bu tanı token tasarrufu ölçmedi.
+- **Güncel CLI farklı model ve efor.** Normal ChatGPT hesabı ve CLI 0.166.0 ile ana ajan `gpt-6-astra` / `max`, test alt ajanı `gpt-6.1-sol` / `medium` olarak kaydedildi. Tek alt ajan açıldı ve iki rol de tamamlandı. Ayrı sohbet kimlikleri iki Responses isteğinde Headroom girişinde eşleşti. Sekiz bağlantının iki ucu sahiplik denetimini geçti. `wait_agent` çağrısı kayıtta var. Eski QA okuyucusu dönüşünü ayrıştıramadığı için birleşik yaşam döngüsü durumu `partial`. Bu koşunun model ve efor seçimi test girdisidir. Sahipliği doğrulanan Headroom penceresi 949 ms içinde exit 0 verdi. Kanıt `work/proofs/codex-current/native-runs/9a50529f-5428-48fc-bfd0-fb622163db80/mixed-role-verification.json`.
+
+H008 açık. Gerçek Desktop hesabı, mevcut sohbet yönlendirmesi ve diğer auth/transport kapsamı bekliyor. Bu tanı token tasarrufu ölçmedi.

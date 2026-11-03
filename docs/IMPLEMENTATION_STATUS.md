@@ -1,6 +1,10 @@
 # Headroom Desktop — güncel devir
 3 Kasım 2026.
 
+## 3 Kasım — H008 farklı model ve efor CLI kanıtı
+- Güncel CLI 0.166.0 ile normal hesabın ana Astra max seçimi korundu. Bu koşuya özel Sol medium alt ajanı çalıştı. Tamamlanma ve iki ayrı Headroom giriş kimliği gözlendi. Eski QA okuyucusunun wait çıktısı kontrolü partial. Pencere ve portlar kapandı.
+- H008 açık ve 20/51 aynı. Sıradaki somut adım, ayrı Desktop test profilinde kullanıcının mevcut ChatGPT hesabıyla resmî giriş yapması ve kayıtlı yönlendirme ile test sohbetinin yeniden açılmasının ölçülmesi. Aktif kullanıcı profili, ayarları ve mevcut sohbetleri bu deneyden ayrı kalır. [Kanıt](proofs/codex-current-diagnostics.md).
+
 ## 3 Kasım — H008 Desktop izole WebSocket kabulü
 - Sahte sağlayıcıdaki eksik kimlik alanı penceresiz koşuda ayrıldı. Düzeltme sonrası pinli motor üzerinden yerel Responses WebSocket terminali doğrulandı.
 - Kullanıcıya açılıştan önce bilgi verildi. İzole kurulu Desktop arayüzü kayıtlı uç noktayı kullandı ve Headroom üzerinden yerel tamamlanmış yanıtı gösterdi. Test penceresi ve portlar kapandı. Normal Codex ayar hash'i eşleşti. [Kanıt](proofs/codex-current-diagnostics.md).
