@@ -6,3 +6,5 @@ pub mod store;
 mod normalize_tests;
 #[cfg(test)]
 mod query_tests;
+#[cfg(test)]
+mod store_tests;

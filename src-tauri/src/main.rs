@@ -17,6 +17,7 @@ use integrations::discovery::{
     SavedInstallationChoiceReply, SavedInstallationChoiceRequest,
 };
 use integrations::picker;
+use metrics::store::{MetricsError, MetricsQueryRequest, MetricsReply, MetricsStore};
 use runtime::manager::{IngressReply, RuntimeManager, RuntimeReply};
 use state::choices::ChoiceStore;
 use state::store::{PreferenceStore, PreferencesReply};
@@ -100,6 +101,20 @@ fn get_ingress_snapshot(
     request_id: String,
 ) -> IngressReply {
     state.get_ingress_snapshot(request_id)
+}
+
+#[tauri::command]
+async fn get_metrics_summary(
+    state: tauri::State<'_, MetricsStore>,
+    request: MetricsQueryRequest,
+) -> Result<MetricsReply, MetricsReply> {
+    let store = state.inner().clone();
+    let request_id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || store.query(request))
+            .await
+            .unwrap_or_else(|_| MetricsStore::failure(request_id, MetricsError::Unavailable)),
+    )
 }
 
 #[tauri::command]
@@ -378,12 +393,13 @@ fn main() {
                             .map_err(|_| ())?
                     }),
             );
-            let codex_verifier = CodexVerifyManager::new(app_local_data_dir);
+            let codex_verifier = CodexVerifyManager::new(app_local_data_dir.clone());
             app.manage(runtime);
             app.manage(PreferenceStore::new(app.path().app_data_dir().ok()));
             app.manage(discovery);
             app.manage(plans);
             app.manage(codex_verifier);
+            app.manage(MetricsStore::new(app_local_data_dir));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -391,6 +407,7 @@ fn main() {
             stop_engine,
             get_runtime_snapshot,
             get_ingress_snapshot,
+            get_metrics_summary,
             get_preferences,
             save_preferences,
             get_discovery_snapshot,

@@ -1,6 +1,17 @@
 # Headroom Desktop — güncel devir
 4 Kasım 2026.
 
+## H024 — tamamlandı
+- 22/51; ana görev sonunda duruldu. Sıradaki H025 başlamadı. [Kabul](proofs/metrics-store.md), [karar012](decisions/012-metrics-store.md), [inceleme](reviews/H024.md). Kalıcı kayıt/ölçüm kararları, depo/native uygulama ve inceleme ana ajanda; tek Luna yalnız query test dosyasını yazdı. Bir semantik düzeltme paketi sonrası çalışan completed olarak durduruldu; ana ajan sınır regresyonlarını ekledi. Model/efor değiştirilmedi, ek çalışan açılmadı; geliştirme tasarrufu/süre ölçülmedi.
+- SQLite transaction/upsert, ortak conflict merge ve slot kimliği doğrulaması; izleme oturumu/bugün/7 yerel gün,30 gün retention,64 grup ayrıntısı, karma temel/taşma/bilinmeyen kapsam DTO'su tamamlandı. Yeni depoda prompt/auth/log içeriği yoktur. Constructor/boş sorgu pasif; schema/hardlink/reparse/busy/kapasite/rollback koşulları sabit hata üretir.
+- İlk12 PASS/17 RED sonrası uygulama; sınır regresyonları önce RED sonra GREEN. Ayrı Rust süreçleriyle yazıp yeniden okumada fixture1.400/%14 ve yeni boş izleme oturumu doğrulandı. Bu gerçek kullanıcı tasarrufu değildir.36 odaklı PASS; son adayın tek tam Rust kapısı313 PASS/5 ignored, fmt/offline embedded build PASS.108 kaynak/test/config/yardımcı fingerprint'i önce/sonra eşleşti;98 frontend/build kanıtı ilgili girdi/dist/araç eşleşmesiyle yeniden kullanılır.
+- İki gerçek native Headroom açılışında session/today/seven_days ve geçersiz schema sorgusu doğru; aynı süreçte sabit/yeni süreçte farklı izleme kimliği. İki pencere WM_CLOSE→exit0, sahipli Job/port cleanup tamam. Normal config/preferences/ownership/onboarding/metrik DB durumu eşleşti; motor/model başlatılmadı. Son rapor `work/proofs/metrics-store/acceptance.json`.
+- Sonraki somut adım H025: owned runtime'dan bounded metadata toplama ve nesil/gap kapsamını gerçek yolla doğrulayıp yerel sorguyu Graphite Genel bakışa bağlamak. H024 polling veya canlı dashboard kurmadı;0.41.0 sayaç temeli bilinmeyen kalır. Windows11/macOS/Linux/installer/güç kesintisi/uzun yük doğrulanmadı. Canlı API-key kabulü H041'de açık.
+
+## H024 — başladı
+- Kullanıcının devam mesajıyla sıradaki H024 başladı;21/51 aynı. Kalıcı kayıt/ölçüm kararları ve uygulama ana ajanda; mevcut tek Luna yalnız `metrics/query_tests.rs` dosyasındaki sabit sözleşme testlerini yazar. [Plan ve kabul](decisions/012-metrics-store.md).
+- SQLite upsert/transaction, 30 gün retention, ilk yakalamaya bağlı izleme oturumu ve yerel takvim dönemleri hedeflenir. H023'ün belirsiz 0.41.0 ölçümleri yükseltilmez; canlı collector, ekran ve auth/model değişikliği yoktur. Sıradaki adım odaklı RED testleri ve depo/sorgu uygulamasıdır.
+
 ## H008 — ChatGPT kapsamıyla tamamlandı
 - Kullanıcı, gerçek ChatGPT CLI/Desktop kanıtıyla H008 kapanışını ve canlı API-key testinin H041 yayın öncesi kabulünde açık tutulmasını seçti. TASKS ana kutusu kapandı:21/51. Sıradaki H024 başlamadı; ana görev sonunda çalışma durduruldu. [Kabul ve sınırlar](proofs/codex-native-wait.md#h008-kapsam-kararı-ve-kapanış).
 - Ana ajan auth/rota, izin ve kabul semantiğini üstlendi. Mevcut tek Luna yalnız kabul/kanıt eşlemesini salt okunur denetledi; yeni çalışan veya alt çalışan yok. Son metadata incelemesi istemci MCP çağrı/dönüşünü eşleştirip environment_blocked / mcp_requires_approval_policy_never nedenini doğruladı. Envanter belirsizliği bu koşul için kalktı; izin politikası değiştirilmedi, reddedilen eylem tekrar edilmedi.

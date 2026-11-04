@@ -4,13 +4,13 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H013–H023, H040, H046 ve **H047 tamamlandı:21/51.** H008 kullanıcı kararıyla Windows10 ChatGPT kapsamıyla kabul edildi: CLI ana/alt ajan ve Desktop aynı sohbet/yeniden açılış gerçek trafikle doğrulandı. Canlı API-key testi H041 yayın öncesi kabulünde açık; bütün modeller/işletim sistemleri için destek iddiası yok. H023 içeriksiz normalizasyon/adaptör kabulüdür; canlı dashboard değildir. Sıradaki H024 bekliyor, başlamadı. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
+**Durum:** H001–H005, H007–H008, H013–H024, H040, H046 ve **H047 tamamlandı:22/51.** H024 kalıcı metadata/dönem sorgusu kabulüdür; canlı collector/ekran H025'te. H008 Windows10 ChatGPT CLI/Desktop kapsamıyla kabul edildi; canlı API-key testi H041 yayın öncesi kabulünde açık. Sıradaki H025 başlamadı, kullanıcı devam mesajı bekleniyor. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
 ## Geliştirme araçları ve çalışma düzeni
 
-Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H023 ve kapsamı netleştirilen H008 kabul edildi. Sıradaki ürün görevi H024; kullanıcı devam mesajı bekleniyor.
+Bu işler 51 ürün görevine eklenmez. DEV001/DEV002 ve H024 kabul edildi. Sıradaki ürün görevi H025; kullanıcı devam mesajı bekleniyor.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -379,14 +379,17 @@ flowchart TD
 - **Dosyalar:** `src-tauri/src/metrics/{mod,normalize,normalize_tests}.rs`, `tests/fixtures/metrics/`, `src-tauri/src/main.rs`, `src-tauri/Cargo.toml`; mevcut time parsing özelliği, lock aynı.
 
 ### H024 — Oturum ve dönem kaydı
+- **Durum:** Tamamlandı —4 Kasım. Ana ajan kalıcı kayıt/ölçüm/native uygulama ve inceleme sahibi; tek Luna yalnız bağımsız sorgu testlerini yazdı.36 odaklı/313 tam Rust PASS,5 opt-in ignored; fmt/offline embedded build ve iki gerçek native açılışta sorgu/exit0 PASS. Değişmeyen98 frontend/build kanıtı fingerprint ile yeniden kullanıldı. [Kanıt](docs/proofs/metrics-store.md), [inceleme](docs/reviews/H024.md).
+- **Uygulama planı (kabul öncesi):** Ana ajan kalıcı kayıt/kapsam ve native sorgu uygulamasını üstlendi; mevcut tek Luna yalnız sabitlenmiş toplam sözleşmesinin bağımsız test dosyasını yazdı. SQLite event_id upsert,30 gün metadata saklama, yerel bugün/7 gün ve izleme oturumu sözleşmesi [karar012](docs/decisions/012-metrics-store.md) içindedir. Canlı collector ve ekran bağlantısı H025'te kalır; güncel kabul yukarıdadır.
 - **H023 devir sözleşmesi:** schema1 `event_id` upsert, `origin_id` istek grubu, `main_metric_eligible` + aynı temel/bileşen filtresi korunur. Legacy rolling snapshot ve aggregate kayıtları tam trafik/ölçülmüş tasarruf sayılmaz; eksik provenance kendiliğinden yükseltilmez. Canlı kıyaslanabilir toplayıcı kanıtı henüz yoktur.
-- [ ] Normalize event'ler tekrar sayılmadan yerelde saklanır ve dönem toplamları hesaplanır.
+- [x] Normalize event'ler tekrar sayılmadan yerelde saklanır ve dönem toplamları hesaplanır. SQLite event_id upsert/çatışma, izleme oturumu, yerel bugün/7 gün,30 gün retention ve kapsam DTO'su kabul edildi. Canlı toplayıcı ve ekran H025'in ayrı kabulüdür.
 - **Kabul:** Oturum/bugün/7 gün kapsamları ayrı; yerel saat ve yeniden açılış doğru; saklama süresi görünür. Seçili kapsamın tasarruf yüzdesi `100 × (ΣB − ΣA) / ΣB` ile hesaplanır; istek yüzdeleri ortalanmaz. Eksik kayıtlar için ölçüm kapsamı gösterilir; ölçülebilen alt toplam bütün trafikmiş gibi sunulmaz.
 - **Doğrulama:** Zaman sınırı, tekrar event ve yeniden başlatma odaklı testleri; ağırlıklı yüzde hesabı (`1.000 → 500` ve `9.000 → 8.100` toplamında `%14`); kısmi ölçüm kapsamı.
 - **Bağımlılık / boyut:** H023 / M.
-- **Dosyalar:** `src-tauri/src/metrics/store.rs`, `src-tauri/src/metrics/store_tests.rs`, `src-tauri/src/metrics/query.rs`.
+- **Dosyalar:** `src-tauri/src/metrics/{store,store_tests,query,query_tests,normalize,mod}.rs`, `src-tauri/src/main.rs`, `src-tauri/Cargo.{toml,lock}`; sözleşme/karar012 ve yerel `work/proofs/metrics-store/` kanıtları.
 
 ### H025 — Gerçek Genel bakış ekranı
+- **H024 entegrasyon devri:** İlk dilim owned runtime'dan bounded metadata toplayıcısını ve H023→H024 kayıt girişini gerçek kaynağa bağlar; yalnız depo sorgusunu ekrana bağlamak canlı dashboard kabulü değildir. Polling/gap ve nesil değişimi ayrı doğrulanır;0.41.0'ın bilinmeyen sayaç temeli yükseltilmez. Motor dururken yerel geçmiş okunabilmelidir. H024'te canlı polling başlamaz.
 - **3 Kasım UI/UX kabulü:** [İnceleme](docs/reviews/UX-2026-11-03.md). Graphite korunur; ilk kullanımda kısa etki özetiyle Bağla ve başlat, sonraki kullanımda hatırlanan bağlantıyla Başlat. Aynı etkin ayar kapsamı ve desteklenen rota kanıtlı CLI/Desktop adayları tek mantıksal uygulama satırıdır; farklı profil/proje/çatışmada anlamlı seçim korunur. H022'nin tarihsel kabulü bu yeni hedefin tamamlandığı anlamına gelmez.
 - [ ] Normal ekranda teknik ikili/sürüm seçimi gerekmez; gerçek kayıt/trafik durumları ve tek sonraki eylem görünür. Salt Gelişmiş okuması tarama/bağlantıyı kilitlemez; gerçek işlemin eşzamanlılık koruması sürer. Tek boş durum, okunur metin, erişilir gezinme ve klavye/ölçekleme kabulü uygulanır.
 - **24 Ekim ürün yönü:** Varsayılan görünüm platform → model satırlarında kullanılan token, tasarruf token/% ve kaynağı varsa maliyet. Resmî harcama/tahmin ayrı; abonelik kotasından tutar uydurulmaz. Teknik yönlendirme ayrıntıları Gelişmiş altında; hesap ve sohbet durumları H050/H051 ile kısa özetlenir.
@@ -663,4 +666,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**21/51 tamam; H008 ChatGPT kapsamıyla kapandı.** Kullanıcı canlı API-key testini H041 yayın öncesi kabulünde açık tutmayı seçti. Windows10'da CLI ana/tek alt ajan, native bekleme ve Desktop aynı sohbet/yeniden açılış gerçek trafikle doğrulandı. MCP test çağrısı izin politikası nedeniyle environment_blocked; QA relay resetlerinin yönü/zamanı bilinmiyor, genel transport sağlığı iddia edilmedi. Değişmeyen 101 ürün girdisiyle son yerel kapının 289 Rust/98 frontend PASS ve build/fmt kanıtları yeniden kullanılır; iki yeni Python fixture'ının 3 odaklı testi ayrıca PASS. [Kabul ve sınırlar](docs/proofs/codex-native-wait.md#h008-kapsam-kararı-ve-kapanış). Sıradaki H024 başlamadı; kullanıcı devam mesajı bekleniyor. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.
+**22/51 tamam; H024 kapandı.** Kalıcı içeriksiz depo ve yerel dönem sorgusu, ayrı süreçte kayıt/yeniden okuma ve iki gerçek native açılışta IPC doğrulandı.36 odaklı/313 tam Rust PASS,5 opt-in ignored; fmt/embedded build PASS. Değişmeyen98 frontend/build kanıtı fingerprint ile korundu. [Kabul](docs/proofs/metrics-store.md), [inceleme](docs/reviews/H024.md). Sıradaki H025 owned metadata toplayıcısı ve gerçek Genel bakış ekranıdır; henüz başlamadı, kullanıcı devam mesajı bekleniyor. Canlı API-key kabulü H041'de açık. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.
