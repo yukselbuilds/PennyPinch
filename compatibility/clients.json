@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "last_updated": "2026-10-24",
+  "last_updated": "2026-11-04",
   "purpose": "Observed compatibility combinations only. A local fixture result does not imply live auth, desktop, subagent, or release support.",
   "allowed_statuses": [
     "not_tested",
@@ -333,6 +333,120 @@
         "docs/reviews/H021.md"
       ],
       "evidence_date": "2026-10-24"
+    },
+    {
+      "id": "codex-cli-0166-chatgpt-win10-native-wait",
+      "product": "OpenAI Codex CLI",
+      "version": "0.166.0",
+      "surface": "Native Headroom verifier and isolated CLI exec; parent plus one child",
+      "platform": "Windows 10 Pro 22H2 x64 (10.0.19045)",
+      "auth": "Existing ChatGPT sign-in; credentials not copied into proof",
+      "protocol": "OpenAI Responses via ChatGPT gateway",
+      "transport": "WebSocket through owned loopback ingress and pinned Headroom 0.41.0",
+      "status": "live_verified",
+      "capabilities": {
+        "native_ui_to_cli_completed_response": {
+          "status": "live_verified",
+          "evidence": "docs/proofs/codex-current.md"
+        },
+        "same_model_parent_child_separate_routing": {
+          "status": "live_verified",
+          "evidence": "docs/proofs/codex-current-diagnostics.md"
+        },
+        "different_model_effort_spawn_wait_and_separate_routing": {
+          "status": "live_verified",
+          "evidence": "docs/proofs/codex-native-wait.md"
+        },
+        "controlled_child_mcp_gate": {
+          "status": "environment_blocked",
+          "evidence": "docs/proofs/codex-native-wait.md",
+          "detail": "Client requires MCP approval while approval policy is never; no gate HTTP request. Policy unchanged and action not retried."
+        },
+        "historical_qa_tcp_resets": {
+          "status": "unknown",
+          "evidence": "docs/proofs/codex-native-wait.md",
+          "detail": "Two resets; direction and relation to model terminal events not recorded. Coarse TCP counter is not model completion status."
+        },
+        "client_side_ccr_and_all_model_features": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/codex-native-wait.md"
+        }
+      },
+      "limits": [
+        "Observed parent/child models and efforts are test inputs, not a product allowlist.",
+        "Scoped completed requests do not establish general tool/transport health, all models, or other OS support."
+      ],
+      "evidence": [
+        "docs/proofs/codex-current.md",
+        "docs/proofs/codex-current-diagnostics.md",
+        "docs/proofs/codex-native-wait.md"
+      ],
+      "evidence_date": "2026-11-04"
+    },
+    {
+      "id": "codex-desktop-2610276604-chatgpt-win10",
+      "product": "OpenAI Codex Desktop",
+      "version": "Desktop 26.1027.6604.0; backend 0.166.0-alpha.5.1",
+      "surface": "Installed packaged Desktop; separate authorized account profile; same native chat reopened",
+      "platform": "Windows 10 Pro 22H2 x64 (10.0.19045)",
+      "auth": "Official ChatGPT device sign-in in app-owned test state",
+      "protocol": "OpenAI Responses via ChatGPT gateway",
+      "transport": "WebSocket through owned loopback ingress and pinned Headroom 0.41.0",
+      "status": "live_verified",
+      "capabilities": {
+        "visible_completed_response_and_same_chat_reopen": {
+          "status": "live_verified",
+          "evidence": "docs/proofs/codex-desktop-live.md"
+        },
+        "saved_endpoint_after_full_app_reopen": {
+          "status": "live_verified",
+          "evidence": "docs/proofs/codex-desktop-live.md"
+        },
+        "external_endpoint_change_in_running_process": {
+          "status": "unsupported",
+          "evidence": "docs/proofs/codex-desktop-live.md",
+          "detail": "The observed next turn remained direct; full app reopen was required in this version."
+        },
+        "signed_discovery_and_isolated_apply_undo": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/codex-desktop-live.md"
+        },
+        "desktop_subagent_and_client_side_ccr": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/codex-desktop-live.md"
+        }
+      },
+      "limits": [
+        "Packaged diagnostic launch and owned Job cleanup; not standard launcher, normal GUI-close, installer, or release proof.",
+        "Model/effort preserved in this profile; no all-model or other OS support claim."
+      ],
+      "evidence": [
+        "docs/proofs/codex-desktop-live.md",
+        "docs/proofs/codex-native-wait.md"
+      ],
+      "evidence_date": "2026-11-04"
+    },
+    {
+      "id": "codex-current-real-api-key-provider",
+      "product": "OpenAI Codex CLI / Desktop",
+      "version": "CLI 0.166.0; Desktop 26.1027.6604.0/backend 0.166.0-alpha.5.1",
+      "surface": "Real API-key provider path; separate from verified ChatGPT combinations",
+      "platform": "Windows 10 Pro 22H2 x64 (10.0.19045)",
+      "auth": "Real API key not supplied or used",
+      "protocol": "Responses API; live auth path not tested",
+      "transport": "Live HTTP/SSE and WebSocket not tested for this auth combination",
+      "status": "not_tested",
+      "capabilities": {
+        "real_api_key_provider_model_reasoning_and_completion": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/codex-native-wait.md",
+          "detail": "User moved this acceptance to the open H041 pre-release gate; synthetic API-key fixtures remain separate historical records."
+        }
+      },
+      "evidence": [
+        "docs/proofs/codex-native-wait.md"
+      ],
+      "evidence_date": "2026-11-04"
     }
   ],
   "product_capabilities": [

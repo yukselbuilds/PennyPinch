@@ -1,6 +1,14 @@
 # Headroom Desktop — güncel devir
 4 Kasım 2026.
 
+## H008 — ChatGPT kapsamıyla tamamlandı
+- Kullanıcı, gerçek ChatGPT CLI/Desktop kanıtıyla H008 kapanışını ve canlı API-key testinin H041 yayın öncesi kabulünde açık tutulmasını seçti. TASKS ana kutusu kapandı:21/51. Sıradaki H024 başlamadı; ana görev sonunda çalışma durduruldu. [Kabul ve sınırlar](proofs/codex-native-wait.md#h008-kapsam-kararı-ve-kapanış).
+- Ana ajan auth/rota, izin ve kabul semantiğini üstlendi. Mevcut tek Luna yalnız kabul/kanıt eşlemesini salt okunur denetledi; yeni çalışan veya alt çalışan yok. Son metadata incelemesi istemci MCP çağrı/dönüşünü eşleştirip environment_blocked / mcp_requires_approval_policy_never nedenini doğruladı. Envanter belirsizliği bu koşul için kalktı; izin politikası değiştirilmedi, reddedilen eylem tekrar edilmedi.
+- QA relay sayacı TCP aktarım/kapanışını izler; model terminal başarısını ayrıştırmaz. İki resetin yönü/terminalle zaman ilişkisi kayıtta yok ve unknown kalır. Yeni model çağrısı veya sentetik ağ deneyi yapılmadı; native yanıt/rol/bekleme kanıtı ve genel transport sağlığı ayrıldı.
+- Uyumluluk kataloğuna yalnız gözlenen CLI0.166.0 ve Desktop26.1027.6604.0 ChatGPT/Win10 kayıtları eklendi; Desktop alt ajan ve canlı API-key not_tested, kontrollü MCP environment_blocked. Eski fixture kayıtları korundu. Katalog UI bağlantısı H036'da bekler.
+- UI/runtime değişmedi. 101 ürün girdisi, araç/ortam ve 3 Python fixture testi fingerprint eşleşmesiyle önceki PASS kanıtları yeniden kullanılır; sonuç `work/proofs/codex-current/h008-chatgpt-acceptance.json` içindedir. Son kapanış diliminde bir metadata okuyucu alan adı varsayımı düzeltildi; ürün hatası değildi. Geliştirme token tasarrufu/süre ölçülmedi.
+- Sonraki somut adım, kullanıcının yeni devam mesajından sonra H024 oturum/dönem kaydı kabulünü ele almak. Canlı API-key erişimi veya ücretli kaynak olmadan H041'in taşınan maddesi tamamlandı sayılmaz.
+
 ## 4 Kasım — ürün hedefleri ve H008 native bekleme
 - Kullanıcı en iyi tasarruf özelliklerini kapsama hedefini yineledi. Mevcut tek Luna xhigh çalışanı yalnız spec/TASKS/kaynak eşlemesi belgelerini düzenledi; ana ajan auth/rota ve kabul incelemesini üstlendi. Tek düzeltme paketinde H041 ilk sürüm kontrol+Headroom tabanı ile H043 sonrası dört kollu RTK kıyası ayrıldı; yayın bağımlılık döngüsü önlendi. Yeni ana görev/kurulum yok, 20/51 ve H008 aktif/H024 bekliyor. [Hedefler](research/optimization-targets-2026-11-04.md).
 - H012/H034 sürüm güveni ile davranış uyumunu ayırır, güncelleme sonrası kanıtı yeniden doğrular. H025 sade uygulama/model metrikleri, H041/H043 fayda-kalite-cache-gecikme kıyası, H044 açık opt-in OSS terminal filtresi hedefi güçlendirildi. RTK/BUSL proxy veya otomatik model düşürme eklenmedi; ölçülmüş üstünlük/tasarruf iddiası yok.

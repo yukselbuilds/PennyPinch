@@ -26,4 +26,6 @@
 
 - **4 Kasım native bekleme.** Yeni gerçek CLI koşusunda ana Astra max ve tek Sol medium alt ajanı için spawn/wait, completed runtime olayı, eşleşen `timed_out=false` dönüşü ve ayrı giriş kimlikleri doğrulandı. Kontrollü MCP kapısı kullanılmadığı için o senaryo geçmedi. Gizlenen işaretle ikinci koşu araç kullanılamıyor yanıtını iletti. Model çağrısız ayrı app-server kontrolü aynı MCP fixture'ını gerçekten çağırdı. [Kapsam ve kanıt](codex-native-wait.md).
 
-H008 açık. Kontrollü alt ajan MCP erişimi, iki QA relay resetinin sınıflandırılması ve canlı API-key/geniş auth kapsamı takipte. Yerel motor tahminleri sağlayıcı faturası veya kota tasarrufu kanıtı sayılmaz.
+4 Kasım salt okunur inceleme, kontrollü MCP çağrısının istemcinin `approval_policy=never` politikasıyla engellendiğini aynı call_id üzerinden doğruladı: environment_blocked. İzin değiştirilmedi ve çağrı tekrarlanmadı. QA relay sayacı TCP kapanışını ölçer; iki tarihsel resetin yönü ve terminalle zaman ilişkisi bilinmiyor.
+
+H008, kullanıcının 4 Kasım kapsam kararıyla doğrulanmış Windows10 ChatGPT CLI/Desktop akışları için kapandı. Canlı API-key testi H041 yayın öncesi kabulünde açık/not_tested kaldı. [Kapanış ve sınırlar](codex-native-wait.md#h008-kapsam-kararı-ve-kapanış). Yerel motor tahminleri sağlayıcı faturası veya kota tasarrufu kanıtı sayılmaz.
