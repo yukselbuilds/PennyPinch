@@ -1,5 +1,13 @@
 # Headroom Desktop — güncel devir
-3 Kasım 2026.
+4 Kasım 2026.
+
+## 4 Kasım — H008 gerçek Desktop hesabı ve aynı sohbet
+- Kullanıcı ayrı profilin resmî girişini tamamladı ve ilk kullanım ekranını atladı. Ana ajan auth/rota/süreç sahipliği nedeniyle doğrulamayı yürüttü; mevcut Luna kullanılmadı. Kurulu Desktop bu arada 26.1027.6604.0 paketine ve farklı hashli 0.166.0-alpha.5.1 backend'e güncellenmişti. Yeni imza/pin doğrulandı; eski dosyalara bağlı GUI kanıtı güncel paket yerine sayılmadı.
+- Gerçek Desktop iki kısa yanıtı Headroom üzerinden tamamladı. Yeni sohbet ekranına çıkışta eski yanıtın görünmezliği, aynı sohbeti kenar çubuğundan açınca ilk yanıtın görünürlüğü ve ikinci tam yanıt doğrulandı. Native kimlik, iki tur ve varsayılan model/efor ayrıca eşleşti. Motor 5 yerel istek/1 cache/0 failure bildirdi; warmup/istek amaçları ayrı sayılmadı. [Kanıt](proofs/codex-desktop-live.md).
+- Test penceresi owned Job cleanup ile kapandı; bu normal GUI kapanış kabulü değildir. Motor graceful/exit0 ve iki port kapalı. Normal config eşleşti; test profilindeki sahipli endpoint alanı kaldırıldı. Auth uygulama state'inde kaldı. Eski boş ekran koşusu model isteği göndermedi; paket ve ortam birlikte değiştiği için kök nedeni bilinmiyor.
+- 101 ürün girdisi önceki tam kapıyla eşleşti; ürün testleri tekrar edilmedi. Kurulu paket/backend değişimi nedeniyle 2 opt-in gerçek keşif/pin ve izole CLI/Desktop Apply/Undo yenilendi ve PASS. Geliştirme tasarrufu ölçülmedi; ham motor tahmini kota/fatura tasarrufu sayılmadı.
+- CLI farklı model koşusunun eski wait çıktısı aynı parent kaydında sınıflandırıldı: eşleşen çağrı dispatch öncesi iptal. Birleşik yaşam döngüsü partial kalır; child tamamlanması ve ayrı rota kanıtı korunur. Yeni model çağrısı yapılmadı.
+- H008 açık ve 20/51 aynı. Sonraki somut adım, çalışan izole Desktop'a sonradan kaydedilen endpoint'in adoption/restart davranışını ve uygulama yeniden açılınca aynı test sohbetinin rotasını ölçmek. Canlı API-key yolu ve geniş auth/transport kapsamı ayrıca açık. H024 başlamadı.
 
 ## 3 Kasım — H008 farklı model ve efor CLI kanıtı
 - Güncel CLI 0.166.0 ile normal hesabın ana Astra max seçimi korundu. Bu koşuya özel Sol medium alt ajanı çalıştı. Tamamlanma ve iki ayrı Headroom giriş kimliği gözlendi. Eski QA okuyucusunun wait çıktısı kontrolü partial. Pencere ve portlar kapandı.
