@@ -28,6 +28,16 @@ Yerel kanıt kökü `work/proofs/codex-current/desktop-live-runs/dd004ad6-2551-4
 
 Önceki `9de4c852-5008-4870-b03a-4c184decc742` koşusu boş arayüzle süre sonunda kapandı, model isteği gözlenmedi. İki koşu arasında paket ve test ortamı değiştiğinden önceki boş ekranın kök nedeni bu PASS ile açıklanmış sayılmaz.
 
+## Çalışan uygulamada ayar ve tam yeniden açılış
+
+Aynı gün ayrı `6d0d6209-1743-43b0-84bb-4df18dac61f0` koşusu mevcut test hesabı ve sohbetiyle yapıldı. İlk Desktop süreci Headroom ayarı olmadan başlatıldı. Aynı native sohbet görünür olduktan sonra yalnız bu test profilinin endpoint alanı atomik eklendi.
+
+İlk ek yanıt aynı GUI süreci açıkken tamamlandı, Headroom istek ve WebSocket sayaçları sıfır kaldı. Bu sürüm, çalışan süreçte haricen eklenen ayarı o turda kullanmadı. Test penceresi sahipli Job ile kapatılıp kayıtlı ayarla yeniden açıldı. Önceki sohbet ve yanıt geri geldi. İkinci ek yanıt aynı native kimlikle Headroom üzerinden tamamlandı. İkinci istek öncesi ve sonrası farklı motor satırı ayrıca gözlendi. Bu sonuç mevcut UI'daki yeniden açma uyarısıyla uyumlu; ürün kopyası değiştirilmedi.
+
+Frontend'in ilk süreçteki geçici `client-new-thread` kimliği yeniden açılışta native kimliğe dönüştü. Eşleme aynı native sohbet üzerinden yapıldı. Bu, sohbet DB'sini yeniden etiketleme işlemi değildir.
+
+İki test GUI süreci ve üç loopback listener kapandı. Motor graceful/exit 0 verdi. Normal config ve kaynak/paket fingerprint'leri eşleşti. Test profilindeki sahipli endpoint kaldırıldı. Yerel kanıtlar ikinci run altındaki `before-apply.json`, `after-change.json`, `before-second.json`, `finish.json`, `adoption.json` ve `verification.json` dosyalarıdır.
+
 ## Kabul sınırı
 
-H008 ana görevi açık. Bu koşu yeni sürecin kayıtlı endpoint'i kullanmasını ve aynı süreçte mevcut sohbetin yeniden açılmasını kanıtlar. Çalışan Desktop'a sonradan eklenen ayarın yeniden başlatmadan uygulanması, uygulama tamamen kapatıldıktan sonra aynı sohbetin geri açılması ve canlı API-key sağlayıcı yolu henüz bu deneyde doğrulanmadı. API-key HTTP/SSE ve yerel Desktop WebSocket fixture kanıtları ayrıca korunur. Windows 11, macOS, Linux, bütün model özellikleri ve uzun süreli kararlılık bu kısa koşunun kapsamı değildir.
+H008 ana görevi açık. Bu sürümde yeni ayarın o açık turda kullanılmadığı ve tam yeniden açılışla mevcut sohbetin Headroom'a yönlendiği ölçüldü. Canlı API-key sağlayıcı yolu henüz doğrulanmadı; API-key HTTP/SSE ve yerel Desktop WebSocket fixture kanıtları ayrı tutulur. CLI'nin farklı model koşusundaki wait çağrısı dispatch öncesi iptal olduğu için o birleşik yaşam döngüsü sonucu kısmi kalır. Windows 11, macOS, Linux, bütün model özellikleri, aktif stream sırasında ayar değiştirme ve uzun süreli kararlılık bu kısa koşunun kapsamı değildir.

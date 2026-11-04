@@ -22,4 +22,6 @@
 
 - **Farklı model CLI koşusunun wait sınıflandırması.** Aynı koşuya ait parent kaydı kimlik hash'iyle bulunup önce/sonra fingerprint eşleşmesiyle incelendi. Tek `wait_agent` çağrısının eşleşen sonucu dispatch öncesi iptaldi. Önceki `partial` sonucu korunur; bu yalnız eski okuyucunun güncel JSON'u tanımaması olarak açıklanamaz. Child tamamlanması ve parent son yanıtı ayrı kanıttır. Yeni model çağrısı yapılmadı. Metadata `native-runs/9a50529f-5428-48fc-bfd0-fb622163db80/wait-shape-verification.json` içindedir.
 
-H008 açık. Çalışan Desktop'ta yeni ayarın adoption/restart davranışı, uygulama yeniden açılışı ve geniş auth/transport kapsamı bekliyor. Yerel motor tahminleri sağlayıcı faturası veya kota tasarrufu kanıtı sayılmaz.
+- **Tam Desktop yeniden açılışı.** Ayrı koşuda açık test sürecine kaydedilen endpoint o turu Headroom'a taşımadı. Tam kapat/aç sonrasında aynı native sohbet geri yüklendi ve yeni yanıt Headroom üzerinden tamamlandı. Mevcut yeniden açma uyarısı doğru. Test süreçleri/portları kapandı ve normal config korundu. [Kanıt](codex-desktop-live.md).
+
+H008 açık. Canlı API-key/geniş auth kapsamı ve CLI wait yaşam döngüsünün kısmi sonucu takipte. Yerel motor tahminleri sağlayıcı faturası veya kota tasarrufu kanıtı sayılmaz.
