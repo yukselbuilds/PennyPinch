@@ -78,7 +78,7 @@ pub struct Observation {
     pub provider_usage: ProviderUsage,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MeasurementStatus {
     Measured,
@@ -90,7 +90,8 @@ pub enum MeasurementStatus {
     Conflict,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct NormalizedEvent {
     pub schema_version: u8,
     pub runtime_generation: String,
@@ -185,15 +186,15 @@ fn input_component(component: Component) -> bool {
     matches!(component, Component::MessageInput | Component::WholeInput)
 }
 
-fn slot(value: &Observation) -> String {
+fn slot(optimizer: Optimizer, component: Component) -> String {
     // Overlapping message/whole-input observations must conflict, never add twice.
-    let optimizer = match value.optimizer {
+    let optimizer = match optimizer {
         Optimizer::Headroom => "headroom",
         Optimizer::Rtk => "rtk",
         Optimizer::Cache => "cache",
         Optimizer::Output => "output",
     };
-    let component = match value.before.component {
+    let component = match component {
         Component::MessageInput | Component::WholeInput | Component::Unknown => "input",
         Component::ToolSchema => "tool_schema",
         Component::NovelInput => "novel_input",
@@ -284,7 +285,7 @@ fn normalize_one(value: &Observation) -> Result<NormalizedEvent, NormalizeError>
     Ok(NormalizedEvent {
         schema_version: 1,
         runtime_generation,
-        event_id: opaque_id(&[&origin_id, &slot(value)]),
+        event_id: opaque_id(&[&origin_id, &slot(value.optimizer, value.before.component)]),
         origin_id,
         observed_via: vec![value.source],
         timestamp_utc,
@@ -312,29 +313,8 @@ pub fn normalize(observations: &[Observation]) -> Result<NormalizedBatch, Normal
         let incoming = normalize_one(value)?;
         if let Some(current) = events.get_mut(&incoming.event_id) {
             duplicate_observations += 1;
-            let mut comparison = incoming.clone();
-            comparison.observed_via = current.observed_via.clone();
-            if current.status != MeasurementStatus::Conflict && *current != comparison {
+            if merge_event(current, &incoming) {
                 conflicting_events += 1;
-                current.status = MeasurementStatus::Conflict;
-                current.before = unverified_reading(None);
-                current.after = unverified_reading(None);
-                current.provider_usage = ProviderUsage::default();
-                current.saved_tokens = None;
-                current.saved_percent = None;
-                current.main_metric_eligible = false;
-            }
-            if current.status == MeasurementStatus::Conflict
-                && current.timestamp_utc != incoming.timestamp_utc
-            {
-                current.timestamp_utc = None;
-            }
-            if !current.observed_via.contains(&value.source) {
-                current.observed_via.push(value.source);
-                current.observed_via.sort_by_key(|s| match s {
-                    Source::Proxy => 0,
-                    Source::Mcp => 1,
-                });
             }
         } else {
             events.insert(incoming.event_id.clone(), incoming);
@@ -347,6 +327,107 @@ pub fn normalize(observations: &[Observation]) -> Result<NormalizedBatch, Normal
         duplicate_observations,
         conflicting_events,
     })
+}
+
+pub(crate) fn merge_event(current: &mut NormalizedEvent, incoming: &NormalizedEvent) -> bool {
+    let mut comparison = incoming.clone();
+    comparison.observed_via = current.observed_via.clone();
+    let new_conflict = current.status != MeasurementStatus::Conflict && *current != comparison;
+    if new_conflict {
+        current.status = MeasurementStatus::Conflict;
+        current.before = unverified_reading(None);
+        current.after = unverified_reading(None);
+        current.provider_usage = ProviderUsage::default();
+        current.saved_tokens = None;
+        current.saved_percent = None;
+        current.main_metric_eligible = false;
+    }
+    if current.status == MeasurementStatus::Conflict
+        && current.timestamp_utc != incoming.timestamp_utc
+    {
+        current.timestamp_utc = None;
+    }
+    for source in &incoming.observed_via {
+        if !current.observed_via.contains(source) {
+            current.observed_via.push(*source);
+        }
+    }
+    current.observed_via.sort_by_key(|s| match s {
+        Source::Proxy => 0,
+        Source::Mcp => 1,
+    });
+    new_conflict
+}
+
+/// Revalidate the bounded schema at the persistent-store trust boundary.
+pub(crate) fn validate_event(value: &NormalizedEvent) -> Result<(), NormalizeError> {
+    let valid_hash = |s: &str| {
+        s.len() == 64
+            && s.bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    };
+    if value.schema_version != 1
+        || generation(&value.runtime_generation)? != value.runtime_generation
+        || !valid_hash(&value.origin_id)
+        || !valid_hash(&value.event_id)
+        || value.observed_via.is_empty()
+        || value.observed_via.len() > 2
+        || (value.observed_via.len() == 2 && value.observed_via != [Source::Proxy, Source::Mcp])
+    {
+        return Err(NormalizeError::InvalidIdentity);
+    }
+    if value.status != MeasurementStatus::Conflict
+        && value.event_id
+            != opaque_id(&[
+                &value.origin_id,
+                &slot(value.optimizer, value.before.component),
+            ])
+    {
+        return Err(NormalizeError::InvalidIdentity);
+    }
+    validate_reading(&value.before)?;
+    validate_reading(&value.after)?;
+    for count in [
+        value.provider_usage.input,
+        value.provider_usage.output,
+        value.provider_usage.cached_input,
+    ] {
+        validate_count(count)?;
+    }
+    if let Some(stamp) = &value.timestamp_utc {
+        let parsed =
+            OffsetDateTime::parse(stamp, &Rfc3339).map_err(|_| NormalizeError::InvalidTimestamp)?;
+        if parsed.offset() != UtcOffset::UTC {
+            return Err(NormalizeError::InvalidTimestamp);
+        }
+    }
+    if value.status == MeasurementStatus::Measured {
+        let (Some(before), Some(after)) = (value.before.tokens, value.after.tokens) else {
+            return Err(NormalizeError::InvalidCounter);
+        };
+        let saved = before as i64 - after as i64;
+        let percent = (before > 0).then(|| 100.0 * saved as f64 / before as f64);
+        if value.timestamp_utc.is_none()
+            || value.before.basis != value.after.basis
+            || value.before.basis.kind == CounterKind::Unknown
+            || value.before.basis.tokenizer.is_none()
+            || value.before.component == Component::Unknown
+            || value.before.component != value.after.component
+            || value.saved_tokens != Some(saved)
+            || value.saved_percent != percent
+            || value.main_metric_eligible
+                != (value.optimizer == Optimizer::Headroom
+                    && input_component(value.before.component))
+        {
+            return Err(NormalizeError::InvalidBasis);
+        }
+    } else if value.main_metric_eligible
+        || value.saved_tokens.is_some()
+        || value.saved_percent.is_some()
+    {
+        return Err(NormalizeError::InvalidBasis);
+    }
+    Ok(())
 }
 
 #[derive(Deserialize)]
