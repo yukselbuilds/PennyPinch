@@ -85,6 +85,8 @@ Headroom'un `compress`, retrieval ve istatistik araçları mevcut motor yetenekl
 
 Her adaptör; istemci sürümü, işletim sistemi, arayüz türü, giriş yöntemi, protokol ve son başarılı doğrulama tarihinden oluşan bir uyumluluk kaydı tutar. Durumlar **Doğrulandı**, **Deneysel**, **Desteklenmiyor** şeklindedir. Bir dosya yolunun mevcut olması destek kanıtı değildir.
 
+Doğrulanmış yayıncı imzası veya güvenilir kaynaktan sabitlenen hash dosyanın kökenini; gerçek config/protokol/özellik deneyi davranış uyumluluğunu doğrular. Salt sürüm numarası değişimi genel uyumsuzluk iddiası üretmez; bilinen kırılmalar ve güvenlik sınırları korunur; güncelleme sonrası önceki davranış kanıtı stale olur ve kontrollü yeniden doğrulama gerekebilir. Normal akışta binary seçimi kullanıcıya yüklenmez.
+
 ### Alt ajan kapsamı
 
 **Kullanıcı kararı — varsayılan kapsam:** Kullanıcı istemciyi bağladığında o bağlantının desteklenen bütün modelleri, ana ajanı ve bütün alt ajanları birlikte kapsanır. Model veya alt ajan başına ayrı seçim/kurulum gerekmez. Bu bir ürün kabul koşuludur; henüz bütün istemci/auth/ajan kombinasyonlarının doğrulandığı anlamına gelmez.
@@ -237,6 +239,8 @@ Oran = 100 × S / B  (yalnız B > 0 ve iki değer de biliniyorsa)
 
 Headroom'un kalıcı event kaydı, anlık `/stats` ve MCP snapshot'ları farklı kaynaklardır. Uygulama kayıt türlerini normalize etmeli; proxy, MCP ve subagent toplamlarını körlemesine birleştirmemelidir. [Tasarruf kayıtlarının yapısı](https://docs.headroomlabs.ai/docs/savings), [izleme uçları](https://docs.headroomlabs.ai/docs/metrics).
 
+İsteğe bağlı terminal filtresi/proxy gibi ek katmanlar Headroom motor ölçümüne eklenerek tek bir yüzde yapılmaz. Komut çıktısı baytları, RTK’nın bytes/4 tahmini, aynı temelde karşılaştırılabilen toplam girdi tokenları, sağlayıcı cache/output sayaçları ve fatura kullanımı ayrı tutulur. Katmanlar yalnız aynı istek/iş yükü bağı ve karşılaştırılabilir temel kanıtlanırsa yan yana kıyaslanır; kanıt yoksa bilinmiyor kalır.
+
 İstemci/model kırılımı kanıt varsa gösterilir. Proje, sohbet, ana ajan ve subagent kırılımı yalnız güvenilir metadata veya uygulamanın yönettiği başlatma eşlemesi varsa gösterilir. Aksi halde “Atanamayan trafik” ya da “Proxy toplamı” kullanılır. Aynı model iki farklı ajan tarafından kullanılabilir.
 
 Panel istatistikleri doğrudan yerel kayıtlardan okur; rapor hazırlamak için LLM çağrısı yapmaz. GPT'nin her son mesajına tasarruf satırı ekletmek ilk sürümün gereği değildir. Sonradan istenirse kısa, koşullu ve snapshot zamanını belirten bir entegrasyon olabilir.
@@ -258,6 +262,7 @@ Panel istatistikleri doğrudan yerel kayıtlardan okur; rapor hazırlamak için 
 - **Proje tercihleri:** İstemci ve doğrulanmış proje eşlemesine göre öneriler. Aynı proxy'nin global ayarlarını projeler arasında çakıştırmaz.
 - **Dışa aktarılabilir tanı:** Sürüm, bağlantı testi ve ayar farklarının içeriksiz raporu.
 - **Uyum denetimi:** İstemci güncellendikten sonra yeniden doğrulama ihtiyacını bildirir; çalışırken motoru zorla değiştirmez.
+- **İsteğe bağlı terminal filtresi:** H043/H044 sınırları içinde, doğrulanmış istemci ve shell komutlarına ek bir katmandır. Bağlantıdaki model, reasoning, auth veya ajan ayarını değiştirmez; yerel/yerleşik araç çağrılarını otomatik yakaladığı varsayılmaz.
 
 Claude Code, Codex ve diğer istemcilerde büyük geçmişin yeniden yazılması cache kazancını azaltabilir. Cache koruması ve yeni içerik üzerinde çalışma başlangıç stratejisidir; “daha agresif her zaman daha iyi” varsayılmaz. [Cache davranışı](https://docs.headroomlabs.ai/docs/cache-optimization).
 
@@ -465,6 +470,7 @@ Bu kararlar ilk özellik belgesinin hazırlanmasını engellemez. Sınanan varsa
 İlk kullanılabilir sürümden sonraki isteğe bağlı kapsam:
 
 - **RTK:** H043'te istemciye özel teknik kanıt, H044'te yönetilen kurulum ve açık etkinleştirme. Model/auth/reasoning veya ajan sayısı değişmez. Kaynak, kesin sayısal çıktı ve test/hata bilgisi korunur. RTK ile Headroom tasarrufu eşdeğer kapsam ve bağlantı kanıtı yoksa ayrı gösterilir. Otomatik global hook/shell değişikliği yapılmaz.
+  RTK-OSS Apache-2.0 terminal filtreleri isteğe bağlı adaydır; RTK engine ve ayrı proxy BUSL-1.1 bu kapsamla otomatik dahil veya dağıtılmış sayılmaz. Belgelenen rtk claude kullanımı Codex/OpenCode, PowerShell veya yerel araç kapsamını kanıtlamaz. [Kaynak/hedef eşlemesi](docs/research/optimization-targets-2026-11-04.md).
 - **Yerel öneriler:** H045; yalnız içeriksiz metadata ile, ek LLM çağrısı olmadan açıklanabilir sağlık ve optimizasyon önerileri üretir. Öneri kendi başına profil/model/config değiştirmez; bilinmeyen trafik veya tasarruf tahmin edilmez. Memory/learn ve talimat dosyası yazımı bu özellik değildir, kapalı kalır.
 
 Ürün ilkeleri:

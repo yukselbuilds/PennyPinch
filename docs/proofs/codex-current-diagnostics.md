@@ -24,4 +24,6 @@
 
 - **Tam Desktop yeniden açılışı.** Ayrı koşuda açık test sürecine kaydedilen endpoint o turu Headroom'a taşımadı. Tam kapat/aç sonrasında aynı native sohbet geri yüklendi ve yeni yanıt Headroom üzerinden tamamlandı. Mevcut yeniden açma uyarısı doğru. Test süreçleri/portları kapandı ve normal config korundu. [Kanıt](codex-desktop-live.md).
 
-H008 açık. Canlı API-key/geniş auth kapsamı ve CLI wait yaşam döngüsünün kısmi sonucu takipte. Yerel motor tahminleri sağlayıcı faturası veya kota tasarrufu kanıtı sayılmaz.
+- **4 Kasım native bekleme.** Yeni gerçek CLI koşusunda ana Astra max ve tek Sol medium alt ajanı için spawn/wait, completed runtime olayı, eşleşen `timed_out=false` dönüşü ve ayrı giriş kimlikleri doğrulandı. Kontrollü MCP kapısı kullanılmadığı için o senaryo geçmedi. Gizlenen işaretle ikinci koşu araç kullanılamıyor yanıtını iletti. Model çağrısız ayrı app-server kontrolü aynı MCP fixture'ını gerçekten çağırdı. [Kapsam ve kanıt](codex-native-wait.md).
+
+H008 açık. Kontrollü alt ajan MCP erişimi, iki QA relay resetinin sınıflandırılması ve canlı API-key/geniş auth kapsamı takipte. Yerel motor tahminleri sağlayıcı faturası veya kota tasarrufu kanıtı sayılmaz.

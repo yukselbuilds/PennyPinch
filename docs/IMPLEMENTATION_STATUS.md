@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 4 Kasım 2026.
 
+## 4 Kasım — ürün hedefleri ve H008 native bekleme
+- Kullanıcı en iyi tasarruf özelliklerini kapsama hedefini yineledi. Mevcut tek Luna xhigh çalışanı yalnız spec/TASKS/kaynak eşlemesi belgelerini düzenledi; ana ajan auth/rota ve kabul incelemesini üstlendi. Tek düzeltme paketinde H041 ilk sürüm kontrol+Headroom tabanı ile H043 sonrası dört kollu RTK kıyası ayrıldı; yayın bağımlılık döngüsü önlendi. Yeni ana görev/kurulum yok, 20/51 ve H008 aktif/H024 bekliyor. [Hedefler](research/optimization-targets-2026-11-04.md).
+- H012/H034 sürüm güveni ile davranış uyumunu ayırır, güncelleme sonrası kanıtı yeniden doğrular. H025 sade uygulama/model metrikleri, H041/H043 fayda-kalite-cache-gecikme kıyası, H044 açık opt-in OSS terminal filtresi hedefi güçlendirildi. RTK/BUSL proxy veya otomatik model düşürme eklenmedi; ölçülmüş üstünlük/tasarruf iddiası yok.
+- Ana ajan iki yeni CLI gözlemi yaptı. İlk koşuda native spawn/wait ve ana/tek alt ajan tamamlandı; bir completed wait olayı, eşleşen timed_out=false dönüşü ve ayrı Responses giriş kimlikleri doğrulandı. Ana Astra max korundu, test alt ajanı Sol medium/fork none. Kontrollü araç çağrısı 0 olduğundan o senaryo başarısız/kısmi tutuldu. İkinci koşuda promptta beklenen işaret gizlendi; araç kullanılamıyor yanıtı ve gerçek native bekleme gözlendi. [Kanıt](proofs/codex-native-wait.md).
+- Fixture için 3 odaklı test PASS. Ayrı sahte-auth/ephemeral app-server kontrolü MCP aracını bir kez gerçekten çağırdı; model turu başlatılmadı. İkinci canlı koşuda motor 7 yerel istek/0 başarısız istek/0 başarısız WS frame bildirdi; QA relay iki 10054 reset kaydetti. Yön/zaman ilişkisi bilinmiyor, genel transport sağlığı iddia edilmedi. Test süreçleri/portlar kapandı, normal config ve kaynak fingerprint'leri eşleşti. UI/runtime kodu değişmedi; iki Python test fixture'ı eklendi. Geliştirme tasarrufu/süre ölçümü yok.
+- H008 açık. Son doğrulanmış dilim native mesaj/bekleme ve ayrı rota kanıtı. Sonraki somut adım MCP test aracının alt ajan tool envanteri/çağrı yolunda görünürlüğünü ve relay reset yönünü model çağrısı gerektirmeyen mevcut metadata ile ayırmak; canlı API-key için yetkili credential ihtiyacı sürer. Aynı olumlu native bekleme koşusu tekrar edilmez; kontrollü MCP senaryosu geçmiş sayılmaz. H024 başlamadı.
+
 ## 4 Kasım — H008 gerçek Desktop hesabı ve aynı sohbet
 - Kullanıcı ayrı profilin resmî girişini tamamladı ve ilk kullanım ekranını atladı. Ana ajan auth/rota/süreç sahipliği nedeniyle doğrulamayı yürüttü; mevcut Luna kullanılmadı. Kurulu Desktop bu arada 26.1027.6604.0 paketine ve farklı hashli 0.166.0-alpha.5.1 backend'e güncellenmişti. Yeni imza/pin doğrulandı; eski dosyalara bağlı GUI kanıtı güncel paket yerine sayılmadı.
 - Gerçek Desktop iki kısa yanıtı Headroom üzerinden tamamladı. Yeni sohbet ekranına çıkışta eski yanıtın görünmezliği, aynı sohbeti kenar çubuğundan açınca ilk yanıtın görünürlüğü ve ikinci tam yanıt doğrulandı. Native kimlik, iki tur ve varsayılan model/efor ayrıca eşleşti. Motor 5 yerel istek/1 cache/0 failure bildirdi; warmup/istek amaçları ayrı sayılmadı. [Kanıt](proofs/codex-desktop-live.md).
@@ -99,6 +106,8 @@
 - Graphite korunur. Gerçek tasarruf miktarı/% ve platform/model kırılımı H023–H026; hesap bağlantıları/açık sohbetler H050/H051'de. Ölçülmemiş tasarruf gösterilmez.
 
 ## Korunan işlem sınırları
+
+- **4 Kasım belge/etiket komutu reddi:** TASKS.md'ye katman ayrıntılarının Gelişmiş'te kalması ve sessiz sentetik model turu başlatılmaması hakkında iki ek cümle yazmayı, ayrıca RTK v1.1.0 etiket/peeled-ref sorgusunu birlikte içeren komut otomatik review'da `blocked by policy` ile reddedildi; komut çalışmadı. Bu iki ekleme ve aynı RTK etiket sorgusu başka araç/shell/handler ile tekrarlanmayacak. Önceki tamamlanan TASKS değişiklikleri korunur; kaynak notu release API target_commitish ile doğrulanmış tag pin'ini ayırır.
 
 - **Vite hidden Start-Process başlatması 20 Ekim otomatik review'da `blocked by policy` ile reddedildi; komut çalışmadı, 1420 boştu. Aynı sunucu başka launcher/yoldan başlatılmayacak.** H014-b native testi gerekiyorsa Vite'sız embedded dist/standalone build ayrı çıktısı kullanılacak; ret edilen Vite eylemi tekrarlanmaz.
 
