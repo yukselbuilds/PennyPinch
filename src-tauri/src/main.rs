@@ -17,6 +17,10 @@ use integrations::discovery::{
     SavedInstallationChoiceReply, SavedInstallationChoiceRequest,
 };
 use integrations::picker;
+use metrics::activity::{
+    ActivityDetailReply, ActivityDetailRequest, ActivityListReply, ActivityQueryRequest,
+    ActivityReply,
+};
 use metrics::collector::{OverviewManager, OverviewReply};
 use metrics::store::{MetricsError, MetricsQueryRequest, MetricsReply, MetricsStore};
 use runtime::manager::{IngressReply, RuntimeManager, RuntimeReply};
@@ -137,6 +141,32 @@ async fn get_overview_snapshot(
     )
 }
 
+#[tauri::command]
+async fn get_activity_snapshot(
+    state: tauri::State<'_, OverviewManager>,
+    request: ActivityQueryRequest,
+) -> Result<ActivityListReply, ActivityListReply> {
+    let manager = state.inner().clone();
+    let id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || manager.read_activity(request))
+            .await
+            .unwrap_or_else(|_| ActivityReply::error(id, MetricsError::Unavailable)),
+    )
+}
+#[tauri::command]
+async fn get_activity_detail(
+    state: tauri::State<'_, OverviewManager>,
+    request: ActivityDetailRequest,
+) -> Result<ActivityDetailReply, ActivityDetailReply> {
+    let manager = state.inner().clone();
+    let id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || manager.read_activity_detail(request))
+            .await
+            .unwrap_or_else(|_| ActivityReply::error(id, MetricsError::Unavailable)),
+    )
+}
 #[tauri::command]
 fn get_preferences(
     state: tauri::State<'_, PreferenceStore>,
@@ -432,6 +462,8 @@ fn main() {
             get_ingress_snapshot,
             get_metrics_summary,
             get_overview_snapshot,
+            get_activity_snapshot,
+            get_activity_detail,
             get_preferences,
             save_preferences,
             get_discovery_snapshot,

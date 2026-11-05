@@ -36,6 +36,31 @@ pub struct PeriodTotals {
     pub omitted_basis_groups: u64,
 }
 
+/// Bounded summary for per-request projections; raw basis labels never leave this DTO.
+#[derive(Debug, Serialize)]
+pub struct MetricSummary {
+    pub status: AggregateStatus,
+    pub comparable_events: u64,
+    pub excluded_events: u64,
+    pub before_tokens: Option<u64>,
+    pub after_tokens: Option<u64>,
+    pub saved_tokens: Option<i64>,
+    pub saved_percent: Option<f64>,
+}
+impl From<PeriodTotals> for MetricSummary {
+    fn from(v: PeriodTotals) -> Self {
+        Self {
+            status: v.status,
+            comparable_events: v.comparable_events,
+            excluded_events: v.excluded_events,
+            before_tokens: v.before_tokens,
+            after_tokens: v.after_tokens,
+            saved_tokens: v.saved_tokens,
+            saved_percent: v.saved_percent,
+        }
+    }
+}
+
 /// Input is the unique, validated event set selected by the metrics store.
 pub fn aggregate_unique_events(events: &[NormalizedEvent]) -> PeriodTotals {
     aggregate_event_refs(events.iter())

@@ -29,6 +29,7 @@ pub enum MetricsError {
     Capacity,
     Unavailable,
     InvalidLocalTime,
+    NotFound,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -83,6 +84,15 @@ pub struct PeriodMetrics {
 pub struct MetricBucket {
     pub at_utc: String,
     pub totals: PeriodTotals,
+}
+
+pub(crate) struct PeriodSelection {
+    pub monitoring_session_id: String,
+    pub from: Option<DateTime<Utc>>,
+    pub now: DateTime<Utc>,
+    pub last_event: Option<DateTime<Utc>>,
+    pub coverage: Coverage,
+    pub events: Vec<NormalizedEvent>,
 }
 
 #[derive(Clone)]
@@ -216,12 +226,11 @@ impl MetricsStore {
         )
     }
 
-    pub fn query_at<Tz: TimeZone>(
+    pub(crate) fn select_period<Tz: TimeZone>(
         &self,
         period: Period,
         now: DateTime<Tz>,
-    ) -> Result<PeriodMetrics, MetricsError> {
-        let zone = now.timezone();
+    ) -> Result<PeriodSelection, MetricsError> {
         let from = match period {
             Period::Session => None,
             Period::Today | Period::SevenDays => {
@@ -303,6 +312,30 @@ impl MetricsStore {
             coverage.unidentified_rows_observed = flags.2;
             tx.commit().map_err(sql_error)?;
         }
+        Ok(PeriodSelection {
+            monitoring_session_id: self.monitoring_session_id.clone(),
+            from,
+            now,
+            last_event,
+            coverage,
+            events,
+        })
+    }
+
+    pub fn query_at<Tz: TimeZone>(
+        &self,
+        period: Period,
+        now: DateTime<Tz>,
+    ) -> Result<PeriodMetrics, MetricsError> {
+        let zone = now.timezone();
+        let PeriodSelection {
+            monitoring_session_id,
+            from,
+            now,
+            last_event,
+            coverage,
+            events,
+        } = self.select_period(period, now)?;
         let totals = aggregate_unique_events(&events);
         let series = if totals.status == AggregateStatus::Measured {
             build_series(&events, period, now, from, &zone)?
@@ -310,7 +343,7 @@ impl MetricsStore {
             Vec::new()
         };
         Ok(PeriodMetrics {
-            monitoring_session_id: self.monitoring_session_id.clone(),
+            monitoring_session_id,
             period,
             from_utc: from.map(utc_string),
             to_utc: utc_string(now),

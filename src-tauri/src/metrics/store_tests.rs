@@ -31,6 +31,7 @@ fn observation(id: &str, stamp: &str) -> Observation {
         component: Component::MessageInput,
     };
     Observation {
+        metadata: Default::default(),
         attribution: Default::default(),
         runtime_generation: "00000000-0000-4000-8000-000000000001".into(),
         request_id: id.into(),

@@ -30,6 +30,7 @@ fn observation(
     optimizer: Optimizer,
 ) -> Observation {
     Observation {
+        metadata: Default::default(),
         attribution: Default::default(),
         runtime_generation: GENERATION.into(),
         request_id: id.into(),

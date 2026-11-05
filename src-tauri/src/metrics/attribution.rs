@@ -56,7 +56,7 @@ impl Attribution {
     }
 }
 
-fn safe_label(value: &str) -> bool {
+pub(crate) fn safe_label(value: &str) -> bool {
     let lower = value.to_ascii_lowercase();
     !value.is_empty()
         && value.len() <= 128
@@ -64,6 +64,7 @@ fn safe_label(value: &str) -> bool {
             .bytes()
             .all(|b| b.is_ascii_alphanumeric() || b"._-/:+@".contains(&b))
         && !value.contains(":/")
+        && !value.starts_with('/')
         && !lower.starts_with("sk-")
         && !lower.starts_with("ghp_")
         && !lower.starts_with("github_pat_")
@@ -72,7 +73,7 @@ fn safe_label(value: &str) -> bool {
 fn identity(value: &str) -> bool {
     !value.is_empty() && value.len() <= 128 && value.bytes().all(|b| b.is_ascii_graphic())
 }
-fn hash(value: &str) -> bool {
+pub(crate) fn hash(value: &str) -> bool {
     value.len() == 64
         && value
             .bytes()
@@ -282,13 +283,19 @@ fn status(known: u64, total: u64) -> CoverageStatus {
         CoverageStatus::Partial
     }
 }
-pub(crate) fn aggregate(events: &[NormalizedEvent]) -> AttributionSummary {
+pub(crate) fn group_origins(
+    events: &[NormalizedEvent],
+) -> BTreeMap<&str, (Attribution, Vec<&NormalizedEvent>)> {
     let mut origins: BTreeMap<&str, (Attribution, Vec<&NormalizedEvent>)> = BTreeMap::new();
     for event in events {
         let origin = origins.entry(&event.origin_id).or_default();
         merge(&mut origin.0, &event.attribution);
         origin.1.push(event);
     }
+    origins
+}
+pub(crate) fn aggregate(events: &[NormalizedEvent]) -> AttributionSummary {
+    let origins = group_origins(events);
     let mut groups: BTreeMap<Group, Bucket<'_>> = BTreeMap::new();
     let mut total = Counts::default();
     for (value, events) in origins.into_values() {

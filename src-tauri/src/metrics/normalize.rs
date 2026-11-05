@@ -1,4 +1,5 @@
 use super::attribution::{self, Attribution};
+use super::request_metadata::{duration, ErrorPresence, RequestMetadata, TransformCount};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
@@ -69,6 +70,8 @@ pub struct ProviderUsage {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Observation {
     #[serde(default)]
+    pub metadata: RequestMetadata,
+    #[serde(default)]
     pub attribution: Attribution,
     pub runtime_generation: String,
     pub request_id: String,
@@ -96,6 +99,8 @@ pub enum MeasurementStatus {
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct NormalizedEvent {
+    #[serde(default, skip_serializing_if = "RequestMetadata::is_unknown")]
+    pub metadata: RequestMetadata,
     #[serde(default, skip_serializing_if = "Attribution::is_unknown")]
     pub attribution: Attribution,
     pub schema_version: u8,
@@ -257,6 +262,7 @@ fn normalize_one(value: &Observation) -> Result<NormalizedEvent, NormalizeError>
         .unwrap_or(&value.request_id);
     let origin_id = opaque_id(&[&runtime_generation, origin_namespace, origin_request]);
     attribution::validate(&value.attribution, &origin_id)?;
+    value.metadata.validate()?;
     let status = if value.before.tokens.is_none() || value.after.tokens.is_none() {
         MeasurementStatus::MissingCounter
     } else if value.before.basis.kind == CounterKind::Unknown
@@ -289,6 +295,7 @@ fn normalize_one(value: &Observation) -> Result<NormalizedEvent, NormalizeError>
         (None, None)
     };
     Ok(NormalizedEvent {
+        metadata: value.metadata.clone(),
         attribution: value.attribution.clone(),
         schema_version: 1,
         runtime_generation,
@@ -340,8 +347,10 @@ pub(crate) fn merge_event(current: &mut NormalizedEvent, incoming: &NormalizedEv
     let mut comparison = incoming.clone();
     comparison.observed_via = current.observed_via.clone();
     comparison.attribution = current.attribution.clone();
+    comparison.metadata = current.metadata.clone();
     let new_conflict = current.status != MeasurementStatus::Conflict && *current != comparison;
     attribution::merge(&mut current.attribution, &incoming.attribution);
+    current.metadata.merge(&incoming.metadata);
     if new_conflict {
         current.status = MeasurementStatus::Conflict;
         current.before = unverified_reading(None);
@@ -370,6 +379,7 @@ pub(crate) fn merge_event(current: &mut NormalizedEvent, incoming: &NormalizedEv
 
 /// Revalidate the bounded schema at the persistent-store trust boundary.
 pub(crate) fn validate_event(value: &NormalizedEvent) -> Result<(), NormalizeError> {
+    value.metadata.validate()?;
     attribution::validate(&value.attribution, &value.origin_id)?;
     let valid_hash = |s: &str| {
         s.len() == 64
@@ -460,6 +470,27 @@ struct RawRow {
     timestamp: Option<String>,
     input_tokens_original: Option<u64>,
     input_tokens_optimized: Option<u64>,
+    total_latency_ms: Option<f64>,
+    optimization_latency_ms: Option<f64>,
+    cache_hit: Option<bool>,
+    #[serde(default)]
+    error: ErrorPresence,
+    #[serde(default)]
+    transforms_applied: TransformCount,
+}
+
+impl RawRow {
+    fn metadata(&self) -> RequestMetadata {
+        RequestMetadata {
+            total_ms: duration(self.total_latency_ms),
+            optimization_ms: duration(self.optimization_latency_ms),
+            first_token_ms: None,
+            outcome: self.error.0,
+            cache_reported_hit: self.cache_hit,
+            transforms_count: self.transforms_applied.0,
+            conflicted: false,
+        }
+    }
 }
 
 struct Rows(Vec<RawRow>);
@@ -515,26 +546,59 @@ pub fn project_headroom_041(
         serde_json::from_slice(payload).map_err(|_| NormalizeError::InvalidPayload)?;
     let reported_request_count = snapshot.requests.as_ref().and_then(|r| r.total);
     validate_count(reported_request_count)?;
-    let rows = snapshot.recent_requests.or(snapshot.request_logs);
+    let rows = snapshot
+        .recent_requests
+        .as_ref()
+        .or(snapshot.request_logs.as_ref());
     if rows.is_none() && snapshot.requests.is_none() {
         return Err(NormalizeError::InvalidPayload);
     }
     let aggregate_only = rows.is_none();
     let mut unidentified_rows = 0;
     let mut observations = Vec::new();
-    for row in rows.map(|rows| rows.0).unwrap_or_default() {
-        let Some(request_id) = row.request_id.filter(|id| !id.is_empty()) else {
+    let mut secondary: BTreeMap<(&str, &str), Vec<&RawRow>> = BTreeMap::new();
+    if snapshot.recent_requests.is_some() {
+        if let Some(logs) = &snapshot.request_logs {
+            for row in &logs.0 {
+                if let (Some(id), Some(stamp)) =
+                    (row.request_id.as_deref(), row.timestamp.as_deref())
+                {
+                    secondary.entry((id, stamp)).or_default().push(row);
+                }
+            }
+        }
+    }
+    for row in rows.into_iter().flat_map(|rows| &rows.0) {
+        let Some(request_id) = row.request_id.as_ref().filter(|id| !id.is_empty()) else {
             unidentified_rows += 1;
             continue;
         };
+        let mut metadata = row.metadata();
+        if let Some(logs) = row
+            .timestamp
+            .as_deref()
+            .and_then(|stamp| secondary.get(&(request_id.as_str(), stamp)))
+        {
+            for log in logs {
+                if row
+                    .model
+                    .as_ref()
+                    .zip(log.model.as_ref())
+                    .is_none_or(|(a, b)| a == b)
+                {
+                    metadata.merge(&log.metadata());
+                }
+            }
+        }
         observations.push(Observation {
+            metadata,
             attribution: Attribution::observed(row.model.as_deref(), row.provider.as_deref()),
             runtime_generation: runtime_generation.into(),
-            request_id,
+            request_id: request_id.clone(),
             source,
             // A raw MCP ID/tag cannot attest ownership of a proxy request.
             proxy_request_id: None,
-            timestamp_utc: row.timestamp,
+            timestamp_utc: row.timestamp.clone(),
             optimizer: Optimizer::Headroom,
             before: unverified_reading(row.input_tokens_original),
             after: unverified_reading(row.input_tokens_optimized),

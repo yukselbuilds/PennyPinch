@@ -21,6 +21,8 @@ import {
 import { Applications } from "./features/integrations/Applications";
 import type { ClientKind } from "./lib/integrations";
 import { Overview } from "./features/overview/Overview";
+import { Activity } from "./features/activity/Activity";
+import { useActivity } from "./features/activity/useActivity";
 import { useOverviewConnections, useOverviewMetrics } from "./features/overview/useOverview";
 import type { MetricPeriod } from "./lib/metrics";
 import { windowZoomClient, type WindowScale } from "./lib/windowZoom";
@@ -35,7 +37,7 @@ const copy = {
     nav: ["Genel bakış", "Uygulamalar", "Etkinlik", "Ayarlar"],
     eyebrow: "YEREL KONTROL ALANI",
     headline: ["Kontrol paneli", "Uygulamalar", "Etkinlik", "Tercihler"],
-    subtitle: ["Yerel model trafiği için tek bir görünüm.", "Bağlantı durumu ve tarama kapsamı.", "Ölçüm verisi geldiğinde burada görünür.", "Görünüm ve dil tercihleri."],
+    subtitle: ["Yerel model trafiği için tek bir görünüm.", "Bağlantı durumu ve tarama kapsamı.", "İçerik saklamadan istek ve ölçüm ayrıntıları.", "Görünüm ve dil tercihleri."],
     engine: "Motor", connection: "Bağlantı", compression: "Sıkıştırma kontrolü",
     noConnection: "Doğrulanmadı", compressionOff: "Uygulanmadı",
     engineUnavailable: "Kullanılamıyor", engineUnknown: "Durum bilinmiyor", engineStopped: "Durduruldu",
@@ -49,7 +51,6 @@ const copy = {
     hintUnknown: "Motor durumu henüz doğrulanmadı.", hintUnavailableEngine: "Motor bu ortamda kullanılamıyor.",
     overviewTitle: "Henüz ölçüm yok", overviewBody: "Headroom yerel durumunu gösteriyor. Tasarruf değerleri, ölçüm kaynağı hazır olduğunda görünür.",
     clientsTitle: "Tarama yapılmadı", clientsBody: "Bu ekranda bulunan istemciler gösterilir. Henüz hiçbir kurulum incelenmedi.",
-    activityTitle: "Etkinlik kaydı bekleniyor", activityBody: "Ölçülebilir istek ve tasarruf özetleri burada listelenir. Etkinlik kaydı henüz uygulanmadı.",
     settingsTitle: "Görünüm", settingsBody: "Dil ve tema tercihleri.", theme: "Tema", language: "Dil", system: "Sistem", dark: "Koyu", light: "Açık", turkish: "Türkçe", english: "English",
     sessionOnly: "Bu seçimler yalnızca bu masaüstü oturumunda geçerli.",
     preferencesLoading: "Tercihler yükleniyor…", preferencesLoaded: "Tercihler yüklendi.", preferencesSaving: "Tercihler kaydediliyor…", preferencesSaved: "Tercihler kaydedildi.", preferencesSessionOnly: "Yalnızca bu oturumda geçerli; masaüstü bağlantısı kullanılamıyor.", preferencesError: "Tercih işlemi tamamlanamadı.", preferencesLoadFailed: "Tercihler doğrulanamadı. Kayıtlı ayarlar değiştirilmedi.", preferencesSaveFailed: "Tercihler kaydedilemedi; önceki kayıtlı seçimler korundu.", preferencesRetry: "Yeniden oku",
@@ -74,7 +75,7 @@ const copy = {
     nav: ["Overview", "Applications", "Activity", "Settings"],
     eyebrow: "LOCAL CONTROL SURFACE",
     headline: ["Overview", "Applications", "Activity", "Preferences"],
-    subtitle: ["A single view for local model traffic.", "Connection status and discovery scope.", "Measurement data will appear here when available.", "Appearance and language preferences."],
+    subtitle: ["A single view for local model traffic.", "Connection status and discovery scope.", "Request and measurement details without conversation content.", "Appearance and language preferences."],
     engine: "Engine", connection: "Connection", compression: "Compression control",
     noConnection: "Not verified", compressionOff: "Not implemented",
     engineUnavailable: "Unavailable", engineUnknown: "Status unknown", engineStopped: "Stopped",
@@ -88,7 +89,6 @@ const copy = {
     hintUnknown: "The engine state has not been verified yet.", hintUnavailableEngine: "The engine is unavailable in this environment.",
     overviewTitle: "No measurements yet", overviewBody: "Headroom is showing local state. Savings will appear when a measurement source is ready.",
     clientsTitle: "No scan performed", clientsBody: "Detected clients will appear here. No installation has been inspected yet.",
-    activityTitle: "Waiting for activity", activityBody: "Measured request and savings summaries will appear here. Activity recording is not implemented yet.",
     settingsTitle: "Appearance", settingsBody: "Language and appearance preferences.", theme: "Theme", language: "Language", system: "System", dark: "Dark", light: "Light", turkish: "Türkçe", english: "English",
     sessionOnly: "These choices apply only to this desktop session.",
     preferencesLoading: "Loading preferences…", preferencesLoaded: "Preferences loaded.", preferencesSaving: "Saving preferences…", preferencesSaved: "Preferences saved.", preferencesSessionOnly: "Session only; the desktop bridge is unavailable.", preferencesError: "The preference operation could not be completed.", preferencesLoadFailed: "Preferences could not be validated. Saved settings were not changed.", preferencesSaveFailed: "Preferences could not be saved; the previous saved choices were kept.", preferencesRetry: "Read again",
@@ -178,6 +178,7 @@ export default function App() {
     setApplicationsBusy(busy);
   }, []);
   const overview = useOverviewMetrics(period, screen === "overview");
+  const activity = useActivity(screen === "activity");
   const connections = useOverviewConnections(screen === "overview");
   const [theme, setTheme] = useState<PreferenceTheme>("system");
   const [windowScale, setWindowScale] = useState<WindowScale>(1);
@@ -392,8 +393,8 @@ export default function App() {
     period={period} metrics={overview.metrics} connections={connections.connections} connectionsLoading={connections.loading}
     onPeriodChange={setPeriod} onRefresh={overview.refresh} onConnect={connect}
     onOpenApplications={() => navigate("applications")} onStart={() => void runLifecycle("start")} onStop={() => void runLifecycle("stop")} />
-    : screen === "applications" ? <Applications language={language} requestedClient={requestedClient} onBusyChange={onApplicationsBusy} /> : renderScreen(
-    screen,
+    : screen === "applications" ? <Applications language={language} requestedClient={requestedClient} onBusyChange={onApplicationsBusy} />
+    : screen === "activity" ? <Activity language={language} {...activity} /> : renderSettings(
     labels,
     theme,
     language,
@@ -434,8 +435,7 @@ export default function App() {
   </div>;
 }
 
-function renderScreen(
-  screen: "activity" | "settings",
+function renderSettings(
   labels: Labels,
   theme: PreferenceTheme,
   language: PreferenceLanguage,
@@ -445,9 +445,6 @@ function renderScreen(
   onPreferencesRetry: () => void,
   zoom: WindowZoomView,
 ) {
-  if (screen === "activity") return <section className="empty-screen-card">
-    <span className="large-outline-icon" aria-hidden="true">◷</span><div className="panel-kicker">{language === "tr" ? "ÖLÇÜM GEÇMİŞİ" : "MEASUREMENT HISTORY"}</div><h2>{labels.activityTitle}</h2><p>{labels.activityBody}</p>
-  </section>;
   const preferencesBusy = preferencesStatus === "loading" || preferencesStatus === "saving";
   const preferencesUnavailable = preferencesBusy || preferencesStatus === "error";
   return <section className="settings-card">

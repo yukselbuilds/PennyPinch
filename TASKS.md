@@ -4,13 +4,13 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H013–H026, H040, H046 ve **H047 tamamlandı:24/51.** H026 model/istemci/ajan kapsamı yerel kabul edildi; canlı kimlik kanıtı olmayan alanlar unknown kalır. H008 Windows10 ChatGPT CLI/Desktop kapsamıyla kabul edildi; canlı API-key testi H041 yayın öncesi kabulünde açık. Sıradaki H027 başlamadı, kullanıcı devam mesajı bekleniyor. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
+**Durum:** H001–H005, H007–H008, H013–H027, H040, H046 ve **H047 tamamlandı:25/51.** H027 kapandı: içeriksiz etkinlik ve ayrıntı. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
 ## Geliştirme araçları ve çalışma düzeni
 
-Bu işler 51 ürün görevine eklenmez. DEV001/DEV002 ve H026 kabul edildi. Sıradaki ürün görevi H027; kullanıcı devam mesajı bekleniyor.
+Bu işler 51 ürün görevine eklenmez. DEV001/DEV002 ve H027 kabul edildi. Sıradaki ürün görevi H028; kullanıcı devam mesajı bekleniyor.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -419,12 +419,15 @@ flowchart TD
 ## Günlük kullanım
 
 ### H027 — İçeriksiz etkinlik ayrıntıları
-- [ ] İstemci, model, süre, sonuç ve ölçüm bazında etkinlik listesi oluşturulur.
+- **5 Kasım başladı:** Ana ajan metadata/süre/sonuç semantiği, kalıcı uyum ve sorgu sahibi; [plan015](docs/decisions/015-activity.md). H033 dosya dışa aktarma başlamaz; bu görev export-safe metadata DTO'sunu kurar. Süre ve hata bilgisi yoksa tahmin edilmez.
+- [x] İstemci, model, süre, sonuç ve ölçüm bazında etkinlik listesi oluşturulur.
+- **5 Kasım tamamlandı:** [Kabul](docs/proofs/activity.md), [inceleme](docs/reviews/H027.md). Ortak dönem/store → içeriksiz list/detail IPC → strict client/session → Graphite UI tamamlandı. Filtre100 sınırından önce; ayrıntı32 + omitted. Raw error/transform/body yok, tokenizer opaque;0/unknown ve ayrı metadata conflict korunur. H033 dosya dışa aktarma başlamadı; JSON projeksiyonu canary ile temiz.
+- **Son kapı:**133 frontend/344 Rust PASS,5 mevcut opt-in ignored; fmt/build PASS.142 kaynak/config ve native artefakt fingerprint'leri eşleşti. Gerçek owned source/list/period/error ve native125/150/100 zoom PASS; kaynak0 istek, dolu/ajanlı satırlar izole fixture. Kullanıcı ayarları ve kapanış korundu; ana görev sonunda duruldu. H028 başlamadı.
 - **Kabul:** Filtre/ayrıntı çalışır; ham konuşma yok; gizli alanlar listede ve dışa aktarmada bulunmaz.
 - **Ek kabul:** Kanıt varsa süre/ilk token gecikmesi, aktif optimizasyon katmanı ve cache/ölçüm kapsamı ayrıntıda gösterilir. Süre verisi yoksa tahmin edilmez; provider hata gövdesi/komut çıktısı tanı adı altında saklanmaz.
 - **Doğrulama:** Metadata fixture'ları, klavye ile ayrıntı açma ve hassas alan denetimi.
 - **Bağımlılık / boyut:** H026 / M.
-- **Dosyalar:** `src/features/activity/Activity.tsx`, `src/features/activity/RequestDetails.tsx`, `src/features/activity/Activity.test.tsx`.
+- **Dosyalar:** `src/features/activity/`, `src/lib/activity*.ts`, `src-tauri/src/metrics/activity*.rs`, `request_metadata.rs`, `tests/app/activity*.test.mjs`.
 
 ### H028 — Güvenli Başlat/Duraklat
 - **3 Kasım UI/UX kabulü:** Günlük ana kontrol duruma göre Başlat veya Duraklat/Devam et olur; motor kapanışı ve bağlantıyı kaldırma farklı etkilerle yönetilir. Uygulanmamış eylem çalışıyormuş gibi sunulmaz; hazır motor tek başına bağlı istemci/tasarruf anlamına gelmez.
@@ -670,4 +673,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**24/51 tamam; H026 kapandı.** Aynı dönem model/istemci/ajan kapsamı; bilinmeyen, partial ve yalnız gözlenen verified alt küme görünür.125 frontend/335 Rust PASS,5 mevcut opt-in ignored; fmt/embedded build ve native collector/dönem/zoom PASS. [Kabul](docs/proofs/attribution.md), [inceleme](docs/reviews/H026.md). Sıradaki H027 içeriksiz etkinlik ayrıntılarıdır; başlamadı, kullanıcı devam mesajı bekleniyor. Gerçek kimlikli/iki ajanlı örnekler fixture'dır; canlı kanıt olmadan atama yükseltilmez. Canlı API-key kabulü H041'de açık. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.
+**25/51 tamam; H027 kapandı.** İçeriksiz etkinlik listesi/filtre/ayrıntı, süre ve kaynak sonucu, aynı dönem ölçümü ve export-safe DTO tamamlandı.133 frontend/344 Rust PASS,5 mevcut opt-in ignored; fmt/embedded build ve native collector/dönem/klavye/zoom PASS. [Kabul](docs/proofs/activity.md), [inceleme](docs/reviews/H027.md). Sıradaki H028 güvenli Başlat/Duraklat; başlamadı, kullanıcı devam mesajı bekleniyor. Dolu/kimlikli örnekler fixture'dır; canlı kanıt olmadan atama veya tasarruf iddiası yükseltilmez. Canlı API-key kabulü H041'de açık. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.

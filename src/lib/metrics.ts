@@ -35,11 +35,13 @@ export interface AttributionSummary {
   groups:AttributionRow[]; omitted_groups:number;
 }
 
+export const isMetricHash = (v:unknown):v is string => typeof v === "string" && /^[0-9a-f]{64}$/.test(v);
+export const isMetricLabel = (v:unknown):v is string => typeof v === "string" && v.length>0 && v.length<=128 && /^[A-Za-z0-9._\-/:+@]+$/.test(v)
+  && !v.includes(":/") && !v.startsWith("/") && !/^(?:sk-|ghp_|github_pat_|unknown$)/i.test(v);
+
 export function decodeAttributionSummary(value:unknown,events:number,origins:number,main:MetricTotals):AttributionSummary|null {
   const keys = ["requests","events","model_observed","client_verified","agent_verified","conflicts"] as const;
-  const hash = (v:unknown):v is string => typeof v === "string" && /^[0-9a-f]{64}$/.test(v);
-  const label = (v:unknown):v is string => typeof v === "string" && v.length>0 && v.length<=128 && /^[A-Za-z0-9._\-/:+@]+$/.test(v)
-    && !v.includes(":/") && !/^(?:sk-|ghp_|github_pat_|unknown$)/i.test(v);
+  const hash = isMetricHash, label=isMetricLabel;
   function counts(v:unknown):AttributionCounts|null {
     if (!record(v) || keys.some(k=>!count(v[k]))) return null;
     const c = Object.fromEntries(keys.map(k=>[k,v[k]])) as unknown as AttributionCounts;
@@ -185,7 +187,7 @@ const runtimeGeneration = (v: unknown): v is string => typeof v === "string" && 
 const utc = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/.test(v)
   && Number.isFinite(Date.parse(v)) && new Date(v).toISOString().slice(0, 19) === v.slice(0, 19);
 
-function totals(value: unknown): MetricTotals | null {
+export function decodeMetricTotals(value: unknown): MetricTotals | null {
   if (!record(value) || !member(value.status, statuses) || !count(value.comparable_events) || !count(value.excluded_events)) return null;
   const { before_tokens: before, after_tokens: after, saved_tokens: saved, saved_percent: percent } = value;
   if (value.status === "measured") {
@@ -199,6 +201,15 @@ function totals(value: unknown): MetricTotals | null {
   return { status: value.status, comparable_events: value.comparable_events, excluded_events: value.excluded_events,
     before_tokens: before as number | null, after_tokens: after as number | null,
     saved_tokens: saved as number | null, saved_percent: percent as number | null };
+}
+
+const totals=decodeMetricTotals;
+export function decodeMetricCollection(c:unknown):OverviewSnapshot["collection"]|null {
+  if (!record(c)||!member(c.status, collectionStatuses) || !token(c.interval_seconds) || c.interval_seconds < 1 || c.interval_seconds > 60
+    || !(c.last_capture_utc === null || utc(c.last_capture_utc)) || !(c.runtime_generation === null || runtimeGeneration(c.runtime_generation))
+    || !(c.last_error === null || member(c.last_error, collectionErrors)) || typeof c.sampling_interrupted_since_start !== "boolean") return null;
+  return {status:c.status,interval_seconds:c.interval_seconds,last_capture_utc:c.last_capture_utc,runtime_generation:c.runtime_generation,
+    last_error:c.last_error,sampling_interrupted_since_start:c.sampling_interrupted_since_start};
 }
 
 function snapshot(value: Record<string, unknown>, expectedPeriod: MetricPeriod): OverviewSnapshot | null {
@@ -217,9 +228,8 @@ function snapshot(value: Record<string, unknown>, expectedPeriod: MetricPeriod):
     || [coverage.rolling_window, coverage.aggregate_only, coverage.unidentified_rows_observed].some(v => typeof v !== "boolean")) return null;
   const attribution=decodeAttributionSummary(d.attribution,coverage.events,coverage.distinct_origins,main);
   if (!attribution) return null;
-  if (!member(c.status, collectionStatuses) || !token(c.interval_seconds) || c.interval_seconds < 1 || c.interval_seconds > 60
-    || !(c.last_capture_utc === null || utc(c.last_capture_utc)) || !(c.runtime_generation === null || runtimeGeneration(c.runtime_generation))
-    || !(c.last_error === null || member(c.last_error, collectionErrors)) || typeof c.sampling_interrupted_since_start !== "boolean") return null;
+  const collection=decodeMetricCollection(c);
+  if (!collection) return null;
   const series: MetricBucket[] = [];
   let previous = -Infinity, before = 0, after = 0, saved = 0, measured = 0;
   for (const raw of d.series) {
@@ -238,8 +248,7 @@ function snapshot(value: Record<string, unknown>, expectedPeriod: MetricPeriod):
       coverage: { events: coverage.events, distinct_origins: coverage.distinct_origins, unplaced_events: coverage.unplaced_events,
         rolling_window: coverage.rolling_window as boolean, aggregate_only: coverage.aggregate_only as boolean,
         unidentified_rows_observed: coverage.unidentified_rows_observed as boolean, complete_traffic: false } },
-    collection: { status: c.status, interval_seconds: c.interval_seconds, last_capture_utc: c.last_capture_utc,
-      runtime_generation: c.runtime_generation, last_error: c.last_error, sampling_interrupted_since_start: c.sampling_interrupted_since_start } };
+    collection };
 }
 
 export function createMetricsClient(transport: MetricsTransport): { read: (period: MetricPeriod) => Promise<MetricsResult> } {

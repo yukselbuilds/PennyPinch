@@ -14,6 +14,7 @@ fn observation(id: &str) -> Observation {
         component: Component::MessageInput,
     };
     Observation {
+        metadata: Default::default(),
         attribution: Attribution::default(),
         runtime_generation: GEN.into(),
         request_id: id.into(),

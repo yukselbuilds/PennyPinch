@@ -1,3 +1,7 @@
+use super::activity::{
+    ActivityDetailReply, ActivityDetailRequest, ActivityListReply, ActivityQueryRequest,
+    ActivityReply, ActivitySnapshot,
+};
 use super::store::{
     MetricsError, MetricsFailure, MetricsQueryRequest, MetricsStore, PeriodMetrics,
 };
@@ -72,6 +76,20 @@ struct CollectorInner {
 struct CollectorState {
     snapshot: CollectionSnapshot,
     last_success: Option<Instant>,
+}
+
+fn collection_snapshot(state: &CollectorState) -> CollectionSnapshot {
+    let mut collection = state.snapshot.clone();
+    if collection.status == CollectionStatus::Recording
+        && state.last_success.is_some_and(|at| {
+            at.elapsed() > Duration::from_secs(collection.interval_seconds * 2 + 2)
+        })
+    {
+        collection.status = CollectionStatus::Interrupted;
+        collection.last_error = Some(CollectionError::Unavailable);
+        collection.sampling_interrupted_since_start = true;
+    }
+    collection
 }
 
 impl OverviewManager {
@@ -220,16 +238,7 @@ impl OverviewManager {
         let now = Local::now();
         match self.inner.store.query_at(request.period, now) {
             Ok(data) => {
-                let mut collection = state.snapshot.clone();
-                if collection.status == CollectionStatus::Recording
-                    && state.last_success.is_some_and(|at| {
-                        at.elapsed() > Duration::from_secs(collection.interval_seconds * 2 + 2)
-                    })
-                {
-                    collection.status = CollectionStatus::Interrupted;
-                    collection.last_error = Some(CollectionError::Unavailable);
-                    collection.sampling_interrupted_since_start = true;
-                }
+                let collection = collection_snapshot(&state);
                 OverviewReply::Snapshot(OverviewSnapshot {
                     schema_version: 1,
                     request_id: request.request_id,
@@ -247,6 +256,54 @@ impl OverviewManager {
         }
     }
 
+    pub fn read_activity(&self, request: ActivityQueryRequest) -> ActivityListReply {
+        if !request.is_valid() {
+            return ActivityReply::error(request.request_id, MetricsError::InvalidInput);
+        }
+        let state = self.inner.state.lock().unwrap_or_else(|p| p.into_inner());
+        let now = Local::now();
+        match self
+            .inner
+            .store
+            .activity_at(request.period, &request.filter, now)
+        {
+            Ok(data) => ActivityReply::Snapshot(ActivitySnapshot {
+                schema_version: 1,
+                request_id: request.request_id,
+                status: "ok",
+                observed_at_utc: now
+                    .with_timezone(&Utc)
+                    .to_rfc3339_opts(SecondsFormat::AutoSi, true),
+                data,
+                collection: Some(collection_snapshot(&state)),
+            }),
+            Err(code) => ActivityReply::error(request.request_id, code),
+        }
+    }
+    pub fn read_activity_detail(&self, request: ActivityDetailRequest) -> ActivityDetailReply {
+        if !request.is_valid() {
+            return ActivityReply::error(request.request_id, MetricsError::InvalidInput);
+        }
+        let _state = self.inner.state.lock().unwrap_or_else(|p| p.into_inner());
+        let now = Local::now();
+        match self
+            .inner
+            .store
+            .activity_detail_at(request.period, &request.origin_id, now)
+        {
+            Ok(data) => ActivityReply::Snapshot(ActivitySnapshot {
+                schema_version: 1,
+                request_id: request.request_id,
+                status: "ok",
+                observed_at_utc: now
+                    .with_timezone(&Utc)
+                    .to_rfc3339_opts(SecondsFormat::AutoSi, true),
+                data,
+                collection: None,
+            }),
+            Err(code) => ActivityReply::error(request.request_id, code),
+        }
+    }
     pub fn shutdown(&self) -> bool {
         self.inner.shutdown()
     }
@@ -399,7 +456,9 @@ mod tests {
         let port = listener.local_addr().unwrap().port();
         let stamp = Utc::now().to_rfc3339();
         let payload = serde_json::json!({"recent_requests":[{"request_id":"http-fixture", "timestamp":stamp,"model":"observed-model","provider":"observed-provider","client":"codex","role":"subagent","agent_id":"PRIVATE_CANARY",
-            "input_tokens_original":120000,"input_tokens_optimized":75000,"request_messages":["PRIVATE_CANARY"],"tags":{"auth":"PRIVATE_CANARY"}}]}).to_string();
+            "total_latency_ms":12.5,"optimization_latency_ms":0,"transforms_applied":["PRIVATE_CANARY"],
+            "input_tokens_original":120000,"input_tokens_optimized":75000,"request_messages":["PRIVATE_CANARY"],"tags":{"auth":"PRIVATE_CANARY"}}],
+            "request_logs":[{"request_id":"http-fixture","timestamp":stamp,"model":"observed-model","error":{"body":"PRIVATE_CANARY"},"cache_hit":true,"response_content":"PRIVATE_CANARY"}]}).to_string();
         let server = thread::spawn(move || {
             for _ in 0..2 {
                 let (mut socket, _) = listener.accept().unwrap();
@@ -456,6 +515,38 @@ mod tests {
         assert!(snapshot.data.attribution.groups[0].client.is_none());
         assert!(snapshot.data.attribution.groups[0].agent.is_none());
         assert!(!serde_json::to_string(&snapshot).unwrap().contains("CANARY"));
+        let request = super::ActivityQueryRequest {
+            schema_version: 1,
+            request_id: uuid::Uuid::new_v4().to_string(),
+            period: super::super::store::Period::Session,
+            filter: Default::default(),
+        };
+        let super::ActivityReply::Snapshot(list) = manager.read_activity(request) else {
+            panic!("activity read failed")
+        };
+        assert_eq!(list.data.rows.len(), 1);
+        assert_eq!(list.data.rows[0].metadata.total_ms, Some(12.5));
+        assert_eq!(
+            list.data.rows[0].metadata.outcome,
+            super::super::request_metadata::Outcome::ErrorReported
+        );
+        assert_eq!(list.data.rows[0].metadata.cache_reported_hit, Some(true));
+        assert!(list.data.rows[0].metadata.first_token_ms.is_none());
+        assert!(list.data.rows[0].identity.client.is_none());
+        let origin = list.data.rows[0].origin_id.clone();
+        assert!(!serde_json::to_string(&list).unwrap().contains("CANARY"));
+        let super::ActivityReply::Snapshot(detail) =
+            manager.read_activity_detail(super::ActivityDetailRequest {
+                schema_version: 1,
+                request_id: uuid::Uuid::new_v4().to_string(),
+                period: super::super::store::Period::Session,
+                origin_id: origin,
+            })
+        else {
+            panic!("activity detail failed")
+        };
+        assert_eq!(detail.data.measurements.len(), 1);
+        assert!(!serde_json::to_string(&detail).unwrap().contains("CANARY"));
         assert!(manager.shutdown());
         server.join().unwrap();
     }
