@@ -1,3 +1,4 @@
+use super::control::{self, ControlError, ControlOperation, ControlTarget, OptimizationState};
 use serde::de::{self, MapAccess, SeqAccess, Visitor};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
@@ -121,13 +122,17 @@ fn startup_diagnostic_for_test() -> StartupDiagnostic {
 
 const EXPECTED_ENGINE_VERSION: &str = "0.41.0";
 const EXPECTED_MANIFEST_SHA256: &str =
-    "e57249e194eb5e5ac8c0396956338c40f35d144b357adb3db826bfb4ce133c57";
+    "4217e8f67946c96caa028e0a0d4e9a41e2e6894e4cafcd7e23adb00ad7cd1c03";
 const EXPECTED_CONTROLLER_SHA256: &str =
-    "a56a82bed8c2878416f99f817f899a294daf5907ba5c21ba53b06a22b2e2537d";
+    "9c5abfe1fd8b91cd5cd6f6addcc00e0dfb3cc88880e67e6c8a6b715b0f8e5545";
 const EXPECTED_HELPER_SHA256: &str =
-    "70c0d5b8c52c3f74cb417781c4e1fe60fce942ed6f2375871f90cafbdb1dc398";
+    "fc394183b35c42532c3dc35f523c8b7eb9b9cc6ee94ad57e9ed098374e854d08";
 const EXPECTED_SHIM_SHA256: &str =
     "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1";
+const EXPECTED_OPTIMIZATION_SHA256: &str =
+    "972c0e60fb791fb9ccd27167e561bf31cef735da88e3423b0e607b2205c8a283";
+const EXPECTED_OPTIMIZATION_SOURCES_SHA256: &str =
+    "f96b93d2c574a2155012c7e587aaed2a2c86f6fe288cd88f847e81e9a27b4bfa";
 const EXPECTED_RUNTIME_MANIFEST_SHA256: &str =
     "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908";
 const EXPECTED_RUNNER_SHA256: &str =
@@ -264,6 +269,7 @@ struct EngineState {
 struct CompressionState {
     status: &'static str,
     active_stream_count: Option<u64>,
+    revision: Option<u64>,
 }
 
 #[derive(Serialize)]
@@ -392,6 +398,17 @@ fn snapshot_error(request_id: &str, error: PublicError) -> RuntimeReply {
     })
 }
 
+fn map_control_error(error: ControlError) -> PublicError {
+    match error {
+        ControlError::InvalidInput => PublicError::ValidationFailed,
+        ControlError::InvalidResponse => PublicError::UnsupportedProtocol,
+        ControlError::Unavailable => PublicError::EnvironmentBlocked,
+        ControlError::OwnershipLost => PublicError::OwnershipLost,
+        ControlError::Transport => PublicError::Timeout,
+        ControlError::ConfigConflict => PublicError::ConfigConflict,
+    }
+}
+
 fn valid_request_id(request_id: &str) -> bool {
     if request_id.len() != 36 || !request_id.is_ascii() {
         return false;
@@ -439,6 +456,7 @@ impl EngineStatus {
 
 #[derive(Clone)]
 struct RuntimeView {
+    optimization: Option<OptimizationState>,
     status: EngineStatus,
     error_code: Option<&'static str>,
     cleanup_uncertain: bool,
@@ -454,6 +472,7 @@ struct RuntimeView {
 impl RuntimeView {
     fn new(status: EngineStatus) -> Self {
         Self {
+            optimization: None,
             status,
             error_code: None,
             cleanup_uncertain: false,
@@ -487,8 +506,22 @@ impl RuntimeView {
                 error_code: self.error_code,
             },
             compression: CompressionState {
-                status: "not_implemented",
+                status: if self.status == EngineStatus::Ready {
+                    self.optimization.map_or("unknown", |state| {
+                        if state.enabled {
+                            "enabled"
+                        } else {
+                            "paused"
+                        }
+                    })
+                } else {
+                    "unavailable"
+                },
                 active_stream_count: None,
+                revision: self
+                    .optimization
+                    .filter(|_| self.status == EngineStatus::Ready)
+                    .map(|state| state.revision),
             },
             discovery: DiscoveryState {
                 status: "not_scanned",
@@ -506,7 +539,10 @@ impl RuntimeView {
             capabilities: Capabilities {
                 start,
                 stop: active_generation,
-                pause: false,
+                pause: self.status == EngineStatus::Ready
+                    && self
+                        .optimization
+                        .is_some_and(|state| !state.enabled || state.can_pause),
                 connect: false,
             },
         })
@@ -926,6 +962,9 @@ impl RuntimeLayout {
         let overlay_controller = resolve_relative(&self.runtime_root, "desktop_controller.py")?;
         let overlay_helper = resolve_relative(&self.runtime_root, "desktop_helper.py")?;
         let overlay_shim = resolve_relative(&self.runtime_root, "cache_control_shim.py")?;
+        let overlay_control = resolve_relative(&self.runtime_root, "optimization_control.py")?;
+        let overlay_control_sources =
+            resolve_relative(&self.runtime_root, "optimization-sources.json")?;
         let packaged_manifest = resolve_relative(&payload_root, &manifest.engine.runtime_manifest)?;
         let runner = resolve_relative(&payload_root, &manifest.engine.runner)?;
         let python = resolve_relative(&payload_root, &manifest.engine.python)?;
@@ -934,6 +973,11 @@ impl RuntimeLayout {
             (&overlay_controller, EXPECTED_CONTROLLER_SHA256),
             (&overlay_helper, EXPECTED_HELPER_SHA256),
             (&overlay_shim, EXPECTED_SHIM_SHA256),
+            (&overlay_control, EXPECTED_OPTIMIZATION_SHA256),
+            (
+                &overlay_control_sources,
+                EXPECTED_OPTIMIZATION_SOURCES_SHA256,
+            ),
             (&packaged_manifest, EXPECTED_RUNTIME_MANIFEST_SHA256),
             (&runner, EXPECTED_RUNNER_SHA256),
             (&python, EXPECTED_PYTHON_SHA256),
@@ -970,6 +1014,7 @@ struct RuntimeManifest {
     protocol_version: u8,
     engine: EngineManifest,
     shim: ShimManifest,
+    optimization_control: OptimizationManifest,
     profile: ProfileManifest,
 }
 
@@ -996,6 +1041,15 @@ struct EngineManifest {
 struct ShimManifest {
     file: String,
     sha256: String,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct OptimizationManifest {
+    file: String,
+    sha256: String,
+    sources: String,
+    sources_sha256: String,
 }
 
 #[derive(Deserialize)]
@@ -1030,6 +1084,10 @@ fn validate_manifest(manifest: &RuntimeManifest) -> Result<(), PublicError> {
         || engine.prefix_tracker_sha256 != EXPECTED_PREFIX_SHA256
         || manifest.shim.file != "cache_control_shim.py"
         || manifest.shim.sha256 != EXPECTED_SHIM_SHA256
+        || manifest.optimization_control.file != "optimization_control.py"
+        || manifest.optimization_control.sha256 != EXPECTED_OPTIMIZATION_SHA256
+        || manifest.optimization_control.sources != "optimization-sources.json"
+        || manifest.optimization_control.sources_sha256 != EXPECTED_OPTIMIZATION_SOURCES_SHA256
         || profile.mode != "cache"
         || profile.savings_profile != "coding"
         || profile.ccr_ttl_seconds != 7200
@@ -1292,8 +1350,16 @@ pub(crate) fn valid_generation(value: &str) -> bool {
     value.len() == 32 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
 }
 
+#[derive(Clone, Eq, PartialEq)]
+struct ControlSecret(String);
+impl std::fmt::Debug for ControlSecret {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("[redacted]")
+    }
+}
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct ReadyInfo {
+    control_secret: ControlSecret,
     generation: String,
     helper_pid: u32,
     engine_pid: u32,
@@ -1324,6 +1390,7 @@ fn parse_controller_ready(
         "engine_console_allocated",
         "config",
         "shim",
+        "optimization_control",
     ];
     parse_common(&value, expected_request_id, None, "ready", KEYS)?;
     let helper_pid = u64_value(&value, "helper_pid")?;
@@ -1380,7 +1447,24 @@ fn parse_controller_ready(
     {
         return Err(PublicError::ConfigConflict);
     }
+    let control = object_value(&value, "optimization_control")?;
+    if !exact_keys(
+        control,
+        &[
+            "protocol_version",
+            "control_token",
+            "module_sha256",
+            "sources_sha256",
+        ],
+    ) || u64_value(control, "protocol_version")? != 1
+        || string_value(control, "module_sha256")? != EXPECTED_OPTIMIZATION_SHA256
+        || string_value(control, "sources_sha256")? != EXPECTED_OPTIMIZATION_SOURCES_SHA256
+        || !super::control::valid_secret(string_value(control, "control_token")?)
+    {
+        return Err(PublicError::ConfigConflict);
+    }
     Ok(ReadyInfo {
+        control_secret: ControlSecret(string_value(control, "control_token")?.to_owned()),
         generation: string_value(&value, "runtime_generation")?.to_owned(),
         helper_pid: u32::try_from(helper_pid).map_err(|_| PublicError::UnsupportedProtocol)?,
         engine_pid: u32::try_from(engine_pid).map_err(|_| PublicError::UnsupportedProtocol)?,
@@ -1670,6 +1754,8 @@ fn safe_environment(state_root: &Path) -> Result<Vec<(String, String)>, PublicEr
 }
 
 struct ControllerSession {
+    control_secret: ControlSecret,
+    optimization: Option<OptimizationState>,
     child: Child,
     stdin: ChildStdin,
     receiver: mpsc::Receiver<ReaderMessage>,
@@ -1687,6 +1773,40 @@ struct ControllerSession {
 }
 
 impl ControllerSession {
+    fn optimization_control(
+        &self,
+        id: &str,
+        operation: ControlOperation,
+    ) -> Result<OptimizationState, PublicError> {
+        #[cfg(windows)]
+        {
+            control::request(
+                ControlTarget {
+                    port: self.listener_port,
+                    owner_pid: self.engine_pid,
+                    generation: &self.generation,
+                    secret: &self.control_secret.0,
+                },
+                id,
+                operation,
+                || {
+                    self.backend_lease.is_alive_for(&self.generation)
+                        && owned_process_chain(
+                            self.controller_pid,
+                            self.helper_pid,
+                            self.engine_pid,
+                        )
+                        && listener_owner(self.listener_port) == Some(self.engine_pid)
+                },
+            )
+            .map_err(map_control_error)
+        }
+        #[cfg(not(windows))]
+        {
+            let _ = (id, operation);
+            Err(PublicError::EnvironmentBlocked)
+        }
+    }
     fn capture_metrics(
         &self,
     ) -> Result<super::metrics_read::OwnedMetricsSnapshot, super::metrics_read::RuntimeMetricsError>
@@ -1906,7 +2026,9 @@ impl ControllerSession {
             };
             #[cfg(test)]
             set_startup_diagnostic_stage("controller_session_ready");
-            Ok(Self {
+            let mut session = Self {
+                control_secret: ready.control_secret,
+                optimization: None,
                 child,
                 stdin,
                 receiver,
@@ -1919,7 +2041,20 @@ impl ControllerSession {
                 listener_port: ready.listener_port,
                 last_health: Instant::now(),
                 backend_lease,
-            })
+            };
+            match session.optimization_control(request_id, ControlOperation::Read) {
+                Ok(state) if state.enabled && state.revision == 0 && state.can_pause => {
+                    session.optimization = Some(state)
+                }
+                _ => {
+                    let report = session.force_stop();
+                    return Err(cleanup_result_error(
+                        PublicError::ConfigConflict,
+                        report.clean(),
+                    ));
+                }
+            }
+            Ok(session)
         }
     }
 
@@ -1935,6 +2070,9 @@ impl ControllerSession {
                 }
                 if probe_ready(self.listener_port, EXPECTED_ENGINE_VERSION) {
                     self.last_health = Instant::now();
+                    self.optimization = self
+                        .optimization_control(&Uuid::new_v4().to_string(), ControlOperation::Read)
+                        .ok();
                     true
                 } else {
                     health_is_fresh(self.last_health, Instant::now())
@@ -3356,6 +3494,13 @@ fn write_ingress_view(view: &Arc<RwLock<IngressView>>, update: impl FnOnce(&mut 
 }
 
 enum ActorCommand {
+    SetOptimization {
+        request_id: String,
+        expected_generation: String,
+        expected_revision: u64,
+        enabled: bool,
+        reply: mpsc::SyncSender<RuntimeReply>,
+    },
     CollectMetrics {
         reply: mpsc::SyncSender<
             Result<
@@ -3738,6 +3883,43 @@ impl RuntimeManager {
             .unwrap_or_else(|_| snapshot_error(&request_id, PublicError::Timeout))
     }
 
+    pub fn set_optimization(
+        &self,
+        request_id: String,
+        expected_generation: String,
+        expected_revision: u64,
+        enabled: bool,
+    ) -> RuntimeReply {
+        if !valid_request_id(&request_id)
+            || !valid_generation(&expected_generation)
+            || expected_revision > control::MAX_CONTROL_COUNTER
+        {
+            return snapshot_error(&request_id, PublicError::ValidationFailed);
+        }
+        if !self.actor_available || self.shutting_down.load(Ordering::SeqCst) {
+            return snapshot_error(&request_id, PublicError::EnvironmentBlocked);
+        }
+        let (reply, receiver) = mpsc::sync_channel(1);
+        if let Err(error) = self.sender.try_send(ActorCommand::SetOptimization {
+            request_id: request_id.clone(),
+            expected_generation,
+            expected_revision,
+            enabled,
+            reply,
+        }) {
+            return snapshot_error(
+                &request_id,
+                match error {
+                    mpsc::TrySendError::Full(_) => PublicError::Busy,
+                    mpsc::TrySendError::Disconnected(_) => PublicError::EnvironmentBlocked,
+                },
+            );
+        }
+        receiver
+            .recv_timeout(Duration::from_secs(4))
+            .unwrap_or_else(|_| snapshot_error(&request_id, PublicError::Timeout))
+    }
+
     pub fn shutdown(&self) -> bool {
         if !self.actor_available {
             return true;
@@ -3823,6 +4005,7 @@ fn set_ready_view(view: &Arc<RwLock<RuntimeView>>, session: &ControllerSession) 
         session.listener_port,
         session.engine_pid,
         session.last_health,
+        session.optimization,
     );
 }
 
@@ -3832,6 +4015,7 @@ fn mark_ready_view(
     listener_port: u16,
     listener_owner_pid: u32,
     last_health: Instant,
+    optimization: Option<OptimizationState>,
 ) {
     write_view(view, |state| {
         state.status = EngineStatus::Ready;
@@ -3842,6 +4026,7 @@ fn mark_ready_view(
         state.listener_port = Some(listener_port);
         state.listener_owner_pid = Some(listener_owner_pid);
         state.last_health = Some(last_health);
+        state.optimization = optimization;
     });
 }
 
@@ -3860,6 +4045,7 @@ fn clear_view(
         state.listener_port = None;
         state.listener_owner_pid = None;
         state.last_health = None;
+        state.optimization = None;
     });
 }
 
@@ -3952,6 +4138,60 @@ fn run_actor(
     let mut active: Option<ControllerSession> = None;
     loop {
         match receiver.recv_timeout(ACTOR_POLL_INTERVAL) {
+            Ok(ActorCommand::SetOptimization {
+                request_id,
+                expected_generation,
+                expected_revision,
+                enabled,
+                reply,
+            }) => {
+                if shutting_down.load(Ordering::SeqCst) {
+                    let _ =
+                        reply.send(snapshot_error(&request_id, PublicError::EnvironmentBlocked));
+                    continue;
+                }
+                let Some(session) = active.as_mut() else {
+                    let _ = reply.send(snapshot_error(&request_id, PublicError::EngineNotReady));
+                    continue;
+                };
+                let ready = {
+                    let state = view.read().unwrap_or_else(|p| p.into_inner());
+                    state.status == EngineStatus::Ready && !state.cleanup_uncertain
+                };
+                if !ready {
+                    let _ = reply.send(snapshot_error(&request_id, PublicError::EngineNotReady));
+                    continue;
+                }
+                if session.generation != expected_generation {
+                    let _ = reply.send(snapshot_error(&request_id, PublicError::OwnershipLost));
+                    continue;
+                }
+                let known = session.optimization;
+                if known.is_none_or(|state| {
+                    state.revision != expected_revision || !enabled && !state.can_pause
+                }) {
+                    let _ = reply.send(snapshot_error(&request_id, PublicError::ConfigConflict));
+                    continue;
+                }
+                match session.optimization_control(
+                    &request_id,
+                    ControlOperation::Set {
+                        expected_revision,
+                        enabled,
+                    },
+                ) {
+                    Ok(state) => {
+                        session.optimization = Some(state);
+                        set_ready_view(&view, session);
+                        let _ = reply.send(snapshot_for(&view, &request_id));
+                    }
+                    Err(error) => {
+                        session.optimization = None;
+                        write_view(&view, |state| state.optimization = None);
+                        let _ = reply.send(snapshot_error(&request_id, error));
+                    }
+                }
+            }
             Ok(ActorCommand::CollectMetrics { reply }) => {
                 let result = if shutting_down.load(Ordering::SeqCst) {
                     Err(super::metrics_read::RuntimeMetricsError::Stopped)

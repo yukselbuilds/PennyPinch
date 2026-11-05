@@ -4,13 +4,13 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H013–H027, H040, H046 ve **H047 tamamlandı:25/51.** H027 kapandı: içeriksiz etkinlik ve ayrıntı. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
+**Durum:** H001–H005, H007–H008, H011, H013–H028, H040, H046 ve **H047 tamamlandı:27/51.** H028 ile ortak H011 prefix/CCR güvenlik kabulü kapandı. Sıradaki H029 başlamadı; ana görev sonunda duruldu. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
 ## Geliştirme araçları ve çalışma düzeni
 
-Bu işler 51 ürün görevine eklenmez. DEV001/DEV002 ve H027 kabul edildi. Sıradaki ürün görevi H028; kullanıcı devam mesajı bekleniyor.
+Bu işler 51 ürün görevine eklenmez. DEV001/DEV002 ve H028 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H029 başlamadı; kullanıcı devam mesajı bekleniyor.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -188,8 +188,9 @@ flowchart TD
 **Kontrol noktası K2 — H008–H010:** Hangi yüzey/sürüm/auth kombinasyonunun gerçekten desteklendiği belirlenir. Eksik erişim nedeniyle test edilemeyen kombinasyon deneysel kalır.
 
 ### H011 — Duraklatma güvenliği kanıtı
-- [ ] Aktif stream ve sıkıştırılmış geçmiş varken mod geçişleri sınanır.
-- [x] **H011-a kaynak değerlendirmesi tamam:** [Kaynak kaydı](docs/proofs/pause.md) request bypass/kill-switch/runtime-env/restart davranışını ayırıyor. Güvenli uygulama kontrolü ve aktif stream/prefix/CCR replay henüz yok; pause `not_implemented/not_tested`, UI eylemi kapalı. H007 retrieval başarısı bu kabulü kapatmaz; runtime proof H014/H028 kontrol katmanıyla yapılacak.
+- [x] Aktif stream ve sıkıştırılmış geçmiş varken mod geçişleri sınanır.
+- [x] **H011-a tarihsel kaynak değerlendirmesi:** [Kaynak kaydı](docs/proofs/pause.md) bypass/kill-switch/runtime-env/restart ayrımını korur.5 Kasım H028 ile gerçek request/frame kontrolü ve prefix/CCR/aktif SSE/WS kanıtı tamamlandı; eski not_implemented kaydı güncel durum değildir.
+- **Ortak H028 kabulü:** [Kanıt](docs/proofs/safe-pause.md): aynı konuşmada eski prefix/CCR, tek upstream POST/WS bağlantısı, resume sonrası yeni sıkıştırma; gerçek UI/iki manager izolasyonu ve ayrı graceful stop/backend unavailable etkisi. Yerel Windows10 kabulüdür; canlı sağlayıcı/diğer OS/genel model desteği yükseltilmedi.
 - **Kabul:** Önceden gönderilmiş prefix ve CCR erişimi korunur; devam eden istek kesilmez; motor tamamen durdurulduğunda etki doğru raporlanır.
 - **Doğrulama:** Yerel çok turlu replay; başlat → sıkıştır → duraklat → retrieval → devam sırası.
 - **Bağımlılık / boyut:** H007, H008, H009, H010 / M.
@@ -430,13 +431,15 @@ flowchart TD
 - **Dosyalar:** `src/features/activity/`, `src/lib/activity*.ts`, `src-tauri/src/metrics/activity*.rs`, `request_metadata.rs`, `tests/app/activity*.test.mjs`.
 
 ### H028 — Güvenli Başlat/Duraklat
+- **5 Kasım tamamlandı:** Ana ajan motor/private kontrol/native/inceleme sahibi; tek Luna yalnız sunum, sınırlı test ve izole fixture yazdı. [Plan016](docs/decisions/016-safe-pause.md), [kabul](docs/proofs/safe-pause.md), [inceleme](docs/reviews/H028.md).
+- **Son kapı:**138 frontend/349 Rust PASS,6 opt-in ignored; ayrıca11 embedded Python kontrol testi, gerçek iki-manager opt-in, controller suite ve native düğme/pending/error/klavye/zoom kabulü PASS.151 kaynak/config ve native/replay fingerprint'leri kabul kaydında eşleşti. Mevcut ayarlar aynı; ücretli model çağrısı0, geliştirme tasarrufu ölçülmedi.
 - **3 Kasım UI/UX kabulü:** Günlük ana kontrol duruma göre Başlat veya Duraklat/Devam et olur; motor kapanışı ve bağlantıyı kaldırma farklı etkilerle yönetilir. Uygulanmamış eylem çalışıyormuş gibi sunulmaz; hazır motor tek başına bağlı istemci/tasarruf anlamına gelmez.
-- [ ] H011'de kanıtlanan davranış gerçek UI ve runtime'a bağlanır.
+- [x] H011'de kanıtlanan davranış gerçek UI ve runtime'a bağlanır.
 - **Kabul:** Eylem bitmeden durum başarı sayılmaz; stream ve CCR sürer; başka motor grubunun ayarı değişmez.
 - **Ek kabul:** Pause otomatik client config kaldırma veya Codex thread provider retag işlemi değildir. Aynı konuşmada pause→CCR→resume ve cached-prefix korunumu sınanır; stream ortasında yeniden POST/düz iletime geçiş yapılmaz.
 - **Doğrulama:** Etkin istek sırasında duraklatma/devam ve başarısız kontrol komutu senaryoları.
 - **Bağımlılık / boyut:** H025, H011 / M.
-- **Dosyalar:** `src-tauri/src/runtime/control.rs`, `src-tauri/src/runtime/control_tests.rs`, `src/features/overview/OptimizationControl.tsx`.
+- **Dosyalar:** `runtime/optimization_control.py`, `src-tauri/src/runtime/control.rs` (testler dahil), runtime manager/controller, `src/features/overview/OptimizationControl.tsx`, `tests/runtime/pause_replay.py`.
 
 ### H029 — Bağlantıyı kaldırma akışı
 - [ ] Kullanıcı UI'dan uygulamaya ait yönlendirmeyi geri alır.
@@ -673,4 +676,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**25/51 tamam; H027 kapandı.** İçeriksiz etkinlik listesi/filtre/ayrıntı, süre ve kaynak sonucu, aynı dönem ölçümü ve export-safe DTO tamamlandı.133 frontend/344 Rust PASS,5 mevcut opt-in ignored; fmt/embedded build ve native collector/dönem/klavye/zoom PASS. [Kabul](docs/proofs/activity.md), [inceleme](docs/reviews/H027.md). Sıradaki H028 güvenli Başlat/Duraklat; başlamadı, kullanıcı devam mesajı bekleniyor. Dolu/kimlikli örnekler fixture'dır; canlı kanıt olmadan atama veya tasarruf iddiası yükseltilmez. Canlı API-key kabulü H041'de açık. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.
+**27/51 tamam; H028 ve ortak H011 güvenlik kabulü kapandı.** Gerçek Başlat/Duraklat/Devam et, prefix/CCR ve aktif SSE/WS korunumu, iki motor izolasyonu, pending/error/klavye/zoom kabulü tamamlandı.138 frontend/349 Rust PASS,6 opt-in ignored; ek gerçek opt-in ve controller/unit kontrolleri PASS. [Kabul](docs/proofs/safe-pause.md), [inceleme](docs/reviews/H028.md). Sıradaki H029 başlamadı; kullanıcı devam mesajı bekleniyor. Yerel fixture sonuçları canlı sağlayıcı/model tasarrufu veya diğer OS desteği değildir. H041 canlı API-key kapısı açık; güncel devir `docs/IMPLEMENTATION_STATUS.md`.

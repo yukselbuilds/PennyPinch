@@ -1,7 +1,7 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 
 export type EngineStatus = "unavailable" | "unknown" | "stopped" | "starting" | "ready" | "stopping" | "failed";
-export type CompressionStatus = "unavailable" | "not_implemented";
+export type CompressionStatus = "unavailable" | "unknown" | "enabled" | "paused";
 export type DiscoveryStatus = "unavailable" | "not_scanned";
 
 export const PUBLIC_ERROR_MESSAGES = {
@@ -27,7 +27,7 @@ export interface RuntimeSnapshot {
   runtime_generation: string | null;
   engine_version: "0.41.0" | null;
   engine: { status: EngineStatus; error_code: PublicErrorCode | null };
-  compression: { status: CompressionStatus; active_stream_count: null };
+  compression: { status: CompressionStatus; active_stream_count: null; revision:number|null };
   discovery: { status: DiscoveryStatus; clients: [] };
   metrics: {
     status: "waiting";
@@ -38,7 +38,7 @@ export interface RuntimeSnapshot {
     request_count: null;
     covered_count: null;
   };
-  capabilities: { start: boolean; stop: boolean; pause: false; connect: false };
+  capabilities: { start: boolean; stop: boolean; pause: boolean; connect: false };
 }
 
 export interface SnapshotErrorEnvelope {
@@ -71,7 +71,7 @@ function isOpaqueId(value: unknown): value is string {
 }
 
 function isGeneration(value: unknown): value is string {
-  return typeof value === "string" && /^[0-9a-f]{32}$/i.test(value);
+  return typeof value === "string" && /^[0-9a-f]{32}$/i.test(value) && value !== "0".repeat(32);
 }
 
 function isPublicErrorCode(value: unknown): value is PublicErrorCode {
@@ -99,7 +99,7 @@ export function decodeSnapshot(value: unknown, expectedRequestId: string): Runti
 
   if (!hasExactKeys(value, ["schema_version", "request_id", "snapshot_id", "observed_at_utc", "runtime_generation", "engine_version", "engine", "compression", "discovery", "metrics", "capabilities"]) ||
       !hasExactKeys(value.engine, ["status", "error_code"]) ||
-      !hasExactKeys(value.compression, ["status", "active_stream_count"]) ||
+      !hasExactKeys(value.compression, ["status", "active_stream_count", "revision"]) ||
       !hasExactKeys(value.discovery, ["status", "clients"]) ||
       !hasExactKeys(value.metrics, ["status", "before_total", "after_total", "saved_total", "saved_percent", "request_count", "covered_count"]) ||
       !hasExactKeys(value.capabilities, ["start", "stop", "pause", "connect"])) return null;
@@ -123,13 +123,20 @@ export function decodeSnapshot(value: unknown, expectedRequestId: string): Runti
   if ((engineStatus === "stopped" && value.capabilities.start !== true) ||
       (engineStatus !== "stopped" && engineStatus !== "failed" && value.capabilities.start !== false)) return null;
 
-  if (value.compression.status !== "not_implemented" || value.compression.active_stream_count !== null ||
+  const compressionStatus=value.compression.status,revision=value.compression.revision;
+  const controlKnown=compressionStatus==="enabled"||compressionStatus==="paused";
+  if ((!controlKnown&&compressionStatus!=="unknown"&&compressionStatus!=="unavailable") ||value.compression.active_stream_count !== null
+    ||(controlKnown?typeof revision!=="number"||!Number.isSafeInteger(revision)||revision<0:revision!==null)) return null;
+  if (engineStatus==="ready"?compressionStatus==="unavailable":compressionStatus!=="unavailable") return null;
+  if (controlKnown&&engineStatus!=="ready" || value.capabilities.pause&&(!controlKnown||engineStatus!=="ready")
+    ||compressionStatus==="paused"&&value.capabilities.pause!==true) return null;
+  if (
       value.discovery.status !== "not_scanned" || !Array.isArray(value.discovery.clients) || value.discovery.clients.length !== 0) return null;
   if (value.metrics.status !== "waiting" || value.metrics.before_total !== null || value.metrics.after_total !== null ||
       value.metrics.saved_total !== null || value.metrics.saved_percent !== null || value.metrics.request_count !== null ||
       value.metrics.covered_count !== null) return null;
   if (typeof value.capabilities.start !== "boolean" || typeof value.capabilities.stop !== "boolean" ||
-      value.capabilities.pause !== false || value.capabilities.connect !== false) return null;
+      typeof value.capabilities.pause!=="boolean" || value.capabilities.connect !== false) return null;
 
   return {
     schema_version: 1,
@@ -139,7 +146,7 @@ export function decodeSnapshot(value: unknown, expectedRequestId: string): Runti
     runtime_generation: generation,
     engine_version: engineVersion,
     engine: { status: engineStatus, error_code: engineError },
-    compression: { status: "not_implemented", active_stream_count: null },
+    compression: { status:compressionStatus as CompressionStatus, active_stream_count: null, revision:revision as number|null },
     discovery: { status: "not_scanned", clients: [] },
     metrics: {
       status: "waiting",
@@ -153,7 +160,7 @@ export function decodeSnapshot(value: unknown, expectedRequestId: string): Runti
     capabilities: {
       start: value.capabilities.start,
       stop: value.capabilities.stop,
-      pause: false,
+      pause: value.capabilities.pause,
       connect: false,
     },
   };
@@ -206,32 +213,35 @@ function newRequestId(): string | null {
   return requestId && isOpaqueId(requestId) ? requestId : null;
 }
 
-async function invokeRuntimeCommand(command: "get_runtime_snapshot" | "start_engine" | "stop_engine", expectedGeneration?: string): Promise<SnapshotResult> {
-  if (!isTauri()) return { kind: "desktop_unavailable" };
-  if (expectedGeneration !== undefined && !isGeneration(expectedGeneration)) return { kind: "invalid_response" };
-  const requestId = newRequestId();
-  if (!requestId) return { kind: "request_failed" };
-  try {
-    const raw: unknown = await invoke(command, command === "stop_engine"
-      ? { requestId, expectedGeneration }
-      : { requestId });
-    const snapshot = decodeSnapshot(raw, requestId);
-    if (snapshot) return { kind: "snapshot", snapshot };
-    const error = decodeSnapshotError(raw, requestId);
-    return error ? { kind: "snapshot_error", error } : { kind: "invalid_response" };
-  } catch {
-    return { kind: "request_failed" };
+export interface RuntimeTransport {
+  isNative:()=>boolean;createRequestId:()=>string|null;invoke:(command:string,args:Record<string,unknown>)=>Promise<unknown>;
+}
+export function createRuntimeClient(transport:RuntimeTransport){
+  async function call(command:string,args:Record<string,unknown>={}):Promise<SnapshotResult>{
+    if(!transport.isNative())return {kind:"desktop_unavailable"};
+    const requestId=transport.createRequestId();if(!isOpaqueId(requestId))return {kind:"request_failed"};
+    try{
+      const raw=await transport.invoke(command,{requestId,...args});const snapshot=decodeSnapshot(raw,requestId);
+      if(snapshot)return {kind:"snapshot",snapshot};
+      const error=decodeSnapshotError(raw,requestId);return error?{kind:"snapshot_error",error}:{kind:"invalid_response"};
+    }catch{return {kind:"request_failed"};}
   }
+  return {
+    read:()=>call("get_runtime_snapshot"),start:()=>call("start_engine"),
+    stop:(expectedGeneration:string):Promise<SnapshotResult>=>isGeneration(expectedGeneration)?call("stop_engine",{expectedGeneration}):Promise.resolve({kind:"invalid_response"}),
+    set:async(expectedGeneration:string,expectedRevision:number,enabled:boolean):Promise<SnapshotResult>=>{
+      if(!isGeneration(expectedGeneration)||!Number.isSafeInteger(expectedRevision)||expectedRevision<0||typeof enabled!=="boolean")return {kind:"invalid_response"};
+      const result=await call("set_optimization",{expectedGeneration,expectedRevision,enabled});
+      if(result.kind==="snapshot"){
+        const snapshot=result.snapshot,r=snapshot.compression.revision;
+        if(snapshot.runtime_generation!==expectedGeneration||snapshot.compression.status!==(enabled?"enabled":"paused")||r===null||r<expectedRevision||r>expectedRevision+1)return {kind:"invalid_response"};
+      }
+      return result;
+    },
+  };
 }
-
-export function readRuntimeSnapshot(): Promise<SnapshotResult> {
-  return invokeRuntimeCommand("get_runtime_snapshot");
-}
-
-export function startEngine(): Promise<SnapshotResult> {
-  return invokeRuntimeCommand("start_engine");
-}
-
-export function stopEngine(expectedGeneration: string): Promise<SnapshotResult> {
-  return invokeRuntimeCommand("stop_engine", expectedGeneration);
-}
+const nativeRuntime=createRuntimeClient({isNative:()=>isTauri(),createRequestId:newRequestId,invoke:(command,args)=>invoke(command,args)});
+export const readRuntimeSnapshot=()=>nativeRuntime.read();
+export const startEngine=()=>nativeRuntime.start();
+export const stopEngine=(expectedGeneration:string)=>nativeRuntime.stop(expectedGeneration);
+export const setOptimization=(expectedGeneration:string,expectedRevision:number,enabled:boolean)=>nativeRuntime.set(expectedGeneration,expectedRevision,enabled);

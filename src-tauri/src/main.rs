@@ -101,6 +101,23 @@ fn get_runtime_snapshot(
 }
 
 #[tauri::command]
+async fn set_optimization(
+    state: tauri::State<'_, RuntimeManager>,
+    request_id: String,
+    expected_generation: String,
+    expected_revision: u64,
+    enabled: bool,
+) -> Result<RuntimeReply, RuntimeReply> {
+    let manager = state.inner().clone();
+    let failure_id = request_id.clone();
+    Ok(tauri::async_runtime::spawn_blocking(move || {
+        manager.set_optimization(request_id, expected_generation, expected_revision, enabled)
+    })
+    .await
+    .unwrap_or_else(|_| RuntimeManager::failure_reply(failure_id)))
+}
+
+#[tauri::command]
 fn get_ingress_snapshot(
     state: tauri::State<'_, RuntimeManager>,
     request_id: String,
@@ -458,6 +475,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             start_engine,
             stop_engine,
+            set_optimization,
             get_runtime_snapshot,
             get_ingress_snapshot,
             get_metrics_summary,

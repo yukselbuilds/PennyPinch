@@ -1,6 +1,6 @@
 # H011-a — Pause control source assessment
 
-**Status: `not_implemented` / `not_tested`.** The production UI must keep compression pause disabled until H011/H028 proves an app-owned control path. This is a source assessment of the pinned `headroom-ai==0.41.0` package, not a runtime test.
+**19 Ekim2026 tarihsel kaynak değerlendirmesi:** O tarihte `not_implemented/not_tested` idi.5 Kasım H011/H028 uygulama kontrolü ve yerel motor/native kabulü [güvenli duraklatma kanıtında](safe-pause.md) tamamlandı. Aşağıdaki metin ilk source assessment kaydıdır; güncel UI durumu veya canlı sağlayıcı desteği olarak okunmaz.
 
 ## What the pinned source provides
 

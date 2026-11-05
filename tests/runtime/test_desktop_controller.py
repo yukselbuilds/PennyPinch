@@ -148,6 +148,8 @@ class DesktopProtocolTests(unittest.TestCase):
             (root / "python.exe").write_bytes(b"pinned-python")
             (root / "prefix_tracker.py").write_bytes(b"pinned-prefix")
             (root / "cache_control_shim.py").write_bytes(b"pinned-shim")
+            (root / "optimization_control.py").write_bytes(b"pinned-control")
+            (root / "optimization-sources.json").write_bytes(b"pinned-sources")
             manifest = {
                 "schema_version": 1,
                 "protocol_version": 1,
@@ -167,6 +169,7 @@ class DesktopProtocolTests(unittest.TestCase):
                     "prefix_tracker_sha256": hashlib.sha256(b"pinned-prefix").hexdigest(),
                 },
                 "shim": {"file": "cache_control_shim.py", "sha256": hashlib.sha256(b"pinned-shim").hexdigest()},
+                "optimization_control": {"file": "optimization_control.py", "sha256": hashlib.sha256(b"pinned-control").hexdigest(), "sources": "optimization-sources.json", "sources_sha256": hashlib.sha256(b"pinned-sources").hexdigest()},
                 "profile": {
                     "mode": "cache",
                     "savings_profile": "coding",
@@ -189,9 +192,16 @@ class DesktopProtocolTests(unittest.TestCase):
                 "site_packages": manifest["engine"]["site_packages"],
                 "prefix_tracker_sha256": manifest["engine"]["prefix_tracker_sha256"],
                 "shim_sha256": manifest["shim"]["sha256"],
+                "optimization_sha256": manifest["optimization_control"]["sha256"],
+                "optimization_sources_sha256": manifest["optimization_control"]["sources_sha256"],
             }
             verified = verify_runtime_files(manifest, root, expected_pins=pins)
             self.assertEqual(verified["runner"], hashlib.sha256(b"pinned-runner").hexdigest())
+            for name, original in (("optimization_control.py", b"pinned-control"), ("optimization-sources.json", b"pinned-sources")):
+                (root / name).write_bytes(b"changed-control")
+                with self.assertRaises(ProtocolError):
+                    verify_runtime_files(manifest, root, expected_pins=pins)
+                (root / name).write_bytes(original)
             (root / "headroom_runtime.py").write_bytes(b"changed-runner")
             with self.assertRaises(ProtocolError):
                 verify_runtime_files(manifest, root, expected_pins=pins)

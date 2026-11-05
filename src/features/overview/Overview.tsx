@@ -1,6 +1,8 @@
 import "./overview.css";
 import { SavingsChart } from "./SavingsChart";
 import { Coverage } from "./Coverage";
+import {OptimizationControl} from "./OptimizationControl";
+import {optimizationView} from "../../lib/optimization";
 import {
   formatMetricNumber,
   formatMetricPercent,
@@ -11,7 +13,6 @@ import {
   type OverviewSnapshot,
 } from "../../lib/metrics";
 import type { ClientKind } from "../../lib/integrations";
-import type { EngineStatus } from "../../runtime/snapshot";
 
 const copy = {
   tr: {
@@ -41,25 +42,7 @@ const copy = {
     retry: "Yeniden dene",
     refreshing: "Güncelleniyor…",
     refresh: "Veriyi yenile",
-    engine: "Motor durumu",
-    engineReady: "Hazır",
-    engineStopped: "Durduruldu",
-    engineStarting: "Başlatılıyor",
-    engineStopping: "Durduruluyor",
-    engineFailed: "Hata bildirdi",
-    engineUnavailable: "Kullanılamıyor",
-    engineUnknown: "Bilinmiyor",
-    engineReadyHint: "Motor hazır; istemci trafiği ayrı ölçülür.",
-    engineRequirement: "Bağlantıdan sonra kodlama uygulamanı kullanmaya devam edebilirsin.",
-    noSavedConnection: "Henüz yönlendirme kaydı yok.",
-    savedConnection: "Headroom ayar kaydı var; açık istemci ve trafik durumu ayrıca değerlendirilir.",
-    connectAndStart: "Bağla ve başlat",
     manage: "Uygulamaları yönet",
-    start: "Başlat",
-    starting: "Başlatılıyor…",
-    stop: "Motoru durdur",
-    running: "Çalışıyor",
-    more: "Diğer motor işlemleri",
     connections: "Uygulama bağlantıları",
     connectionSaved: "Yönlendirme kaydı var",
     connectionMissing: "Yönlendirme kaydı yok",
@@ -139,25 +122,7 @@ const copy = {
     retry: "Try again",
     refreshing: "Updating…",
     refresh: "Refresh data",
-    engine: "Engine status",
-    engineReady: "Ready",
-    engineStopped: "Stopped",
-    engineStarting: "Starting",
-    engineStopping: "Stopping",
-    engineFailed: "Reported an error",
-    engineUnavailable: "Unavailable",
-    engineUnknown: "Unknown",
-    engineReadyHint: "The engine is ready; client traffic is measured separately.",
-    engineRequirement: "After connecting, keep working in your coding application.",
-    noSavedConnection: "No routing setting is saved yet.",
-    savedConnection: "A Headroom setting is saved; open client and traffic status are separate.",
-    connectAndStart: "Connect and start",
     manage: "Manage applications",
-    start: "Start",
-    starting: "Starting…",
-    stop: "Stop engine",
-    running: "Running",
-    more: "More engine actions",
     connections: "Application connections",
     connectionSaved: "Routing setting saved",
     connectionMissing: "No routing setting saved",
@@ -234,18 +199,6 @@ function formatTime(value: string | null, language: OverviewProps["language"]): 
   }).format(date);
 }
 
-function engineText(status: EngineStatus, t: OverviewCopy): string {
-  switch (status) {
-    case "ready": return t.engineReady;
-    case "stopped": return t.engineStopped;
-    case "starting": return t.engineStarting;
-    case "stopping": return t.engineStopping;
-    case "failed": return t.engineFailed;
-    case "unavailable": return t.engineUnavailable;
-    default: return t.engineUnknown;
-  }
-}
-
 function collectionText(snapshot: OverviewSnapshot, t: OverviewCopy): string {
   switch (snapshot.collection.status) {
     case "recording": return t.collectionRecording;
@@ -295,13 +248,8 @@ export function Overview(props: OverviewProps) {
   const saved = measuredTotals?.saved_tokens ?? null;
   const percent = measuredTotals?.saved_percent ?? null;
   const isIncrease = saved !== null && saved < 0;
-  const engineStatus = props.runtime?.engine.status ?? "unknown";
-  const hasSavedConnection = props.connections.some((connection) => connection.state === "saved");
-  const connectionRecordsKnown = clients.every((client) =>
-    props.connections.some((connection) => connection.client === client.kind && connection.state !== "unknown"),
-  );
-  const engineReady = engineStatus === "ready";
-  const showStart = hasSavedConnection && !engineReady && Boolean(props.runtime?.capabilities.start);
+  const control=optimizationView(props.runtime,props.pending);
+  const controlAction=()=>({start:props.onStart,pause:props.onPause,resume:props.onResume,refresh:props.onRuntimeRefresh})[control.primary]();
   const periodOptions: readonly MetricPeriod[] = ["session", "today", "seven_days"];
   const number = (value: number | null) => formatMetricNumber(value, props.language);
 
@@ -355,40 +303,7 @@ export function Overview(props: OverviewProps) {
           )}
         </section>
 
-        <aside className="overview__engine" aria-label={t.engine}>
-          <div className="overview__engine-status">
-            <span className={`overview__status-dot is-${engineStatus}`} aria-hidden="true" />
-            <div>
-              <span>{t.engine}</span>
-              <strong>{engineText(engineStatus, t)}</strong>
-            </div>
-          </div>
-          <p>{engineReady ? t.engineReadyHint : hasSavedConnection ? t.savedConnection : connectionRecordsKnown ? t.noSavedConnection : t.connectionUnknown}</p>
-          {!hasSavedConnection && connectionRecordsKnown && !props.connectionsLoading ? (
-            <button className="overview__primary" type="button" onClick={props.onOpenApplications}>
-              {engineReady ? t.connect : t.connectAndStart}<span aria-hidden="true">↗</span>
-            </button>
-          ) : props.connectionsLoading || !connectionRecordsKnown ? (
-            <button className="overview__primary" type="button" onClick={props.onOpenApplications}>{t.manage}</button>
-          ) : showStart ? (
-            <button className="overview__primary" type="button" disabled={props.pending !== null} onClick={props.onStart}>
-              {props.pending === "start" ? t.starting : t.start}<span aria-hidden="true">▶</span>
-            </button>
-          ) : engineReady ? (
-            <div className="overview__running">{t.running}</div>
-          ) : (
-            <button className="overview__primary overview__primary--quiet" type="button" onClick={props.onOpenApplications}>{t.manage}</button>
-          )}
-          <p className="overview__engine-requirement">{t.engineRequirement}</p>
-          {engineReady && props.runtime?.capabilities.stop && (
-            <details className="overview__engine-more">
-              <summary>{t.more}</summary>
-              <button type="button" disabled={props.pending !== null} onClick={props.onStop}>
-                {props.pending === "stop" ? (props.language === "tr" ? "Durduruluyor…" : "Stopping…") : t.stop}
-              </button>
-            </details>
-          )}
-        </aside>
+        <OptimizationControl language={props.language} view={control} onPrimary={controlAction} onStop={props.onStop}/>
       </div>
 
       {snapshot && snapshot.data.series.length > 0 && <section className="overview__chart-panel" aria-labelledby="overview-chart-title">

@@ -30,5 +30,11 @@
     "model_router_enabled": "0",
     "memory": false,
     "learn": false
+  },
+  "optimization_control": {
+    "file": "optimization_control.py",
+    "sha256": "972c0e60fb791fb9ccd27167e561bf31cef735da88e3423b0e607b2205c8a283",
+    "sources": "optimization-sources.json",
+    "sources_sha256": "f96b93d2c574a2155012c7e587aaed2a2c86f6fe288cd88f847e81e9a27b4bfa"
   }
 }

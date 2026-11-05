@@ -35,6 +35,8 @@ PINNED_EXPECTED = {
     "site_packages": "Lib/site-packages",
     "prefix_tracker_sha256": "f1af4ee279f879efc48ddfebbff125a088893bb64ee960ca2dbd4ad1cdb628ee",
     "shim_sha256": "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1",
+    "optimization_sha256": "972c0e60fb791fb9ccd27167e561bf31cef735da88e3423b0e607b2205c8a283",
+    "optimization_sources_sha256": "f96b93d2c574a2155012c7e587aaed2a2c86f6fe288cd88f847e81e9a27b4bfa",
 }
 ERROR_CODES = frozenset(
     {
@@ -72,6 +74,7 @@ _READY_KEYS = frozenset(
         "engine_console_allocated",
         "config",
         "shim",
+        "optimization_control",
     }
 )
 _CONFIG_KEYS = frozenset(
@@ -188,6 +191,14 @@ def _validate_event_data(event: str, data: dict[str, Any]) -> None:
             raise ProtocolError("invalid_shape")
         config = data.get("config")
         shim = data.get("shim")
+        control = data.get("optimization_control")
+        if not isinstance(control,dict) or set(control)!={"protocol_version","control_token","module_sha256","sources_sha256"}:
+            raise ProtocolError("invalid_shape")
+        token=control.get("control_token")
+        if type(control.get("protocol_version")) is not int or control["protocol_version"]!=1 or not isinstance(token,str) or len(token)!=32 or any(c not in "0123456789abcdef" for c in token) or token=="0"*32:
+            raise ProtocolError("invalid_shape")
+        if any(not isinstance(control.get(k),str) or len(control[k])!=64 or any(c not in "0123456789abcdef" for c in control[k]) for k in ("module_sha256","sources_sha256")):
+            raise ProtocolError("invalid_shape")
         if not isinstance(config, dict) or set(config) != _CONFIG_KEYS:
             raise ProtocolError("invalid_shape")
         if not isinstance(shim, dict) or set(shim) != _SHIM_KEYS:
@@ -313,7 +324,8 @@ def verify_runtime_files(
     validate_runtime_profile(manifest.get("profile"))
     engine = manifest.get("engine")
     shim = manifest.get("shim")
-    if not isinstance(engine, dict) or not isinstance(shim, dict):
+    control = manifest.get("optimization_control")
+    if not isinstance(engine, dict) or not isinstance(shim, dict) or not isinstance(control,dict) or control.get("file")!="optimization_control.py" or control.get("sources")!="optimization-sources.json":
         raise ProtocolError("manifest_invalid")
     pins = expected_pins or PINNED_EXPECTED
     manifest_pins = {
@@ -326,6 +338,8 @@ def verify_runtime_files(
         "site_packages": engine.get("site_packages"),
         "prefix_tracker_sha256": engine.get("prefix_tracker_sha256"),
         "shim_sha256": shim.get("sha256"),
+        "optimization_sha256": control.get("sha256"),
+        "optimization_sources_sha256": control.get("sources_sha256"),
     }
     if manifest_pins != pins:
         raise ProtocolError("runtime_pin_mismatch")
@@ -336,6 +350,8 @@ def verify_runtime_files(
             "python": _under(payload_root, engine["python"]),
             "prefix_tracker": _under(payload_root, engine["prefix_tracker"]),
             "shim": _under(overlay_root or payload_root, shim["file"]),
+            "optimization_control": _under(overlay_root or payload_root,control["file"]),
+            "optimization_sources": _under(overlay_root or payload_root,control["sources"]),
         }
         expected = {
             "runtime_manifest": engine["runtime_manifest_sha256"],
@@ -343,6 +359,8 @@ def verify_runtime_files(
             "python": engine["python_sha256"],
             "prefix_tracker": engine["prefix_tracker_sha256"],
             "shim": shim["sha256"],
+            "optimization_control": control["sha256"],
+            "optimization_sources": control["sources_sha256"],
         }
     except (KeyError, TypeError):
         raise ProtocolError("manifest_invalid") from None
@@ -673,6 +691,8 @@ def serve(args: argparse.Namespace) -> int:
             or ready.get("engine_console_allocated") is not True
             or ready.get("controller_consoleless") is not True
             or ready.get("shim", {}).get("active") is not True
+            or ready.get("optimization_control",{}).get("module_sha256")!=manifest["optimization_control"]["sha256"]
+            or ready.get("optimization_control",{}).get("sources_sha256")!=manifest["optimization_control"]["sources_sha256"]
         ):
             _emit_error(request["request_id"], generation, "engine_start_failed")
             return 3

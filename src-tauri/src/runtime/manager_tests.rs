@@ -128,6 +128,7 @@ fn ready_frame() -> Vec<u8> {
             "output_shaper_enabled": false,
             "model_router_enabled": false
         },
+        "optimization_control":{"protocol_version":1,"control_token":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","module_sha256":EXPECTED_OPTIMIZATION_SHA256,"sources_sha256":EXPECTED_OPTIMIZATION_SOURCES_SHA256},
         "shim": {
             "active": true,
             "version": "0.41.0",
@@ -537,7 +538,7 @@ fn expired_ready_snapshot_becomes_unknown_and_recovers_after_fresh_health() {
     assert_eq!(stale.engine.error_code, Some("timeout"));
     assert!(stale.capabilities.stop);
 
-    mark_ready_view(&shared_view, GENERATION, 48631, 302, Instant::now());
+    mark_ready_view(&shared_view, GENERATION, 48631, 302, Instant::now(), None);
     let fresh = manager.get_runtime_snapshot("8132bced-3ce0-4c1b-8f48-d93d7b96f7ce".to_owned());
     assert_eq!(fresh.status_for_test(), Some("ready"));
 }
@@ -900,6 +901,196 @@ fn request_readyz_through_ingress(address: SocketAddr) {
         .expect("bounded ingress /readyz response");
     assert_eq!(status, 200);
     assert!(health_payload_matches(&body, EXPECTED_ENGINE_VERSION));
+}
+
+#[test]
+fn private_control_ready_attestation_is_pinned_and_debug_redacted() {
+    let ready = parse_controller_ready(&ready_frame(), REQUEST_ID, 300).unwrap();
+    assert!(!format!("{ready:?}").contains(&"a".repeat(32)));
+    for (key, value) in [
+        ("control_token", json!("0".repeat(32))),
+        ("module_sha256", json!("0".repeat(64))),
+        ("sources_sha256", json!("0".repeat(64))),
+        ("protocol_version", json!(2)),
+        ("extra", json!(true)),
+    ] {
+        let mut value_frame: Value = serde_json::from_slice(&ready_frame()).unwrap();
+        value_frame["optimization_control"][key] = value;
+        let mut raw = serde_json::to_vec(&value_frame).unwrap();
+        raw.push(b'\n');
+        assert!(parse_controller_ready(&raw, REQUEST_ID, 300).is_err());
+    }
+}
+
+fn assert_optimization(reply: &RuntimeReply, status: &str, revision: Option<u64>, available: bool) {
+    let RuntimeReply::Snapshot(snapshot) = reply else {
+        panic!("expected runtime snapshot")
+    };
+    assert_eq!(snapshot.compression.status, status);
+    assert_eq!(snapshot.compression.revision, revision);
+    assert_eq!(snapshot.capabilities.pause, available);
+    assert_eq!(snapshot.compression.active_stream_count, None);
+    let public = serde_json::to_string(snapshot).unwrap();
+    assert!(!public.contains("control_token"));
+    assert!(!public.contains("optimization_control"));
+}
+
+#[test]
+fn public_optimization_state_requires_ready_and_known_control() {
+    let mut view = RuntimeView::new(EngineStatus::Ready);
+    view.runtime_generation = Some(GENERATION.to_owned());
+    view.engine_version = Some(EXPECTED_ENGINE_VERSION.to_owned());
+    assert_optimization(
+        &view.snapshot(REQUEST_ID.to_owned()),
+        "unknown",
+        None,
+        false,
+    );
+    view.optimization = Some(OptimizationState {
+        enabled: true,
+        revision: 0,
+        can_pause: true,
+        active_http_requests: 3,
+    });
+    assert_optimization(
+        &view.snapshot(REQUEST_ID.to_owned()),
+        "enabled",
+        Some(0),
+        true,
+    );
+    view.optimization.as_mut().unwrap().can_pause = false;
+    assert_optimization(
+        &view.snapshot(REQUEST_ID.to_owned()),
+        "enabled",
+        Some(0),
+        false,
+    );
+    view.optimization.as_mut().unwrap().enabled = false;
+    assert_optimization(
+        &view.snapshot(REQUEST_ID.to_owned()),
+        "paused",
+        Some(0),
+        true,
+    );
+    view.status = EngineStatus::Stopping;
+    assert_optimization(
+        &view.snapshot(REQUEST_ID.to_owned()),
+        "unavailable",
+        None,
+        false,
+    );
+}
+
+#[cfg(windows)]
+#[test]
+#[ignore = "opt-in real pinned helper/controller pause; loopback control only, no model/provider request"]
+fn live_manager_pause_is_owned_revision_checked_and_reversible() {
+    let project =
+        fs::canonicalize(PathBuf::from(env!("CARGO_MANIFEST_DIR")).parent().unwrap()).unwrap();
+    let runs = project.join("work/proofs/runtime-manager/runs");
+    fs::create_dir_all(&runs).unwrap();
+    let runs = fs::canonicalize(runs).unwrap();
+    let make_manager = || {
+        let root = runs.join(Uuid::new_v4().to_string());
+        fs::create_dir(&root).unwrap();
+        let layout =
+            RuntimeLayout::from_roots(project.clone(), project.join("runtime"), root.clone())
+                .unwrap();
+        let manager = RuntimeManager::from_layout(Ok(layout));
+        LiveRunCleanup {
+            manager,
+            run_root: root,
+            runs_root: runs.clone(),
+            complete: false,
+        }
+    };
+    let mut first = make_manager();
+    let mut second = make_manager();
+    reset_startup_diagnostic();
+    let started = first.manager.start_engine(REQUEST_ID.to_owned());
+    assert_eq!(
+        started.status_for_test(),
+        Some("ready"),
+        "start_error={:?}; diagnostic={:?}",
+        started.error_code_for_test(),
+        startup_diagnostic_for_test()
+    );
+    let generation = started.generation_for_test().unwrap();
+    assert_optimization(&started, "enabled", Some(0), true);
+    let port = first.manager.listener_port_for_test().unwrap();
+    let owner = first.manager.listener_owner_pid_for_test().unwrap();
+    let other = second.manager.start_engine(Uuid::new_v4().to_string());
+    assert_eq!(other.status_for_test(), Some("ready"));
+    let other_generation = other.generation_for_test().unwrap();
+    let other_port = second.manager.listener_port_for_test().unwrap();
+    let other_owner = second.manager.listener_owner_pid_for_test().unwrap();
+    assert_ne!(generation, other_generation);
+    assert_ne!(port, other_port);
+    let paused =
+        first
+            .manager
+            .set_optimization(Uuid::new_v4().to_string(), generation.clone(), 0, false);
+    assert_optimization(&paused, "paused", Some(1), true);
+    assert_eq!(
+        paused.generation_for_test().as_deref(),
+        Some(generation.as_str())
+    );
+    assert_eq!(listener_owner(port), Some(owner));
+    let stale =
+        first
+            .manager
+            .set_optimization(Uuid::new_v4().to_string(), generation.clone(), 0, true);
+    assert_eq!(stale.error_code_for_test(), Some("config_conflict"));
+    let foreign = first.manager.set_optimization(
+        Uuid::new_v4().to_string(),
+        other_generation.clone(),
+        1,
+        true,
+    );
+    assert_eq!(foreign.error_code_for_test(), Some("ownership_lost"));
+    assert_optimization(
+        &second.manager.get_runtime_snapshot(REQUEST_ID.to_owned()),
+        "enabled",
+        Some(0),
+        true,
+    );
+    let resumed =
+        first
+            .manager
+            .set_optimization(Uuid::new_v4().to_string(), generation.clone(), 1, true);
+    assert_optimization(&resumed, "enabled", Some(2), true);
+    let repeat =
+        first
+            .manager
+            .set_optimization(Uuid::new_v4().to_string(), generation.clone(), 2, true);
+    assert_optimization(&repeat, "enabled", Some(2), true);
+    let stopped = first
+        .manager
+        .stop_engine(Uuid::new_v4().to_string(), generation);
+    assert_eq!(stopped.status_for_test(), Some("stopped"));
+    assert_optimization(&stopped, "unavailable", None, false);
+    assert!(owned_listener_closed(port, owner, PORT_CLOSE_TIMEOUT));
+    assert_optimization(
+        &second.manager.get_runtime_snapshot(REQUEST_ID.to_owned()),
+        "enabled",
+        Some(0),
+        true,
+    );
+    assert_eq!(listener_owner(other_port), Some(other_owner));
+    assert_eq!(
+        second
+            .manager
+            .stop_engine(Uuid::new_v4().to_string(), other_generation)
+            .status_for_test(),
+        Some("stopped")
+    );
+    assert!(owned_listener_closed(
+        other_port,
+        other_owner,
+        PORT_CLOSE_TIMEOUT
+    ));
+    assert!(first.finish());
+    assert!(second.finish());
 }
 
 fn is_expected_closed_socket_error(kind: std::io::ErrorKind) -> bool {

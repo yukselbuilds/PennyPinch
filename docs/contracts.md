@@ -19,7 +19,7 @@ Güncel kaynak ayrımı: [OpenAI'nin subagent belgesi](https://learn.chatgpt.com
 | Runtime snapshot | Yok | Aşağıdaki durum DTO'su; salt okunur. |
 | Start engine | Yok; ayarlar backend state'inden | Idempotent başlatma isteği + güncel snapshot; H014. `ready` yalnız gerçek kanıtla. |
 | Stop engine | Beklenen runtime nesli | Aktif trafik/bağlantı etkisi incelenmiş bounded shutdown; H029/H030 semantiği. |
-| Pause/resume compression | Beklenen nesil ve hedef | H011/H028 geçmeden etkin bir UI eylemi yok; proxy restart veya config rollback yerine geçmez. |
+| Pause/resume compression | Beklenen nesil, revision ve hedef | H028 `set_optimization`; gerçek kontrol ack'i sonrası snapshot. Proxy restart veya config rollback değildir. |
 | Discover clients | Yeniden tara isteği | İçeriksiz kurulum kimlikleri, sürüm/yüzey ve durum; H016. Ayar değiştirmez. |
 | Plan connection/disconnect | Keşfedilmiş kurulum ve kapsam kimliği | Süreli plan kimliği, uygulanacak alanların sade özeti, yeniden başlatma ihtiyacı; H017/H029. |
 | Apply plan | Plan kimliği, beklenen fingerprint | Atomik işlem/sahiplik sonucu; drift varsa conflict; H018. |
@@ -34,7 +34,7 @@ Bu adlar komut aileleridir; H013 yalnız uygulanmış dar snapshot/sağlık sın
 
 **Motor:** `unavailable | stopped | starting | ready | stopping | failed | unknown`. Snapshot en az `schema_version`, `snapshot_id`, `observed_at_utc`, `runtime_generation`, `engine_version`, durum ve sabit hata kodunu taşır. `unknown`, gözlem yok/eskiyse kullanılır; `ready` veya `stopped` varsayılamaz. PID/loopback adresi iç tanı metadata'sıdır; UI'nın kendi yönetim hedefi seçmesine izin vermez. Önceki nesilden gelen geç yanıt yeni nesli `ready` yapmaz.
 
-**Sıkıştırma:** `unavailable | not_implemented | enabled | pausing | paused | failed | unknown`. `ready` motor, `enabled` sıkıştırma anlamına gelmez. H011/H028 pause sözleşmesini kanıtlayana kadar UI'da pause eylemi yok ve durum `not_implemented` olur; `paused` uydurulmaz. Aktif stream sayısı `null`/unknown olabilir ve hiçbir zaman sessizce sıfıra çevrilmez.
+**Sıkıştırma (H028,5 Kasım2026):** `unavailable | enabled | paused | unknown`; `revision` bilinen kontrolde JS-safe sayı, diğer durumlarda null. Hazır motorun kontrolü okunamadıysa `unknown`; diğer motor durumlarında `unavailable`. `pausing` bir renderer işlem beklemesidir, onaylanmış motor durumu değildir. `capabilities.pause` mevcut durumun duraklatma/devam eylemini yetkilendirir. Güvenli replay kanıtı yoksa yeni pause kapalıdır; resume yapılabilir. `active_stream_count` null kalır; özel kontrolün HTTP istek sayısı ve ingress TCP sayısı stream sayısına çevrilmez.
 
 **Keşif:** `not_scanned | detected | not_detected | error`; istemci sürümü bilinmiyorsa `null`. `not_detected`, protokol uyumsuzluğu değildir.
 
@@ -65,6 +65,10 @@ H007'de kanıtlanan opaque cache marker shim'i, H014-a'da aynı hash ile üretim
 Endpoint gözlemi ve engine health ayrı güncellenir; süresi geçen gözlem `unknown/timeout` ve nullable sayaç üretir. Motor yeniden başlarken endpoint kimliği/adresi korunur; her TCP bağlantısı tek backend nesline sabitlenir. Kayıtlı port doluysa başka adres seçilmez. Backend socket'inin exact established peer PID'si doğrulanmadan istemci payload'ı aktarılmaz. Yalnız PID değil held process handle, JobObject üyeliği, parent chain ve nesil doğrulanır; Windows'un ek owned konsol süreçleri olabileceği için güvenlik tam üç süreç sayısına dayanmaz.
 
 Stop sırası yeni route'u kaldırma → engine graceful stop → bounded TCP drain → owned cleanup doğrulamasıdır. Zorla iptal graceful başarı sayılmaz; tamamlanmış temizlik ve belirsiz temizlik ayrı tutulur. Doğrudan upstream fail-open kapalıdır; kopmuş POST/SSE başka backend'e tekrar gönderilmez. Gateway/OAuth, CCR/pause, canlı istemci ve model desteği bu transport sözleşmesiyle doğrulanmış olmaz. Uygulama tamamen kapalıyken port serbesttir; tray/background veya config geri alma H018/H029/H030/H034 kapılarında ayrıca çözülür. [Arıza matrisi](validation/ingress-failure-matrix.md), [karar](decisions/003-connection-ingress.md), [yerel kanıtlar](proofs/connection-ingress.md).
+
+H028 `set_optimization(request_id, expected_generation, expected_revision, enabled)` yalnız tipli hedef alır. Renderer port, nonce, URL, PID veya özel kontrol gövdesi gönderemez. Rust → actor → held process/Job/nesil + exact connected peer doğrulaması → tek private POST → correlate edilmiş ack → snapshot zinciri kullanılır. Health hazır, compression kontrolü unknown kalabilir; başarısız kontrol motoru öldürmez. Otomatik komut tekrarı veya başka motora geçiş yoktur. Başarısız ack/okuma optimistic başarı üretmez; taze read ile toparlanır.
+
+Ephemeral nonce yalnız private bootstrap/ready ve native bellektedir; DTO/state/log/export'a girmez. Aynı motor/endpoint/CCR deposu korunur, HTTP kararı istek başında ve WS kararı frame sınırında sabitlenir. Kaynak/payload/kapasite veya executor timeout güveni bozarsa pause reddedilir; paused replay ham prefix'e sessizce geçmez. Pinned vendor dosyaları değiştirilmez. [Karar016](decisions/016-safe-pause.md), [yerel H011/H028 kabulü](proofs/safe-pause.md).
 
 ## 4. Config sahipliği ve geri alma
 

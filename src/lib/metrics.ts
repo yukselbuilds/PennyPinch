@@ -1,6 +1,7 @@
 import type { ClientKind } from "./integrations";
 import type { PreferenceLanguage } from "./preferences";
 import type { RuntimeSnapshot } from "../runtime/snapshot";
+import type {RuntimeAction} from "./optimization";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 
 export type MetricPeriod = "session" | "today" | "seven_days";
@@ -146,7 +147,7 @@ export interface OverviewConnection {
 export interface OverviewProps {
   language: PreferenceLanguage;
   runtime: RuntimeSnapshot | null;
-  pending: "start" | "stop" | null;
+  pending: RuntimeAction | null;
   period: MetricPeriod;
   metrics: OverviewMetricsState;
   connections: readonly OverviewConnection[];
@@ -157,6 +158,9 @@ export interface OverviewProps {
   onOpenApplications: () => void;
   onStart: () => void;
   onStop: () => void;
+  onPause:()=>void;
+  onResume:()=>void;
+  onRuntimeRefresh:()=>void;
 }
 
 export type MetricsResult =

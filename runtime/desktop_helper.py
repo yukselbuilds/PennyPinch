@@ -11,6 +11,7 @@ import re
 import sys
 import threading
 import time
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +34,7 @@ SHIM_MARKER = re.compile(
     rb"headroom-desktop-cache-shim:version=(0\.41\.0);prefix_sha256=([0-9a-f]{64});shim_sha256=([0-9a-f]{64})"
 )
 ROUTER_MARKER = b"headroom-desktop-model-router:disabled"
+CONTROL_MARKER = re.compile(rb"headroom-desktop-optimization-control:module_sha256=([0-9a-f]{64});sources_sha256=([0-9a-f]{64})")
 
 
 def _load_controller(overlay_root: Path):
@@ -63,6 +65,7 @@ class BoundedEngineOutput:
         self._line_tail = b""
         self._lock = threading.Lock()
         self.shim_marker: tuple[str, str, str] | None = None
+        self.control_marker: tuple[str, str] | None = None
         self._thread = threading.Thread(target=self._drain, args=(stream,), daemon=True)
         self._thread.start()
 
@@ -88,6 +91,10 @@ class BoundedEngineOutput:
                         marker = tuple(item.decode("ascii") for item in match.groups())
                         with self._lock:
                             self.shim_marker = marker
+                    match = CONTROL_MARKER.search(line[:1024])
+                    if match:
+                        with self._lock:
+                            self.control_marker = tuple(item.decode("ascii") for item in match.groups())
         finally:
             stream.close()
 
@@ -105,6 +112,7 @@ class BoundedEngineOutput:
             with self._lock:
                 ready = (
                     self.shim_marker is not None
+                    and self.control_marker is not None
                     and "local_telemetry_enabled" in self.flags
                     and "anonymous_beacon_disabled" in self.flags
                     and "model_router_disabled" in self.flags
@@ -149,7 +157,7 @@ def _load_h006_helper(path: Path, expected_sha256: str):
     return module
 
 
-def _engine_bootstrap(payload_root: Path, overlay_root: Path, manifest: dict[str, Any]) -> str:
+def _engine_bootstrap(payload_root: Path, overlay_root: Path, manifest: dict[str, Any], generation: str, control_token: str) -> str:
     engine = manifest["engine"]
     shim_file = overlay_root / manifest["shim"]["file"]
     prefix_sha = engine["prefix_tracker_sha256"]
@@ -174,6 +182,10 @@ def _engine_bootstrap(payload_root: Path, overlay_root: Path, manifest: dict[str
         "shim=desktop_shim.install(); "
         f"assert shim['version']=={expected_version_literal} and shim['source_sha256']=={prefix_sha!r} and shim['shim_sha256']=={shim_sha!r} and shim['active']=='true'; "
         "print('headroom-desktop-cache-shim:version='+shim['version']+';prefix_sha256='+shim['source_sha256']+';shim_sha256='+shim['shim_sha256'],flush=True); "
+        "import optimization_control; "
+        f"control=optimization_control.install({generation!r},{control_token!r}); "
+        f"assert control['module_sha256']=={manifest['optimization_control']['sha256']!r} and control['sources_sha256']=={manifest['optimization_control']['sources_sha256']!r}; "
+        "print('headroom-desktop-optimization-control:module_sha256='+control['module_sha256']+';sources_sha256='+control['sources_sha256'],flush=True); "
         "from headroom.cli import main; main()"
     )
 
@@ -231,6 +243,8 @@ def _verify_live_runtime(helper: Any, process: Any, port: int, output: BoundedEn
     shim_marker = output.shim_marker
     if shim_marker != (engine["version"], engine["prefix_tracker_sha256"], shim_sha):
         raise RuntimeError("cache-shim-provenance-mismatch")
+    if output.control_marker != (manifest["optimization_control"]["sha256"],manifest["optimization_control"]["sources_sha256"]):
+        raise RuntimeError("optimization-provenance-mismatch")
     config = {
         "mode": effective["mode"],
         "savings_profile": effective["savings_profile"],
@@ -266,6 +280,7 @@ def _patch_and_run(args: argparse.Namespace) -> int:
         "port": None,
         "live_config": None,
         "shim": None,
+        "control_token": uuid.uuid4().hex,
     }
     original_start_engine = helper.start_engine
     original_safe_environment = helper.safe_environment
@@ -303,7 +318,7 @@ def _patch_and_run(args: argparse.Namespace) -> int:
         return result
 
     def engine_command(port: int) -> list[str]:
-        bootstrap = _engine_bootstrap(payload_root, overlay_root, manifest)
+        bootstrap = _engine_bootstrap(payload_root, overlay_root, manifest,args.runtime_generation,process_state["control_token"])
         return [
             str(payload_root / manifest["engine"]["python"]),
             "-I",
@@ -352,6 +367,9 @@ def _patch_and_run(args: argparse.Namespace) -> int:
                 "engine_console_allocated": source.get("engine_console_allocated") is True,
                 "config": config,
                 "shim": shim,
+                "optimization_control": {"protocol_version":1,"control_token":process_state["control_token"],
+                                         "module_sha256":manifest["optimization_control"]["sha256"],
+                                         "sources_sha256":manifest["optimization_control"]["sources_sha256"]},
             }
             sys.stdout.buffer.write(controller.encode_frame(request_id, args.runtime_generation, "ready", data))
             sys.stdout.buffer.flush()

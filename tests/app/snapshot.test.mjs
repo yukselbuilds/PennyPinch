@@ -13,7 +13,7 @@ const snapshot = (status = "stopped") => ({
   runtime_generation: null,
   engine_version: null,
   engine: { status, error_code: null },
-  compression: { status: "not_implemented", active_stream_count: null },
+  compression: { status: status==="ready"?"unknown":"unavailable", active_stream_count: null, revision:null },
   discovery: { status: "not_scanned", clients: [] },
   metrics: {
     status: "waiting",
@@ -48,7 +48,7 @@ test("accepts fixed statuses and nullable manager error codes without inventing 
   value.capabilities.start = false;
   assert.equal(decodeSnapshot(value, requestId)?.engine.error_code, "cleanup_failed");
   assert.equal(decodeSnapshot(value, requestId)?.metrics.saved_percent, null);
-  assert.equal(decodeSnapshot(value, requestId)?.compression.status, "not_implemented");
+  assert.equal(decodeSnapshot(value, requestId)?.compression.status, "unavailable");
 });
 
 test("rejects a ready response without a pinned owned generation", () => {

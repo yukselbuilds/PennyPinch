@@ -1,0 +1,38 @@
+.optimization-control {
+  min-width: 0;
+}
+
+.optimization-control__dot.is-enabled {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.optimization-control__dot.is-paused,
+.optimization-control__dot.is-failed {
+  border-color: var(--warning);
+  background: var(--warning);
+}
+
+.optimization-control__description {
+  min-height: 40px;
+  overflow-wrap: anywhere;
+}
+
+.optimization-control__primary {
+  align-self: stretch;
+  min-height: 40px;
+  font-size: 13px;
+}
+
+.optimization-control__more p {
+  margin: 8px 0 0;
+  color: var(--warning);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+@media (max-width: 683px) {
+  .optimization-control { padding: 16px; }
+  .optimization-control__description { min-height: 0; }
+}

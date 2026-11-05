@@ -4,6 +4,7 @@ import {
   readRuntimeSnapshot,
   startEngine,
   stopEngine,
+  setOptimization,
   type PublicErrorCode,
   type RuntimeSnapshot,
   type SnapshotErrorEnvelope,
@@ -25,10 +26,11 @@ import { Activity } from "./features/activity/Activity";
 import { useActivity } from "./features/activity/useActivity";
 import { useOverviewConnections, useOverviewMetrics } from "./features/overview/useOverview";
 import type { MetricPeriod } from "./lib/metrics";
+import type { RuntimeAction } from "./lib/optimization";
 import { windowZoomClient, type WindowScale } from "./lib/windowZoom";
 
 type Screen = "overview" | "applications" | "activity" | "settings";
-type LifecycleAction = "start" | "stop";
+type LifecycleAction = RuntimeAction;
 type WindowZoomView = { scale: WindowScale; pending: boolean; failed: boolean; change: (scale: WindowScale) => void };
 type PreferenceUiStatus = "loading" | "loaded" | "saving" | "saved" | "error" | "session_only";
 
@@ -68,7 +70,7 @@ const copy = {
       port_conflict: "Motorun yerel bağlantı noktası kullanılamıyor. Biraz sonra yeniden dene.",
       engine_not_ready: "Motor hazır duruma geçmedi. Durumu yenileyip yeniden dene.", ownership_lost: "Motor sürecinin sahipliği doğrulanamadı.",
       timeout: "Motor denetimi zaman aşımına uğradı. Durumu yenileyip yeniden dene.", cleanup_failed: "Normal kapanış doğrulanamadı. Güncel motor durumunu kontrol et.",
-      config_conflict: "Motor yapılandırması beklenen profille eşleşmiyor. Temel paketi, disk alanını ve yazma izinlerini kontrol edip motoru başlatmayı veya uygulamayı yeniden açmayı dene.",
+      config_conflict: "Motorun durumu veya yapılandırması değişti. Durumu yenileyip yeniden dene.",
     },
   },
   en: {
@@ -106,7 +108,7 @@ const copy = {
       port_conflict: "The engine loopback port is unavailable. Try again shortly.",
       engine_not_ready: "The engine did not become ready. Refresh its state and try again.", ownership_lost: "Ownership of the engine process could not be verified.",
       timeout: "Engine control timed out. Refresh its state and try again.", cleanup_failed: "Engine shutdown was not verified. Check the current engine state.",
-      config_conflict: "The engine configuration does not match the required profile. Check the core package, available disk space, and write permission, then try starting the engine or reopening the app.",
+      config_conflict: "The engine state or configuration changed. Refresh its state and try again.",
     },
   },
 } satisfies Record<PreferenceLanguage, Record<string, unknown>>;
@@ -296,13 +298,21 @@ export default function App() {
     if (lifecycleLocked.current || applicationsLock.current || !snapshot) return;
     if (action === "start" && !snapshot.capabilities.start) return;
     if (action === "stop" && (!snapshot.capabilities.stop || !snapshot.runtime_generation)) return;
+    if ((action==="pause"||action==="resume")&&(!snapshot.capabilities.pause||!snapshot.runtime_generation||snapshot.compression.revision===null
+      ||snapshot.compression.status!==(action==="pause"?"enabled":"paused"))) return;
     lifecycleLocked.current = true;
     setPending(action);
     setCommandError(null);
     const commandSequence = requestSequence.current.next();
     try {
-      const commandResult = action === "start" ? await startEngine() : await stopEngine(snapshot.runtime_generation!);
+      const commandResult = action === "start" ? await startEngine() : action==="stop"?await stopEngine(snapshot.runtime_generation!)
+        :await setOptimization(snapshot.runtime_generation!,snapshot.compression.revision!,action==="resume");
       if (!mounted.current) return;
+      if ((action === "pause" || action === "resume") && commandResult.kind !== "snapshot") {
+        setSnapshot(current => current?.engine.status === "ready" && current.runtime_generation === snapshot.runtime_generation
+          ? { ...current, compression: { status: "unknown", active_stream_count: null, revision: null }, capabilities: { ...current.capabilities, pause: false } }
+          : current);
+      }
       if (commandResult.kind === "snapshot") {
         if (requestSequence.current.isCurrent(commandSequence)) {
           setSnapshot(commandResult.snapshot);
@@ -376,12 +386,12 @@ export default function App() {
 
   const screenKey: Screen[] = ["overview", "applications", "activity", "settings"];
   function navigate(next: Screen) {
-    if (applicationsLock.current) return;
+    if (applicationsLock.current || lifecycleLocked.current) return;
     setRequestedClient(null);
     setScreen(next);
   }
   function connect(client: ClientKind) {
-    if (applicationsLock.current) return;
+    if (applicationsLock.current || lifecycleLocked.current) return;
     if (connections.connections.some(item => item.client === client && item.state === "saved")) {
       navigate("applications");
       return;
@@ -392,7 +402,8 @@ export default function App() {
   const content = screen === "overview" ? <Overview language={language} runtime={snapshot} pending={pending}
     period={period} metrics={overview.metrics} connections={connections.connections} connectionsLoading={connections.loading}
     onPeriodChange={setPeriod} onRefresh={overview.refresh} onConnect={connect}
-    onOpenApplications={() => navigate("applications")} onStart={() => void runLifecycle("start")} onStop={() => void runLifecycle("stop")} />
+    onOpenApplications={() => navigate("applications")} onStart={() => void runLifecycle("start")} onStop={() => void runLifecycle("stop")}
+    onPause={()=>void runLifecycle("pause")} onResume={()=>void runLifecycle("resume")} onRuntimeRefresh={retrySnapshot} />
     : screen === "applications" ? <Applications language={language} requestedClient={requestedClient} onBusyChange={onApplicationsBusy} />
     : screen === "activity" ? <Activity language={language} {...activity} /> : renderSettings(
     labels,
@@ -407,13 +418,13 @@ export default function App() {
 
   return <div className="app-shell">
     <aside className="sidebar">
-      <a className="brand" href="#overview" aria-disabled={applicationsBusy} onClick={(event) => { event.preventDefault(); navigate("overview"); }} aria-label={language === "tr" ? "Headroom genel bakış" : "Headroom overview"}>
+      <a className="brand" href="#overview" aria-disabled={applicationsBusy || pending !== null} onClick={(event) => { event.preventDefault(); navigate("overview"); }} aria-label={language === "tr" ? "Headroom genel bakış" : "Headroom overview"}>
         <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
         <span>headroom<span className="brand-period">.</span></span>
       </a>
       <div className="sidebar-label">{language === "tr" ? "ÇALIŞMA ALANI" : "WORKSPACE"}</div>
       <nav className="primary-nav" aria-label={language === "tr" ? "Ana gezinme" : "Primary navigation"}>
-        {screenKey.map((key, index) => <button key={key} disabled={applicationsBusy} className={`nav-item ${screen === key ? "is-active" : ""}`} onClick={() => navigate(key)} aria-current={screen === key ? "page" : undefined}>
+        {screenKey.map((key, index) => <button key={key} disabled={applicationsBusy || pending !== null} className={`nav-item ${screen === key ? "is-active" : ""}`} onClick={() => navigate(key)} aria-current={screen === key ? "page" : undefined}>
           <span className={`nav-glyph glyph-${key}`} aria-hidden="true">{["◫", "▤", "◷", "⚙"][index]}</span><span>{nav[index]}</span>
         </button>)}
       </nav>
