@@ -1,4 +1,5 @@
 pub mod manager;
+pub(crate) mod metrics_read;
 
 #[cfg(windows)]
 pub mod ingress;

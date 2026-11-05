@@ -487,3 +487,57 @@ fn metrics_store_real_process_restart_preserves_history_and_starts_new_session()
     assert_eq!(reader["saved_percent"], 14.0);
     assert_eq!(reader["retention_days"], 30);
 }
+
+#[test]
+fn metrics_overview_series_and_last_event_use_the_selected_local_period() {
+    let store = MetricsStore::in_directory(&fixture_root());
+    let previous = observation("previous", "2026-11-03T20:59:59Z");
+    let mut small = observation("small", "2026-11-04T07:15:00Z");
+    small.before.tokens = Some(1000);
+    small.after.tokens = Some(500);
+    let mut large = observation("large", "2026-11-04T08:40:00Z");
+    large.before.tokens = Some(9000);
+    large.after.tokens = Some(8100);
+    insert(&store, &[previous, small, large]).unwrap();
+    let today = store.query_at(Period::Today, now()).unwrap();
+    assert_eq!(today.totals.saved_percent, Some(14.0));
+    let value = serde_json::to_value(today).unwrap();
+    let series = value["series"].as_array().expect("real period series");
+    assert_eq!(series.len(), 2);
+    assert_eq!(series[0]["at_utc"], "2026-11-04T07:00:00Z");
+    assert_eq!(series[1]["at_utc"], "2026-11-04T08:00:00Z");
+    assert_eq!(
+        series
+            .iter()
+            .map(|v| v["totals"]["saved_tokens"].as_i64().unwrap())
+            .sum::<i64>(),
+        1400
+    );
+    assert_eq!(value["last_event_utc"], "2026-11-04T08:40:00Z");
+    let week = serde_json::to_value(store.query_at(Period::SevenDays, now()).unwrap()).unwrap();
+    assert_eq!(week["series"].as_array().unwrap().len(), 2);
+    assert_eq!(week["series"][0]["at_utc"], "2026-11-02T21:00:00Z");
+    assert_eq!(week["totals"]["saved_tokens"], 1450);
+}
+
+#[test]
+fn metrics_overview_never_charts_incomparable_or_mixed_counter_bases() {
+    let store = MetricsStore::in_directory(&fixture_root());
+    let first = observation("first", "2026-11-04T07:00:00Z");
+    let mut other = observation("other", "2026-11-04T08:00:00Z");
+    for reading in [&mut other.before, &mut other.after] {
+        reading.basis.kind = CounterKind::ProviderTokenizer;
+        reading.basis.tokenizer = Some("provider-fixture".into());
+    }
+    insert(&store, &[first, other]).unwrap();
+    let value = serde_json::to_value(store.query_at(Period::Today, now()).unwrap()).unwrap();
+    assert_eq!(value["totals"]["status"], "mixed_bases");
+    assert!(value["totals"]["saved_percent"].is_null());
+    assert_eq!(
+        value["series"]
+            .as_array()
+            .expect("explicit empty series")
+            .len(),
+        0
+    );
+}

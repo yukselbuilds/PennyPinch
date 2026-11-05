@@ -75,7 +75,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
     previousResults: "İşlem başarısız oldu; son tamamlanan taramanın sonuçları korunuyor.",
     partialScope: "Tarama bilinen yerel konumlarla sınırlıdır. Yokluk, desteklenmediği anlamına gelmez.",
     sessionOnly: "Dosyadan ekleme yalnızca kurulum keşfeder. Seçim, kurulumu açıkça kaydettiğinde veya Bağlan'ı seçtiğinde hatırlanır; ayar yalnız Bağlan'da değişir. İsteğe bağlı araçlar normal bağlantı için gerekmez.",
-    advancedLockNote: "Tarama veya bağlantıyı yönetmek için gelişmiş ayrıntıları kapat.",
+    advancedLockNote: "Ayrıntıları okumak ayarları değiştirmez. Doğrulama sürerken diğer işlemler bekler.",
     pickerCancelled: "Dosya seçimi iptal edildi; mevcut sonuçlar korundu.",
     pickerBlocked: "Dosya seçici açılamadı. İstemciye ait komut dosyasını yerel sabit diskten seç.",
     pickerInvalid: "Yanıt doğrulanamadı. İstemciye ait komut dosyasını yerel sabit diskten seç.",
@@ -106,7 +106,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
     previousResults: "The operation failed; results from the last completed scan are preserved.",
     partialScope: "Scanning is limited to known local locations. Absence here does not mean unsupported.",
     sessionOnly: "Add from file only discovers an installation. A choice is remembered only after you explicitly save an installation choice or connect; settings change only on connect. Optional tools are not required for a normal connection.",
-    advancedLockNote: "Close Advanced details to scan or manage a connection.",
+    advancedLockNote: "Reading details does not change settings. Other actions wait while verification runs.",
     pickerCancelled: "File selection was cancelled; current results were kept.",
     pickerBlocked: "The file picker could not open. Choose the client command file from a local fixed drive.",
     pickerInvalid: "The response could not be validated. Choose the client command file from a local fixed drive.",
@@ -162,7 +162,11 @@ const commandFileNames: Record<ClientKind, string> = {
   opencode: "opencode.exe, opencode.cmd, opencode.bat",
 };
 
-export function Applications({ language }: { language: PreferenceLanguage }) {
+export function Applications({ language, requestedClient, onBusyChange }: {
+  language: PreferenceLanguage;
+  requestedClient: ClientKind | null;
+  onBusyChange: (busy: boolean) => void;
+}) {
   const text = copy[language];
   const [state, setState] = useState<ViewState>(() => isDiscoveryAvailable() ? { kind: "loading" } : { kind: "unavailable" });
   const [refreshing, setRefreshing] = useState(false);
@@ -171,11 +175,13 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
   const [ownershipStates, setOwnershipStates] = useState<Record<ClientKind, OwnershipCardState>>(initialOwnershipStates);
   const [ownershipRefreshing, setOwnershipRefreshing] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const advancedOpenRef = useRef(false);
+  const [advancedVisited, setAdvancedVisited] = useState(false);
+  const [verificationBusy, setVerificationBusy] = useState(false);
+  const verificationLock = useRef(false);
+  const initialRequestHandled = useRef(false);
   const [notice, setNotice] = useState<"picker_cancelled" | null>(null);
   const mounted = useRef(false);
   const actionLocked = useRef(false);
-  const advancedLock = useRef(false);
   const requests = useRef(new DiscoveryRequestSequence());
   const ownershipSequence = useRef(0);
 
@@ -202,7 +208,7 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
   }
 
   async function readOwnershipRecords(lockAlreadyHeld = false) {
-    if (!mounted.current || advancedOpenRef.current || (actionLocked.current && !lockAlreadyHeld)) return;
+    if (!mounted.current || verificationLock.current || (actionLocked.current && !lockAlreadyHeld)) return;
     const acquiredLock = !lockAlreadyHeld;
     if (acquiredLock) actionLocked.current = true;
     const sequence = ++ownershipSequence.current;
@@ -231,12 +237,12 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
   }
 
   async function refreshOwnershipRecords() {
-    if (actionLocked.current) return;
+    if (actionLocked.current || verificationLock.current) return;
     await readOwnershipRecords();
   }
 
   async function scanAgain() {
-    if (actionLocked.current || !isDiscoveryAvailable()) return;
+    if (actionLocked.current || verificationLock.current || !isDiscoveryAvailable()) return;
     actionLocked.current = true;
     setNotice(null);
     setRefreshing(true);
@@ -253,8 +259,9 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
   }
 
   async function addFromFile(clientKind: ClientKind) {
-    if (actionLocked.current || !isDiscoveryAvailable()) return;
+    if (actionLocked.current || verificationLock.current || !isDiscoveryAvailable()) return;
     actionLocked.current = true;
+    onBusyChange(true);
     setNotice(null);
     setSelectingClient(clientKind);
     const request = requests.current.next();
@@ -268,18 +275,21 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
       showResult(result, true, { kind: "picker", clientKind });
     } finally {
       actionLocked.current = false;
+      onBusyChange(false);
       if (mounted.current && requests.current.isCurrent(request)) setSelectingClient(null);
     }
   }
 
   function openConnectionPreview(clientKind: ClientKind) {
-    if (actionLocked.current || advancedOpenRef.current || !isDiscoveryAvailable()) return;
+    if (actionLocked.current || verificationLock.current || !isDiscoveryAvailable()) return;
     actionLocked.current = true;
+    onBusyChange(true);
     setConnectionClient(clientKind);
   }
 
   function closeConnectionPreview() {
     actionLocked.current = false;
+    onBusyChange(false);
     setConnectionClient(null);
     window.setTimeout(() => {
       if (mounted.current) void readOwnershipRecords();
@@ -297,10 +307,22 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
 
   const scanning = state.kind === "loading" || refreshing;
   const mutationPending = scanning || selectingClient !== null || connectionClient !== null;
-  const surfaceBusy = mutationPending || ownershipRefreshing || advancedOpen;
+  const surfaceBusy = mutationPending || ownershipRefreshing || verificationBusy;
   const snapshot = state.kind === "ready" ? state.snapshot : null;
   const readyState = state.kind === "ready";
   const issue = state.kind === "error" ? state.issue : state.kind === "ready" ? state.issue : undefined;
+
+  useEffect(() => {
+    if (!requestedClient || initialRequestHandled.current || state.kind !== "ready" || surfaceBusy) return;
+    initialRequestHandled.current = true;
+    openConnectionPreview(requestedClient);
+  }, [requestedClient, state.kind, surfaceBusy]);
+
+  function verificationActivity(busy: boolean) {
+    verificationLock.current = busy;
+    setVerificationBusy(busy);
+    onBusyChange(busy);
+  }
 
   return <section className="applications" aria-label={language === "tr" ? "İstemci keşfi" : "Client discovery"}>
     <div className="applications-toolbar">
@@ -374,26 +396,17 @@ export function Applications({ language }: { language: PreferenceLanguage }) {
     {snapshot?.status === "partial" && snapshot.installations.some((item) => item.client_kind === "codex") && <details
       className="applications-advanced" onToggle={(event) => {
         const open = event.currentTarget.open;
-        if (open && actionLocked.current) {
-          event.currentTarget.open = false;
-          return;
-        }
-        advancedOpenRef.current = open;
-        if (open) {
-          advancedLock.current = true;
-          actionLocked.current = true;
-        } else if (advancedLock.current) {
-          advancedLock.current = false;
-          actionLocked.current = false;
-        }
+        if (open) setAdvancedVisited(true);
         setAdvancedOpen(open);
       }}>
       <summary>{text.advanced}</summary>
-      {advancedOpen && !mutationPending && !ownershipRefreshing && <ConnectionStatus
+      {advancedVisited && <ConnectionStatus
         key={`${snapshot.scan_generation}:${snapshot.installations.filter((item) => item.client_kind === "codex").map((item) => `${item.installation_id}-${item.surface}-${item.version ?? "unknown"}`).join(",")}`}
         language={language}
         installations={snapshot.installations.filter((item) => item.client_kind === "codex")}
         scanGeneration={snapshot.scan_generation}
+        verificationDisabled={mutationPending || ownershipRefreshing}
+        onVerificationChange={verificationActivity}
       />}
     </details>}
 

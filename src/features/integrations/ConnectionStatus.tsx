@@ -250,10 +250,14 @@ export function ConnectionStatus({
   language,
   installations,
   scanGeneration,
+  verificationDisabled,
+  onVerificationChange,
 }: {
   language: PreferenceLanguage;
   installations: InstallationSummary[];
   scanGeneration: number;
+  verificationDisabled: boolean;
+  onVerificationChange: (busy: boolean) => void;
 }) {
   const text = copy[language];
   const [selectedId, setSelectedId] = useState(() => installations.length === 1 ? installations[0].installation_id : "");
@@ -311,8 +315,9 @@ export function ConnectionStatus({
     if (!selected || selected.client_kind !== "codex" || state.kind !== "snapshot"
       || !isCodexVerifySelectionSupported({ ...selected, client_kind: "codex" })
       || !state.value.runtime.engine_ready || !state.value.runtime.stable_ingress_ready
-      || verifyInFlight.current) return;
+      || verificationDisabled || verifyInFlight.current) return;
     verifyInFlight.current = true;
+    onVerificationChange(true);
     const token = verifySequence.current.next();
     const context = verifyContext;
     const runtimeGenerationAtStart = state.value.runtime.runtime_generation;
@@ -333,6 +338,7 @@ export function ConnectionStatus({
       setVerification({ kind: "result", result });
     } finally {
       verifyInFlight.current = false;
+      onVerificationChange(false);
     }
   }
 
@@ -341,7 +347,7 @@ export function ConnectionStatus({
   const supportedSelection = Boolean(selected && selected.client_kind === "codex"
     && isCodexVerifySelectionSupported({ ...selected, client_kind: "codex" }));
   const runtimeReady = state.kind === "snapshot" && state.value.runtime.engine_ready && state.value.runtime.stable_ingress_ready;
-  const canVerify = available && supportedSelection && runtimeReady && verification.kind !== "stale";
+  const canVerify = available && !verificationDisabled && supportedSelection && runtimeReady && verification.kind !== "stale";
   const failure = state.kind === "failed" ? failureText(state.result, text) : null;
   return <section className="connection-status-panel" aria-label={text.title}>
     <div className="connection-status-panel__header">

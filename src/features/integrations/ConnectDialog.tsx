@@ -18,6 +18,7 @@ import {
   resolvePreferredInstallation,
 } from "../../lib/installationChoices";
 import { readRuntimeSnapshot, startEngine } from "../../runtime/snapshot";
+import { equivalentCodexInstallation } from "../../lib/equivalentInstallations";
 import type {
   ConnectionPlan,
   ConnectionActionErrorCode,
@@ -421,6 +422,7 @@ export function ConnectDialog({
   const pendingAction = useRef<"apply" | "undo" | "connect" | null>(null);
   const idsKey = candidateSelectionKey(installations);
   const [selectedId, setSelectedId] = useState("");
+  const [equivalentSelection, setEquivalentSelection] = useState(false);
   const selectedIdRef = useRef("");
   selectedIdRef.current = selectedId;
   const [choiceView, setChoiceView] = useState<InstallationChoiceView>({ kind: "loading", message: null });
@@ -500,6 +502,7 @@ export function ConnectDialog({
     const expected = currentCandidateContext.current;
     const sequence = ++choiceSequence.current;
     setChoiceView({ kind: "loading", message: null });
+    setEquivalentSelection(false);
     try {
       const next = await installationChoiceClient.get(expected.clientKind);
       if (!mounted.current || choiceSequence.current !== sequence || !candidateContextIsCurrent(expected)) return;
@@ -509,7 +512,34 @@ export function ConnectDialog({
         setChoiceView({ kind: "error", message: text.choiceUnavailable });
         return;
       }
-      const preferred = resolvePreferredInstallation(next, installations, expected.clientKind, expected.scanGeneration);
+      let preferred = resolvePreferredInstallation(next, installations, expected.clientKind, expected.scanGeneration);
+      if (next.snapshot.status === "not_selected" && expected.clientKind === "codex"
+        && installations.length > 1 && installations.length <= 4) {
+        const isCurrent = () => mounted.current && choiceSequence.current === sequence && candidateContextIsCurrent(expected);
+        setChoiceView({ kind: "loading", message: language === "tr"
+          ? "Bağlantı için motor hazırlanıyor ve ayar kapsamı karşılaştırılıyor. İstemci ayarları henüz değiştirilmedi."
+          : "Preparing the engine and comparing setting scopes. Client settings have not changed yet." });
+        let runtime = await readRuntimeSnapshot();
+        if (!isCurrent()) return;
+        if (!runtimeIsReady(runtime) && runtime.kind === "snapshot" && runtime.snapshot.capabilities.start) {
+          runtime = await startEngine();
+          if (!isCurrent()) return;
+        }
+        if (runtimeIsReady(runtime)) {
+          const plans: ConnectionPlan[] = [];
+          for (const item of installations) {
+            if (!isCurrent()) return;
+            const preview = await connectionPlanClient.preview({ installationId: item.installation_id,
+              scanGeneration: expected.scanGeneration, clientKind: "codex", scope: "user_config" });
+            if (!isCurrent()) return;
+            if (preview.kind !== "preview") break;
+            plans.push(preview.plan);
+          }
+          preferred = equivalentCodexInstallation(installations, plans, expected.scanGeneration, Date.now());
+          setEquivalentSelection(preferred !== null);
+        }
+      }
+      if (!mounted.current || choiceSequence.current !== sequence || !candidateContextIsCurrent(expected)) return;
       const unusableSavedChoice = next.snapshot.status === "available" && preferred === null;
       setSelectedId(preferred ?? "");
       selectedIdRef.current = preferred ?? "";
@@ -568,7 +598,7 @@ export function ConnectDialog({
     mounted.current = true;
     restoreFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     if (!dialog.open) dialog.showModal();
-    (installations.length > 0 ? selectRef.current : closeRef.current)?.focus();
+    closeRef.current?.focus();
     if (isClaude) void refreshClaudeState();
     else void readOwnership();
     const keepTabInside = (event: KeyboardEvent) => {
@@ -1100,6 +1130,13 @@ export function ConnectDialog({
           {actionFeedback && <p className={"connection-dialog__action-feedback is-" + actionFeedback.kind} role={actionFeedback.kind === "success" ? "status" : "alert"} aria-live="polite">{mutationPending ? (pendingAction.current === "undo" ? text.undoing : pendingAction.current === "connect" ? text.connecting : text.applying) : actionFeedback.message}</p>}
           {mutationPending && !actionFeedback && <p className="connection-dialog__action-feedback" role="status" aria-live="polite">{pendingAction.current === "undo" ? text.undoing : pendingAction.current === "connect" ? text.connecting : text.applying}</p>}
         </section>
+        {selectedId && choiceView.kind === "ready" && <p className="connection-dialog__notice" role="status">
+          {equivalentSelection
+            ? language === "tr" ? "Codex kurulumları aynı kullanıcı ayarını ve desteklenen rotayı paylaşıyor. Tek bağlantı yeterli." : "Codex installations share the same user setting and supported route. One connection is enough."
+            : language === "tr" ? "Bağlantı hedefi hazır. Teknik kurulum ayrıntılarını Gelişmiş bölümünde görebilirsin." : "The connection target is ready. Installation details are available under Advanced."}
+        </p>}
+        <details className="connection-dialog__installation-choice" open={!selectedId && choiceView.kind !== "loading"}>
+        <summary>{selectedId ? (language === "tr" ? "Gelişmiş: kurulum hedefi" : "Advanced: installation target") : text.installation}</summary>
         <label className="connection-dialog__field" htmlFor="connection-installation">{text.installation}
             <select
             ref={selectRef}
@@ -1114,6 +1151,7 @@ export function ConnectDialog({
             </option>)}
           </select>
         </label>
+        </details>
         {choiceView.kind === "loading" && <p className="connection-dialog__notice" role="status"><span className="applications-spinner" aria-hidden="true" />{text.choiceLoading}</p>}
         {choiceView.message && <p className={`connection-dialog__notice${choiceView.kind === "error" ? " connection-dialog__notice--error" : ""}`} role={choiceView.kind === "error" ? "alert" : "status"}>{choiceView.message}</p>}
         {!previewAvailable && <p className="connection-dialog__notice" role="status">{text.noInstallations}</p>}

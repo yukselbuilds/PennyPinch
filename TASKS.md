@@ -1,16 +1,16 @@
 # Headroom Desktop — Görev Listesi
 
-**Tarih:** 4 Kasım 2026
+**Tarih:** 5 Kasım 2026
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H013–H024, H040, H046 ve **H047 tamamlandı:22/51.** H024 kalıcı metadata/dönem sorgusu kabulüdür; canlı collector/ekran H025'te. H008 Windows10 ChatGPT CLI/Desktop kapsamıyla kabul edildi; canlı API-key testi H041 yayın öncesi kabulünde açık. Sıradaki H025 başlamadı, kullanıcı devam mesajı bekleniyor. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
+**Durum:** H001–H005, H007–H008, H013–H025, H040, H046 ve **H047 tamamlandı:23/51.** H025 canlı collector ve sade Genel bakış kabul edildi. H008 Windows10 ChatGPT CLI/Desktop kapsamıyla kabul edildi; canlı API-key testi H041 yayın öncesi kabulünde açık. Sıradaki H026 başlamadı; kullanıcı devam mesajı bekleniyor. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
 ## Geliştirme araçları ve çalışma düzeni
 
-Bu işler 51 ürün görevine eklenmez. DEV001/DEV002 ve H024 kabul edildi. Sıradaki ürün görevi H025; kullanıcı devam mesajı bekleniyor.
+Bu işler 51 ürün görevine eklenmez. DEV001/DEV002 ve H025 kabul edildi. Sıradaki ürün görevi H026; kullanıcı devam mesajı bekleniyor.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -389,17 +389,19 @@ flowchart TD
 - **Dosyalar:** `src-tauri/src/metrics/{store,store_tests,query,query_tests,normalize,mod}.rs`, `src-tauri/src/main.rs`, `src-tauri/Cargo.{toml,lock}`; sözleşme/karar012 ve yerel `work/proofs/metrics-store/` kanıtları.
 
 ### H025 — Gerçek Genel bakış ekranı
+- **Durum:** Tamamlandı —5 Kasım 2026;23/51. Owned collector → H023/H024 kayıt/sorgu → Graphite → gerçek native kabul. Ana ajan runtime/ölçüm/bağlantı güveni ve kapanış sahibi; tek Luna sunum ve frontend sözleşme testlerinde çalıştı, sonra completed/durdurulmuş olarak devralındı. [Plan013](docs/decisions/013-live-overview.md), [kanıt](docs/proofs/live-overview.md), [inceleme](docs/reviews/H025.md).
 - **H024 entegrasyon devri:** İlk dilim owned runtime'dan bounded metadata toplayıcısını ve H023→H024 kayıt girişini gerçek kaynağa bağlar; yalnız depo sorgusunu ekrana bağlamak canlı dashboard kabulü değildir. Polling/gap ve nesil değişimi ayrı doğrulanır;0.41.0'ın bilinmeyen sayaç temeli yükseltilmez. Motor dururken yerel geçmiş okunabilmelidir. H024'te canlı polling başlamaz.
 - **3 Kasım UI/UX kabulü:** [İnceleme](docs/reviews/UX-2026-11-03.md). Graphite korunur; ilk kullanımda kısa etki özetiyle Bağla ve başlat, sonraki kullanımda hatırlanan bağlantıyla Başlat. Aynı etkin ayar kapsamı ve desteklenen rota kanıtlı CLI/Desktop adayları tek mantıksal uygulama satırıdır; farklı profil/proje/çatışmada anlamlı seçim korunur. H022'nin tarihsel kabulü bu yeni hedefin tamamlandığı anlamına gelmez.
-- [ ] Normal ekranda teknik ikili/sürüm seçimi gerekmez; gerçek kayıt/trafik durumları ve tek sonraki eylem görünür. Salt Gelişmiş okuması tarama/bağlantıyı kilitlemez; gerçek işlemin eşzamanlılık koruması sürer. Tek boş durum, okunur metin, erişilir gezinme ve klavye/ölçekleme kabulü uygulanır.
+- [x] Normal ekranda teknik ikili/sürüm seçimi gerekmez; gerçek kayıt/trafik durumları ve tek sonraki eylem görünür. Salt Gelişmiş okuması tarama/bağlantıyı kilitlemez; gerçek işlemin eşzamanlılık koruması sürer. Tek boş durum, okunur metin, erişilir gezinme ve klavye/ölçekleme kabulü uygulanır. Aynı native planlı adaylar geçici bir hedef olur; farklı/stale/unavailable hedef anlamlı seçimi korur.125/150 gerçek WebView ölçeği doğrulandı; OS DPI sonucu değildir.
 - **24 Ekim ürün yönü:** Varsayılan görünüm platform → model satırlarında kullanılan token, tasarruf token/% ve kaynağı varsa maliyet. Resmî harcama/tahmin ayrı; abonelik kotasından tutar uydurulmaz. Teknik yönlendirme ayrıntıları Gelişmiş altında; hesap ve sohbet durumları H050/H051 ile kısa özetlenir.
-- [ ] Graphite Genel bakış ekranında **tasarruf yüzdesi ve tasarruf edilen token miktarı birlikte** yerel kayıt üzerinden gösterilir; grafik aynı kapsamı kullanır.
+- [x] Graphite Genel bakış ekranında **tasarruf yüzdesi ve tasarruf edilen token miktarı birlikte** yerel kayıt üzerinden gösterilir; grafik aynı kapsamı kullanır. Gerçek legacy temel belirsizse yüzde üretilmez;37,5/45.000,0, artış ve karma temel UI örnekleri izole fixture kanıtıdır.
 - **Kabul:** Dönem filtresi gerçek sorgu; veri kaynağı/zamanı ve ölçüm kapsamı görünür. Örneğin `%37,5 · 45.000 token` yanında sıkıştırma öncesi/sonrası değerler ayrıntıda görülebilir; yüzde Türkçe/İngilizce locale'e uygun biçimlenir. Veri yoksa `— / Veri bekleniyor` gösterilir; artış varsa oran gizlenmez ve “token artışı” olarak anlatılır. Bu oran Headroom'un girdi azalmasıdır; abonelik kotası/fatura indirimi sayılmaz.
 - **Ek kabul:** Aktif motor, gözlenen trafik ve ölçülebilir fayda ayrı sinyaldir; hazır motorla sıfır trafik veya eksik kapsama uydurma kazanç üretmez. Yaklaşık%50 veya2x ürün vaadi örnek projeden taşınmaz.
 - **Katman kabulü:** H044 kapsamında isteğe bağlı bir filtre etkinse Headroom, RTK ve birleşik sonuçlar yalnız aynı olay/kapsam ve karşılaştırılabilir temelde ayrı gösterilir; katman yüzdeleri toplanmaz. Komut baytı tahmini, toplam girdi token farkı ve ölçülen/tahmini maliyet ayrı alanlardır.
 - **Doğrulama:** Odaklı metrik/UI testleri; Playwright ile dönem değişince miktar ve yüzdenin birlikte yenilenmesi, sıfır/eksik/negatif durumlar, yuvarlama ve TR/EN biçimi; konsol/taşma kontrolü.
 - **Bağımlılık / boyut:** H024, H022 / M.
-- **Dosyalar:** `src/features/overview/Overview.tsx`, `src/features/overview/SavingsChart.tsx`, `src/features/overview/Overview.test.tsx`, `src/lib/metrics.ts`.
+- **Son kapı:**120 frontend/327 Rust PASS,5 mevcut opt-in ignored; fmt/build ve native source/stop/restart/period/zoom PASS.123 kaynak/config fingerprint'i eşleşti; model isteği0. Yeni model/ajan desteği veya canlı kullanıcı tasarrufu ölçülmedi. Ana görev sonunda duruldu; H026 başlamadı.
+- **Dosyalar:** `src/features/overview/`, `src/lib/metrics.ts`, `src/lib/metricsSession.ts`, `src-tauri/src/metrics/collector.rs`, `src-tauri/src/runtime/metrics_read.rs`, `tests/app/metrics*.test.mjs`.
 
 ### H026 — Model ve ajan kapsamının gösterimi
 - **24 Ekim ürün yönü:** Platform/model/sohbet/ajan ilişkisinde yalnız kanıtlı atama kullanılır; atanamayan trafik ayrı kalır. H051 sohbet listesiyle ortak metadata sözleşmesi gerekir; yalnız aynı model adı kimlik kanıtı değildir.
@@ -666,4 +668,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**22/51 tamam; H024 kapandı.** Kalıcı içeriksiz depo ve yerel dönem sorgusu, ayrı süreçte kayıt/yeniden okuma ve iki gerçek native açılışta IPC doğrulandı.36 odaklı/313 tam Rust PASS,5 opt-in ignored; fmt/embedded build PASS. Değişmeyen98 frontend/build kanıtı fingerprint ile korundu. [Kabul](docs/proofs/metrics-store.md), [inceleme](docs/reviews/H024.md). Sıradaki H025 owned metadata toplayıcısı ve gerçek Genel bakış ekranıdır; henüz başlamadı, kullanıcı devam mesajı bekleniyor. Canlı API-key kabulü H041'de açık. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.
+**23/51 tamam; H025 kapandı.** Owned metadata collector, yerel dönem sorgusu ve sade Graphite Genel bakış kabul edildi.120 frontend/327 Rust PASS,5 mevcut opt-in ignored; fmt/embedded build ve native source/stop/restart/zoom PASS. [Kabul](docs/proofs/live-overview.md), [inceleme](docs/reviews/H025.md). Sıradaki H026 model/ajan kapsamıdır; henüz başlamadı, kullanıcı devam mesajı bekleniyor. Canlı API-key kabulü H041'de açık. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.

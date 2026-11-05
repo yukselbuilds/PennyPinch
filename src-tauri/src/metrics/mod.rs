@@ -1,3 +1,4 @@
+pub mod collector;
 pub mod normalize;
 pub mod query;
 pub mod store;

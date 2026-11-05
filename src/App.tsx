@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   LatestRequestSequence,
   readRuntimeSnapshot,
   startEngine,
   stopEngine,
-  type EngineStatus,
   type PublicErrorCode,
   type RuntimeSnapshot,
   type SnapshotErrorEnvelope,
@@ -20,10 +19,15 @@ import {
   type UserPreferences,
 } from "./lib/preferences";
 import { Applications } from "./features/integrations/Applications";
-import { discoverySession } from "./lib/integrations";
+import type { ClientKind } from "./lib/integrations";
+import { Overview } from "./features/overview/Overview";
+import { useOverviewConnections, useOverviewMetrics } from "./features/overview/useOverview";
+import type { MetricPeriod } from "./lib/metrics";
+import { windowZoomClient, type WindowScale } from "./lib/windowZoom";
 
 type Screen = "overview" | "applications" | "activity" | "settings";
 type LifecycleAction = "start" | "stop";
+type WindowZoomView = { scale: WindowScale; pending: boolean; failed: boolean; change: (scale: WindowScale) => void };
 type PreferenceUiStatus = "loading" | "loaded" | "saving" | "saved" | "error" | "session_only";
 
 const copy = {
@@ -141,19 +145,6 @@ function preferenceStatusLabel(status: PreferenceUiStatus, labels: Labels): stri
   return values[status];
 }
 
-function engineLabel(status: EngineStatus, labels: Labels): string {
-  const values: Record<EngineStatus, string> = {
-    unavailable: labels.engineUnavailable,
-    unknown: labels.engineUnknown,
-    stopped: labels.engineStopped,
-    starting: labels.engineStarting,
-    ready: labels.engineReady,
-    stopping: labels.engineStopping,
-    failed: labels.engineFailed,
-  };
-  return values[status];
-}
-
 function SnapshotNotice({
   readIssue,
   commandError,
@@ -176,16 +167,23 @@ function SnapshotNotice({
   return <div className="notice" role="alert"><span>{message}</span><button className="text-button" onClick={onRetry}>{labels.refresh}</button></div>;
 }
 
-function StatusCard({ title, value, symbol, tone = "neutral" }: { title: string; value: string; symbol: string; tone?: "neutral" | "mint" }) {
-  return <section className={`status-card tone-${tone}`} aria-label={`${title}: ${value}`}>
-    <div className="status-card__head"><span>{title}</span><span className="status-icon" aria-hidden="true">{symbol}</span></div>
-    <strong>{value}</strong>
-  </section>;
-}
-
 export default function App() {
   const [screen, setScreen] = useState<Screen>("overview");
+  const [period, setPeriod] = useState<MetricPeriod>("session");
+  const [requestedClient, setRequestedClient] = useState<ClientKind | null>(null);
+  const [applicationsBusy, setApplicationsBusy] = useState(false);
+  const applicationsLock = useRef(false);
+  const onApplicationsBusy = useCallback((busy: boolean) => {
+    applicationsLock.current = busy;
+    setApplicationsBusy(busy);
+  }, []);
+  const overview = useOverviewMetrics(period, screen === "overview");
+  const connections = useOverviewConnections(screen === "overview");
   const [theme, setTheme] = useState<PreferenceTheme>("system");
+  const [windowScale, setWindowScale] = useState<WindowScale>(1);
+  const [zoomPending, setZoomPending] = useState(false);
+  const [zoomFailed, setZoomFailed] = useState(false);
+  const zoomLock = useRef(false);
   const [language, setLanguage] = useState<PreferenceLanguage>("tr");
   const [preferencesStatus, setPreferencesStatus] = useState<PreferenceUiStatus>("loading");
   const [preferencesIssue, setPreferencesIssue] = useState<PreferenceIssue | null>(null);
@@ -294,7 +292,7 @@ export default function App() {
   }
 
   async function runLifecycle(action: LifecycleAction) {
-    if (lifecycleLocked.current || !snapshot) return;
+    if (lifecycleLocked.current || applicationsLock.current || !snapshot) return;
     if (action === "start" && !snapshot.capabilities.start) return;
     if (action === "stop" && (!snapshot.capabilities.stop || !snapshot.runtime_generation)) return;
     lifecycleLocked.current = true;
@@ -327,10 +325,25 @@ export default function App() {
     void loadSnapshot();
   }
 
+  async function changeWindowScale(scale: WindowScale) {
+    if (zoomLock.current) return;
+    zoomLock.current = true;
+    setZoomPending(true);
+    setZoomFailed(false);
+    try {
+      const changed = await windowZoomClient.set(scale);
+      if (!mounted.current) return;
+      if (changed) setWindowScale(scale);
+      setZoomFailed(!changed);
+    } finally {
+      zoomLock.current = false;
+      if (mounted.current) setZoomPending(false);
+    }
+  }
+
   useEffect(() => {
     mounted.current = true;
     void loadSnapshot();
-    void discoverySession.loadInitial().catch(() => undefined);
     void reloadPreferences();
     const timer = window.setInterval(() => {
       if (pollInFlight.current) return;
@@ -361,30 +374,45 @@ export default function App() {
   }, [language]);
 
   const screenKey: Screen[] = ["overview", "applications", "activity", "settings"];
-  const content = screen === "applications" ? <Applications language={language} /> : renderScreen(
+  function navigate(next: Screen) {
+    if (applicationsLock.current) return;
+    setRequestedClient(null);
+    setScreen(next);
+  }
+  function connect(client: ClientKind) {
+    if (applicationsLock.current) return;
+    if (connections.connections.some(item => item.client === client && item.state === "saved")) {
+      navigate("applications");
+      return;
+    }
+    setRequestedClient(client);
+    setScreen("applications");
+  }
+  const content = screen === "overview" ? <Overview language={language} runtime={snapshot} pending={pending}
+    period={period} metrics={overview.metrics} connections={connections.connections} connectionsLoading={connections.loading}
+    onPeriodChange={setPeriod} onRefresh={overview.refresh} onConnect={connect}
+    onOpenApplications={() => navigate("applications")} onStart={() => void runLifecycle("start")} onStop={() => void runLifecycle("stop")} />
+    : screen === "applications" ? <Applications language={language} requestedClient={requestedClient} onBusyChange={onApplicationsBusy} /> : renderScreen(
     screen,
     labels,
-    snapshot,
     theme,
     language,
-    pending,
-    runLifecycle,
     changePreferences,
     preferencesStatus,
     preferenceIssueMessage(preferencesIssue, labels),
     reloadPreferences,
-    () => setScreen("applications"),
+    { scale: windowScale, pending: zoomPending, failed: zoomFailed, change: changeWindowScale },
   );
 
   return <div className="app-shell">
     <aside className="sidebar">
-      <a className="brand" href="#overview" onClick={(event) => { event.preventDefault(); setScreen("overview"); }} aria-label={language === "tr" ? "Headroom genel bakış" : "Headroom overview"}>
+      <a className="brand" href="#overview" aria-disabled={applicationsBusy} onClick={(event) => { event.preventDefault(); navigate("overview"); }} aria-label={language === "tr" ? "Headroom genel bakış" : "Headroom overview"}>
         <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
         <span>headroom<span className="brand-period">.</span></span>
       </a>
       <div className="sidebar-label">{language === "tr" ? "ÇALIŞMA ALANI" : "WORKSPACE"}</div>
       <nav className="primary-nav" aria-label={language === "tr" ? "Ana gezinme" : "Primary navigation"}>
-        {screenKey.map((key, index) => <button key={key} className={`nav-item ${screen === key ? "is-active" : ""}`} onClick={() => setScreen(key)} aria-current={screen === key ? "page" : undefined}>
+        {screenKey.map((key, index) => <button key={key} disabled={applicationsBusy} className={`nav-item ${screen === key ? "is-active" : ""}`} onClick={() => navigate(key)} aria-current={screen === key ? "page" : undefined}>
           <span className={`nav-glyph glyph-${key}`} aria-hidden="true">{["◫", "▤", "◷", "⚙"][index]}</span><span>{nav[index]}</span>
         </button>)}
       </nav>
@@ -407,57 +435,16 @@ export default function App() {
 }
 
 function renderScreen(
-  screen: Exclude<Screen, "applications">,
+  screen: "activity" | "settings",
   labels: Labels,
-  snapshot: RuntimeSnapshot | null,
   theme: PreferenceTheme,
   language: PreferenceLanguage,
-  pending: LifecycleAction | null,
-  runLifecycle: (action: LifecycleAction) => void,
   onPreferencesChange: (change: Partial<UserPreferences>) => void,
   preferencesStatus: PreferenceUiStatus,
   preferencesErrorMessage: string | null,
   onPreferencesRetry: () => void,
-  onOpenApplications: () => void,
+  zoom: WindowZoomView,
 ) {
-  if (screen === "overview") {
-    const engineValue = snapshot ? engineLabel(snapshot.engine.status, labels) : labels.engineUnknown;
-    const hint = !snapshot ? labels.hintUnavailable : snapshot.engine.status === "ready" ? labels.hintReady :
-      snapshot.engine.status === "stopped" ? labels.hintStopped : snapshot.engine.status === "starting" ? labels.hintStarting :
-        snapshot.engine.status === "stopping" ? labels.hintStopping : snapshot.engine.status === "failed" ? labels.hintFailed :
-          snapshot.engine.status === "unavailable" ? labels.hintUnavailableEngine : labels.hintUnknown;
-    const startDisabled = !snapshot?.capabilities.start || pending !== null;
-    const stopDisabled = !snapshot?.capabilities.stop || !snapshot.runtime_generation || pending !== null;
-    return <>
-      <div className="status-grid">
-        <StatusCard title={labels.engine} value={engineValue} symbol="◉" tone={snapshot?.engine.status === "ready" ? "mint" : "neutral"} />
-        <StatusCard title={labels.connection} value={labels.noConnection} symbol="↔" />
-        <StatusCard title={labels.compression} value={snapshot?.compression.status === "not_implemented" ? labels.compressionOff : labels.awaiting} symbol="⌁" />
-      </div>
-      <section className="savings-panel">
-        <div className="panel-kicker"><span className="mint-line" />{labels.metric.toUpperCase()}</div>
-        <div className="savings-values">
-          <div className="savings-amount"><span>{labels.amount}</span><strong>—</strong><small>{labels.awaiting}</small></div>
-          <div className="savings-divider" aria-hidden="true" />
-          <div className="savings-rate"><span>{labels.rate}</span><strong>—<em>%</em></strong><small>{labels.awaiting}</small></div>
-        </div>
-        <div className="savings-footnote"><span className="info-mark">i</span>{language === "tr" ? "Yüzde ve miktar aynı ölçüm kapsamından birlikte hesaplanır." : "Percentage and amount are calculated from the same measurement scope."}</div>
-      </section>
-      <section className="empty-panel">
-        <div className="empty-illustration" aria-hidden="true"><span className="orbit orbit-one" /><span className="orbit orbit-two" /><span className="orbit-core"><i /></span></div>
-        <div className="empty-copy"><div className="panel-kicker">{language === "tr" ? "BAŞLANGIÇ DURUMU" : "INITIAL STATE"}</div><h2>{labels.overviewTitle}</h2><p>{labels.overviewBody}</p></div>
-      </section>
-      <section className="actions-panel">
-        <div><div className="panel-kicker">{language === "tr" ? "MOTOR KONTROLÜ" : "ENGINE CONTROL"}</div><p>{hint}</p><small className="engine-requirement">{labels.engineRequirement}</small></div>
-        <div className="action-row">
-          <button className="button button-primary" disabled={startDisabled} title={startDisabled ? labels.unavailable : undefined} onClick={() => runLifecycle("start")}><span aria-hidden="true">▶</span>{pending === "start" ? labels.starting : labels.start}</button>
-          <button className="button" disabled={stopDisabled} title={stopDisabled ? labels.unavailable : undefined} onClick={() => runLifecycle("stop")}><span aria-hidden="true">■</span>{pending === "stop" ? labels.stopping : labels.stop}</button>
-          <button className="button" disabled title={labels.unavailable}><span aria-hidden="true">Ⅱ</span>{labels.pause}</button>
-          <button className="button button-connect" onClick={onOpenApplications}><span aria-hidden="true">↗</span>{labels.connect}</button>
-        </div>
-      </section>
-    </>;
-  }
   if (screen === "activity") return <section className="empty-screen-card">
     <span className="large-outline-icon" aria-hidden="true">◷</span><div className="panel-kicker">{language === "tr" ? "ÖLÇÜM GEÇMİŞİ" : "MEASUREMENT HISTORY"}</div><h2>{labels.activityTitle}</h2><p>{labels.activityBody}</p>
   </section>;
@@ -471,6 +458,13 @@ function renderScreen(
     <label className="setting-row"><span><strong>{labels.language}</strong><small>{labels.interfaceLanguage}</small></span>
       <select aria-label={labels.language} disabled={preferencesUnavailable} value={language} onChange={(event) => onPreferencesChange({ language: event.target.value as PreferenceLanguage })}><option value="tr">{labels.turkish}</option><option value="en">{labels.english}</option></select>
     </label>
+    <label className="setting-row"><span><strong>{language === "tr" ? "Görünüm ölçeği" : "View scale"}</strong><small>{language === "tr" ? "Bu pencere için. Sistem ekran ölçeğini değiştirmez." : "For this window. System display scaling stays the same."}</small></span>
+      <select aria-label={language === "tr" ? "Görünüm ölçeği" : "View scale"} value={zoom.scale} disabled={zoom.pending || !windowZoomClient.available()}
+        onChange={event => zoom.change(Number(event.target.value) as WindowScale)}>
+        <option value="1">100%</option><option value="1.25">125%</option><option value="1.5">150%</option>
+      </select>
+    </label>
+    {zoom.failed && <p className="settings-note" role="alert">{language === "tr" ? "Pencere ölçeği değiştirilemedi. Yeniden deneyebilirsin." : "The window scale could not be changed. Try again."}</p>}
     <div className="settings-note" role="status" aria-live="polite">{preferenceStatusLabel(preferencesStatus, labels)}</div>
     {preferencesStatus === "error" && <div className="notice preference-notice" role="alert">
       <span>{preferencesErrorMessage ?? labels.preferencesLoadFailed}</span>

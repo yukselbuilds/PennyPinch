@@ -38,9 +38,20 @@ pub struct PeriodTotals {
 
 /// Input is the unique, validated event set selected by the metrics store.
 pub fn aggregate_unique_events(events: &[NormalizedEvent]) -> PeriodTotals {
+    aggregate_event_refs(events.iter())
+}
+
+pub(crate) fn aggregate_event_refs<'a>(
+    events: impl IntoIterator<Item = &'a NormalizedEvent>,
+) -> PeriodTotals {
     let mut sums: BTreeMap<(Basis, Component), (u128, u128, u64)> = BTreeMap::new();
     let mut comparable_events = 0;
-    for event in events.iter().filter(|event| event.main_metric_eligible) {
+    let mut event_count = 0;
+    for event in events {
+        event_count += 1;
+        if !event.main_metric_eligible {
+            continue;
+        }
         let before = event.before.tokens.expect("validated measured input");
         let after = event.after.tokens.expect("validated measured input");
         comparable_events += 1;
@@ -83,7 +94,7 @@ pub fn aggregate_unique_events(events: &[NormalizedEvent]) -> PeriodTotals {
     let mut result = PeriodTotals {
         status: AggregateStatus::NoComparableEvents,
         comparable_events,
-        excluded_events: events.len() as u64 - comparable_events,
+        excluded_events: event_count - comparable_events,
         before_tokens: None,
         after_tokens: None,
         saved_tokens: None,

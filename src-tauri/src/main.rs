@@ -17,6 +17,7 @@ use integrations::discovery::{
     SavedInstallationChoiceReply, SavedInstallationChoiceRequest,
 };
 use integrations::picker;
+use metrics::collector::{OverviewManager, OverviewReply};
 use metrics::store::{MetricsError, MetricsQueryRequest, MetricsReply, MetricsStore};
 use runtime::manager::{IngressReply, RuntimeManager, RuntimeReply};
 use state::choices::ChoiceStore;
@@ -114,6 +115,25 @@ async fn get_metrics_summary(
         tauri::async_runtime::spawn_blocking(move || store.query(request))
             .await
             .unwrap_or_else(|_| MetricsStore::failure(request_id, MetricsError::Unavailable)),
+    )
+}
+
+#[tauri::command]
+async fn get_overview_snapshot(
+    state: tauri::State<'_, OverviewManager>,
+    request: MetricsQueryRequest,
+) -> Result<OverviewReply, OverviewReply> {
+    let overview = state.inner().clone();
+    let request_id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || overview.read(request))
+            .await
+            .unwrap_or_else(|_| {
+                OverviewReply::Error(MetricsStore::error_detail(
+                    request_id,
+                    MetricsError::Unavailable,
+                ))
+            }),
     )
 }
 
@@ -394,12 +414,15 @@ fn main() {
                     }),
             );
             let codex_verifier = CodexVerifyManager::new(app_local_data_dir.clone());
+            let metrics = MetricsStore::new(app_local_data_dir);
+            let overview = OverviewManager::new(runtime.clone(), metrics.clone());
             app.manage(runtime);
             app.manage(PreferenceStore::new(app.path().app_data_dir().ok()));
             app.manage(discovery);
             app.manage(plans);
             app.manage(codex_verifier);
-            app.manage(MetricsStore::new(app_local_data_dir));
+            app.manage(metrics);
+            app.manage(overview);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -408,6 +431,7 @@ fn main() {
             get_runtime_snapshot,
             get_ingress_snapshot,
             get_metrics_summary,
+            get_overview_snapshot,
             get_preferences,
             save_preferences,
             get_discovery_snapshot,
@@ -464,6 +488,7 @@ fn main() {
                         verifier_clean as u8,
                         exit_start.elapsed().as_millis()
                     );
+                    let collector_clean = app_handle.state::<OverviewManager>().shutdown();
                     let runtime_clean = app_handle.state::<RuntimeManager>().shutdown();
                     #[cfg(debug_assertions)]
                     eprintln!(
@@ -471,7 +496,7 @@ fn main() {
                         runtime_clean as u8,
                         exit_start.elapsed().as_millis()
                     );
-                    let clean = verifier_clean && runtime_clean;
+                    let clean = verifier_clean && collector_clean && runtime_clean;
                     let exit_code = if clean { code.unwrap_or(0) } else { 1 };
                     EXIT_GATE.complete();
                     #[cfg(debug_assertions)]

@@ -2,12 +2,12 @@ use super::normalize::{
     merge_event, validate_event, EngineProjection, NormalizedBatch, NormalizedEvent,
     MAX_OBSERVATIONS,
 };
-use super::query::{aggregate_unique_events, PeriodTotals};
+use super::query::{aggregate_event_refs, aggregate_unique_events, AggregateStatus, PeriodTotals};
 use crate::integrations::config_io::{pin_existing_directory_chain, PinnedDirectoryChain};
-use chrono::{DateTime, Days, Duration, Local, SecondsFormat, TimeZone, Utc};
+use chrono::{DateTime, Days, Duration, Local, SecondsFormat, TimeZone, Timelike, Utc};
 use rusqlite::{params, Connection, ErrorCode, OpenFlags, OptionalExtension, TransactionBehavior};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs::{self, File, OpenOptions};
 use std::path::{Path, PathBuf};
 use std::time::Duration as StdDuration;
@@ -72,8 +72,16 @@ pub struct PeriodMetrics {
     pub from_utc: Option<String>,
     pub to_utc: String,
     pub retention_days: u16,
+    pub last_event_utc: Option<String>,
     pub totals: PeriodTotals,
+    pub series: Vec<MetricBucket>,
     pub coverage: Coverage,
+}
+
+#[derive(Debug, Serialize)]
+pub struct MetricBucket {
+    pub at_utc: String,
+    pub totals: PeriodTotals,
 }
 
 #[derive(Clone)]
@@ -212,6 +220,7 @@ impl MetricsStore {
         period: Period,
         now: DateTime<Tz>,
     ) -> Result<PeriodMetrics, MetricsError> {
+        let zone = now.timezone();
         let from = match period {
             Period::Session => None,
             Period::Today | Period::SevenDays => {
@@ -235,6 +244,7 @@ impl MetricsStore {
         let cutoff = retention_cutoff(now)?;
         let mut coverage = Coverage::default();
         let mut events = Vec::new();
+        let mut last_event = None;
         if let Some(mut db) = self.open(false)? {
             let tx = db
                 .connection
@@ -269,7 +279,10 @@ impl MetricsStore {
                         continue
                     }
                     None => coverage.unplaced_events += 1,
-                    _ => {}
+                    Some(stamp) => {
+                        last_event =
+                            Some(last_event.map_or(stamp, |last: DateTime<Utc>| last.max(stamp)))
+                    }
                 }
                 origins.insert(event.origin_id.clone());
                 events.push(event);
@@ -289,21 +302,27 @@ impl MetricsStore {
             coverage.unidentified_rows_observed = flags.2;
             tx.commit().map_err(sql_error)?;
         }
+        let totals = aggregate_unique_events(&events);
+        let series = if totals.status == AggregateStatus::Measured {
+            build_series(&events, period, now, from, &zone)?
+        } else {
+            Vec::new()
+        };
         Ok(PeriodMetrics {
             monitoring_session_id: self.monitoring_session_id.clone(),
             period,
             from_utc: from.map(utc_string),
             to_utc: utc_string(now),
             retention_days: RETENTION_DAYS,
-            totals: aggregate_unique_events(&events),
+            last_event_utc: last_event.map(utc_string),
+            totals,
+            series,
             coverage,
         })
     }
 
     pub fn query(&self, request: MetricsQueryRequest) -> MetricsReply {
-        let canonical_id = uuid::Uuid::parse_str(&request.request_id)
-            .is_ok_and(|id| !id.is_nil() && id.to_string() == request.request_id);
-        if request.schema_version != 1 || !canonical_id {
+        if !request.is_valid() {
             return Self::failure(request.request_id, MetricsError::InvalidInput);
         }
         match self.query_at(request.period, Local::now()) {
@@ -318,16 +337,20 @@ impl MetricsStore {
     }
 
     pub fn failure(request_id: String, code: MetricsError) -> MetricsReply {
+        MetricsReply::Error(Self::error_detail(request_id, code))
+    }
+
+    pub(crate) fn error_detail(request_id: String, code: MetricsError) -> MetricsFailure {
         let safe_id = uuid::Uuid::parse_str(&request_id)
             .unwrap_or(uuid::Uuid::nil())
             .to_string();
-        MetricsReply::Error(MetricsFailure {
+        MetricsFailure {
             schema_version: 1,
             request_id: safe_id,
             status: "error",
             code,
             retryable: matches!(code, MetricsError::Busy | MetricsError::Unavailable),
-        })
+        }
     }
 
     fn open(&self, create: bool) -> Result<Option<Database>, MetricsError> {
@@ -434,6 +457,60 @@ struct Database {
 
 fn utc_string(value: DateTime<Utc>) -> String {
     value.to_rfc3339_opts(SecondsFormat::AutoSi, true)
+}
+
+fn build_series<Tz: TimeZone>(
+    events: &[NormalizedEvent],
+    period: Period,
+    now: DateTime<Utc>,
+    from: Option<DateTime<Utc>>,
+    zone: &Tz,
+) -> Result<Vec<MetricBucket>, MetricsError> {
+    let mut timed = Vec::new();
+    for event in events.iter().filter(|event| event.main_metric_eligible) {
+        timed.push((event, event_time(event)?.ok_or(MetricsError::Corrupt)?));
+    }
+    let first = timed
+        .iter()
+        .map(|(_, stamp)| *stamp)
+        .min()
+        .ok_or(MetricsError::Corrupt)?;
+    let hourly = period == Period::Today
+        || (period == Period::Session && now.signed_duration_since(first) <= Duration::days(1));
+    let anchor = from.unwrap_or(
+        first
+            .date_naive()
+            .and_hms_opt(first.hour(), 0, 0)
+            .ok_or(MetricsError::InvalidLocalTime)?
+            .and_utc(),
+    );
+    let mut buckets: BTreeMap<DateTime<Utc>, Vec<&NormalizedEvent>> = BTreeMap::new();
+    for (event, stamp) in timed {
+        let at = if hourly {
+            anchor + Duration::hours(stamp.signed_duration_since(anchor).num_hours())
+        } else {
+            let date = stamp
+                .with_timezone(zone)
+                .date_naive()
+                .and_hms_opt(0, 0, 0)
+                .ok_or(MetricsError::InvalidLocalTime)?;
+            zone.from_local_datetime(&date)
+                .earliest()
+                .ok_or(MetricsError::InvalidLocalTime)?
+                .with_timezone(&Utc)
+        };
+        buckets.entry(at).or_default().push(event);
+    }
+    if buckets.len() > 64 {
+        return Err(MetricsError::Capacity);
+    }
+    Ok(buckets
+        .into_iter()
+        .map(|(at, events)| MetricBucket {
+            at_utc: utc_string(at),
+            totals: aggregate_event_refs(events),
+        })
+        .collect())
 }
 
 fn event_time(value: &NormalizedEvent) -> Result<Option<DateTime<Utc>>, MetricsError> {
@@ -597,6 +674,14 @@ pub struct MetricsQueryRequest {
     pub schema_version: u8,
     pub request_id: String,
     pub period: Period,
+}
+
+impl MetricsQueryRequest {
+    pub(crate) fn is_valid(&self) -> bool {
+        self.schema_version == 1
+            && uuid::Uuid::parse_str(&self.request_id)
+                .is_ok_and(|id| !id.is_nil() && id.to_string() == self.request_id)
+    }
 }
 
 #[derive(Debug, Serialize)]

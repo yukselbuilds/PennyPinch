@@ -1288,7 +1288,7 @@ fn parse_common(
     Ok(())
 }
 
-fn valid_generation(value: &str) -> bool {
+pub(crate) fn valid_generation(value: &str) -> bool {
     value.len() == 32 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
 }
 
@@ -1687,6 +1687,32 @@ struct ControllerSession {
 }
 
 impl ControllerSession {
+    fn capture_metrics(
+        &self,
+    ) -> Result<super::metrics_read::OwnedMetricsSnapshot, super::metrics_read::RuntimeMetricsError>
+    {
+        #[cfg(windows)]
+        {
+            super::metrics_read::read_owned_projection(
+                self.listener_port,
+                self.engine_pid,
+                &self.generation,
+                || {
+                    self.backend_lease.is_alive_for(&self.generation)
+                        && owned_process_chain(
+                            self.controller_pid,
+                            self.helper_pid,
+                            self.engine_pid,
+                        )
+                        && listener_owner(self.listener_port) == Some(self.engine_pid)
+                },
+            )
+        }
+        #[cfg(not(windows))]
+        {
+            Err(super::metrics_read::RuntimeMetricsError::Unavailable)
+        }
+    }
     fn launch(
         layout: &RuntimeLayout,
         request_id: &str,
@@ -2169,8 +2195,18 @@ fn health_payload_matches(body: &[u8], expected_version: &str) -> bool {
 }
 
 fn read_http_body(stream: &mut TcpStream, deadline: Instant) -> Option<(u16, Vec<u8>)> {
+    read_http_body_with_limit(stream, deadline, 64 * 1024)
+}
+
+pub(super) fn read_http_body_with_limit(
+    stream: &mut TcpStream,
+    deadline: Instant,
+    max_body: usize,
+) -> Option<(u16, Vec<u8>)> {
     const MAX_HEADER: usize = 2048;
-    const MAX_BODY: usize = 64 * 1024;
+    if max_body == 0 || max_body > 2 * 1024 * 1024 {
+        return None;
+    }
     let mut received = Vec::with_capacity(4096);
     let mut chunk = [0u8; 4096];
     let header_end = loop {
@@ -2201,7 +2237,7 @@ fn read_http_body(stream: &mut TcpStream, deadline: Instant) -> Option<(u16, Vec
             }
             Err(_) => return None,
         }
-        if received.len() > MAX_HEADER + MAX_BODY {
+        if received.len() > MAX_HEADER + max_body {
             return None;
         }
     };
@@ -2232,12 +2268,12 @@ fn read_http_body(stream: &mut TcpStream, deadline: Instant) -> Option<(u16, Vec
         }
     }
     let content_length = content_length?;
-    if content_length > MAX_BODY {
+    if content_length > max_body {
         return None;
     }
     let body_start = header_end;
     while received.len().saturating_sub(body_start) < content_length {
-        if deadline <= Instant::now() || received.len() > MAX_HEADER + MAX_BODY {
+        if deadline <= Instant::now() || received.len() > MAX_HEADER + max_body {
             return None;
         }
         let remaining = deadline.saturating_duration_since(Instant::now());
@@ -3320,6 +3356,14 @@ fn write_ingress_view(view: &Arc<RwLock<IngressView>>, update: impl FnOnce(&mut 
 }
 
 enum ActorCommand {
+    CollectMetrics {
+        reply: mpsc::SyncSender<
+            Result<
+                super::metrics_read::OwnedMetricsSnapshot,
+                super::metrics_read::RuntimeMetricsError,
+            >,
+        >,
+    },
     Start {
         request_id: String,
         reply: mpsc::SyncSender<RuntimeReply>,
@@ -3334,6 +3378,89 @@ enum ActorCommand {
     },
 }
 
+#[cfg(all(test, windows))]
+mod metrics_actor_tests {
+    use super::*;
+    use crate::runtime::metrics_read::{OwnedMetricsSnapshot, RuntimeMetricsError};
+    fn manager(status: EngineStatus) -> (RuntimeManager, mpsc::Receiver<ActorCommand>) {
+        let (sender, receiver) = mpsc::sync_channel(1);
+        let mut view = RuntimeView::new(status);
+        view.last_health = Some(Instant::now());
+        (
+            RuntimeManager {
+                sender,
+                view: Arc::new(RwLock::new(view)),
+                ingress_view: Arc::new(RwLock::new(IngressView::starting())),
+                shutting_down: Arc::new(AtomicBool::new(false)),
+                actor_available: true,
+            },
+            receiver,
+        )
+    }
+
+    #[test]
+    fn stopped_or_unavailable_runtime_never_queues_a_metadata_probe() {
+        for (status, error) in [
+            (EngineStatus::Stopped, RuntimeMetricsError::Stopped),
+            (EngineStatus::Unavailable, RuntimeMetricsError::Unavailable),
+            (EngineStatus::Starting, RuntimeMetricsError::NotReady),
+        ] {
+            let (manager, receiver) = manager(status);
+            assert_eq!(manager.capture_metrics().unwrap_err(), error);
+            assert!(receiver.try_recv().is_err());
+        }
+    }
+
+    #[test]
+    fn capture_uses_actor_generation_not_an_earlier_ui_view() {
+        let (manager, receiver) = manager(EngineStatus::Ready);
+        let actor = thread::spawn(move || {
+            if let Ok(ActorCommand::CollectMetrics { reply }) =
+                receiver.recv_timeout(Duration::from_millis(300))
+            {
+                let generation = "00000000-0000-4000-8000-000000000002";
+                let projection = crate::metrics::normalize::project_headroom_041(
+                    br#"{"recent_requests":[]}"#,
+                    generation,
+                    "0.41.0",
+                    crate::metrics::normalize::Source::Proxy,
+                )
+                .unwrap();
+                let _ = reply.send(Ok(OwnedMetricsSnapshot {
+                    generation: generation.into(),
+                    captured_at: chrono::Utc::now(),
+                    projection,
+                }));
+            }
+        });
+        let captured = manager.capture_metrics();
+        actor.join().unwrap();
+        assert_eq!(
+            captured.unwrap().generation,
+            "00000000-0000-4000-8000-000000000002"
+        );
+    }
+
+    #[test]
+    fn metadata_backpressure_and_disconnected_actor_are_fixed_errors() {
+        let (manager, receiver) = manager(EngineStatus::Ready);
+        let (reply, _) = mpsc::sync_channel(1);
+        assert!(manager
+            .sender
+            .try_send(ActorCommand::CollectMetrics { reply })
+            .is_ok());
+        assert_eq!(
+            manager.capture_metrics().unwrap_err(),
+            RuntimeMetricsError::Busy
+        );
+        drop(receiver);
+        assert_eq!(
+            manager.capture_metrics().unwrap_err(),
+            RuntimeMetricsError::Unavailable
+        );
+    }
+}
+
 #[derive(Clone)]
 pub struct RuntimeManager {
     sender: mpsc::SyncSender<ActorCommand>,
@@ -3344,6 +3471,40 @@ pub struct RuntimeManager {
 }
 
 impl RuntimeManager {
+    pub(crate) fn capture_metrics(
+        &self,
+    ) -> Result<super::metrics_read::OwnedMetricsSnapshot, super::metrics_read::RuntimeMetricsError>
+    {
+        use super::metrics_read::RuntimeMetricsError as Error;
+        if self.shutting_down.load(Ordering::SeqCst) || !self.actor_available {
+            return Err(Error::Unavailable);
+        }
+        {
+            let view = self.view.read().unwrap_or_else(|p| p.into_inner());
+            match view.status {
+                EngineStatus::Stopped => return Err(Error::Stopped),
+                EngineStatus::Unavailable => return Err(Error::Unavailable),
+                EngineStatus::Ready
+                    if view
+                        .last_health
+                        .is_some_and(|last| health_is_fresh(last, Instant::now())) => {}
+                _ => return Err(Error::NotReady),
+            }
+        }
+        let (reply, receiver) = mpsc::sync_channel(1);
+        self.sender
+            .try_send(ActorCommand::CollectMetrics { reply })
+            .map_err(|e| match e {
+                mpsc::TrySendError::Full(_) => Error::Busy,
+                mpsc::TrySendError::Disconnected(_) => Error::Unavailable,
+            })?;
+        receiver
+            .recv_timeout(Duration::from_secs(3))
+            .map_err(|error| match error {
+                mpsc::RecvTimeoutError::Timeout => Error::Busy,
+                mpsc::RecvTimeoutError::Disconnected => Error::Unavailable,
+            })?
+    }
     pub fn new(resource_dir: Option<PathBuf>, app_data_dir: Option<PathBuf>) -> Self {
         Self::from_layout(RuntimeLayout::resolve(resource_dir, app_data_dir))
     }
@@ -3791,6 +3952,17 @@ fn run_actor(
     let mut active: Option<ControllerSession> = None;
     loop {
         match receiver.recv_timeout(ACTOR_POLL_INTERVAL) {
+            Ok(ActorCommand::CollectMetrics { reply }) => {
+                let result = if shutting_down.load(Ordering::SeqCst) {
+                    Err(super::metrics_read::RuntimeMetricsError::Stopped)
+                } else {
+                    active
+                        .as_ref()
+                        .ok_or(super::metrics_read::RuntimeMetricsError::Stopped)
+                        .and_then(ControllerSession::capture_metrics)
+                };
+                let _ = reply.send(result);
+            }
             Ok(ActorCommand::Start { request_id, reply }) => {
                 if shutting_down.load(Ordering::SeqCst) {
                     let _ =
