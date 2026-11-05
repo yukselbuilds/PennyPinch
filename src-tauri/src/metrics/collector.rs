@@ -398,7 +398,7 @@ mod tests {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let port = listener.local_addr().unwrap().port();
         let stamp = Utc::now().to_rfc3339();
-        let payload = serde_json::json!({"recent_requests":[{"request_id":"http-fixture", "timestamp":stamp,
+        let payload = serde_json::json!({"recent_requests":[{"request_id":"http-fixture", "timestamp":stamp,"model":"observed-model","provider":"observed-provider","client":"codex","role":"subagent","agent_id":"PRIVATE_CANARY",
             "input_tokens_original":120000,"input_tokens_optimized":75000,"request_messages":["PRIVATE_CANARY"],"tags":{"auth":"PRIVATE_CANARY"}}]}).to_string();
         let server = thread::spawn(move || {
             for _ in 0..2 {
@@ -448,6 +448,13 @@ mod tests {
         assert_eq!(snapshot.data.totals.comparable_events, 0);
         assert!(snapshot.data.totals.saved_tokens.is_none());
         assert!(snapshot.data.totals.saved_percent.is_none());
+        assert_eq!(snapshot.data.attribution.coverage.model_observed, 1);
+        assert_eq!(
+            snapshot.data.attribution.groups[0].model.as_deref(),
+            Some("observed-model")
+        );
+        assert!(snapshot.data.attribution.groups[0].client.is_none());
+        assert!(snapshot.data.attribution.groups[0].agent.is_none());
         assert!(!serde_json::to_string(&snapshot).unwrap().contains("CANARY"));
         assert!(manager.shutdown());
         server.join().unwrap();

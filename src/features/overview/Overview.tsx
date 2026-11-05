@@ -1,5 +1,6 @@
 import "./overview.css";
 import { SavingsChart } from "./SavingsChart";
+import { Coverage } from "./Coverage";
 import {
   formatMetricNumber,
   formatMetricPercent,
@@ -412,6 +413,8 @@ export function Overview(props: OverviewProps) {
             increaseLabel={t.chartIncrease}
           />
       </section>}
+
+      {snapshot && <Coverage language={props.language} summary={snapshot.data.attribution}/>}
 
       <section className="overview__connections" aria-labelledby="overview-connections-title">
         <div className="overview__section-heading">

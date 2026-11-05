@@ -1,3 +1,4 @@
+use super::attribution::{self, Attribution};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
@@ -67,6 +68,8 @@ pub struct ProviderUsage {
 // Origins and bases come from a trusted collector, never from arbitrary engine tags.
 #[derive(Clone, Debug, Deserialize)]
 pub struct Observation {
+    #[serde(default)]
+    pub attribution: Attribution,
     pub runtime_generation: String,
     pub request_id: String,
     pub source: Source,
@@ -93,6 +96,8 @@ pub enum MeasurementStatus {
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct NormalizedEvent {
+    #[serde(default, skip_serializing_if = "Attribution::is_unknown")]
+    pub attribution: Attribution,
     pub schema_version: u8,
     pub runtime_generation: String,
     pub origin_id: String,
@@ -173,7 +178,7 @@ fn validate_reading(value: &Reading) -> Result<(), NormalizeError> {
     Ok(())
 }
 
-fn opaque_id(parts: &[&str]) -> String {
+pub(crate) fn opaque_id(parts: &[&str]) -> String {
     let mut hash = Sha256::new();
     for part in parts {
         hash.update((part.len() as u64).to_be_bytes());
@@ -251,6 +256,7 @@ fn normalize_one(value: &Observation) -> Result<NormalizedEvent, NormalizeError>
         .as_deref()
         .unwrap_or(&value.request_id);
     let origin_id = opaque_id(&[&runtime_generation, origin_namespace, origin_request]);
+    attribution::validate(&value.attribution, &origin_id)?;
     let status = if value.before.tokens.is_none() || value.after.tokens.is_none() {
         MeasurementStatus::MissingCounter
     } else if value.before.basis.kind == CounterKind::Unknown
@@ -283,6 +289,7 @@ fn normalize_one(value: &Observation) -> Result<NormalizedEvent, NormalizeError>
         (None, None)
     };
     Ok(NormalizedEvent {
+        attribution: value.attribution.clone(),
         schema_version: 1,
         runtime_generation,
         event_id: opaque_id(&[&origin_id, &slot(value.optimizer, value.before.component)]),
@@ -332,7 +339,9 @@ pub fn normalize(observations: &[Observation]) -> Result<NormalizedBatch, Normal
 pub(crate) fn merge_event(current: &mut NormalizedEvent, incoming: &NormalizedEvent) -> bool {
     let mut comparison = incoming.clone();
     comparison.observed_via = current.observed_via.clone();
+    comparison.attribution = current.attribution.clone();
     let new_conflict = current.status != MeasurementStatus::Conflict && *current != comparison;
+    attribution::merge(&mut current.attribution, &incoming.attribution);
     if new_conflict {
         current.status = MeasurementStatus::Conflict;
         current.before = unverified_reading(None);
@@ -361,6 +370,7 @@ pub(crate) fn merge_event(current: &mut NormalizedEvent, incoming: &NormalizedEv
 
 /// Revalidate the bounded schema at the persistent-store trust boundary.
 pub(crate) fn validate_event(value: &NormalizedEvent) -> Result<(), NormalizeError> {
+    attribution::validate(&value.attribution, &value.origin_id)?;
     let valid_hash = |s: &str| {
         s.len() == 64
             && s.bytes()
@@ -444,6 +454,8 @@ struct EngineSnapshot {
 
 #[derive(Deserialize)]
 struct RawRow {
+    model: Option<String>,
+    provider: Option<String>,
     request_id: Option<String>,
     timestamp: Option<String>,
     input_tokens_original: Option<u64>,
@@ -516,6 +528,7 @@ pub fn project_headroom_041(
             continue;
         };
         observations.push(Observation {
+            attribution: Attribution::observed(row.model.as_deref(), row.provider.as_deref()),
             runtime_generation: runtime_generation.into(),
             request_id,
             source,

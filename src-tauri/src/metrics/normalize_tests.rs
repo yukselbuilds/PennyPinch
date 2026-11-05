@@ -16,6 +16,7 @@ fn reading(tokens: Option<u64>) -> Reading {
 
 fn event(id: &str, before: Option<u64>, after: Option<u64>) -> Observation {
     Observation {
+        attribution: Default::default(),
         runtime_generation: GENERATION.into(),
         request_id: id.into(),
         source: Source::Proxy,

@@ -4,13 +4,13 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H013–H025, H040, H046 ve **H047 tamamlandı:23/51.** H025 canlı collector ve sade Genel bakış kabul edildi. H008 Windows10 ChatGPT CLI/Desktop kapsamıyla kabul edildi; canlı API-key testi H041 yayın öncesi kabulünde açık. Sıradaki H026 başlamadı; kullanıcı devam mesajı bekleniyor. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
+**Durum:** H001–H005, H007–H008, H013–H026, H040, H046 ve **H047 tamamlandı:24/51.** H026 model/istemci/ajan kapsamı yerel kabul edildi; canlı kimlik kanıtı olmayan alanlar unknown kalır. H008 Windows10 ChatGPT CLI/Desktop kapsamıyla kabul edildi; canlı API-key testi H041 yayın öncesi kabulünde açık. Sıradaki H027 başlamadı, kullanıcı devam mesajı bekleniyor. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
 ## Geliştirme araçları ve çalışma düzeni
 
-Bu işler 51 ürün görevine eklenmez. DEV001/DEV002 ve H025 kabul edildi. Sıradaki ürün görevi H026; kullanıcı devam mesajı bekleniyor.
+Bu işler 51 ürün görevine eklenmez. DEV001/DEV002 ve H026 kabul edildi. Sıradaki ürün görevi H027; kullanıcı devam mesajı bekleniyor.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -404,11 +404,13 @@ flowchart TD
 - **Dosyalar:** `src/features/overview/`, `src/lib/metrics.ts`, `src/lib/metricsSession.ts`, `src-tauri/src/metrics/collector.rs`, `src-tauri/src/runtime/metrics_read.rs`, `tests/app/metrics*.test.mjs`.
 
 ### H026 — Model ve ajan kapsamının gösterimi
+- **Durum:** Tamamlandı —5 Kasım 2026;24/51. Ana ajan provenance/kimlik, eski payload uyumu ve sorgu/kabul sahibi; tek Luna yalnız Coverage sunumunu yazdı, completed/durdurulmuş olarak devralındı. [Plan014](docs/decisions/014-attribution.md), [kanıt](docs/proofs/attribution.md), [inceleme](docs/reviews/H026.md). Pinned model/provider etiketleri gözlenir; modelden istemci/ajan çıkarılmaz, native istek-rotası witness'ı olmayan alanlar unknown kalır. H025 toplamı ve gerçek sayaç temeli korunur.
 - **24 Ekim ürün yönü:** Platform/model/sohbet/ajan ilişkisinde yalnız kanıtlı atama kullanılır; atanamayan trafik ayrı kalır. H051 sohbet listesiyle ortak metadata sözleşmesi gerekir; yalnız aynı model adı kimlik kanıtı değildir.
-- [ ] İstemci/model kırılımı ve mevcutsa ajan kimliği gösterilir.
+- [x] İstemci/model kırılımı ve mevcutsa ajan kimliği gösterilir. Aynı model/ayrı ajan ve upstream kimliği korunur; bilinmeyen ayrı kalır. Eski payload/replay, origin katman birleştirmesi ve64 grup + açık Diğer toplamı kabul edildi. Schema1 additive metadata alanı SQL şemasını değiştirmedi.
 - **Kabul:** Modelden ajan kimliği türetilmez; ayrı bulut/sağlayıcı yolu kapsanmış sayılmaz; bilinmeyen atama ayrı görünür.
 - **Ek kabul:** Ana/alt ajan kapsamı doğrulandı/kısmi/bilinmiyor olarak, gerçek route kanıtıyla gösterilir. Proxy toplamı vardır ama rol metadata'sı yoksa ajan bazlı tam kapsama iddiası üretilmez. Bu alanlar optimizasyonu yalnız ana ajanla sınırlayan filtreye dönüşmez.
 - **Doğrulama:** Aynı modeli kullanan iki ajan, eksik metadata ve farklı upstream fixture'ları.
+- **Son kapı:**125 frontend/335 Rust PASS,5 mevcut opt-in ignored; fmt/build ve gerçek owned collector/dönem DTO'su PASS. Kimlikli/iki ajanlı UI senaryoları izole fixture, canlı kaynak0 istek; gerçek tüm-ajan veya sağlayıcı başarısı iddia edilmedi.128 kaynak/config fingerprint'i eşleşti; native125/150/100 zoom ve ayarlar değişmeden kapanış PASS. Ana görev sonunda duruldu; H027 başlamadı.
 - **Bağımlılık / boyut:** H025 / M.
 - **Dosyalar:** `src-tauri/src/metrics/attribution.rs`, `src-tauri/src/metrics/attribution_tests.rs`, `src/features/overview/Coverage.tsx`.
 
@@ -668,4 +670,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**23/51 tamam; H025 kapandı.** Owned metadata collector, yerel dönem sorgusu ve sade Graphite Genel bakış kabul edildi.120 frontend/327 Rust PASS,5 mevcut opt-in ignored; fmt/embedded build ve native source/stop/restart/zoom PASS. [Kabul](docs/proofs/live-overview.md), [inceleme](docs/reviews/H025.md). Sıradaki H026 model/ajan kapsamıdır; henüz başlamadı, kullanıcı devam mesajı bekleniyor. Canlı API-key kabulü H041'de açık. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.
+**24/51 tamam; H026 kapandı.** Aynı dönem model/istemci/ajan kapsamı; bilinmeyen, partial ve yalnız gözlenen verified alt küme görünür.125 frontend/335 Rust PASS,5 mevcut opt-in ignored; fmt/embedded build ve native collector/dönem/zoom PASS. [Kabul](docs/proofs/attribution.md), [inceleme](docs/reviews/H026.md). Sıradaki H027 içeriksiz etkinlik ayrıntılarıdır; başlamadı, kullanıcı devam mesajı bekleniyor. Gerçek kimlikli/iki ajanlı örnekler fixture'dır; canlı kanıt olmadan atama yükseltilmez. Canlı API-key kabulü H041'de açık. Güncel devir: `docs/IMPLEMENTATION_STATUS.md`.

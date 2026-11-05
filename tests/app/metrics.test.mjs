@@ -47,6 +47,11 @@ function snapshot({
   collection = {},
 } = {}) {
   const eventCount = values.comparable_events + values.excluded_events;
+  const origins=coverage.distinct_origins??eventCount;
+  const counts={requests:origins,events:coverage.events??eventCount,model_observed:0,client_verified:0,agent_verified:0,conflicts:0};
+  const attribution={scope:"observed_requests",coverage:counts,client_status:"unknown",agent_status:"unknown",groups:eventCount===0?[]:[{
+    group_id:"a".repeat(64),model:null,provider:null,client:null,upstream_id:null,agent:null,conflicted:false,is_other:false,coverage:counts,totals:values,
+  }],omitted_groups:0};
   return {
     schema_version: 1,
     request_id: id,
@@ -60,10 +65,11 @@ function snapshot({
       retention_days: 30,
       last_event_utc: eventCount > 0 ? observedAt : null,
       totals: { ...values, groups: [], omitted_basis_groups: 0 },
+      attribution,
       series,
       coverage: {
         events: eventCount,
-        distinct_origins: values.comparable_events,
+        distinct_origins: eventCount,
         unplaced_events: 0,
         rolling_window: false,
         aggregate_only: false,

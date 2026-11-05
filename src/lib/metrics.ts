@@ -23,7 +23,75 @@ export interface MetricBucket {
   totals: MetricTotals;
 }
 
+export type AttributionStatus = "unknown" | "partial" | "verified";
+export interface AttributionCounts { requests:number; events:number; model_observed:number; client_verified:number; agent_verified:number; conflicts:number }
+export interface AttributionAgent { id:string; parent_id:string|null; role:"unknown"|"main"|"subagent" }
+export interface AttributionRow {
+  group_id:string; model:string|null; provider:string|null; client:ClientKind|null; upstream_id:string|null; agent:AttributionAgent|null;
+  conflicted:boolean; is_other:boolean; coverage:AttributionCounts; totals:MetricTotals;
+}
+export interface AttributionSummary {
+  scope:"observed_requests"; coverage:AttributionCounts; client_status:AttributionStatus; agent_status:AttributionStatus;
+  groups:AttributionRow[]; omitted_groups:number;
+}
+
+export function decodeAttributionSummary(value:unknown,events:number,origins:number,main:MetricTotals):AttributionSummary|null {
+  const keys = ["requests","events","model_observed","client_verified","agent_verified","conflicts"] as const;
+  const hash = (v:unknown):v is string => typeof v === "string" && /^[0-9a-f]{64}$/.test(v);
+  const label = (v:unknown):v is string => typeof v === "string" && v.length>0 && v.length<=128 && /^[A-Za-z0-9._\-/:+@]+$/.test(v)
+    && !v.includes(":/") && !/^(?:sk-|ghp_|github_pat_|unknown$)/i.test(v);
+  function counts(v:unknown):AttributionCounts|null {
+    if (!record(v) || keys.some(k=>!count(v[k]))) return null;
+    const c = Object.fromEntries(keys.map(k=>[k,v[k]])) as unknown as AttributionCounts;
+    if (c.requests>c.events || (c.requests===0)!==(c.events===0) || c.conflicts>c.requests
+      || c.model_observed>c.requests-c.conflicts || c.client_verified>c.requests-c.conflicts || c.agent_verified>c.client_verified) return null;
+    return c;
+  }
+  const level = (known:number,total:number):AttributionStatus => known===0?"unknown":known===total?"verified":"partial";
+  if (!record(value) || value.scope!=="observed_requests" || !Array.isArray(value.groups) || value.groups.length>64 || !count(value.omitted_groups)) return null;
+  const coverage=counts(value.coverage);
+  if (!coverage || coverage.events!==events || coverage.requests!==origins || value.client_status!==level(coverage.client_verified,origins)
+    || value.agent_status!==level(coverage.agent_verified,origins) || (origins===0)!==(value.groups.length===0)) return null;
+  const sums:AttributionCounts={requests:0,events:0,model_observed:0,client_verified:0,agent_verified:0,conflicts:0};
+  const groups:AttributionRow[]=[],ids=new Set<string>();let before=0,after=0,saved=0,comparable=0,excluded=0,others=0;
+  for (const raw of value.groups) {
+    if (!record(raw)||!hash(raw.group_id)||ids.has(raw.group_id)||typeof raw.is_other!=="boolean"||typeof raw.conflicted!=="boolean"
+      || !(raw.model===null||label(raw.model)) || !(raw.provider===null||label(raw.provider))
+      || !(raw.client===null||member(raw.client,["codex","claude_code","opencode"] as const))||!(raw.upstream_id===null||hash(raw.upstream_id))) return null;
+    const c=counts(raw.coverage),part=totals(raw.totals);let agent:AttributionAgent|null=null;
+    if (!c || c.requests===0 || !part || c.events!==part.comparable_events+part.excluded_events) return null;
+    if (raw.agent!==null) {
+      if (!record(raw.agent)||!hash(raw.agent.id)||!(raw.agent.parent_id===null||hash(raw.agent.parent_id))
+        || raw.agent.parent_id===raw.agent.id||!member(raw.agent.role,["unknown","main","subagent"] as const)
+        ||raw.agent.role==="main"&&raw.agent.parent_id!==null) return null;
+      agent={id:raw.agent.id,parent_id:raw.agent.parent_id,role:raw.agent.role};
+    }
+    if (raw.is_other) {
+      others+=1;
+      if (others>1 || value.groups.length!==64 || groups.length!==63 || value.omitted_groups<2 || value.omitted_groups>c.requests
+        || raw.model!==null||raw.provider!==null||raw.client!==null||raw.upstream_id!==null||agent!==null||raw.conflicted) return null;
+    } else {
+      if ((raw.client===null)!==(raw.upstream_id===null)||agent!==null&&raw.client===null
+        || c.model_observed!==(raw.model===null?0:c.requests)||c.client_verified!==(raw.client===null?0:c.requests)
+        || c.agent_verified!==(agent===null||agent.role==="unknown"?0:c.requests)||c.conflicts!==(raw.conflicted?c.requests:0)
+        || raw.conflicted&&(raw.model!==null||raw.provider!==null||raw.client!==null||raw.upstream_id!==null||agent!==null)) return null;
+    }
+    ids.add(raw.group_id);for(const k of keys)sums[k]+=c[k];
+    comparable+=part.comparable_events;excluded+=part.excluded_events;
+    if (main.status==="measured" && part.comparable_events>0) {
+      if (part.status!=="measured") return null;
+      before+=part.before_tokens!;after+=part.after_tokens!;saved+=part.saved_tokens!;
+    }
+    groups.push({group_id:raw.group_id,model:raw.model,provider:raw.provider,client:raw.client,upstream_id:raw.upstream_id,
+      agent,conflicted:raw.conflicted,is_other:raw.is_other,coverage:c,totals:part});
+  }
+  if (keys.some(k=>sums[k]!==coverage[k]) || comparable!==main.comparable_events||excluded!==main.excluded_events
+    || (value.omitted_groups>0)!==(others===1) || main.status==="measured"&&(before!==main.before_tokens||after!==main.after_tokens||saved!==main.saved_tokens)) return null;
+  return {scope:"observed_requests",coverage,client_status:value.client_status as AttributionStatus,agent_status:value.agent_status as AttributionStatus,groups,omitted_groups:value.omitted_groups};
+}
+
 export interface PeriodMetrics {
+  attribution:AttributionSummary;
   monitoring_session_id: string;
   period: MetricPeriod;
   from_utc: string | null;
@@ -147,6 +215,8 @@ function snapshot(value: Record<string, unknown>, expectedPeriod: MetricPeriod):
     || coverage.distinct_origins > coverage.events || coverage.unplaced_events > coverage.events
     || main.comparable_events + main.excluded_events !== coverage.events || coverage.complete_traffic !== false
     || [coverage.rolling_window, coverage.aggregate_only, coverage.unidentified_rows_observed].some(v => typeof v !== "boolean")) return null;
+  const attribution=decodeAttributionSummary(d.attribution,coverage.events,coverage.distinct_origins,main);
+  if (!attribution) return null;
   if (!member(c.status, collectionStatuses) || !token(c.interval_seconds) || c.interval_seconds < 1 || c.interval_seconds > 60
     || !(c.last_capture_utc === null || utc(c.last_capture_utc)) || !(c.runtime_generation === null || runtimeGeneration(c.runtime_generation))
     || !(c.last_error === null || member(c.last_error, collectionErrors)) || typeof c.sampling_interrupted_since_start !== "boolean") return null;
@@ -164,7 +234,7 @@ function snapshot(value: Record<string, unknown>, expectedPeriod: MetricPeriod):
   if (main.status === "measured" ? before !== main.before_tokens || after !== main.after_tokens || saved !== main.saved_tokens || measured !== main.comparable_events : series.length !== 0) return null;
   return { schema_version: 1, request_id: value.request_id as string, status: "ok", observed_at_utc: value.observed_at_utc,
     data: { monitoring_session_id: d.monitoring_session_id, period: expectedPeriod, from_utc: d.from_utc, to_utc: d.to_utc,
-      last_event_utc: d.last_event_utc, retention_days: d.retention_days, totals: main, series,
+      last_event_utc: d.last_event_utc, retention_days: d.retention_days, totals: main, series,attribution,
       coverage: { events: coverage.events, distinct_origins: coverage.distinct_origins, unplaced_events: coverage.unplaced_events,
         rolling_window: coverage.rolling_window as boolean, aggregate_only: coverage.aggregate_only as boolean,
         unidentified_rows_observed: coverage.unidentified_rows_observed as boolean, complete_traffic: false } },

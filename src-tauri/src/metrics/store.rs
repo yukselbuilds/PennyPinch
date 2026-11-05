@@ -76,6 +76,7 @@ pub struct PeriodMetrics {
     pub totals: PeriodTotals,
     pub series: Vec<MetricBucket>,
     pub coverage: Coverage,
+    pub attribution: super::attribution::AttributionSummary,
 }
 
 #[derive(Debug, Serialize)]
@@ -318,6 +319,7 @@ impl MetricsStore {
             totals,
             series,
             coverage,
+            attribution: super::attribution::aggregate(&events),
         })
     }
 
