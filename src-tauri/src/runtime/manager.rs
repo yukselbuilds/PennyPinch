@@ -124,9 +124,9 @@ const EXPECTED_ENGINE_VERSION: &str = "0.41.0";
 const EXPECTED_MANIFEST_SHA256: &str =
     "4217e8f67946c96caa028e0a0d4e9a41e2e6894e4cafcd7e23adb00ad7cd1c03";
 const EXPECTED_CONTROLLER_SHA256: &str =
-    "9c5abfe1fd8b91cd5cd6f6addcc00e0dfb3cc88880e67e6c8a6b715b0f8e5545";
+    "8750f60c79a0b59d070ec53e81abe358f8a068765c18418de681145af94f62b0";
 const EXPECTED_HELPER_SHA256: &str =
-    "fc394183b35c42532c3dc35f523c8b7eb9b9cc6ee94ad57e9ed098374e854d08";
+    "11b35423d891edb5b077fb5d09f3477437c2e6b157d19f5f430e870dd6ecb5c0";
 const EXPECTED_SHIM_SHA256: &str =
     "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1";
 const EXPECTED_OPTIMIZATION_SHA256: &str =
@@ -3654,6 +3654,20 @@ impl RuntimeManager {
         Self::from_layout(RuntimeLayout::resolve(resource_dir, app_data_dir))
     }
 
+    #[cfg(test)]
+    pub(crate) fn isolated_for_test(state_root: PathBuf) -> Self {
+        let project = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .expect("project root")
+            .to_path_buf();
+        let layout = fs::canonicalize(state_root)
+            .map_err(|_| PublicError::EnvironmentBlocked)
+            .and_then(|state_root| {
+                RuntimeLayout::from_roots(project.clone(), project.join("runtime"), state_root)
+            });
+        Self::from_layout(layout)
+    }
+
     pub fn failure_reply(request_id: String) -> RuntimeReply {
         snapshot_error(&request_id, PublicError::EnvironmentBlocked)
     }
@@ -3949,7 +3963,7 @@ impl RuntimeManager {
     }
 
     #[cfg(test)]
-    fn listener_port_for_test(&self) -> Option<u16> {
+    pub(crate) fn listener_port_for_test(&self) -> Option<u16> {
         self.view
             .read()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
@@ -3957,7 +3971,20 @@ impl RuntimeManager {
     }
 
     #[cfg(test)]
-    fn listener_owner_pid_for_test(&self) -> Option<u32> {
+    pub(crate) fn ownership_diagnostic_for_test(&self) -> String {
+        let diagnostic = startup_diagnostic_for_test();
+        format!(
+            "stage={};lease={:?};job={:?};chain={:?};listener={:?}",
+            diagnostic.stage,
+            diagnostic.lease_alive,
+            diagnostic.job_active_processes,
+            diagnostic.process_chain_valid,
+            diagnostic.listener_owner_match
+        )
+    }
+
+    #[cfg(test)]
+    pub(crate) fn listener_owner_pid_for_test(&self) -> Option<u32> {
         self.view
             .read()
             .unwrap_or_else(|poisoned| poisoned.into_inner())

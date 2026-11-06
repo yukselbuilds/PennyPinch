@@ -29,7 +29,7 @@ Burada “kapalı”, istemcinin konfigürasyonuna yeni bir fallback eklenmediğ
 | Yarım SSE / backend kopması | Yarım akış biter; başka backend'e taşıma veya tekrar gönderme yok | A2 PASS |
 | Geciktirilmiş okuyucu | Sınırlı buffer/partial-write offset; süreler içinde byte sırası korunur | A2 4MiB fixture PASS; gerçek uzun kernel backpressure ölçümü yok |
 | Bağlantı sınırı / idle / toplam ömür / drain aşımı | Sınırlı kaynaklar; zorlanan kapanış graceful değildir | A2 PASS |
-| Engine stop | Yeni route kapanır → engine request-aware stop → bounded TCP drain → owned cleanup | Gerçek manager+native idle keep-alive stop PASS; aktif pinned-engine gated-SSE stop H029/H030'da açık |
+| Engine stop | Yeni route kapanır → engine request-aware stop → bounded TCP drain → owned cleanup | Gerçek manager+native idle keep-alive PASS; H029 gerçek pinned gated-SSE normal/stuck/no-replay/cleanup PASS. Aktif uygulama kapanışı/tray H030'da açık |
 | Uygulama kapanışı | Owned motor ve ingress kapanışı doğrulanır; belirsiz cleanup başarı sayılmaz | Native iki exit0/süreç0/listener0; yeni app süreci aynı kaydı/adresi açtı |
 | Eski observation / listener kaybı | Endpoint/engine gözlemleri ayrı; eski ready ve bilinmeyen sayaç başarı/sıfır sayılmaz | TTL/listener Start/poll ve startup sonrası heartbeat regresyonları PASS |
 

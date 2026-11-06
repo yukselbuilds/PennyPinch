@@ -14,6 +14,9 @@ use uuid::Uuid;
 const RUNS_RELATIVE: &str = "work/proofs/config-transaction/actions-c1/runs";
 const ENDPOINT_ID: &str = "019a0000-0000-7000-8000-d00000000042";
 
+#[path = "disconnect.rs"]
+mod disconnect;
+
 struct Fixture {
     project_root: PathBuf,
     runs_root: PathBuf,

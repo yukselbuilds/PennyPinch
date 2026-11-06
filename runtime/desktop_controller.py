@@ -25,6 +25,15 @@ HELPER_STOP_TIMEOUT_SECONDS = 30.0
 HELPER_EXIT_TIMEOUT_SECONDS = 30.0
 HELPER_TERMINATE_TIMEOUT_SECONDS = 5.0
 HELPER_READER_JOIN_TIMEOUT_SECONDS = 2.0
+# Public vocabularies and checksums from the pinned tiktoken_ext/openai_public.py.
+TOKENIZER_SOURCES = (
+    ("https://openaipublic.blob.core.windows.net/gpt-2/encodings/main/vocab.bpe", "1ce1664773c50f3e0cc8842619a93edc4624525b728b188a9e0be33b7726adc5"),
+    ("https://openaipublic.blob.core.windows.net/gpt-2/encodings/main/encoder.json", "196139668be63f3b5d6574427317ae82f612a97c5d1cdaf36ed2256dbf636783"),
+    ("https://openaipublic.blob.core.windows.net/encodings/r50k_base.tiktoken", "306cd27f03c1a714eca7108e03d66b7dc042abe8c258b44c199a7ed9838dd930"),
+    ("https://openaipublic.blob.core.windows.net/encodings/p50k_base.tiktoken", "94b5ca7dff4d00767bc256fdd1b27e5b17361d7b8a5f968547f9f23eb70d2069"),
+    ("https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken", "223921b76ee99bde995b7ff738513eef100fb51d18c93597a113bcffe865b2a7"),
+    ("https://openaipublic.blob.core.windows.net/encodings/o200k_base.tiktoken", "446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d"),
+)
 PINNED_EXPECTED = {
     "engine_name": "headroom-ai",
     "engine_version": "0.41.0",
@@ -311,6 +320,18 @@ def _under(root: Path, relative: str) -> Path:
     if not resolved.is_file():
         raise ProtocolError("runtime_pin_mismatch")
     return resolved
+
+
+def verify_tokenizer_cache(payload_root: Path) -> Path:
+    root = payload_root.resolve(strict=True)
+    cache = (root / "tiktoken-cache").resolve(strict=True)
+    if root not in cache.parents or not cache.is_dir():
+        raise ProtocolError("runtime_pin_mismatch")
+    for url, expected in TOKENIZER_SOURCES:
+        key = hashlib.sha1(url.encode("utf-8")).hexdigest()
+        if _sha256_file(_under(cache, key)) != expected:
+            raise ProtocolError("runtime_pin_mismatch")
+    return cache
 
 
 def verify_runtime_files(

@@ -53,6 +53,7 @@ class BoundedEngineOutput:
     NEEDLES = {
         b"headroom-runtime-console=allocated": "engine_console_allocated",
         b"application shutdown complete": "lifespan_complete",
+        b"timeout graceful shutdown exceeded": "request_drain_timeout",
         b"headroom proxy session summary": "proxy_summary",
         b"local telemetry: enabled": "local_telemetry_enabled",
         b"anonymous upload beacon: disabled": "anonymous_beacon_disabled",
@@ -143,6 +144,12 @@ class VersionedControlInput:
             return '{"command":"invalid"}\n'
         self._state["request_id"] = value["request_id"]
         return '{"command":"stop"}\n'
+
+
+def _shutdown_kind(source: dict[str, Any], output: BoundedEngineOutput | None) -> str:
+    if source.get("shutdown") == "graceful" and output is not None and not output.has("request_drain_timeout"):
+        return "graceful"
+    return "incomplete"
 
 
 def _load_h006_helper(path: Path, expected_sha256: str):
@@ -309,6 +316,7 @@ def _patch_and_run(args: argparse.Namespace) -> int:
         process_state["stage"] = "engine-environment-setup"
         env = original_safe_environment(*call_args, **call_kwargs)
         env.update(PROFILE_ENV)
+        env["TIKTOKEN_CACHE_DIR"] = str(controller.verify_tokenizer_cache(payload_root))
         return env
 
     def wait_for_ready(*call_args: Any, **call_kwargs: Any):
@@ -375,9 +383,7 @@ def _patch_and_run(args: argparse.Namespace) -> int:
             sys.stdout.buffer.flush()
             return
         if event == "stopped":
-            shutdown = source.get("shutdown")
-            if shutdown != "graceful":
-                shutdown = "incomplete"
+            shutdown = _shutdown_kind(source, process_state["output"])
             data = {
                 "shutdown": shutdown,
                 "engine_exit_code": source.get("engine_exit_code") if type(source.get("engine_exit_code")) is int else None,

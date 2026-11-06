@@ -8,6 +8,7 @@ import {
   type ClaudeSettingsSnapshot,
 } from "../../lib/claudeContext";
 import { ClaudeScopeSection } from "./ClaudeScopeSection";
+import { DisconnectDialog } from "./DisconnectDialog";
 import {
   canApplyForConnectionScope,
   candidateSelectionKey,
@@ -23,6 +24,7 @@ import type {
   ConnectionPlan,
   ConnectionActionErrorCode,
   ConnectionOwnership,
+  ConnectionScope,
   ConnectionPlanErrorCode,
   ConnectionPlanResult,
 } from "../../lib/contracts";
@@ -182,7 +184,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
     ownershipLimits: "Headroom ve motor açık kalmalı. Uygulama kapanınca kayıt otomatik geri alınmaz.",
     ownershipReadError: "Sahiplik kaydı okunamadı. Önizleme salt okunur olarak kullanılabilir.",
     ownershipRefreshRequired: "İşlem sonucu kesinleşmedi. Yeni bir geri alma işleminden önce kaydı yeniden oku.",
-    reloadOwnership: "Kaydı yeniden oku", reloadingOwnership: "Kayıt okunuyor…", undo: "Geri al", undoing: "Geri alınıyor…",
+    reloadOwnership: "Kaydı yeniden oku", reloadingOwnership: "Kayıt okunuyor…", undo: "Bağlantıyı kaldır", undoing: "Bağlantı kaldırılıyor…",
     applySuccess: "Yönlendirme kaydedildi.", unchangedSuccess: "Yönlendirme zaten aynıydı; yeni sahiplik kaydı oluşturulmadı.",
     undoSuccess: "Yönlendirme geri alındı.", applying: "Yönlendirme kaydediliyor…",
     actionUnavailable: "İşlem bu ortamda kullanılamıyor.", actionFailure: "İşlem tamamlanamadı. Kaydı yeniden oku.",
@@ -264,7 +266,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
     ownershipLimits: "Keep Headroom and its engine running. The record is not automatically undone when the app closes.",
     ownershipReadError: "The ownership record could not be read. Read-only preview remains available.",
     ownershipRefreshRequired: "The operation outcome is uncertain. Reload the record before another undo.",
-    reloadOwnership: "Reload record", reloadingOwnership: "Reading record…", undo: "Undo", undoing: "Undoing…",
+    reloadOwnership: "Reload record", reloadingOwnership: "Reading record…", undo: "Remove connection", undoing: "Removing connection…",
     applySuccess: "Routing saved.", unchangedSuccess: "Routing was already the same; no new ownership record was created.",
     undoSuccess: "Routing released.", applying: "Saving routing…",
     actionUnavailable: "This action is unavailable in this environment.", actionFailure: "The action could not be completed. Reload the record.",
@@ -406,6 +408,8 @@ export function ConnectDialog({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const selectRef = useRef<HTMLSelectElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const disconnectOpenRef = useRef(false);
+  const disconnectScopeRef = useRef<ConnectionScope>("user_config");
   const restoreFocus = useRef<HTMLElement | null>(null);
   const mounted = useRef(false);
   const requestSequence = useRef(0);
@@ -438,6 +442,7 @@ export function ConnectDialog({
   const [claudePickerPending, setClaudePickerPending] = useState(false);
   const [claudeError, setClaudeError] = useState<string | null>(null);
   const [mutationPending, setMutationPending] = useState(false);
+  const [disconnectOpen, setDisconnectOpen] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<ActionFeedback | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const currentContext = { scanGeneration, installationIdsKey: idsKey };
@@ -602,7 +607,7 @@ export function ConnectDialog({
     if (isClaude) void refreshClaudeState();
     else void readOwnership();
     const keepTabInside = (event: KeyboardEvent) => {
-      if (event.key !== "Tab") return;
+      if (disconnectOpenRef.current || event.key !== "Tab") return;
       const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
         'button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], summary:not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])',
       )).filter((element) => {
@@ -1054,18 +1059,37 @@ export function ConnectDialog({
         setActionFeedback({ kind: "uncertain", message: text.actionUncertain });
       }
     } finally {
+      const wasUndo = pendingAction.current === "undo";
       mutationLock.current = false;
       bridgeLock.current = false;
       pendingAction.current = null;
       if (mounted.current) {
         setMutationPending(false);
         setBridgePending(false);
+        if (wasUndo) {
+          disconnectOpenRef.current = false;
+          setDisconnectOpen(false);
+        }
       }
     }
   }
 
+  function requestUndoConfirmation() {
+    if (disconnectOpenRef.current || bridgeLock.current || mutationLock.current || mutationPending || !activeOwnership || !nativeAvailable
+      || (isClaude && (!claudeContextRef.current || activeOwnership.scope !== claudeContextRef.current.scope))) return;
+    disconnectScopeRef.current = activeOwnership.scope;
+    disconnectOpenRef.current = true;
+    setDisconnectOpen(true);
+  }
+
+  function cancelUndoConfirmation() {
+    if (mutationLock.current) return;
+    disconnectOpenRef.current = false;
+    setDisconnectOpen(false);
+  }
+
   function close() {
-    if (mutationLock.current || scopePickerLock.current) return;
+    if (mutationLock.current || scopePickerLock.current || disconnectOpenRef.current) return;
     requestSequence.current += 1;
     ownershipSequence.current += 1;
     claudeSequence.current += 1;
@@ -1077,8 +1101,8 @@ export function ConnectDialog({
     className="connection-dialog"
     aria-labelledby="connection-dialog-title"
     tabIndex={-1}
-    onCancel={(event) => { event.preventDefault(); if (!mutationLock.current && !scopePickerLock.current) close(); }}
-    onClick={(event) => { if (event.target === event.currentTarget && !mutationLock.current && !scopePickerLock.current) close(); }}
+    onCancel={(event) => { event.preventDefault(); if (!mutationLock.current && !scopePickerLock.current && !disconnectOpenRef.current) close(); }}
+    onClick={(event) => { if (event.target === event.currentTarget && !mutationLock.current && !scopePickerLock.current && !disconnectOpenRef.current) close(); }}
   >
     <div className="connection-dialog__frame">
       <header className="connection-dialog__header">
@@ -1088,7 +1112,7 @@ export function ConnectDialog({
             : text.scope}</div>
           <h2 id="connection-dialog-title">{text.title} · {clientTitles[clientKind]}</h2>
         </div>
-        <button ref={closeRef} className="connection-dialog__close" type="button" disabled={mutationPending || claudePickerPending || scopePickerLock.current} onClick={close} aria-label={text.close}>×</button>
+        <button ref={closeRef} className="connection-dialog__close" type="button" disabled={mutationPending || disconnectOpen || claudePickerPending || scopePickerLock.current} onClick={close} aria-label={text.close}>×</button>
       </header>
       <div className="connection-dialog__body">
         {isClaude
@@ -1121,11 +1145,11 @@ export function ConnectDialog({
           {ownershipView.kind === "ready" && ownership?.state === "released" && <p className="connection-dialog__notice" role="status">{text.ownershipReleased}</p>}
           {ownershipView.kind === "ready" && activeOwnership && <>
             <p className="connection-dialog__notice" role="status">{text.ownershipActive}{isClaude && activeOwnership.scope === "project_local_config" ? ` ${language === "tr" ? "Bu kayıt başka bir proje klasörüne ait olabilir; geri almak için ilk seçilen klasörü yeniden seçin." : "This record may belong to another project folder; reselect the original folder before undoing."}` : ""}</p>
-            <button className="button connection-dialog__undo" type="button" disabled={mutationPending || bridgePending || !nativeAvailable || (isClaude && (!claudeContext || activeOwnership.scope !== currentScope))} onClick={() => void undoOwnership()}>
+            <button className="button connection-dialog__undo" type="button" aria-haspopup="dialog" aria-controls="disconnect-dialog" disabled={mutationPending || bridgePending || !nativeAvailable || (isClaude && (!claudeContext || activeOwnership.scope !== currentScope))} onClick={requestUndoConfirmation}>
               {mutationPending ? (pendingAction.current === "undo" ? text.undoing : pendingAction.current === "connect" ? text.connecting : text.applying) : text.undo}
             </button>
           </>}
-          <p className="connection-dialog__ownership-note">{text.ownershipNotVerified} {text.ownershipLimits}</p>
+          <p className="connection-dialog__ownership-note">{text.ownershipNotVerified} {activeOwnership && text.ownershipLimits}</p>
           {!plan && <p className="connection-dialog__ownership-note">{text.sessionRestart} {text.routeBoundary}</p>}
           {actionFeedback && <p className={"connection-dialog__action-feedback is-" + actionFeedback.kind} role={actionFeedback.kind === "success" ? "status" : "alert"} aria-live="polite">{mutationPending ? (pendingAction.current === "undo" ? text.undoing : pendingAction.current === "connect" ? text.connecting : text.applying) : actionFeedback.message}</p>}
           {mutationPending && !actionFeedback && <p className="connection-dialog__action-feedback" role="status" aria-live="polite">{pendingAction.current === "undo" ? text.undoing : pendingAction.current === "connect" ? text.connecting : text.applying}</p>}
@@ -1217,5 +1241,15 @@ export function ConnectDialog({
         </div>
       </footer>
     </div>
+    <DisconnectDialog
+      open={disconnectOpen}
+      pending={mutationPending && pendingAction.current === "undo"}
+      language={language}
+      clientName={clientTitles[clientKind]}
+      scope={disconnectScopeRef.current}
+      restoreFocusRef={closeRef}
+      onCancel={cancelUndoConfirmation}
+      onConfirm={() => void undoOwnership()}
+    />
   </dialog>;
 }

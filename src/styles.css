@@ -339,3 +339,30 @@ h1 { margin-bottom: 8px; font-size: clamp(28px, 2.9vw, 38px); line-height: 1.15;
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
   .applications-spinner { animation: none; border-color: var(--accent); }
 }
+
+.disconnect-dialog {
+  width: min(440px, calc(100vw - 24px));
+  max-width: 440px;
+  margin: auto;
+  padding: 0;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.disconnect-dialog::backdrop { background: rgb(5 8 10 / 72%); backdrop-filter: blur(2px); }
+.disconnect-dialog__body { display: grid; gap: 11px; padding: 22px; }
+.disconnect-dialog__eyebrow { color: var(--accent); font-size: 12px; font-weight: 600; }
+.disconnect-dialog__body h2 { margin: 0; color: var(--text); font-size: 18px; font-weight: 620; letter-spacing: -.25px; }
+.disconnect-dialog__scope { margin: 0; color: var(--muted); font-size: 12px; font-weight: 600; }
+.disconnect-dialog__copy { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+.disconnect-dialog__pending { margin: 0; color: var(--quiet); font-size: 12px; }
+.disconnect-dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 9px; margin-top: 5px; }
+.disconnect-dialog__confirm { color: var(--text); background: color-mix(in srgb, var(--warning) 12%, var(--surface-raised)); border-color: color-mix(in srgb, var(--warning) 45%, var(--border)); }
+.disconnect-dialog__confirm:not(:disabled):hover { background: color-mix(in srgb, var(--warning) 20%, var(--surface-raised)); border-color: var(--warning); }
+@media (max-width: 420px) {
+  .disconnect-dialog__body { padding: 18px; }
+  .disconnect-dialog__actions { display: grid; grid-template-columns: 1fr; }
+  .disconnect-dialog__actions .button { width: 100%; }
+}

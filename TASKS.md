@@ -4,20 +4,20 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H011, H013–H028, H040, H046 ve **H047 tamamlandı:27/51.** H028 ile ortak H011 prefix/CCR güvenlik kabulü kapandı. Sıradaki H029 başlamadı; ana görev sonunda duruldu. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
+**Durum:** H001–H005, H007–H008, H011, H013–H029, H040, H046 ve **H047 tamamlandı:28/51.** H029 güvenli kaldırma ve gerçek pinned-engine aktif SSE stop kabulü kapandı. Sıradaki H030 başlamadı; ana görev sonunda duruldu. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
 ## Geliştirme araçları ve çalışma düzeni
 
-**5–6 Kasım öncelik değişikliği:** Kullanıcının isteğiyle UX001 tasarım yenilemesi tamamlandı; H029 başlamadı. Bu iş mevcut özelliklerin sunumunu yeniler,27/51 işlevsel kabul sayısını değiştirmez.
+**5–6 Kasım tarihsel öncelik değişikliği:** Kullanıcının isteğiyle UX001 tasarım yenilemesi tamamlandığında H029 henüz başlamamıştı. UX001 mevcut özelliklerin sunumunu yeniler, o tarihteki27/51 işlevsel kabul sayısını değiştirmez; güncel ürün sayısı üstteki satırdadır.
 
 ### UX001 — Headroom görsel dilinin yenilenmesi
 - [x] Projeye sabitlenmiş tasarım rehberi, ortak hiyerarşi ve dört native ekran yenilenmiş; gerçek kontrol/ölçüm/erişilebilirlik akışları korunmuş.
 - **Kabul:** [DESIGN.md](DESIGN.md) içindeki boş/gerçek/örnek veri ayrımı, tema/dil/ölçek/klavye, native render ve son yerel kalite kapısı. Ana ajan art direction/uygulama/inceleme sahibi; H029 başlamaz. Sahte tasarruf veya hesap/sohbet işlevi eklenmez.
 - **Durum:**6 Kasım tamamlandı. Emil design engineering yalnız projeye, immutable commit/MIT lisansıyla kuruldu; diğer üç kaynak incelendi.138 frontend/349 Rust PASS,6 opt-in ignored; aynı152 girdili derleme/test blokları ve gerçek native kontroller PASS. [Kanıt](docs/proofs/ui-taste.md), [inceleme](docs/reviews/UX001.md). Yerel Windows10; örnek veriler gerçek tasarruf değildir. Görev sonunda durulur.
 
-Bu işler 51 ürün görevine eklenmez. DEV001/DEV002 ve H028 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H029 başlamadı; kullanıcı devam mesajı bekleniyor.
+Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028 ve H029 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H030 başlamadı; kullanıcı devam mesajı bekleniyor.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -449,8 +449,10 @@ flowchart TD
 - **Dosyalar:** `runtime/optimization_control.py`, `src-tauri/src/runtime/control.rs` (testler dahil), runtime manager/controller, `src/features/overview/OptimizationControl.tsx`, `tests/runtime/pause_replay.py`.
 
 ### H029 — Bağlantıyı kaldırma akışı
-- [ ] Kullanıcı UI'dan uygulamaya ait yönlendirmeyi geri alır.
-- [ ] H040'ın native idle HTTP keep-alive kanıtına ek olarak gerçek pinned-engine aktif gated-SSE sırasında kaldırma/stop; tamamlama, süre aşımı, no-replay ve cleanup sonuçları doğrulanır.
+- **Durum:**6 Kasım tamamlandı; [plan017](docs/decisions/017-safe-disconnect.md), [kanıt](docs/proofs/safe-disconnect.md), [inceleme](docs/reviews/H029.md). Ana ajan sahiplik/stream/kabul, tek Luna ilk onay UI dilimi sahibi; devralma sonrası inceleme/düzeltme/native kabul ana ajanda.28/51; H030 başlamadı.
+- [x] Kullanıcı UI'dan uygulamaya ait yönlendirmeyi geri alır.
+- [x] H040'ın native idle HTTP keep-alive kanıtına ek olarak gerçek pinned-engine aktif gated-SSE sırasında kaldırma/stop; tamamlama, süre aşımı, no-replay ve cleanup sonuçları doğrulanır.
+- **Son kabul:**138 frontend/351 Rust PASS,7 opt-in ignored; ayrıca gerçek SSE opt-in ve Python shutdown/cache kontrolleri PASS. Aynı engine neslinde kaldırma, diğer istemcinin korunması, yeni stable-route engeli, eksik SSE'nin başarı sayılmaması ve owned cleanup; native onay/iptal/pending/error/odak/tema/dil/zoom doğrulandı.6 tokenizer asset/7 offline encoding hazır. Windows10 yerel kanıtı; gerçek sağlayıcı/diğer OS/installer/uzun yük kapsamı açık.
 - **Kabul:** Sonraki kullanıcı ayarı korunur; mevcut süreç yeniden açılacaksa belirtilir; başka istemci etkilenmez.
 - **Doğrulama:** Üç adaptörde sahiplik/çatışma testleri; etkin istek varken kaldırma akışı.
 - **Bağımlılık / boyut:** H028, H022 / M.
@@ -552,7 +554,7 @@ flowchart TD
 - [x] **H040-a2:** Nesle sabitlenen opak aktarım, bağlantı/kaynak sınırları, half-close ve bounded drain; Windows10'da 21 odaklı endpoint/relay testi ve fmt PASS. Yerel sentetik auth/protokol/SSE kanıtı; gerçek manager/motor kabulü değildir.
 - [x] **H040-b:** Üretim yöneticisi actor'ı stable ingress ve held process handle/job/generation lease'i yönetir; ayrı `get_ingress_snapshot` dar komutu endpoint/backend ayrımını korur. Endpoint/engine observation ayrı; stale ve kayıp listener ready sayılmaz.
 - [x] **H040-c:** Gerçek pinned motorun iki neslinde aynı adres/ID, `/readyz`, kapalı rota/0bayt, owned cleanup ve aynı portu yeniden açma PASS. Son tam Rust gate68 PASS/2 opt-in ignored, fmt/check reuse, uyarısız embedded build. Native gerçek fareyle Start→Ready→Stop→Stopped→Start→Ready, idle keep-alive stop, iki normal exit0 ve yeni uygulama sürecinde aynı endpoint PASS. [Kanıt](docs/proofs/connection-ingress.md), [inceleme](docs/reviews/H040.md), [arıza matrisi](docs/validation/ingress-failure-matrix.md).
-- **Kabul sınırı:** Auth/model/reasoning/SSE byte korunumu sentetik relay kanıtıdır; canlı sağlayıcı/istemci/alt ajan veya pinned-engine aktif gated-SSE stop kanıtı değildir. Sonuncusu H029/H030'da açık; kalıcı CCR/pause ve uzun kernel backpressure/perf ayrı kapılardır. Bütün direct upstream fail-open yolları kapalıdır.
+- **Kabul sınırı:** H040'ın auth/model/reasoning/SSE byte korunumu sentetik relay kanıtıdır; canlı sağlayıcı/istemci/alt ajan kanıtı değildir. Gerçek pinned-engine aktif gated-SSE stop daha sonra H029'da yerel loopback fixture'ıyla kabul edildi; uygulama kapanışı/tray H030'da açık, uzun kernel backpressure/perf ayrı kapıdır. Bütün direct upstream fail-open yolları kapalıdır.
 - **Kabul:** Aynı model/reasoning/auth/upstream korunur; API-key ve ChatGPT gateway birbirine karışmaz. Yabancı listener'a istemci payload/auth aktarımı, sahiplenme veya sonlandırma yok; exact peer kontrolü TCP connect sonrası olduğundan sıfır SYN garantisi değildir. Upstream gönderimi başladıktan sonra kör retry/ikinci POST yok; belirsiz yol veya CCR geçmişi açık hata/uyarı verir. Bağlantı/pause/çıkış sözleşmesi ve kaynak sınırları kayıtlı.
 - **Doğrulama:** Sentetik auth'lu yerel Responses/Anthropic fixture ve sahip olunan runtime; backend nesli değişirken sabit client adresi, fail-open capability matrisi, yarım stream, timeout ve yabancı listener senaryoları. Gerçek auth/model çağrısı ayrı uyumluluk kapısına tabidir.
 - **Bağımlılık / boyut:** H014, H016, H007 / M; a/b/c ayrı1–5 dosyalık dilimler. H017'den önce tamamlanır.
@@ -683,4 +685,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**27/51 tamam; H028 ve ortak H011 güvenlik kabulü kapandı.** Gerçek Başlat/Duraklat/Devam et, prefix/CCR ve aktif SSE/WS korunumu, iki motor izolasyonu, pending/error/klavye/zoom kabulü tamamlandı.138 frontend/349 Rust PASS,6 opt-in ignored; ek gerçek opt-in ve controller/unit kontrolleri PASS. [Kabul](docs/proofs/safe-pause.md), [inceleme](docs/reviews/H028.md). Sıradaki H029 başlamadı; kullanıcı devam mesajı bekleniyor. Yerel fixture sonuçları canlı sağlayıcı/model tasarrufu veya diğer OS desteği değildir. H041 canlı API-key kapısı açık; güncel devir `docs/IMPLEMENTATION_STATUS.md`.
+**28/51 tamam; H029 güvenli kaldırma kabulü kapandı.**138 frontend/351 Rust PASS,7 opt-in ignored; ayrıca gerçek SSE stop/no-replay/cleanup ve Python shutdown/cache kontrolleri PASS. Native onay/iptal/pending/error/klavye/tema/dil/zoom;6 asset/7 offline tokenizer encoding doğrulandı. [Kabul](docs/proofs/safe-disconnect.md), [inceleme](docs/reviews/H029.md). Sıradaki H030 başlamadı; kullanıcı devam mesajı bekleniyor. Yerel fixture sonuçları canlı sağlayıcı/model tasarrufu veya diğer OS desteği değildir. H041 canlı API-key ve uzun yük; H038 installer/tokenizer asset paketleme açık; güncel devir `docs/IMPLEMENTATION_STATUS.md`.
