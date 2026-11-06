@@ -13,14 +13,15 @@ import {
   type OverviewSnapshot,
 } from "../../lib/metrics";
 import type { ClientKind } from "../../lib/integrations";
+import { Icon } from "../../components/Icon";
 
 const copy = {
   tr: {
-    section: "GENEL BAKIŞ",
-    heading: "Girdi kullanımı",
+    section: "Genel bakış",
+    heading: "Kullanım özeti",
     period: "Dönem",
     periods: { session: "Oturum", today: "Bugün", seven_days: "7 gün" },
-    saved: "Ölçülen girdi azalması",
+    saved: "Girdi tasarrufu",
     inputReduction: "girdi azalması",
     inputIncrease: "girdi artışı",
     tokensSaved: "token azaltımı",
@@ -41,8 +42,8 @@ const copy = {
     failed: "Ölçüm okunamadı.",
     retry: "Yeniden dene",
     refreshing: "Güncelleniyor…",
-    refresh: "Veriyi yenile",
-    manage: "Uygulamaları yönet",
+    refresh: "Yenile",
+    manage: "Yönet",
     connections: "Uygulama bağlantıları",
     connectionSaved: "Yönlendirme kaydı var",
     connectionMissing: "Yönlendirme kaydı yok",
@@ -77,11 +78,11 @@ const copy = {
     samplingInterrupted: "Başlangıçtan beri örnekleme kesintisi",
     yes: "Evet",
     no: "Hayır",
-    chart: "Dönem içindeki ölçümler",
+    chart: "Token değişimi",
     chartEmpty: "Karşılaştırılabilir zaman kovası henüz yok.",
     chartSaved: "Girdi azalması",
     chartIncrease: "Girdi artışı",
-    chartDescription: "Çubuklar yalnızca gerçek ölçüm kovalarını gösterir; aradaki zamanlar sıfır kabul edilmez.",
+    chartDescription: "Kaydedilen ölçümler. Veri olmayan aralıklar dahil edilmez.",
     metricErrors: {
       invalid_input: "Ölçüm isteği doğrulanamadı.",
       unsafe_path: "Ölçüm deposu güvenli bir konumda değil.",
@@ -96,11 +97,11 @@ const copy = {
     } satisfies Record<MetricsUiError, string>,
   },
   en: {
-    section: "OVERVIEW",
-    heading: "Input usage",
+    section: "Overview",
+    heading: "Usage summary",
     period: "Period",
     periods: { session: "Session", today: "Today", seven_days: "7 days" },
-    saved: "Measured input reduction",
+    saved: "Input savings",
     inputReduction: "input reduction",
     inputIncrease: "input increase",
     tokensSaved: "token reduction",
@@ -121,8 +122,8 @@ const copy = {
     failed: "Measurements could not be read.",
     retry: "Try again",
     refreshing: "Updating…",
-    refresh: "Refresh data",
-    manage: "Manage applications",
+    refresh: "Refresh",
+    manage: "Manage",
     connections: "Application connections",
     connectionSaved: "Routing setting saved",
     connectionMissing: "No routing setting saved",
@@ -157,11 +158,11 @@ const copy = {
     samplingInterrupted: "Sampling interrupted since start",
     yes: "Yes",
     no: "No",
-    chart: "Measurements over time",
+    chart: "Token trend",
     chartEmpty: "There are no comparable time buckets yet.",
     chartSaved: "Input reduction",
     chartIncrease: "Input increase",
-    chartDescription: "Bars show only actual measurement buckets; gaps in time are not treated as zero.",
+    chartDescription: "Recorded measurements. Unobserved intervals stay empty.",
     metricErrors: {
       invalid_input: "The measurement request could not be validated.",
       unsafe_path: "The measurement store is not in a safe location.",
@@ -252,12 +253,19 @@ export function Overview(props: OverviewProps) {
   const controlAction=()=>({start:props.onStart,pause:props.onPause,resume:props.onResume,refresh:props.onRuntimeRefresh})[control.primary]();
   const periodOptions: readonly MetricPeriod[] = ["session", "today", "seven_days"];
   const number = (value: number | null) => formatMetricNumber(value, props.language);
+  const empty = measuredTotals === null;
+  const emptyTitle = props.metrics.kind === "loading"
+    ? (props.language === "tr" ? "Ölçümler yükleniyor" : "Loading measurements")
+    : props.metrics.kind !== "ready"
+      ? (props.language === "tr" ? "Ölçümler kullanılamıyor" : "Measurements unavailable")
+      : snapshot!.data.coverage.events === 0
+        ? (props.language === "tr" ? "İlk ölçümünü bekliyor" : "Your first measurement awaits")
+        : (props.language === "tr" ? "Karşılaştırma bekleniyor" : "Awaiting a comparison");
 
   return (
     <section className="overview" aria-label={props.language === "tr" ? "Genel bakış" : "Overview"}>
       <div className="overview__toolbar">
         <div>
-          <div className="overview__eyebrow">{t.section}</div>
           <h2>{t.heading}</h2>
         </div>
         <div className="overview__period" role="group" aria-label={t.period}>
@@ -274,39 +282,42 @@ export function Overview(props: OverviewProps) {
         </div>
       </div>
 
-      <div className="overview__hero">
+      <div className={`overview__hero${empty ? " is-empty" : ""}`}>
         <section className="overview__metric" aria-labelledby="overview-metric-title">
-          <div className="overview__metric-label" id="overview-metric-title">{t.saved}</div>
-          <div className={`overview__percent${saved !== null && saved < 0 ? " is-increase" : ""}`}>
-            <strong>{formatMetricPercent(isIncrease && percent !== null ? Math.abs(percent) : percent, props.language)}</strong>
-            <span>{isIncrease ? t.inputIncrease : t.inputReduction}</span>
+          <div className="overview__metric-label" id="overview-metric-title"><Icon name="chart" />{t.saved}</div>
+          <div className={`overview__percent${isIncrease ? " is-increase" : ""}${empty ? " is-empty" : ""}`}>
+            <strong>{empty ? emptyTitle : formatMetricPercent(isIncrease && percent !== null ? Math.abs(percent) : percent, props.language)}</strong>
+            {!empty && <span>{isIncrease ? t.inputIncrease : t.inputReduction}</span>}
           </div>
-          <div className="overview__amount-row">
+          {!empty && <div className="overview__amount-row">
             <strong>{number(saved === null ? null : Math.abs(saved))}</strong>
             <span>{saved !== null && saved < 0 ? t.tokensIncreased : t.tokensSaved}</span>
-          </div>
+          </div>}
           <p className="overview__metric-message">{metricMessage(props.metrics, props.language, t)}</p>
-          {snapshot && !snapshot.data.coverage.complete_traffic && (
+          {snapshot && snapshot.data.coverage.events > 0 && !snapshot.data.coverage.complete_traffic && (
             <p className="overview__scope-note"><span aria-hidden="true">i</span>{t.partial}</p>
           )}
-          {snapshot && snapshot.data.totals.before_tokens !== null && snapshot.data.totals.after_tokens !== null && (
-            <div className="overview__range">
+          {snapshot && (!empty || snapshot.data.coverage.events > 0) && <div className="overview__range">
               <span><small>{t.from}</small><strong>{number(snapshot.data.totals.before_tokens)}</strong></span>
               <span className="overview__range-arrow" aria-hidden="true">→</span>
               <span><small>{t.to}</small><strong>{number(snapshot.data.totals.after_tokens)}</strong></span>
-            </div>
-          )}
+              <span className="overview__request-count"><small>{props.language === "tr" ? "Kaydedilen istek" : "Recorded requests"}</small><strong>{number(snapshot.data.coverage.distinct_origins)}</strong></span>
+            </div>}
           {props.metrics.kind === "error" && (
             <button className="overview__text-button" type="button" onClick={props.onRefresh}>
               {t.retry}
             </button>
           )}
+          {snapshot && snapshot.data.coverage.events === 0 && <button className="overview__empty-action" type="button" onClick={props.onOpenApplications}>
+            {props.language === "tr" ? "Uygulamalarına göz at" : "Explore your applications"}<Icon name="arrow" />
+          </button>}
         </section>
 
         <OptimizationControl language={props.language} view={control} onPrimary={controlAction} onStop={props.onStop}/>
       </div>
 
-      {snapshot && snapshot.data.series.length > 0 && <section className="overview__chart-panel" aria-labelledby="overview-chart-title">
+      <div className="overview__content-grid">
+      <section className="overview__chart-panel" aria-labelledby="overview-chart-title">
         <div className="overview__section-heading">
           <div>
             <h3 id="overview-chart-title">{t.chart}</h3>
@@ -318,7 +329,7 @@ export function Overview(props: OverviewProps) {
             </button>
           )}
         </div>
-          <SavingsChart
+        {snapshot && snapshot.data.series.length > 0 ? <SavingsChart
             language={props.language}
             buckets={snapshot.data.series}
             fromUtc={snapshot.data.from_utc}
@@ -326,16 +337,14 @@ export function Overview(props: OverviewProps) {
             emptyLabel={t.chartEmpty}
             savedLabel={t.chartSaved}
             increaseLabel={t.chartIncrease}
-          />
-      </section>}
-
-      {snapshot && <Coverage language={props.language} summary={snapshot.data.attribution}/>}
+        /> : <div className="overview__chart-empty"><Icon name="activity" /><strong>{props.language === "tr" ? "Trafik geldikçe şekillenecek" : "Your traffic will take shape here"}</strong><span>{props.language === "tr" ? "Kaydedilen ölçümler bu alanda görünecek." : "Recorded measurements will appear in this space."}</span></div>}
+      </section>
 
       <section className="overview__connections" aria-labelledby="overview-connections-title">
         <div className="overview__section-heading">
           <div>
             <h3 id="overview-connections-title">{t.connections}</h3>
-            <p>{props.language === "tr" ? "Ayar kaydı, istemcinin kullandığı veya trafik ürettiği anlamına gelmez." : "A saved setting does not mean a client is open or sending traffic."}</p>
+            <p>{props.language === "tr" ? "Kayıtlı ayarlar canlı trafik anlamına gelmez." : "Saved settings do not confirm live traffic."}</p>
           </div>
         </div>
         <ul>
@@ -343,7 +352,7 @@ export function Overview(props: OverviewProps) {
             const connection = props.connections.find((candidate) => candidate.client === kind);
             return (
               <li key={kind}>
-                <span className="overview__client-mark" aria-hidden="true">{label === "Claude Code" ? "C" : label === "OpenCode" ? "O" : "X"}</span>
+                <span className={`overview__client-mark is-${kind}`} aria-hidden="true"><Icon name={kind === "codex" ? "terminal" : kind === "claude_code" ? "asterisk" : "code"}/></span>
                 <strong>{label}</strong>
                 <span className={`overview__connection-state is-${connection?.state ?? "unknown"}`}>
                   {connectionText(connection, props.connectionsLoading, t)}
@@ -353,12 +362,16 @@ export function Overview(props: OverviewProps) {
                 </span>
                 <button className="overview__connect-link" type="button" onClick={() => connection?.detected === false ? props.onOpenApplications() : props.onConnect(kind)}>
                   {connection?.state === "saved" ? t.manage : connection?.detected === false ? (props.language === "tr" ? "Bul / ekle" : "Find / add") : t.connect}
+                  <Icon name="chevron" />
                 </button>
               </li>
             );
           })}
         </ul>
       </section>
+      </div>
+
+      {snapshot && <Coverage language={props.language} summary={snapshot.data.attribution}/>}
 
       {snapshot && (
         <footer className="overview__metadata">

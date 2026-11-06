@@ -117,9 +117,8 @@ export function SavingsChart({
             </rect>
           );
         })}
-        <text x={LEFT} y="162" textAnchor="start" className="overview__chart-axis-label">{startLabel}</text>
-        <text x={RIGHT} y="162" textAnchor="end" className="overview__chart-axis-label">{endLabel}</text>
       </svg>
+      <div className="overview__chart-axis" aria-hidden="true"><span>{startLabel}</span><span>{endLabel}</span></div>
       <ol className="overview__chart-sr-list" aria-label={language === "tr" ? "Ölçüm değerleri" : "Measurement values"}>
         {points.map((point, index) => (
           <li key={`${point.at}-${index}`}>{`${fullTimeLabel(point.at, language)}: ${formatValue(point.value)}`}</li>

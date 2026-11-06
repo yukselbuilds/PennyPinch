@@ -75,6 +75,8 @@
 
 ## Ponytail ve görev kabulü
 
+- UI tasarımı ve görsel incelemede proje içi `.agents/skills/emil-design-eng/SKILL.md` ile `DESIGN.md` uygulanır. Bu rehber görsel hiyerarşi, tipografi ve etkileşim içindir; motor, ölçüm veya güvenlik sözleşmelerini değiştirmez. Global skill/ayar kurulmaz; yeni tasarım çalışması mevcut runtime kabulünü yeniden yorumlamaz.
+
 - Ortak araç seçimi, kısa çalışan devri, gerçek yerel kalite kapısı ve ana görev bitiş ölçütleri `docs/development/WORKFLOW.md` içindedir. Görev satırının kabul koşullarıyla birlikte uygulanır.
 - Projedeki `.agents/skills/ponytail/SKILL.md` kodlama/düzeltmede `full` seviyesinde kullanılır. Ana ajan değişiklik kabulünde `.agents/skills/ponytail-review/SKILL.md` okur; mevcut kalite incelemesiyle tek inceleme yapar. `.agents/skills/ponytail-audit/SKILL.md` belirlenmiş eski kod denetimi içindir; her görevde bütün depoyu tekrar tarama.
 - Raporlar Türkçedir. Ponytail yeni model/ajan, yayın veya ayar değiştirme yetkisi vermez. En küçük değişiklik; sahiplik, atomik yazım, çatışmayı koruyan geri alma, güvenlik, hata yönetimi, erişilebilirlik ve gerekli testleri koruyarak görevi tamamen bitirir.

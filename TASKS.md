@@ -1,6 +1,6 @@
 # Headroom Desktop — Görev Listesi
 
-**Tarih:** 5 Kasım 2026
+**Tarih:**6 Kasım2026
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
@@ -9,6 +9,13 @@
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
 ## Geliştirme araçları ve çalışma düzeni
+
+**5–6 Kasım öncelik değişikliği:** Kullanıcının isteğiyle UX001 tasarım yenilemesi tamamlandı; H029 başlamadı. Bu iş mevcut özelliklerin sunumunu yeniler,27/51 işlevsel kabul sayısını değiştirmez.
+
+### UX001 — Headroom görsel dilinin yenilenmesi
+- [x] Projeye sabitlenmiş tasarım rehberi, ortak hiyerarşi ve dört native ekran yenilenmiş; gerçek kontrol/ölçüm/erişilebilirlik akışları korunmuş.
+- **Kabul:** [DESIGN.md](DESIGN.md) içindeki boş/gerçek/örnek veri ayrımı, tema/dil/ölçek/klavye, native render ve son yerel kalite kapısı. Ana ajan art direction/uygulama/inceleme sahibi; H029 başlamaz. Sahte tasarruf veya hesap/sohbet işlevi eklenmez.
+- **Durum:**6 Kasım tamamlandı. Emil design engineering yalnız projeye, immutable commit/MIT lisansıyla kuruldu; diğer üç kaynak incelendi.138 frontend/349 Rust PASS,6 opt-in ignored; aynı152 girdili derleme/test blokları ve gerçek native kontroller PASS. [Kanıt](docs/proofs/ui-taste.md), [inceleme](docs/reviews/UX001.md). Yerel Windows10; örnek veriler gerçek tasarruf değildir. Görev sonunda durulur.
 
 Bu işler 51 ürün görevine eklenmez. DEV001/DEV002 ve H028 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H029 başlamadı; kullanıcı devam mesajı bekleniyor.
 

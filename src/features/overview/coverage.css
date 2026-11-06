@@ -2,9 +2,9 @@
   display: grid;
   gap: 12px;
   min-width: 0;
-  padding: 16px 18px;
+  padding: 22px;
   border: 1px solid var(--border);
-  border-radius: 11px;
+  border-radius: 14px;
   background: var(--surface);
 }
 
@@ -56,6 +56,8 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 9px;
 }
+.coverage__details summary { width: fit-content; cursor: pointer; color: var(--muted); font-size: 12px; }
+.coverage__details[open] summary { margin-bottom: 12px; }
 
 .coverage__status {
   display: grid;

@@ -28,6 +28,7 @@ import { useOverviewConnections, useOverviewMetrics } from "./features/overview/
 import type { MetricPeriod } from "./lib/metrics";
 import type { RuntimeAction } from "./lib/optimization";
 import { windowZoomClient, type WindowScale } from "./lib/windowZoom";
+import { HeadroomMark, Icon } from "./components/Icon";
 
 type Screen = "overview" | "applications" | "activity" | "settings";
 type LifecycleAction = RuntimeAction;
@@ -38,8 +39,8 @@ const copy = {
   tr: {
     nav: ["Genel bakış", "Uygulamalar", "Etkinlik", "Ayarlar"],
     eyebrow: "YEREL KONTROL ALANI",
-    headline: ["Kontrol paneli", "Uygulamalar", "Etkinlik", "Tercihler"],
-    subtitle: ["Yerel model trafiği için tek bir görünüm.", "Bağlantı durumu ve tarama kapsamı.", "İçerik saklamadan istek ve ölçüm ayrıntıları.", "Görünüm ve dil tercihleri."],
+    headline: ["Genel bakış", "Uygulamalar", "Etkinlik", "Ayarlar"],
+    subtitle: ["Daha az bağlam. Daha fazla alan.", "Kodlama araçlarını Headroom’a bağla.", "İsteklerini ve ölçümlerini takip et.", "Headroom’u kendine göre ayarla."],
     engine: "Motor", connection: "Bağlantı", compression: "Sıkıştırma kontrolü",
     noConnection: "Doğrulanmadı", compressionOff: "Uygulanmadı",
     engineUnavailable: "Kullanılamıyor", engineUnknown: "Durum bilinmiyor", engineStopped: "Durduruldu",
@@ -62,7 +63,7 @@ const copy = {
       config_conflict: "Tercihler başka bir işlemle değişti. Önce yeniden oku.",
     },
     bridgeUnavailable: "Masaüstü bağlantısı kullanılamıyor", invalidSnapshot: "Yerel durum yanıtı doğrulanamadı", snapshotFailed: "Yerel durum okunamadı",
-    nativeSnapshot: "Yerel durum güncel", refresh: "Durumu yenile", footer: "YEREL İSTATİSTİKLER",
+    nativeSnapshot: "Yerel veriler", refresh: "Durumu yenile", footer: "Yerel ölçümler",
     loading: "Yerel durum okunuyor", systemTheme: "Sistem tercihini izle veya sabit görünüm seç.", interfaceLanguage: "Arayüz dili.",
     commandErrors: {
       validation_failed: "Komut isteği doğrulanamadı.", unsupported_protocol: "Motor denetim protokolü desteklenmiyor.",
@@ -77,7 +78,7 @@ const copy = {
     nav: ["Overview", "Applications", "Activity", "Settings"],
     eyebrow: "LOCAL CONTROL SURFACE",
     headline: ["Overview", "Applications", "Activity", "Preferences"],
-    subtitle: ["A single view for local model traffic.", "Connection status and discovery scope.", "Request and measurement details without conversation content.", "Appearance and language preferences."],
+    subtitle: ["Less context. More headroom.", "Connect your coding tools to Headroom.", "Keep track of requests and measurements.", "Make Headroom feel like home."],
     engine: "Engine", connection: "Connection", compression: "Compression control",
     noConnection: "Not verified", compressionOff: "Not implemented",
     engineUnavailable: "Unavailable", engineUnknown: "Status unknown", engineStopped: "Stopped",
@@ -100,7 +101,7 @@ const copy = {
       config_conflict: "Preferences changed elsewhere. Read them again before retrying.",
     },
     bridgeUnavailable: "Desktop bridge unavailable", invalidSnapshot: "Local state response could not be validated", snapshotFailed: "Local state could not be read",
-    nativeSnapshot: "Local state updated", refresh: "Refresh status", footer: "LOCAL STATISTICS",
+    nativeSnapshot: "Local data", refresh: "Refresh status", footer: "Local measurements",
     loading: "Reading local state", systemTheme: "Follow system preference or choose an appearance.", interfaceLanguage: "Interface language.",
     commandErrors: {
       validation_failed: "The engine command could not be validated.", unsupported_protocol: "The engine control protocol is unsupported.",
@@ -208,7 +209,6 @@ export default function App() {
   const nav = labels.nav as string[];
   const headings = labels.headline as string[];
   const subtitles = labels.subtitle as string[];
-  const status = snapshot?.engine.status;
 
   async function loadSnapshot(isBackground = false) {
     const sequence = requestSequence.current.next();
@@ -419,25 +419,24 @@ export default function App() {
   return <div className="app-shell">
     <aside className="sidebar">
       <a className="brand" href="#overview" aria-disabled={applicationsBusy || pending !== null} onClick={(event) => { event.preventDefault(); navigate("overview"); }} aria-label={language === "tr" ? "Headroom genel bakış" : "Headroom overview"}>
-        <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
+        <HeadroomMark />
         <span>headroom<span className="brand-period">.</span></span>
       </a>
-      <div className="sidebar-label">{language === "tr" ? "ÇALIŞMA ALANI" : "WORKSPACE"}</div>
       <nav className="primary-nav" aria-label={language === "tr" ? "Ana gezinme" : "Primary navigation"}>
         {screenKey.map((key, index) => <button key={key} disabled={applicationsBusy || pending !== null} className={`nav-item ${screen === key ? "is-active" : ""}`} onClick={() => navigate(key)} aria-current={screen === key ? "page" : undefined}>
-          <span className={`nav-glyph glyph-${key}`} aria-hidden="true">{["◫", "▤", "◷", "⚙"][index]}</span><span>{nav[index]}</span>
+          <Icon name={key} className="nav-glyph" /><span>{nav[index]}</span>
         </button>)}
       </nav>
       <div className="sidebar-bottom">
-        <div className="local-mark"><span className="local-dot" />{labels.footer}</div>
-        <div className="build-label">DESKTOP · 0.1</div>
+        <div className="local-mark"><Icon name="shield" />{labels.footer}</div>
+        <span className="sidebar-note">{language === "tr" ? "Cihazında saklanır." : "Stored on this device."}</span>
       </div>
     </aside>
 
     <main className="main-panel">
       <header className="page-header">
-        <div><div className="eyebrow">{labels.eyebrow}</div><h1>{headings[screenKey.indexOf(screen)]}</h1><p>{subtitles[screenKey.indexOf(screen)]}</p></div>
-        <div className="header-status" aria-live="polite"><span className={`pulse-dot ${status === "ready" ? "is-ready" : ""}`} />{loading ? labels.loading : snapshot ? labels.nativeSnapshot : (language === "tr" ? "Yerel durum" : "Local state")}</div>
+        <div><h1>{headings[screenKey.indexOf(screen)]}</h1><p>{subtitles[screenKey.indexOf(screen)]}</p></div>
+        <div className="header-status" aria-live="polite"><Icon name="shield" />{loading ? labels.loading : snapshot ? labels.nativeSnapshot : (language === "tr" ? "Yerel durum" : "Local state")}</div>
       </header>
       <SnapshotNotice readIssue={readIssue} commandError={commandError} engineError={snapshot?.engine.error_code ?? null} onRetry={retrySnapshot} labels={labels} />
       {content}
@@ -459,7 +458,7 @@ function renderSettings(
   const preferencesBusy = preferencesStatus === "loading" || preferencesStatus === "saving";
   const preferencesUnavailable = preferencesBusy || preferencesStatus === "error";
   return <section className="settings-card">
-    <div className="settings-intro"><div className="panel-kicker">{language === "tr" ? "KİŞİSELLEŞTİRME" : "PERSONALIZATION"}</div><h2>{labels.settingsTitle}</h2><p>{labels.settingsBody}</p></div>
+    <div className="settings-intro"><span className="settings-icon"><Icon name="settings" /></span><div><h2>{labels.settingsTitle}</h2><p>{labels.settingsBody}</p></div></div>
     <label className="setting-row"><span><strong>{labels.theme}</strong><small>{labels.systemTheme}</small></span>
       <select aria-label={labels.theme} disabled={preferencesUnavailable} value={theme} onChange={(event) => onPreferencesChange({ theme: event.target.value as PreferenceTheme })}><option value="system">{labels.system}</option><option value="dark">{labels.dark}</option><option value="light">{labels.light}</option></select>
     </label>

@@ -15,14 +15,14 @@
 }
 
 .optimization-control__description {
-  min-height: 40px;
+  min-height: 44px;
   overflow-wrap: anywhere;
 }
 
 .optimization-control__primary {
   align-self: stretch;
-  min-height: 40px;
-  font-size: 13px;
+  min-height: 41px;
+  font-size: 12px;
 }
 
 .optimization-control__more p {

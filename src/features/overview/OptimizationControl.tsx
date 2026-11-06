@@ -1,5 +1,6 @@
 import type { OptimizationControlProps, OptimizationView } from "../../lib/optimization";
 import "./optimization-control.css";
+import { Icon } from "../../components/Icon";
 
 const copy = {
   tr: {
@@ -16,10 +17,10 @@ const copy = {
       unknown: "Bilinmiyor",
     },
     description: {
-      enabled: "Yeni istekler için sıkıştırma açık. İstemci trafiği ve tasarruf ayrıca kanıtlanır.",
-      paused: "Yeni sıkıştırma duraklatıldı. Mevcut istekler ve retrieval hizmeti korunur.",
+      enabled: "Yeni istekler sıkıştırılır. Yalnız Headroom’a yönlendirilen trafik işlenir.",
+      paused: "Yeni sıkıştırma duraklatıldı. Süren yanıtlar ve önceki içeriğe erişim devam eder.",
       ready: "Motor hazır; bu, tüm istemcilerin bağlı veya tasarrufun ölçülmüş olduğunu göstermez.",
-      stopped: "Motor durdu. Bağlantı ayarları bundan etkilenmez.",
+      stopped: "Başlatarak sıkıştırmayı etkinleştir. Bağlantı ayarların korunur.",
       starting: "Motor başlatılıyor; sıkıştırma durumu henüz doğrulanmadı.",
       stopping: "Motor durduruluyor; istemci trafiği ayrıca değerlendirilir.",
       failed: "Motor hata bildirdi; kayıtlı istemci ayarları ayrı durumdadır.",
@@ -38,7 +39,7 @@ const copy = {
       pause: "Duraklatılıyor…",
       resume: "Devam ediliyor…",
     },
-    more: "Diğer motor işlemleri",
+    more: "Motor seçenekleri",
     stop: "Motoru durdur",
     stopWarning: "Motoru durdurmak yönlendirmeyi geri almaz; bağlı uygulamalar bağlantı hatası alabilir.",
   },
@@ -56,10 +57,10 @@ const copy = {
       unknown: "Unknown",
     },
     description: {
-      enabled: "Compression is enabled for new requests. Client traffic and savings need separate evidence.",
-      paused: "New compression is paused. Current requests and retrieval remain available.",
+      enabled: "New requests are compressed. Only traffic routed through Headroom is processed.",
+      paused: "New compression is paused. Current responses and access to earlier content continue.",
       ready: "The engine is ready; this does not show that all clients are connected or savings are measured.",
-      stopped: "The engine is stopped. Connection settings are unaffected.",
+      stopped: "Start the engine to enable compression. Your connection settings stay in place.",
       starting: "The engine is starting; optimization status is not confirmed yet.",
       stopping: "The engine is stopping; client traffic is assessed separately.",
       failed: "The engine reported an error; saved client settings are separate.",
@@ -78,7 +79,7 @@ const copy = {
       pause: "Pausing…",
       resume: "Resuming…",
     },
-    more: "More engine actions",
+    more: "Engine options",
     stop: "Stop engine",
     stopWarning: "Stopping the engine does not undo routing; connected applications may report connection errors.",
   },
@@ -107,10 +108,10 @@ export function OptimizationControl({ language, view, onPrimary, onStop }: Optim
       {view.pauseUnavailable && <p className="optimization-control__description" role="status">{language==="tr"?"Bu çalışma için güvenli duraklatma doğrulanamıyor.":"Safe pause is unavailable for this runtime history."}</p>}
       <button className="overview__primary optimization-control__primary" type="button"
         aria-busy={pending} disabled={view.disabled || pending} onClick={onPrimary}>
-        {primaryLabel}
+        <Icon name={view.primary === "pause" ? "pause" : view.primary === "refresh" ? "refresh" : "play"} /><span>{primaryLabel}</span>
       </button>
       <details className="overview__engine-more optimization-control__more">
-        <summary>{text.more}</summary>
+        <summary>{text.more}<Icon name="chevron" /></summary>
         <p>{text.stopWarning}</p>
         <button type="button" disabled={!view.canStop || pending} onClick={onStop}>
           {view.pending === "stop" ? text.pending.stop : text.stop}

@@ -17,3 +17,7 @@ Kullanıcı asenkron konsept sorusuna **Graphite — koyu grafit ve mint** yanı
 Ivory ve Signal, karşılaştırılabilir tasarım alternatifleri olarak `outputs/ui-concepts/` içinde korunur. Üç farklı gezinme düzenini tek uygulamada tema adı altında desteklemek ilk sürüm kapsamını gereksiz büyütür; renk teması ile düzen konsepti ayrı kararlardır.
 
 Kaynaklar: `HEADROOM_DESKTOP_SPEC.md` bölüm 8, `UI_CONCEPTS.md`, `outputs/ui-concepts/graphite.html`.
+
+## 5 Kasım2026 — kullanıcının istediği tasarım yenilemesi
+
+Kullanıcı eski görünümü reddetti. Graphite/mint ailesi korunarak hiyerarşi, boşluk, tipografi, ikonlar ve dört ekranın sunumu yeniden kurulur; yukarıdaki eski palette/layout değerleri tarihsel kalır. Güncel görsel sözleşme [DESIGN.md](../../DESIGN.md) ve proje içi Emil design engineering rehberidir. UX001 mevcut işlevi görsel olarak yeniler; yeni hesap/sohbet özelliği veya H029 kabulü üretmez.

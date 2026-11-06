@@ -15,7 +15,7 @@ interface CoverageProps {
 
 const copy = {
   tr: {
-    title: "Gözlenen istek kapsamı",
+    title: "Uygulama ve model bazında",
     scope: "Yalnız kaydedilen istekler gösterilir; bu, tüm sağlayıcı trafiğini temsil etmez.",
     evidence: "Model ve sağlayıcı adları gözlenen etiketlerdir. Rota ve ajan ataması ayrı kanıt gerektirir.",
     clients: "İstemci ataması",
@@ -50,7 +50,7 @@ const copy = {
     empty: "Bu kapsamda grup satırı yok.",
   },
   en: {
-    title: "Observed request coverage",
+    title: "By application and model",
     scope: "Only recorded requests are shown; this may not represent all provider traffic.",
     evidence: "Model and provider names are observed labels. Route and agent assignment need separate evidence.",
     clients: "Client attribution",
@@ -172,6 +172,7 @@ export function Coverage({ language, summary }: CoverageProps) {
 
       <p className="coverage__evidence">{text.evidence}</p>
 
+      <details className="coverage__details"><summary>{language === "tr" ? "Kimlik ve kapsam ayrıntıları" : "Identity and coverage details"}</summary>
       <div className="coverage__status-grid">
         <div className={`coverage__status is-${summary.client_status}`}>
           <span>{text.clients}</span>
@@ -184,6 +185,7 @@ export function Coverage({ language, summary }: CoverageProps) {
           <small>{agentVerified} / {formatMetricNumber(summary.coverage.requests, language)} {text.requests}</small>
         </div>
       </div>
+      </details>
 
       {(summary.coverage.events > 0 || summary.coverage.conflicts > 0 || omitted > 0) && (
         <p className="coverage__meta">

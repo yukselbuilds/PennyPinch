@@ -1,5 +1,12 @@
 # Headroom Desktop — güncel devir
-5 Kasım 2026.
+6 Kasım2026.
+
+## UX001 — tasarım yenilemesi tamamlandı (6 Kasım2026)
+- Kullanıcı mevcut görünümü reddedip dört tasarım kaynağı verdi. Ana ajan art direction, UI uygulama, bağlı inceleme ve kabulü üstlendi; ek çalışan açılmadı. H029 başlamadı;27/51 ürün kabulü aynı. [Görsel sözleşme](../DESIGN.md), [kabul](proofs/ui-taste.md), [inceleme](reviews/UX001.md), TASKS UX001.
+- Emil design engineering yalnız `.agents/skills/emil-design-eng` içine sabit commit/MIT lisansıyla kuruldu; diğer üç kaynak bounded inceleme girdisidir. Global ayar/model/auth/runtime/ölçüm semantiği değiştirilmedi; yeni UI bağımlılığı yok.
+- İlk render gözle incelenip palette/boş alan/küçük yazılar tek düzeltme paketinde ele alındı. Son aday152 girdi: `render-build-2.json` ve `final-checks-1.json` aynı kaynak/araç/ortamla138 frontend/349 Rust PASS,6 opt-in ignored; fmt/build PASS. Kaynak değişmediğinden başarılı derlemeler tekrar edilmedi.
+- Native `b6f83419-3f3a-4833-a6e7-6d8071cb1224`: gerçek motor kontrolü/dört ekran ve izole full-App pending/error/örnek/0/negatif/mixed/stale, TR/EN/tema/klavye/reduced-motion/native125/150/100 PASS. Kritik seçicilerde min kontrast4.68:1. Ayrı temiz görseller `visual-runs/f392ab84-2f92-4177-8818-4369ba11f221`; pencere exit0/portlar kapalı/mevcut ayarlar aynı. Güncel kaynak/artefakt/rehber fingerprint'leri `work/proofs/taste/acceptance.json` içindedir.
+- Mixed fixture olay sayısı gerçek sözleşmeye uyarlandı; üretim ölçümü değişmedi. Soğuk motor başlangıcında kısa40s test beklemesi mevcut100s native/90s helper sözleşmesine uyarlandı; ürün timeout'u değişmedi, performans kabulü verilmedi. Örnek sayılar üründe yoktur. Windows10 yerel kabulü; diğer OS/canlı sağlayıcı/installer/uzun yük açık. Geliştirme tasarrufu ölçülmedi. Sıradaki H029 için kullanıcı devam mesajı beklenir.
 
 ## H028 ve ortak H011 güvenlik kabulü — tamamlandı
 -27/51; [plan016](decisions/016-safe-pause.md), [kabul](proofs/safe-pause.md), [inceleme](reviews/H028.md). Ana ajan motor snapshot/prefix/CCR, private kontrol sahipliği, helper/controller → Rust → IPC → UI bağı ve kabul sahibidir. H029 başlamadı; ana görev sonunda durulur.

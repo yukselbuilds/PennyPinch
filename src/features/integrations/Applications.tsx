@@ -12,6 +12,7 @@ import {
 import type { PreferenceLanguage } from "../../lib/preferences";
 import { ConnectDialog } from "./ConnectDialog";
 import { ConnectionStatus } from "./ConnectionStatus";
+import { Icon } from "../../components/Icon";
 import { connectionActionClient } from "../../lib/connectionActions";
 import type { ConnectionActionResult, ConnectionOwnership, ConnectionPlan } from "../../lib/contracts";
 
@@ -453,7 +454,7 @@ function ClientCard({
   const connectDisabled = mutationPending || !isDiscoveryAvailable();
   return <article role="listitem" className={`application-card ${state === "detected" ? "is-detected" : ""}`}>
     <header className="application-card__header">
-      <span className={`application-mark application-mark--${client.kind}`} aria-hidden="true">{client.mark}</span>
+      <span className={`application-mark application-mark--${client.kind}`} aria-hidden="true"><Icon name={client.kind === "codex" ? "terminal" : client.kind === "claude_code" ? "asterisk" : "code"}/></span>
       <div className="application-card__heading"><h2>{client.title}</h2><span className={`application-card__status ${state === "detected" ? "is-detected" : ""}`}>{status}</span></div>
     </header>
     {state === "detected" ? <ul className="application-installations">
