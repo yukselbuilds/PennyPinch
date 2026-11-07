@@ -97,6 +97,7 @@ _CONFIG_KEYS = frozenset(
         "learning_enabled",
         "output_shaper_enabled",
         "model_router_enabled",
+        "protected_tools",
     }
 )
 _SHIM_KEYS = frozenset({"active", "version", "prefix_tracker_sha256", "shim_sha256"})
@@ -210,6 +211,7 @@ def _validate_event_data(event: str, data: dict[str, Any]) -> None:
             raise ProtocolError("invalid_shape")
         if not isinstance(config, dict) or set(config) != _CONFIG_KEYS:
             raise ProtocolError("invalid_shape")
+        validate_protected_tools(config.get("protected_tools"))
         if not isinstance(shim, dict) or set(shim) != _SHIM_KEYS:
             raise ProtocolError("invalid_shape")
         if type(config.get("ttl_seconds")) is not int or any(
@@ -464,6 +466,22 @@ def _windows_consoleless() -> bool:
     return not bool(kernel32.GetConsoleWindow())
 
 
+def validate_protected_tools(value: Any) -> list[str]:
+    if (not isinstance(value, list) or len(value) > 32
+        or any(not isinstance(name, str) or not 1 <= len(name) <= 96
+               or any(not (c.isascii() and (c.isalnum() or c in "_-.:/")) for c in name) for name in value)
+        or value != sorted(set(value))):
+        raise ProtocolError("invalid_shape")
+    return value
+
+
+def protected_tools_from_environment() -> list[str]:
+    try:
+        return validate_protected_tools(json.loads(os.environ.get("HEADROOM_DESKTOP_PROTECTED_TOOLS", "[]")))
+    except (ValueError, TypeError):
+        raise ProtocolError("invalid_shape") from None
+
+
 def _safe_child_environment(state_root: Path) -> dict[str, str]:
     windows_root = os.environ.get("SystemRoot", r"C:\Windows")
     system_drive = os.environ.get("SystemDrive", "C:")
@@ -486,6 +504,7 @@ def _safe_child_environment(state_root: Path) -> dict[str, str]:
         "HOME": str(home),
         "APPDATA": str(appdata),
         "LOCALAPPDATA": str(localappdata),
+        "HEADROOM_DESKTOP_PROTECTED_TOOLS": json.dumps(protected_tools_from_environment()),
     }
 
 

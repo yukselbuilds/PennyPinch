@@ -64,7 +64,7 @@ function matches(r:ActivityRow,f:ActivityFilter):boolean {
 function list(v:Record<string,unknown>,period:MetricPeriod,filter:ActivityFilter):ActivitySnapshot|null {
   const d=v.data,c=decodeMetricCollection(v.collection);
   if(!utc(v.observed_at_utc)||!record(d)||!c||!uuid(d.monitoring_session_id)||d.period!==period||!(d.from_utc===null||utc(d.from_utc))||!utc(d.to_utc)
-    ||d.retention_days!==30||!record(d.coverage)||!count(d.matched_requests)||!count(d.shown_requests)||d.limit!==100
+    ||![7,30,90].includes(d.retention_days as number)||!record(d.coverage)||!count(d.matched_requests)||!count(d.shown_requests)||d.limit!==100
     ||d.shown_requests!==Math.min(d.matched_requests,100)||d.has_more!==(d.matched_requests>100)||!count(d.unplaced_requests)
     ||d.unplaced_requests>d.matched_requests||!Array.isArray(d.rows)||d.rows.length!==d.shown_requests)return null;
   const start=d.from_utc===null?-Infinity:Date.parse(d.from_utc),end=Date.parse(d.to_utc),cov=d.coverage;
@@ -78,7 +78,7 @@ function list(v:Record<string,unknown>,period:MetricPeriod,filter:ActivityFilter
     if(r.timestamp_utc===null)unplaced+=1;ids.add(r.origin_id);rows.push(r);
   }
   if(unplaced>d.unplaced_requests)return null;
-  const data:ActivityData={monitoring_session_id:d.monitoring_session_id,period,from_utc:d.from_utc,to_utc:d.to_utc,retention_days:30,
+  const data:ActivityData={monitoring_session_id:d.monitoring_session_id,period,from_utc:d.from_utc,to_utc:d.to_utc,retention_days:d.retention_days as number,
     coverage:{events:cov.events,distinct_origins:cov.distinct_origins,unplaced_events:cov.unplaced_events,complete_traffic:false,
       rolling_window:cov.rolling_window as boolean,aggregate_only:cov.aggregate_only as boolean,unidentified_rows_observed:cov.unidentified_rows_observed as boolean},
     matched_requests:d.matched_requests,shown_requests:d.shown_requests,limit:100,has_more:d.has_more as boolean,unplaced_requests:d.unplaced_requests,rows};

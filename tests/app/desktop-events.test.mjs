@@ -16,6 +16,7 @@ function snapshot(id = requestId, overrides = {}) {
     request_id: id,
     status: "snapshot",
     tray_available: true,
+    close_to_tray: true,
     exit_state: "idle",
     exit_token: null,
     ...overrides,

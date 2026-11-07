@@ -1,5 +1,7 @@
 # 012 — Yerel metrik deposu ve dönem sorgusu
 
+7 Kasım H031 eki: varsayılan30 korunarak7/30/90 kullanıcı tercihi eklendi. SQLite schema2, ölçümler korunarak schema1'den taşınır; tek cutoff eski tarihli replay'in süre uzatılınca dönmesini önler. Aşağıdaki ilk H024 kabulü tarihseldir; güncel karar [019](019-operating-preferences.md).
+
 4 Kasım 2026. H024 uygulayıcısı ana ajan; kalıcı kayıt ve ölçüm semantiğinin sahibi ana ajandır. Tek Luna xhigh çalışanı yalnız sabitlenmiş ağırlıklı toplam sözleşmesinin birim testlerini yazar.
 
 ## Kapsam ve sınırlar

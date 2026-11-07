@@ -11,6 +11,7 @@ pub(crate) struct Lifecycle(Mutex<State>);
 #[derive(Default)]
 struct State {
     tray_available: bool,
+    confirm_on_close: bool,
     confirmation: Option<String>,
     exiting: bool,
 }
@@ -23,6 +24,7 @@ pub(crate) enum Reply {
         request_id: String,
         status: &'static str,
         tray_available: bool,
+        close_to_tray: bool,
         exit_state: &'static str,
         exit_token: Option<String>,
     },
@@ -71,6 +73,7 @@ impl State {
             request_id: request_id.to_owned(),
             status: "snapshot",
             tray_available: self.tray_available,
+            close_to_tray: !self.confirm_on_close,
             exit_state: if self.exiting {
                 "shutting_down"
             } else if self.confirmation.is_some() {
@@ -84,6 +87,12 @@ impl State {
 }
 
 impl Lifecycle {
+    pub(crate) fn set_close_to_tray(&self, enabled: bool) {
+        self.0
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .confirm_on_close = !enabled;
+    }
     pub(crate) fn set_tray_available(&self, available: bool) {
         self.0
             .lock()
@@ -142,7 +151,7 @@ impl Lifecycle {
     }
     pub(crate) fn hide_on_close(&self) -> bool {
         let mut state = self.0.lock().unwrap_or_else(|e| e.into_inner());
-        if state.exiting || !state.tray_available {
+        if state.exiting || !state.tray_available || state.confirm_on_close {
             return false;
         }
         state.confirmation = None;
@@ -229,5 +238,21 @@ mod tests {
         assert_eq!(reply["request_id"], Uuid::nil().to_string());
         assert_eq!(reply["error"]["code"], "validation_failed");
         assert_eq!(value(life.snapshot(&id()))["exit_state"], "idle");
+    }
+
+    #[test]
+    fn operating_close_preference_requires_confirmation_without_stopping_on_cancel() {
+        let life = Lifecycle::default();
+        life.set_tray_available(true);
+        life.set_close_to_tray(false);
+        assert!(!life.hide_on_close());
+        let token = value(life.request(&id()))["exit_token"]
+            .as_str()
+            .unwrap()
+            .to_owned();
+        assert_eq!(value(life.cancel(&id(), &token))["exit_state"], "idle");
+        assert!(!life.is_exiting());
+        life.set_close_to_tray(true);
+        assert!(life.hide_on_close());
     }
 }

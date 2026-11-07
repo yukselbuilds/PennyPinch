@@ -54,6 +54,116 @@ fn insert(store: &MetricsStore, values: &[Observation]) -> Result<IngestResult, 
 }
 
 #[test]
+fn operating_retention_is_shared_by_ingest_overview_activity_and_reopen() {
+    use crate::state::store::{OperatingPreferences, PreferenceStore, PreferencesReply};
+    let path = fixture_root();
+    let project =
+        fs::canonicalize(PathBuf::from(env!("CARGO_MANIFEST_DIR")).parent().unwrap()).unwrap();
+    let relative = fs::canonicalize(path.parent().unwrap())
+        .unwrap()
+        .strip_prefix(&project)
+        .unwrap()
+        .join("preferences");
+    let prefs = PreferenceStore::for_test(project, relative).unwrap();
+    let save = |days| {
+        let PreferencesReply::Snapshot(current) = prefs.get_preferences(Uuid::new_v4().to_string())
+        else {
+            panic!("preference read")
+        };
+        assert!(matches!(
+            prefs.save_with_operating(
+                Uuid::new_v4().to_string(),
+                "tr".into(),
+                "system".into(),
+                Some(OperatingPreferences {
+                    retention_days: days,
+                    ..Default::default()
+                }),
+                current.revision,
+                current.state_fingerprint
+            ),
+            PreferencesReply::Snapshot(_)
+        ));
+    };
+    save(90);
+    let store = MetricsStore::in_directory(&path).with_preferences(prefs.clone());
+    let values = [
+        observation("age50", "2026-09-15T08:00:00Z"),
+        observation("age20", "2026-10-15T08:00:00Z"),
+        observation("age3", "2026-11-01T08:00:00Z"),
+    ];
+    assert_eq!(insert(&store, &values).unwrap().inserted, 3);
+    assert_eq!(
+        store
+            .query_at(Period::Session, now())
+            .unwrap()
+            .coverage
+            .events,
+        3
+    );
+    save(30);
+    let queried = store.query_at(Period::Session, now()).unwrap();
+    assert_eq!(queried.retention_days, 30);
+    assert_eq!(queried.coverage.events, 2);
+    save(7);
+    let activity = store
+        .activity_at(Period::Session, &Default::default(), now())
+        .unwrap();
+    assert_eq!(activity.retention_days, 7);
+    assert_eq!(activity.coverage.events, 1);
+    let reopened = MetricsStore::in_directory(&path).with_preferences(prefs.clone());
+    assert_eq!(
+        reopened
+            .query_at(Period::SevenDays, now())
+            .unwrap()
+            .retention_days,
+        7
+    );
+    save(90);
+    let widened = store.query_at(Period::Session, now()).unwrap();
+    assert_eq!(widened.retention_days, 90);
+    assert_eq!(widened.coverage.events, 1);
+    assert_eq!(
+        insert(&store, &values[..1]).unwrap().inserted,
+        0,
+        "pruned origins must not be reimported"
+    );
+}
+
+#[test]
+fn operating_retention_migrates_schema_one_without_changing_existing_measurements() {
+    let root = fixture_root();
+    let store = MetricsStore::in_directory(&root);
+    insert(&store, &[observation("migration", "2026-11-04T08:00:00Z")]).unwrap();
+    let conn = Connection::open(root.join("metrics.sqlite3")).unwrap();
+    let before: String = conn
+        .query_row("SELECT payload FROM events", [], |r| r.get(0))
+        .unwrap();
+    conn.execute_batch("DROP TABLE retention_floor; PRAGMA user_version=1;")
+        .unwrap();
+    drop(conn);
+    let reopened = MetricsStore::in_directory(&root);
+    assert_eq!(
+        reopened
+            .query_at(Period::Today, now())
+            .unwrap()
+            .coverage
+            .events,
+        1
+    );
+    let conn = Connection::open(root.join("metrics.sqlite3")).unwrap();
+    assert_eq!(
+        conn.pragma_query_value(None, "user_version", |r| r.get::<_, i64>(0))
+            .unwrap(),
+        2
+    );
+    let after: String = conn
+        .query_row("SELECT payload FROM events", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(before, after);
+}
+
+#[test]
 fn metrics_store_missing_read_is_passive_and_unknown_not_zero() {
     let root = fixture_root();
     let result = MetricsStore::in_directory(&root)

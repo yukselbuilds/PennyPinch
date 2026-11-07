@@ -124,9 +124,9 @@ const EXPECTED_ENGINE_VERSION: &str = "0.41.0";
 const EXPECTED_MANIFEST_SHA256: &str =
     "4217e8f67946c96caa028e0a0d4e9a41e2e6894e4cafcd7e23adb00ad7cd1c03";
 const EXPECTED_CONTROLLER_SHA256: &str =
-    "8750f60c79a0b59d070ec53e81abe358f8a068765c18418de681145af94f62b0";
+    "11bbb66bf64dbc60861450c271df132cc4bf9033a74b2f0a5b8727c43c9b2ef5";
 const EXPECTED_HELPER_SHA256: &str =
-    "11b35423d891edb5b077fb5d09f3477437c2e6b157d19f5f430e870dd6ecb5c0";
+    "1c137dff0164ca90332281e88b0f7dd51e8c4bd7076c61f8562cf31379fedde1";
 const EXPECTED_SHIM_SHA256: &str =
     "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1";
 const EXPECTED_OPTIMIZATION_SHA256: &str =
@@ -456,6 +456,7 @@ impl EngineStatus {
 
 #[derive(Clone)]
 struct RuntimeView {
+    protected_tools: Option<Vec<String>>,
     optimization: Option<OptimizationState>,
     status: EngineStatus,
     error_code: Option<&'static str>,
@@ -473,6 +474,7 @@ impl RuntimeView {
     fn new(status: EngineStatus) -> Self {
         Self {
             optimization: None,
+            protected_tools: None,
             status,
             error_code: None,
             cleanup_uncertain: false,
@@ -825,6 +827,7 @@ fn map_ingress_error(error: super::ingress::IngressError) -> PublicError {
 
 #[derive(Clone)]
 struct RuntimeLayout {
+    preferences: Option<crate::state::store::PreferenceStore>,
     boundary_root: PathBuf,
     state_boundary_root: PathBuf,
     runtime_root: PathBuf,
@@ -907,6 +910,7 @@ impl RuntimeLayout {
         }
         Ok(Self {
             boundary_root,
+            preferences: None,
             state_boundary_root,
             runtime_root,
             manifest_path,
@@ -996,6 +1000,12 @@ impl RuntimeLayout {
             workspace,
             config,
             python_path: python,
+            protected_tools: self.preferences.as_ref().map_or(Ok(Vec::new()), |store| {
+                store
+                    .operating()
+                    .map(|p| p.protected_tools)
+                    .map_err(|_| PublicError::ConfigConflict)
+            })?,
         })
     }
 }
@@ -1104,6 +1114,7 @@ fn validate_manifest(manifest: &RuntimeManifest) -> Result<(), PublicError> {
 }
 
 struct VerifiedRuntime {
+    protected_tools: Vec<String>,
     payload_root: PathBuf,
     manifest_path: PathBuf,
     controller_path: PathBuf,
@@ -1359,6 +1370,7 @@ impl std::fmt::Debug for ControlSecret {
 }
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct ReadyInfo {
+    protected_tools: Vec<String>,
     control_secret: ControlSecret,
     generation: String,
     helper_pid: u32,
@@ -1423,6 +1435,7 @@ fn parse_controller_ready(
         "learning_enabled",
         "output_shaper_enabled",
         "model_router_enabled",
+        "protected_tools",
     ];
     if !exact_keys(config, CONFIG_KEYS)
         || string_value(config, "mode")? != "cache"
@@ -1434,6 +1447,16 @@ fn parse_controller_ready(
         || bool_value(config, "learning_enabled")?
         || bool_value(config, "output_shaper_enabled")?
         || bool_value(config, "model_router_enabled")?
+    {
+        return Err(PublicError::ConfigConflict);
+    }
+    let protected_tools: Vec<String> = serde_json::from_value(config["protected_tools"].clone())
+        .map_err(|_| PublicError::UnsupportedProtocol)?;
+    if !(crate::state::store::OperatingPreferences {
+        protected_tools: protected_tools.clone(),
+        ..Default::default()
+    })
+    .is_valid()
     {
         return Err(PublicError::ConfigConflict);
     }
@@ -1464,6 +1487,7 @@ fn parse_controller_ready(
         return Err(PublicError::ConfigConflict);
     }
     Ok(ReadyInfo {
+        protected_tools,
         control_secret: ControlSecret(string_value(control, "control_token")?.to_owned()),
         generation: string_value(&value, "runtime_generation")?.to_owned(),
         helper_pid: u32::try_from(helper_pid).map_err(|_| PublicError::UnsupportedProtocol)?,
@@ -1754,6 +1778,7 @@ fn safe_environment(state_root: &Path) -> Result<Vec<(String, String)>, PublicEr
 }
 
 struct ControllerSession {
+    protected_tools: Vec<String>,
     control_secret: ControlSecret,
     optimization: Option<OptimizationState>,
     child: Child,
@@ -1861,6 +1886,11 @@ impl ControllerSession {
             .current_dir(&verified.payload_root)
             .env_clear()
             .envs(environment)
+            .env(
+                "HEADROOM_DESKTOP_PROTECTED_TOOLS",
+                serde_json::to_string(&verified.protected_tools)
+                    .map_err(|_| PublicError::ValidationFailed)?,
+            )
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
@@ -1974,7 +2004,10 @@ impl ControllerSession {
                 diagnostic.listener_owner_match = Some(listener_owner_match);
             });
             let ownership_verified = process_chain_valid && listener_owner_match;
-            if !ownership_verified || !probe_ready(ready.listener_port, EXPECTED_ENGINE_VERSION) {
+            if !ownership_verified
+                || ready.protected_tools != verified.protected_tools
+                || !probe_ready(ready.listener_port, EXPECTED_ENGINE_VERSION)
+            {
                 let error = if ownership_verified {
                     PublicError::EngineNotReady
                 } else {
@@ -2027,6 +2060,7 @@ impl ControllerSession {
             #[cfg(test)]
             set_startup_diagnostic_stage("controller_session_ready");
             let mut session = Self {
+                protected_tools: ready.protected_tools,
                 control_secret: ready.control_secret,
                 optimization: None,
                 child,
@@ -3654,6 +3688,35 @@ impl RuntimeManager {
         Self::from_layout(RuntimeLayout::resolve(resource_dir, app_data_dir))
     }
 
+    pub(crate) fn with_preferences(
+        resource_dir: Option<PathBuf>,
+        app_data_dir: Option<PathBuf>,
+        preferences: crate::state::store::PreferenceStore,
+    ) -> Self {
+        Self::from_layout(
+            RuntimeLayout::resolve(resource_dir, app_data_dir).map(|mut layout| {
+                layout.preferences = Some(preferences);
+                layout
+            }),
+        )
+    }
+
+    pub(crate) fn settings_observation(&self) -> Value {
+        let mut view = self.view.write().unwrap_or_else(|e| e.into_inner());
+        expire_stale_ready_view(&mut view, Instant::now());
+        let verified = view.status == EngineStatus::Ready && view.protected_tools.is_some();
+        serde_json::json!({
+            "status": if verified { "verified" } else if view.status == EngineStatus::Stopped { "inactive" } else { "unknown" },
+            "runtime_generation": if verified { view.runtime_generation.clone() } else { None },
+            "protected_tools": if verified { view.protected_tools.clone() } else { None },
+            "local_stats_enabled": if verified { Some(true) } else { None },
+            "beacon_enabled": if verified { Some(false) } else { None },
+            "mode": if verified { Some("cache") } else { None },
+            "savings_profile": if verified { Some("coding") } else { None },
+            "ccr_ttl_seconds": if verified { Some(7200_u32) } else { None }
+        })
+    }
+
     #[cfg(test)]
     pub(crate) fn isolated_for_test(state_root: PathBuf) -> Self {
         let project = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -4033,6 +4096,7 @@ fn set_ready_view(view: &Arc<RwLock<RuntimeView>>, session: &ControllerSession) 
         session.engine_pid,
         session.last_health,
         session.optimization,
+        session.protected_tools.clone(),
     );
 }
 
@@ -4043,6 +4107,7 @@ fn mark_ready_view(
     listener_owner_pid: u32,
     last_health: Instant,
     optimization: Option<OptimizationState>,
+    protected_tools: Vec<String>,
 ) {
     write_view(view, |state| {
         state.status = EngineStatus::Ready;
@@ -4054,6 +4119,7 @@ fn mark_ready_view(
         state.listener_owner_pid = Some(listener_owner_pid);
         state.last_health = Some(last_health);
         state.optimization = optimization;
+        state.protected_tools = Some(protected_tools);
     });
 }
 
@@ -4552,3 +4618,7 @@ fn run_actor(
 #[cfg(test)]
 #[path = "manager_tests.rs"]
 mod tests;
+
+#[cfg(all(test, windows))]
+#[path = "settings_live.rs"]
+mod operating_live;

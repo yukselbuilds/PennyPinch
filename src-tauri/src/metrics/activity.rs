@@ -9,7 +9,6 @@ use super::query::{aggregate_event_refs, MetricSummary};
 use super::request_metadata::{Outcome, RequestMetadata};
 use super::store::{
     Coverage, MetricsError, MetricsFailure, MetricsQueryRequest, MetricsStore, Period,
-    RETENTION_DAYS,
 };
 use chrono::{DateTime, SecondsFormat, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
@@ -340,7 +339,7 @@ impl MetricsStore {
             period,
             from_utc: s.from.map(utc),
             to_utc: utc(s.now),
-            retention_days: RETENTION_DAYS,
+            retention_days: s.retention_days,
             coverage: s.coverage,
             matched_requests,
             shown_requests: rows.len() as u64,

@@ -6,6 +6,20 @@ export type PreferenceTheme = "system" | "light" | "dark";
 export interface UserPreferences {
   language: PreferenceLanguage;
   theme: PreferenceTheme;
+  operating: OperatingPreferences;
+}
+
+export interface OperatingPreferences {
+  close_to_tray: boolean;
+  retention_days: 7 | 30 | 90;
+  protected_tools: string[];
+}
+export const defaultOperatingPreferences = (): OperatingPreferences => ({close_to_tray:true,retention_days:30,protected_tools:[]});
+export function decodeOperatingPreferences(value: unknown): OperatingPreferences | null {
+  if (!isRecord(value) || !hasExactKeys(value,["close_to_tray","retention_days","protected_tools"])
+    ||typeof value.close_to_tray!=="boolean"||![7,30,90].includes(value.retention_days as number)||!Array.isArray(value.protected_tools)
+    ||value.protected_tools.length>32||!value.protected_tools.every((name,index,all)=>typeof name==="string"&&/^[a-zA-Z0-9_.:/-]{1,96}$/.test(name)&&(index===0||all[index-1]<name)))return null;
+  return {close_to_tray:value.close_to_tray,retention_days:value.retention_days as 7|30|90,protected_tools:[...value.protected_tools]};
 }
 
 export interface RuntimeManifestReference {
@@ -103,10 +117,11 @@ function isFingerprint(value: unknown): value is string {
 }
 
 function decodePreferences(value: unknown): UserPreferences | null {
-  if (!isRecord(value) || !hasExactKeys(value, ["language", "theme"])) return null;
+  if (!isRecord(value) || !(hasExactKeys(value, ["language", "theme"]) || hasExactKeys(value,["language","theme","operating"]))) return null;
   if ((value.language !== "tr" && value.language !== "en") ||
       (value.theme !== "system" && value.theme !== "light" && value.theme !== "dark")) return null;
-  return { language: value.language, theme: value.theme };
+  const operating=Object.hasOwn(value,"operating")?decodeOperatingPreferences(value.operating):defaultOperatingPreferences();
+  return operating?{ language: value.language, theme: value.theme, operating }:null;
 }
 
 function decodeManifest(value: unknown): RuntimeManifestReference | null {
@@ -196,6 +211,7 @@ export function createPreferencesClient(options: ClientOptions) {
       return invokePreferences("save_preferences", {
         language: preferences.language,
         theme: preferences.theme,
+        ...(Object.hasOwn(preferences,"operating")?{operating:preferences.operating}:{}),
         expectedRevision,
         expectedFingerprint,
       });

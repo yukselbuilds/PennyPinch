@@ -7,6 +7,108 @@ use uuid::Uuid;
 
 const REQUEST_ID: &str = "7132bced-3ce0-4c1b-8f48-d93d7b96f7ce";
 
+#[test]
+fn operating_preferences_migrate_without_rewrite_and_legacy_save_preserves_them() {
+    use super::store::OperatingPreferences;
+    let fixture = Fixture::new();
+    snapshot(fixture.store.save_preferences(
+        REQUEST_ID.into(),
+        "en".into(),
+        "dark".into(),
+        0,
+        None,
+    ));
+    let path = fixture.store.file_path_for_test();
+    let mut legacy: serde_json::Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+    legacy["preferences"]
+        .as_object_mut()
+        .unwrap()
+        .remove("operating");
+    let original = serde_json::to_vec(&legacy).unwrap();
+    fs::write(&path, &original).unwrap();
+    let read = snapshot(fixture.store.get_preferences(REQUEST_ID.into()));
+    assert_eq!(read.preferences.operating, OperatingPreferences::default());
+    assert_eq!(fs::read(&path).unwrap(), original);
+    let wanted = OperatingPreferences {
+        close_to_tray: false,
+        retention_days: 90,
+        protected_tools: vec!["ReadExact".into(), "mcp__local__report".into()],
+    };
+    let saved = snapshot(fixture.store.save_with_operating(
+        REQUEST_ID.into(),
+        "en".into(),
+        "dark".into(),
+        Some(wanted.clone()),
+        read.revision,
+        read.state_fingerprint.clone(),
+    ));
+    let bytes = fs::read(&path).unwrap();
+    assert_eq!(
+        error_code(fixture.store.save_with_operating(
+            REQUEST_ID.into(),
+            "en".into(),
+            "dark".into(),
+            Some(Default::default()),
+            read.revision,
+            read.state_fingerprint
+        )),
+        "config_conflict"
+    );
+    assert_eq!(fs::read(&path).unwrap(), bytes);
+    let reopened =
+        PreferenceStore::for_test(fixture.project_root.clone(), fixture.relative_root.clone())
+            .unwrap();
+    let theme = snapshot(reopened.save_preferences(
+        REQUEST_ID.into(),
+        "tr".into(),
+        "light".into(),
+        saved.revision,
+        saved.state_fingerprint,
+    ));
+    assert_eq!(theme.preferences.operating, wanted);
+    let mut invalid = wanted;
+    invalid.protected_tools.push("bad name".into());
+    let before = fs::read(&path).unwrap();
+    assert_eq!(
+        error_code(reopened.save_with_operating(
+            REQUEST_ID.into(),
+            "tr".into(),
+            "light".into(),
+            Some(invalid),
+            theme.revision,
+            theme.state_fingerprint
+        )),
+        "validation_failed"
+    );
+    assert_eq!(fs::read(&path).unwrap(), before);
+    fixture.cleanup();
+}
+
+#[test]
+fn operating_preferences_reject_unbounded_unsorted_or_duplicate_tool_names() {
+    use super::store::OperatingPreferences;
+    for names in [
+        vec!["".into()],
+        vec!["b".into(), "a".into()],
+        vec!["a".into(), "a".into()],
+        vec!["x".repeat(97)],
+        vec!["é".into()],
+        vec!["a,b".into()],
+        (0..33).map(|i| format!("tool{i:02}")).collect(),
+    ] {
+        assert!(!OperatingPreferences {
+            protected_tools: names,
+            ..Default::default()
+        }
+        .is_valid());
+    }
+    assert!(!OperatingPreferences {
+        retention_days: 0,
+        ..Default::default()
+    }
+    .is_valid());
+}
+
 struct Fixture {
     project_root: PathBuf,
     relative_root: PathBuf,

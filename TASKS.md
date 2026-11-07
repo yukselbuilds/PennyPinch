@@ -4,7 +4,7 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H011, H013–H030, H040, H046 ve **H047 tamamlandı:29/51.** H030 sistem tepsisi ve kapanış kabul edildi; H031 başlamadı, ana görev sonunda duruldu. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
+**Durum:** H001–H005, H007–H008, H011, H013–H031, H040, H046 ve **H047 tamamlandı:30/51.** H031 çalışma tercihleri kabul edildi; H032 başlamadı, ana görev sonunda duruldu. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
@@ -17,7 +17,7 @@
 - **Kabul:** [DESIGN.md](DESIGN.md) içindeki boş/gerçek/örnek veri ayrımı, tema/dil/ölçek/klavye, native render ve son yerel kalite kapısı. Ana ajan art direction/uygulama/inceleme sahibi; H029 başlamaz. Sahte tasarruf veya hesap/sohbet işlevi eklenmez.
 - **Durum:**6 Kasım tamamlandı. Emil design engineering yalnız projeye, immutable commit/MIT lisansıyla kuruldu; diğer üç kaynak incelendi.138 frontend/349 Rust PASS,6 opt-in ignored; aynı152 girdili derleme/test blokları ve gerçek native kontroller PASS. [Kanıt](docs/proofs/ui-taste.md), [inceleme](docs/reviews/UX001.md). Yerel Windows10; örnek veriler gerçek tasarruf değildir. Görev sonunda durulur.
 
-Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028–H030 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H031 başlamadı; kullanıcı devam mesajı beklenir.
+Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028–H031 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H032 başlamadı; kullanıcı devam mesajı beklenir.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -471,11 +471,14 @@ flowchart TD
 - **Dosyalar:** `src-tauri/src/desktop/tray.rs`, `src-tauri/src/desktop/lifecycle.rs`, `src/lib/desktop-events.ts`.
 
 ### H031 — Kullanıcı ayarları ve başlangıç tercihi
-- [ ] İsteğe bağlı Windows başlangıcı, veri saklama ve çalışma tercihleri uygulanır.
+- **Durum:**7 Kasım tamamlandı; [plan019](docs/decisions/019-operating-preferences.md), [kabul](docs/proofs/operating-preferences.md), [inceleme](docs/reviews/H031.md). Ana ajan kalıcı kayıt/OS sahipliği/retention ve motor kabulü; tek Luna frontend/client testi sahibi, root devraldı.30/51; H032 başlamadı.
+- [x] İsteğe bağlı Windows başlangıcı, veri saklama ve çalışma tercihleri uygulanır.
+- **Kanıt:**153 frontend/362 Rust PASS,8 opt-in ignored; fmt/TS/Vite/native build, Python ve ek gerçek pinned-engine testi PASS. İki araç/iki generation'da58.800'er bayt sayısal çıktı tam; stats açık/beacon kapalı. Native Sky mouse ile iki yönde save/reopen/onay-ESC/gizle PASS; state geri yüklendi.26 kontrol171 kaynak/config ile son artefact/ortamı bağlar (`work/proofs/settings/acceptance.json`).
+- **Sınır:** Startup aç/kapat/foreign/stale/komşu-değer testi gerçek Windows API'siyle izole HKCU anahtarında; gerçek Run değişmedi. Gerçek login/reboot, Windows11/diğer OS ve installer kanıtı değildir; ücretsiz Windows11 istisnası korunur. Geliştirme tasarrufu ölçülmedi.
 - **Kabul:** Kullanıcı seçimi olmadan başlangıç görevi yok; yerel stats açık/beacon kapalı doğrulanır; uygulama ayar değişikliğinin etkisini gösterir. Gelişmiş korumalı araç listesi doğrulanmış motor ayarına bağlanır; değişikliğin etkilediği bağlantı/motor grubu bellidir. Sentetik test aracı üretim varsayılanı yapılmaz.
 - **Doğrulama:** Aç/kapat/yeniden aç senaryoları ve etkin motor ayarlarıyla karşılaştırma.
 - **Bağımlılık / boyut:** H030 / M.
-- **Dosyalar:** `src/features/settings/Settings.tsx`, `src-tauri/src/desktop/autostart.rs`, `src/lib/preferences.ts`, `src/features/settings/Settings.test.tsx`.
+- **Dosyalar:** `src/features/settings/Settings.tsx`, `src-tauri/src/desktop/autostart.rs`, `src/lib/preferences.ts`, `src/lib/operatingSettings.ts`, `tests/app/operating-settings.test.mjs`, `src-tauri/src/runtime/settings_live.rs` ve ilgili store/lifecycle yolları.
 
 ### H032 — Açık/koyu tema ve iki dil
 - [ ] Seçilen tasarım her iki tema ve Türkçe/İngilizce metinlerle tamamlanır.
@@ -688,4 +691,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**29/51 tamam; H030 sistem tepsisi ve kapanış kabulü kapandı.**146 frontend/356 Rust PASS,7 opt-in ignored; fmt/TS/Vite/native build ve43 toplu kaynak/artifact bağlama kontrolü PASS. Gerçek native pencere gizleme/açık SSE, normal exit0, stuck/exit1/no replay, owned engine kaybı ve Sky ESC/Tab/Enter doğrulandı. Kullanıcının gerçek tepsi denemesi ve ana ajanın son Açık/Duraklat gözlemi `manual-final.json`/`closeout.json` ile bağlandı; eşleşen kaynak/binary/dist/araç/OS nedeniyle testler tekrarlanmadı. [Kabul](docs/proofs/tray-lifecycle.md), [inceleme](docs/reviews/H030.md). Sıradaki H031 başlamadı; kullanıcı devam mesajı beklenir. Windows11 ücretli koşusu skipped/not_tested; yerel fixture sonuçları canlı sağlayıcı/model tasarrufu veya diğer OS desteği değildir. H041 API-key/uzun yük ve H038 installer/tokenizer paketleme açık; güncel devir `docs/IMPLEMENTATION_STATUS.md`.
+**30/51 tamam; H031 çalışma tercihleri kabulü kapandı.**153 frontend/362 Rust PASS,8 opt-in ignored; fmt/TS/Vite/native build, Python, ek gerçek motor ve native Sky kabulü PASS.7/30/90 metadata saklama, tepsi seçimi, gerçek engine ack'li araç listesi ve ayrı kullanıcı eylemli Windows başlangıcı hazır.26 kontrol171 kaynak/config ile son artefact/ortamı bağladı; gerçek Run ve test öncesi state korundu. [Kabul](docs/proofs/operating-preferences.md), [inceleme](docs/reviews/H031.md). Sıradaki H032 başlamadı; kullanıcı devam mesajı beklenir. Gerçek login/reboot ve Windows11/diğer OS doğrulanmadı; ücretli Windows11 istisnası korunur. H041 API-key/uzun yük ve H038 installer/tokenizer paketleme açık; güncel devir `docs/IMPLEMENTATION_STATUS.md`.

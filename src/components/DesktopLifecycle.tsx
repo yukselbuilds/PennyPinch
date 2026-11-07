@@ -16,6 +16,7 @@ const copy = {
   tr: {
     trayAvailable: "X tepside çalışmayı sürdürür.",
     trayUnavailable: "Tepsi kullanılamıyor; pencere kapanışı çıkış onayı ister.",
+    confirmOnClose: "Pencereyi kapatırken çıkış onayı sorulur.",
     trayUnknown: "Tepsi durumu bilinmiyor.",
     exit: "Headroom’dan çık",
     title: "Headroom’dan çıkılsın mı?",
@@ -43,6 +44,7 @@ const copy = {
   en: {
     trayAvailable: "Closing the window keeps Headroom running in the tray.",
     trayUnavailable: "The tray is unavailable; closing the window asks before exiting.",
+    confirmOnClose: "Closing the window asks before exiting.",
     trayUnknown: "Tray status is unknown.",
     exit: "Exit Headroom",
     title: "Exit Headroom?",
@@ -229,7 +231,7 @@ export function DesktopLifecycle({ language, blocked }: { language: PreferenceLa
   const error = actionFailure ?? readFailure;
   const stateText = loading && !snapshot ? (language === "tr" ? "Tepsi durumu okunuyor…" : "Reading tray status…")
     : !fresh ? text.trayUnknown
-    : snapshot?.tray_available ? text.trayAvailable : text.trayUnavailable;
+    : snapshot?.tray_available ? snapshot.close_to_tray ? text.trayAvailable : text.confirmOnClose : text.trayUnavailable;
   const confirming = pending !== null || snapshot?.exit_state === "shutting_down";
   const tokenUsable = fresh && snapshot?.exit_state === "confirmation_required" && snapshot.exit_token !== null;
   const canConfirm = tokenUsable && !blocked && pending === null;
@@ -253,7 +255,7 @@ export function DesktopLifecycle({ language, blocked }: { language: PreferenceLa
         <span className="desktop-exit-dialog__eyebrow">Headroom</span>
         <h2 id="desktop-exit-title">{text.title}</h2>
         <div id="desktop-exit-explanation" className="desktop-exit-dialog__copy">
-          <p>{text.engine}</p><p>{text.routing}</p><p>{text.clients}</p><p>{text.streams}</p><p>{text.closeWindow}</p>
+          <p>{text.engine}</p><p>{text.routing}</p><p>{text.clients}</p><p>{text.streams}</p><p>{snapshot?.tray_available && snapshot.close_to_tray ? text.closeWindow : text.confirmOnClose}</p>
         </div>
         {blocked && <p className="desktop-exit-dialog__blocked" role="status">{text.blocked}</p>}
         {error && <p className="desktop-exit-dialog__error" role="alert">{text.errors[error]}</p>}

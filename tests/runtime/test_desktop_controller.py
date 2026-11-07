@@ -24,6 +24,7 @@ from runtime.desktop_controller import (
     encode_frame,
     validate_runtime_profile,
     verify_runtime_files,
+    validate_protected_tools,
 )
 
 
@@ -43,6 +44,12 @@ class _IncompleteHelperStream:
 
 
 class DesktopProtocolTests(unittest.TestCase):
+    def test_protected_tool_boundary_is_bounded_sorted_and_not_a_shell_expression(self):
+        self.assertEqual(validate_protected_tools(["ReadExact", "mcp__local__data"]),["ReadExact", "mcp__local__data"])
+        for invalid in (None, "ReadExact", [""], ["bad name"], ["é"], ["a", "a"], ["z", "a"], ["x"*97], [f"t{i:02}" for i in range(33)]):
+            with self.assertRaises(ProtocolError):
+                validate_protected_tools(invalid)
+
     def test_stalled_helper_frame_has_a_bounded_timeout(self):
         child = subprocess.Popen(
             [sys.executable, "-I", "-c", "import time; time.sleep(30)"],
@@ -330,6 +337,7 @@ class DesktopRuntimeSmokeTests(unittest.TestCase):
                     "learning_enabled": False,
                     "output_shaper_enabled": False,
                     "model_router_enabled": False,
+                    "protected_tools": [],
                 },
             )
             shim = ready.get("shim")

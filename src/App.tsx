@@ -13,11 +13,13 @@ import {
 import {
   readPreferences,
   savePreferences,
+  defaultOperatingPreferences,
   PreferencesRequestSequence,
   type PreferenceLanguage,
   type PreferenceTheme,
   type PreferencesResult,
   type UserPreferences,
+  type OperatingPreferences,
 } from "./lib/preferences";
 import { Applications } from "./features/integrations/Applications";
 import type { ClientKind } from "./lib/integrations";
@@ -30,6 +32,7 @@ import type { RuntimeAction } from "./lib/optimization";
 import { windowZoomClient, type WindowScale } from "./lib/windowZoom";
 import { HeadroomMark, Icon } from "./components/Icon";
 import { DesktopLifecycle } from "./components/DesktopLifecycle";
+import { Settings } from "./features/settings/Settings";
 
 type Screen = "overview" | "applications" | "activity" | "settings";
 type LifecycleAction = RuntimeAction;
@@ -205,7 +208,7 @@ export default function App() {
   const preferencesWriteLocked = useRef(false);
   const preferencesRevision = useRef(0);
   const preferencesFingerprint = useRef<string | null>(null);
-  const persistedPreferences = useRef<UserPreferences>({ language: "tr", theme: "system" });
+  const persistedPreferences = useRef<UserPreferences>({ language: "tr", theme: "system", operating: defaultOperatingPreferences() });
   const labels = copy[language] as Labels;
   const nav = labels.nav as string[];
   const headings = labels.headline as string[];
@@ -241,7 +244,7 @@ export default function App() {
       setPreferencesIssue(null);
       setPreferencesStatus("loaded");
     } else if (result.kind === "desktop_unavailable") {
-      persistedPreferences.current = { language, theme };
+      persistedPreferences.current = { language, theme, operating: defaultOperatingPreferences() };
       setPreferencesIssue(null);
       setPreferencesStatus("session_only");
     } else {
@@ -252,8 +255,10 @@ export default function App() {
 
   async function changePreferences(change: Partial<UserPreferences>) {
     const next: UserPreferences = {
+      ...persistedPreferences.current,
       language: change.language ?? language,
       theme: change.theme ?? theme,
+      operating: change.operating ?? persistedPreferences.current.operating,
     };
     if (preferencesStatus === "session_only") {
       persistedPreferences.current = next;
@@ -415,6 +420,9 @@ export default function App() {
     preferenceIssueMessage(preferencesIssue, labels),
     reloadPreferences,
     { scale: windowScale, pending: zoomPending, failed: zoomFailed, change: changeWindowScale },
+    persistedPreferences.current.operating,
+    (operating) => changePreferences({ operating }),
+    onApplicationsBusy,
   );
 
   return <div className="app-shell">
@@ -456,6 +464,9 @@ function renderSettings(
   preferencesErrorMessage: string | null,
   onPreferencesRetry: () => void,
   zoom: WindowZoomView,
+  operating: OperatingPreferences,
+  onOperatingSave: (preferences: OperatingPreferences) => Promise<void>,
+  onOperatingBusy: (busy: boolean) => void,
 ) {
   const preferencesBusy = preferencesStatus === "loading" || preferencesStatus === "saving";
   const preferencesUnavailable = preferencesBusy || preferencesStatus === "error";
@@ -479,5 +490,6 @@ function renderSettings(
       <span>{preferencesErrorMessage ?? labels.preferencesLoadFailed}</span>
       <button className="text-button" disabled={preferencesBusy} onClick={onPreferencesRetry}>{labels.preferencesRetry}</button>
     </div>}
+    <Settings language={language} preferences={operating} status={preferencesStatus} onSave={onOperatingSave} onBusyChange={onOperatingBusy} />
   </section>;
 }

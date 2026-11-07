@@ -26,7 +26,7 @@ use metrics::collector::{OverviewManager, OverviewReply};
 use metrics::store::{MetricsError, MetricsQueryRequest, MetricsReply, MetricsStore};
 use runtime::manager::{IngressReply, RuntimeManager, RuntimeReply};
 use state::choices::ChoiceStore;
-use state::store::{PreferenceStore, PreferencesReply};
+use state::store::{OperatingPreferences, PreferenceStore, PreferencesReply};
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::Arc;
 use tauri::Manager;
@@ -200,22 +200,56 @@ fn save_preferences(
     request_id: String,
     language: String,
     theme: String,
+    operating: Option<OperatingPreferences>,
     expected_revision: u64,
     expected_fingerprint: Option<String>,
 ) -> PreferencesReply {
-    let reply = state.save_preferences(
+    let reply = state.save_with_operating(
         request_id,
         language,
         theme,
+        operating,
         expected_revision,
         expected_fingerprint,
     );
     if let PreferencesReply::Snapshot(ref snapshot) = reply {
+        app.state::<desktop::lifecycle::Lifecycle>()
+            .set_close_to_tray(snapshot.preferences.operating.close_to_tray);
+        desktop::lifecycle::notify(&app);
         if let Some(tray) = app.try_state::<desktop::tray::TrayController>() {
             tray.set_language(&snapshot.preferences.language);
         }
     }
     reply
+}
+
+#[tauri::command]
+fn get_operating_snapshot(
+    state: tauri::State<'_, RuntimeManager>,
+    startup: tauri::State<'_, desktop::autostart::Autostart>,
+    request_id: String,
+) -> serde_json::Value {
+    desktop::settings::read(&request_id, &state, &startup)
+}
+#[tauri::command]
+fn set_autostart(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, RuntimeManager>,
+    startup: tauri::State<'_, desktop::autostart::Autostart>,
+    request_id: String,
+    enabled: bool,
+    expected_fingerprint: Option<String>,
+) -> serde_json::Value {
+    if app.state::<desktop::lifecycle::Lifecycle>().is_exiting() {
+        return desktop::settings::error(&request_id, "busy");
+    }
+    desktop::settings::set_startup(
+        &request_id,
+        enabled,
+        expected_fingerprint.as_deref(),
+        &state,
+        &startup,
+    )
 }
 
 #[tauri::command]
@@ -485,7 +519,9 @@ fn main() {
             let resource_dir = app.path().resource_dir().ok();
             let app_data_dir = app.path().app_data_dir().ok();
             let app_local_data_dir = app.path().app_local_data_dir().ok();
-            let runtime = RuntimeManager::new(resource_dir, app_data_dir);
+            let preferences = PreferenceStore::new(app_data_dir.clone());
+            let runtime =
+                RuntimeManager::with_preferences(resource_dir, app_data_dir, preferences.clone());
             let choice_store = ChoiceStore::for_app_local_data(app_local_data_dir.clone()).ok();
             let discovery = DiscoveryManager::with_choice_store(choice_store.clone());
             let claude_picker_owner = app
@@ -513,16 +549,24 @@ fn main() {
                     }),
             );
             let codex_verifier = CodexVerifyManager::new(app_local_data_dir.clone());
-            let metrics = MetricsStore::new(app_local_data_dir);
+            let metrics =
+                MetricsStore::new(app_local_data_dir).with_preferences(preferences.clone());
             let overview = OverviewManager::new(runtime.clone(), metrics.clone());
             app.manage(runtime);
-            app.manage(PreferenceStore::new(app.path().app_data_dir().ok()));
+            app.manage(preferences);
             app.manage(discovery);
             app.manage(plans);
             app.manage(codex_verifier);
             app.manage(metrics);
             app.manage(overview);
             app.manage(desktop::lifecycle::Lifecycle::default());
+            app.manage(desktop::autostart::Autostart::new());
+            let close_to_tray = app
+                .state::<PreferenceStore>()
+                .operating()
+                .is_ok_and(|p| p.close_to_tray);
+            app.state::<desktop::lifecycle::Lifecycle>()
+                .set_close_to_tray(close_to_tray);
             let language = match app
                 .state::<PreferenceStore>()
                 .get_preferences(uuid::Uuid::new_v4().to_string())
@@ -552,6 +596,8 @@ fn main() {
             get_activity_detail,
             get_preferences,
             save_preferences,
+            get_operating_snapshot,
+            set_autostart,
             get_discovery_snapshot,
             scan_discovery,
             get_saved_installation_choice,

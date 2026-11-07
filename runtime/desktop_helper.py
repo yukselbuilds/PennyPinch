@@ -215,6 +215,10 @@ def _verify_live_runtime(helper: Any, process: Any, port: int, output: BoundedEn
     if health_status != 200 or not isinstance(health, dict):
         raise RuntimeError("engine-config-check-failed")
     effective = health.get("config")
+    controller = _load_controller(Path(__file__).resolve().parent)
+    protected_tools = controller.protected_tools_from_environment()
+    if not isinstance(effective, dict) or not set(protected_tools).issubset(set(effective.get("exclude_tools", []))):
+        raise RuntimeError("engine-protected-tools-check-failed")
     live_env = effective.get("runtime_env") if isinstance(effective, dict) else None
     if not (
         isinstance(effective, dict)
@@ -262,6 +266,7 @@ def _verify_live_runtime(helper: Any, process: Any, port: int, output: BoundedEn
         "learning_enabled": effective["learn"],
         "output_shaper_enabled": False,
         "model_router_enabled": False,
+        "protected_tools": protected_tools,
     }
     shim = {
         "active": True,
@@ -316,6 +321,7 @@ def _patch_and_run(args: argparse.Namespace) -> int:
         process_state["stage"] = "engine-environment-setup"
         env = original_safe_environment(*call_args, **call_kwargs)
         env.update(PROFILE_ENV)
+        env["HEADROOM_PROTECT_TOOL_RESULTS"] = ",".join(controller.protected_tools_from_environment())
         env["TIKTOKEN_CACHE_DIR"] = str(controller.verify_tokenizer_cache(payload_root))
         return env
 

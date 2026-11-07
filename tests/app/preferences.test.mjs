@@ -5,6 +5,8 @@ import {
   decodePreferencesError,
   decodePreferencesSnapshot,
   PreferencesRequestSequence,
+  defaultOperatingPreferences,
+  decodeOperatingPreferences,
 } from "../../src/lib/preferences.ts";
 
 const requestId = "7132bced-3ce0-4c1b-8f48-d93d7b96f7ce";
@@ -31,11 +33,20 @@ function snapshot(overrides = {}) {
 
 test("decodes exact typed preferences and the pinned manifest reference", () => {
   const decoded = decodePreferencesSnapshot(snapshot(), requestId);
-  assert.deepEqual(decoded?.preferences, { language: "en", theme: "dark" });
+  assert.deepEqual(decoded?.preferences, { language: "en", theme: "dark", operating: defaultOperatingPreferences() });
   assert.equal(decoded?.revision, 3);
   assert.equal(decoded?.state_fingerprint, fingerprint);
   assert.equal(decoded?.runtime_manifest.ccr_ttl_seconds, 7200);
   assert.equal("future_secret" in (decoded ?? {}), false);
+});
+
+test("operating preferences migrate legacy replies and reject unsafe tools or retention",()=>{
+  const operating={close_to_tray:false,retention_days:7,protected_tools:["ReadExact","mcp__local__read"]};
+  const reply=snapshot({preferences:{language:"tr",theme:"system",operating}});
+  assert.deepEqual(decodePreferencesSnapshot(reply,requestId)?.preferences.operating,operating);
+  for(const bad of [ {...operating,retention_days:0},{...operating,protected_tools:["a","a"]},{...operating,protected_tools:["z","a"]},{...operating,protected_tools:["bad name"]},{...operating,protected_tools:Array.from({length:33},(_,i)=>`tool${i}`)},{...operating,unexpected:true} ]) {
+    assert.equal(decodeOperatingPreferences(bad),null);
+  }
 });
 
 test("rejects unknown fields, request mismatch, unsafe revisions, fingerprints, and pin drift", () => {

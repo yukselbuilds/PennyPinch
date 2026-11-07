@@ -88,6 +88,44 @@ pub struct PreferencesErrorDetail {
 pub struct UserPreferences {
     pub language: String,
     pub theme: String,
+    #[serde(default)]
+    pub operating: OperatingPreferences,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct OperatingPreferences {
+    pub close_to_tray: bool,
+    pub retention_days: u16,
+    pub protected_tools: Vec<String>,
+}
+
+impl Default for OperatingPreferences {
+    fn default() -> Self {
+        Self {
+            close_to_tray: true,
+            retention_days: 30,
+            protected_tools: Vec::new(),
+        }
+    }
+}
+
+impl OperatingPreferences {
+    pub(crate) fn is_valid(&self) -> bool {
+        matches!(self.retention_days, 7 | 30 | 90)
+            && self.protected_tools.len() <= 32
+            && self.protected_tools.iter().all(|name| {
+                !name.is_empty()
+                    && name.len() <= 96
+                    && name
+                        .bytes()
+                        .all(|b| b.is_ascii_alphanumeric() || b"_-.:/".contains(&b))
+            })
+            && self
+                .protected_tools
+                .windows(2)
+                .all(|pair| pair[0] < pair[1])
+    }
 }
 
 impl Default for UserPreferences {
@@ -95,6 +133,7 @@ impl Default for UserPreferences {
         Self {
             language: "tr".to_owned(),
             theme: "system".to_owned(),
+            operating: OperatingPreferences::default(),
         }
     }
 }
@@ -180,7 +219,7 @@ impl PreferenceStore {
     }
 
     #[cfg(test)]
-    pub(super) fn for_test(
+    pub(crate) fn for_test(
         project_root: PathBuf,
         relative_root: PathBuf,
     ) -> Result<Self, &'static str> {
@@ -225,10 +264,30 @@ impl PreferenceStore {
         expected_revision: u64,
         expected_fingerprint: Option<String>,
     ) -> PreferencesReply {
+        self.save_with_operating(
+            request_id,
+            language,
+            theme,
+            None,
+            expected_revision,
+            expected_fingerprint,
+        )
+    }
+
+    pub fn save_with_operating(
+        &self,
+        request_id: String,
+        language: String,
+        theme: String,
+        operating: Option<OperatingPreferences>,
+        expected_revision: u64,
+        expected_fingerprint: Option<String>,
+    ) -> PreferencesReply {
         if !valid_request_id(&request_id)
             || !valid_preferences(&UserPreferences {
                 language: language.clone(),
                 theme: theme.clone(),
+                operating: operating.clone().unwrap_or_default(),
             })
             || expected_fingerprint
                 .as_deref()
@@ -262,12 +321,23 @@ impl PreferenceStore {
         let next = StoredDocument {
             schema_version: SCHEMA_VERSION,
             revision,
-            preferences: UserPreferences { language, theme },
+            preferences: UserPreferences {
+                language,
+                theme,
+                operating: operating.unwrap_or(current.document.preferences.operating),
+            },
             runtime_manifest: RuntimeManifestReference::pinned(),
         };
         match save_document(location, &next, current.fingerprint.as_deref(), &self.inner) {
             Ok(fingerprint) => snapshot_reply(request_id, next, Some(fingerprint)),
             Err(error) => error_reply(&request_id, error),
+        }
+    }
+
+    pub(crate) fn operating(&self) -> Result<OperatingPreferences, ()> {
+        match self.get_preferences(Uuid::new_v4().to_string()) {
+            PreferencesReply::Snapshot(snapshot) => Ok(snapshot.preferences.operating),
+            _ => Err(()),
         }
     }
 
@@ -702,6 +772,7 @@ fn mutex_name(location: &StoreLocation) -> String {
 fn valid_preferences(preferences: &UserPreferences) -> bool {
     matches!(preferences.language.as_str(), "tr" | "en")
         && matches!(preferences.theme.as_str(), "system" | "light" | "dark")
+        && preferences.operating.is_valid()
 }
 
 fn valid_fingerprint(value: &str) -> bool {

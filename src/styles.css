@@ -367,6 +367,42 @@ h1 { margin-bottom: 8px; font-size: clamp(28px, 2.9vw, 38px); line-height: 1.15;
   .disconnect-dialog__actions .button { width: 100%; }
 }
 
+.operating-settings { display: grid; gap: 0; margin-top: 19px; border-top: 1px solid var(--border); }
+.operating-settings__heading { padding: 16px 0 5px; }
+.operating-settings__heading h3 { margin: 0; color: var(--text); font-size: 14px; font-weight: 620; }
+.operating-settings__heading p { margin: 3px 0 0; color: var(--quiet); font-size: 12px; }
+.operating-settings__section { display: grid; gap: 9px; padding: 15px 0; border-bottom: 1px solid var(--border); }
+.operating-settings__section h4, .operating-settings__section-heading h4 { margin: 0; color: var(--muted); font-size: 12px; font-weight: 620; }
+.operating-settings__toggle, .operating-settings__retention { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.operating-settings__toggle > span, .operating-settings__retention > span, .operating-settings__tools > span { display: grid; gap: 3px; min-width: 0; }
+.operating-settings__toggle strong, .operating-settings__retention strong, .operating-settings__tools strong { color: var(--text); font-size: 13px; font-weight: 570; }
+.operating-settings__toggle small, .operating-settings__retention small, .operating-settings__tools small, .operating-settings__help { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.operating-settings__toggle input, .operating-settings__warning input { width: 17px; height: 17px; flex: 0 0 auto; accent-color: var(--accent); }
+.operating-settings__retention select { min-width: 112px; min-height: 36px; padding: 6px 9px; color: var(--text); background: var(--surface-raised); border: 1px solid var(--border); border-radius: 7px; }
+.operating-settings__warning { display: grid; gap: 7px; padding: 10px 12px; color: var(--muted); background: color-mix(in srgb, var(--warning) 7%, var(--surface)); border: 1px solid color-mix(in srgb, var(--warning) 32%, var(--border)); border-radius: 8px; }
+.operating-settings__warning p { margin: 0; font-size: 12px; line-height: 1.5; }
+.operating-settings__warning label { display: flex; align-items: center; gap: 8px; color: var(--text); font-size: 12px; }
+.operating-settings__advanced { border-bottom: 1px solid var(--border); }
+.operating-settings__advanced summary { width: fit-content; padding: 14px 1px; color: var(--accent); font-size: 12px; font-weight: 600; cursor: pointer; }
+.operating-settings__advanced summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 2px; }
+.operating-settings__advanced-body { display: grid; gap: 8px; padding: 0 0 15px; }
+.operating-settings__tools { display: grid; gap: 9px; }
+.operating-settings__tools textarea { width: 100%; max-width: 520px; min-height: 92px; resize: vertical; padding: 9px 10px; color: var(--text); background: var(--surface-raised); border: 1px solid var(--border); border-radius: 7px; font: inherit; font-family: Consolas, "Cascadia Code", monospace; font-size: 12px; line-height: 1.5; }
+.operating-settings__tools textarea[aria-invalid="true"] { border-color: var(--warning); }
+.operating-settings__field-error, .operating-settings__warning-note { margin: 0; color: var(--warning); font-size: 12px; line-height: 1.5; }
+.operating-settings__save-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+.operating-settings__status { color: var(--muted); font-size: 12px; }
+.operating-settings__section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.operating-settings__status-line, .operating-settings__pins, .operating-settings__tools-applied { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.operating-settings__pins { color: var(--text); }
+.operating-settings__tools-applied { color: var(--quiet); }
+.operating-settings__section--status > .button { justify-self: start; }
+@media (max-width: 520px) {
+  .operating-settings__toggle, .operating-settings__retention { align-items: flex-start; }
+  .operating-settings__retention { flex-direction: column; }
+  .operating-settings__save-row { align-items: flex-start; flex-direction: column; }
+}
+
 .desktop-lifecycle { display: grid; gap: 6px; margin-top: 13px; padding-top: 11px; border-top: 1px solid var(--border); }
 .desktop-lifecycle__tray, .desktop-lifecycle__error { margin: 0; color: var(--quiet); font-size: 11px; line-height: 1.4; }
 .desktop-lifecycle__error { color: var(--warning); }

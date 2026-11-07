@@ -4,6 +4,7 @@ use super::normalize::{
 };
 use super::query::{aggregate_event_refs, aggregate_unique_events, AggregateStatus, PeriodTotals};
 use crate::integrations::config_io::{pin_existing_directory_chain, PinnedDirectoryChain};
+use crate::state::store::PreferenceStore;
 use chrono::{DateTime, Days, Duration, Local, SecondsFormat, TimeZone, Timelike, Utc};
 use rusqlite::{params, Connection, ErrorCode, OpenFlags, OptionalExtension, TransactionBehavior};
 use serde::{Deserialize, Serialize};
@@ -87,6 +88,7 @@ pub struct MetricBucket {
 }
 
 pub(crate) struct PeriodSelection {
+    pub retention_days: u16,
     pub monitoring_session_id: String,
     pub from: Option<DateTime<Utc>>,
     pub now: DateTime<Utc>,
@@ -97,6 +99,7 @@ pub(crate) struct PeriodSelection {
 
 #[derive(Clone)]
 pub struct MetricsStore {
+    preferences: Option<PreferenceStore>,
     root: Option<PathBuf>,
     monitoring_session_id: String,
 }
@@ -113,14 +116,32 @@ impl MetricsStore {
         let _ = app_local_data;
         Self {
             root,
+            preferences: None,
             monitoring_session_id: uuid::Uuid::new_v4().to_string(),
         }
+    }
+
+    pub(crate) fn with_preferences(mut self, preferences: PreferenceStore) -> Self {
+        self.preferences = Some(preferences);
+        self
+    }
+
+    fn retention_days(&self) -> Result<u16, MetricsError> {
+        self.preferences
+            .as_ref()
+            .map_or(Ok(RETENTION_DAYS), |store| {
+                store
+                    .operating()
+                    .map(|settings| settings.retention_days)
+                    .map_err(|_| MetricsError::Unavailable)
+            })
     }
 
     #[cfg(test)]
     pub(crate) fn in_directory(root: &Path) -> Self {
         Self {
             root: Some(root.to_owned()),
+            preferences: None,
             monitoring_session_id: uuid::Uuid::new_v4().to_string(),
         }
     }
@@ -141,12 +162,13 @@ impl MetricsStore {
                 return Err(MetricsError::InvalidInput);
             }
         }
-        let cutoff = retention_cutoff(now)?;
+        let cutoff = retention_cutoff(now, self.retention_days()?)?;
         let mut db = self.open(true)?.ok_or(MetricsError::Unavailable)?;
         let tx = db
             .connection
             .transaction_with_behavior(TransactionBehavior::Immediate)
             .map_err(sql_error)?;
+        let cutoff = advance_retention_floor(&tx, cutoff)?;
         let mut result = IngestResult {
             inserted: 0,
             replayed: 0,
@@ -251,7 +273,8 @@ impl MetricsStore {
             }
         };
         let now = now.with_timezone(&Utc);
-        let cutoff = retention_cutoff(now)?;
+        let retention_days = self.retention_days()?;
+        let cutoff = retention_cutoff(now, retention_days)?;
         let mut coverage = Coverage::default();
         let mut events = Vec::new();
         let mut last_event = None;
@@ -260,6 +283,7 @@ impl MetricsStore {
                 .connection
                 .transaction_with_behavior(TransactionBehavior::Immediate)
                 .map_err(sql_error)?;
+            let cutoff = advance_retention_floor(&tx, cutoff)?;
             prune(&tx, cutoff)?;
             let session =
                 (period == Period::Session).then_some(self.monitoring_session_id.as_str());
@@ -267,7 +291,11 @@ impl MetricsStore {
                 AND (occurred_at IS NULL OR (occurred_at>=?2 AND occurred_at<=?3)) ORDER BY event_id LIMIT 100001").map_err(sql_error)?;
             let rows = statement
                 .query_map(
-                    params![session, from.unwrap_or(cutoff).timestamp(), now.timestamp()],
+                    params![
+                        session,
+                        from.map_or(cutoff, |stamp| stamp.max(cutoff)).timestamp(),
+                        now.timestamp()
+                    ],
                     |r| {
                         Ok((
                             r.get::<_, String>(0)?,
@@ -305,7 +333,7 @@ impl MetricsStore {
             coverage.distinct_origins = origins.len() as u64;
             let flags: (bool,bool,bool) = tx.query_row("SELECT coalesce(max(rolling),0),coalesce(max(aggregate_only),0),coalesce(max(unidentified),0)
                 FROM captures WHERE (?1 IS NULL OR session_id=?1) AND bucket_utc>=?2 AND bucket_utc<=?3",
-                params![session, from.unwrap_or(cutoff).timestamp().div_euclid(86400)*86400, now.timestamp()],
+                params![session, from.map_or(cutoff,|stamp|stamp.max(cutoff)).timestamp().div_euclid(86400)*86400, now.timestamp()],
                 |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?))).map_err(sql_error)?;
             coverage.rolling_window = flags.0;
             coverage.aggregate_only = flags.1;
@@ -313,6 +341,7 @@ impl MetricsStore {
             tx.commit().map_err(sql_error)?;
         }
         Ok(PeriodSelection {
+            retention_days,
             monitoring_session_id: self.monitoring_session_id.clone(),
             from,
             now,
@@ -329,6 +358,7 @@ impl MetricsStore {
     ) -> Result<PeriodMetrics, MetricsError> {
         let zone = now.timezone();
         let PeriodSelection {
+            retention_days,
             monitoring_session_id,
             from,
             now,
@@ -347,7 +377,7 @@ impl MetricsStore {
             period,
             from_utc: from.map(utc_string),
             to_utc: utc_string(now),
-            retention_days: RETENTION_DAYS,
+            retention_days,
             last_event_utc: last_event.map(utc_string),
             totals,
             series,
@@ -449,14 +479,23 @@ impl MetricsStore {
                 .map_err(sql_error)?;
             tx.pragma_update(None, "application_id", APPLICATION_ID)
                 .map_err(sql_error)?;
-            tx.pragma_update(None, "user_version", 1)
+            tx.pragma_update(None, "user_version", 2)
                 .map_err(sql_error)?;
             tx.execute_batch("CREATE TABLE events(event_id TEXT PRIMARY KEY,origin_id TEXT NOT NULL,session_id TEXT NOT NULL,first_seen INTEGER NOT NULL,occurred_at INTEGER,payload TEXT NOT NULL CHECK(length(payload)<=4096));
                 CREATE INDEX events_time ON events(occurred_at); CREATE INDEX events_session ON events(session_id);
-                CREATE TABLE captures(session_id TEXT NOT NULL,bucket_utc INTEGER NOT NULL,rolling INTEGER NOT NULL,aggregate_only INTEGER NOT NULL,unidentified INTEGER NOT NULL,PRIMARY KEY(session_id,bucket_utc));").map_err(sql_error)?;
+                CREATE TABLE captures(session_id TEXT NOT NULL,bucket_utc INTEGER NOT NULL,rolling INTEGER NOT NULL,aggregate_only INTEGER NOT NULL,unidentified INTEGER NOT NULL,PRIMARY KEY(session_id,bucket_utc));
+                CREATE TABLE retention_floor(id INTEGER PRIMARY KEY CHECK(id=1),cutoff_utc INTEGER NOT NULL);").map_err(sql_error)?;
             tx.commit().map_err(sql_error)?;
-        } else if application != APPLICATION_ID || schema != 1 {
+        } else if application != APPLICATION_ID || !matches!(schema, 1 | 2) {
             return Err(MetricsError::UnsupportedSchema);
+        } else if schema == 1 {
+            let tx = connection
+                .transaction_with_behavior(TransactionBehavior::Immediate)
+                .map_err(sql_error)?;
+            tx.execute_batch("CREATE TABLE retention_floor(id INTEGER PRIMARY KEY CHECK(id=1),cutoff_utc INTEGER NOT NULL);").map_err(sql_error)?;
+            tx.pragma_update(None, "user_version", 2)
+                .map_err(sql_error)?;
+            tx.commit().map_err(sql_error)?;
         }
         connection
             .execute_batch(
@@ -560,9 +599,27 @@ fn event_time(value: &NormalizedEvent) -> Result<Option<DateTime<Utc>>, MetricsE
         .transpose()
 }
 
-fn retention_cutoff(now: DateTime<Utc>) -> Result<DateTime<Utc>, MetricsError> {
-    now.checked_sub_signed(Duration::days(RETENTION_DAYS as i64))
+fn retention_cutoff(
+    now: DateTime<Utc>,
+    retention_days: u16,
+) -> Result<DateTime<Utc>, MetricsError> {
+    now.checked_sub_signed(Duration::days(retention_days as i64))
         .ok_or(MetricsError::InvalidInput)
+}
+
+fn advance_retention_floor(
+    tx: &rusqlite::Transaction<'_>,
+    cutoff: DateTime<Utc>,
+) -> Result<DateTime<Utc>, MetricsError> {
+    tx.execute("INSERT INTO retention_floor(id,cutoff_utc) VALUES(1,?1) ON CONFLICT(id) DO UPDATE SET cutoff_utc=max(cutoff_utc,excluded.cutoff_utc)",[cutoff.timestamp()]).map_err(sql_error)?;
+    let effective: i64 = tx
+        .query_row(
+            "SELECT cutoff_utc FROM retention_floor WHERE id=1",
+            [],
+            |row| row.get(0),
+        )
+        .map_err(sql_error)?;
+    DateTime::from_timestamp(effective, 0).ok_or(MetricsError::Corrupt)
 }
 
 fn prune(tx: &rusqlite::Transaction<'_>, cutoff: DateTime<Utc>) -> Result<u64, MetricsError> {

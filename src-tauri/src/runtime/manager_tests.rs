@@ -122,6 +122,7 @@ fn ready_frame() -> Vec<u8> {
             "savings_profile": "coding",
             "ttl_seconds": 7200,
             "telemetry_enabled": true,
+            "protected_tools": [],
             "beacon_enabled": false,
             "memory_enabled": false,
             "learning_enabled": false,
@@ -538,7 +539,15 @@ fn expired_ready_snapshot_becomes_unknown_and_recovers_after_fresh_health() {
     assert_eq!(stale.engine.error_code, Some("timeout"));
     assert!(stale.capabilities.stop);
 
-    mark_ready_view(&shared_view, GENERATION, 48631, 302, Instant::now(), None);
+    mark_ready_view(
+        &shared_view,
+        GENERATION,
+        48631,
+        302,
+        Instant::now(),
+        None,
+        Vec::new(),
+    );
     let fresh = manager.get_runtime_snapshot("8132bced-3ce0-4c1b-8f48-d93d7b96f7ce".to_owned());
     assert_eq!(fresh.status_for_test(), Some("ready"));
 }

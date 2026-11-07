@@ -9,6 +9,7 @@ export interface DesktopSnapshot {
   request_id: string;
   status: "snapshot";
   tray_available: boolean;
+  close_to_tray: boolean;
   exit_state: DesktopExitState;
   exit_token: string | null;
 }
@@ -43,7 +44,7 @@ type ClientOptions = {
 };
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-const snapshotKeys = ["schema_version", "request_id", "status", "tray_available", "exit_state", "exit_token"] as const;
+const snapshotKeys = ["schema_version", "request_id", "status", "tray_available", "close_to_tray", "exit_state", "exit_token"] as const;
 const errorKeys = ["schema_version", "request_id", "status", "error"] as const;
 const nestedErrorKeys = ["code", "retryable", "message_key", "diagnostic_id"] as const;
 const errorRules = {
@@ -69,7 +70,7 @@ function isCanonicalUuid(value: unknown): value is string {
 export function decodeDesktopSnapshot(value: unknown, requestId: string): DesktopSnapshot | null {
   if (!isCanonicalUuid(requestId) || !isRecord(value) || !hasExactKeys(value, snapshotKeys)
     || value.schema_version !== 1 || value.request_id !== requestId || value.status !== "snapshot"
-    || typeof value.tray_available !== "boolean"
+    || typeof value.tray_available !== "boolean" || typeof value.close_to_tray !== "boolean"
     || (value.exit_state !== "idle" && value.exit_state !== "confirmation_required" && value.exit_state !== "shutting_down")) return null;
   if (value.exit_state === "confirmation_required") {
     if (!isCanonicalUuid(value.exit_token)) return null;
@@ -79,6 +80,7 @@ export function decodeDesktopSnapshot(value: unknown, requestId: string): Deskto
     request_id: requestId,
     status: "snapshot",
     tray_available: value.tray_available,
+    close_to_tray: value.close_to_tray,
     exit_state: value.exit_state,
     exit_token: value.exit_token as string | null,
   };
