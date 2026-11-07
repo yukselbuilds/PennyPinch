@@ -29,6 +29,7 @@ import type { MetricPeriod } from "./lib/metrics";
 import type { RuntimeAction } from "./lib/optimization";
 import { windowZoomClient, type WindowScale } from "./lib/windowZoom";
 import { HeadroomMark, Icon } from "./components/Icon";
+import { DesktopLifecycle } from "./components/DesktopLifecycle";
 
 type Screen = "overview" | "applications" | "activity" | "settings";
 type LifecycleAction = RuntimeAction;
@@ -430,6 +431,7 @@ export default function App() {
       <div className="sidebar-bottom">
         <div className="local-mark"><Icon name="shield" />{labels.footer}</div>
         <span className="sidebar-note">{language === "tr" ? "Cihazında saklanır." : "Stored on this device."}</span>
+        <DesktopLifecycle language={language} blocked={applicationsBusy || pending !== null} />
       </div>
     </aside>
 

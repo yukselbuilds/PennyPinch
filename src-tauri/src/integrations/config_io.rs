@@ -1071,6 +1071,14 @@ pub(crate) struct PlanManager {
 }
 
 impl PlanManager {
+    /// Terminal hold after a validated exit confirmation; no writer can start
+    /// between the busy check and process shutdown.
+    pub(crate) fn hold_for_exit(&self) -> bool {
+        self.preview_in_flight
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            .is_ok()
+    }
+
     pub(crate) fn new(discovery: DiscoveryManager, runtime: RuntimeManager) -> Self {
         Self {
             discovery,

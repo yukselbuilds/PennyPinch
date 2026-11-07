@@ -1,10 +1,10 @@
 # Headroom Desktop — Görev Listesi
 
-**Tarih:**6 Kasım2026
+**Tarih:**7 Kasım2026
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H011, H013–H029, H040, H046 ve **H047 tamamlandı:28/51.** H029 güvenli kaldırma ve gerçek pinned-engine aktif SSE stop kabulü kapandı. Sıradaki H030 başlamadı; ana görev sonunda duruldu. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
+**Durum:** H001–H005, H007–H008, H011, H013–H029, H040, H046 ve **H047 tamamlandı:28/51.** H030 sistem tepsisi ve kapanış aktif; H031 başlamadı. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
@@ -17,7 +17,7 @@
 - **Kabul:** [DESIGN.md](DESIGN.md) içindeki boş/gerçek/örnek veri ayrımı, tema/dil/ölçek/klavye, native render ve son yerel kalite kapısı. Ana ajan art direction/uygulama/inceleme sahibi; H029 başlamaz. Sahte tasarruf veya hesap/sohbet işlevi eklenmez.
 - **Durum:**6 Kasım tamamlandı. Emil design engineering yalnız projeye, immutable commit/MIT lisansıyla kuruldu; diğer üç kaynak incelendi.138 frontend/349 Rust PASS,6 opt-in ignored; aynı152 girdili derleme/test blokları ve gerçek native kontroller PASS. [Kanıt](docs/proofs/ui-taste.md), [inceleme](docs/reviews/UX001.md). Yerel Windows10; örnek veriler gerçek tasarruf değildir. Görev sonunda durulur.
 
-Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028 ve H029 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H030 başlamadı; kullanıcı devam mesajı bekleniyor.
+Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028 ve H029 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H030 aktif, H031 başlamadı.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -459,8 +459,11 @@ flowchart TD
 - **Dosyalar:** `src/features/integrations/DisconnectDialog.tsx`, `src/features/integrations/DisconnectDialog.test.tsx`, `src-tauri/src/integrations/disconnect.rs`.
 
 ### H030 — Sistem tepsisi ve kapanış
+- **Durum:**7 Kasım aktif; [plan018](docs/decisions/018-tray-lifecycle.md). Ana ajan native yaşam döngüsü/sahiplik/kabul, mevcut tek Luna sabit frontend sözleşmesi sahibi.28/51 aynı; H031 başlamadı. Önceden kabul edilmiş H047/karar006 ücretsiz kullanım istisnasıyla ücretli Windows11 kanıtı skipped/not_tested kalır; Windows10 kanıtı onun yerine geçmez.
 - **3 Kasım UI/UX kabulü:** Pencereyi kapatma, tepside çalışma ve tamamen çıkış günlük dilde açıklanır. Endpoint kayıtlıyken motorun kapanmasının istemciyi etkileyebileceği gizlenmez; otomatik doğrudan bağlantıya dönüş kanıtsız vaat edilmez.
 - [ ] Pencere kapanışı ile runtime kapanışı ayrılır.
+- **Yerel kabul:**146 frontend/356 Rust PASS,7 opt-in ignored; fmt/TS/Vite/native build PASS. Gerçek native aktif SSE sırasında Sky Alt+F4; normal drain/terminal/exit0, stuck/exit1/no replay, owned engine kaybı ve Sky ESC/Tab/Enter PASS.43 programatik kaynak/artifact/ortam bağlama kontrolü; test state'i ve protected ayarlar geri yüklendi. [Kanıt](docs/proofs/tray-lifecycle.md), [inceleme](docs/reviews/H030.md).
+- **Tek açık kabul:** gerçek tepsi Aç/Duraklat/Devam et menü etkileşimi. Sky screenshot timeout ve click geometry hatası nedeniyle kullanıcı kontrolü bekleniyor; normal development pencere açık, Başlat sonrası denenebilir. Sonuç gelmeden ana kutu kapatılmaz;28/51 aynı, H031 başlamaz.
 - **Kabul:** Tepsi durum ve temel eylemleri gösterir; aktif bağlantı sessiz kesilmez; yalnız sahip olunan süreçler yönetilir.
 - **Ek kabul:** H040'ın istemci giriş noktası/backend nesli ayrımı korunur. Pencere kapatma/çıkış/bypass ve config geri alma farklı eylemlerdir; crash toparlama sınırlıdır, yabancı listener'a müdahale edilmez.
 - **Doğrulama:** İki Windows'ta pencere kapatma/açma, tamamen çıkış ve motor hatası.
@@ -685,4 +688,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**28/51 tamam; H029 güvenli kaldırma kabulü kapandı.**138 frontend/351 Rust PASS,7 opt-in ignored; ayrıca gerçek SSE stop/no-replay/cleanup ve Python shutdown/cache kontrolleri PASS. Native onay/iptal/pending/error/klavye/tema/dil/zoom;6 asset/7 offline tokenizer encoding doğrulandı. [Kabul](docs/proofs/safe-disconnect.md), [inceleme](docs/reviews/H029.md). Sıradaki H030 başlamadı; kullanıcı devam mesajı bekleniyor. Yerel fixture sonuçları canlı sağlayıcı/model tasarrufu veya diğer OS desteği değildir. H041 canlı API-key ve uzun yük; H038 installer/tokenizer asset paketleme açık; güncel devir `docs/IMPLEMENTATION_STATUS.md`.
+**28/51 tamam; H030 aktif, tek açık kabul gerçek tepsi menüsü.**146 frontend/356 Rust PASS,7 opt-in ignored; fmt/TS/Vite/native build ve43 toplu kaynak/artifact bağlama kontrolü PASS. Gerçek native pencere gizleme/açık SSE, normal exit0, stuck/exit1/no replay, owned engine kaybı ve Sky ESC/Tab/Enter doğrulandı. [Kabul](docs/proofs/tray-lifecycle.md), [inceleme](docs/reviews/H030.md). Normal Headroom penceresi manuel Başlat → tepsi Aç/Duraklat/Devam et kontrolü için açık; kullanıcı sonucu gelmeden H030 kapanmaz ve H031 başlamaz. Windows11 ücretli koşusu skipped/not_tested; yerel fixture sonuçları canlı sağlayıcı/model tasarrufu veya diğer OS desteği değildir. H041 API-key/uzun yük ve H038 installer/tokenizer paketleme açık; güncel devir `docs/IMPLEMENTATION_STATUS.md`.

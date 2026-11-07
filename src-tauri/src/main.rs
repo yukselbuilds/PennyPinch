@@ -1,3 +1,4 @@
+mod desktop;
 mod integrations;
 pub mod metrics;
 mod runtime;
@@ -194,6 +195,7 @@ fn get_preferences(
 
 #[tauri::command]
 fn save_preferences(
+    app: tauri::AppHandle,
     state: tauri::State<'_, PreferenceStore>,
     request_id: String,
     language: String,
@@ -201,13 +203,63 @@ fn save_preferences(
     expected_revision: u64,
     expected_fingerprint: Option<String>,
 ) -> PreferencesReply {
-    state.save_preferences(
+    let reply = state.save_preferences(
         request_id,
         language,
         theme,
         expected_revision,
         expected_fingerprint,
-    )
+    );
+    if let PreferencesReply::Snapshot(ref snapshot) = reply {
+        if let Some(tray) = app.try_state::<desktop::tray::TrayController>() {
+            tray.set_language(&snapshot.preferences.language);
+        }
+    }
+    reply
+}
+
+#[tauri::command]
+fn get_desktop_state(
+    state: tauri::State<'_, desktop::lifecycle::Lifecycle>,
+    request_id: String,
+) -> desktop::lifecycle::Reply {
+    state.snapshot(&request_id)
+}
+#[tauri::command]
+fn request_desktop_exit(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, desktop::lifecycle::Lifecycle>,
+    request_id: String,
+) -> desktop::lifecycle::Reply {
+    let reply = state.request(&request_id);
+    desktop::lifecycle::notify(&app);
+    reply
+}
+#[tauri::command]
+fn cancel_desktop_exit(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, desktop::lifecycle::Lifecycle>,
+    request_id: String,
+    exit_token: String,
+) -> desktop::lifecycle::Reply {
+    let reply = state.cancel(&request_id, &exit_token);
+    desktop::lifecycle::notify(&app);
+    reply
+}
+#[tauri::command]
+fn confirm_desktop_exit(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, desktop::lifecycle::Lifecycle>,
+    plans: tauri::State<'_, Arc<PlanManager>>,
+    request_id: String,
+    exit_token: String,
+) -> desktop::lifecycle::Reply {
+    let (reply, started) = state.confirm(&request_id, &exit_token, || plans.hold_for_exit());
+    desktop::lifecycle::notify(&app);
+    if started {
+        app.exit(0);
+    }
+    reply
 }
 
 #[tauri::command]
@@ -470,6 +522,18 @@ fn main() {
             app.manage(codex_verifier);
             app.manage(metrics);
             app.manage(overview);
+            app.manage(desktop::lifecycle::Lifecycle::default());
+            let language = match app
+                .state::<PreferenceStore>()
+                .get_preferences(uuid::Uuid::new_v4().to_string())
+            {
+                PreferencesReply::Snapshot(snapshot) => snapshot.preferences.language,
+                _ => "tr".to_owned(),
+            };
+            app.manage(desktop::tray::TrayController::install(
+                app.handle(),
+                &language,
+            ));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -477,6 +541,10 @@ fn main() {
             stop_engine,
             set_optimization,
             get_runtime_snapshot,
+            get_desktop_state,
+            request_desktop_exit,
+            cancel_desktop_exit,
+            confirm_desktop_exit,
             get_ingress_snapshot,
             get_metrics_summary,
             get_overview_snapshot,
@@ -503,6 +571,25 @@ fn main() {
         .expect("failed to build Headroom desktop");
 
     app.run(|app_handle, event| {
+        if let tauri::RunEvent::WindowEvent {
+            label,
+            event: tauri::WindowEvent::CloseRequested { api, .. },
+            ..
+        } = &event
+        {
+            if label == "main" && EXIT_GATE.0.load(Ordering::SeqCst) != 2 {
+                api.prevent_close();
+                let state = app_handle.state::<desktop::lifecycle::Lifecycle>();
+                if state.hide_on_close() {
+                    if let Some(window) = app_handle.get_webview_window("main") {
+                        let _ = window.hide();
+                    }
+                    desktop::lifecycle::notify(app_handle);
+                } else if !state.is_exiting() {
+                    desktop::lifecycle::request_exit(app_handle);
+                }
+            }
+        }
         #[cfg(debug_assertions)]
         if matches!(
             &event,
@@ -514,6 +601,14 @@ fn main() {
             eprintln!("headroom_exit event=window_close");
         }
         if let tauri::RunEvent::ExitRequested { code, api, .. } = event {
+            if !app_handle
+                .state::<desktop::lifecycle::Lifecycle>()
+                .is_exiting()
+            {
+                api.prevent_exit();
+                desktop::lifecycle::request_exit(app_handle);
+                return;
+            }
             let action = EXIT_GATE.request();
             #[cfg(debug_assertions)]
             eprintln!(
@@ -540,13 +635,16 @@ fn main() {
                     );
                     let collector_clean = app_handle.state::<OverviewManager>().shutdown();
                     let runtime_clean = app_handle.state::<RuntimeManager>().shutdown();
+                    let tray_clean = app_handle
+                        .state::<desktop::tray::TrayController>()
+                        .shutdown(&app_handle);
                     #[cfg(debug_assertions)]
                     eprintln!(
                         "headroom_exit event=runtime_done clean={} elapsed_ms={}",
                         runtime_clean as u8,
                         exit_start.elapsed().as_millis()
                     );
-                    let clean = verifier_clean && collector_clean && runtime_clean;
+                    let clean = verifier_clean && collector_clean && runtime_clean && tray_clean;
                     let exit_code = if clean { code.unwrap_or(0) } else { 1 };
                     EXIT_GATE.complete();
                     #[cfg(debug_assertions)]

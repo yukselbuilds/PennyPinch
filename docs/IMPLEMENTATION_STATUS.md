@@ -1,5 +1,12 @@
 # Headroom Desktop — güncel devir
-6 Kasım2026.
+7 Kasım2026.
+
+## H030 — aktif: sistem tepsisi ve kapanış
+-28/51 aynı; [plan018](decisions/018-tray-lifecycle.md). X/hide ve explicit exit ayrılıyor. Native yaşam döngüsü, config-operation exit bariyeri, tray ack ve mevcut owned shutdown zincirini ana ajan üstlenir; mevcut tek Luna yalnız belirlenmiş frontend IPC/onay UI dilimini yazar. H031 başlamadı.
+- Son aday146 frontend/356 Rust PASS,7 opt-in ignored; fmt/TS/Vite/native build PASS. Kaynak/ortam fingerprint'leri `work/proofs/tray/final-1.json` ve build kayıtlarında; aynı başarılı kapı tekrar çalıştırılmaz. Tek Luna frontend dilimi completed, root kaynak/bağlı akış incelemesi, portal/StrictMode/DTO/capability düzeltmeleri ve native kabulü devraldı. [Kabul](proofs/tray-lifecycle.md), [inceleme](reviews/H030.md).
+- İzole UI TR/EN/açık/koyu/dar görünüm, ESC/focus/Tab/pending/busy/error PASS. Gerçek native Sky Alt+F4, açık gated-SSE sırasında aynı generation/endpoint ve1 upstream POST'u korudu. Son normal `610ebbd4-091f-4135-9c02-e8baf91508fc`: gerçek drain sınırından sonra terminal/exit0; timeout `fff9de67-e194-46bf-88f7-3de65bb997ee`: terminal yok/exit1/no replay; crash `de1769d7-43c7-4cc4-be19-9337a446a6b0`: yalnız owned leaf engine, görünür hata ve Sky ESC/Tab/Enter/exit0. Zorlama yok; her final koşuda state ve protected byte fingerprint'leri aynı.43 toplu kontrol `work/proofs/tray/acceptance-1.json` içinde; tüm güncel kaynak/artifact'lar eşleşti.
+- **Tek açık kabul:** gerçek tepsi Aç/Duraklat/Devam et etkileşimi. Sky screenshot timeout/click geometry hatası ve Explorer/tepsi hedefi yokluğu nedeniyle kullanıcıya kısa kontrol soruldu; cevap bekleniyor, PASS sayılmadı. Otomatik native job'lar kapandı, izole state geri yüklendi. Normal development Headroom penceresi manuel kontrol için açık, motor Durduruldu; Başlat → tepsi Aç/Duraklat/Devam et sonucu okunacak. Yeni debug/test monitörü veya sağlayıcı çağrısı yok. Kalan ana görevi kapatmadan H031'e geçilmez.
+- H047 ücretsiz istisnası gereği ücretli Windows11 test açılmaz; not_tested saklanır. Yeni autostart/global ayar/hesap/ücretli sağlayıcı çağrısı yok. Geliştirme token tasarrufu/süre ölçülmedi.
 
 ## H029 — güvenli bağlantı kaldırma tamamlandı
 -28/51; [plan017](decisions/017-safe-disconnect.md), [kanıt](proofs/safe-disconnect.md), [inceleme](reviews/H029.md). Ana ajan mevcut atomik undo/ownership ve gerçek motor/stream kabulünün sahibi. Mevcut tek Luna ilk onay UI dilimini yazdı, completed/durdurulmuş olarak devralındı; kök inceleme, ESC/Tab/pending odak düzeltmeleri ve final kabul ana ajanda. Geliştirme tasarrufu/süre ölçülmedi. H030 başlamadı; ana görev sonunda durulur.

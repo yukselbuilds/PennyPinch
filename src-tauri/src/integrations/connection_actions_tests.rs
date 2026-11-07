@@ -17,6 +17,29 @@ const ENDPOINT_ID: &str = "019a0000-0000-7000-8000-d00000000042";
 #[path = "disconnect.rs"]
 mod disconnect;
 
+#[test]
+fn exit_hold_blocks_new_config_writers_without_touching_user_bytes() {
+    let fixture = Fixture::new();
+    let config = fixture.path("exit/config.toml");
+    let original = b"model = \"exit-fixture\"\n";
+    write_file(&config, original);
+    let (plans, installation, scan) = manager(&fixture, "codex", config.clone());
+    let plan = preview(&plans, installation, scan);
+    assert!(plans.hold_for_exit());
+    assert!(!plans.hold_for_exit());
+    assert_eq!(
+        error_code(plans.apply_connection(ApplyConnectionRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            plan_id: plan.plan_id,
+            expected_config_fingerprint: plan.config_fingerprint,
+        })),
+        "busy"
+    );
+    assert_eq!(fs::read(&config).unwrap(), original);
+    assert!(!fixture.path("state").exists());
+}
+
 struct Fixture {
     project_root: PathBuf,
     runs_root: PathBuf,

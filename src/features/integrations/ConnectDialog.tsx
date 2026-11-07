@@ -607,7 +607,8 @@ export function ConnectDialog({
     if (isClaude) void refreshClaudeState();
     else void readOwnership();
     const keepTabInside = (event: KeyboardEvent) => {
-      if (disconnectOpenRef.current || event.key !== "Tab") return;
+      if (disconnectOpenRef.current || document.querySelector('dialog[open][data-desktop-exit-confirmation]')
+        || event.key !== "Tab") return;
       const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
         'button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], summary:not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])',
       )).filter((element) => {

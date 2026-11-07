@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main-window-zoom",
-  "description": "The main window may change its own view scale.",
+  "description": "The main window may change its view scale and subscribe to desktop lifecycle events.",
   "windows": ["main"],
-  "permissions": ["core:webview:allow-set-webview-zoom"]
+  "permissions": ["core:webview:allow-set-webview-zoom", "core:event:allow-listen", "core:event:allow-unlisten"]
 }
