@@ -5,7 +5,7 @@ use std::io::{Read, Write};
 use std::path::{Component, Path, PathBuf};
 #[cfg(test)]
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 
 const SCHEMA_VERSION: u8 = 1;
@@ -25,6 +25,7 @@ pub struct PreferenceStore {
 
 struct StoreInner {
     location: Result<StoreLocation, StoreError>,
+    operation: Mutex<()>,
     #[cfg(test)]
     fail_replace_once: AtomicBool,
 }
@@ -232,6 +233,7 @@ impl PreferenceStore {
         Self {
             inner: Arc::new(StoreInner {
                 location,
+                operation: Mutex::new(()),
                 #[cfg(test)]
                 fail_replace_once: AtomicBool::new(false),
             }),
@@ -245,6 +247,11 @@ impl PreferenceStore {
         let location = match &self.inner.location {
             Ok(location) => location,
             Err(error) => return error_reply(&request_id, *error),
+        };
+        // Startup readers share this store; serialize them before the cross-process lock.
+        let _operation = match self.inner.operation.lock() {
+            Ok(guard) => guard,
+            Err(_) => return error_reply(&request_id, StoreError::EnvironmentBlocked),
         };
         let _lock = match StoreLock::acquire(location) {
             Ok(lock) => lock,
@@ -298,6 +305,10 @@ impl PreferenceStore {
         let location = match &self.inner.location {
             Ok(location) => location,
             Err(error) => return error_reply(&request_id, *error),
+        };
+        let _operation = match self.inner.operation.lock() {
+            Ok(guard) => guard,
+            Err(_) => return error_reply(&request_id, StoreError::EnvironmentBlocked),
         };
         let _lock = match StoreLock::acquire(location) {
             Ok(lock) => lock,

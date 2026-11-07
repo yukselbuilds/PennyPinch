@@ -8,6 +8,46 @@ use uuid::Uuid;
 const REQUEST_ID: &str = "7132bced-3ce0-4c1b-8f48-d93d7b96f7ce";
 
 #[test]
+#[cfg(windows)]
+fn concurrent_readers_restore_saved_appearance() {
+    let fixture = Fixture::new();
+    snapshot(fixture.store.save_preferences(
+        REQUEST_ID.into(),
+        "en".into(),
+        "dark".into(),
+        0,
+        None,
+    ));
+    let path = fixture.store.file_path_for_test();
+    let original = fs::read(&path).unwrap();
+    let barrier = Arc::new(Barrier::new(5));
+    let mut workers = Vec::new();
+    for _ in 0..4 {
+        let store = fixture.store.clone();
+        let barrier = Arc::clone(&barrier);
+        workers.push(thread::spawn(move || {
+            barrier.wait();
+            (0..16)
+                .map(|_| store.get_preferences(REQUEST_ID.into()))
+                .collect::<Vec<_>>()
+        }));
+    }
+    barrier.wait();
+    let replies: Vec<_> = workers
+        .into_iter()
+        .flat_map(|worker| worker.join().unwrap())
+        .collect();
+    for reply in replies {
+        let loaded = snapshot(reply);
+        assert_eq!(loaded.preferences.language, "en");
+        assert_eq!(loaded.preferences.theme, "dark");
+        assert_eq!(loaded.revision, 1);
+    }
+    assert_eq!(fs::read(&path).unwrap(), original);
+    fixture.cleanup();
+}
+
+#[test]
 fn operating_preferences_migrate_without_rewrite_and_legacy_save_preserves_them() {
     use super::store::OperatingPreferences;
     let fixture = Fixture::new();
