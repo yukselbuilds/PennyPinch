@@ -1,6 +1,6 @@
 # H030 — pencere, tepsi ve açık çıkış
 
-7 Kasım2026. Durum: uygulama/yerel otomatik kabul tamam, gerçek tepsi menü etkileşimi açık; H030 kapanmadı, H031 başlamaz. Ana ajan süreç/ayar sahipliği ve kapanış kabulünü üstlenir. Mevcut tek Luna xhigh sabit sözleşmeli frontend dilimini tamamladı; root inceleme/düzeltme/native kabulü devraldı. Kanıt [tray-lifecycle](../proofs/tray-lifecycle.md).
+7 Kasım2026. Durum: H030 tamamlandı; otomatik native kabul, kullanıcının gerçek tepsi menü denemesi ve ana ajanın son native durum/fingerprint gözlemi bağlandı.29/51; H031 başlamaz. Ana ajan süreç/ayar sahipliği ve kapanış kabulünü üstlendi. Tek Luna xhigh sabit sözleşmeli frontend dilimini tamamladı; root inceleme/düzeltme/native kabulü devraldı. Kanıt [tray-lifecycle](../proofs/tray-lifecycle.md).
 
 ## Amaç ve kapsam
 
