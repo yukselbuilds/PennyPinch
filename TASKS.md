@@ -1,10 +1,10 @@
 # Headroom Desktop — Görev Listesi
 
-**Tarih:**7 Kasım2026
+**Tarih:** 8 Kasım 2026
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H011, H013–H032, H040, H046 ve **H047 tamamlandı:31/51.** H032 tema/iki dil kabul edildi; H033 başlamadı, ana görev sonunda duruldu. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
+**Durum:** H001–H005, H007–H008, H011, H013–H033, H040, H046 ve **H047 tamamlandı: 32/51.** H033 istatistik/tanı dışa aktarma kabul edildi; H034 başlamadı, ana görev sonunda duruldu. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
@@ -17,7 +17,7 @@
 - **Kabul:** [DESIGN.md](DESIGN.md) içindeki boş/gerçek/örnek veri ayrımı, tema/dil/ölçek/klavye, native render ve son yerel kalite kapısı. Ana ajan art direction/uygulama/inceleme sahibi; H029 başlamaz. Sahte tasarruf veya hesap/sohbet işlevi eklenmez.
 - **Durum:**6 Kasım tamamlandı. Emil design engineering yalnız projeye, immutable commit/MIT lisansıyla kuruldu; diğer üç kaynak incelendi.138 frontend/349 Rust PASS,6 opt-in ignored; aynı152 girdili derleme/test blokları ve gerçek native kontroller PASS. [Kanıt](docs/proofs/ui-taste.md), [inceleme](docs/reviews/UX001.md). Yerel Windows10; örnek veriler gerçek tasarruf değildir. Görev sonunda durulur.
 
-Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028–H032 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H033 başlamadı; kullanıcı devam mesajı beklenir.
+Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028–H033 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H034 başlamadı; kullanıcı devam mesajı beklenir.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -491,13 +491,16 @@ flowchart TD
 - **Dosyalar:** Mevcut `src/styles.css`, `src/App.tsx`, `src/features/settings/Settings.tsx`, `src/lib/metrics.ts` ve bileşen sözlükleri; `src-tauri/src/state/store.rs`, `src-tauri/src/state/store_tests.rs`. Yeni i18n katmanı/bağımlılığı gerekmedi.
 
 ### H033 — İstatistik ve tanı dışa aktarma
-- [ ] Kullanıcı dönem özetini JSON/CSV, sorun giderme bilgisini ayıklanmış rapor olarak alır.
+- **Durum:**8 Kasım tamamlandı; [plan021](docs/decisions/021-export.md), [kabul](docs/proofs/export.md), [inceleme](docs/reviews/H033.md). Ana ajan ölçüm/dosya güvenliği, entegrasyon ve kabul; mevcut tek Luna frontend/client dilimi sahibi.32/51; H034 başlamadı.
+- [x] Kullanıcı dönem özetini JSON/CSV, sorun giderme bilgisini ayıklanmış rapor olarak alır.
+- **Kanıt:**161 frontend/371 Rust PASS,8 opt-in ignored; fmt ve aynı aday TS/Vite/native build PASS.20 tema/dil/genişlik birleşimi +6 davranış grubu; gerçek Sky Save As ile JSON/CSV/tanı ve Cancel. Dosyalar tıklamadaki gerçek native capture ile18 kontrolde eşleşti; iptal3 dosyanın baytlarını korudu.16 toplu kontrol180 kaynak/config ve son artefact/ortamı bağlar (`work/proofs/export/acceptance.json`).
+- **Sınır:** Dışa aktarma aggregate dönem özetidir; ayrıntılı istek/model listesi veya maliyet tahmini değildir. Windows10 yerel; EN arayüz/client/renderer, native Save As TR. Yardımcı betiğin SQLite kilidinde kalan cleanup'ı ayrı kayıtla tamamlandı; asıl state baytları geri yüklendi, uygulama/port kapalı. Yardımcı hatası nedeniyle native exit code kaydı yoktur; uydurulmadı. Windows11/diğer OS/installer/canlı sağlayıcı/gerçek disk dolması kanıtı değildir.
 - **Kabul:** Token miktarıyla birlikte tasarruf yüzdesi, öncesi/sonrası toplamlar ve ölçüm kaynağı/kapsamı dışa aktarılır; ekrandaki aynı dönemle tutarlıdır. Bilinmeyen yüzde sıfıra dönüşmez; auth/içerik/kişisel yollar çıkmaz; dosya adı ve kodlama locale'e uygun.
 - **Doğrulama:** Dışa aktarma fixture'ları, formül başlangıçlı CSV alanları ve hassas alan taraması.
 - **Bağımlılık / boyut:** H027, H032 / M.
-- **Dosyalar:** `src-tauri/src/export/report.rs`, `src-tauri/src/export/report_tests.rs`, `src/features/activity/ExportButton.tsx`.
+- **Dosyalar:** `src-tauri/src/export/`, `src-tauri/src/integrations/picker.rs`, `src-tauri/src/main.rs`, `src/lib/exportReport.ts`, `src/features/overview/ExportButton.tsx`, `src/features/overview/export-button.css`, `src/features/overview/Overview.tsx`, `tests/app/export-report.test.mjs`.
 
-**Kontrol noktası K6 — H027–H033:** Başlat, duraklat, tepsi, kaldırma ve ayarlar günlük kullanımda tutarlı; raporlar sınırlı ve içeriksizdir.
+**Kontrol noktası K6 — H027–H033 tamamlandı:** Başlat, duraklat, tepsi, kaldırma ve ayarlar günlük kullanımda tutarlı; raporlar sınırlı ve içeriksizdir. Yerel kapsamın işletim sistemi/sağlayıcı sınırları kendi kanıtlarında saklıdır.
 
 ## Yayın adayı
 
@@ -694,4 +697,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**31/51 tamam; H032 tema ve iki dil kabulü kapandı.**153 frontend/363 Rust PASS,8 opt-in ignored; fmt/TS/Vite/native build PASS.48 ekran/durum ×5 genişlikte TR/EN/açık-koyu, locale, system/manual ve kayıt hatası kabulü geçti. Native üç normal oturumda dört birleşim ve manuel/system yeniden açılış doğrulandı; açılıştaki eşzamanlı tercih okuma çakışması giderildi.26 kontrol171 kaynak/config ile son artefact/ortamı bağladı; gerçek Run ve test öncesi state korundu. [Kabul](docs/proofs/theme-language.md), [inceleme](docs/reviews/H032.md). Sıradaki H033 istatistik/tanı dışa aktarma başlamadı; kullanıcı devam mesajı beklenir. Windows11/diğer OS, gerçek OS tema geçişi ve installer doğrulanmadı; ücretli Windows11 istisnası korunur. H041 API-key/uzun yük ve H038 installer/tokenizer paketleme açık; güncel devir `docs/IMPLEMENTATION_STATUS.md`.
+**32/51 tamam; H033 istatistik ve tanı dışa aktarma kabulü kapandı.**161 frontend/371 Rust PASS,8 opt-in ignored; fmt/TS/Vite/native build PASS. Seçili capture'ın JSON/locale CSV toplam/yüzde/kapsamı ve allowlist tanı raporu hazır. Native Save As ile üç dosya ve Cancel doğrulandı;18 dosya kontrolü ve16 toplu kontrol180 güncel kaynak/config ile son artefact/ortamı bağladı. Kapanıştaki QA SQLite kilidi ayrı geri yükleme kaydıyla çözüldü; state/Run korundu, uygulama/port kapalı, exit code bilinmiyor. [Kabul](docs/proofs/export.md), [inceleme](docs/reviews/H033.md). Sıradaki H034 hata/toparlama akışları başlamadı; kullanıcı devam mesajı beklenir. Windows11/diğer OS/installer/canlı sağlayıcı doğrulanmadı; ücretli Windows11 istisnası korunur. H041 API-key/uzun yük ve H038 installer/tokenizer paketleme açık; güncel devir `docs/IMPLEMENTATION_STATUS.md`.

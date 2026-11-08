@@ -14,6 +14,7 @@ import {
 } from "../../lib/metrics";
 import type { ClientKind } from "../../lib/integrations";
 import { Icon } from "../../components/Icon";
+import { ExportButton } from "./ExportButton";
 
 const copy = {
   tr: {
@@ -268,6 +269,7 @@ export function Overview(props: OverviewProps) {
         <div>
           <h2>{t.heading}</h2>
         </div>
+        <div className="overview__actions">
         <div className="overview__period" role="group" aria-label={t.period}>
           {periodOptions.map((period) => (
             <button
@@ -279,6 +281,8 @@ export function Overview(props: OverviewProps) {
               {t.periods[period]}
             </button>
           ))}
+        </div>
+        <ExportButton language={props.language} snapshotRequestId={snapshot?.request_id ?? null} />
         </div>
       </div>
 

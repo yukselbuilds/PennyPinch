@@ -1,4 +1,5 @@
 mod desktop;
+mod export;
 mod integrations;
 pub mod metrics;
 mod runtime;
@@ -143,20 +144,55 @@ async fn get_metrics_summary(
 #[tauri::command]
 async fn get_overview_snapshot(
     state: tauri::State<'_, OverviewManager>,
+    reports: tauri::State<'_, export::report::ReportManager>,
     request: MetricsQueryRequest,
 ) -> Result<OverviewReply, OverviewReply> {
     let overview = state.inner().clone();
     let request_id = request.request_id.clone();
-    Ok(
-        tauri::async_runtime::spawn_blocking(move || overview.read(request))
-            .await
-            .unwrap_or_else(|_| {
-                OverviewReply::Error(MetricsStore::error_detail(
-                    request_id,
-                    MetricsError::Unavailable,
-                ))
-            }),
-    )
+    let reply = tauri::async_runtime::spawn_blocking(move || overview.read(request))
+        .await
+        .unwrap_or_else(|_| {
+            OverviewReply::Error(MetricsStore::error_detail(
+                request_id,
+                MetricsError::Unavailable,
+            ))
+        });
+    if let OverviewReply::Snapshot(snapshot) = &reply {
+        reports.remember(snapshot);
+    }
+    Ok(reply)
+}
+
+#[tauri::command]
+async fn export_report(
+    app: tauri::AppHandle,
+    reports: tauri::State<'_, export::report::ReportManager>,
+    runtime: tauri::State<'_, RuntimeManager>,
+    request: export::report::Request,
+) -> Result<export::report::Reply, export::report::Reply> {
+    use export::report::{failure, Error};
+    let id = request.request_id.clone();
+    if app.state::<desktop::lifecycle::Lifecycle>().is_exiting() {
+        return Ok(failure(&id, Error::Busy));
+    }
+    let job = match reports.begin(request) {
+        Ok(job) => job,
+        Err(error) => return Ok(failure(&id, error)),
+    };
+    let snapshot = runtime.get_runtime_snapshot(uuid::Uuid::new_v4().to_string());
+    let owner = app
+        .get_webview_window("main")
+        .and_then(|w| w.hwnd().ok())
+        .map(|h| h.0 as usize);
+    Ok(tauri::async_runtime::spawn_blocking(move || {
+        job.save(&snapshot, |artifact| {
+            owner
+                .ok_or(())
+                .and_then(|owner| picker::save_report(owner, artifact))
+        })
+    })
+    .await
+    .unwrap_or_else(|_| failure(&id, Error::Unavailable)))
 }
 
 #[tauri::command]
@@ -285,10 +321,13 @@ fn confirm_desktop_exit(
     app: tauri::AppHandle,
     state: tauri::State<'_, desktop::lifecycle::Lifecycle>,
     plans: tauri::State<'_, Arc<PlanManager>>,
+    reports: tauri::State<'_, export::report::ReportManager>,
     request_id: String,
     exit_token: String,
 ) -> desktop::lifecycle::Reply {
-    let (reply, started) = state.confirm(&request_id, &exit_token, || plans.hold_for_exit());
+    let (reply, started) = state.confirm(&request_id, &exit_token, || {
+        reports.hold_for_exit(|| plans.hold_for_exit())
+    });
     desktop::lifecycle::notify(&app);
     if started {
         app.exit(0);
@@ -559,6 +598,7 @@ fn main() {
             app.manage(codex_verifier);
             app.manage(metrics);
             app.manage(overview);
+            app.manage(export::report::ReportManager::default());
             app.manage(desktop::lifecycle::Lifecycle::default());
             app.manage(desktop::autostart::Autostart::new());
             let close_to_tray = app
@@ -592,6 +632,7 @@ fn main() {
             get_ingress_snapshot,
             get_metrics_summary,
             get_overview_snapshot,
+            export_report,
             get_activity_snapshot,
             get_activity_detail,
             get_preferences,

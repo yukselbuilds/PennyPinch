@@ -13,9 +13,10 @@ mod windows_picker {
     };
     use windows::Win32::UI::Shell::Common::COMDLG_FILTERSPEC;
     use windows::Win32::UI::Shell::{
-        FileOpenDialog, IFileOpenDialog, IShellItem, SHCreateItemFromParsingName,
-        FOS_DONTADDTORECENT, FOS_FILEMUSTEXIST, FOS_FORCEFILESYSTEM, FOS_NOCHANGEDIR,
-        FOS_NODEREFERENCELINKS, FOS_PATHMUSTEXIST, FOS_PICKFOLDERS, SIGDN_FILESYSPATH,
+        FileOpenDialog, FileSaveDialog, IFileOpenDialog, IFileSaveDialog, IShellItem,
+        SHCreateItemFromParsingName, FOS_DONTADDTORECENT, FOS_FILEMUSTEXIST, FOS_FORCEFILESYSTEM,
+        FOS_NOCHANGEDIR, FOS_NODEREFERENCELINKS, FOS_PATHMUSTEXIST, FOS_PICKFOLDERS,
+        FOS_STRICTFILETYPES, SIGDN_FILESYSPATH,
     };
 
     const MAX_PATH_UNITS: usize = 32_767;
@@ -47,6 +48,86 @@ mod windows_picker {
             if !self.0 .0.is_null() {
                 unsafe { CoTaskMemFree(Some(self.0 .0.cast::<c_void>())) };
             }
+        }
+    }
+
+    fn filesystem_path(item: IShellItem) -> Result<PathBuf, ()> {
+        let display_name = unsafe { item.GetDisplayName(SIGDN_FILESYSPATH).map_err(|_| ())? };
+        let memory = TaskMemory(display_name);
+        let raw = memory.0 .0;
+        if raw.is_null() {
+            return Err(());
+        }
+        let length = (0..=MAX_PATH_UNITS)
+            .find(|&index| unsafe { raw.add(index).read() == 0 })
+            .ok_or(())?;
+        if length == 0 {
+            return Err(());
+        }
+        let units = unsafe { std::slice::from_raw_parts(raw, length) };
+        Ok(PathBuf::from(OsString::from_wide(units)))
+    }
+
+    pub(super) fn save_report(
+        owner_hwnd: usize,
+        name: &str,
+        extension: &str,
+        turkish: bool,
+    ) -> Result<Option<PathBuf>, ()> {
+        if owner_hwnd == 0 || !matches!(extension, "json" | "csv") {
+            return Err(());
+        }
+        let _apartment = ComApartment::initialize()?;
+        let dialog: IFileSaveDialog = unsafe {
+            CoCreateInstance(&FileSaveDialog, None, CLSCTX_INPROC_SERVER).map_err(|_| ())?
+        };
+        let wide = |s: &str| s.encode_utf16().chain(Some(0)).collect::<Vec<_>>();
+        let title = wide(if turkish {
+            "Raporu kaydet"
+        } else {
+            "Save report"
+        });
+        let name = wide(name);
+        let extension = wide(extension);
+        let pattern = wide(if extension[0] == b'j' as u16 {
+            "*.json"
+        } else {
+            "*.csv"
+        });
+        let label = wide(if extension[0] == b'j' as u16 {
+            "JSON"
+        } else {
+            "CSV (UTF-8)"
+        });
+        let filters = [COMDLG_FILTERSPEC {
+            pszName: PCWSTR(label.as_ptr()),
+            pszSpec: PCWSTR(pattern.as_ptr()),
+        }];
+        unsafe {
+            dialog
+                .SetOptions(
+                    FOS_FORCEFILESYSTEM
+                        | FOS_PATHMUSTEXIST
+                        | FOS_NOCHANGEDIR
+                        | FOS_NODEREFERENCELINKS
+                        | FOS_DONTADDTORECENT
+                        | FOS_STRICTFILETYPES,
+                )
+                .map_err(|_| ())?;
+            dialog.SetFileTypes(&filters).map_err(|_| ())?;
+            dialog
+                .SetDefaultExtension(PCWSTR(extension.as_ptr()))
+                .map_err(|_| ())?;
+            dialog.SetFileName(PCWSTR(name.as_ptr())).map_err(|_| ())?;
+            dialog.SetTitle(PCWSTR(title.as_ptr())).map_err(|_| ())?;
+            if let Err(error) = dialog.Show(Some(HWND(owner_hwnd as *mut c_void))) {
+                return if error.code() == HRESULT_CANCELLED {
+                    Ok(None)
+                } else {
+                    Err(())
+                };
+            }
+            filesystem_path(dialog.GetResult().map_err(|_| ())?).map(Some)
         }
     }
 
@@ -102,31 +183,7 @@ mod windows_picker {
             }
 
             let item = dialog.GetResult().map_err(|_| ())?;
-            let display_name = item.GetDisplayName(SIGDN_FILESYSPATH).map_err(|_| ())?;
-            let memory = TaskMemory(display_name);
-            let raw = memory.0 .0;
-            if raw.is_null() {
-                return Err(());
-            }
-            let mut length = None;
-            for index in 0..=MAX_PATH_UNITS {
-                if raw.add(index).read() == 0 {
-                    length = Some(index);
-                    break;
-                }
-            }
-            let Some(length) = length else {
-                return Err(());
-            };
-            if length == 0 {
-                return Err(());
-            }
-            let units = std::slice::from_raw_parts(raw, length);
-            let path = OsString::from_wide(units);
-            if path.is_empty() {
-                return Err(());
-            }
-            Ok(Some(PathBuf::from(path)))
+            filesystem_path(item).map(Some)
         }
     }
 
@@ -178,31 +235,31 @@ mod windows_picker {
             }
 
             let item = dialog.GetResult().map_err(|_| ())?;
-            let display_name = item.GetDisplayName(SIGDN_FILESYSPATH).map_err(|_| ())?;
-            let memory = TaskMemory(display_name);
-            let raw = memory.0 .0;
-            if raw.is_null() {
-                return Err(());
-            }
-            let mut length = None;
-            for index in 0..=MAX_PATH_UNITS {
-                if raw.add(index).read() == 0 {
-                    length = Some(index);
-                    break;
-                }
-            }
-            let Some(length) = length else {
-                return Err(());
-            };
-            if length == 0 {
-                return Err(());
-            }
-            let path = OsString::from_wide(std::slice::from_raw_parts(raw, length));
-            if path.is_empty() {
-                return Err(());
-            }
-            Ok(Some(PathBuf::from(path)))
+            filesystem_path(item).map(Some)
         }
+    }
+}
+
+pub(crate) fn save_report(
+    owner: usize,
+    artifact: &crate::export::report::Artifact,
+) -> Result<Option<PathBuf>, ()> {
+    #[cfg(windows)]
+    {
+        let name = artifact.suggested_name.clone();
+        let extension = artifact.extension;
+        let turkish = artifact.language == crate::export::report::Language::Tr;
+        return std::thread::Builder::new()
+            .name("headroom-export-picker-sta".into())
+            .spawn(move || windows_picker::save_report(owner, &name, extension, turkish))
+            .map_err(|_| ())?
+            .join()
+            .map_err(|_| ())?;
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = (owner, artifact);
+        Err(())
     }
 }
 
