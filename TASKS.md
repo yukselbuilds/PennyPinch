@@ -4,7 +4,7 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H011, H013–H033, H040, H046 ve **H047 tamamlandı: 32/51.** H033 istatistik/tanı dışa aktarma kabul edildi; H034 başlamadı, ana görev sonunda duruldu. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
+**Durum:** H001–H005, H007–H008, H011, H013–H034, H040, H046 ve **H047 tamamlandı: 33/51.** H034 hata ve toparlama akışları yerel kapsamda kabul edildi; H035 başlamadı, ana görev sonunda duruldu. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
@@ -17,7 +17,7 @@
 - **Kabul:** [DESIGN.md](DESIGN.md) içindeki boş/gerçek/örnek veri ayrımı, tema/dil/ölçek/klavye, native render ve son yerel kalite kapısı. Ana ajan art direction/uygulama/inceleme sahibi; H029 başlamaz. Sahte tasarruf veya hesap/sohbet işlevi eklenmez.
 - **Durum:**6 Kasım tamamlandı. Emil design engineering yalnız projeye, immutable commit/MIT lisansıyla kuruldu; diğer üç kaynak incelendi.138 frontend/349 Rust PASS,6 opt-in ignored; aynı152 girdili derleme/test blokları ve gerçek native kontroller PASS. [Kanıt](docs/proofs/ui-taste.md), [inceleme](docs/reviews/UX001.md). Yerel Windows10; örnek veriler gerçek tasarruf değildir. Görev sonunda durulur.
 
-Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028–H033 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H034 başlamadı; kullanıcı devam mesajı beklenir.
+Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028–H034 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H035 başlamadı; kullanıcı devam mesajı beklenir.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -505,14 +505,17 @@ flowchart TD
 ## Yayın adayı
 
 ### H034 — Hata ve toparlama akışları
-- [ ] Motor çökmesi, auth hatası, eksik runtime ve config çakışması kullanıcı akışları tamamlanır.
+- **Durum:** 8 Kasım tamamlandı; [plan 022](docs/decisions/022-recovery.md), [kabul](docs/proofs/recovery.md), [inceleme](docs/reviews/H034.md). Ana ajan teşhis, kayıt/süreç sahipliği, entegrasyon ve kabul sahibi; aynı tek Luna strict istemci/yardım bileşeni dilimini tamamladı. 33/51; H035 başlamadı.
+- [x] Motor çökmesi, auth hatası, eksik runtime ve config çakışması kullanıcı akışları tamamlanır.
+- **Kanıt:** 168 frontend/379 Rust PASS, 8 opt-in ignored; fmt/TS/Vite/custom-protocol build PASS. 20 tema/dil/genişlik birleşimi ve 8 davranış grubu; gerçek Sky tıklamasıyla stopped → hazır motor, ayrı kalıcı giriş, trafik yok ve eski raporun geçersizliği gözlendi. Üç gerçek native yanıt strict istemciyle çözüldü; exit0/kapalı owned portlar/state geri yükleme doğrulandı. 18 kabul kontrolü 187 güncel kaynak/config ile son artefact/ortamı bağlar (`work/proofs/recovery/acceptance.json`).
+- **Sınır:** Arıza enjeksiyonu gerçek manager'ın public durumlarını ve gerçek Windows config fixture'larını kullanır; canlı auth arızası veya gerçek motor sürecini zorla çökertme değildir. Bilinmeyen hata katmanı unknown kalır; 401/403/giriş mesajı varsa istemcide oturum açma rehberi verilir. Yeni sağlayıcı çağrısı, auth/config onarımı veya otomatik bypass yok. Kurulum güncelliği metadata kontrolüdür; hash/protokol/sağlayıcı başarı kanıtı değildir. Yerel Windows10; Windows11/diğer OS/installer/uzun yük doğrulanmadı.
 - **Kabul:** Sınırlı yeniden deneme; doğru sonraki adım; sahte başarı ve yabancı süreç sonlandırma yok.
 - **Ek kabul:** İçeriksiz “Bağlantıyı denetle” raporu engine sağlığı, config kapsamı, kalıcı endpoint ve son gerçek trafik sinyalini ayırır. Otomatik teşhis config/auth yazmaz; onarım gerekirse önizleme/sahiplik kuralları kullanılır. Trafik gözlenmemesi tek başına yönlendirme kaçağı veya tasarruf0 kanıtı değildir.
 - **Katmanlı hata kabulü:** Etkin bir hook/filtre varsa hata kaynağı ancak gözlenebildiğinde Headroom rotası, istemci/shell katmanı veya bilinmiyor olarak ayrılır. Çıkış kodu ve hata durumu maskelenmez; tanı ham konuşma/secret saklamaz. Otomatik bypass, model/auth değişimi veya kör tekrar yoktur.
 - **Güncelleme sonrası:** Önceki uyumluluk kanıtı stale gösterilir; yeni sürümün gerçek config/protokol/özellik yolu kontrollü biçimde yeniden doğrulanır ve gerekirse istemcinin yeniden açılması söylenir. Bilinmiyor bozuk demek değildir; normal akış kullanıcıdan binary seçmesini istemez.
 - **Doğrulama:** Fault injection; stale doğrulama ve konfigürasyon değişimi senaryoları.
 - **Bağımlılık / boyut:** H033 / M.
-- **Dosyalar:** `src-tauri/src/runtime/recovery.rs`, `src-tauri/src/runtime/recovery_tests.rs`, `src/components/ProblemNotice.tsx`.
+- **Dosyalar:** `src-tauri/src/runtime/recovery.rs`, `src-tauri/src/runtime/recovery_tests.rs`, `src-tauri/src/integrations/config_io/recovery.rs`, `src-tauri/src/integrations/discovery.rs`, `src-tauri/src/main.rs`, `src/lib/recovery.ts`, `src/components/ProblemNotice.tsx`, `src/components/problem-notice.css`, `src/App.tsx`, `src/features/integrations/Applications.tsx`, ilgili testler.
 
 ### H035 — Erişilebilirlik ve performans
 - [ ] Klavye, kontrast, ekran okuyucu adları ve yüksek DPI sonuçları tamamlanır.
@@ -697,4 +700,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**32/51 tamam; H033 istatistik ve tanı dışa aktarma kabulü kapandı.**161 frontend/371 Rust PASS,8 opt-in ignored; fmt/TS/Vite/native build PASS. Seçili capture'ın JSON/locale CSV toplam/yüzde/kapsamı ve allowlist tanı raporu hazır. Native Save As ile üç dosya ve Cancel doğrulandı;18 dosya kontrolü ve16 toplu kontrol180 güncel kaynak/config ile son artefact/ortamı bağladı. Kapanıştaki QA SQLite kilidi ayrı geri yükleme kaydıyla çözüldü; state/Run korundu, uygulama/port kapalı, exit code bilinmiyor. [Kabul](docs/proofs/export.md), [inceleme](docs/reviews/H033.md). Sıradaki H034 hata/toparlama akışları başlamadı; kullanıcı devam mesajı beklenir. Windows11/diğer OS/installer/canlı sağlayıcı doğrulanmadı; ücretli Windows11 istisnası korunur. H041 API-key/uzun yük ve H038 installer/tokenizer paketleme açık; güncel devir `docs/IMPLEMENTATION_STATUS.md`.
+**33/51 tamam; H034 hata ve toparlama kabulü kapandı.** 168 frontend/379 Rust PASS, 8 opt-in ignored; fmt/TS/Vite/native build PASS. Salt okunur “Bağlantıyı denetle” motor, kalıcı giriş, üç uygulamanın config kapsamı ve son yerel trafik işaretini ayırır; tarama/motor değişimi eski raporu geçersiz kılar. Arıza/kapsam/güncelleme senaryoları ve native stopped → ready akışı doğrulandı. 18 kabul kontrolü 187 kaynak/config ile son artefact/ortamı bağladı; exit0, state/Run koruması ve kapalı owned portlar kaydedildi. [Kabul](docs/proofs/recovery.md), [inceleme](docs/reviews/H034.md). Sıradaki H035 erişilebilirlik ve performans başlamadı; kullanıcı devam mesajı beklenir. Yerel Windows10; canlı sağlayıcı/auth arızası, gerçek süreç çökertme, Windows11/diğer OS/installer/uzun yük doğrulanmadı. H041 API-key ve H038 paketleme açık; güncel devir `docs/IMPLEMENTATION_STATUS.md`.

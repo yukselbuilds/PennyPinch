@@ -163,10 +163,11 @@ const commandFileNames: Record<ClientKind, string> = {
   opencode: "opencode.exe, opencode.cmd, opencode.bat",
 };
 
-export function Applications({ language, requestedClient, onBusyChange }: {
+export function Applications({ language, requestedClient, onBusyChange, onDiscoveryChange }: {
   language: PreferenceLanguage;
   requestedClient: ClientKind | null;
   onBusyChange: (busy: boolean) => void;
+  onDiscoveryChange?: (generation: number) => void;
 }) {
   const text = copy[language];
   const [state, setState] = useState<ViewState>(() => isDiscoveryAvailable() ? { kind: "loading" } : { kind: "unavailable" });
@@ -189,6 +190,7 @@ export function Applications({ language, requestedClient, onBusyChange }: {
   function showResult(result: DiscoveryResult, preserveLastScan: boolean, source: OperationSource) {
     setNotice(null);
     if (result.kind === "snapshot") {
+      onDiscoveryChange?.(result.snapshot.scan_generation);
       setState({ kind: "ready", snapshot: result.snapshot });
     } else if (result.kind === "desktop_unavailable") {
       setState({ kind: "unavailable" });

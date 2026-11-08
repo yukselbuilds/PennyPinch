@@ -202,6 +202,34 @@ fn snapshot(reply: DiscoveryReply) -> super::discovery::DiscoverySnapshot {
 }
 
 #[test]
+fn recovery_detects_updated_and_missing_installations_without_executing_them() {
+    let fixture = Fixture::new();
+    let package = fixture.at("npm/node_modules/@openai/codex");
+    write_file(&package.join("package.json"), br#"{"name":"@openai/codex","version":"0.163.0-alpha.10.2","bin":{"codex":"bin/codex.js"}}"#);
+    let binary = package.join("bin/codex.js");
+    write_file(&binary, b"never execute this fixture");
+    let manager = DiscoveryManager::new();
+    assert!(manager.recovery_scan().is_none());
+    let inputs = || DiscoveryInputs {
+        npm_roots: vec![fixture.at("npm")],
+        ..Default::default()
+    };
+    snapshot(manager.scan_with_inputs(REQUEST_ID.into(), inputs()));
+    let first = manager.recovery_scan().unwrap();
+    assert_eq!(first.installations.len(), 1);
+    assert_eq!(first.installations[0].1, "current");
+    write_file(&binary, b"changed executable metadata; never execute");
+    assert_eq!(manager.recovery_scan().unwrap().installations[0].1, "stale");
+    snapshot(manager.scan_with_inputs(REQUEST_ID.into(), inputs()));
+    assert_eq!(
+        manager.recovery_scan().unwrap().installations[0].1,
+        "current"
+    );
+    fs::remove_file(&binary).unwrap();
+    assert_eq!(manager.recovery_scan().unwrap().installations[0].1, "stale");
+}
+
+#[test]
 fn initial_state_is_not_scanned_and_absence_is_not_unsupported() {
     let manager = DiscoveryManager::new();
     let initial = snapshot(manager.list_snapshot(REQUEST_ID.to_owned()));

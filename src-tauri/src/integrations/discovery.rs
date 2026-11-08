@@ -95,6 +95,12 @@ struct DiscoveryState {
 struct InstallationObservation {
     identity: FileIdentity,
     size_bytes: u64,
+    modified: std::time::SystemTime,
+}
+
+pub(crate) struct RecoveryScan {
+    pub generation: u64,
+    pub installations: Vec<(InstallationSummary, &'static str)>,
 }
 
 #[derive(Clone)]
@@ -252,6 +258,44 @@ impl DiscoveryManager {
     ) -> Result<InstallationSummary, InstallationSelectionError> {
         self.select_installation_with_path(installation_id, expected_scan_generation)
             .map(|(summary, _)| summary)
+    }
+
+    /// Metadata freshness only; this neither executes a client nor proves its protocol.
+    pub(crate) fn recovery_scan(&self) -> Option<RecoveryScan> {
+        if self.inner.scanning.load(Ordering::SeqCst) {
+            return None;
+        }
+        let state = self.inner.state.read().unwrap_or_else(|p| p.into_inner());
+        if !state.scanned {
+            return None;
+        }
+        let installations = state
+            .installations
+            .iter()
+            .map(|summary| {
+                let current = state.paths.get(&summary.installation_id).and_then(|path| {
+                    observe_candidate(&Candidate {
+                        kind: summary.client_kind,
+                        surface: summary.surface,
+                        version: summary.version.clone(),
+                        source: summary.source,
+                        location_label: summary.location_label,
+                        identity_path: path.clone(),
+                        executable_path: path.clone(),
+                    })
+                });
+                let freshness = match (state.observations.get(&summary.installation_id), current) {
+                    (Some(before), Some(after)) if *before == after => "current",
+                    (Some(_), _) => "stale",
+                    _ => "unknown",
+                };
+                (summary.clone(), freshness)
+            })
+            .collect();
+        Some(RecoveryScan {
+            generation: state.generation,
+            installations,
+        })
     }
 
     pub(crate) fn select_installation_with_path(
@@ -988,6 +1032,10 @@ fn observe_candidate(candidate: &Candidate) -> Option<InstallationObservation> {
     Some(InstallationObservation {
         identity: choice.identity,
         size_bytes: choice.size_bytes,
+        modified: fs::metadata(&choice.executable_path)
+            .ok()?
+            .modified()
+            .ok()?,
     })
 }
 

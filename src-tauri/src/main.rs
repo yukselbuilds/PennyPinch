@@ -128,6 +128,30 @@ fn get_ingress_snapshot(
 }
 
 #[tauri::command]
+async fn get_recovery_snapshot(
+    recovery: tauri::State<'_, runtime::recovery::RecoveryManager>,
+    runtime: tauri::State<'_, RuntimeManager>,
+    discovery: tauri::State<'_, DiscoveryManager>,
+    plans: tauri::State<'_, Arc<PlanManager>>,
+    overview: tauri::State<'_, OverviewManager>,
+    request: runtime::recovery::Request,
+) -> Result<runtime::recovery::Reply, runtime::recovery::Reply> {
+    let (recovery, runtime, discovery, plans, overview) = (
+        recovery.inner().clone(),
+        runtime.inner().clone(),
+        discovery.inner().clone(),
+        plans.inner().clone(),
+        overview.inner().clone(),
+    );
+    let id = request.request_id.clone();
+    Ok(tauri::async_runtime::spawn_blocking(move || {
+        recovery.read(request, &runtime, &discovery, &plans, &overview)
+    })
+    .await
+    .unwrap_or_else(|_| runtime::recovery::failure(id, "unavailable")))
+}
+
+#[tauri::command]
 async fn get_metrics_summary(
     state: tauri::State<'_, MetricsStore>,
     request: MetricsQueryRequest,
@@ -599,6 +623,7 @@ fn main() {
             app.manage(metrics);
             app.manage(overview);
             app.manage(export::report::ReportManager::default());
+            app.manage(runtime::recovery::RecoveryManager::default());
             app.manage(desktop::lifecycle::Lifecycle::default());
             app.manage(desktop::autostart::Autostart::new());
             let close_to_tray = app
@@ -630,6 +655,7 @@ fn main() {
             cancel_desktop_exit,
             confirm_desktop_exit,
             get_ingress_snapshot,
+            get_recovery_snapshot,
             get_metrics_summary,
             get_overview_snapshot,
             export_report,

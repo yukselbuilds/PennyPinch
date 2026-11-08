@@ -18,6 +18,93 @@ const ENDPOINT_ID: &str = "019a0000-0000-7000-8000-d00000000042";
 mod disconnect;
 
 #[test]
+fn recovery_rechecks_owned_config_for_all_adapters_without_writing_or_repairing() {
+    use super::plan::ClientKind;
+    for (client, kind, path, original, version, discovery_kind) in [
+        ("codex", ClientKind::Codex, "codex/config.toml", b"model = 'model-any'\n".as_slice(), "0.163.0-alpha.10.2", "codex"),
+        ("claude_code", ClientKind::ClaudeCode, "claude/settings.json", b"{\"model\":\"model-any\"}".as_slice(), "2.1.158", "claude_code"),
+        ("opencode_v1", ClientKind::OpenCodeV1, "xdg/opencode/opencode.json", b"{\"provider\":{\"openai\":{\"npm\":\"@ai-sdk/openai\",\"models\":{\"model-any\":{}}}}}".as_slice(), "1.19.3", "opencode"),
+    ] {
+        let fixture = Fixture::new();
+        let config = fixture.path(path);
+        write_file(&config, original);
+        let auth = config.parent().unwrap().join("auth.json");
+        write_file(&auth, b"PRIVATE_AUTH_FILE_CANARY");
+        let (manager, id, generation) = manager(&fixture, client, config.clone());
+        let installation = super::discovery::InstallationSummary {
+            installation_id: id.clone(), client_kind: discovery_kind, surface: "cli", version: Some(version.into()),
+            source: "user_local_npm", location_label: "user_local", status: "detected", connection_status: "not_connected",
+        };
+        assert_eq!(manager.recovery_config(kind, Some(&installation), generation).state, "not_owned");
+        let plan = preview(&manager, id, generation);
+        let owned = apply(&manager, &plan).ownership.unwrap();
+        let before = fs::read(&config).unwrap();
+        let result = manager.recovery_config(kind, Some(&installation), generation);
+        assert_eq!(result.state, "matches_owned_endpoint", "{client}");
+        assert_eq!(result.scope, "user_config");
+        assert_eq!(result.endpoint, Some((ENDPOINT_ID.into(), 41731)));
+        assert_eq!(fs::read(&config).unwrap(), before);
+        assert_eq!(manager.recovery_config(kind, None, generation).state, "not_rechecked");
+        let tampered = String::from_utf8(before.clone()).unwrap().replace("41731", "41732");
+        assert_ne!(tampered.as_bytes(), before);
+        write_file(&config, tampered.as_bytes());
+        assert_eq!(manager.recovery_config(kind, Some(&installation), generation).state, "conflict");
+        assert_eq!(fs::read(&config).unwrap(), tampered.as_bytes());
+        write_file(&config, b"invalid config; PRIVATE_CONFIG_CANARY");
+        let changed = fs::read(&config).unwrap();
+        let result = manager.recovery_config(kind, Some(&installation), generation);
+        assert_ne!(result.state, "matches_owned_endpoint");
+        assert_eq!(fs::read(&config).unwrap(), changed);
+        assert_eq!(fs::read(&auth).unwrap(), b"PRIVATE_AUTH_FILE_CANARY");
+        let snapshot = success(manager.ownership_snapshot(OwnershipSnapshotRequest {
+            schema_version: 1, request_id: Uuid::new_v4().to_string(), client_kind: client.into(),
+        })).ownership.unwrap();
+        assert_eq!(snapshot.record_fingerprint, owned.record_fingerprint);
+        assert!(manager.hold_for_exit());
+        assert_eq!(manager.recovery_config(kind, Some(&installation), generation).state, "busy");
+        assert_eq!(fs::read(&config).unwrap(), changed);
+    }
+}
+
+#[test]
+fn recovery_does_not_reuse_user_scope_evidence_for_another_claude_project() {
+    use super::plan::ClientKind;
+    let fixture = Fixture::new();
+    let config = fixture.path("claude-user/settings.json");
+    write_file(&config, b"{}");
+    let project = fixture.path("separate-project");
+    fs::create_dir(&project).unwrap();
+    let picker = Arc::new(Mutex::new(Some(project.clone())));
+    let roots = root_inputs("claude_code", &config);
+    let (manager, id, generation) = manager_with_providers_and_project_picker(
+        &fixture,
+        "claude_code",
+        move || roots.clone(),
+        || stable_endpoint(41731),
+        Some(picker),
+    );
+    let installation = super::discovery::InstallationSummary {
+        installation_id: id.clone(),
+        client_kind: "claude_code",
+        surface: "cli",
+        version: Some("2.1.158".into()),
+        source: "user_local_npm",
+        location_label: "user_local",
+        status: "detected",
+        connection_status: "not_connected",
+    };
+    let plan = preview(&manager, id, generation);
+    apply(&manager, &plan);
+    let bytes = fs::read(&config).unwrap();
+    select_claude_project(&manager);
+    let report = manager.recovery_config(ClientKind::ClaudeCode, Some(&installation), generation);
+    assert_eq!(report.state, "not_rechecked");
+    assert_eq!(report.scope, "user_config");
+    assert_eq!(fs::read(&config).unwrap(), bytes);
+    assert!(!project.join(".claude").exists());
+}
+
+#[test]
 fn exit_hold_blocks_new_config_writers_without_touching_user_bytes() {
     let fixture = Fixture::new();
     let config = fixture.path("exit/config.toml");

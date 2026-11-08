@@ -27,6 +27,8 @@ mod codex_verify;
 mod connection_actions;
 #[path = "config_io/opencode_environment.rs"]
 pub(super) mod opencode_environment;
+#[path = "config_io/recovery.rs"]
+mod recovery;
 
 pub(crate) use claude_context::{
     ClaudeContextErrorDetail, ClaudeContextErrorReply, ClaudeContextReply,

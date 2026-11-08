@@ -420,7 +420,7 @@ pub(super) fn supported_version(kind: ClientKind, version: &str) -> bool {
     }
 }
 
-pub(super) fn supported_installation(
+pub(crate) fn supported_installation(
     kind: ClientKind,
     surface: &str,
     version: Option<&str>,

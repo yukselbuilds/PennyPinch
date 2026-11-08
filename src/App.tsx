@@ -31,6 +31,7 @@ import type { MetricPeriod } from "./lib/metrics";
 import type { RuntimeAction } from "./lib/optimization";
 import { windowZoomClient, type WindowScale } from "./lib/windowZoom";
 import { HeadroomMark, Icon } from "./components/Icon";
+import { ProblemNotice } from "./components/ProblemNotice";
 import { DesktopLifecycle } from "./components/DesktopLifecycle";
 import { Settings } from "./features/settings/Settings";
 
@@ -179,8 +180,11 @@ export default function App() {
   const [period, setPeriod] = useState<MetricPeriod>("session");
   const [requestedClient, setRequestedClient] = useState<ClientKind | null>(null);
   const [applicationsBusy, setApplicationsBusy] = useState(false);
+  const [recoveryRevision, setRecoveryRevision] = useState(0);
+  const [recoveryScanGeneration, setRecoveryScanGeneration] = useState<number | null>(null);
   const applicationsLock = useRef(false);
   const onApplicationsBusy = useCallback((busy: boolean) => {
+    if (busy && !applicationsLock.current) setRecoveryRevision(value => value + 1);
     applicationsLock.current = busy;
     setApplicationsBusy(busy);
   }, []);
@@ -410,7 +414,7 @@ export default function App() {
     onPeriodChange={setPeriod} onRefresh={overview.refresh} onConnect={connect}
     onOpenApplications={() => navigate("applications")} onStart={() => void runLifecycle("start")} onStop={() => void runLifecycle("stop")}
     onPause={()=>void runLifecycle("pause")} onResume={()=>void runLifecycle("resume")} onRuntimeRefresh={retrySnapshot} />
-    : screen === "applications" ? <Applications language={language} requestedClient={requestedClient} onBusyChange={onApplicationsBusy} />
+    : screen === "applications" ? <Applications language={language} requestedClient={requestedClient} onBusyChange={onApplicationsBusy} onDiscoveryChange={setRecoveryScanGeneration} />
     : screen === "activity" ? <Activity language={language} {...activity} /> : renderSettings(
     labels,
     theme,
@@ -450,6 +454,12 @@ export default function App() {
       </header>
       <SnapshotNotice readIssue={readIssue} commandError={commandError} engineError={snapshot?.engine.error_code ?? null} onRetry={retrySnapshot} labels={labels} />
       {content}
+      {(screen === "overview" || screen === "applications") && <ProblemNotice
+        language={language} disabled={applicationsBusy || pending !== null}
+        contextKey={`${recoveryRevision}:${recoveryScanGeneration ?? "none"}:${snapshot?.runtime_generation ?? "none"}:${snapshot?.engine.status ?? "unknown"}:${snapshot?.engine.error_code ?? "none"}`}
+        onOpenApplications={() => navigate("applications")}
+        onOpenOverview={() => navigate("overview")}
+      />}
       <footer className="mobile-footer">{labels.footer}</footer>
     </main>
   </div>;

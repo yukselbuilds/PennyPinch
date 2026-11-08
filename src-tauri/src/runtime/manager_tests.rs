@@ -10,6 +10,95 @@ use std::sync::mpsc;
 const REQUEST_ID: &str = "7132bced-3ce0-4c1b-8f48-d93d7b96f7ce";
 const GENERATION: &str = "6132bced3ce04c1b8f48d93d7b96f7ce";
 
+#[test]
+fn recovery_real_manager_failure_snapshots_do_not_start_repair_or_touch_another_listener() {
+    use crate::integrations::{config_io::PlanManager, discovery::DiscoveryManager};
+    use crate::metrics::{collector::OverviewManager, store::MetricsStore};
+    use crate::runtime::recovery::{RecoveryManager, Request};
+    let runtime = RuntimeManager::from_layout(Err(PublicError::EnvironmentBlocked));
+    let discovery = DiscoveryManager::new();
+    let plans = PlanManager::new(discovery.clone(), runtime.clone());
+    let metrics_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("work/proofs/recovery/manager-tests")
+        .join(Uuid::new_v4().to_string());
+    let overview = OverviewManager::new(runtime.clone(), MetricsStore::in_directory(&metrics_path));
+    let other_listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let address = other_listener.local_addr().unwrap();
+    let recovery = RecoveryManager::default();
+    for (status, code, expected) in [
+        (
+            EngineStatus::Unavailable,
+            PublicError::EnvironmentBlocked,
+            "unavailable",
+        ),
+        (EngineStatus::Failed, PublicError::OwnershipLost, "failed"),
+        (EngineStatus::Unknown, PublicError::Timeout, "unknown"),
+    ] {
+        {
+            let mut view = runtime.view.write().unwrap();
+            *view = RuntimeView::new(status);
+            view.error_code = Some(code.code());
+        }
+        let id = Uuid::new_v4().to_string();
+        let wire = serde_json::to_value(recovery.read(
+            Request {
+                schema_version: 1,
+                request_id: id.clone(),
+            },
+            &runtime,
+            &discovery,
+            &plans,
+            &overview,
+        ))
+        .unwrap();
+        assert_eq!(wire["request_id"], id);
+        assert_eq!(wire["status"], "snapshot");
+        assert_eq!(wire["runtime"]["engine_status"], expected);
+        assert_eq!(wire["runtime"]["error_code"], code.code());
+        assert_eq!(wire["traffic"]["status"], "none");
+        assert_eq!(wire["traffic"]["outcome"], "unknown");
+        assert_eq!(wire["clients"].as_array().unwrap().len(), 3);
+        assert!(
+            wire["clients"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|c| c["installation_status"] == "unknown"
+                    && c["compatibility"] == "not_verified")
+        );
+        assert!(runtime.view.read().unwrap().runtime_generation.is_none());
+        assert!(std::net::TcpStream::connect(address).is_ok());
+        let encoded = wire.to_string();
+        for forbidden in [
+            "api_key",
+            "auth.json",
+            "config.toml",
+            "runtime_generation",
+            "endpoint_id",
+            "PRIVATE",
+        ] {
+            assert!(!encoded.contains(forbidden));
+        }
+    }
+    let invalid = serde_json::to_value(recovery.read(
+        Request {
+            schema_version: 2,
+            request_id: REQUEST_ID.into(),
+        },
+        &runtime,
+        &discovery,
+        &plans,
+        &overview,
+    ))
+    .unwrap();
+    assert_eq!(invalid["error"]["code"], "invalid_input");
+    assert!(overview.shutdown());
+    assert!(runtime.shutdown());
+    assert!(std::net::TcpStream::connect(address).is_ok());
+}
+
 struct LiveRunCleanup {
     manager: RuntimeManager,
     run_root: PathBuf,

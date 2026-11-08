@@ -1,0 +1,49 @@
+.problem-notice {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 15px 16px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.problem-notice__intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.problem-notice__intro > div { min-width: 0; }
+.problem-notice h2 { margin: 0; color: var(--text); font-size: 14px; font-weight: 620; }
+.problem-notice__intro p, .problem-notice__hint, .problem-notice__status, .problem-notice__observed, .problem-notice__guidance {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.problem-notice__check { flex: 0 0 auto; }
+.problem-notice__status { color: var(--warning); }
+.problem-notice__report { display: grid; gap: 8px; padding-top: 11px; border-top: 1px solid var(--border); }
+.problem-notice__facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px 20px; margin: 0; }
+.problem-notice__facts > div { display: grid; gap: 4px; min-width: 0; }
+.problem-notice__facts dt { color: var(--quiet); font-size: 11px; font-weight: 650; }
+.problem-notice__facts dd { min-width: 0; margin: 0; color: var(--text); font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+.problem-notice__facts dd small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+.problem-notice__fact--wide { grid-column: 1 / -1; }
+.problem-notice__clients { display: grid; gap: 5px; }
+.problem-notice__clients > span { display: grid; grid-template-columns: minmax(76px, auto) minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.problem-notice__clients strong { color: var(--text); font-size: 11px; font-weight: 600; }
+.problem-notice__clients small { margin: 0 !important; overflow-wrap: anywhere; }
+.problem-notice__guidance { color: var(--warning); }
+.problem-notice button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+@media (max-width: 520px) {
+  .problem-notice { padding: 13px; }
+  .problem-notice__intro { flex-direction: column; align-items: stretch; }
+  .problem-notice__check { align-self: flex-start; }
+  .problem-notice__facts { grid-template-columns: minmax(0, 1fr); }
+  .problem-notice__fact--wide { grid-column: auto; }
+}
