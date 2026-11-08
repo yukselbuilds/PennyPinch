@@ -231,6 +231,7 @@ export function Activity(props: ActivityProps) {
     const exactModel = form.get("model-value");
     if (modelValueKind === "exact" && !isMetricLabel(exactModel)) {
       setModelError(true);
+      event.currentTarget.querySelector<HTMLInputElement>('[name="model-value"]')?.focus();
       return;
     }
     setModelError(false);
@@ -292,7 +293,7 @@ export function Activity(props: ActivityProps) {
             <input name="model-value" type="text" maxLength={128} value={modelValue} disabled={modelKind !== "exact"}
               aria-invalid={modelError || undefined} aria-describedby={modelError ? "activity-model-error" : undefined}
               onChange={(event) => setModelValue(event.currentTarget.value)} />
-            {modelError && <small id="activity-model-error" className="activity__field-error">{text.modelInvalid}</small>}
+            {modelError && <small id="activity-model-error" className="activity__field-error" role="alert">{text.modelInvalid}</small>}
           </label>
           <label>{text.outcome}
             <select name="outcome" value={outcome} onChange={(event) => setOutcome(event.currentTarget.value as ActivityFilter["outcome"])}>

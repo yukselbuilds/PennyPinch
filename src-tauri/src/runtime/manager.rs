@@ -27,7 +27,8 @@ const STOP_EVENT_TIMEOUT: Duration = Duration::from_secs(30);
 const PROCESS_EXIT_TIMEOUT: Duration = Duration::from_secs(30);
 const FORCE_EXIT_TIMEOUT: Duration = Duration::from_secs(5);
 const READER_JOIN_TIMEOUT: Duration = Duration::from_millis(750);
-const ACTOR_POLL_INTERVAL: Duration = Duration::from_secs(1);
+// Commands wake the actor immediately; passive probes stay inside the 5s health window.
+const ACTOR_POLL_INTERVAL: Duration = Duration::from_secs(2);
 const HEALTH_EXPIRY: Duration = Duration::from_secs(5);
 const HEALTH_IO_TIMEOUT: Duration = Duration::from_millis(300);
 const PORT_CLOSE_TIMEOUT: Duration = Duration::from_secs(3);

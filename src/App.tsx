@@ -370,7 +370,8 @@ export default function App() {
       if (pollInFlight.current) return;
       pollInFlight.current = true;
       void loadSnapshot(true).finally(() => { pollInFlight.current = false; });
-    }, 1000);
+    // Lifecycle commands publish their own acknowledgement; passive status needs fewer redraws.
+    }, 3000);
     return () => {
       mounted.current = false;
       requestSequence.current.invalidate();
@@ -430,6 +431,7 @@ export default function App() {
   );
 
   return <div className="app-shell">
+    <a className="skip-navigation" href="#main-content" onClick={() => document.getElementById("main-content")?.focus()}>{language === "tr" ? "Ana içeriğe geç" : "Skip to main content"}</a>
     <aside className="sidebar">
       <a className="brand" href="#overview" aria-disabled={applicationsBusy || pending !== null} onClick={(event) => { event.preventDefault(); navigate("overview"); }} aria-label={language === "tr" ? "Headroom genel bakış" : "Headroom overview"}>
         <HeadroomMark />
@@ -447,7 +449,7 @@ export default function App() {
       </div>
     </aside>
 
-    <main className="main-panel">
+    <main id="main-content" className="main-panel" tabIndex={-1}>
       <header className="page-header">
         <div><h1>{headings[screenKey.indexOf(screen)]}</h1><p>{subtitles[screenKey.indexOf(screen)]}</p></div>
         <div className="header-status" aria-live="polite"><Icon name="shield" />{loading ? labels.loading : snapshot ? labels.nativeSnapshot : (language === "tr" ? "Yerel durum" : "Local state")}</div>
