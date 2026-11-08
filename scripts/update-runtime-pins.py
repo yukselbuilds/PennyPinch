@@ -19,21 +19,28 @@ def replace(text,pattern,replacement):
 controller=controller_path.read_text(encoding='utf-8')
 controller=replace(controller,r'("optimization_sha256":\s*")[^"]+("\s*,)',lambda m:m[1]+control_hash+m[2])
 controller=replace(controller,r'("optimization_sources_sha256":\s*")[^"]+("\s*,)',lambda m:m[1]+source_hash+m[2])
-updates={manifest_path:(json.dumps(target_manifest,indent=2)+'\n').encode(),controller_path:controller.encode()}
+windows_manifest={**target_manifest,'engine':{**target_manifest['engine'],'payload_root':'payload'}}
+updates={manifest_path:(json.dumps(target_manifest,indent=2)+'\n').encode(),
+ ROOT/'runtime/manifest.windows.json':(json.dumps(windows_manifest,indent=2)+'\n').encode(),controller_path:controller.encode()}
 pins={'EXPECTED_MANIFEST_SHA256':hashlib.sha256(updates[manifest_path]).hexdigest(),
+ 'EXPECTED_WINDOWS_MANIFEST_SHA256':hashlib.sha256(updates[ROOT/'runtime/manifest.windows.json']).hexdigest(),
  'EXPECTED_CONTROLLER_SHA256':hashlib.sha256(updates[controller_path]).hexdigest(),
  'EXPECTED_HELPER_SHA256':sha(ROOT/'runtime/desktop_helper.py'),
  'EXPECTED_OPTIMIZATION_SHA256':control_hash,'EXPECTED_OPTIMIZATION_SOURCES_SHA256':source_hash}
 manager=manager_path.read_text(encoding='utf-8')
 for name,value in pins.items():manager=replace(manager,rf'(const {name}:\s*&str\s*=\s*")[^"]+(";)',lambda m:m[1]+value+m[2])
 original_manager=manager_path.read_bytes();updates[manager_path]=manager.replace('\r\n','\n').replace('\n','\r\n').encode() if b'\r\n' in original_manager else manager.encode()
-changed={p:data for p,data in updates.items() if p.read_bytes()!=data}
+changed={p:data for p,data in updates.items() if not p.exists() or p.read_bytes()!=data}
 if args.write:
  backup=ROOT/'work/proofs/pause/pin-backups'/str(uuid.uuid4());backup.mkdir(parents=True)
- before={str(p.relative_to(ROOT)):sha(p) for p in updates}
+ before={str(p.relative_to(ROOT)):sha(p) if p.exists() else None for p in updates}
  for p,data in changed.items():
-  assert p.resolve().is_relative_to(ROOT) and p.is_file() and p.stat().st_size>0
-  previous=p.read_bytes();(backup/p.name).write_bytes(previous)
+  assert p.resolve().is_relative_to(ROOT)
+  if p.exists():
+   assert p.is_file() and p.stat().st_size>0
+   previous=p.read_bytes();(backup/p.name).write_bytes(previous)
+  else:
+   assert p==ROOT/'runtime/manifest.windows.json'
   temp=p.with_name(p.name+'.'+uuid.uuid4().hex+'.tmp');temp.write_bytes(data);assert temp.read_bytes()==data;os.replace(temp,p)
  after={str(p.relative_to(ROOT)):sha(p) for p in updates}
  (backup/'result.json').write_text(json.dumps({'before':before,'after':after,'changed':len(changed),'vendor_sources_unchanged':True},indent=2)+'\n',encoding='utf-8')

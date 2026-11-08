@@ -11,6 +11,107 @@ const REQUEST_ID: &str = "7132bced-3ce0-4c1b-8f48-d93d7b96f7ce";
 const GENERATION: &str = "6132bced3ce04c1b8f48d93d7b96f7ce";
 
 #[test]
+fn windows_bundle_manifest_changes_only_payload_location() {
+    let development: Value =
+        serde_json::from_str(include_str!("../../../runtime/manifest.json")).unwrap();
+    let windows_bytes = include_bytes!("../../../runtime/manifest.windows.json");
+    let windows: Value = serde_json::from_slice(windows_bytes).unwrap();
+    let mut expected = development.clone();
+    expected["engine"]["payload_root"] = json!("payload");
+    assert_eq!(windows, expected);
+    assert_eq!(
+        format!("{:x}", Sha256::digest(windows_bytes)),
+        EXPECTED_WINDOWS_MANIFEST_SHA256
+    );
+    assert_eq!(
+        validate_manifest(&serde_json::from_value(windows).unwrap()),
+        Ok(())
+    );
+}
+
+#[test]
+fn windows_bundle_layout_uses_separate_state_and_rejects_a_development_manifest() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("work/proofs/windows-install/layouts")
+        .join(Uuid::new_v4().to_string())
+        .join("Kurulum çalışma");
+    let resources = root.join("resources");
+    let user_state = root.join("user state");
+    fs::create_dir_all(resources.join("runtime")).unwrap();
+    fs::create_dir_all(&user_state).unwrap();
+    let manifest = resources.join("runtime/manifest.json");
+    fs::write(&manifest, include_bytes!("../../../runtime/manifest.json")).unwrap();
+    let layout = RuntimeLayout::from_bundle(resources.clone(), user_state.clone()).unwrap();
+    assert_eq!(layout.manifest_sha256, EXPECTED_WINDOWS_MANIFEST_SHA256);
+    assert!(!layout.state_root.starts_with(&resources));
+    assert!(matches!(layout.verify(), Err(PublicError::ConfigConflict)));
+    fs::write(
+        manifest,
+        include_bytes!("../../../runtime/manifest.windows.json"),
+    )
+    .unwrap();
+    assert!(matches!(
+        layout.verify(),
+        Err(PublicError::EnvironmentBlocked)
+    ));
+    assert!(RuntimeLayout::from_bundle(root.join("missing"), user_state).is_err());
+}
+
+#[test]
+#[ignore = "opt-in staged Windows bundle lifecycle; local readiness only, no provider calls"]
+fn windows_bundle_real_staged_payload_starts_and_stops_without_development_layout() {
+    fn files(root: &Path, folder: &Path, values: &mut std::collections::BTreeMap<PathBuf, String>) {
+        for entry in fs::read_dir(folder).unwrap() {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                files(root, &path, values);
+            } else {
+                values.insert(
+                    path.strip_prefix(root).unwrap().to_path_buf(),
+                    sha256_file(&path).unwrap(),
+                );
+            }
+        }
+    }
+    let project =
+        fs::canonicalize(PathBuf::from(env!("CARGO_MANIFEST_DIR")).parent().unwrap()).unwrap();
+    let resources = project.join("work/build/windows/resources");
+    let state = project
+        .join("work/proofs/windows-install/bundle-native")
+        .join(Uuid::new_v4().to_string())
+        .join("Kullanıcı çalışma state");
+    fs::create_dir_all(&state).unwrap();
+    let layout = RuntimeLayout::from_bundle(resources.clone(), state.clone()).unwrap();
+    let mut before = std::collections::BTreeMap::new();
+    files(&resources, &resources, &mut before);
+    let verified = layout.verify().expect("strict staged bundle pins");
+    assert_eq!(
+        verified.payload_root,
+        fs::canonicalize(resources.join("runtime/payload")).unwrap()
+    );
+    assert!(verified
+        .state_root
+        .starts_with(fs::canonicalize(&state).unwrap()));
+    assert!(!verified.state_root.starts_with(&resources));
+    let manager = RuntimeManager::from_layout(Ok(layout));
+    let foreign = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
+    let foreign_port = foreign.local_addr().unwrap().port();
+    let started = manager.start_engine(REQUEST_ID.to_owned());
+    let generation = started.generation_for_test().expect("bundled engine ready");
+    assert_eq!(started.status_for_test(), Some("ready"));
+    assert_optimization(&started, "enabled", Some(0), true);
+    let stopped = manager.stop_engine(Uuid::new_v4().to_string(), generation);
+    assert_eq!(stopped.status_for_test(), Some("stopped"));
+    assert!(TcpStream::connect((Ipv4Addr::LOCALHOST, foreign_port)).is_ok());
+    manager.shutdown();
+    let mut after = std::collections::BTreeMap::new();
+    files(&resources, &resources, &mut after);
+    assert_eq!(before, after, "bundle resources must remain read-only");
+}
+
+#[test]
 fn recovery_real_manager_failure_snapshots_do_not_start_repair_or_touch_another_listener() {
     use crate::integrations::{config_io::PlanManager, discovery::DiscoveryManager};
     use crate::metrics::{collector::OverviewManager, store::MetricsStore};

@@ -336,6 +336,7 @@ def _patch_and_run(args: argparse.Namespace) -> int:
         return [
             str(payload_root / manifest["engine"]["python"]),
             "-I",
+            "-B",
             "-u",
             "-c",
             bootstrap,

@@ -24,6 +24,18 @@ Historical protocol fixture helpers still import runner modules from ignored `/w
 
 Consequently, a fresh clone is not engine-ready. The current runtime proof is limited to the recorded Windows 10 host; it makes no macOS or Linux support claim. See [the local runtime proof](docs/proofs/desktop-runtime.md) and [the H018 transaction proof](docs/proofs/config-transaction.md) for scope and limits.
 
+## Windows development installer
+
+With the pinned development toolchain and engine payload already prepared locally:
+
+```powershell
+pnpm.cmd build:windows
+```
+
+This verifies and stages the engine, then builds an unsigned x64, current-user NSIS preview under `work/caches/cargo-target/release/bundle/nsis/`. The installed app carries its Python engine and frontend; users do not install Python, Node or Rust to run it. WebView2 is required; the embedded bootstrapper needs Internet access if the runtime is missing. The installer checks the destination length before copying resources. This payload accepts an installation root of up to 100 UTF-16 units; a longer destination is rejected with an explicit error.
+
+The release manifest points to bundled `runtime/payload`, while mutable application state is stored separately under LocalAppData. The H037 payload inventory is 22,325 files / 533,082,296 bytes, including the later tokenizer cache; it is recorded in [`runtime/windows-payload.json`](runtime/windows-payload.json). Vendor licenses and the development preview limits are described in [NOTICE](NOTICE.md). The source clone still does not download or bootstrap this payload. Local installer results, clean Windows 10/11 and missing-WebView2 gaps are tracked separately in [H037 validation](docs/validation/windows-install.md). H037 remains open; this is not a production release.
+
 ## GitHub and evidence
 
 The project is maintained in the private, source-only [Protocol272/headroom-desktop](https://github.com/Protocol272/headroom-desktop) repository. The first import was published through GitHub Desktop; [H046 evidence](docs/proofs/repository-import.md) records the scope. H047-a observed the GitHub Free plan and an account usage hard stop. The manual source-only [first CI run](https://github.com/Protocol272/headroom-desktop/actions/runs/39759872053) passed 49 app tests and the frontend build on a standard Ubuntu runner. [H047 evidence](docs/proofs/free-ci.md) records the fresh-source check, account hard stop and observed $0 billable usage; native platform support remains separate. The free-only CI decision and gates are recorded in [decision 006](docs/decisions/006-free-ci.md), and the workflow's scope and dispatch requirements are documented in [source checks](docs/validation/source-checks.md).

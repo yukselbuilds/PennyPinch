@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "date_utc": "2026-11-08T19:20:43.131971+00:00",
+  "task": "H037",
+  "main_status": "open",
+  "local_installed_slice": "pass",
+  "workspace_source_fingerprint_files": 206,
+  "local_checks_passed": 25,
+  "local_checks_total": 25,
+  "app_version": "0.1.0",
+  "engine_version": "0.41.0",
+  "host_windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "toolchain": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0"
+  },
+  "python_tests": 21,
+  "frontend_tests": 173,
+  "rust_tests": 388,
+  "rust_opt_in_ignored": 9,
+  "artifacts": {
+    "installer_sha256": "b100aa5b8cc7be7ec576459531a9d86a388a9f789409d6017f5bdcbc58dfcc0a",
+    "installer_bytes": 131035994,
+    "release_exe_sha256": "4353524e742b4ee7c9b4855902307151f264729cbdef1489cf99f10c9e74e108",
+    "release_exe_bytes": 8745984,
+    "installed_exe_sha256": "b365a6efe3c21b784ceedfc47aade1c1647193aa739c579eaecb72b9e6c7ecff",
+    "installed_resource_files": 22333,
+    "payload": {
+      "tree_sha256": "42f8007a937004f37aaa965c117f6e2ecaac630ef910d22dc10ccadcf6fe89a1",
+      "files": 22325,
+      "bytes": 533082296
+    }
+  },
+  "evidence": {
+    "acceptance_path": "work/proofs/windows-install/acceptance.json",
+    "acceptance_sha256": "f34bca3affff37955e03db75f75c13504f39e57bf03a5f152ae2e7f8d84bb286",
+    "native_run": "work/proofs/windows-install/runs/5df045f6-43f2-4f6f-a5bb-bc9b65406f05"
+  },
+  "not_tested": [
+    "clean Windows10",
+    "Windows11",
+    "missing WebView2",
+    "installed release tray menu",
+    "interrupted download/resume/repair",
+    "full publication license inventory",
+    "live provider request in this installer run"
+  ],
+  "development_token_savings": "not_measured",
+  "ci_dispatched": false
+}

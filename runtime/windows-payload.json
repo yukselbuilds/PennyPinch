@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "engine": {
+    "name": "headroom-ai",
+    "version": "0.41.0",
+    "python": "3.13.13",
+    "dependency_lock_sha256": "161d3b1543b1f6620c1ce40e38d9a2fba26d5c64e3e103a41dcd81dff18ced3f"
+  },
+  "inventory": {
+    "tree_sha256": "42f8007a937004f37aaa965c117f6e2ecaac630ef910d22dc10ccadcf6fe89a1",
+    "files": 22325,
+    "bytes": 533082296
+  },
+  "components": {
+    "Lib/site-packages/": 470960943,
+    "tiktoken-cache/": 8465407
+  }
+}

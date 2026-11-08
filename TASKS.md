@@ -4,7 +4,7 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H011, H013–H036, H040, H046 ve **H047 tamamlandı: 35/51.** H035 güncel adayın performans/DPI kontrolü ve kullanıcı tepsi onayıyla kapandı; H037 başlamadı. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. macOS H048/Linux H049 native CI planlı; mevcut Actions akışı yalnız elle başlatılan Ubuntu kaynak kontrolüdür. Her yeni CI koşusu öncesi ücretsiz kota/hard-stop yeniden kontrol edilir. Hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
+**Durum:** H001–H005, H007–H008, H011, H013–H036, H040, H046 ve **H047 tamamlandı: 35/51.** H037 Windows installer üzerinde aktif; yerel bundle ve kurulum dilimleri ana temiz-OS kabulünün yerine geçmez. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. macOS H048/Linux H049 native CI planlı; mevcut Actions akışı yalnız elle başlatılan Ubuntu kaynak kontrolüdür. Her yeni CI koşusu öncesi ücretsiz kota/hard-stop yeniden kontrol edilir. Hesap/sohbet H050/H051 planlı. Henüz yayınlanmış üretim uygulaması yok.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
@@ -17,7 +17,7 @@
 - **Kabul:** [DESIGN.md](DESIGN.md) içindeki boş/gerçek/örnek veri ayrımı, tema/dil/ölçek/klavye, native render ve son yerel kalite kapısı. Ana ajan art direction/uygulama/inceleme sahibi; H029 başlamaz. Sahte tasarruf veya hesap/sohbet işlevi eklenmez.
 - **Durum:**6 Kasım tamamlandı. Emil design engineering yalnız projeye, immutable commit/MIT lisansıyla kuruldu; diğer üç kaynak incelendi.138 frontend/349 Rust PASS,6 opt-in ignored; aynı152 girdili derleme/test blokları ve gerçek native kontroller PASS. [Kanıt](docs/proofs/ui-taste.md), [inceleme](docs/reviews/UX001.md). Yerel Windows10; örnek veriler gerçek tasarruf değildir. Görev sonunda durulur.
 
-Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028–H036 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H035 sonunda duruldu; H037 başlamadı.
+Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028–H036 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H037 aktif, ana kabul açık.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -539,12 +539,16 @@ flowchart TD
 - **Dosyalar:** `compatibility/clients.json`, `src-tauri/src/compatibility/catalog.rs`, `src/features/integrations/Compatibility.tsx`, `src-tauri/src/compatibility/catalog_tests.rs`.
 
 ### H037 — Windows installer ve temiz kurulum
+- **Durum:** 8 Kasım aktif;35/51 korunur. Ana ajan paketleme/güven/süreç/ayar ve kabul sahibi. [Plan025](docs/decisions/025-windows-installer.md). Yerel imzasız NSIS preview üretildi ve kurulu uygulama doğrulandı; temiz OS/WebView2 kabulü ayrıca kanıtlanmadan ana kutu kapanmaz.
 - [ ] Uygulama ve motor birlikte paketlenir; WebView2 ön koşulu yönetilir.
+- [x] **H037-a1 yerel bundle dilimi:** Ayrı pinned Windows manifesti, Unicode state/sabit resources ayrımı, atomik tam envanterli staging ve bozuk/kaçış/reparse/forged receipt testleri;20 Python +2 Rust odaklı test PASS. Rust manager üzerinden gerçek packaged start/ready/stop ve22.333 resource dosyasının önce/sonra hash eşitliği `bundle-native-2.json` ile geçti. Installer/temiz OS sonucu değildir; ana kutu açık. [Kanıt](docs/validation/windows-install.md).
+- [x] **H037-a2 yerel installer dilimi:** Gerçek NSIS üretimi; uzun yolun exit2 ile reddi, kısa boşluk/Unicode hedefte22.333resource dosyası tam eşitliği, kısıtlı PATH ile kurulu uygulama→motor0.41.0→yerel HTTP200, Sky Duraklat/Devam/normal çıkış ve state/Run/port koruyan temizlik.21Python/173frontend/388Rust PASS,9ignored; son aday25/25 kontrolle bağlandı. Önceki aynı-disk izole Codex Bağlan/Geri al kanıtı değişmeyen çekirdek kaynaklarıyla sınırlı yeniden kullanıldı. [Doğrulama](docs/validation/windows-install.md), [artefakt kaydı](docs/proofs/windows-installer.json), [inceleme](docs/reviews/H037.md). Canlı sağlayıcı/temiz OS/tepsi sonucu değildir.
+- [ ] **Açık ana kabul:** Temiz Windows10, ayrı Windows11 (ücretli yol kullanılmaz), WebView2-yok, kurulu sürüm tepsisi ve indirme/onarım sınırları. Tam yayın lisans envanteri ayrıca açık. Yerel installer başarısı bu alanları kapatmaz; H038 başlamadı.
 - **Kabul:** Windows 10/11'de terminal/SDK gerektirmeyen kurulum; boşluklu/Unicode yol desteği; sürüm/lisans kayıtları doğru.
 - **Ek kabul:** Temel motor ile isteğe bağlı ML/MCP/RTK boyutları ayrıdır; kaldığı yerden devam/onarım ve bozuk indirme güvenli ele alınır. Bileşenler sürüm/hash ve varsa imza ile doğrulanır. Kaynak aktarılırsa sabit commit/dosya/değişiklik ve copyright/lisans bildirimleri NOTICE kaydına girer; özel hesap backend'i bağımlılık olmaz.
 - **Doğrulama:** İki ayrı temiz Windows ortamında kur → bağlan → küçük gerçek trafik → tepsi akışı.
 - **Bağımlılık / boyut:** H036, H006 / M.
-- **Dosyalar:** `src-tauri/tauri.conf.json`, `scripts/package-engine.*`, `docs/validation/windows-install.md`.
+- **Dosyalar:** `src-tauri/installer.conf.json`, `src-tauri/windows-hooks.nsh`, `scripts/package-windows.py`, `scripts/build-windows.ps1`, `runtime/manifest.windows.json`, `runtime/windows-payload.json`, `NOTICE.md`, `docs/validation/windows-install.md`.
 
 ### H038 — Kaldırma ve veri tercihleri
 - [ ] Uninstaller ve ürün içi bağlantı kaldırma birlikte doğrulanır.
@@ -706,4 +710,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**35/51 tamam; H035 ve H036 kabul edildi, duruldu.** Güncel173 frontend/386 Rust/8 ignored/84 audit kapısı eşleşen girdilerle yeniden kullanıldı; değişen binary için sabit yerel performans ve Uygulamalar DPI kontrolü yenilendi, kullanıcı tepsi akışını onayladı. [H035 kanıtı](docs/proofs/accessibility-performance.md). Sıradaki H037 Windows installer/temiz kurulum hazırlığı H006'nın açık paketleme sınırlarıyla birlikte ele alınır; henüz başlamadı. macOS H048/Linux H049 Actions native işleri kendi görevlerinde, güncel ücretsiz kota/hard-stop denetimiyle elle çalıştırılacak; bu kapanışta CI başlatılmadı. Yerel Windows10 debug kanıtı; diğer OS/installer/uzun yük/canlı sağlayıcı sınırları ve H041 API-key/H042 güncelleme kapıları açık. Güncel devir `docs/IMPLEMENTATION_STATUS.md`.
+**35/51 tamam; H037 ana kabulü açık.** Yerel bundle ve installer dilimleri tamamlandı:21Python/173frontend/388Rust PASS/9ignored,25/25 aday kontrolü; imzasız kurulu uygulama, tam resource eşitliği ve normal kapanış/temizlik. [H037 kanıtı](docs/validation/windows-install.md). Devam noktası temiz Windows10/11, eksik WebView2, kurulu sürüm tepsisi ve indirme/onarım kabulüdür; H038 başlamaz. macOS H048/Linux H049 native Actions işleri kendi görevlerinde güncel ücretsiz kota/hard-stop denetimiyle ele alınır; bu adımda CI başlatılmadı. Yerel Windows10 geliştirme hostu yayın/temiz OS kanıtı değildir. H041 API-key/H042 güncelleme kapıları açık. Güncel devir `docs/IMPLEMENTATION_STATUS.md`.

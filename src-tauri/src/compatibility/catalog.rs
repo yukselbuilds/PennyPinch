@@ -13,7 +13,7 @@ use std::sync::{
 use uuid::Uuid;
 
 const SOURCE: &str = include_str!("../../../compatibility/clients.json");
-const MANIFEST: &str = include_str!("../../../runtime/manifest.json");
+const MANIFEST: &str = crate::runtime::manager::ACTIVE_MANIFEST;
 const STATUSES: [&str; 7] = [
     "not_tested",
     "unknown",

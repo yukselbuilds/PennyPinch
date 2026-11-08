@@ -82,6 +82,8 @@ Cargo çağrılarında süreç ortamı `CARGO_HOME=<repo>/work/caches/cargo-home
 
 H035/H036 ek kapıları: `pnpm.cmd test:a11y` gerçek App'i izole transport ile Edge/headless üzerinde denetler; browser kurulumu ayrı ortam ön koşuludur. Viewport karşılığı gerçek OS DPI kanıtı değildir. `pnpm.cmd test:compatibility` strict katalog istemcisini ve keşif fixture sözleşmesini odaklı çalıştırır; aynı testler `test:app` listesinde de vardır. Bu komutlar var olmayan `test:e2e` ile karıştırılmaz. Native ürün kabulü ayrıca yapılır.
 
+H037 Windows paket kapısı: `pnpm.cmd build:windows` mevcut pinned payload'ı tam envanterle `work/build/windows/resources` içine doğrular, ardından current-user NSIS development preview üretir. Proje-local build Python'u ve mevcut motor payload'ı gerekir; temiz clone/bootstrap veya temiz OS sonucu değildir. Odaklı paket testi aynı Python ile `-I -B -m unittest discover -s tests/runtime -p test_windows_package.py` komutudur. `windows_bundle_real_staged_payload_starts_and_stops_without_development_layout` opt-in Rust testi gerçek staging kaynaklarını kullanır; bunun normal test listesindeki ignored sonucu PASS değildir. Kurulum, gerçek resources eşitliği, native motor ve normal kapanış ayrıca gözlenir; Windows10/11 ve WebView2-yok ayrı kaydedilir. Kullanıcının normal istemci/auth dosyaları test fixture'ı yapılmaz.
+
 ## Geçmiş kod denetiminin sınırı
 
 DEV002'nin ilk raporu config Apply/Undo ve sahiplik → runtime/proxy → UI bağlantı yollarını önceliklendirir. CodeGraph ilişkileri keşfeder; raporlayacak ajan ilgili gerçek kaynağı okur. Her bulgu dosya/satır, oluşma koşulu, kullanıcı etkisi ve en küçük düzeltmeyle desteklenir. Kontrol edilmeyen alanlar yazılır. Rapor üretmek, bütün düzeltmeleri uygulamak veya ana görevleri kapatmak değildir.

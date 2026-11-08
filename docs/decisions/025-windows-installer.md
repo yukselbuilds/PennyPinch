@@ -1,0 +1,25 @@
+# H037 — Windows installer ve paketlenen motor
+
+8 Kasım 2026; başladı,35/51. Ana ajan kurulum/süreç/ayar güveni, uygulama ve kabul sahibi. Ponytail full uygulanır; belirsiz paketleme kararları çalışan ajana devredilmez. H035/H036 kanıtı korunur; ana görev bitince durulur. Ücretsiz sınırı, mevcut istemci/auth/model ayarları ve başka sohbetler korunur.
+
+## Amaç ve sözleşmeler
+
+NSIS current-user x64 installer; geliştirme araçları gerektirmeyen, uygulamaya gömülü arayüz ve sabit CPython/Headroom payload. Temel kurulum kendi dosyalarını içerir, kullanıcı state'i kurulum dizinine yazmaz; mevcut uygulama-local state/sahiplik/atomik yazım sözleşmeleri korunur. Installer otomatik istemci yönlendirme veya hesap girişi yapmaz. Güncelleme/kurulu sürüm rollback H042, güvenli kaldırma bütünlüğü H038'de ayrı kabul edilir.
+
+Geliştirme manifesti ve eski payload değiştirilmez. Paket için yalnız `engine.payload_root` alanı `payload` olan ayrı, kaynakta tutulan Windows manifesti kullanılır; diğer alanlar birebir aynı ve pinlidir. Rust kurulum layout'u resources/runtime kökünü ve release manifest hash'ini doğrular. Uyumluluk paneli derlenen varyantın aynı manifestini okur. Paketleme yalnız kaynak doğrulanınca yeni staging dizinine atomik tamamlanır; reparse/path escape ve değiştirilmiş payload reddedilir. Kaynak cache/workspace/auth/loglar bundle'a girmez. Vendor dosyaları değiştirilmez; kaynak aktarıldığında commit/dosya/değişiklik/lisans kaydı üretilir.
+
+WebView2 varlığı Tauri'nin desteklenen installer yolu üzerinden denetlenir; eksikte bootstrap kurulumu internet gereksinimiyle açıkça belirtilir. Kullanıcıya Python/Node/Rust kurdurulmaz. Geliştirme sırasında indirilen bundler araçları yalnız proje cache'inde kalır. Paket imzasız development preview'dur; imzalı yayın iddiası veya yeni ödeme/sertifika yoktur. Mevcut pinned proxy bağımlılıkları körlemesine çıkarılmaz; gerçek bileşen boyutu ve optional ML/MCP/RTK sınırı kaydedilir.
+
+## Sıralı kabul
+
+İlk derin test hedefi113karakterdi; NSIS exit0 dönmesine rağmen toplam yolu261/271karakter olan iki `.pyc` dosyası eksikti. Bu aday tam kurulum kabulü değildir. Windows genel ayarı değiştirilmeden, installer100UTF-16 birimini aşan kökü kopyalamadan önce açık hata/exit2 ile reddeder; dosya atlamaya izin verilmez. Staging her pinned dosya ve dizin yolunun bu kökle Win32 sınırlarına sığdığını denetler; payload değişirse bütçe yeniden kontrol edilir. Daha kısa boşluk/Unicode hedef ve uzun yol reddi gerçek installer ile ayrı doğrulanır. Desteklenmeyen uzun yol sessiz başarı sayılmaz.
+
+Yerel installer deneyi uygulamaya ait boş proje/work hedefini ve yalnız yeni oluşan state dizinlerini kullanır. Var olan hesap profillerinin içerikleri okunmaz/kopyalanmaz; yapısal metadata karşılaştırılır. Test state arşivi için açık ek kök `%LOCALAPPDATA%\HeadroomDesktop-QA-H037` kullanılır. Gerçek Codex ayarı yerine yalnız çocuk uygulamanın ortamındaki `CODEX_HOME` fixture'ı bağlanır; mevcut transaction sözleşmesi uyarınca state ile aynı disktedir. Farklı diskteki fixture güvenle reddedildi ve dosyası değişmedi; yeni diskler arası transaction desteği bu göreve eklenmez.
+
+1. **Taşınabilir bundle layout:** kaynak/girdi pinleri ve file inventory doğrulanır; kurulu manifestin yalnız payload yolu farkı, kayıp/bozuk/symlink/kaçış/stale staging reddi. Boşluk/Unicode yolda resources ve kullanıcı state'i ayrı; gerçek pinned motor start/ready/stop, port/süreç sahipliği ve tokenizer cache testi. PATH'te geliştirici araçları yok. Fixture canlı sağlayıcı sonucu sayılmaz.
+2. **Installer üretimi:** NSIS ve WebView2 ayarları, current-user kurulum, sürüm/NOTICE/lisans kayıtları, payload/hash kontrolü ve en küçük yeniden üretim komutu. Araç/paket indirmesi bozulursa başarı dosyası üretilmez; kaynak cache'i değiştirilmez. İndirme/onarım özelliği ancak gerçek uygulandıysa sunulur; H042 işi hazır gösterilmez.
+3. **Yerel kurulum kabulü:** mevcut ortamda izole hedefe gerçek install→aç→motor→yerel trafik→tepsi→normal çıkış. Kullanıcının gerçek ayarları/istemci bağlantıları korunur. Temiz Windows10/11 ve WebView2-yok durumu ayrı kanıttır; ücretli Windows11 yolu kullanılmaz, ücretsiz ortam yoksa not_tested ve görev açık kalır. CI çalıştırılacaksa o aşamada güncel ücretsiz kota/hard-stop yeniden doğrulanır; otomatik matrix/yayın yok.
+
+Her uygulama diliminde odaklı test; son adayda WORKFLOW yerel kapısı bir kez, etkilenmeyen testler fingerprint ile yeniden kullanılır. Komut/script mevcut olmadan çalışır diye sunulmaz. İlgili kaynak/config/test/araç/OS ve artefaktların önce/sonra hash'leri aynı adımda otomatik kaydedilir. Kanıt `work/proofs/windows-install/`, özet `docs/validation/windows-install.md` ve inceleme `docs/reviews/H037.md`. Yayın ve diğer OS başarısı çıkarılmaz.
+
+Kaynaklar: sabit yerel Tauri CLI2.12.3 schema'sı ve Rust kaynakları; [Tauri Windows installer](https://v2.tauri.app/distribute/windows-installer/), [resource mapping](https://v2.tauri.app/develop/resources/),8 Kasım okundu. Per-user NSIS ve kaynak map'i yerel pinned schema ile çapraz kontrol edildi. WebView2 bootstrap eksikte internet gerektirir; çevrimdışı temiz kurulum kanıtı değildir.

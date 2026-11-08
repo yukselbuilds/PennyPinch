@@ -603,11 +603,13 @@ fn main() {
     let app = tauri::Builder::default()
         .setup(|app| {
             let resource_dir = app.path().resource_dir().ok();
-            let app_data_dir = app.path().app_data_dir().ok();
             let app_local_data_dir = app.path().app_local_data_dir().ok();
-            let preferences = PreferenceStore::new(app_data_dir.clone());
-            let runtime =
-                RuntimeManager::with_preferences(resource_dir, app_data_dir, preferences.clone());
+            let preferences = PreferenceStore::new(app_local_data_dir.clone());
+            let runtime = RuntimeManager::with_preferences(
+                resource_dir,
+                app_local_data_dir.clone(),
+                preferences.clone(),
+            );
             let choice_store = ChoiceStore::for_app_local_data(app_local_data_dir.clone()).ok();
             let discovery = DiscoveryManager::with_choice_store(choice_store.clone());
             let claude_picker_owner = app

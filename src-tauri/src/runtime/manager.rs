@@ -124,10 +124,22 @@ fn startup_diagnostic_for_test() -> StartupDiagnostic {
 const EXPECTED_ENGINE_VERSION: &str = "0.41.0";
 const EXPECTED_MANIFEST_SHA256: &str =
     "4217e8f67946c96caa028e0a0d4e9a41e2e6894e4cafcd7e23adb00ad7cd1c03";
+const EXPECTED_WINDOWS_MANIFEST_SHA256: &str =
+    "ff2916975537b188d10ff93c630576f8b8a64d8321df44a08f2b405de3a6f49d";
+pub(crate) const ACTIVE_MANIFEST: &str = if cfg!(debug_assertions) {
+    include_str!("../../../runtime/manifest.json")
+} else {
+    include_str!("../../../runtime/manifest.windows.json")
+};
+const ACTIVE_MANIFEST_SHA256: &str = if cfg!(debug_assertions) {
+    EXPECTED_MANIFEST_SHA256
+} else {
+    EXPECTED_WINDOWS_MANIFEST_SHA256
+};
 const EXPECTED_CONTROLLER_SHA256: &str =
-    "11bbb66bf64dbc60861450c271df132cc4bf9033a74b2f0a5b8727c43c9b2ef5";
+    "42c0cee4b0a52b0959449510003f01198cb1a006fb052cc9e12e394b873c3b5e";
 const EXPECTED_HELPER_SHA256: &str =
-    "1c137dff0164ca90332281e88b0f7dd51e8c4bd7076c61f8562cf31379fedde1";
+    "3652e19c1fb375ef5ee0dafcbd354a9fa98dc95e68b657d84b9f83c1283c545e";
 const EXPECTED_SHIM_SHA256: &str =
     "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1";
 const EXPECTED_OPTIMIZATION_SHA256: &str =
@@ -841,6 +853,7 @@ struct RuntimeLayout {
     state_boundary_root: PathBuf,
     runtime_root: PathBuf,
     manifest_path: PathBuf,
+    manifest_sha256: &'static str,
     state_root: PathBuf,
 }
 
@@ -868,17 +881,23 @@ impl RuntimeLayout {
 
         let resource_dir = resource_dir.ok_or(PublicError::EnvironmentBlocked)?;
         let app_data_dir = app_data_dir.ok_or(PublicError::EnvironmentBlocked)?;
+        Self::from_bundle(resource_dir, app_data_dir)
+    }
+
+    fn from_bundle(resource_dir: PathBuf, app_data_dir: PathBuf) -> Result<Self, PublicError> {
         let boundary_root =
             fs::canonicalize(resource_dir).map_err(|_| PublicError::EnvironmentBlocked)?;
         let runtime_root = boundary_root.join("runtime");
         let state_boundary_root = canonical_platform_directory(app_data_dir)?;
         let state_root = state_boundary_root.join("runtime");
-        Self::from_roots_with_state_boundary(
+        let mut layout = Self::from_roots_with_state_boundary(
             boundary_root,
             runtime_root,
             state_boundary_root,
             state_root,
-        )
+        )?;
+        layout.manifest_sha256 = EXPECTED_WINDOWS_MANIFEST_SHA256;
+        Ok(layout)
     }
 
     #[cfg(test)]
@@ -923,6 +942,7 @@ impl RuntimeLayout {
             state_boundary_root,
             runtime_root,
             manifest_path,
+            manifest_sha256: ACTIVE_MANIFEST_SHA256,
             state_root,
         })
     }
@@ -955,7 +975,7 @@ impl RuntimeLayout {
     }
 
     fn verify(&self) -> Result<VerifiedRuntime, PublicError> {
-        if sha256_file(&self.manifest_path)? != EXPECTED_MANIFEST_SHA256 {
+        if sha256_file(&self.manifest_path)? != self.manifest_sha256 {
             return Err(PublicError::ConfigConflict);
         }
         let raw_manifest =
@@ -1882,6 +1902,7 @@ impl ControllerSession {
         use std::os::windows::process::CommandExt;
         command
             .arg("-I")
+            .arg("-B")
             .arg("-u")
             .arg(&verified.controller_path)
             .arg("--manifest")
@@ -3818,7 +3839,7 @@ impl RuntimeManager {
         expire_stale_ready_view(&mut view, Instant::now());
         CatalogRuntime {
             pinned_version: EXPECTED_ENGINE_VERSION,
-            manifest_sha256: EXPECTED_MANIFEST_SHA256,
+            manifest_sha256: ACTIVE_MANIFEST_SHA256,
             active_version: view.engine_version.clone(),
             engine_status: view.status.label(),
         }

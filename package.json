@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 1420 --strictPort",
     "build": "tsc -b && vite build",
+    "build:windows": "powershell.exe -NoLogo -NoProfile -NonInteractive -File scripts/build-windows.ps1",
     "typecheck": "tsc -b --pretty false",
     "test:snapshot": "node --experimental-strip-types --test tests/app/snapshot.test.mjs",
     "test:preferences": "node --experimental-strip-types --test tests/app/preferences.test.mjs",

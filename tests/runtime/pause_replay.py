@@ -92,7 +92,7 @@ for p in [run/'workspace',run/'config']:p.mkdir(parents=True,exist_ok=True)
 env.update(OPENAI_TARGET_API_URL=f'http://127.0.0.1:{server.server_port}/v1',ANTHROPIC_TARGET_API_URL=f'http://127.0.0.1:{server.server_port}',HEADROOM_CCR_TTL_SECONDS='7200',HEADROOM_TELEMETRY='on',HEADROOM_BEACON='off',HEADROOM_STATELESS='false',HEADROOM_LOG_MESSAGES='off',HEADROOM_LOG_LEVEL='info',HEADROOM_UPDATE_CHECK='off',HEADROOM_MODE='cache',HEADROOM_SAVINGS_PROFILE='coding',HEADROOM_OUTPUT_SHAPER='0',HEADROOM_MODEL_ROUTER_ENABLED='0',HEADROOM_DETECT_BACKEND='python')
 env['PATH']=os.pathsep.join((str(runtime),os.path.join(env['SystemRoot'],'System32')))
 bootstrap=f"import site,sys;sys.prefix=sys.exec_prefix={str(runtime)!r};site.addsitedir({str(runtime/'Lib/site-packages')!r});sys.path.insert(0,{str(ROOT/'runtime')!r});import cache_control_shim;cache_control_shim.install();import optimization_control;optimization_control.install({generation!r},{secret!r});from headroom.cli import main;main()"
-command=[str(python),'-I','-u','-c',bootstrap,'proxy','--host','127.0.0.1','--port',str(port)]
+command=[str(python),'-I','-B','-u','-c',bootstrap,'proxy','--host','127.0.0.1','--port',str(port)]
 def post(path,body,headers=None,timeout=40,on_headers=None):
  conn=http.client.HTTPConnection('127.0.0.1',port,timeout=timeout)
  try:

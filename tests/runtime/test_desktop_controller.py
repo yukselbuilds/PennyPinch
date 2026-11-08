@@ -278,6 +278,7 @@ class DesktopRuntimeSmokeTests(unittest.TestCase):
         command = [
             str(payload / "python.exe"),
             "-I",
+            "-B",
             "-u",
             str(controller_script),
             "--manifest",

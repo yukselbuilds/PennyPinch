@@ -612,6 +612,7 @@ def _start_helper(
     command = [
         str(executable),
         "-I",
+        "-B",
         "-u",
         str(helper_script),
         "--manifest",
