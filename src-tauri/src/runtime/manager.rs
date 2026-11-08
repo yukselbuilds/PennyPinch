@@ -200,6 +200,14 @@ pub(crate) struct CodexRuntimeObservation {
     pub(crate) error_code: Option<&'static str>,
 }
 
+#[derive(Serialize)]
+pub(crate) struct CatalogRuntime {
+    pub(crate) pinned_version: &'static str,
+    pub(crate) manifest_sha256: &'static str,
+    pub(crate) active_version: Option<String>,
+    pub(crate) engine_status: &'static str,
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum StableEndpointAccessError {
     Unavailable,
@@ -3803,6 +3811,17 @@ impl RuntimeManager {
             .unwrap_or_else(|poisoned| poisoned.into_inner());
         expire_stale_ready_view(&mut view, Instant::now());
         view.snapshot(request_id)
+    }
+
+    pub(crate) fn catalog_runtime(&self) -> CatalogRuntime {
+        let mut view = self.view.write().unwrap_or_else(|p| p.into_inner());
+        expire_stale_ready_view(&mut view, Instant::now());
+        CatalogRuntime {
+            pinned_version: EXPECTED_ENGINE_VERSION,
+            manifest_sha256: EXPECTED_MANIFEST_SHA256,
+            active_version: view.engine_version.clone(),
+            engine_status: view.status.label(),
+        }
     }
 
     pub fn get_ingress_snapshot(&self, request_id: String) -> IngressReply {

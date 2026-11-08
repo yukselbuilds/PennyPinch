@@ -4,6 +4,7 @@ import App from '../../src/App';
 import {DisconnectDialog} from '../../src/features/integrations/DisconnectDialog';
 import {reset,Scenario} from './desktopTransport';
 import '../../src/styles.css';
+export {bumpCompatibilityContext,blockCompatibility,releaseCompatibility,blockDiscoveryScan,releaseDiscoveryScan} from './desktopTransport';
 let root:Root|null=null;
 export function mount(language='tr',theme='dark',scenario:Scenario='data'){
  root?.unmount();reset(language,theme,scenario);document.body.innerHTML='<div id="root"></div>';

@@ -67,6 +67,33 @@ fn recovery_rechecks_owned_config_for_all_adapters_without_writing_or_repairing(
 }
 
 #[test]
+fn compatibility_config_context_detects_user_edits_without_writing_any_adapter() {
+    use super::plan::ClientKind;
+    for (client, kind, relative, original, version, discovery_kind) in [
+        ("codex", ClientKind::Codex, "codex/config.toml", b"model = 'model-any'\n".as_slice(), "0.163.0-alpha.10.2", "codex"),
+        ("claude_code", ClientKind::ClaudeCode, "claude/settings.json", b"{\"model\":\"model-any\"}".as_slice(), "2.1.158", "claude_code"),
+        ("opencode_v1", ClientKind::OpenCodeV1, "xdg/opencode/opencode.json", b"{\"provider\":{\"openai\":{\"npm\":\"@ai-sdk/openai\",\"models\":{\"model-any\":{}}}}}".as_slice(), "1.19.3", "opencode"),
+    ] {
+        let fixture=Fixture::new();let config=fixture.path(relative);write_file(&config,original);
+        let auth=config.parent().unwrap().join("auth.json");write_file(&auth,b"PRIVATE_AUTH_FILE_CANARY");
+        let (manager,id,generation)=manager(&fixture,client,config.clone());
+        let installation=super::discovery::InstallationSummary {installation_id:id.clone(),client_kind:discovery_kind,surface:"cli",version:Some(version.into()),source:"user_local_npm",location_label:"user_local",status:"detected",connection_status:"not_connected"};
+        let plan=preview(&manager,id,generation);apply(&manager,&plan);
+        let first=manager.recovery_config(kind,Some(&installation),generation);assert_eq!(first.state,"matches_owned_endpoint");
+        let first_fingerprint=first.context_fingerprint.unwrap();assert_eq!(first_fingerprint.len(),64);
+        let bytes=fs::read(&config).unwrap();
+        let changed=if client=="codex" {let mut b=bytes.clone();b.extend_from_slice(b"\n# unrelated user edit\n");b}else{
+            let mut value:serde_json::Value=serde_json::from_slice(&bytes).unwrap();value["unrelated_user_setting"]=serde_json::json!(true);serde_json::to_vec_pretty(&value).unwrap()
+        };
+        write_file(&config,&changed);
+        let second=manager.recovery_config(kind,Some(&installation),generation);assert_eq!(second.state,"matches_owned_endpoint");
+        assert_ne!(second.context_fingerprint,Some(first_fingerprint));
+        assert_eq!(manager.recovery_config(kind,Some(&installation),generation).context_fingerprint,second.context_fingerprint);
+        assert_eq!(fs::read(&config).unwrap(),changed);assert_eq!(fs::read(&auth).unwrap(),b"PRIVATE_AUTH_FILE_CANARY");
+    }
+}
+
+#[test]
 fn recovery_does_not_reuse_user_scope_evidence_for_another_claude_project() {
     use super::plan::ClientKind;
     let fixture = Fixture::new();

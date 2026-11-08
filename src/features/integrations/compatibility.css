@@ -1,0 +1,28 @@
+.compatibility { margin-top: 24px; border-top: 1px solid var(--border); color: var(--muted); }
+.compatibility > summary { padding: 18px 0; color: var(--text); cursor: pointer; font-weight: 500; }
+.compatibility__content { padding-bottom: 12px; }
+.compatibility__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.compatibility__heading p { max-width: 650px; line-height: 1.6; }
+.compatibility__heading button { flex-shrink: 0; }
+.compatibility__release { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 20px; padding: 16px 0 8px; }
+.compatibility__release strong { color: var(--text); font-weight: 500; }
+.compatibility__pin { max-width: 700px; line-height: 1.6; font-size: 12px; }
+.compatibility h3 { font-size: 14px; font-weight: 500; color: var(--text); margin: 28px 0 12px; }
+.compatibility__installations, .compatibility__records { list-style: none; padding: 0; margin: 0; }
+.compatibility__installations > li { display: grid; gap: 6px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.compatibility__installations strong { color: var(--text); font-size: 13px; font-weight: 500; }
+.compatibility__installations small { line-height: 1.5; }
+.compatibility__records > li { padding: 18px 0; border-top: 1px solid var(--border); overflow-wrap: anywhere; }
+.compatibility__record-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px 20px; }
+.compatibility__record-heading strong { color: var(--text); font-size: 14px; font-weight: 500; }
+.compatibility__badge { font-size: 12px; }
+.compatibility__badge.is-live_verified { color: var(--accent); }
+.compatibility__version { display: block; padding: 6px 0; font-variant-numeric: tabular-nums; }
+.compatibility__records p { font-size: 12px; line-height: 1.6; margin-bottom: 8px; }
+.compatibility__records details, .compatibility__adapters { font-size: 12px; line-height: 1.6; }
+.compatibility details summary { color: var(--muted); cursor: pointer; }
+.compatibility details p { margin: 10px 0; }
+.compatibility code { font-size: 11px; overflow-wrap: anywhere; }
+.compatibility__adapters { padding-top: 20px; }
+.compatibility__notice { padding: 12px 0; color: var(--text); line-height: 1.6; }
+@media (max-width: 600px) { .compatibility__heading { flex-direction: column; gap: 8px; } }

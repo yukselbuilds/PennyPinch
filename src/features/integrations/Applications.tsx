@@ -12,6 +12,7 @@ import {
 import type { PreferenceLanguage } from "../../lib/preferences";
 import { ConnectDialog } from "./ConnectDialog";
 import { ConnectionStatus } from "./ConnectionStatus";
+import { Compatibility } from "./Compatibility";
 import { Icon } from "../../components/Icon";
 import { connectionActionClient } from "../../lib/connectionActions";
 import type { ConnectionActionResult, ConnectionOwnership, ConnectionPlan } from "../../lib/contracts";
@@ -163,11 +164,12 @@ const commandFileNames: Record<ClientKind, string> = {
   opencode: "opencode.exe, opencode.cmd, opencode.bat",
 };
 
-export function Applications({ language, requestedClient, onBusyChange, onDiscoveryChange }: {
+export function Applications({ language, requestedClient, onBusyChange, onDiscoveryChange, runtimeContext = "unknown" }: {
   language: PreferenceLanguage;
   requestedClient: ClientKind | null;
   onBusyChange: (busy: boolean) => void;
   onDiscoveryChange?: (generation: number) => void;
+  runtimeContext?: string;
 }) {
   const text = copy[language];
   const [state, setState] = useState<ViewState>(() => isDiscoveryAvailable() ? { kind: "loading" } : { kind: "unavailable" });
@@ -412,6 +414,9 @@ export function Applications({ language, requestedClient, onBusyChange, onDiscov
         onVerificationChange={verificationActivity}
       />}
     </details>}
+
+    <Compatibility language={language} disabled={surfaceBusy}
+      contextKey={`${runtimeContext}:${snapshot?.scan_generation ?? "none"}:${ownershipSequence.current}:${verificationBusy}`} />
 
     {connectionClient && <ConnectDialog
       language={language}

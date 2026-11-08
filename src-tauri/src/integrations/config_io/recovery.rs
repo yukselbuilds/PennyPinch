@@ -3,11 +3,13 @@ use super::*;
 use crate::integrations::transaction::{undo_owned_endpoint, TransactionError};
 use crate::integrations::transaction_fs::FileTransaction;
 use crate::state::ownership::{config_path_binding, OwnershipState};
+use sha2::{Digest, Sha256};
 
 pub(crate) struct ConfigObservation {
     pub state: &'static str,
     pub scope: &'static str,
     pub endpoint: Option<(String, u16)>,
+    pub context_fingerprint: Option<String>,
 }
 impl ConfigObservation {
     fn unknown(state: &'static str) -> Self {
@@ -15,6 +17,7 @@ impl ConfigObservation {
             state,
             scope: "unknown",
             endpoint: None,
+            context_fingerprint: None,
         }
     }
 }
@@ -50,11 +53,17 @@ impl PlanManager {
                         state: "not_rechecked",
                         scope,
                         endpoint: Some((record.endpoint_id().into(), record.endpoint_port())),
+                        context_fingerprint: None,
                     };
                     if let Some(installation) = installation {
-                        result.state = self
-                            .inspect_owned_config(&record, installation, scan_generation)
-                            .unwrap_or("unavailable");
+                        if let Ok((state, fingerprint)) =
+                            self.inspect_owned_config(&record, installation, scan_generation)
+                        {
+                            result.state = state;
+                            result.context_fingerprint = fingerprint;
+                        } else {
+                            result.state = "unavailable";
+                        }
                     }
                     result
                 }
@@ -70,16 +79,16 @@ impl PlanManager {
         record: &crate::state::ownership::OwnershipRecord,
         installation: &InstallationSummary,
         generation: u64,
-    ) -> Result<&'static str, ()> {
+    ) -> Result<(&'static str, Option<String>), ()> {
         let kind = record.client_kind().ok_or(())?;
         let (roots, scope) = self.config_roots_for_context(kind).map_err(|_| ())?;
         if record.config_scope() != Some(scope) {
-            return Ok("not_rechecked");
+            return Ok(("not_rechecked", None));
         }
         let first = read_user_config(kind, &roots).map_err(|_| ())?;
         if first.presence == ConfigPresence::Missing || record.config_source() != Some(first.source)
         {
-            return Ok("conflict");
+            return Ok(("conflict", None));
         }
         let path = match roots.target(kind).map_err(|_| ())? {
             ConfigTarget::Single { path, .. } => path,
@@ -90,7 +99,7 @@ impl PlanManager {
             },
         };
         if config_path_binding(&path).map_err(|_| ())? != record.config_path_binding_sha256() {
-            return Ok("not_rechecked");
+            return Ok(("not_rechecked", None));
         }
         // The pure undo validator checks all owned fields, including OpenCode routes.
         // Its returned bytes are discarded; no rollback or repair is written.
@@ -147,7 +156,17 @@ impl PlanManager {
         {
             return Err(());
         }
-        Ok(
+        let mut digest = Sha256::new();
+        digest.update(b"headroom-compatibility-config/v1\0");
+        for value in [
+            Some(first.fingerprint.as_str()),
+            layers.as_ref().map(|l| l.fingerprint.as_str()),
+            environment.as_ref().map(|e| e.fingerprint.as_str()),
+        ] {
+            digest.update(value.unwrap_or("none").as_bytes());
+            digest.update([0]);
+        }
+        Ok((
             if fields_match
                 && plan.blockers.is_empty()
                 && layers.as_ref().is_none_or(|l| l.route_blockers.is_empty())
@@ -157,6 +176,7 @@ impl PlanManager {
             } else {
                 "conflict"
             },
-        )
+            Some(format!("{:x}", digest.finalize())),
+        ))
     }
 }

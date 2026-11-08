@@ -1,13 +1,22 @@
 // Isolated UI evidence only. No native API, filesystem, auth, or provider access.
 import {runtimeSnapshot} from './runtime.mjs';
 import {activityList,activityDetail} from './activity.mjs';
+import {compatibilitySnapshot} from './compatibility.mjs';
 export type Scenario = 'data'|'empty'|'error';
 let language='tr',theme='dark',scenario:Scenario='data',revision=1,exit='idle',generation=1;
 const callbacks=new Set<()=>void>();
+let compatibilityRevision=0;
+let compatibilityGate:Promise<void>|null=null,releaseGate:(()=>void)|null=null;
+let scanGate:Promise<void>|null=null,releaseScanGate:(()=>void)|null=null;
+export function bumpCompatibilityContext(){compatibilityRevision++;}
+export function blockCompatibility(){if(compatibilityGate)throw Error('fixture_already_blocked');compatibilityGate=new Promise(resolve=>{releaseGate=resolve;});}
+export function releaseCompatibility(){releaseGate?.();releaseGate=null;compatibilityGate=null;}
+export function blockDiscoveryScan(){if(scanGate)throw Error('fixture_scan_already_blocked');scanGate=new Promise(resolve=>{releaseScanGate=resolve;});}
+export function releaseDiscoveryScan(){releaseScanGate?.();releaseScanGate=null;scanGate=null;}
 export const installations=['codex','claude_code','opencode'].map((client_kind,index)=>({
  installation_id:`7132bced-3ce0-4c1b-8f48-d93d7b96f7c${index}`,
  client_kind,surface:'cli',version:['0.163.0-alpha.10.2','2.1.158','1.19.3'][index],
- source:'user_local_npm',location_label:'user_local',status:'detected',connection_status:'not_connected',
+ source:'user_local_npm',location_label:'User-local npm',status:'detected',connection_status:'not_verified',
 }));
 const reference={engine_version:'0.41.0',manifest_sha256:'8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908',mode:'cache',savings_profile:'coding',ccr_ttl_seconds:7200};
 const operating={close_to_tray:true,retention_days:30,protected_tools:[]};
@@ -23,12 +32,21 @@ function overview(period:string,id:string){
  from_utc:period==='session'?null:'2026-11-08T00:00:00Z',to_utc:at,retention_days:30,last_event_utc:populated?at:null,totals,coverage,attribution,
  series:populated?[{at_utc:at,totals}]:[]},collection:{status:'recording',interval_seconds:5,last_capture_utc:at,runtime_generation:'7132bced3ce04c1b8f48d93d7b96f7ce',last_error:null,sampling_interrupted_since_start:false}};
 }
-export function reset(nextLanguage:string,nextTheme:string,nextScenario:Scenario){language=nextLanguage;theme=nextTheme;scenario=nextScenario;revision=1;exit='idle';generation=1;}
+export function reset(nextLanguage:string,nextTheme:string,nextScenario:Scenario){releaseCompatibility();releaseDiscoveryScan();language=nextLanguage;theme=nextTheme;scenario=nextScenario;revision=1;exit='idle';generation=1;compatibilityRevision=0;}
 export function isTauri(){return true;}
 export function getCurrentWebview(){return {setZoom:async()=>{}};}
 export async function listen(_event:string,callback:()=>void){callbacks.add(callback);return()=>callbacks.delete(callback);}
 export async function invoke(command:string,args:any){
  const id=args.requestId??args.request?.request_id;
+ if(command==='scan_discovery'&&scanGate)await scanGate;
+ if(command==='get_compatibility_snapshot'){
+  if(compatibilityGate)await compatibilityGate;
+  if(scenario==='error')throw Error('isolated_catalog_read_failure');
+  const result=compatibilitySnapshot(id);result.scan_generation=generation;result.context_fingerprint=(compatibilityRevision?'e':'d').repeat(64);
+  result.installations=scenario==='empty'?[]:installations.map(i=>({installation_id:i.installation_id,client_kind:i.client_kind,surface:i.surface,version:i.version,
+   freshness:'current',config_supported:true,config_state:'not_owned',historical_evidence_ids:result.records.filter(r=>r.client_kind===i.client_kind&&r.surface===i.surface&&r.tested_versions.includes(i.version)).map(r=>r.id)}));
+  return result;
+ }
  if(command==='get_runtime_snapshot')return {...runtimeSnapshot(),request_id:id};
  if(command==='get_preferences')return preferences(id);
  if(command==='save_preferences'){language=args.language;theme=args.theme;revision++;for(const cb of callbacks)cb();return preferences(id);}

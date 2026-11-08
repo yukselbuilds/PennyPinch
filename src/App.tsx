@@ -415,7 +415,8 @@ export default function App() {
     onPeriodChange={setPeriod} onRefresh={overview.refresh} onConnect={connect}
     onOpenApplications={() => navigate("applications")} onStart={() => void runLifecycle("start")} onStop={() => void runLifecycle("stop")}
     onPause={()=>void runLifecycle("pause")} onResume={()=>void runLifecycle("resume")} onRuntimeRefresh={retrySnapshot} />
-    : screen === "applications" ? <Applications language={language} requestedClient={requestedClient} onBusyChange={onApplicationsBusy} onDiscoveryChange={setRecoveryScanGeneration} />
+    : screen === "applications" ? <Applications language={language} requestedClient={requestedClient} onBusyChange={onApplicationsBusy} onDiscoveryChange={setRecoveryScanGeneration}
+      runtimeContext={`${snapshot?.runtime_generation ?? "none"}:${snapshot?.engine.status ?? "unknown"}:${snapshot?.engine_version ?? "none"}`} />
     : screen === "activity" ? <Activity language={language} {...activity} /> : renderSettings(
     labels,
     theme,

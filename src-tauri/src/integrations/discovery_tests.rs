@@ -230,6 +230,74 @@ fn recovery_detects_updated_and_missing_installations_without_executing_them() {
 }
 
 #[test]
+fn compatibility_updated_installation_requires_revalidation_without_global_version_promises() {
+    use crate::compatibility::catalog::{CatalogManager, Request};
+    use crate::integrations::config_io::PlanManager;
+    use crate::runtime::manager::RuntimeManager;
+    let fixture = Fixture::new();
+    let package = fixture.at("npm/node_modules/@openai/codex");
+    let binary = package.join("bin/codex.js");
+    write_file(&package.join("package.json"),br#"{"name":"@openai/codex","version":"0.163.0-alpha.10.2","bin":{"codex":"bin/codex.js"}}"#);
+    write_file(&binary, b"never execute this fixture");
+    let discovery = DiscoveryManager::new();
+    let runtime = RuntimeManager::new(None, None);
+    let plans = PlanManager::new(discovery.clone(), runtime.clone());
+    let catalog = CatalogManager::default();
+    let inputs = || DiscoveryInputs {
+        npm_roots: vec![fixture.at("npm")],
+        ..Default::default()
+    };
+    let read = || {
+        serde_json::to_value(catalog.read(
+            Request {
+                schema_version: 1,
+                request_id: Uuid::new_v4().to_string(),
+            },
+            &runtime,
+            &discovery,
+            &plans,
+        ))
+        .unwrap()
+    };
+    snapshot(discovery.scan_with_inputs(REQUEST_ID.into(), inputs()));
+    let first = read();
+    assert_eq!(first["installations"][0]["freshness"], "current");
+    assert_eq!(first["installations"][0]["config_supported"], true);
+    assert_eq!(
+        first["installations"][0]["historical_evidence_ids"],
+        serde_json::json!(["codex-cli-responses-api-fixture"])
+    );
+    write_file(
+        &binary,
+        b"changed binary metadata, never execute this fixture",
+    );
+    let stale = read();
+    assert_eq!(stale["installations"][0]["freshness"], "stale");
+    assert_eq!(stale["installations"][0]["config_supported"], false);
+    assert!(stale["installations"][0]["historical_evidence_ids"]
+        .as_array()
+        .unwrap()
+        .is_empty());
+    assert!(stale["context_fingerprint"].is_null());
+    write_file(
+        &package.join("package.json"),
+        br#"{"name":"@openai/codex","version":"0.167.0","bin":{"codex":"bin/codex.js"}}"#,
+    );
+    snapshot(discovery.scan_with_inputs(REQUEST_ID.into(), inputs()));
+    let updated = read();
+    assert_eq!(updated["installations"][0]["version"], "0.167.0");
+    assert_eq!(updated["installations"][0]["config_supported"], true);
+    assert!(updated["installations"][0]["historical_evidence_ids"]
+        .as_array()
+        .unwrap()
+        .is_empty());
+    assert_eq!(
+        fs::read(&binary).unwrap(),
+        b"changed binary metadata, never execute this fixture"
+    );
+}
+
+#[test]
 fn initial_state_is_not_scanned_and_absence_is_not_unsupported() {
     let manager = DiscoveryManager::new();
     let initial = snapshot(manager.list_snapshot(REQUEST_ID.to_owned()));

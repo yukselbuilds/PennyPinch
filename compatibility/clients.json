@@ -1,6 +1,11 @@
 {
   "schema_version": 1,
-  "last_updated": "2026-11-04",
+  "last_updated": "2026-11-08",
+  "release": {
+    "channel": "development",
+    "app_version": "0.1.0",
+    "engine_version": "0.41.0"
+  },
   "purpose": "Observed compatibility combinations only. A local fixture result does not imply live auth, desktop, subagent, or release support.",
   "allowed_statuses": [
     "not_tested",
@@ -14,6 +19,7 @@
   "records": [
     {
       "id": "headroom-packaged-runtime-win10-helper",
+      "match": {"client_kind": "engine", "surface": "runtime", "versions": ["0.41.0"], "auth_method": "none", "platform": "windows_10_x64", "engine_version": "0.41.0"},
       "product": "Headroom engine runtime",
       "version": "headroom-ai 0.41.0; CPython 3.13.13",
       "surface": "Packaged runtime; consoleless controller to hidden helper",
@@ -41,6 +47,7 @@
     },
     {
       "id": "codex-cli-responses-api-fixture",
+      "match": {"client_kind": "codex", "surface": "cli", "versions": ["0.163.0-alpha.10.2"], "auth_method": "synthetic", "platform": "windows_10_x64", "engine_version": "0.41.0"},
       "product": "OpenAI Codex CLI",
       "version": "0.163.0-alpha.10.2",
       "surface": "CLI exec, isolated process profile",
@@ -82,6 +89,7 @@
     },
     {
       "id": "codex-desktop-chatgpt-auth",
+      "match": {"client_kind": "codex", "surface": "desktop", "versions": [], "auth_method": "chatgpt", "platform": "unknown", "engine_version": "0.41.0"},
       "product": "OpenAI Codex Desktop",
       "version": "unknown",
       "surface": "Desktop main agent and subagent",
@@ -105,6 +113,7 @@
     },
     {
       "id": "claude-code-cli-anthropic-api-fixture",
+      "match": {"client_kind": "claude_code", "surface": "cli", "versions": ["2.1.158"], "auth_method": "synthetic", "platform": "windows_10_x64", "engine_version": "0.41.0"},
       "product": "Claude Code CLI",
       "version": "2.1.158",
       "surface": "CLI --bare/--print; tools disabled",
@@ -138,6 +147,7 @@
     },
     {
       "id": "claude-code-cli-oauth-and-agent-surfaces",
+      "match": {"client_kind": "claude_code", "surface": "cli", "versions": ["2.1.158"], "auth_method": "oauth", "platform": "unknown", "engine_version": "0.41.0"},
       "product": "Claude Code CLI",
       "version": "2.1.158",
       "surface": "Existing OAuth session, enabled tools, hooks/plugins, subagents",
@@ -161,6 +171,7 @@
     },
     {
       "id": "opencode-v1-cli-openai-compatible-fixture",
+      "match": {"client_kind": "opencode", "surface": "cli", "versions": ["1.19.3"], "auth_method": "synthetic", "platform": "windows_10_x64", "engine_version": "0.41.0"},
       "product": "OpenCode CLI",
       "version": "1.19.3 (V1 config)",
       "surface": "CLI run; tools disabled; --pure",
@@ -194,6 +205,7 @@
     },
     {
       "id": "opencode-v2-tui-desktop",
+      "match": {"client_kind": "opencode", "surface": "other", "versions": [], "auth_method": "unknown", "platform": "unknown", "engine_version": "0.41.0"},
       "product": "OpenCode",
       "version": "unknown (V2 not installed or exercised)",
       "surface": "V2 CLI, TUI and desktop surfaces",
@@ -217,6 +229,7 @@
     },
     {
       "id": "claude-code-native-product-scoped-fixture",
+      "match": {"client_kind": "claude_code", "surface": "cli", "versions": ["2.1.158"], "auth_method": "synthetic", "platform": "windows_10_x64", "engine_version": "0.41.0"},
       "product": "Claude Code CLI",
       "version": "2.1.158",
       "surface": "Native Headroom UI; common scoped Apply/Undo; CLI print with tools disabled",
@@ -280,6 +293,7 @@
     },
     {
       "id": "opencode-v1-native-product-provider-routes-win10",
+      "match": {"client_kind": "opencode", "surface": "cli", "versions": ["1.19.3"], "auth_method": "synthetic", "platform": "windows_10_x64", "engine_version": "0.41.0"},
       "product": "OpenCode V1",
       "version": "1.19.3 native Windows x64 baseline; exact measured SHA pin",
       "surface": "Headroom native UI to saved user JSONC; three eligible provider aliases",
@@ -336,6 +350,7 @@
     },
     {
       "id": "codex-cli-0166-chatgpt-win10-native-wait",
+      "match": {"client_kind": "codex", "surface": "cli", "versions": ["0.166.0"], "auth_method": "chatgpt", "platform": "windows_10_x64", "engine_version": "0.41.0"},
       "product": "OpenAI Codex CLI",
       "version": "0.166.0",
       "surface": "Native Headroom verifier and isolated CLI exec; parent plus one child",
@@ -385,6 +400,7 @@
     },
     {
       "id": "codex-desktop-2610276604-chatgpt-win10",
+      "match": {"client_kind": "codex", "surface": "desktop", "versions": ["26.1027.6604.0"], "auth_method": "chatgpt", "platform": "windows_10_x64", "engine_version": "0.41.0"},
       "product": "OpenAI Codex Desktop",
       "version": "Desktop 26.1027.6604.0; backend 0.166.0-alpha.5.1",
       "surface": "Installed packaged Desktop; separate authorized account profile; same native chat reopened",
@@ -428,6 +444,7 @@
     },
     {
       "id": "codex-current-real-api-key-provider",
+      "match": {"client_kind": "codex", "surface": "cli_desktop", "versions": ["0.166.0", "26.1027.6604.0", "0.166.0-alpha.5.1"], "auth_method": "api_key", "platform": "windows_10_x64", "engine_version": "0.41.0"},
       "product": "OpenAI Codex CLI / Desktop",
       "version": "CLI 0.166.0; Desktop 26.1027.6604.0/backend 0.166.0-alpha.5.1",
       "surface": "Real API-key provider path; separate from verified ChatGPT combinations",
@@ -452,11 +469,11 @@
   "product_capabilities": [
     {
       "id": "compression-pause",
-      "status": "not_tested",
-      "implementation": "not_implemented",
-      "ui": "disabled until H011/H028 proof",
-      "evidence": "docs/proofs/pause.md",
-      "evidence_date": "2026-10-19"
+      "status": "local_fixture_pass",
+      "implementation": "implemented",
+      "ui": "Native pause/resume with generation-bound private acknowledgement; Windows 10/pinned 0.41.0 local fixture scope only.",
+      "evidence": "docs/proofs/safe-pause.md",
+      "evidence_date": "2026-11-05"
     }
   ],
   "environment_gates": [
@@ -476,10 +493,10 @@
     },
     {
       "id": "tauri-native-helper-wiring",
-      "status": "not_tested",
-      "detail": "H006-a used a GUI-like consoleless controller; it did not exercise Tauri process creation or stdio wiring.",
-      "evidence": ["docs/proofs/windows-engine.md"],
-      "evidence_date": "2026-10-19"
+      "status": "local_fixture_pass",
+      "detail": "Actual Tauri/WebView2 to owned native manager/controller/engine acknowledgement on Windows 10 with pinned 0.41.0; clean-machine, other OS, installer and abrupt shutdown are separate scopes.",
+      "evidence": ["docs/proofs/safe-pause.md", "docs/reviews/H028.md"],
+      "evidence_date": "2026-11-05"
     }
   ]
 }

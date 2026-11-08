@@ -1,3 +1,4 @@
+mod compatibility;
 mod desktop;
 mod export;
 mod integrations;
@@ -149,6 +150,28 @@ async fn get_recovery_snapshot(
     })
     .await
     .unwrap_or_else(|_| runtime::recovery::failure(id, "unavailable")))
+}
+
+#[tauri::command]
+async fn get_compatibility_snapshot(
+    catalog: tauri::State<'_, compatibility::catalog::CatalogManager>,
+    runtime: tauri::State<'_, RuntimeManager>,
+    discovery: tauri::State<'_, DiscoveryManager>,
+    plans: tauri::State<'_, Arc<PlanManager>>,
+    request: compatibility::catalog::Request,
+) -> Result<compatibility::catalog::Reply, compatibility::catalog::Reply> {
+    let (catalog, runtime, discovery, plans) = (
+        catalog.inner().clone(),
+        runtime.inner().clone(),
+        discovery.inner().clone(),
+        plans.inner().clone(),
+    );
+    let id = request.request_id.clone();
+    Ok(tauri::async_runtime::spawn_blocking(move || {
+        catalog.read(request, &runtime, &discovery, &plans)
+    })
+    .await
+    .unwrap_or_else(|_| compatibility::catalog::failure(id, "unavailable")))
 }
 
 #[tauri::command]
@@ -624,6 +647,7 @@ fn main() {
             app.manage(overview);
             app.manage(export::report::ReportManager::default());
             app.manage(runtime::recovery::RecoveryManager::default());
+            app.manage(compatibility::catalog::CatalogManager::default());
             app.manage(desktop::lifecycle::Lifecycle::default());
             app.manage(desktop::autostart::Autostart::new());
             let close_to_tray = app
@@ -656,6 +680,7 @@ fn main() {
             confirm_desktop_exit,
             get_ingress_snapshot,
             get_recovery_snapshot,
+            get_compatibility_snapshot,
             get_metrics_summary,
             get_overview_snapshot,
             export_report,

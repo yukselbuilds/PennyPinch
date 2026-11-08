@@ -80,6 +80,8 @@ Cargo çağrılarında süreç ortamı `CARGO_HOME=<repo>/work/caches/cargo-home
 
 Şu anda `lint`, `test`, `test:e2e` adlı pnpm scriptleri yoktur. Planlanan bir komut başarılı kontrol diye işaretlenmez; eklendiği görevde bu tablo güncellenir. UI davranışı gereken görevlerde ilgili native kullanıcı akışı ayrıca doğrulanır. Bu kapı debug embedded ürünü doğrular; H038/H039 installer, güncelleme ve yayın kabulünün yerine geçmez. CI, push ve yayın kendi aşamasında ele alınır; mevcut ücretsiz kullanım sınırı geçerlidir.
 
+H035/H036 ek kapıları: `pnpm.cmd test:a11y` gerçek App'i izole transport ile Edge/headless üzerinde denetler; browser kurulumu ayrı ortam ön koşuludur. Viewport karşılığı gerçek OS DPI kanıtı değildir. `pnpm.cmd test:compatibility` strict katalog istemcisini ve keşif fixture sözleşmesini odaklı çalıştırır; aynı testler `test:app` listesinde de vardır. Bu komutlar var olmayan `test:e2e` ile karıştırılmaz. Native ürün kabulü ayrıca yapılır.
+
 ## Geçmiş kod denetiminin sınırı
 
 DEV002'nin ilk raporu config Apply/Undo ve sahiplik → runtime/proxy → UI bağlantı yollarını önceliklendirir. CodeGraph ilişkileri keşfeder; raporlayacak ajan ilgili gerçek kaynağı okur. Her bulgu dosya/satır, oluşma koşulu, kullanıcı etkisi ve en küçük düzeltmeyle desteklenir. Kontrol edilmeyen alanlar yazılır. Rapor üretmek, bütün düzeltmeleri uygulamak veya ana görevleri kapatmak değildir.

@@ -478,6 +478,23 @@ fn runtime_manifest_rejects_profile_drift_and_unknown_fields() {
 }
 
 #[test]
+fn compatibility_engine_pin_rejects_version_transition_and_accepts_restored_pin() {
+    let original = include_bytes!("../../../runtime/manifest.json");
+    let mut candidate: Value = serde_json::from_slice(original).unwrap();
+    for version in ["0.42.0", "0.40.0", "latest"] {
+        candidate["engine"]["version"] = json!(version);
+        let parsed: RuntimeManifest = serde_json::from_value(candidate.clone()).unwrap();
+        assert_eq!(validate_manifest(&parsed), Err(PublicError::ConfigConflict));
+    }
+    let restored: RuntimeManifest = serde_json::from_slice(original).unwrap();
+    assert_eq!(validate_manifest(&restored), Ok(()));
+    assert_eq!(
+        format!("{:x}", Sha256::digest(original)),
+        EXPECTED_MANIFEST_SHA256
+    );
+}
+
+#[test]
 fn unavailable_layout_and_generation_bound_stop_are_safe() {
     let project =
         fs::canonicalize(PathBuf::from(env!("CARGO_MANIFEST_DIR")).parent().unwrap()).unwrap();

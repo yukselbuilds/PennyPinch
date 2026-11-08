@@ -4,7 +4,7 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H011, H013–H034, H040, H046 ve **H047 tamamlandı: 33/51.** H035 erişilebilirlik ve performans aktif; yerel erişilebilirlik, performans, gerçek Windows DPI ve normal kapanış kontrolleri geçti, son tepsi menüsü kabulü açık. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
+**Durum:** H001–H005, H007–H008, H011, H013–H034, H036, H040, H046 ve **H047 tamamlandı: 34/51.** Kullanıcının açık sıra istisnasıyla H036 uyum kataloğu tamamlandı; H035'in manuel tepsi kabulü açık. H036'nın yeni adayına eski H035 toplu kabulü otomatik taşınmaz; kalan kontrolde ilgili fingerprint kapsamı değerlendirilir. Canlı kimlik kanıtı olmayan alanlar unknown kalır; API-key H041 yayın öncesi kabulünde açık. H048/H049 ve hesap/sohbet H050/H051 planlı. Henüz kurulabilir üretim uygulaması yok.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
@@ -17,7 +17,7 @@
 - **Kabul:** [DESIGN.md](DESIGN.md) içindeki boş/gerçek/örnek veri ayrımı, tema/dil/ölçek/klavye, native render ve son yerel kalite kapısı. Ana ajan art direction/uygulama/inceleme sahibi; H029 başlamaz. Sahte tasarruf veya hesap/sohbet işlevi eklenmez.
 - **Durum:**6 Kasım tamamlandı. Emil design engineering yalnız projeye, immutable commit/MIT lisansıyla kuruldu; diğer üç kaynak incelendi.138 frontend/349 Rust PASS,6 opt-in ignored; aynı152 girdili derleme/test blokları ve gerçek native kontroller PASS. [Kanıt](docs/proofs/ui-taste.md), [inceleme](docs/reviews/UX001.md). Yerel Windows10; örnek veriler gerçek tasarruf değildir. Görev sonunda durulur.
 
-Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028–H034 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H035 aktif; sonraki ana görev başlamaz.
+Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028–H034 ve H036 kabul edildi; ortak H011 güvenlik ön koşulu da kapandı. H035'in manuel tepsi kabulü açık. H036 sonunda duruldu; H037 başlamadı.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -518,19 +518,22 @@ flowchart TD
 - **Dosyalar:** `src-tauri/src/runtime/recovery.rs`, `src-tauri/src/runtime/recovery_tests.rs`, `src-tauri/src/integrations/config_io/recovery.rs`, `src-tauri/src/integrations/discovery.rs`, `src-tauri/src/main.rs`, `src/lib/recovery.ts`, `src/components/ProblemNotice.tsx`, `src/components/problem-notice.css`, `src/App.tsx`, `src/features/integrations/Applications.tsx`, ilgili testler.
 
 ### H035 — Erişilebilirlik ve performans
-- **Durum:** 8 Kasım başladı; [plan 023](docs/decisions/023-accessibility-performance.md). Ana ajan native/performance/kabul sahibi; mevcut tek Luna salt okunur erişilebilirlik incelemesi yapar. 33/51; H035 açık.
+- **Durum:** 8 Kasım kısmi; manuel tepsi kabulü açık. [Plan023](docs/decisions/023-accessibility-performance.md). Ana ajan native/performance/kabul sahibi; aynı tek Luna salt okunur erişilebilirlik incelemesini tamamladı. H036 sonrası güncel toplam34/51; aşağıdaki performans/DPI kanıtı H035'in tarihsel adayına aittir.
 - [ ] Klavye, kontrast, ekran okuyucu adları ve yüksek DPI sonuçları tamamlanır.
 - [x] **H035-a erişilebilirlik dilimi:** Skip navigation, filtre hatasında focus/alert ve açık tema kontrastı düzeltildi; tekrar çalıştırılabilir `test:a11y` 68 audit/0 ihlal. Bu, gerçek OS DPI/tepsi veya performans kabulü değildir; ana kutu açık.
-- [x] **H035-b performans ve DPI dilimi:** Son adayın motor-kapalı/hazır boşta60s ve10 yerel istek kontrolleri geçti; gerçek Windows125%/150%,120/144DPI ve96DPI'a geri dönüş kaydedildi. Ayrı son native koşu normal exit0/state restore/owned port kapanışı PASS. Tepsi menüsü kabulü açık; bir ölçüm koşusunun süre sınırında zorla kapanması PASS sayılmadı. [Ölçüm](docs/validation/performance.md), [kanıt](docs/proofs/accessibility-performance.md).
+- [x] **H035-b performans ve DPI dilimi:** H035'in o tarihteki adayında motor-kapalı/hazır boşta60s ve10 yerel istek kontrolleri geçti; gerçek Windows125%/150%,120/144DPI ve96DPI'a geri dönüş kaydedildi. Ayrı son native koşu normal exit0/state restore/owned port kapanışı PASS. Tepsi menüsü kabulü açık; bir ölçüm koşusunun süre sınırında zorla kapanması PASS sayılmadı. H036 sonrası etkilenmeyen kanıt yalnız ilgili fingerprint eşleşmesiyle taşınır. [Ölçüm](docs/validation/performance.md), [kanıt](docs/proofs/accessibility-performance.md).
 - **Kabul:** Kritik erişilebilirlik hatası yok; 1024×720/%125/%150'de eylemler erişilebilir; UI/motor kaynağı ayrı ölçülür.
 - **Doğrulama:** Playwright/erişilebilirlik denetimi + gerçek Windows DPI/tray kontrolü; referans donanım kaydı.
 - **Bağımlılık / boyut:** H034 / M; düzeltme listesi 5 dosyayı aşarsa bölünür.
 - **Dosyalar:** `tests/e2e/accessibility.spec.ts`, `docs/validation/performance.md`, ilgili UI dilimi.
 
 ### H036 — Uyum kataloğu ve güncelleme davranışı
-- [ ] Sürüm/auth/yüzey destek kayıtları arayüze bağlanır; istemci değişikliği yeniden doğrulamayı işaretler.
+- **Durum:** 8 Kasım tamamlandı; kullanıcının açık isteğiyle H035'in manuel tepsi kabulü beklerken yalnız bu görev için sıra istisnası uygulandı.34/51; H035 açık. [Plan024](docs/decisions/024-compatibility-catalog.md), [kanıt](docs/proofs/compatibility.md), [inceleme](docs/reviews/H036.md). Ana ajan uygulama/kanıt/sürüm güveni ve kabul sahibi; aynı tek Luna salt okunur kanıt eşlemesi yaptı, limit sonrası root devraldı. H037 başlamadı; görev sonunda durulur.
+- [x] Sürüm/auth/yüzey destek kayıtları arayüze bağlanır; istemci değişikliği yeniden doğrulamayı işaretler.
+- **Kanıt:**173 frontend/386 Rust PASS,8 opt-in ignored; fmt/TS/Vite/custom-protocol build ve84 audit/0 ihlal. Gerçek Sky native stopped/ready okuma, tarama sırasında/sonrasında eski sonucu gizleme, yenileme ve klavye PASS. Motor aynı nesil/0.41.0; normal exit0, state/Run/owned port koruması.28 toplu kontrol güncel kaynak/artefakt/ortamı bağlar (`work/proofs/compatibility/acceptance.json`).
 - **Kabul:** Doğrulandı/deneysel/desteklenmiyor ayrımı; aktif oturumda zorla motor güncellemesi yok; sürüm geçişi geri alınabilir.
 - **Ek kabul:** README, destek kataloğu, etkin engine/adapter ve yayın kanalı tutarlı tutulur. Eski sürüme ait vendor düzeltmesi kaynak/sürüm guard'ı olmadan taşınmaz. Gerçek installer güncellemesi H042'nin ayrı kabulüdür.
+- **Sınır:** Kanal development; yeni indirme veya kurulu sürüm geçişi sunulmaz. Bu görev yanlış pinin reddini/orijinal pine dönüşü sınadı; uygulanabilir installer güncelleme/rollback H042'de açık. Yeni canlı sağlayıcı/model/ajan, diğer OS, temiz kurulum ve uzun yük kanıtı değildir; model çağrısı0. Geliştirme tasarrufu ölçülmedi.
 - **Doğrulama:** Sürüm ve config fingerprint değişimi fixture'ları; katalogdaki her doğrulanmış satırın kanıt kontrolü.
 - **Bağımlılık / boyut:** H035 / M.
 - **Dosyalar:** `compatibility/clients.json`, `src-tauri/src/compatibility/catalog.rs`, `src/features/integrations/Compatibility.tsx`, `src-tauri/src/compatibility/catalog_tests.rs`.
@@ -703,4 +706,4 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ## Bu teslimden sonraki başlangıç
 
-**33/51 tamam; H035 erişilebilirlik ve performans aktif.** 168 frontend/379 Rust PASS,8 opt-in ignored; fmt/TS/Vite/native build ve68 audit/0 ihlal. Sabit CPU/bellek/gecikme kontrolleri ile gerçek Windows125%/150%DPI, dar pencere/klavye ve100%'e geri dönüş doğrulandı. Ayrı son koşunun normal exit0/state/Run/port kabulü geçti; tepsi menüsü denemesi açık. Ölçüm koşusunun süre sınırında zorla kapanışı başarı sayılmadı. [Kanıt](docs/proofs/accessibility-performance.md), [inceleme](docs/reviews/H035.md). H036 başlamaz. Yerel Windows10 debug kanıtı; Windows11/diğer OS/installer/uzun yük ve canlı sağlayıcı performansı doğrulanmadı. H041 API-key ve H038 paketleme açık; güncel devir `docs/IMPLEMENTATION_STATUS.md`.
+**34/51 tamam; H036 kabul edildi ve duruldu.**173 frontend/386 Rust PASS,8 opt-in ignored; fmt/TS/Vite/native build ve84 audit/0 ihlal. Kapalı başlayan uyum kataloğu, yeniden doğrulama ve sabit motor politikası gerçek native akışla tamamlandı. [Kanıt](docs/proofs/compatibility.md), [inceleme](docs/reviews/H036.md). H035'in manuel tepsi menüsü kabulü açık; tarihsel CPU/DPI kayıtlarının yeni adayla ilgili kapsamı fingerprint üzerinden değerlendirilmeden toplu PASS taşınmaz. Sonraki başlangıç H035'in kalan dar kabulünü planlamaktır; H037 başlamadı. Yerel Windows10 debug kanıtı; diğer OS/installer/uzun yük/canlı sağlayıcı sınırları ve H041 API-key/H042 güncelleme kapıları açık. Güncel devir `docs/IMPLEMENTATION_STATUS.md`.
