@@ -1,6 +1,6 @@
 # H035 — yerel erişilebilirlik ve performans ölçümü
 
-8 Kasım 2026; **aktif, H035 tamamlanmadı**. [Plan 023](../decisions/023-accessibility-performance.md). Bu kayıt Windows10 geliştirme binary'si içindir; yayın/installer, uzun süreli yük veya canlı sağlayıcı performansı değildir.
+8 Kasım 2026; **H035 tamamlandı**. [Plan023](../decisions/023-accessibility-performance.md), [güncel kabul](../proofs/accessibility-performance.md). Bu kayıt Windows10 geliştirme binary'si içindir; yayın/installer, uzun süreli yük veya canlı sağlayıcı performansı değildir.
 
 ## Sabit koşullar
 
@@ -10,7 +10,13 @@ Intel Core i7-10875H, 8 çekirdek/16 mantıksal işlemci, yaklaşık 16GB RAM; W
 
 Eşikler: hazır/boşta60s ve motor kapalı/boşta60s için grup başına ortalama CPU≤%10 tek çekirdek; UI private≤512MiB, motor private≤1536MiB. İki ısınma + 10 sıralı/saniyede en çok bir 128 satırlık sentetik araç JSON isteğinde ısınmış yerel p95≤5s, aynı bellek sınırları. Native hazır sinyali≤100s; izole App gezinme olayından ikinci frame'e p95≤250ms. Eşikler sonuçtan sonra yükseltilmedi.
 
-## Bulgular ve geçerlilik
+## Güncel H036 sonrası aday
+
+Koşu `93ce1a01-e141-42b3-b8fe-4afeea51fd0a`: tamamlanmış frontend ardından60s motor-kapalı UI7,54%/motor0%; ayrı60s model warmup UI10,78%/motor15,09%; sonrasında60s ready UI9,85%/motor0,26%. Her faz59 örnek. Warmup CPU'su boşta sınırına dahil edilmedi; eşikler korunur.2+10 aynı yerel istekte p9535,88ms, peak private UI185,30MiB/motor1157,14MiB; load CPU13,28%/4,89% için boşta eşiği uygulanmaz. Proxy12 istek; exact cache nedeniyle yerel fixture upstream1, dış sağlayıcı0. Sky Başlat→ready16,72s; kaynak/binary hash'leri aynı adımda kaydedildi.
+
+Değişen Uygulamalar125%/150% gerçek Windows ölçeğinde120/144DPI ve DPR1,25/1,5 ile aç/kapat/yenile kontrolünü geçti.100%/96DPI/DPR1 geri yüklendi. Hem bu run hem kullanıcı tepsi run'ı normal exit0/forcedfalse, owned port/state/Run korumasıyla bitti. Güncel kaynak kapısı173/386/84, eşleşen girdilerle yeniden kullanıldı. Diğer ekranların değişmeyen ilgili kaynakları ve shell/focus bölümü programatik eşleştirildi; tarihsel dar-pencere/klavye/DPI kapsamı yalnız bu alanlarda yeniden kullanıldı.46 teknik kontrol ve son belge kabulü kanıtı bağlar. UI CPU sınırına yakınlık ve kısa debug koşusu nedeniyle uzun yük/release kararlılığı iddia edilmez.
+
+## Tarihsel bulgular ve geçerlilik
 
 | Koşu | Gözlenen | Karar |
 | --- | --- | --- |
@@ -33,4 +39,4 @@ Proje içi `pnpm.cmd test:a11y` gerçek App'i izole transport ile çalıştırı
 
 Gerçek Sky fare/klavye ile native pencere 1015×711 CSS piksele daraltıldı; bu, 1024×720 hedefinden biraz daha kısıtlıdır. Skip bağlantısı görünür odak aldı ve Enter ana içeriğe taşıdı. Gerçek Windows Settings üzerinden125%/150% uygulandı: GetDpiForWindow120/144 ve WebView DPR1,25/1,5 birlikte kaydedildi; uygulama görünüm ölçeği100% kaldı.125%'te duraklatma,150%'de devam etme, dört ekran, bağlantı diyaloğunun alt eylemleri ve ESC ile kapanması gözlendi.150%'de ekran alanı pencere yüksekliğini650 CSS piksele indirdi; yatay taşma yoktu. Native gözlem TR/koyu kapsamındadır; diğer dil/tema birleşimleri otomatik UI kapısındadır.
 
-Windows Settings100%, native96DPI/DPR1 olarak geri alındı ve Settings kapatıldı. Kanıt `os125*`, `os150*`, `os100-restored*`, `keyboard-*` JSON'ları ve dar kapsamlı native görüntülerdir. Ölçüm koşusu daha sonra20dk test sınırına ulaştı ve zorla kapandı; `result.json` bütünüyle FAIL olarak korunur, state geri yüklendi. Geçerli faz ölçümleriyle normal kapanış birbirine karıştırılmaz. Son ayrı native koşu aynı kaynak/binary/dist adayında normal Sky çıkış/onayıyla exit0 verdi; state/protected/Run aynı, owned debug/stable port kapalı, yabancı listener canlı kaldı. Test motoru arka planda bırakılmadı. Windows tepsi alanı Sky listesinde hedeflenebilir pencere olarak sunulmadığı için yalnız tepsi menüsü kontrolü kullanıcı yanıtını bekliyor; bu tamamlanmadan H035 kapanmaz.
+Tarihsel Windows Settings100%, native96DPI/DPR1 olarak geri alındı ve Settings kapatıldı. Kanıt `os125*`, `os150*`, `os100-restored*`, `keyboard-*` JSON'ları ve native görüntülerdir. O ölçüm koşusu20dk sınırında zorla kapandı; bütün run FAIL kalır. Ayrı o-aday kapanışı normal exit0 verdi; bu eski kapanış yeni binary'nin sonucu sayılmadı. Güncel kullanıcı tepsi onayı ve normal kapanış üstteki yeni koşularla tamamlandı; test motoru arka planda bırakılmadı.

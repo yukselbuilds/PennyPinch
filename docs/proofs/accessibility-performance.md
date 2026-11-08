@@ -1,6 +1,23 @@
 # H035 — erişilebilirlik ve performans kanıtı
 
-8 Kasım 2026; **kısmi, 33/51; H035 açık**. [Plan 023](../decisions/023-accessibility-performance.md), [ölçüm koşulları](../validation/performance.md), [inceleme](../reviews/H035.md). Ana ajan performans/runtime, gerçek Windows kontrolleri ve kabul sahibi; mevcut tek Luna yalnız salt okunur erişilebilirlik incelemesi yaptı. Geliştirme token tasarrufu ölçülmedi.
+8 Kasım 2026; **tamamlandı, 35/51**. [Plan023](../decisions/023-accessibility-performance.md), [ölçüm koşulları](../validation/performance.md), [inceleme](../reviews/H035.md). Ana ajan performans/runtime, gerçek Windows kontrolleri ve kabul sahibi; mevcut tek Luna yalnız salt okunur erişilebilirlik incelemesi yaptı. Geliştirme token tasarrufu ölçülmedi.
+
+## Güncel adayın kapanışı
+
+H036 uygulama kodunu ve binary'yi değiştirdiği için güncel adayda performans ve değişen Uygulamalar ekranının OS DPI kabulü yenilendi. `work/proofs/accessibility/h036-final-acceptance.json`46/46 kontrolü, `closure-acceptance.json` son belge değişimlerini bağlar. Güncel173 frontend/386 Rust/8 ignored ve84 audit/0 ihlal, aynı kaynak/araç/OS ile H036'dan yeniden kullanılır; ürün testleri tekrarlanmadı. Önceki toplu H035 PASS kaydı yeni binary'ye taşınmadı. Etkilenmeyen UI kaynakları ve App shell/focus bölümü programatik aynı bulunarak eski dar-pencere/klavye/diğer-ekran DPI kapsamı yeniden bağlandı.
+
+| Güncel kontrol | Gözlenen | Kanıt |
+| --- | --- | --- |
+| Kullanıcı tepsi denemesi | X→tepsiden aç→Duraklat→Devam et tümü çalışıyor onayı; aynı nesil/revision0→4 içinde iki enabled/paused/enabled çevrimi | `work/proofs/compatibility/native-runs/2dd91219-d59e-47be-8ccb-c2b6d6a57fcd/manual-tray-user-report.json`, `tray-observations.json` |
+| Motor kapalı/hazır boşta60s | UI7,54%/9,85%; motor0%/0,26%;59'ar örnek, sabit bellek sınırları PASS | Run `93ce1a01-e141-42b3-b8fe-4afeea51fd0a`, `idle_off_settled/idle_ready.json` |
+| Isınma ve yerel yük | Ayrı60s warmup UI10,78%/motor15,09%;2+10 yerel istekte p9535,88ms, UI185,30MiB/motor1157,14MiB private | Aynı run `warmup/load.json`; aynı31.925byte/128satır sentetik girdi. Proxy12 isteği aldı; exact cache nedeniyle fixture upstream çağrısı1, dış sağlayıcı0. |
+| Başlatma/gezinme | Gerçek Sky Başlat→ready16,72s; güncel UI p9521,8ms | `startup.json`, H036 `ui-5c51934c-954b-4f74-8997-ee61ebad2fb9/result.json` |
+| Değişen Uygulamalar125%/150% |120/144DPI, DPR1,25/1,5; uyum aç/kapat/yenile12kayıt; kritik eylemlere yatay erişim, taşma yok | Aynı run `catalog125*`, `catalog150*`; gerçek Sky fare/klavye, API/IPC enjeksiyonu yok |
+| Geri yükleme/kapanış |100%/96DPI/DPR1 geri döndü, Settings kapandı; her iki güncel native koşu normal exit0/forcedfalse | İki run `result.json`; state/protected/gerçek HKCU Run aynı, owned portlar kapalı, yabancı listener canlı, son Sky listesinde Headroom/Settings yok |
+
+UI CPU hazır sonucu %10 sınırına yakındır; uzun süreli/release/sağlayıcı performansı veya kazanım yüzdesi çıkarılmaz. Son kapanışta yalnız belgeler değişti; README'nin H035 durumu düzeltildi, ürün girdileri aynı kaldı. Kaynak/kanıt/artefakt/araç/OS önce-sonra fingerprint'leri programatik kaydedildi. Tepsi görsel davranışı kullanıcı onayıdır; pasif DOM visibility tek başına pencerenin gizlendiği kanıtı sayılmadı. H035 tamamlandıktan sonra duruldu; H037 başlamadı.
+
+## İlk adayın tarihsel kaydı
 
 Skip bağlantısı, etkinlik filtre hatasının odağı/duyurusu ve açık tema kontrastı düzeltildi. UI pasif runtime sorgusu3s, native actor pasif health sorgusu2s oldu. Açık lifecycle komutları kanaldan hemen uyandırır ve kendi ack'ini gösterir;5s health geçerliliği, her istekte sahiplik kontrolü, auth/model/rota ve stream/CCR sözleşmeleri değişmedi.
 
@@ -20,6 +37,6 @@ Kanıtlar `work/proofs/accessibility/` altında. Son `checkpoint-acceptance.json
 
 İlk iki CPU başarısız adayı raporda korunur. Üçüncü run'ın ölçüm ve DPI dilimleri geçti; ancak20 dakikalık test sınırı normal çıkış tıklamasından önce doldu. Run `result.json` bu nedenle `forced:true, passed:false`; bu koşu bütün olarak başarılı değildir. Orijinal state geri yüklendi, yabancı listener korundu. Sayısal faz ölçümleri kendi değişmeyen kaynak/binary ve yük fingerprint'leriyle geçerlidir; normal kapanış için ayrı son koşu gerekir.
 
-Son ayrı koşu `6d8f33c6-fe4e-4b2e-888b-ca92205c57c4` aynı kaynak/binary/dist adayındadır. Sky sistem tepsisini hedeflenebilir pencere olarak sunmadığı için kullanıcıya Aç/Duraklat/Devam et denemesi soruldu; yanıt gelmedi. Pasif gözlem yalnız visible/enabled gördü; menü denemesi diye sunulmaz. Sonra ana ajan uygulamayı normal çıkış onayıyla kapattı ve helper orijinal state'i geri yükledi. Test motoru arka planda bırakılmadı. Yalnız tepsi menüsü kabulü açık; bu kanıt gelmeden H035 kapanmaz ve H036 başlamaz.
+Tarihsel ayrı koşu `6d8f33c6-fe4e-4b2e-888b-ca92205c57c4` o kaynak/binary/dist adayındadır. O anda tepsi onayı gelmemişti; pasif visible/enabled gözlemi menü denemesi sayılmadı. Ana ajan normal kapattı ve state geri yüklendi. Bu eski pending kaydı korunur; güncel kullanıcı onayı, performans/DPI ve normal kapanış üstteki yeni kabulde tamamlandı.
 
 Windows10 x64 build19045 debug adayının yerel kanıtıdır. Windows11, macOS/Linux, installer, uzun süreli yük, gerçek sağlayıcı ve yardımcı teknolojiyle elle ekran okuyucu deneyimi bu kabulün kanıtlanmış alanları değildir.
