@@ -1,0 +1,41 @@
+{
+  "date_utc": "2026-11-09T15:31:02.030953+00:00",
+  "task": "H037",
+  "main_status": "open",
+  "installed_tray_status": "pass",
+  "checks_passed": 14,
+  "installer_sha256": "b100aa5b8cc7be7ec576459531a9d86a388a9f789409d6017f5bdcbc58dfcc0a",
+  "host_windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "engine_version": "0.41.0",
+  "user_confirmed_steps": [
+    "close_to_tray",
+    "reopen_from_tray",
+    "pause_from_tray",
+    "resume_from_tray"
+  ],
+  "observed_runtime_cycle": [
+    {
+      "revision": 0,
+      "compression": "enabled"
+    },
+    {
+      "revision": 1,
+      "compression": "paused"
+    },
+    {
+      "revision": 2,
+      "compression": "enabled"
+    }
+  ],
+  "same_engine_generation": true,
+  "normal_exit_and_owned_cleanup": true,
+  "evidence": {
+    "path": "work/proofs/windows-install/tray-acceptance.json",
+    "sha256": "c604fbfbb8b5aab98c94565078ec2f88b2f9b0d77a060d67b2ce0f2d1566dee6",
+    "native_run": "work/proofs/windows-install/runs/9331f09e-903e-4db2-b84b-57dac53d1146"
+  }
+}

@@ -41,13 +41,18 @@ NSIS ayarı current-user/x64 hedefler; paketlenen WebView2 bootstrapper eksik ru
 
 Üretilen NSIS ön koşul bölümü, kontrollü kayıt değeri ve yerel kurucu dönüş kodlarıyla üç kez çalıştırıldı. WebView2 eksik ve kurucu hatalı olduğunda exit 2 döndü, kopyalama adımına geçilmedi. Kurucunun 0 dönüşünde ve WebView2 zaten var senaryosunda kopyalama adımı tamamlandı. Gerçek WebView2 kurucusunun eksik runtime bulunan temiz sistemde denenmesi açık. [Ön koşul kaydı](../../work/proofs/windows-install/webview-fixture/a03807eb-622b-4b85-9340-826359c56865/result.json).
 
-İlk koşucu açılıştan önce Windows ortam değişkeni okumasında durdu. İzole kurulum korundu ve ikinci koşuda hata durumu doğrudan gözlendi. İlk gözlem beklentisi, uygulamanın motor dursa da yerel giriş noktasını açabildiği için düzeltildi. Onarımdan sonraki normal çıkış kodu 0 oldu. WebView tanı portu ilk yoklamada görünüyordu. Takipte tanı ve motor portlarının kapalı olduğu ve uygulama sürecinin sona erdiği doğrulandı. Yalnız test kurulumu kaldırıldı. Tepsi gözlemi revision 0'da kaldı ve menü kabulü açık. Kaynak ve araç girdileri eşleşen önceki kalite kapısı yeniden kullanıldı. 12 kabul kontrolü ve ham sonuçlar kayıtlı. [Onarım artefaktı](../proofs/windows-installer-repair.json), [yerel kabul](../../work/proofs/windows-install/repair-acceptance.json).
+İlk koşucu açılıştan önce Windows ortam değişkeni okumasında durdu. İzole kurulum korundu ve ikinci koşuda hata durumu doğrudan gözlendi. İlk gözlem beklentisi, uygulamanın motor dursa da yerel giriş noktasını açabildiği için düzeltildi. Onarımdan sonraki normal çıkış kodu 0 oldu. WebView tanı portu ilk yoklamada görünüyordu. Takipte tanı ve motor portlarının kapalı olduğu ve uygulama sürecinin sona erdiği doğrulandı. Yalnız test kurulumu kaldırıldı. Bu koşunun tepsi gözlemi revision 0'da kaldı. Menü kabulü aşağıdaki ayrı koşuda alındı. Kaynak ve araç girdileri eşleşen önceki kalite kapısı yeniden kullanıldı. 12 kabul kontrolü ve ham sonuçlar kayıtlı. [Onarım artefaktı](../proofs/windows-installer-repair.json), [yerel kabul](../../work/proofs/windows-install/repair-acceptance.json).
+
+## Kurulu sürümün tepsi menüsü
+
+9 Kasım 2026. Kullanıcı aynı 0.1.0 paketinin Windows 10 build 19045 kurulumunda X ile tepsiye almayı, tepsiden yeniden açmayı, Duraklat ve Devam et eylemlerini doğruladı. Pasif gözlem motor 0.41.0 için aynı nesilde Açık → Duraklatıldı → Açık ve revision 0→1→2 kaydetti. Yeniden açılma kullanıcı onayıyla ve öne alınan Headroom penceresiyle doğrulandı. İlk pencere görüntüsündeki örtülme ayrı ham kayıtta saklandı. [Tepsi kaydı](../proofs/windows-installer-tray.json).
+
+Normal çıkış kodu 0, yerel motor ve tanı portları kapalı. Kaldırma öncesinde 22.333 kaynak dosyası doğrulandı. Yalnız izole kurulum kaldırıldı. Mevcut profil metadata'sı ve başlangıç kaydı korundu. Kaynak ve installer kimliği önceki adayla eşleşti. 14 kabul kontrolü geçti. [Yerel kabul](../../work/proofs/windows-install/tray-acceptance.json).
 
 ## Açık kabul
 
 1. Temiz Windows10 ve ayrı Windows11 sonuçları. Ücretli Windows11 yolu kullanılmaz; ücretsiz ortam yoksa not_tested kalır. Bu hostta izole state ve kısıtlı PATH temiz işletim sistemi diye sunulmaz.
 2. WebView2 bulunmayan temiz sistemde gerçek ön koşul kurulumu ve kesilen indirmenin sürdürülmesi. Eksik paketin reddi, aynı sürümle onarım ve kontrollü ön koşul hatası yerel dilimde doğrulandı. H042 indirme ve güncelleme akışı kendi kabulüne bağlıdır.
-3. Kurulu release için gerçek tepsi menüsü; H035'in kullanıcı onayı debug adayının kapsamındadır. Son kurulu adayda pencere eylemleri geçti, tepsi menüsü denenmedi.
-4. Tam uygulama genelinde üçüncü taraf lisans envanteri ve yayın kabulü. NOTICE korunmuş vendor bildirimlerini ve preview sınırını gösterir. CI gerekiyorsa ilgili aşamada ücretsiz kota/hard-stop tekrar doğrulanır; bu adımda CI çalıştırılmadı.
+3. Tam uygulama genelinde üçüncü taraf lisans envanteri ve yayın kabulü. NOTICE korunmuş vendor bildirimlerini ve preview sınırını gösterir. CI koşusu öncesinde ücretsiz kota ve harcama sınırı doğrulanır.
 
 macOS/Linux port/native Actions görevleri H048/H049'dadır. Bu Windows görevi onların başarı veya hazır workflow kanıtı değildir.
