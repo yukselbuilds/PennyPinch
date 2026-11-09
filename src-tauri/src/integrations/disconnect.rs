@@ -91,6 +91,62 @@ fn disconnect_all_adapters_refuse_changed_owned_endpoint_without_writing() {
     }
 }
 
+#[test]
+fn uninstall_undo_is_retryable_with_a_locked_client_and_keeps_user_edits() {
+    use std::os::windows::fs::OpenOptionsExt;
+
+    let fixture = Fixture::new();
+    let mut expected = Vec::new();
+    for kind in ["codex", "claude_code", "opencode_v1"] {
+        let (relative, original) = config_fixture(kind);
+        let config = fixture.path(relative);
+        write_file(&config, &original);
+        let (manager, installation, scan) = manager(&fixture, kind, config.clone());
+        apply(&manager, &preview(&manager, installation, scan));
+        let applied = String::from_utf8(fs::read(&config).unwrap()).unwrap();
+        fs::write(&config, applied.replace("fixture-before", "fixture-edited")).unwrap();
+        expected.push((
+            config,
+            String::from_utf8(original)
+                .unwrap()
+                .replace("fixture-before", "fixture-edited"),
+        ));
+    }
+    let plans = PlanManager::with_test_sources(
+        DiscoveryManager::new(),
+        ConfigRootInputs {
+            codex_home: Some(fixture.path("codex")),
+            claude_config_dir: Some(fixture.path("claude")),
+            xdg_config_home: Some(fixture.path("xdg")),
+            ..ConfigRootInputs::default()
+        },
+        Err(StableEndpointAccessError::Unavailable),
+    )
+    .with_ownership_store(
+        OwnershipStore::new(&fixture.root, Path::new("state/ownership")).unwrap(),
+    );
+
+    let (locked_path, locked_expected) = &expected[2];
+    let before = fs::read(locked_path).unwrap();
+    let locked = fs::OpenOptions::new()
+        .read(true)
+        .share_mode(0)
+        .open(locked_path)
+        .unwrap();
+    assert!(plans.undo_for_uninstall().is_err());
+    drop(locked);
+    assert_eq!(fs::read(locked_path).unwrap(), before);
+    assert_ne!(before, locked_expected.as_bytes());
+    for (path, content) in &expected[..2] {
+        assert_eq!(fs::read(path).unwrap(), content.as_bytes());
+    }
+    assert_eq!(plans.undo_for_uninstall(), Ok(()));
+    assert_eq!(plans.undo_for_uninstall(), Ok(()));
+    for (path, content) in expected {
+        assert_eq!(fs::read(path).unwrap(), content.as_bytes());
+    }
+}
+
 struct Gate {
     case: String,
     release: Sender<bool>,

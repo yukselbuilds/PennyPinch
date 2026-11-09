@@ -1082,11 +1082,28 @@ impl PlanManager {
     }
 
     pub(crate) fn new(discovery: DiscoveryManager, runtime: RuntimeManager) -> Self {
+        Self::with_endpoint(discovery, move || runtime.ready_stable_endpoint())
+    }
+
+    #[cfg(all(windows, not(debug_assertions)))]
+    pub(crate) fn for_uninstall() -> Self {
+        Self::with_endpoint(DiscoveryManager::new(), || {
+            Err(StableEndpointAccessError::Unavailable)
+        })
+    }
+
+    fn with_endpoint(
+        discovery: DiscoveryManager,
+        endpoint_provider: impl Fn() -> Result<ReadyStableEndpoint, StableEndpointAccessError>
+            + Send
+            + Sync
+            + 'static,
+    ) -> Self {
         Self {
             discovery,
             claude_context: claude_context::ClaudeContextManager::new(),
             roots_provider: Arc::new(ConfigRootInputs::from_environment),
-            endpoint_provider: Arc::new(move || runtime.ready_stable_endpoint()),
+            endpoint_provider: Arc::new(endpoint_provider),
             opencode_environment_provider: Arc::new(opencode_environment::Snapshot::from_process),
             leases: Mutex::new(HashMap::new()),
             preview_in_flight: AtomicBool::new(false),

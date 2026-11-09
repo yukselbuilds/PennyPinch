@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "task": "H038",
+  "status": "local_acceptance_pass",
+  "date_utc": "2026-11-09T17:08:57.110892+00:00",
+  "host_windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "main_tasks_complete": 36,
+  "checks_passed": 40,
+  "checks_total": 40,
+  "product_source_inputs": 212,
+  "frontend_tests": 173,
+  "rust_tests": 392,
+  "rust_opt_in_ignored": 9,
+  "focused_tests": 4,
+  "installer": {
+    "path": "work/caches/cargo-target/release/bundle/nsis/Headroom H038 QA_0.1.0_x64-setup.exe",
+    "bytes": 131048720,
+    "sha256": "f43bd97ec9b84f0149db01890df418b321e869e3ab024007bc5b00e53738afe3"
+  },
+  "test_bundle_identifier": "dev.headroom.desktop.h038-qa",
+  "native": {
+    "app_connect_disconnect_reconnect": "pass",
+    "open_app_refused": "pass",
+    "locked_config_refused": "pass",
+    "endpoint_conflict_refused": "pass",
+    "history_keep": "pass",
+    "history_delete_with_locked_file_refused": "pass",
+    "history_delete_retry": "pass",
+    "external_client_configs_preserved": 3,
+    "diagnostic_ports_closed": "pass"
+  },
+  "evidence": {
+    "path": "work/proofs/windows-uninstall/acceptance.json",
+    "sha256": "e3d69c7c6763509451cc25efd8a474041c240de5cbe37c5b26c119235c2f9721"
+  },
+  "not_tested": [
+    "Windows 11",
+    "clean Windows",
+    "live provider",
+    "production installer identifier",
+    "signed updates (/UPDATE)"
+  ]
+}

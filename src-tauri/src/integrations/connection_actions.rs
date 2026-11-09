@@ -119,6 +119,44 @@ impl PlanManager {
         undo_connection(self, request)
     }
 
+    #[cfg(all(windows, any(test, not(debug_assertions))))]
+    pub(crate) fn undo_for_uninstall(&self) -> Result<(), &'static str> {
+        let mut requests = Vec::new();
+        for kind in [
+            ClientKind::Codex,
+            ClientKind::ClaudeCode,
+            ClientKind::OpenCodeV1,
+        ] {
+            let client_kind = client_kind_code(kind).to_owned();
+            let request_id = Uuid::new_v4().to_string();
+            let snapshot = self.ownership_snapshot(OwnershipSnapshotRequest {
+                schema_version: 1,
+                request_id: request_id.clone(),
+                client_kind: client_kind.clone(),
+            });
+            let snapshot = match snapshot {
+                ConnectionActionReply::Success(snapshot) => snapshot,
+                ConnectionActionReply::Error(failure) => return Err(failure.error.code),
+            };
+            if let Some(record) = snapshot.ownership.filter(|record| record.state == "active") {
+                requests.push(UndoConnectionRequest {
+                    schema_version: 1,
+                    request_id,
+                    client_kind,
+                    owner_id: record.owner_id,
+                    expected_revision: record.revision,
+                    expected_record_fingerprint: record.record_fingerprint,
+                });
+            }
+        }
+        for request in requests {
+            if let ConnectionActionReply::Error(failure) = self.undo_connection(request) {
+                return Err(failure.error.code);
+            }
+        }
+        Ok(())
+    }
+
     pub(crate) fn ownership_snapshot(
         &self,
         request: OwnershipSnapshotRequest,

@@ -1,0 +1,13 @@
+# H038 — Kaldırma ve veri tercihleri
+
+9 Kasım 2026. H037’nin dış kabulü açıkken kullanıcı H038’e geçişi onayladı. Ana ajan mevcut geri alma işlemini ve Windows kaldırıcıyı bağlar. Bu işlem ayar sahipliği ve yerel veri silme kararları içerdiği için ana ajan uygular.
+
+Windows’un kaldırma ekranında Headroom geçmişi ve tercihleri varsayılan olarak saklanır. Kullanıcı silmeyi seçerse geçerli kullanıcının Headroom LocalAppData kökü temizlenir. Dışa aktarılan dosyalar ve istemci uygulamalarının verileri kapsam dışında kalır. Etkileşimsiz kaldırma geçmişi saklar. `/UPDATE` işaretli Tauri yolu bu temizliği atlar. Güncelleme kabulü H042’dedir.
+
+Kaldırıcı Windows dosya paylaşımıyla aynı profildeki açık Headroom örneklerini algılar. Açıksa normal tepsi çıkışı istenir. Kaldırıcı kilidi tuttuğu sürece aynı profile yeni bir örnek yazamaz. Kurulu uygulamanın arayüzsüz giriş noktası üç istemcinin sahiplik kaydını okur ve aktif olanlar için mevcut `undo_connection` işlemini çağırır. İstemciye ait yeni alanlar ve yorumlar korunur. Scope, sahiplik, config yolu ve işlem kontrolleri devam eder. Uygulamanın kendi başlangıç kaydı ancak komut satırı kurulu EXE’ye birebir eşleşirse kaldırılır.
+
+İstemci kilidi, sahiplik çatışması veya başarısız geri almada kaldırıcı kurulum dosyalarına ve seçilen veri temizliğine geçmez. Daha önce geri alınan istemciler ayrı ayrı başarıyla kapanmış sayılır. Yeniden deneme yalnız kalan aktif kayıtları işler. Silme sırasında kilitli yerel veri varsa hata görünür ve kurulum korunur. Kullanıcı silmeyi seçmişse, hata anına kadar silinen uygulama verileri geri yüklenmez.
+
+Kabulde Windows 10’da ayrı uygulama kimliği, kurulum klasörü ve sentetik istemci config’i kullanılır. Kurulu uygulamada bağlantı → ürün içi kaldırma → yeniden bağlanma, açık uygulamayla kaldırma reddi, kilit ve çatışmada byte eşitliği, gerçek NSIS üzerinden saklama ve silme ayrı doğrulanır. Başarısız commit senaryosu odaklı Rust testiyle sınanır. Önce/sonra girdi ve ortam parmak izleri `work/proofs/windows-uninstall/` altında saklanır. Son adayın yerel kapısı `WORKFLOW.md` komutlarıyla çalışır. Windows 11 ve temiz Windows kabulü kendi ortamını bekler.
+
+Tauri CLI 2.12.3 NSIS şablonu sabit commit’ten alınır. Kaldırma onayı, korumalı hazırlık ve silme adımları Headroom’a uyarlanır. Kaynak ve MIT metni paketlenen NOTICE’a eklenir. [Tauri şablonu](https://github.com/tauri-apps/tauri/blob/59b63ab500da9859f12d8888c3298bc29bba0b92/crates/tauri-bundler/src/bundle/windows/nsis/installer.nsi) · [Windows dosya paylaşımı](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew).

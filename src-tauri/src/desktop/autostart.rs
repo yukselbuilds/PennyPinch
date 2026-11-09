@@ -55,6 +55,15 @@ impl Autostart {
         })
     }
 
+    #[cfg(all(windows, any(test, not(debug_assertions))))]
+    pub(crate) fn remove_if_owned(&self) -> Result<(), Error> {
+        let snapshot = self.try_read()?;
+        if snapshot.status == "registered" {
+            self.set(false, snapshot.fingerprint.as_deref())?;
+        }
+        Ok(())
+    }
+
     #[cfg(windows)]
     fn try_read(&self) -> Result<Snapshot, Error> {
         let _lock = native::Lock::acquire(&self.key)?;
@@ -340,8 +349,8 @@ mod tests {
         };
         assert_eq!(again.read().fingerprint, enabled.fingerprint);
         assert!(matches!(app.set(false, None), Err(Error::Conflict)));
-        let disabled = app.set(false, enabled.fingerprint.as_deref()).unwrap();
-        assert_eq!(disabled.status, "disabled");
+        app.remove_if_owned().unwrap();
+        assert_eq!(app.read().status, "disabled");
         let foreign = encoded(&"foreign.exe\0".encode_utf16().collect::<Vec<_>>());
         native::write(&key, Some(&foreign)).unwrap();
         let seen = app.read();
@@ -350,6 +359,7 @@ mod tests {
             app.set(true, seen.fingerprint.as_deref()),
             Err(Error::Conflict)
         ));
+        app.remove_if_owned().unwrap();
         assert_eq!(native::read(&key).unwrap(), Some(foreign));
         native::write(&key, None).unwrap();
         native::test_neighbor(&key, false);

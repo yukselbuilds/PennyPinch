@@ -600,6 +600,9 @@ async fn select_client_file(
 }
 
 fn main() {
+    let context = tauri::generate_context!();
+    #[cfg(all(windows, not(debug_assertions)))]
+    let _desktop_use = desktop::uninstall::enter(context.config());
     let app = tauri::Builder::default()
         .setup(|app| {
             let resource_dir = app.path().resource_dir().ok();
@@ -707,7 +710,7 @@ fn main() {
             get_codex_connection_status,
             verify_codex_connection
         ])
-        .build(tauri::generate_context!())
+        .build(context)
         .expect("failed to build Headroom desktop");
 
     app.run(|app_handle, event| {

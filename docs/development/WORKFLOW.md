@@ -84,6 +84,8 @@ H035/H036 ek kapıları: `pnpm.cmd test:a11y` gerçek App'i izole transport ile 
 
 `pnpm.cmd build:windows` mevcut pinned payload'ı tam envanterle `work/build/windows/resources` içine doğrular ve current-user NSIS önizlemesini üretir. Proje içindeki sabitlenmiş Python ve motor payload'ı gerekir. Odaklı paket testleri aynı Python ile `-I -B -m unittest discover -s tests/runtime -p 'test_windows_*.py'` komutuyla çalışır. Teslim ZIP’i aynı Python ile `-I -B scripts/package-windows-delivery.py` komutuyla üretilir. `windows_bundle_real_staged_payload_starts_and_stops_without_development_layout` opt-in Rust testi gerçek staging kaynaklarını kullanır. Kurulum, kaynak eşitliği, native motor ve normal kapanış ayrıca gözlenir. Temiz Windows 10, Windows 11 ve WebView2 yokluğu ayrı kaydedilir. Testler izole istemci ayarlarını kullanır. [Windows doğrulaması](../validation/windows-install.md).
 
+H038 kaldırma kabulü, Windows 10’da gerçek NSIS ve ayrı uygulama kimliğiyle yapıldı. Yerel kapıdan sonra ürün girdileri aynıysa testler yeniden çalıştırılmaz. Kaldırıcıyla ilgili değişiklikte açık uygulama, config kilidi/çatışması ve yerel veriyi saklama/silme yeniden gözlenir. Etkileşimsiz kaldırma veriyi saklar. Güncelleme yolu ayrı kabul edilir. [Kaldırma doğrulaması](../validation/uninstall.md).
+
 ## Geçmiş kod denetiminin sınırı
 
 DEV002'nin ilk raporu config Apply/Undo ve sahiplik → runtime/proxy → UI bağlantı yollarını önceliklendirir. CodeGraph ilişkileri keşfeder; raporlayacak ajan ilgili gerçek kaynağı okur. Her bulgu dosya/satır, oluşma koşulu, kullanıcı etkisi ve en küçük düzeltmeyle desteklenir. Kontrol edilmeyen alanlar yazılır. Rapor üretmek, bütün düzeltmeleri uygulamak veya ana görevleri kapatmak değildir.

@@ -2084,6 +2084,7 @@ fn undo_precommit_fault_rolls_back_config_and_ownership_together() {
         error_code(undo(&manager, "codex", &active)),
         "config_unavailable"
     );
+    assert_eq!(manager.undo_for_uninstall(), Err("config_unavailable"));
     assert_eq!(fs::read(&config).unwrap(), applied_bytes);
     let snapshot = success(manager.ownership_snapshot(OwnershipSnapshotRequest {
         schema_version: 1,
