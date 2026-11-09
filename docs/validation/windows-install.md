@@ -1,6 +1,6 @@
 # H037 — Windows kurulum doğrulaması
 
-8 Kasım2026; **aktif, ana kabul açık;35/51**. [Plan025](../decisions/025-windows-installer.md). Bu kayıt mevcut Windows10 build19045 geliştirme hostu içindir; temiz Windows10/11 veya yayın başarısı değildir.
+9 Kasım 2026. **H037 aktif ve ana kabul açık. 35/51.** Yerel sonuçlar Windows 10 build 19045 geliştirme bilgisayarına aittir. Temiz masaüstü ve yayın doğrulamaları açık kabul bölümünde ayrı izlenir. [Plan025](../decisions/025-windows-installer.md).
 
 ## Paket yolu ve yeniden üretim
 
@@ -56,6 +56,12 @@ Normal çıkış kodu 0, yerel motor ve tanı portları kapalı. Kaldırma önce
 Python bildirimleri wheel `RECORD` yollarıyla da denetlendi ve ONNX Runtime'ın paket içindeki lisans dosyaları bulundu. Ayrı dosyası eksik dört Python dağıtımının özgün metinleri, sürüm etiketlerinden çözülen commit'lere bağlandı. Dört Rust crate'inin metinleri yayımlanan commit'lerden alındı. `selectors` için kilitli kaynak başlığı, kaynak commit'i ve aynı MPL-2.0 metni kaydedildi. Yerel `Headroom_0.1.0_third_party_notices.zip` arşivindeki 597 girdi tekrar okunup hash ile doğrulandı. Arşivin yayın dosyalarıyla birlikte teslim edilmesi ve dağıtım kapsamının kabulü açık. [Lisans arşivi kaydı](../proofs/windows-installer-notices.json).
 
 Yerel HTTP testinde gerçek 131.035.994 baytlık aday 8 MiB'de kesildi. Windows curl kalan 122.647.386 baytı HTTP 206 ile aldı ve tam dosyanın SHA-256 değeri adayla eşleşti. `If-Range` artık geçerli olmadığında sunucu 200 döndürdü, istemci exit 33 verdi ve kısmi dosyayı korudu. Bu kayıt yerel dosya teslimi içindir. Yayın adresi ve Microsoft'un Evergreen runtime aktarımı kendi ortamında doğrulanır. [Aktarım kaydı](../proofs/windows-installer-components.json), [curl devam seçeneği](https://curl.se/docs/manpage.html#-C), [Microsoft WebView2 dağıtımı](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution).
+
+## Yerel önizleme teslim paketi
+
+Proje içindeki sabitlenmiş CPython ile `-I -B scripts/package-windows-delivery.py` çalıştırılır. Script doğrulanmış NSIS kurulum dosyasını ve ona bağlı lisans arşivini kullanır. `work/build/windows/delivery/Headroom_0.1.0_Windows_x64_preview.zip` içine kurulum dosyasını, `LICENSES/` bildirimlerini, iki dilli `README.txt` dosyasını ve `SHA256SUMS.txt` listesini yazar. Kaynak hash’lerini ve ZIP içeriğini doğrular. Mevcut bir teslim dosyası korunur.
+
+Windows PowerShell 7.6.9 ile arşiv `Teslim çalışma` klasörüne çıkarıldı. 600 dosya ve listedeki 599 SHA-256 değeri doğrulandı. ZIP’ten çıkan EXE önceki kurulum ve tepsi testlerindeki imzasız EXE ile birebir eşleşti. On paketleme testi geçti. Ürün kapısının önceki 206 kaynak ve araç girdisi eşleşti. [Teslim kanıtı](../proofs/windows-installer-delivery.json).
 
 ## Açık kabul
 

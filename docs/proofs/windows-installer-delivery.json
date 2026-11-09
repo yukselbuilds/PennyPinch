@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "date_utc": "2026-11-09T16:06:35.3300820Z",
+  "task": "H037-a7",
+  "main_status": "open",
+  "scope": "local_preview_delivery",
+  "app_version": "0.1.0",
+  "host_windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "package_tests": 10,
+  "powershell": "7.6.9",
+  "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+  "prior_product_quality_inputs_matched": 206,
+  "delivery": {
+    "path": "work/build/windows/delivery/Headroom_0.1.0_Windows_x64_preview.zip",
+    "sha256": "3f4a344a62f192b6e296cf55b755191c5e3995f04ab49d0ae48557997db009c6",
+    "bytes": 132310592,
+    "entries": 600,
+    "notice_entries": 597,
+    "verified_extracted_checksums": 599,
+    "extracted_in_unicode_space_path": true,
+    "installer_sha256": "b100aa5b8cc7be7ec576459531a9d86a388a9f789409d6017f5bdcbc58dfcc0a",
+    "notice_archive_sha256": "0985e41a23df01c9b696b482116431d5264ed1313f61cb3c2220b81eb5b3bb06"
+  },
+  "evidence": {
+    "path": "work/proofs/windows-delivery/runs/96dd11df781c48c6aa4032191c60a62e/result.json",
+    "sha256": "ebf9a2dad5671864b54de6af429fde8d4374bc27a220375640c78ce8d164fb1b",
+    "installer_proof": "docs/proofs/windows-installer.json",
+    "notices_proof": "docs/proofs/windows-installer-notices.json"
+  },
+  "remaining": {
+    "clean_windows_10_x64": "not_tested",
+    "clean_windows_11_x64": "not_tested",
+    "missing_webview2_on_clean_host": "not_tested",
+    "publication_download_and_notice_delivery": "not_tested"
+  }
+}
