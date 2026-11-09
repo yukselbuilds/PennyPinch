@@ -1,0 +1,51 @@
+{
+  "date_utc": "2026-11-09T15:00:04.090450+00:00",
+  "task": "H037",
+  "main_status": "open",
+  "local_repair_status": "pass",
+  "checks_passed": 12,
+  "installer_sha256": "b100aa5b8cc7be7ec576459531a9d86a388a9f789409d6017f5bdcbc58dfcc0a",
+  "truncated_installer": {
+    "bytes_removed": 65536,
+    "exit_code": 2,
+    "rejected_before_install": true,
+    "sha256_before": "21843a877b6a8717e24eceef762c9affd76e2fa3612450689e5c2b6f141f453f",
+    "sha256_after": "21843a877b6a8717e24eceef762c9affd76e2fa3612450689e5c2b6f141f453f"
+  },
+  "damaged_payload_rejected": {
+    "status": "unavailable",
+    "code": "config_conflict",
+    "runtime_generation_created": false,
+    "local_fixture_calls": 0,
+    "observer_sha256": "d09e55fc8839e0690a76f32c501fab19a5c4269e19320da413335912865d4d63"
+  },
+  "same_version_reinstall": {
+    "exit_code": 0,
+    "resource": "runtime/cache_control_shim.py",
+    "original_sha256": "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1",
+    "damaged_sha256": "1c51633777f6b487a5db18e72bed55de895667dc1f867c8ed5bcb20973c9641f",
+    "repaired_sha256": "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1",
+    "resources_verified": 22333,
+    "state_and_fixture_config_preserved": true
+  },
+  "local_engine_response": 200,
+  "debug_port_closed_at_follow_up": true,
+  "webview_prerequisite_fixture": {
+    "absent_bootstrap_failure": 2,
+    "absent_bootstrap_zero_exit": 0,
+    "present_skip_bootstrap": 0
+  },
+  "installed_tray": "not_tested",
+  "still_open": [
+    "clean Windows10",
+    "Windows11",
+    "real missing WebView2",
+    "interrupted download resume",
+    "full publication license inventory",
+    "installed release tray menu"
+  ],
+  "proof": {
+    "path": "work/proofs/windows-install/repair-acceptance.json",
+    "sha256": "59d140f974283492aad3f26d0fa50ebc179fdb67f9cac3928bf5eeded8919e0e"
+  }
+}

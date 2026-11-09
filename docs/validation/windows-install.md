@@ -33,10 +33,20 @@ Son `cleanup.json` native koşudan sonra bütün22.332pinned resource + receipt'
 
 NSIS ayarı current-user/x64 hedefler; paketlenen WebView2 bootstrapper eksik runtime'da internet gerektirir. Mevcut WebView2'yi kaldırmak veya Codex'in kullandığı sistem bileşenini bozmak test yöntemi değildir. Eksik-WebView2 ve temiz kullanıcı/makine yolu ayrı ortam kanıtı bekler. Development preview imzasızdır; upstream LICENSE/NOTICE dosyaları korunur, [bildirim](../../NOTICE.md) yayın kabulünün yerini tutmaz.
 
+## Yerel onarım ve WebView2 ön koşulu
+
+9 Kasım 2026. Aynı 0.1.0 kurulum paketiyle çalışıldı. Sonundan 64 KiB eksiltilen kopya exit 2 ile reddedildi. Hedef klasör ve uygulama kaydı oluşmadı. Bu test kesilmiş paketin reddini doğrular. İndirmeyi sürdürme kabulü açık.
+
+İzole kurulumda `runtime/cache_control_shim.py` değiştirildi. Penceredeki **Başlat** eylemi `unavailable/config_conflict` döndürdü ve motor nesli oluşmadı. Aynı sürümü mevcut dizine yeniden kurunca dosya ilk SHA-256 değerine döndü ve 22.333 kaynak dosyası doğrulandı. İzole çalışma ayarı ve Codex fixture dosyası byte düzeyinde korundu. Kurulu motor 0.41.0 hazır oldu ve yerel test isteğine HTTP 200 döndü. Ekrandaki mevcut hata mesajı **Durumu yenile** öneriyor. Hasarlı paket dosyası için doğrulanan onarım, uygulamadan çıkıp aynı kurulum dosyasını tekrar çalıştırmaktır.
+
+Üretilen NSIS ön koşul bölümü, kontrollü kayıt değeri ve yerel kurucu dönüş kodlarıyla üç kez çalıştırıldı. WebView2 eksik ve kurucu hatalı olduğunda exit 2 döndü, kopyalama adımına geçilmedi. Kurucunun 0 dönüşünde ve WebView2 zaten var senaryosunda kopyalama adımı tamamlandı. Gerçek WebView2 kurucusunun eksik runtime bulunan temiz sistemde denenmesi açık. [Ön koşul kaydı](../../work/proofs/windows-install/webview-fixture/a03807eb-622b-4b85-9340-826359c56865/result.json).
+
+İlk koşucu açılıştan önce Windows ortam değişkeni okumasında durdu. İzole kurulum korundu ve ikinci koşuda hata durumu doğrudan gözlendi. İlk gözlem beklentisi, uygulamanın motor dursa da yerel giriş noktasını açabildiği için düzeltildi. Onarımdan sonraki normal çıkış kodu 0 oldu. WebView tanı portu ilk yoklamada görünüyordu. Takipte tanı ve motor portlarının kapalı olduğu ve uygulama sürecinin sona erdiği doğrulandı. Yalnız test kurulumu kaldırıldı. Tepsi gözlemi revision 0'da kaldı ve menü kabulü açık. Kaynak ve araç girdileri eşleşen önceki kalite kapısı yeniden kullanıldı. 12 kabul kontrolü ve ham sonuçlar kayıtlı. [Onarım artefaktı](../proofs/windows-installer-repair.json), [yerel kabul](../../work/proofs/windows-install/repair-acceptance.json).
+
 ## Açık kabul
 
 1. Temiz Windows10 ve ayrı Windows11 sonuçları. Ücretli Windows11 yolu kullanılmaz; ücretsiz ortam yoksa not_tested kalır. Bu hostta izole state ve kısıtlı PATH temiz işletim sistemi diye sunulmaz.
-2. WebView2-yok/başarısız ön koşul kurulumu, gerçek indirme-kesinti/devam/onarım. Bu sürümün motoru gömülüdür; yalnız statik guard/yeniden dene sonucu indirme yöneticisi değildir. H042 indirme/güncelleme akışının kanıtı ayrıca gerekir.
+2. WebView2 bulunmayan temiz sistemde gerçek ön koşul kurulumu ve kesilen indirmenin sürdürülmesi. Eksik paketin reddi, aynı sürümle onarım ve kontrollü ön koşul hatası yerel dilimde doğrulandı. H042 indirme ve güncelleme akışı kendi kabulüne bağlıdır.
 3. Kurulu release için gerçek tepsi menüsü; H035'in kullanıcı onayı debug adayının kapsamındadır. Son kurulu adayda pencere eylemleri geçti, tepsi menüsü denenmedi.
 4. Tam uygulama genelinde üçüncü taraf lisans envanteri ve yayın kabulü. NOTICE korunmuş vendor bildirimlerini ve preview sınırını gösterir. CI gerekiyorsa ilgili aşamada ücretsiz kota/hard-stop tekrar doğrulanır; bu adımda CI çalıştırılmadı.
 
