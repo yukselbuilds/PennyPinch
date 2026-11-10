@@ -49,6 +49,10 @@ Küçük veya korumalı içerikte ek şemaların maliyeti de korundu. Aşağıda
 | Anthropic HTTP/SSE | −%1,30…−%0,87 | −%0,84…−%0,56 | −%27,93…−%20,49 |
 | Responses WebSocket | %0 | %0 | %0 |
 
+Kısa Anthropic örneğinde artışın tamamı `headroom_retrieve` araç tanımından geldi. Üç turlu loopback tekrarının girdi ve çıktı parmak izleri önceki dokuz kayıtla eşleşti. İletilen gövdeden bu tanım çıkarıldığında özgün istek birebir elde edildi. `o200k_base` tam JSON sayımı her turda 100 ek token gösterdi. İlk tur 358’den 458’e, son tur 488’den 588’e çıktı. [Alan bazında ölçüm](../proofs/anthropic-request-overhead.json).
+
+Sabit motor varsayılan ayarla, araç listesi bulunan ve optimizasyona açık isteklerde bu aracı ilk turdan itibaren ekler. Sonradan araç listesini değiştirmek Anthropic’in önbelleğe aldığı ortak başlangıcı geçersiz kılabilir. Aracı ihtiyaç oluştuğunda ekleyen `lazy` ayarı kısa konuşmalardaki bu maliyeti azaltabilir. Uzun konuşmadaki önbellek etkisi canlı sağlayıcıyla ölçülmedi.
+
 Üç motor normal kod 0 ile kapandı, portlar kapandı. Güncel koşuda 648 kaynak ve araç girdisi önce ve sonra eşleşti. İlk koşunun doğrudan WebSocket bağlantısı uyarısı, sabit kütüphanenin açık `legacy=True` seçimiyle giderildi. Bağlantı yaşam döngüsü kontrollü biçimde sonlandırıldı. [İlk protokol ölçümü](../proofs/optimization-surfaces.json).
 
 ## Süreli yük ve başlangıçta Kompress yüklemesi

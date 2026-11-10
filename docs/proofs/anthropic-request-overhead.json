@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "task": "H041",
+  "status": "pass",
+  "matched_previous_requests": 9,
+  "source_fingerprints_matched": 25,
+  "token_encoding": "o200k_base",
+  "token_basis": "canonical_full_request_json_including_added_tool_schemas",
+  "added_tool": "headroom_retrieve",
+  "provider_usage": "not_measured",
+  "fixture_network": {
+    "hf_hub_offline": true,
+    "transformers_offline": true,
+    "upstream": "owned_loopback_fixture",
+    "huggingface_hub_payload_bytes": 0,
+    "packet_capture": false
+  },
+  "rows": [
+    {
+      "turn": 1,
+      "matches": 3,
+      "original_tokens": 358,
+      "forwarded_tokens": 458,
+      "added_tokens": 100,
+      "increase_percent": 27.932960893854748,
+      "changed_top_level_fields": [
+        "tools"
+      ],
+      "retrieval_tool_matches_unmodified_definition": true,
+      "retrieval_tool_delta_tokens": 100,
+      "rest_of_body_exact": true
+    },
+    {
+      "turn": 2,
+      "matches": 3,
+      "original_tokens": 423,
+      "forwarded_tokens": 523,
+      "added_tokens": 100,
+      "increase_percent": 23.64066193853428,
+      "changed_top_level_fields": [
+        "tools"
+      ],
+      "retrieval_tool_matches_unmodified_definition": true,
+      "retrieval_tool_delta_tokens": 100,
+      "rest_of_body_exact": true
+    },
+    {
+      "turn": 3,
+      "matches": 3,
+      "original_tokens": 488,
+      "forwarded_tokens": 588,
+      "added_tokens": 100,
+      "increase_percent": 20.491803278688526,
+      "changed_top_level_fields": [
+        "tools"
+      ],
+      "retrieval_tool_matches_unmodified_definition": true,
+      "retrieval_tool_delta_tokens": 100,
+      "rest_of_body_exact": true
+    }
+  ],
+  "evidence": {
+    "sha256": "55a0b8b3fba81fec16dce0485656ce60738c2fcfd7991af48f5d7bbea45ad8c1",
+    "path": "work/proofs/optimization/anthropic-overhead/b44689a2-3f80-49aa-91b2-a2e2055d75b1/result.json"
+  }
+}
