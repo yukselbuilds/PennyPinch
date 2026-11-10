@@ -119,8 +119,29 @@ fn serve_with_liveness(
             }
         };
         stream
-            .set_read_timeout(Some(Duration::from_secs(2)))
-            .expect("set bounded fixture read");
+            .set_nonblocking(false)
+            .expect("blocking fixture stream");
+        if let Err(error) = stream.set_read_timeout(Some(Duration::from_secs(2))) {
+            assert_eq!(error.kind(), std::io::ErrorKind::InvalidInput);
+            stream
+                .set_nonblocking(true)
+                .expect("bounded closed-peer check");
+            let mut byte = [0u8; 1];
+            match stream.read(&mut byte) {
+                Ok(0) => return 0,
+                Err(error)
+                    if matches!(
+                        error.kind(),
+                        std::io::ErrorKind::ConnectionReset
+                            | std::io::ErrorKind::ConnectionAborted
+                            | std::io::ErrorKind::NotConnected
+                    ) =>
+                {
+                    return 0;
+                }
+                _ => panic!("unconfigured fixture peer is active or received data"),
+            }
+        }
         let received = read_request(&mut stream, request_prefix);
         if received > 0 {
             if let Some(alive) = revoke {
