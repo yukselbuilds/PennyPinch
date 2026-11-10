@@ -1,10 +1,10 @@
 # Headroom Desktop — Görev Listesi
 
-**Tarih:** 10 Kasım 2026
+**Tarih:** 11 Kasım 2026
 
-**Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
+**Kaynak:** [Ürün spesifikasyonu 0.6](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H011, H013–H036, H038–H040, H043, H045–H046 ve **H047 tamamlandı: 39/51.** H043’te RTK-OSS 1.1.0 için uygun bir entegrasyon yolu çıkmadı. H044 yeni aday bekliyor. H042’nin Windows 10 yerel güncelleme/kurtarma ve hata kabulü geçti. Windows 11 ile üretim yayın kaynağı/anahtarı açık. H041’in yerel Windows 10 kabulü geçti, canlı API-key ve Windows 11 kanıtı bekliyor. H037’nin temiz Windows ve yayın kontrolleri açık. macOS H048 ve Linux H049 native CI planlı. Mevcut Actions akışı elle başlatılan Ubuntu kaynak kontrolüdür. Her yeni CI koşusu öncesi ücretsiz kota ve harcama sınırı kontrol edilir. Hesap ve sohbetler H050/H051’de planlı.
+**Durum:** H001–H005, H007–H008, H011, H013–H036, H038–H040, H043, H045–H046 ve **H047 tamamlandı: 39/54.** H043’te RTK-OSS 1.1.0 için uygun bir entegrasyon yolu çıkmadı. H044 yeni aday bekliyor. H042’nin Windows 10 yerel güncelleme/kurtarma ve hata kabulü geçti. Windows 11 ile üretim yayın kaynağı/anahtarı açık. H041’in yerel Windows 10 kabulü geçti, canlı API-key ve Windows 11 kanıtı bekliyor. H037’nin temiz Windows ve yayın kontrolleri açık. H048 macOS aktif, H049 Linux planlı. Actions'ta elle Ubuntu kaynak kontrolü ve macOS ARM64 derleme/motor/Unix protokol dilimleri çalıştırıldı. Her yeni CI koşusu öncesi ücretsiz kota ve harcama sınırı kontrol edilir. Hesap ve sohbetler H050/H051, geri bildirim ve isteğe bağlı kullanım paylaşımı H052–H054'te planlı.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. O tarihte H041–H045 başlamamıştı.
 
@@ -17,7 +17,7 @@
 - **Kabul:** [DESIGN.md](DESIGN.md) içindeki boş/gerçek/örnek veri ayrımı, tema/dil/ölçek/klavye, native render ve son yerel kalite kapısı. Ana ajan art direction/uygulama/inceleme sahibi; H029 başlamaz. Sahte tasarruf veya hesap/sohbet işlevi eklenmez.
 - **Durum:**6 Kasım tamamlandı. Emil design engineering yalnız projeye, immutable commit/MIT lisansıyla kuruldu; diğer üç kaynak incelendi.138 frontend/349 Rust PASS,6 opt-in ignored; aynı152 girdili derleme/test blokları ve gerçek native kontroller PASS. [Kanıt](docs/proofs/ui-taste.md), [inceleme](docs/reviews/UX001.md). Yerel Windows10; örnek veriler gerçek tasarruf değildir. Görev sonunda durulur.
 
-Bu işler 51 ürün görevine eklenmez. DEV001/DEV002, H028–H036 ve H038 kabul edildi. Ortak H011 güvenlik ön koşulu kapandı. H037’nin dış kabulü açık.
+Bu geliştirme işleri ürün görev sayımına eklenmez. DEV001/DEV002, H028–H036 ve H038 kabul edildi. Ortak H011 güvenlik ön koşulu kapandı. H037’nin dış kabulü açık.
 
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
@@ -712,6 +712,32 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 - **Doğrulama:** Birden çok sohbet, aynı modeli kullanan iki sohbet, ana/alt ajan, sessiz ama açık sohbet, kapanmış süreç, stale metadata ve desteklenmeyen istemci fixture'ları; desteklenen yüzeyde gerçek aç/resume ve lifecycle kontrolü.
 - **Bağımlılık / boyut:** H050, H026 / M; metadata kabiliyeti, yaşam döngüsü/atama, liste/açma ayrı dilimler.
 - **Dosyalar:** Sürümlü session metadata adapter'ları, `src/features/integrations/Sessions.tsx`, ortak attribution/query sözleşmesi ve odaklı testler (planlanan).
+
+## Geri bildirim ve isteğe bağlı kullanım paylaşımı — 11 Kasım kullanıcı kararı
+
+### H052 — Özel rapor API'si, depolama ve yönetim paneli
+- [ ] Cloudflare Workers rapor API'si, hesabımıza ait özel D1 veritabanı ve yalnız yetkili yönetimin okuyabildiği panel hazırlanır.
+- **Alt dilimler:** Rapor sözleşmesi ve yerel API/depolama; kimlik doğrulamalı yönetim paneli; yetkili ücretsiz dağıtım ve gerçek kota/saklama kabulü. Veri bölgesi, erişim ve saklama kararı dağıtımdan önce belgelenir.
+- **Kabul:** Geri bildirim ve günlük kullanım özetleri ayrı tutulur. İstemciye veritabanı/yönetim sırları verilmez. Şema/ölçüm temeli ve boyut doğrulaması, hız/kota sınırı, batch tekilleştirme ve sınırlandırılmış sorgular uygulanır. Rastgele kurulum kimliği takma kimlikli veri olarak tanımlanır; kişi sayısı yerine katkı veren kurulum sayısı gösterilir. IP ve altyapı logları ayrıca ele alınır; içerik ve sır loglanmaz.
+- **Ölçüm/saklama:** Yalnız aynı ölçüm temeli içinde ağırlıklı net token azalması ve kurulum medyanı, sıfır/negatif sonuç ve karşılaştırılamayan istek sayılarıyla gösterilir. Platform/model/sürüm ataması kanıtlıysa kullanılır. Katılım ve ölçüm kapsamı görünür. Günlük kurulum özetleri 30 gün sonra kaldırılır; uzun vadeli özet kurulum kimliğini ve günlük ayrıntıyı içermez. Geri bildirim metninin saklama ve silme politikası ayrıca görünürdür.
+- **Doğrulama:** Yerel ve yetkili pilot ortamda geçerli/geçersiz/aşırı büyük rapor, tekrar gönderim, yetkisiz okuma, hız/kota aşımı, 30 günlük temizlik ve farklı ölçüm temelleri. Free plan sınırı ve gerçek hesap durumu doğrulanmadan dağıtım başarılı sayılmaz; görev satırı yeni hesap, yayın veya ücretli kaynak yetkisi değildir.
+- **Bağımlılık / boyut:** H024, H025 / L; yalnız ücretsiz sınırlar. Mevcut H048 bu görev planlandığı için kapanmaz.
+- **Dosyalar:** API, D1 schema/migration, yönetim paneli ve ilgili dağıtım/kanıt yolları uygulanacak dilimde belirlenir.
+
+### H053 — Kullanıcı geri bildirim formu
+- [ ] Kullanıcı hata/önerisini yazar, gönderilecek veriyi önizler ve kendi eylemiyle rapor API'sine gönderir.
+- **Kabul:** Serbest metin ve isteğe bağlı, sınırlandırılmış tanı metadata'sı görünürdür. Otomatik konuşma/kod/istemci auth dosyası eki yoktur. Kullanım paylaşım tercihi ile manuel geri bildirim eylemi bağımsızdır. Kullanıcı iptal edebilir; tekrar tıklama/timeout aynı raporu çoğaltmaz. Kota/bağlantı hatası motor veya model isteğini engellemez.
+- **Doğrulama:** Önizle/gönder/iptal, boş ve boyut aşan içerik, secret fixture'ında tanı alanlarının korunması, çevrimdışı/timeout/tekrar gönderim ve API'de gerçek yetkili teslim makbuzu. Manuel metin paylaşımının kapsamı kullanıcıya açık gösterilir.
+- **Bağımlılık / boyut:** H052, H032 / M; mevcut tasarım dili ve TR/EN.
+- **Dosyalar:** Ayarlar/yardım geri bildirim ekranı, backend rapor istemcisi ve odaklı testler (planlanan).
+
+### H054 — Günlük tasarruf özetleri ve paylaşım tercihi
+- [ ] İlk açılışta paylaşılacak özet gösterilir; kullanıcı tek seferlik açık seçim yaptıktan sonra günlük gönderimler otomatik yürür.
+- **Kabul:** İlk tercihten önce uzak gönderim yoktur; paylaşım ayarlardan kapanabilir ve bekleyen raporlar temizlenir. Eski kullanıcıya güncellemede sessizce etkinleşmez. Yerel ölçüm ile uzağa gönderme ayrı tercihlerdir. Payload yalnız izinli uygulama/motor sürümü, OS ailesi, kanıtlı istemci/model sınıfı, aynı temelde önce/sonra sayaçlar, istek/ölçülemeyen/hata sayıları ve tekilleştirme için gereken en az kimliği taşır. Özel model adları ve serbest etiketler uzak şemaya doğrudan taşınmaz. Konuşma/kod, proje/dosya yolu, anahtar/token ve hesap/sohbet kimliği gönderilmez.
+- **Kuyruk/ölçüm:** 24 saatlik özet ve sınırlı yeniden deneme; yerel kuyruk boyutu/TTL uygulanacak dilimde sabitlenir. Bilinmeyen ölçüm tasarrufa yükseltilmez; negatif net fark korunur. API kesintisi, kota veya kapanışta telemetri model trafiğinin kritik yoluna girmez. Özet ve son gönderim zamanı kullanıcıya görünür. Uzak veriyi silme ve kurulum kimliği sıfırlama akışı saklama politikasıyla birlikte doğrulanır.
+- **Doğrulama:** İlk açılış, eski tercih migration'ı, kabul/ret/sonradan kapatma, kuyruk temizliği, offline/retry/dedup, karışık/bilinmeyen temel, farklı platform/model ve 30 günlük saklama. Kullanıcı raporları katılım gösteren kurulumların ölçümüdür; kontrollü benchmark ve sağlayıcı faturası kabulünün yerine geçmez.
+- **Bağımlılık / boyut:** H052, H015, H024, H026 / M; paylaşım durumu ve güvenli kuyruk, ardından günlük collector ve native UI/API kabulü.
+- **Dosyalar:** Tercih/izin durumu, günlük collector/kuyruk, API istemcisi, Ayarlar önizleme/durum ve odaklı testler (planlanan).
 
 ## İlk sürüm sonrasına bırakılanlar
 

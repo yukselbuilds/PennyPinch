@@ -1,7 +1,7 @@
 # Headroom Desktop — Ürün ve Özellik Spesifikasyonu
 
-**Tarih:** 24 Ekim 2026\
-**Belge sürümü:** 0.5\
+**Tarih:** 11 Kasım 2026\
+**Belge sürümü:** 0.6\
 **Durum:** Geliştirme kapsamı; uygulanmış özelliklerin kanıtlı durumu `TASKS.md` içindedir.  
 **Proje kökü:** `D:\Projeler\Headroom`  
 **Çalışma adı:** Headroom Desktop. Bu, Headroom motorunu kullanan bağımsız masaüstü yönetici projesinin geçici adıdır.
@@ -320,6 +320,7 @@ Installer Windows 11'i zorunlu alt sınır yapmaz. Windows 10 22H2 ve Windows 11
 
 - Yerel bağlantılar loopback üzerinde tutulur. Yönetim eylemleri yalnız uygulamanın yetkili yerel kanalından kabul edilir.
 - Giriş tokenları ve API anahtarları UI loglarına veya istatistik deposuna yazılmaz. Mevcut istemci auth dosyalarının kopyalanması normal kurulum yöntemi değildir.
+- **11 Kasım kullanıcı kapsamı:** H052–H054 ile bize ait özel Cloudflare Workers/D1 rapor API'si ve yetkili panel, kullanıcının önizleyerek gönderdiği geri bildirim ve isteğe bağlı günlük tasarruf özetleri planlanır. İlk açılışta gösterilen veriye ilişkin açık seçimden sonra gönderim otomatikleşir; kapatma ve bekleyen raporu temizleme mümkündür. Yerel ölçüm paylaşım tercihiyle karıştırılmaz. Günlük kurulum özetleri 30 gün tutulur; daha eski istatistikler kurulum kimliği/günlük ayrıntıdan arındırılarak toplulaştırılır. Kod/konuşma, proje yolu, auth sırları ve hesap/sohbet kimliği uzak özete girmez. Katılım ve ölçüm temeli görünür tutulur; farklı temeller birleştirilmez. Ücretsiz kota, veri bölgesi, erişim, silme ve saklama gerçek dağıtımın kabulüdür. [Görevler](TASKS.md#geri-bildirim-ve-isteğe-bağlı-kullanım-paylaşımı--11-kasım-kullanıcı-kararı).
 - Yerel istatistikler açık, upstream anonim kullanım beacon'u kapalı başlangıç tercihidir: desteklenen sürümde `HEADROOM_TELEMETRY=on` ve `HEADROOM_BEACON=off` birlikte doğrulanır. Bu iki özellik aynı şey değildir. [Headroom telemetry açıklaması](https://docs.headroomlabs.ai/docs/proxy#starting-the-proxy).
 - Motor, seçili model sağlayıcısına istek gönderir; gerektiğinde paket/model indirmeleri ayrı gösterilir. “Uygulama hiçbir zaman internete çıkmaz” sözü verilmez.
 - Kullanıcı verileri kurulum klasörüne yazılmaz. Önerilen kök `%LOCALAPPDATA%\HeadroomDesktop` altında config, state, engine ve diagnostics alt dizinleridir.

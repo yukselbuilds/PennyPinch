@@ -1,5 +1,9 @@
 # Headroom Desktop — güncel devir
-10 Kasım 2026.
+11 Kasım 2026.
+
+## Plan bakımı — Geri bildirim ve kullanım paylaşımı
+
+- Kullanıcının 11 Kasım kararı H052–H054 olarak planlandı. Özel Workers/D1 API/panel, manuel geri bildirim, ilk açık seçim sonrası otomatik günlük özet ve 30 günlük ayrıntı saklama. Mevcut ana H048 devam eder; bu kayıt ürün özelliği kabulü değildir. Güncel toplam 39/54. Kaynak/spec/görev kimlikleri doğrulanır; belge bakımı ürün testlerini geçersiz kılmaz.
 
 ## H048 — Apple Silicon derlemesi geçti, motor dilimi aktif
 
@@ -10,7 +14,7 @@
 - Aynı tek Luna xhigh bağımsız kaynak/bağımlılık incelemesini ve envanter regresyonlarını yaptı. Ana ajan testteki hardlink açığını, Windows stat/fstat zaman farkını ve paket izinlerini düzeltti, CI ve kabulü yürüttü. Geliştirme token tasarrufu ölçülmedi.
 - **H048-b3 geçti.** Ana ajan Rust Unix bağlantısını, ortak süre/sınır kontrollü HTTP okumasını ve kontrol/metrik adaptörlerini uyguladı. Özel dizin, UID/inode, gerçek peer PID ve liveness doğrulanır. Aynı tek Luna native fixture testlerini hazırladı. Ana ajan gerçek kontrol/metrik yolunda sıfır bayt, yanıt korelasyonu, symlink reddi ve yanıt sırasında yaşam kaybı kontrollerini ekledi. Windows'ta 40 odaklı test geçti, 3 opt-in test ignored. Mac-only FD ve fixture düzeltmelerinden sonra Windows kodu ve derleyici parmak izleri yeniden eşleşti; başarılı Windows testleri yinelenmedi.
 - İlk native test derlemesindeki Socket dönüşümü standart OwnedFd yoluyla düzeltildi. Native hata tanısı, kapalı test soketine timeout ayarlarken macOS EINVAL döndüğünü gösterdi. Test sunucusu bu durumda yalnız gerçek EOF/kapalı bağlantıda sıfır döndürür; canlı stream açıkça blocking olur. Son koşuda macOS 15.8.2 ARM64 üzerinde 9 test ve uygulama derlemesi geçti, önce/sonra girdiler eşleşti. [Makine kanıtı](proofs/macos-unix-transport.json).
-- **Devir noktası.** H048-b kısmi, toplam 39/51. Sıradaki somut adım macOS RuntimeLayout/pinned payload ve yönetilen motor oturumunu bu Unix kontrol/metrik bağlantısına, ardından stable relay'e bağlamak. Kontrol adaptörlerinin native fixture kabulü UI başlat/durdur veya gerçek istemci trafiği kabulü sayılmadı. İstemci ayar transaction'ı ve H048-c paket/imza/native yaşam döngüsü ayrıca açık. Tam ana görev adayı oluşmadığı için tam ürün kapısı tekrarlanmadı. [Kabul ve sonraki dilimler](validation/macos.md).
+- **Devir noktası.** H048-b kısmi, toplam 39/54. Sıradaki somut adım macOS RuntimeLayout/pinned payload ve yönetilen motor oturumunu bu Unix kontrol/metrik bağlantısına, ardından stable relay'e bağlamak. Kontrol adaptörlerinin native fixture kabulü UI başlat/durdur veya gerçek istemci trafiği kabulü sayılmadı. İstemci ayar transaction'ı ve H048-c paket/imza/native yaşam döngüsü ayrıca açık. Tam ana görev adayı oluşmadığı için tam ürün kapısı tekrarlanmadı. [Kabul ve sonraki dilimler](validation/macos.md).
 
 ## H045 — Yerel öneriler tamamlandı
 
