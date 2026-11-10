@@ -88,6 +88,8 @@ jobs:
               echo "::error::Native Unix transport/control tests failed."
               awk '/^error(\[[A-Z][0-9]+\])?: / { show = ++count <= 10; if (show) print substr($0, 1, 300) }
                 show && /^ *--> src\// { print substr($0, 1, 180); show = 0 }
+                /^thread .* panicked at / { detail = 3; print substr($0, 1, 240); next }
+                detail > 0 { print substr($0, 1, 240); detail-- }
                 /^test .* \.\.\. FAILED$/ || /^test result: / { print substr($0, 1, 240) }' "$build_log"
             else
               awk '/^test result: / { print "Native Unix transport/control " $0 }' "$build_log"
