@@ -2,6 +2,7 @@ import type { ClientKind } from "./integrations";
 import type { PreferenceLanguage } from "./preferences";
 import type { RuntimeSnapshot } from "../runtime/snapshot";
 import type {RuntimeAction} from "./optimization";
+import type { Recommendation } from "./insights";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 
 export type MetricPeriod = "session" | "today" | "seven_days";
@@ -119,6 +120,7 @@ export interface OverviewSnapshot {
   request_id: string;
   status: "ok";
   observed_at_utc: string;
+  recommendations: Recommendation[];
   data: PeriodMetrics;
   collection: {
     status: "waiting" | "recording" | "stopped" | "interrupted" | "unavailable";
@@ -152,10 +154,12 @@ export interface OverviewProps {
   metrics: OverviewMetricsState;
   connections: readonly OverviewConnection[];
   connectionsLoading: boolean;
+  showRecommendations: boolean;
   onPeriodChange: (period: MetricPeriod) => void;
   onRefresh: () => void;
   onConnect: (client: ClientKind) => void;
   onOpenApplications: () => void;
+  onOpenActivity: () => void;
   onStart: () => void;
   onStop: () => void;
   onPause:()=>void;
@@ -216,6 +220,60 @@ export function decodeMetricCollection(c:unknown):OverviewSnapshot["collection"]
     last_error:c.last_error,sampling_interrupted_since_start:c.sampling_interrupted_since_start};
 }
 
+function decodeRecommendations(
+  value: unknown,
+  totals: MetricTotals,
+  origins: number,
+  allPlaced: boolean,
+  recording: boolean,
+): Recommendation[] {
+  // A malformed advisory field must not hide otherwise valid measurements.
+  if (!Array.isArray(value) || value.length > 6) return [];
+  const items: Recommendation[] = [];
+  const seen = new Set<string>();
+  for (const row of value) {
+    if (!record(row)) return [];
+    let item: Recommendation;
+    switch (row.kind) {
+      case "input_growth":
+        if (Object.keys(row).length !== 6 || !allPlaced || totals.status !== "measured"
+          || !member(row.basis, ["local_estimate", "provider_tokenizer"] as const)
+          || !member(row.component, ["message_input", "whole_input"] as const)
+          || !token(row.before_tokens) || row.before_tokens === 0 || row.before_tokens !== totals.before_tokens
+          || !token(row.after_tokens) || row.after_tokens <= row.before_tokens || row.after_tokens !== totals.after_tokens
+          || !count(row.events) || row.events === 0 || row.events !== totals.comparable_events) return [];
+        item = { kind: row.kind, basis: row.basis, component: row.component,
+          before_tokens: row.before_tokens, after_tokens: row.after_tokens, events: row.events };
+        break;
+      case "slow_optimization":
+        if (Object.keys(row).length !== 3 || !recording || !count(row.requests) || row.requests < 20 || row.requests > origins
+          || typeof row.p95_ms !== "number" || !Number.isFinite(row.p95_ms) || row.p95_ms < 1000 || row.p95_ms > 86_400_000) return [];
+        item = { kind: row.kind, p95_ms: row.p95_ms, requests: row.requests };
+        break;
+      case "cache_share_drop": {
+        const { model, provider, previous_hits, previous_requests, recent_hits, recent_requests } = row;
+        if (Object.keys(row).length !== 7 || !recording || !isMetricLabel(model) || !isMetricLabel(provider)
+          || !count(previous_requests) || !count(recent_requests) || previous_requests < 20 || recent_requests < 20
+          || previous_requests + recent_requests > origins || !count(previous_hits) || !count(recent_hits)
+          || previous_hits > previous_requests || recent_hits > recent_requests
+          || 5 * previous_hits * recent_requests < 5 * recent_hits * previous_requests + previous_requests * recent_requests) return [];
+        item = { kind: row.kind, model, provider, previous_hits, previous_requests, recent_hits, recent_requests };
+        break;
+      }
+      case "installation_stale":
+        if (Object.keys(row).length !== 2 || !member(row.client, ["codex", "claude_code", "opencode"] as const)) return [];
+        item = { kind: row.kind, client: row.client };
+        break;
+      default: return [];
+    }
+    const key = item.kind === "installation_stale" ? `${item.kind}:${item.client}` : item.kind;
+    if (seen.has(key)) return [];
+    seen.add(key);
+    items.push(item);
+  }
+  return items;
+}
+
 function snapshot(value: Record<string, unknown>, expectedPeriod: MetricPeriod): OverviewSnapshot | null {
   if (!utc(value.observed_at_utc) || !record(value.data) || !record(value.collection)) return null;
   const d = value.data, c = value.collection;
@@ -247,6 +305,8 @@ function snapshot(value: Record<string, unknown>, expectedPeriod: MetricPeriod):
   }
   if (main.status === "measured" ? before !== main.before_tokens || after !== main.after_tokens || saved !== main.saved_tokens || measured !== main.comparable_events : series.length !== 0) return null;
   return { schema_version: 1, request_id: value.request_id as string, status: "ok", observed_at_utc: value.observed_at_utc,
+    recommendations: decodeRecommendations(value.recommendations, main, coverage.distinct_origins,
+      coverage.unplaced_events === 0 && d.last_event_utc !== null, collection.status === "recording" && collection.runtime_generation !== null),
     data: { monitoring_session_id: d.monitoring_session_id, period: expectedPeriod, from_utc: d.from_utc, to_utc: d.to_utc,
       last_event_utc: d.last_event_utc, retention_days: d.retention_days, totals: main, series,attribution,
       coverage: { events: coverage.events, distinct_origins: coverage.distinct_origins, unplaced_events: coverage.unplaced_events,
@@ -255,19 +315,23 @@ function snapshot(value: Record<string, unknown>, expectedPeriod: MetricPeriod):
     collection };
 }
 
-export function createMetricsClient(transport: MetricsTransport): { read: (period: MetricPeriod) => Promise<MetricsResult> } {
-  return { read: async period => {
+export function createMetricsClient(transport: MetricsTransport): { read: (period: MetricPeriod, includeRecommendations?: boolean) => Promise<MetricsResult> } {
+  return { read: async (period, includeRecommendations = false) => {
     try {
       if (!transport.isNative()) return { kind: "desktop_unavailable" };
       const requestId = transport.createRequestId();
       if (!uuid(requestId)) return { kind: "request_failed" };
       if (!member(period, periods)) return { kind: "invalid_response" };
-      const raw = await transport.invoke("get_overview_snapshot", { request: { schema_version: 1, request_id: requestId, period } });
+      const raw = await transport.invoke("get_overview_snapshot", {
+        request: { schema_version: 1, request_id: requestId, period },
+        ...(includeRecommendations ? { includeRecommendations: true } : {}),
+      });
       if (!record(raw) || raw.schema_version !== 1 || raw.request_id !== requestId) return { kind: "invalid_response" };
       if (raw.status === "error") return member(raw.code, errors) && typeof raw.retryable === "boolean"
         ? { kind: "metrics_error", code: raw.code } : { kind: "invalid_response" };
       if (raw.status !== "ok") return { kind: "invalid_response" };
       const parsed = snapshot(raw, period);
+      if (parsed && !includeRecommendations) parsed.recommendations = [];
       return parsed ? { kind: "snapshot", snapshot: parsed } : { kind: "invalid_response" };
     } catch { return { kind: "request_failed" }; }
   } };

@@ -15,6 +15,7 @@ import {
 import type { ClientKind } from "../../lib/integrations";
 import { Icon } from "../../components/Icon";
 import { ExportButton } from "./ExportButton";
+import { Recommendations } from "./Recommendations";
 
 const copy = {
   tr: {
@@ -375,6 +376,10 @@ export function Overview(props: OverviewProps) {
       </section>
       </div>
 
+      {props.showRecommendations && props.metrics.kind === "ready" && !props.metrics.stale && snapshot && (
+        <Recommendations items={snapshot.recommendations} language={props.language} period={props.period}
+          observedAt={snapshot.observed_at_utc} onOpenActivity={props.onOpenActivity} onOpenApplications={props.onOpenApplications} />
+      )}
       {snapshot && <Coverage language={props.language} summary={snapshot.data.attribution}/>}
 
       {snapshot && (

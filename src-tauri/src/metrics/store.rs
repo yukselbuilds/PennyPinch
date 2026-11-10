@@ -356,7 +356,25 @@ impl MetricsStore {
         period: Period,
         now: DateTime<Tz>,
     ) -> Result<PeriodMetrics, MetricsError> {
+        self.query_with_recommendations_at(period, now, false, None)
+            .map(|(data, _)| data)
+    }
+
+    pub(crate) fn query_with_recommendations_at<Tz: TimeZone>(
+        &self,
+        period: Period,
+        now: DateTime<Tz>,
+        include_recommendations: bool,
+        recording_generation: Option<&str>,
+    ) -> Result<(PeriodMetrics, Vec<crate::insights::rules::Recommendation>), MetricsError> {
         let zone = now.timezone();
+        let selection = self.select_period(period, now)?;
+        let totals = aggregate_unique_events(&selection.events);
+        let recommendations = if include_recommendations {
+            crate::insights::rules::for_period(&selection, &totals, recording_generation)
+        } else {
+            Vec::new()
+        };
         let PeriodSelection {
             retention_days,
             monitoring_session_id,
@@ -365,14 +383,13 @@ impl MetricsStore {
             last_event,
             coverage,
             events,
-        } = self.select_period(period, now)?;
-        let totals = aggregate_unique_events(&events);
+        } = selection;
         let series = if totals.status == AggregateStatus::Measured {
             build_series(&events, period, now, from, &zone)?
         } else {
             Vec::new()
         };
-        Ok(PeriodMetrics {
+        let data = PeriodMetrics {
             monitoring_session_id,
             period,
             from_utc: from.map(utc_string),
@@ -383,7 +400,8 @@ impl MetricsStore {
             series,
             coverage,
             attribution: super::attribution::aggregate(&events),
-        })
+        };
+        Ok((data, recommendations))
     }
 
     pub fn query(&self, request: MetricsQueryRequest) -> MetricsReply {

@@ -91,6 +91,8 @@ pub struct UserPreferences {
     pub theme: String,
     #[serde(default)]
     pub operating: OperatingPreferences,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub show_recommendations: bool,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -135,6 +137,7 @@ impl Default for UserPreferences {
             language: "tr".to_owned(),
             theme: "system".to_owned(),
             operating: OperatingPreferences::default(),
+            show_recommendations: false,
         }
     }
 }
@@ -276,6 +279,7 @@ impl PreferenceStore {
             language,
             theme,
             None,
+            None,
             expected_revision,
             expected_fingerprint,
         )
@@ -287,6 +291,7 @@ impl PreferenceStore {
         language: String,
         theme: String,
         operating: Option<OperatingPreferences>,
+        show_recommendations: Option<bool>,
         expected_revision: u64,
         expected_fingerprint: Option<String>,
     ) -> PreferencesReply {
@@ -295,6 +300,7 @@ impl PreferenceStore {
                 language: language.clone(),
                 theme: theme.clone(),
                 operating: operating.clone().unwrap_or_default(),
+                show_recommendations: show_recommendations.unwrap_or_default(),
             })
             || expected_fingerprint
                 .as_deref()
@@ -336,6 +342,8 @@ impl PreferenceStore {
                 language,
                 theme,
                 operating: operating.unwrap_or(current.document.preferences.operating),
+                show_recommendations: show_recommendations
+                    .unwrap_or(current.document.preferences.show_recommendations),
             },
             runtime_manifest: RuntimeManifestReference::pinned(),
         };

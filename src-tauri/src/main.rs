@@ -3,6 +3,7 @@
 mod compatibility;
 mod desktop;
 mod export;
+mod insights;
 mod integrations;
 pub mod metrics;
 mod runtime;
@@ -194,18 +195,38 @@ async fn get_metrics_summary(
 async fn get_overview_snapshot(
     state: tauri::State<'_, OverviewManager>,
     reports: tauri::State<'_, export::report::ReportManager>,
+    discovery: tauri::State<'_, DiscoveryManager>,
     request: MetricsQueryRequest,
+    include_recommendations: Option<bool>,
 ) -> Result<OverviewReply, OverviewReply> {
     let overview = state.inner().clone();
+    let discovery = discovery.inner().clone();
+    let include_recommendations = include_recommendations.unwrap_or(false);
     let request_id = request.request_id.clone();
-    let reply = tauri::async_runtime::spawn_blocking(move || overview.read(request))
-        .await
-        .unwrap_or_else(|_| {
-            OverviewReply::Error(MetricsStore::error_detail(
-                request_id,
-                MetricsError::Unavailable,
-            ))
-        });
+    let reply = tauri::async_runtime::spawn_blocking(move || {
+        let mut reply = overview.read(request, include_recommendations);
+        if include_recommendations {
+            if let OverviewReply::Snapshot(snapshot) = &mut reply {
+                if let Some(scan) = discovery.recovery_scan() {
+                    snapshot
+                        .recommendations
+                        .extend(insights::rules::installation_checks(
+                            scan.installations.iter().map(|(installation, freshness)| {
+                                (installation.client_kind, *freshness)
+                            }),
+                        ));
+                }
+            }
+        }
+        reply
+    })
+    .await
+    .unwrap_or_else(|_| {
+        OverviewReply::Error(MetricsStore::error_detail(
+            request_id,
+            MetricsError::Unavailable,
+        ))
+    });
     if let OverviewReply::Snapshot(snapshot) = &reply {
         reports.remember(snapshot);
     }
@@ -353,6 +374,7 @@ fn save_preferences(
     language: String,
     theme: String,
     operating: Option<OperatingPreferences>,
+    show_recommendations: Option<bool>,
     expected_revision: u64,
     expected_fingerprint: Option<String>,
 ) -> PreferencesReply {
@@ -361,6 +383,7 @@ fn save_preferences(
         language,
         theme,
         operating,
+        show_recommendations,
         expected_revision,
         expected_fingerprint,
     );

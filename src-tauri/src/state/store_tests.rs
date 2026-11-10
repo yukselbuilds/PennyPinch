@@ -68,6 +68,7 @@ fn operating_preferences_migrate_without_rewrite_and_legacy_save_preserves_them(
     fs::write(&path, &original).unwrap();
     let read = snapshot(fixture.store.get_preferences(REQUEST_ID.into()));
     assert_eq!(read.preferences.operating, OperatingPreferences::default());
+    assert!(!read.preferences.show_recommendations);
     assert_eq!(fs::read(&path).unwrap(), original);
     let wanted = OperatingPreferences {
         close_to_tray: false,
@@ -79,6 +80,7 @@ fn operating_preferences_migrate_without_rewrite_and_legacy_save_preserves_them(
         "en".into(),
         "dark".into(),
         Some(wanted.clone()),
+        Some(true),
         read.revision,
         read.state_fingerprint.clone(),
     ));
@@ -89,6 +91,7 @@ fn operating_preferences_migrate_without_rewrite_and_legacy_save_preserves_them(
             "en".into(),
             "dark".into(),
             Some(Default::default()),
+            Some(false),
             read.revision,
             read.state_fingerprint
         )),
@@ -106,6 +109,7 @@ fn operating_preferences_migrate_without_rewrite_and_legacy_save_preserves_them(
         saved.state_fingerprint,
     ));
     assert_eq!(theme.preferences.operating, wanted);
+    assert!(theme.preferences.show_recommendations);
     let mut invalid = wanted;
     invalid.protected_tools.push("bad name".into());
     let before = fs::read(&path).unwrap();
@@ -115,12 +119,30 @@ fn operating_preferences_migrate_without_rewrite_and_legacy_save_preserves_them(
             "tr".into(),
             "light".into(),
             Some(invalid),
+            None,
             theme.revision,
             theme.state_fingerprint
         )),
         "validation_failed"
     );
     assert_eq!(fs::read(&path).unwrap(), before);
+    let disabled = snapshot(reopened.save_with_operating(
+        REQUEST_ID.into(),
+        "tr".into(),
+        "light".into(),
+        None,
+        Some(false),
+        theme.revision,
+        snapshot(reopened.get_preferences(REQUEST_ID.into())).state_fingerprint,
+    ));
+    assert!(!disabled.preferences.show_recommendations);
+    let disk: serde_json::Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+    assert!(disk["preferences"].get("show_recommendations").is_none());
+    assert!(
+        !snapshot(fixture.store.get_preferences(REQUEST_ID.into()))
+            .preferences
+            .show_recommendations
+    );
     fixture.cleanup();
 }
 

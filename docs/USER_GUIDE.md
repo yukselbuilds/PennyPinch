@@ -26,6 +26,8 @@ Tepsi tercihi açıksa pencerenin X’i Headroom’u tepsiye gizler ve motor ça
 
 ## Tercihler ve güncellemeler
 
+**Yerel öneriler** Ayarlar’dan açılır. Genel bakış, yeterli kayıt olduğunda girdi artışını, yüksek yerel sıkıştırma süresini, kaydedilen cache isabetindeki düşüşü veya yeniden taranması gereken kurulumu gösterir. Her öneride ölçüm kapsamı ve gözlem zamanı görünür. Önerileri aynı ayardan kapatabilirsin.
+
 Ölçüm saklama süresi kısaltıldığında eski kayıtlar kalıcı olarak silinebilir; süreyi uzatmak silinen geçmişi geri getirmez. Gelişmiş korunan araç listesi yalnız sonraki elle motor başlatmasında uygulanır, otomatik yeniden başlatma yapmaz.
 
 Güncellemeler ekranı yalnız bu derlemede güvenilir kaynak yapılandırılmışsa imzalı güncelleme gösterebilir. Kaynak kullanılamıyor mesajı varsa bu derleme için hazır bir üretim güncellemesi yoktur. Windows 10’da yerel güncelleme ve geri dönüş kabulü geçti; üretim yayın kaynağı/anahtarı ve Windows 11 doğrulanmadı.

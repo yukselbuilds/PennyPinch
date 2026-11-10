@@ -129,6 +129,7 @@ h1 { color: var(--text); margin-bottom: 8px; font-size: clamp(28px, 2.9vw, 38px)
 .setting-row { min-height: 98px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--border); }
 .setting-row strong, .setting-row small { display: block; }.setting-row strong { font-size: 14px; font-weight: 550; }.setting-row small { color: var(--muted); margin-top: 5px; font-size: 13px; }
 .setting-row select { min-width: 150px; min-height: 40px; padding: 8px 29px 8px 12px; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--surface-soft); font-size: 13px; }
+.setting-row input[type="checkbox"] { width: 18px; height: 18px; flex: 0 0 18px; accent-color: var(--accent); }
 .settings-note { display: flex; gap: 8px; align-items: center; color: var(--quiet); margin-top: 22px; font-size: 12px; }
 .mobile-footer { display: none; }
 

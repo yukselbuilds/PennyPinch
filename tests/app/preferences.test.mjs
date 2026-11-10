@@ -33,7 +33,7 @@ function snapshot(overrides = {}) {
 
 test("decodes exact typed preferences and the pinned manifest reference", () => {
   const decoded = decodePreferencesSnapshot(snapshot(), requestId);
-  assert.deepEqual(decoded?.preferences, { language: "en", theme: "dark", operating: defaultOperatingPreferences() });
+  assert.deepEqual(decoded?.preferences, { language: "en", theme: "dark", operating: defaultOperatingPreferences(), show_recommendations: false });
   assert.equal(decoded?.revision, 3);
   assert.equal(decoded?.state_fingerprint, fingerprint);
   assert.equal(decoded?.runtime_manifest.ccr_ttl_seconds, 7200);
@@ -56,6 +56,7 @@ test("rejects unknown fields, request mismatch, unsafe revisions, fingerprints, 
   assert.equal(decodePreferencesSnapshot(snapshot({ state_fingerprint: "AB".repeat(32) }), requestId), null);
   assert.equal(decodePreferencesSnapshot(snapshot({ runtime_manifest: { ...snapshot().runtime_manifest, ccr_ttl_seconds: 1800 } }), requestId), null);
   assert.equal(decodePreferencesSnapshot(snapshot({ unexpected: true }), requestId), null);
+  assert.equal(decodePreferencesSnapshot(snapshot({ preferences: { language: "tr", theme: "light", show_recommendations: "true" } }), requestId), null);
 });
 
 const fixedErrors = {
@@ -110,6 +111,10 @@ test("native client sends exact request IDs and revision/fingerprint compare fie
     expectedRevision: 3,
     expectedFingerprint: fingerprint,
   }]);
+  await client.savePreferences({ language: "tr", theme: "light", show_recommendations: true }, 3, fingerprint);
+  await client.savePreferences({ language: "tr", theme: "light", show_recommendations: false }, 4, fingerprint);
+  assert.equal(calls[2][1].showRecommendations, true);
+  assert.equal(calls[3][1].showRecommendations, false);
 });
 
 test("browser mode stays session-only and thrown bridge errors expose no raw text", async () => {

@@ -121,8 +121,48 @@ test('compatibility: scoped records, responsive details, stale replies and conte
  expect(violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>({label:v.label,id:v.id}))).toEqual([]);
 });
 
+test('local recommendations respect the preference and fresh observations', async ({page})=>{
+ for(const language of ['tr','en'])for(const theme of ['dark','light']){
+  const title=language==='tr'?'Yerel öneriler':'Local recommendations';
+  const nav=page.locator('.primary-nav button');
+  await page.setViewportSize({width:683,height:720});
+  await setup(page,language,theme,'recommendations');
+  const panel=page.getByRole('region',{name:title,exact:true});
+  await expect(page.locator('.overview__percent')).toHaveClass(/is-increase/);
+  await expect(panel).toHaveCount(0);
+  await nav.nth(3).click();
+  const toggle=page.getByRole('checkbox',{name:title,exact:true});
+  await expect(toggle).not.toBeChecked();await toggle.focus();await page.keyboard.press('Space');
+  await expect(toggle).toBeChecked();
+  await nav.nth(0).click();
+  await expect(panel.getByRole('article')).toHaveCount(4);
+  await expect(panel.getByRole('button')).toHaveCount(2);
+  await expect(panel.getByRole('alert')).toHaveCount(0);
+  await expect(panel.locator('time')).toHaveAttribute('datetime','2026-11-08T12:00:00Z');
+  await expect(panel.getByText('fixture-provider · fixture-model',{exact:true})).toBeVisible();
+  await audit(page,`${language}-${theme}-recommendations`);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)).toBe(false);
+  if(language==='tr'&&theme==='dark'){
+   await panel.evaluate(element=>element.scrollIntoView({block:'start'}));
+   await page.screenshot({path:path.join(run,'recommendations-tr-dark.png')});
+  }
+  const activity=panel.getByRole('button',{name:language==='tr'?'Etkinlikleri aç':'Open activity'});
+  await activity.focus();await page.keyboard.press('Enter');
+  await expect(nav.nth(2)).toHaveAttribute('aria-current','page');
+  await nav.nth(0).click();
+  await panel.getByRole('button',{name:language==='tr'?'Uygulamaları denetle':'Review applications'}).click();
+  await expect(nav.nth(1)).toHaveAttribute('aria-current','page');
+  await nav.nth(0).click();
+  await page.evaluate(()=>(window as any).DesktopFixture.resolveRecommendations());
+  await page.getByRole('button',{name:language==='tr'?'Yenile':'Refresh',exact:true}).click();
+  await expect(panel).toHaveCount(0);
+  await nav.nth(3).click();await expect(toggle).toBeChecked();await toggle.uncheck();await expect(toggle).not.toBeChecked();
+ }
+ expect(violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>({label:v.label,id:v.id}))).toEqual([]);
+});
+
 test.afterAll(async()=>{
  const after=fingerprint();const sorted=[...timings].sort((a,b)=>a-b),p95=sorted[Math.max(0,Math.ceil(sorted.length*.95)-1)]??null;
- fs.writeFileSync(path.join(run,'result.json'),JSON.stringify({passed:outcomes.length===3&&checks.length===84&&outcomes.every(v=>v.status===v.expected)&&violations.every(v=>!['critical','serious'].includes(v.impact))&&JSON.stringify(before)===JSON.stringify(after),outcomes,checks,violations,timing:{samples:timings.length,p95_ms:p95,threshold_ms:250,scope:'browser click event to second animation frame; excludes test-driver waiting'},before,after,environment:{node:process.version,platform:process.platform,scope:'real App, isolated transport; viewport equivalents are not real OS DPI'}},null,2)+'\n');
+ fs.writeFileSync(path.join(run,'result.json'),JSON.stringify({passed:outcomes.length===4&&checks.length===88&&outcomes.every(v=>v.status===v.expected)&&violations.every(v=>!['critical','serious'].includes(v.impact))&&JSON.stringify(before)===JSON.stringify(after),outcomes,checks,violations,timing:{samples:timings.length,p95_ms:p95,threshold_ms:250,scope:'browser click event to second animation frame; excludes test-driver waiting'},before,after,environment:{node:process.version,platform:process.platform,scope:'real App, isolated transport; viewport equivalents are not real OS DPI'}},null,2)+'\n');
  console.log(JSON.stringify({run:path.relative(root,run),audits:checks.length,violations:violations.length,navigation_p95_ms:p95}));
 });

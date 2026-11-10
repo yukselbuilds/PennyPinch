@@ -79,6 +79,7 @@ fn operating_retention_is_shared_by_ingest_overview_activity_and_reopen() {
                     retention_days: days,
                     ..Default::default()
                 }),
+                None,
                 current.revision,
                 current.state_fingerprint
             ),

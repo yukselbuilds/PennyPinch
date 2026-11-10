@@ -5,7 +5,7 @@ import { createOverviewSession } from '../../src/lib/metricsSession.ts';
 const turn = () => new Promise(resolve => setImmediate(resolve));
 function harness() {
   const calls = [], states = [];
-  const session = createOverviewSession(period => new Promise(resolve => calls.push({period, resolve})), s => states.push(s));
+  const session = createOverviewSession((period, recommendations) => new Promise(resolve => calls.push({period, recommendations, resolve})), s => states.push(s));
   return { session, calls, states, latest: () => states.at(-1) };
 }
 const result = period => ({kind:'snapshot', snapshot:{data:{period}, marker:period}});
@@ -43,4 +43,18 @@ test('wrong scope and rejected transport produce fixed errors, never an old scop
   assert.deepEqual(h.latest().metrics,{kind:'error',error:'invalid_response'});
   h.session.refresh(); h.calls[1].resolve({kind:'request_failed'}); await turn();
   assert.deepEqual(h.latest().metrics,{kind:'error',error:'request_failed'});
+});
+
+test('turning off recommendations invalidates a pending opted-in read', async () => {
+  const h = harness();
+  h.session.target('session', true, true);
+  h.session.target('session', true, false);
+  assert.equal(h.calls[0].recommendations, true);
+  h.calls[0].resolve({kind:'snapshot', snapshot:{data:{period:'session'}, recommendations:[{kind:'installation_stale',client:'codex'}]}});
+  await turn();
+  assert.equal(h.latest().metrics.kind, 'loading');
+  assert.equal(h.calls[1].recommendations, false);
+  h.calls[1].resolve(result('session')); await turn();
+  assert.equal(h.latest().metrics.kind, 'ready');
+  assert.equal(h.latest().metrics.snapshot.recommendations, undefined);
 });

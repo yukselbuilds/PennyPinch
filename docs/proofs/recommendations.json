@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "task": "H045",
+  "date": "2026-11-10",
+  "status": "pass_local_windows10",
+  "quality": {
+    "evidence": {
+      "path": "work/proofs/insights/quality-726a5f55-1f74-4b5d-b0dd-a185400e1acd/result.json",
+      "sha256": "9cf79ddc607e36b84deefe3fda3cc57fbf72063b7c8813c05c16eafb310d8952"
+    },
+    "inputs_matched": 239,
+    "frontend_passed": 181,
+    "rust_passed": 417,
+    "rust_opt_in_ignored": 15,
+    "toolchain": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "checks": 6
+  },
+  "accessibility": {
+    "evidence": {
+      "path": "work/proofs/accessibility/ui-87f2941d-5d18-4769-b052-0c5844d62e37/result.json",
+      "sha256": "77de716dd9d06d47fdff665e3f399e30470e6bae6a9dce422536408c8840ee29"
+    },
+    "audits": 88,
+    "violations": 0,
+    "scenarios": 4,
+    "click_navigation_p95_ms": 19.199999999254942,
+    "scope": "real App, isolated transport; viewport equivalents are not real OS DPI",
+    "screenshot": {
+      "path": "work/proofs/accessibility/ui-87f2941d-5d18-4769-b052-0c5844d62e37/recommendations-tr-dark.png",
+      "sha256": "9c56296b3e0364fbcc85d848c09f8b01604ee0fc5d428d564a0e740dd93c9683"
+    }
+  },
+  "native": {
+    "evidence": {
+      "path": "work/proofs/insights/native-f0a49259ae44/result.json",
+      "sha256": "64910fc44c48975cb7db642274dbfa7993e1bd512afb642b2c56bb4ba5dce568"
+    },
+    "inputs_matched": 248,
+    "scope": "Actual QA Windows app, isolated persisted history and preferences; engine not started",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "phases": [
+      {
+        "phase": "initial",
+        "checks": [
+          "previous_native_save_survives_reopen",
+          "off_on_negative_history",
+          "actual_overview_query_displays_input_growth",
+          "disabling_hides_advice_for_same_measurement",
+          "enabled_saved"
+        ],
+        "exit_requested": true,
+        "exit_code": 0
+      },
+      {
+        "phase": "reopen",
+        "checks": [
+          "reopen_keeps_enabled_preference",
+          "new_measurement_clears_previous_advice",
+          "disabled_saved"
+        ],
+        "exit_requested": true,
+        "exit_code": 0
+      }
+    ],
+    "provider_calls": 0,
+    "isolated_state_identifier": "dev.headroom.desktop.h045-36d1c82cb2ba",
+    "isolated_profile_retained_with_advice_off": true,
+    "build_profile": {
+      "lto": false,
+      "codegen_units": 16
+    },
+    "executable_sha256": "e96c12efa630770503f590cc0b566d612a7f3a6fa4c52f0fd414a0eb5c625c2e"
+  },
+  "earlier_native_attempt": {
+    "evidence": {
+      "path": "work/proofs/insights/native-36d1c82cb2ba/rejected.json",
+      "sha256": "0b14d556601760dc2cb5698ca4601abd9f01b205f38512ca8d52f69bbcccbf67"
+    },
+    "failure_step": "enable",
+    "preference_save_observed": true,
+    "cleanup_review": "blocked by policy"
+  },
+  "measurement_semantics": {
+    "headroom_version": "0.41.0",
+    "pinned_sources": [
+      {
+        "path": "work/proofs/packaging/artifacts/headroom-engine/runtime/Lib/site-packages/headroom/proxy/outcome.py",
+        "sha256": "5d7ad234e0caab9f7adc305de6e1fe5c89ba5e99ebad2d991c75d910ef8b43b6"
+      },
+      {
+        "path": "work/proofs/packaging/artifacts/headroom-engine/runtime/Lib/site-packages/headroom/proxy/models.py",
+        "sha256": "fcf7736dab880b1661cc202e9d1988a6042f0e781ea637fe5d2fba1f5d61ee9c"
+      },
+      {
+        "path": "work/proofs/packaging/artifacts/headroom-engine/runtime/Lib/site-packages/headroom/proxy/request_logger.py",
+        "sha256": "adedd784d6dbd0018af7d4cc5092c668da73ca2af2e5584aa54f0a61332a2166"
+      },
+      {
+        "path": "work/proofs/packaging/artifacts/headroom-engine/runtime/Lib/site-packages/headroom/proxy/server.py",
+        "sha256": "e80fdf59cdede96bfd86541ec22ee4aa98f5d7a3cea8b34e316cd0628c01f8d2"
+      }
+    ],
+    "cache": "recorded upstream or local response cache hits combined",
+    "latency": "compression dispatch duration only"
+  },
+  "not_tested": [
+    "Windows 11",
+    "live provider effect",
+    "older executable opening preferences saved with H045 enabled"
+  ]
+}

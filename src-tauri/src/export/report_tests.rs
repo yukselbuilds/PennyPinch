@@ -67,6 +67,7 @@ fn snapshot(after: u64) -> OverviewSnapshot {
             last_error: None,
             sampling_interrupted_since_start: false,
         },
+        recommendations: vec![],
     }
 }
 

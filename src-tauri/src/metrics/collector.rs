@@ -5,6 +5,7 @@ use super::activity::{
 use super::store::{
     MetricsError, MetricsFailure, MetricsQueryRequest, MetricsStore, PeriodMetrics,
 };
+use crate::insights::rules::Recommendation;
 use crate::runtime::manager::RuntimeManager;
 use crate::runtime::metrics_read::{OwnedMetricsSnapshot, RuntimeMetricsError};
 use chrono::{Local, SecondsFormat, Utc};
@@ -60,6 +61,8 @@ pub struct OverviewSnapshot {
     pub observed_at_utc: String,
     pub data: PeriodMetrics,
     pub collection: CollectionSnapshot,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub recommendations: Vec<Recommendation>,
 }
 
 #[derive(Clone)]
@@ -227,7 +230,11 @@ impl OverviewManager {
         }
     }
 
-    pub fn read(&self, request: MetricsQueryRequest) -> OverviewReply {
+    pub fn read(
+        &self,
+        request: MetricsQueryRequest,
+        include_recommendations: bool,
+    ) -> OverviewReply {
         if !request.is_valid() {
             return OverviewReply::Error(MetricsStore::error_detail(
                 request.request_id,
@@ -236,20 +243,29 @@ impl OverviewManager {
         }
         let state = self.inner.state.lock().unwrap_or_else(|p| p.into_inner());
         let now = Local::now();
-        match self.inner.store.query_at(request.period, now) {
-            Ok(data) => {
-                let collection = collection_snapshot(&state);
-                OverviewReply::Snapshot(OverviewSnapshot {
-                    schema_version: 1,
-                    request_id: request.request_id,
-                    status: "ok",
-                    observed_at_utc: now
-                        .with_timezone(&Utc)
-                        .to_rfc3339_opts(SecondsFormat::AutoSi, true),
-                    data,
-                    collection,
-                })
-            }
+        let collection = collection_snapshot(&state);
+        let recording_generation = if collection.status == CollectionStatus::Recording {
+            collection.runtime_generation.as_deref()
+        } else {
+            None
+        };
+        match self.inner.store.query_with_recommendations_at(
+            request.period,
+            now,
+            include_recommendations,
+            recording_generation,
+        ) {
+            Ok((data, recommendations)) => OverviewReply::Snapshot(OverviewSnapshot {
+                schema_version: 1,
+                request_id: request.request_id,
+                status: "ok",
+                observed_at_utc: now
+                    .with_timezone(&Utc)
+                    .to_rfc3339_opts(SecondsFormat::AutoSi, true),
+                data,
+                collection,
+                recommendations,
+            }),
             Err(error) => {
                 OverviewReply::Error(MetricsStore::error_detail(request.request_id, error))
             }
@@ -376,11 +392,14 @@ mod tests {
         }
     }
     fn query(manager: &OverviewManager) -> OverviewSnapshot {
-        match manager.read(MetricsQueryRequest {
-            schema_version: 1,
-            request_id: uuid::Uuid::new_v4().to_string(),
-            period: Period::Session,
-        }) {
+        match manager.read(
+            MetricsQueryRequest {
+                schema_version: 1,
+                request_id: uuid::Uuid::new_v4().to_string(),
+                period: Period::Session,
+            },
+            false,
+        ) {
             OverviewReply::Snapshot(value) => value,
             _ => panic!("expected local overview snapshot"),
         }

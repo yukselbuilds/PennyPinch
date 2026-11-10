@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 10 Kasım 2026.
 
+## H045 — Yerel öneriler tamamlandı
+
+- **39/51.** Ana ajan sinyal, kayıt ve native kabulü üstlendi. Aynı tek Luna xhigh Genel bakış sunumunu hazırladı. Ana ajan çalışanın bittiğini doğrulayıp sabit satır kimliğini ve ortak eylemleri tamamladı. Öneriler varsayılan kapalı. Açıkken mevcut ölçüm ve keşif kanıtından okunur. [Karar](decisions/029-local-recommendations.md), [kabul](proofs/recommendations.md), [kanıt](proofs/recommendations.json).
+- 181 frontend, 417 Rust ve 88 erişilebilirlik denetimi geçti. 15 opt-in Rust testi ignored. Son kalite 239, native 248 eşleşen girdiye bağlı. İlk native sürücü adımı durdu ve tercih yazımı doğrulandı. Aynı QA binary’sinde beklemeli akış, aç/kapat, yeniden açılış ve net 400 token azalma sonrası önerinin kalkmasını doğruladı. İki normal exit 0 ve kapalı QA debug portları.
+- Silme komutu otomatik denetimde `blocked by policy` nedeniyle reddedildi. `dev.headroom.desktop.h045-36d1c82cb2ba` izole profili, öneri kapalı ve yalnız fixture geçmişiyle kaldı. QA çalışmıyor. Windows 11, canlı sağlayıcı, üretim geri dönüş ve H044 uygun RTK adayı açık. Geliştirme token tasarrufu ölçülmedi. H045 sonunda duruldu.
+
 ## H043 — RTK yerel değerlendirmesi tamamlandı
 
 - **38/51.** Ana ajan ölçüm, geri alma ve Windows izolasyonunu üstlendi. Aynı tek Luna xhigh sabit istemci kaynaklarını dar kapsamda inceledi. Ana ajan gerçek RTK hook/PowerShell ve OpenCode plugin fixture’larını ayrıca çalıştırdı. Apache-2.0 RTK-OSS 1.1.0 arşivi ve exe doğrulandı. [Kabul](proofs/rtk.md), [ölçüm](proofs/rtk.json), [yüzeyler](proofs/rtk-surfaces.md).

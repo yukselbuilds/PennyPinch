@@ -4,19 +4,19 @@ import { createOverviewSession, type OverviewReadState } from "../../lib/metrics
 import { discoverySession, type ClientKind } from "../../lib/integrations";
 import { connectionActionClient } from "../../lib/connectionActions";
 
-export function useOverviewMetrics(period: MetricPeriod, active: boolean) {
+export function useOverviewMetrics(period: MetricPeriod, active: boolean, showRecommendations: boolean) {
   const [state, setState] = useState<OverviewReadState>({ period, metrics: { kind: "loading" } });
   const session = useRef<ReturnType<typeof createOverviewSession> | null>(null);
   if (!session.current) session.current = createOverviewSession(createNativeMetricsClient().read, setState);
   useEffect(() => {
-    session.current!.target(period, active);
+    session.current!.target(period, active, showRecommendations);
     if (!active) return;
     const timer = window.setInterval(() => session.current!.refresh(), 5000);
     return () => {
       window.clearInterval(timer);
-      session.current!.target(period, false);
+      session.current!.target(period, false, showRecommendations);
     };
-  }, [period, active]);
+  }, [period, active, showRecommendations]);
   return {
     metrics: state.period === period ? state.metrics : { kind: "loading" as const },
     refresh: () => session.current!.refresh(),

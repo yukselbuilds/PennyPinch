@@ -7,6 +7,7 @@ export interface UserPreferences {
   language: PreferenceLanguage;
   theme: PreferenceTheme;
   operating: OperatingPreferences;
+  show_recommendations: boolean;
 }
 
 export interface OperatingPreferences {
@@ -117,11 +118,18 @@ function isFingerprint(value: unknown): value is string {
 }
 
 function decodePreferences(value: unknown): UserPreferences | null {
-  if (!isRecord(value) || !(hasExactKeys(value, ["language", "theme"]) || hasExactKeys(value,["language","theme","operating"]))) return null;
+  if (!isRecord(value)) return null;
+  const keys = ["language", "theme"];
+  if (Object.hasOwn(value, "operating")) keys.push("operating");
+  if (Object.hasOwn(value, "show_recommendations")) {
+    if (typeof value.show_recommendations !== "boolean") return null;
+    keys.push("show_recommendations");
+  }
+  if (!hasExactKeys(value, keys)) return null;
   if ((value.language !== "tr" && value.language !== "en") ||
       (value.theme !== "system" && value.theme !== "light" && value.theme !== "dark")) return null;
   const operating=Object.hasOwn(value,"operating")?decodeOperatingPreferences(value.operating):defaultOperatingPreferences();
-  return operating?{ language: value.language, theme: value.theme, operating }:null;
+  return operating ? { language: value.language, theme: value.theme, operating, show_recommendations: value.show_recommendations === true } : null;
 }
 
 function decodeManifest(value: unknown): RuntimeManifestReference | null {
@@ -212,6 +220,7 @@ export function createPreferencesClient(options: ClientOptions) {
         language: preferences.language,
         theme: preferences.theme,
         ...(Object.hasOwn(preferences,"operating")?{operating:preferences.operating}:{}),
+        ...(Object.hasOwn(preferences, "show_recommendations") ? { showRecommendations: preferences.show_recommendations } : {}),
         expectedRevision,
         expectedFingerprint,
       });

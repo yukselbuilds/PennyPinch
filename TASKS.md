@@ -4,7 +4,7 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H011, H013–H036, H038–H040, H043, H046 ve **H047 tamamlandı: 38/51.** H043’te RTK-OSS 1.1.0 için uygun bir entegrasyon yolu çıkmadı. H044 yeni aday bekliyor. H042’nin Windows 10 yerel güncelleme/kurtarma ve hata kabulü geçti. Windows 11 ile üretim yayın kaynağı/anahtarı açık. H041’in yerel Windows 10 kabulü geçti, canlı API-key ve Windows 11 kanıtı bekliyor. H037’nin temiz Windows ve yayın kontrolleri açık. macOS H048 ve Linux H049 native CI planlı. Mevcut Actions akışı elle başlatılan Ubuntu kaynak kontrolüdür. Her yeni CI koşusu öncesi ücretsiz kota ve harcama sınırı kontrol edilir. Hesap ve sohbetler H050/H051’de planlı.
+**Durum:** H001–H005, H007–H008, H011, H013–H036, H038–H040, H043, H045–H046 ve **H047 tamamlandı: 39/51.** H043’te RTK-OSS 1.1.0 için uygun bir entegrasyon yolu çıkmadı. H044 yeni aday bekliyor. H042’nin Windows 10 yerel güncelleme/kurtarma ve hata kabulü geçti. Windows 11 ile üretim yayın kaynağı/anahtarı açık. H041’in yerel Windows 10 kabulü geçti, canlı API-key ve Windows 11 kanıtı bekliyor. H037’nin temiz Windows ve yayın kontrolleri açık. macOS H048 ve Linux H049 native CI planlı. Mevcut Actions akışı elle başlatılan Ubuntu kaynak kontrolüdür. Her yeni CI koşusu öncesi ücretsiz kota ve harcama sınırı kontrol edilir. Hesap ve sohbetler H050/H051’de planlı.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. O tarihte H041–H045 başlamamıştı.
 
@@ -650,11 +650,12 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 - **Dosyalar:** `src-tauri/src/addons/rtk.rs`, `src-tauri/src/addons/rtk_tests.rs`, `src/features/settings/OptionalOptimization.tsx`, `src/lib/addons.ts` (planlanan).
 
 ### H045 — İçeriksiz yerel sağlık ve tasarruf önerileri
-- [ ] Yerel metadata'dan açıklanabilir, kapatılabilir öneriler üretilir; ek LLM çağrısı yapılmaz.
+- [x] Yerel metadata'dan açıklanabilir, kapatılabilir öneriler üretilir; ek LLM çağrısı yapılmaz.
+- **Sonuç, 10 Kasım:** Windows 10 yerel kabulü geçti. Ayarlar’dan açma/kapatma, yeniden açılış ve yeni ölçümle önerinin kalkması gerçek QA uygulamasında doğrulandı. 181 frontend ve 417 Rust testi, 88 erişilebilirlik denetimi ve iki normal native kapanış geçti. [Sinyal sözleşmesi](docs/decisions/029-local-recommendations.md), [kabul](docs/proofs/recommendations.md), [kanıt kaydı](docs/proofs/recommendations.json).
 - **Kabul:** Öneri ölçüm temeli/kapsam/zamanını gösterir; düşük kapsama veya trafik yokluğu kesin tasarruf/kaçak diye sunulmaz. Cache düşüşü, yüksek yerel gecikme ve eski doğrulama için yalnız kanıtlı sinyal kullanılır. Öneri model/reasoning/profil/config'i kendiliğinden değiştirmez; ham içerik/uzak analytics/memory/learn/talimat yazımı yok. Aynı öneri bildirim spam'i üretmez.
 - **Doğrulama:** Boş/kısmi/eski ve olumsuz faydalı kayıtlar için deterministik kural fixture'ları; öneriyi kapatma, güncel ölçümle kaybolma ve TR/EN erişilebilirlik kontrolü.
 - **Bağımlılık / boyut:** H039, H024, H026, H034, H041 / M.
-- **Dosyalar:** `src-tauri/src/insights/rules.rs`, `src-tauri/src/insights/rules_tests.rs`, `src/features/overview/Recommendations.tsx`, `src/lib/insights.ts` (planlanan).
+- **Dosyalar:** `src-tauri/src/insights/rules.rs`, `src-tauri/src/insights/rules_tests.rs`, `src/features/overview/Recommendations.tsx`, `src/lib/insights.ts`.
 
 ## GitHub hazırlığı ve ücretsiz platform kapıları
 

@@ -189,7 +189,6 @@ export default function App() {
     applicationsLock.current = busy;
     setApplicationsBusy(busy);
   }, []);
-  const overview = useOverviewMetrics(period, screen === "overview");
   const activity = useActivity(screen === "activity");
   const connections = useOverviewConnections(screen === "overview");
   const [theme, setTheme] = useState<PreferenceTheme>("system");
@@ -213,7 +212,9 @@ export default function App() {
   const preferencesWriteLocked = useRef(false);
   const preferencesRevision = useRef(0);
   const preferencesFingerprint = useRef<string | null>(null);
-  const persistedPreferences = useRef<UserPreferences>({ language: "tr", theme: "system", operating: defaultOperatingPreferences() });
+  const persistedPreferences = useRef<UserPreferences>({ language: "tr", theme: "system", operating: defaultOperatingPreferences(), show_recommendations: false });
+  const showRecommendations = persistedPreferences.current.show_recommendations;
+  const overview = useOverviewMetrics(period, screen === "overview", showRecommendations);
   const labels = copy[language] as Labels;
   const nav = labels.nav as string[];
   const headings = labels.headline as string[];
@@ -249,7 +250,7 @@ export default function App() {
       setPreferencesIssue(null);
       setPreferencesStatus("loaded");
     } else if (result.kind === "desktop_unavailable") {
-      persistedPreferences.current = { language, theme, operating: defaultOperatingPreferences() };
+      persistedPreferences.current = { language, theme, operating: defaultOperatingPreferences(), show_recommendations: false };
       setPreferencesIssue(null);
       setPreferencesStatus("session_only");
     } else {
@@ -264,6 +265,7 @@ export default function App() {
       language: change.language ?? language,
       theme: change.theme ?? theme,
       operating: change.operating ?? persistedPreferences.current.operating,
+      show_recommendations: change.show_recommendations ?? persistedPreferences.current.show_recommendations,
     };
     if (preferencesStatus === "session_only") {
       persistedPreferences.current = next;
@@ -413,7 +415,8 @@ export default function App() {
   }
   const content = screen === "overview" ? <Overview language={language} runtime={snapshot} pending={pending}
     period={period} metrics={overview.metrics} connections={connections.connections} connectionsLoading={connections.loading}
-    onPeriodChange={setPeriod} onRefresh={overview.refresh} onConnect={connect}
+    showRecommendations={showRecommendations} onPeriodChange={setPeriod} onRefresh={overview.refresh} onConnect={connect}
+    onOpenActivity={() => { activity.onPeriodChange(period); navigate("activity"); }}
     onOpenApplications={() => navigate("applications")} onStart={() => void runLifecycle("start")} onStop={() => void runLifecycle("stop")}
     onPause={()=>void runLifecycle("pause")} onResume={()=>void runLifecycle("resume")} onRuntimeRefresh={retrySnapshot} />
     : screen === "applications" ? <Applications language={language} requestedClient={requestedClient} onBusyChange={onApplicationsBusy} onDiscoveryChange={setRecoveryScanGeneration}
@@ -427,7 +430,7 @@ export default function App() {
     preferenceIssueMessage(preferencesIssue, labels),
     reloadPreferences,
     { scale: windowScale, pending: zoomPending, failed: zoomFailed, change: changeWindowScale },
-    persistedPreferences.current.operating,
+    persistedPreferences.current,
     (operating) => changePreferences({ operating }),
     onApplicationsBusy,
     `${snapshot?.runtime_generation ?? "none"}:${snapshot?.engine.status ?? "unknown"}`,
@@ -479,7 +482,7 @@ function renderSettings(
   preferencesErrorMessage: string | null,
   onPreferencesRetry: () => void,
   zoom: WindowZoomView,
-  operating: OperatingPreferences,
+  preferences: UserPreferences,
   onOperatingSave: (preferences: OperatingPreferences) => Promise<void>,
   onOperatingBusy: (busy: boolean) => void,
   runtimeKey: string,
@@ -500,13 +503,20 @@ function renderSettings(
         <option value="1">100%</option><option value="1.25">125%</option><option value="1.5">150%</option>
       </select>
     </label>
+    <label className="setting-row">
+      <span><strong>{language === "tr" ? "Yerel öneriler" : "Local recommendations"}</strong>
+        <small>{language === "tr" ? "Yeterli yerel ölçüm olduğunda Genel bakış’ta göster." : "Show on Overview when local measurements support a recommendation."}</small></span>
+      <input type="checkbox" aria-label={language === "tr" ? "Yerel öneriler" : "Local recommendations"}
+        checked={preferences.show_recommendations} disabled={preferencesUnavailable || preferencesStatus === "session_only"}
+        onChange={event => onPreferencesChange({ show_recommendations: event.target.checked })} />
+    </label>
     {zoom.failed && <p className="settings-note" role="alert">{language === "tr" ? "Pencere ölçeği değiştirilemedi. Yeniden deneyebilirsin." : "The window scale could not be changed. Try again."}</p>}
     <div className="settings-note" role="status" aria-live="polite">{preferenceStatusLabel(preferencesStatus, labels)}</div>
     {preferencesStatus === "error" && <div className="notice preference-notice" role="alert">
       <span>{preferencesErrorMessage ?? labels.preferencesLoadFailed}</span>
       <button className="text-button" disabled={preferencesBusy} onClick={onPreferencesRetry}>{labels.preferencesRetry}</button>
     </div>}
-    <Settings language={language} preferences={operating} status={preferencesStatus} onSave={onOperatingSave} onBusyChange={onOperatingBusy} />
+    <Settings language={language} preferences={preferences.operating} status={preferencesStatus} onSave={onOperatingSave} onBusyChange={onOperatingBusy} />
     <Updates language={language} runtimeKey={runtimeKey} />
   </section>;
 }

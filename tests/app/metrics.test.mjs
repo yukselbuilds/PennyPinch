@@ -155,6 +155,33 @@ test("browser mode is unavailable without invoking the desktop bridge", async ()
   assert.deepEqual(calls, []);
 });
 
+test("opted-in recommendations match measured scope and malformed advice does not hide valid metrics", async () => {
+  const values = totals({ comparable_events: 40, after_tokens: 120, saved_tokens: -20, saved_percent: -20 });
+  const advice = [
+    { kind: "input_growth", basis: "local_estimate", component: "whole_input", before_tokens: 100, after_tokens: 120, events: 40 },
+    { kind: "slow_optimization", p95_ms: 1001, requests: 20 },
+    { kind: "cache_share_drop", model: "fixture-model", provider: "fixture-provider", previous_hits: 12,
+      previous_requests: 20, recent_hits: 8, recent_requests: 20 },
+    { kind: "installation_stale", client: "codex" },
+  ];
+  const { metrics, calls } = client({ reply: snapshot({ values, top: { recommendations: advice } }) });
+  assert.deepEqual((await metrics.read("today")).snapshot.recommendations, []);
+  assert.deepEqual((await metrics.read("today", true)).snapshot.recommendations, advice);
+  assert.equal(calls[0][1].includeRecommendations, undefined);
+  assert.equal(calls[1][1].includeRecommendations, true);
+  for (const row of [
+    { ...advice[0], after_tokens: 123 }, { ...advice[1], requests: 19 }, { ...advice[2], recent_hits: 9 },
+    { ...advice[2], model: "sk-fixture-secret" }, { ...advice[3], client: "unknown" }, { ...advice[3], content: "canary" },
+  ]) {
+    const result = await client({ reply: snapshot({ values, top: { recommendations: [row] } }) }).metrics.read("today", true);
+    assert.equal(result.kind, "snapshot");
+    assert.deepEqual(result.snapshot.recommendations, []);
+    assert.equal(result.snapshot.data.totals.saved_tokens, -20);
+  }
+  const stopped = await client({ reply: snapshot({ values, collection: { status: "stopped" }, top: { recommendations: [advice[1]] } }) }).metrics.read("today", true);
+  assert.deepEqual(stopped.snapshot.recommendations, []);
+});
+
 test("only canonical non-nil request IDs are sent", async () => {
   for (const id of [null, "not-a-uuid", "00000000-0000-0000-0000-000000000000"]) {
     let invokes = 0;

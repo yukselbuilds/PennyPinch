@@ -2,8 +2,10 @@
 import {runtimeSnapshot} from './runtime.mjs';
 import {activityList,activityDetail} from './activity.mjs';
 import {compatibilitySnapshot} from './compatibility.mjs';
-export type Scenario = 'data'|'empty'|'error';
+export type Scenario = 'data'|'empty'|'error'|'recommendations';
 let language='tr',theme='dark',scenario:Scenario='data',revision=1,exit='idle',generation=1;
+let showRecommendations=false,recommendationsResolved=false;
+export function resolveRecommendations(){recommendationsResolved=true;}
 const callbacks=new Set<()=>void>();
 let compatibilityRevision=0;
 let compatibilityGate:Promise<void>|null=null,releaseGate:(()=>void)|null=null;
@@ -21,18 +23,30 @@ export const installations=['codex','claude_code','opencode'].map((client_kind,i
 const reference={engine_version:'0.41.0',manifest_sha256:'8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908',mode:'cache',savings_profile:'coding',ccr_ttl_seconds:7200};
 const operating={close_to_tray:true,retention_days:30,protected_tools:[]};
 const at='2026-11-08T12:00:00Z';
-function preferences(id:string){return {schema_version:1,request_id:id,status:'ok',revision,state_fingerprint:'ab'.repeat(32),preferences:{language,theme,operating},runtime_manifest:reference};}
+function preferences(id:string){return {schema_version:1,request_id:id,status:'ok',revision,state_fingerprint:'ab'.repeat(32),preferences:{language,theme,operating,...(showRecommendations?{show_recommendations:true}:{})},runtime_manifest:reference};}
 function desktop(id:string){return {schema_version:1,request_id:id,status:'snapshot',tray_available:true,close_to_tray:true,exit_state:exit,exit_token:exit==='confirmation_required'?'4aa54830-c0af-4b4c-8b28-6343270eb55c':null};}
-function overview(period:string,id:string){
- const populated=scenario==='data';const totals={status:populated?'measured':'no_comparable_events',comparable_events:populated?1:0,excluded_events:0,
- before_tokens:populated?1000:null,after_tokens:populated?500:null,saved_tokens:populated?500:null,saved_percent:populated?50:null};
- const coverage={events:populated?1:0,distinct_origins:populated?1:0,unplaced_events:0,rolling_window:false,aggregate_only:false,unidentified_rows_observed:false,complete_traffic:false};
- const attribution={scope:'observed_requests',coverage:{requests:populated?1:0,events:populated?1:0,model_observed:0,client_verified:0,agent_verified:0,conflicts:0},client_status:'unknown',agent_status:'unknown',groups:[],omitted_groups:0};
+function overview(period:string,id:string,includeRecommendations:boolean){
+ const hasAdvice=scenario==='recommendations'&&!recommendationsResolved;
+ const events=scenario==='recommendations'?40:scenario==='data'?1:0;
+ const after=hasAdvice?1250:500;
+ const totals={status:events?'measured':'no_comparable_events',comparable_events:events,excluded_events:0,
+ before_tokens:events?1000:null,after_tokens:events?after:null,saved_tokens:events?1000-after:null,saved_percent:events?(1000-after)/10:null};
+ const coverage={events,distinct_origins:events,unplaced_events:0,rolling_window:false,aggregate_only:false,unidentified_rows_observed:false,complete_traffic:false};
+ const counts={requests:events,events,model_observed:hasAdvice?events:0,client_verified:0,agent_verified:0,conflicts:0};
+ const groups=events?[{group_id:'b'.repeat(64),model:hasAdvice?'fixture-model':null,provider:hasAdvice?'fixture-provider':null,
+  client:null,upstream_id:null,agent:null,conflicted:false,is_other:false,coverage:counts,totals}]:[];
+ const attribution={scope:'observed_requests',coverage:counts,client_status:'unknown',agent_status:'unknown',groups,omitted_groups:0};
+ const recommendations=includeRecommendations&&hasAdvice?[
+  {kind:'input_growth',basis:'local_estimate',component:'whole_input',before_tokens:1000,after_tokens:1250,events},
+  {kind:'slow_optimization',p95_ms:1100,requests:20},
+  {kind:'cache_share_drop',model:'fixture-model',provider:'fixture-provider',previous_hits:12,previous_requests:20,recent_hits:8,recent_requests:20},
+  {kind:'installation_stale',client:'codex'},
+ ]:[];
  return {schema_version:1,request_id:id,status:'ok',observed_at_utc:at,data:{monitoring_session_id:'7132bced-3ce0-4c1b-8f48-d93d7b96f7cf',period,
- from_utc:period==='session'?null:'2026-11-08T00:00:00Z',to_utc:at,retention_days:30,last_event_utc:populated?at:null,totals,coverage,attribution,
- series:populated?[{at_utc:at,totals}]:[]},collection:{status:'recording',interval_seconds:5,last_capture_utc:at,runtime_generation:'7132bced3ce04c1b8f48d93d7b96f7ce',last_error:null,sampling_interrupted_since_start:false}};
+ from_utc:period==='session'?null:'2026-11-08T00:00:00Z',to_utc:at,retention_days:30,last_event_utc:events?at:null,totals,coverage,attribution,
+ series:events?[{at_utc:at,totals}]:[]},collection:{status:'recording',interval_seconds:5,last_capture_utc:at,runtime_generation:'7132bced3ce04c1b8f48d93d7b96f7ce',last_error:null,sampling_interrupted_since_start:false},recommendations};
 }
-export function reset(nextLanguage:string,nextTheme:string,nextScenario:Scenario){releaseCompatibility();releaseDiscoveryScan();language=nextLanguage;theme=nextTheme;scenario=nextScenario;revision=1;exit='idle';generation=1;compatibilityRevision=0;}
+export function reset(nextLanguage:string,nextTheme:string,nextScenario:Scenario){releaseCompatibility();releaseDiscoveryScan();language=nextLanguage;theme=nextTheme;scenario=nextScenario;revision=1;exit='idle';generation=1;compatibilityRevision=0;showRecommendations=false;recommendationsResolved=false;}
 export function isTauri(){return true;}
 export function getCurrentWebview(){return {setZoom:async()=>{}};}
 export async function listen(_event:string,callback:()=>void){callbacks.add(callback);return()=>callbacks.delete(callback);}
@@ -49,14 +63,14 @@ export async function invoke(command:string,args:any){
  }
  if(command==='get_runtime_snapshot')return {...runtimeSnapshot(),request_id:id};
  if(command==='get_preferences')return preferences(id);
- if(command==='save_preferences'){language=args.language;theme=args.theme;revision++;for(const cb of callbacks)cb();return preferences(id);}
+ if(command==='save_preferences'){language=args.language;theme=args.theme;if(typeof args.showRecommendations==='boolean')showRecommendations=args.showRecommendations;revision++;for(const cb of callbacks)cb();return preferences(id);}
  if(command==='get_desktop_state')return desktop(id);
  if(command==='request_desktop_exit'||command==='cancel_desktop_exit'){exit=command==='request_desktop_exit'?'confirmation_required':'idle';return desktop(id);}
  if(command==='get_operating_snapshot')return {schema_version:1,request_id:id,status:'snapshot',autostart:{status:'disabled',fingerprint:null},runtime:{status:'inactive',runtime_generation:null,protected_tools:null,local_stats_enabled:null,beacon_enabled:null,mode:null,savings_profile:null,ccr_ttl_seconds:null}};
  if(command==='get_discovery_snapshot'||command==='scan_discovery')return {schema_version:1,request_id:id,status:'partial',scan_generation:command==='scan_discovery'?++generation:generation,installations:scenario==='empty'?[]:installations,warnings:['scope_partial','absence_is_not_unsupported']};
  if(command==='get_connection_ownership')return {schema_version:1,request_id:id,status:'snapshot',client_kind:args.request.client_kind,ownership:null};
  if(command==='get_saved_installation_choice')return {schema_version:1,request_id:id,status:'not_selected',client_kind:args.request.client_kind,scan_generation:generation,installation_id:null};
- if(command==='get_overview_snapshot'){if(scenario==='error')throw Error('isolated_read_failure');return overview(args.request.period,id);}
+ if(command==='get_overview_snapshot'){if(scenario==='error')throw Error('isolated_read_failure');return overview(args.request.period,id,args.includeRecommendations===true);}
  if(command==='get_activity_snapshot'){
   if(scenario==='error')throw Error('isolated_read_failure');const result=activityList(args.request.period,args.request.filter);result.request_id=id;
   if(scenario==='empty'){result.data.rows=[];result.data.shown_requests=0;result.data.matched_requests=0;result.data.unplaced_requests=0;result.data.coverage={...result.data.coverage,events:0,distinct_origins:0,unplaced_events:0};}return result;

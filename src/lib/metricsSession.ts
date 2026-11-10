@@ -4,12 +4,13 @@ export interface OverviewReadState { period: MetricPeriod; metrics: OverviewMetr
 
 /** One local query at a time. Period changes invalidate replies, not native work. */
 export function createOverviewSession(
-  read: (period: MetricPeriod) => Promise<MetricsResult>,
+  read: (period: MetricPeriod, includeRecommendations: boolean) => Promise<MetricsResult>,
   publish: (state: OverviewReadState) => void,
 ) {
   let period: MetricPeriod = "session";
   let metrics: OverviewMetricsState = { kind: "loading" };
   let active = false;
+  let recommendations = false;
   let epoch = 0;
   let pending = false;
   let dirty = false;
@@ -23,7 +24,7 @@ export function createOverviewSession(
     const stamp = epoch;
     if (metrics.kind === "ready") { metrics = { ...metrics, refreshing: true }; emit(); }
     let result: MetricsResult;
-    try { result = await read(requested); } catch { result = { kind: "request_failed" }; }
+    try { result = await read(requested, recommendations); } catch { result = { kind: "request_failed" }; }
     if (active && stamp === epoch) {
       if (result.kind === "snapshot" && result.snapshot.data.period === period) {
         metrics = { kind: "ready", snapshot: result.snapshot, stale: false, issue: null, refreshing: false };
@@ -43,9 +44,11 @@ export function createOverviewSession(
   }
 
   return {
-    target(next: MetricPeriod, enabled: boolean) {
-      if (next !== period || active !== enabled) epoch += 1;
-      if (next !== period) { period = next; metrics = { kind: "loading" }; emit(); }
+    target(next: MetricPeriod, enabled: boolean, includeRecommendations = false) {
+      const scopeChanged = next !== period || recommendations !== includeRecommendations;
+      if (scopeChanged || active !== enabled) epoch += 1;
+      recommendations = includeRecommendations;
+      if (scopeChanged) { period = next; metrics = { kind: "loading" }; emit(); }
       active = enabled;
       dirty = enabled;
       if (enabled) void pump();
