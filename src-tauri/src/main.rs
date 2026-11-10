@@ -36,6 +36,18 @@ use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::Arc;
 use tauri::Manager;
 
+fn picker_owner_handle(window: &tauri::WebviewWindow) -> Option<usize> {
+    #[cfg(windows)]
+    {
+        window.hwnd().ok().map(|handle| handle.0 as usize)
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = window;
+        None
+    }
+}
+
 static EXIT_GATE: ExitGate = ExitGate(AtomicU8::new(0));
 
 struct ExitGate(AtomicU8);
@@ -252,8 +264,8 @@ async fn export_report(
     let snapshot = runtime.get_runtime_snapshot(uuid::Uuid::new_v4().to_string());
     let owner = app
         .get_webview_window("main")
-        .and_then(|w| w.hwnd().ok())
-        .map(|h| h.0 as usize);
+        .as_ref()
+        .and_then(picker_owner_handle);
     Ok(tauri::async_runtime::spawn_blocking(move || {
         job.save(&snapshot, |artifact| {
             owner
@@ -669,9 +681,8 @@ async fn select_client_file(
     let manager = state.inner().clone();
     let failure_id = request_id.clone();
     let owner_hwnd = (window.label() == "main")
-        .then(|| window.hwnd().ok())
-        .flatten()
-        .map(|hwnd| hwnd.0 as usize);
+        .then(|| picker_owner_handle(&window))
+        .flatten();
     let reply = tauri::async_runtime::spawn_blocking(move || {
         let selector_thread = std::thread::Builder::new()
             .name("headroom-file-picker-sta".to_owned())
@@ -711,8 +722,8 @@ fn main() {
             let discovery = DiscoveryManager::with_choice_store(choice_store.clone());
             let claude_picker_owner = app
                 .get_webview_window("main")
-                .and_then(|window| window.hwnd().ok())
-                .map(|hwnd| hwnd.0 as usize);
+                .as_ref()
+                .and_then(picker_owner_handle);
             let ownership_store = integrations::config_io::ownership_store_for_app_local_data(
                 app_local_data_dir.clone(),
             )

@@ -1,0 +1,105 @@
+name: macOS build
+
+on:
+  workflow_dispatch:
+    inputs:
+      free_only_confirmed:
+        description: Confirm that this run fits the current included compute and account hard stop.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  app-build:
+    if: ${{ inputs.free_only_confirmed == true }}
+    name: Apple Silicon app build (macOS standard runner)
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      CARGO_HOME: ${{ github.workspace }}/work/caches/cargo-home
+      CARGO_TARGET_DIR: ${{ github.workspace }}/work/caches/cargo-target
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      npm_config_cache: ${{ github.workspace }}/work/caches/npm
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up pinned Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+
+      - name: Build and verify the native executable
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = arm64
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --quiet HEAD --
+
+          build_log="$(mktemp "$RUNNER_TEMP/headroom-build.XXXXXX")"
+          trap 'rm -f "$build_log"' EXIT
+          npm install --prefix work/ci-tools --no-save --ignore-scripts --no-audit --no-fund pnpm@11.25.0 \
+            > "$build_log" 2>&1 || { echo "::error::Pinned pnpm install failed."; exit 1; }
+          pnpm_entry="$GITHUB_WORKSPACE/work/ci-tools/node_modules/pnpm/bin/pnpm.cjs"
+          test "$(node "$pnpm_entry" --version)" = 11.25.0
+          node "$pnpm_entry" --store-dir work/caches/pnpm install --frozen-lockfile \
+            > "$build_log" 2>&1 || { echo "::error::Frozen frontend dependency install failed."; exit 1; }
+          rustup toolchain install 1.92.0 --profile minimal --no-self-update \
+            > "$build_log" 2>&1 || { echo "::error::Pinned Rust toolchain install failed."; exit 1; }
+
+          fingerprint() {
+            git rev-parse HEAD 'HEAD^{tree}'
+            sw_vers
+            uname -m
+            xcodebuild -version
+            node --version
+            node "$pnpm_entry" --version
+            rustc +1.92.0 --version --verbose
+            cargo +1.92.0 --version
+            printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}" "$CARGO_PROFILE_DEV_DEBUG"
+          }
+          before="$(fingerprint)"
+          echo "$before"
+          printf 'Inputs before: %s\n' "$(printf '%s' "$before" | shasum -a 256 | cut -d' ' -f1)"
+          status=0
+          if ! node "$pnpm_entry" build > "$build_log" 2>&1; then
+            echo "::error::Frontend typecheck/build failed."
+            status=1
+          else
+            echo "Frontend typecheck/build: passed."
+            cargo +1.92.0 build --locked --manifest-path src-tauri/Cargo.toml \
+              --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
+              > "$build_log" 2>&1 || status=$?
+            if [[ "$status" != 0 ]]; then
+              echo "::error::Locked macOS Tauri build failed."
+              awk '/^error(\[[A-Z][0-9]+\])?: / { show = ++count <= 10; if (show) print substr($0, 1, 300) }
+                show && /^ *--> src\// { print substr($0, 1, 180); show = 0 }' "$build_log"
+            fi
+          fi
+          after="$(fingerprint)"
+          printf 'Inputs after: %s\n' "$(printf '%s' "$after" | shasum -a 256 | cut -d' ' -f1)"
+          test "$before" = "$after"
+          git diff --quiet HEAD --
+          test "$status" = 0
+
+          binary="$CARGO_TARGET_DIR/aarch64-apple-darwin/debug/headroom-desktop"
+          test -x "$binary"
+          test "$(lipo -archs "$binary")" = arm64
+          binary_sha="$(shasum -a 256 "$binary" | cut -d' ' -f1)"
+          printf '%s\n' "Executable SHA-256: $binary_sha" "Native executable architecture: arm64."
+          printf '%s\n' '## macOS build' '' "- Commit: $GITHUB_SHA" \
+            '- Frontend typecheck/build and locked Tauri build passed.' \
+            "- Apple Silicon executable SHA-256: $binary_sha" \
+            '- Scope: build only. Engine, config writes, bundle and native lifecycle not tested.' >> "$GITHUB_STEP_SUMMARY"

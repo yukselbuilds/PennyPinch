@@ -1,6 +1,11 @@
 # Headroom Desktop — güncel devir
 10 Kasım 2026.
 
+## H048-a — Apple Silicon derlemesi aktif
+
+- **39/51.** H044 uygun RTK adayı bekliyor. H048'in ilk diliminde Win32 pencere sahipliği platforma koşullandırıldı, Windows dışı dosya işlemleri desteklenmiyor sonucu vermeye devam ediyor. Tauri'nin Unix derlemesi için mevcut simgenin eşdeğer PNG'si eklendi.
+- Tek Luna xhigh kaynak sınırlarını salt okunur inceledi. Ana ajan pencere, config ve CI sınırlarını uyguladı. [Kabul ve sonraki dilimler](validation/macos.md).
+
 ## H045 — Yerel öneriler tamamlandı
 
 - **39/51.** Ana ajan sinyal, kayıt ve native kabulü üstlendi. Aynı tek Luna xhigh Genel bakış sunumunu hazırladı. Ana ajan çalışanın bittiğini doğrulayıp sabit satır kimliğini ve ortak eylemleri tamamladı. Öneriler varsayılan kapalı. Açıkken mevcut ölçüm ve keşif kanıtından okunur. [Karar](decisions/029-local-recommendations.md), [kabul](proofs/recommendations.md), [kanıt](proofs/recommendations.json).

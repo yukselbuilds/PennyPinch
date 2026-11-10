@@ -1070,6 +1070,22 @@ impl FileTransaction {
         Err(TransactionFsError::Unsupported)
     }
 
+    pub(crate) fn open_existing(
+        &mut self,
+        _path: &std::path::Path,
+        _max_bytes: usize,
+    ) -> Result<(FileToken, FileSnapshot), TransactionFsError> {
+        Err(TransactionFsError::Unsupported)
+    }
+
+    pub(crate) fn create_missing(
+        &mut self,
+        _path: &std::path::Path,
+        _max_bytes: usize,
+    ) -> Result<(FileToken, FileIdentity), TransactionFsError> {
+        Err(TransactionFsError::Unsupported)
+    }
+
     pub(crate) fn create_claude_directory(
         &mut self,
         _project_root: &std::path::Path,
@@ -1089,6 +1105,33 @@ impl FileTransaction {
         &self,
         _token: FileToken,
     ) -> Result<std::path::PathBuf, TransactionFsError> {
+        Err(TransactionFsError::Unsupported)
+    }
+
+    pub(crate) fn reserve_absent(
+        &mut self,
+        _path: &std::path::Path,
+    ) -> Result<(), TransactionFsError> {
+        Err(TransactionFsError::Unsupported)
+    }
+
+    pub(crate) fn replace_contents(
+        &mut self,
+        _token: FileToken,
+        _bytes: &[u8],
+    ) -> Result<(), TransactionFsError> {
+        Err(TransactionFsError::Unsupported)
+    }
+
+    pub(crate) fn seal(&mut self) -> Result<(), TransactionFsError> {
+        Err(TransactionFsError::Unsupported)
+    }
+
+    pub(crate) fn commit(self) -> Result<(), TransactionFsError> {
+        Err(TransactionFsError::Unsupported)
+    }
+
+    pub(crate) fn rollback(self) -> Result<(), TransactionFsError> {
         Err(TransactionFsError::Unsupported)
     }
 }
