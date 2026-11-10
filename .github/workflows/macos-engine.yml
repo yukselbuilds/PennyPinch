@@ -69,12 +69,21 @@ jobs:
           "$uv" export --project runtime/engine-deps --python "$python" --locked --no-dev --no-emit-project \
             --format requirements-txt --output-file "$stage/requirements.txt" \
             > "$log" 2>&1 || { echo "::error::Frozen runtime requirements export failed."; exit 1; }
-          "$uv" pip sync --strict --require-hashes --no-build --python "$python" \
+          "$uv" pip sync --strict --require-hashes --no-build --link-mode copy --python "$python" \
             --target "$stage/payload/site-packages" "$stage/requirements.txt" \
             > "$log" 2>&1 || { echo "::error::Pinned binary wheel install failed."; exit 1; }
 
           mv "$stage/payload" "$stage/relocated"
           python="$stage/relocated/python/bin/python3.13"
+          if ! "$python" -I -B -m unittest discover -s tests/runtime -p test_macos_payload.py -v > "$log" 2>&1; then
+            echo "::error::Payload inventory contract tests failed."
+            exit 1
+          fi
+          if grep -qE '^test_.*symlink.* skipped ' "$log"; then
+            echo "::error::Native macOS symlink checks were skipped."
+            exit 1
+          fi
+          echo "macOS payload inventory contract tests: passed."
           fingerprint() {
             git rev-parse HEAD 'HEAD^{tree}'
             sw_vers
@@ -83,6 +92,7 @@ jobs:
             "$uv" --version
             shasum -a 256 "$python" "$uv" "$stage/requirements.txt" runtime/engine-deps/uv.lock
             printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}"
+            "$python" -I -B scripts/macos-payload.py "$stage/relocated"
           }
           before="$(fingerprint)"
           echo "$before"

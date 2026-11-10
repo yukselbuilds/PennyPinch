@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "task": "H048-b",
+  "slice": "relocated pinned engine probe",
+  "status": "pass",
+  "verified_at_utc": "2026-11-10T18:01:12.742279+00:00",
+  "run_id": 42870582936,
+  "job_id": 130020510058,
+  "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/42870582936",
+  "commit": "96d99ca1f7c499a011f57640efb2cfbf3b018ae8",
+  "git_tree": "f26d91eff96f2d590326e849bdf645f8c79c1ec3",
+  "runner_label": "macos-15",
+  "started_at": "2026-11-10T17:59:48Z",
+  "completed_at": "2026-11-10T18:00:07Z",
+  "inputs_sha256_before": "bd75ce8b1f2621bf6f39667f098d077f78286fe7e32bf9da0f39a5948daa589a",
+  "inputs_sha256_after": "bd75ce8b1f2621bf6f39667f098d077f78286fe7e32bf9da0f39a5948daa589a",
+  "environment": {
+    "macos": "15.8.2",
+    "macos_build": "24H232",
+    "architecture": "arm64",
+    "python": "3.13.13",
+    "uv": "0.13.5",
+    "headroom": "0.41.0",
+    "onnxruntime": "1.31.0"
+  },
+  "dependency_lock_sha256": "161d3b1543b1f6620c1ce40e38d9a2fba26d5c64e3e103a41dcd81dff18ced3f",
+  "checks": {
+    "relocated_engine_ready": "pass",
+    "native_onnx_import": "pass",
+    "exact_unix_peer_pid": "pass",
+    "foreign_peer_received_http": false,
+    "local_telemetry_enabled": true,
+    "anonymous_beacon_enabled": false,
+    "clean_stop": "pass",
+    "temporary_state_removed": "pass",
+    "upstream_readiness_check": "disabled_for_fixture"
+  },
+  "dispatch_allowance": {
+    "observed_via": "authenticated GitHub Billing and Budgets and alerts",
+    "period": "2026-11-01 through 2026-11-30",
+    "recorded_at_utc": "2026-11-10T17:59:43.3745498Z",
+    "plan": "GitHub Free",
+    "included_compute_usd": 12,
+    "used_compute_usd": 0,
+    "billable_usd": 0,
+    "account_actions_budget_usd": 0,
+    "overage_usage_blocked": true,
+    "included_storage_gb": 0.5,
+    "used_storage_gb": 0,
+    "runner": "macos-15 arm64 standard",
+    "timeout_minutes": 10,
+    "maximum_job_compute_usd": 0.62,
+    "workflow_sha256": "530e1cdb0f96033a3eb003e086697ad4ba31e21e21917b409d6db20e5f1a907b",
+    "candidate_sha": "96d99ca1f7c499a011f57640efb2cfbf3b018ae8"
+  },
+  "not_tested": [
+    "Tauri-managed engine",
+    "client config transactions",
+    "native package and signing",
+    "platform compatibility of specific coding clients",
+    "live provider traffic"
+  ]
+}

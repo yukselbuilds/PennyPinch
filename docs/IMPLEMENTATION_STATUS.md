@@ -5,7 +5,8 @@
 
 - **39/51.** H044 uygun RTK adayı bekliyor. H048'in ilk diliminde Win32 pencere sahipliği platforma koşullandırıldı, Windows dışı dosya işlemleri desteklenmiyor sonucu vermeye devam ediyor. Tauri'nin Unix derlemesi için mevcut simgenin eşdeğer PNG'si eklendi.
 - İlk gerçek macOS derlemesi Windows'a özgü sağlık alanında durdu. Ana ajan kontrolü platforma ayırdı. Düzeltilmiş aday macOS 15.8.2 ARM64 üzerinde typecheck/build, kilitli Tauri derlemesi ve ikili mimari kontrolünü geçti. Windows odaklı 44 test geçti, 3 opt-in test çalıştırılmadı. [Makine kanıtı](proofs/macos-build.json).
-- Tek Luna xhigh kaynak ve bağımlılık kilidini salt okunur inceledi. Ana ajan pencere, ayar, sahiplik ve CI sınırlarını üstlendi. H048-b için ilk adım aynı kilitle taşınabilir motor ve sahipli Unix soketinin native kanıtı. Ürün motoru, ayar işlemleri ve paket henüz açık. [Kabul ve sonraki dilimler](validation/macos.md).
+- H048-b ilk motor kanıtı macOS 15.8.2 ARM64 üzerinde geçti. Aynı kilitten CPython 3.13.13, Headroom 0.41.0 ve ONNX Runtime 1.31.0 açıldı. Unix soketinin gerçek çocuk PID'si HTTP öncesi doğrulandı, yabancı dinleyiciye sıfır HTTP baytı, telemetri açık ve beacon kapalı, temiz stop gözlendi. [Makine kanıtı](proofs/macos-engine.json).
+- Tek Luna xhigh kaynak/bağımlılık sınırlarını inceledi ve paket envanteri regresyonlarını yazıyor. Ana ajan pencere, ayar, sahiplik ve CI sınırlarını üstlendi. Sıradaki dilim bütün runtime dosyalarının çalışma öncesi/sonrası envanter doğrulaması. Ürün motoru, ayar işlemleri ve native paket henüz açık. [Kabul ve sonraki dilimler](validation/macos.md).
 
 ## H045 — Yerel öneriler tamamlandı
 
