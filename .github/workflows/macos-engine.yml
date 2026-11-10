@@ -1,0 +1,101 @@
+name: macOS engine probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      free_only_confirmed:
+        description: Confirm that this run fits the current included compute and account hard stop.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-engine-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  engine-probe:
+    if: ${{ inputs.free_only_confirmed == true }}
+    name: Apple Silicon pinned engine (macOS standard runner)
+    runs-on: macos-15
+    timeout-minutes: 10
+    env:
+      UV_NO_CONFIG: '1'
+      UV_NO_PROGRESS: '1'
+      UV_NO_PYTHON_DOWNLOADS: '1'
+      UV_CACHE_DIR: ${{ github.workspace }}/work/caches/uv
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify the relocated engine over its owned Unix socket
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = arm64
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --quiet HEAD --
+          mkdir -p work
+          stage="$(mktemp -d "$GITHUB_WORKSPACE/work/mac.XXXXXX")"
+          log="$stage/probe.log"
+          trap 'rm -f "$log"' EXIT
+
+          download() {
+            curl --proto '=https' --proto-redir '=https' --location --fail --silent --show-error \
+              --max-time 120 --output "$1" "$2"
+            printf '%s  %s\n' "$3" "$1" | shasum -a 256 -c -
+          }
+          download "$stage/python.tgz" \
+            'https://github.com/astral-sh/python-build-standalone/releases/download/20260504/cpython-3.13.13%2B20260504-aarch64-apple-darwin-install_only_stripped.tar.gz' \
+            '001872dfdea7fdb5b985cbe03a5b15d1ba7d8a5df6056615d433423e2adb27c5'
+          download "$stage/uv.tgz" \
+            'https://github.com/astral-sh/uv/releases/download/0.13.5/uv-aarch64-apple-darwin.tar.gz' \
+            '743f85035a1996ecb350659e01cd9faea9709829be09b1b4b03c73eaf3c9cd73'
+          mkdir "$stage/payload" "$stage/tools"
+          tar -xzf "$stage/python.tgz" -C "$stage/payload"
+          tar -xzf "$stage/uv.tgz" -C "$stage/tools" --strip-components=1
+          uv="$stage/tools/uv"
+          python="$stage/payload/python/bin/python3.13"
+          test "$(lipo -archs "$python")" = arm64
+          test "$("$python" -I -B --version)" = 'Python 3.13.13'
+          test "$(shasum -a 256 runtime/engine-deps/uv.lock | cut -d' ' -f1)" = \
+            '161d3b1543b1f6620c1ce40e38d9a2fba26d5c64e3e103a41dcd81dff18ced3f'
+          "$uv" export --project runtime/engine-deps --python "$python" --locked --no-dev --no-emit-project \
+            --format requirements-txt --output-file "$stage/requirements.txt" \
+            > "$log" 2>&1 || { echo "::error::Frozen runtime requirements export failed."; exit 1; }
+          "$uv" pip sync --strict --require-hashes --no-build --python "$python" \
+            --target "$stage/payload/site-packages" "$stage/requirements.txt" \
+            > "$log" 2>&1 || { echo "::error::Pinned binary wheel install failed."; exit 1; }
+
+          mv "$stage/payload" "$stage/relocated"
+          python="$stage/relocated/python/bin/python3.13"
+          fingerprint() {
+            git rev-parse HEAD 'HEAD^{tree}'
+            sw_vers
+            uname -m
+            "$python" -I -B --version
+            "$uv" --version
+            shasum -a 256 "$python" "$uv" "$stage/requirements.txt" runtime/engine-deps/uv.lock
+            printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}"
+          }
+          before="$(fingerprint)"
+          echo "$before"
+          printf 'Inputs before: %s\n' "$(printf '%s' "$before" | shasum -a 256 | cut -d' ' -f1)"
+          status=0
+          "$python" -I -B scripts/probe-macos-engine.py "$stage/relocated/site-packages" "$stage" \
+            > "$log" 2>&1 || status=$?
+          after="$(fingerprint)"
+          printf 'Inputs after: %s\n' "$(printf '%s' "$after" | shasum -a 256 | cut -d' ' -f1)"
+          test "$before" = "$after"
+          git diff --quiet HEAD --
+          awk '/^macOS engine proof( failed)?: / { if (++count <= 2) print substr($0, 1, 240) }' "$log"
+          test "$status" = 0
+          printf '%s\n' '## macOS engine probe' '' "- Commit: $GITHUB_SHA" \
+            '- Pinned CPython and wheel-only engine ran after relocation. Owned Unix socket, readiness, telemetry and clean stop passed.' \
+            '- Scope: direct engine fixture. Application integration, client config transactions, package signing and live provider traffic untested.' >> "$GITHUB_STEP_SUMMARY"

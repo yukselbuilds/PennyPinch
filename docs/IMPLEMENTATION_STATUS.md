@@ -1,10 +1,11 @@
 # Headroom Desktop — güncel devir
 10 Kasım 2026.
 
-## H048-a — Apple Silicon derlemesi aktif
+## H048 — Apple Silicon derlemesi geçti, motor dilimi aktif
 
 - **39/51.** H044 uygun RTK adayı bekliyor. H048'in ilk diliminde Win32 pencere sahipliği platforma koşullandırıldı, Windows dışı dosya işlemleri desteklenmiyor sonucu vermeye devam ediyor. Tauri'nin Unix derlemesi için mevcut simgenin eşdeğer PNG'si eklendi.
-- Tek Luna xhigh kaynak sınırlarını salt okunur inceledi. Ana ajan pencere, config ve CI sınırlarını uyguladı. [Kabul ve sonraki dilimler](validation/macos.md).
+- İlk gerçek macOS derlemesi Windows'a özgü sağlık alanında durdu. Ana ajan kontrolü platforma ayırdı. Düzeltilmiş aday macOS 15.8.2 ARM64 üzerinde typecheck/build, kilitli Tauri derlemesi ve ikili mimari kontrolünü geçti. Windows odaklı 44 test geçti, 3 opt-in test çalıştırılmadı. [Makine kanıtı](proofs/macos-build.json).
+- Tek Luna xhigh kaynak ve bağımlılık kilidini salt okunur inceledi. Ana ajan pencere, ayar, sahiplik ve CI sınırlarını üstlendi. H048-b için ilk adım aynı kilitle taşınabilir motor ve sahipli Unix soketinin native kanıtı. Ürün motoru, ayar işlemleri ve paket henüz açık. [Kabul ve sonraki dilimler](validation/macos.md).
 
 ## H045 — Yerel öneriler tamamlandı
 

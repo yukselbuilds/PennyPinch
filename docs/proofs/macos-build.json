@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "task": "H048-a",
+  "verified_at_utc": "2026-11-10T17:51:26.162301+00:00",
+  "status": "pass",
+  "macos_runs": [
+    {
+      "run_id": 42867872838,
+      "job_id": 130010971362,
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/42867872838",
+      "conclusion": "failure",
+      "commit": "53c84500885ad132ba49f5fa69207f30ae413e96",
+      "git_tree": "cacf99033edff246d630be97ae0add8b0424ca6b",
+      "runner_label": "macos-15",
+      "runner_group": "GitHub Actions",
+      "started_at": "2026-11-10T17:43:39Z",
+      "completed_at": "2026-11-10T17:45:18Z",
+      "inputs_sha256_before": "92635a53ea6bfd6b937eb44d518b59470f9456295b3561da3b01c4d67f069f36",
+      "inputs_sha256_after": "92635a53ea6bfd6b937eb44d518b59470f9456295b3561da3b01c4d67f069f36",
+      "frontend_build": "pass",
+      "environment": {
+        "macos": "15.8.2",
+        "macos_build": "24H232",
+        "xcode": "16.4",
+        "rust_host": "aarch64-apple-darwin",
+        "node": "v25.2.1",
+        "pnpm": "11.25.0",
+        "rustc": "1.92.0"
+      },
+      "dispatch_allowance": {
+        "observed_via": "authenticated GitHub Billing and Budgets and alerts",
+        "period": "2026-11-01 through 2026-11-30",
+        "recorded_at_utc": "2026-11-10T17:43:33.7859605Z",
+        "plan": "GitHub Free",
+        "included_compute_usd": 12,
+        "used_compute_usd": 0,
+        "billable_usd": 0,
+        "account_actions_budget_usd": 0,
+        "overage_usage_blocked": true,
+        "included_storage_gb": 0.5,
+        "used_storage_gb": 0,
+        "runner": "macos-15 arm64 standard",
+        "timeout_minutes": 20,
+        "maximum_job_compute_usd": 1.24,
+        "workflow_sha256": "5715a0c96d406885564ab52f08f89255d4e0fd07528342ae911d6cc8dcc8bdce",
+        "candidate_sha": "53c84500885ad132ba49f5fa69207f30ae413e96"
+      },
+      "native_build": "failed",
+      "diagnostic": "E0609 missing Windows backend_lease field in non-Windows health check"
+    },
+    {
+      "run_id": 42868691135,
+      "job_id": 130013818093,
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/42868691135",
+      "conclusion": "success",
+      "commit": "15a7b6ecd6b5a1b5851ae19507949da199bdd0a3",
+      "git_tree": "040591259d7f9a83240f22157e4cd4ff964e58c5",
+      "runner_label": "macos-15",
+      "runner_group": "GitHub Actions",
+      "started_at": "2026-11-10T17:48:31Z",
+      "completed_at": "2026-11-10T17:50:19Z",
+      "inputs_sha256_before": "142a3d506cde8a978d0a31c9cd5228ad0e77d54fe00af9739961bde533b402c3",
+      "inputs_sha256_after": "142a3d506cde8a978d0a31c9cd5228ad0e77d54fe00af9739961bde533b402c3",
+      "frontend_build": "pass",
+      "environment": {
+        "macos": "15.8.2",
+        "macos_build": "24H232",
+        "xcode": "16.4",
+        "rust_host": "aarch64-apple-darwin",
+        "node": "v25.2.1",
+        "pnpm": "11.25.0",
+        "rustc": "1.92.0"
+      },
+      "dispatch_allowance": {
+        "observed_via": "authenticated GitHub Billing and Budgets and alerts",
+        "period": "2026-11-01 through 2026-11-30",
+        "recorded_at_utc": "2026-11-10T17:48:22.4485331Z",
+        "plan": "GitHub Free",
+        "included_compute_usd": 12,
+        "used_compute_usd": 0,
+        "billable_usd": 0,
+        "account_actions_budget_usd": 0,
+        "overage_usage_blocked": true,
+        "included_storage_gb": 0.5,
+        "used_storage_gb": 0,
+        "runner": "macos-15 arm64 standard",
+        "timeout_minutes": 20,
+        "maximum_job_compute_usd": 1.24,
+        "workflow_sha256": "5715a0c96d406885564ab52f08f89255d4e0fd07528342ae911d6cc8dcc8bdce",
+        "candidate_sha": "15a7b6ecd6b5a1b5851ae19507949da199bdd0a3",
+        "previous_run_id": 42867872838,
+        "retry_reason": "cfg(windows) applied to ControllerSession health and non-Windows fail-closed health branch"
+      },
+      "native_build": "pass",
+      "architecture": "arm64",
+      "executable_sha256": "33cc85b11c94f075be6a683a589816e6744fbf0208ea29b4e00aa838bcc56e0a"
+    }
+  ],
+  "windows_regression": {
+    "input_count": 246,
+    "environment": {
+      "workspace": "D:\\Projeler\\Headroom",
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "windows_build": [
+        10,
+        0,
+        19045
+      ]
+    },
+    "tools": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "tests": [
+      "test result: ok. 44 passed; 0 failed; 3 ignored; 0 measured; 385 filtered out; finished in 1.17s"
+    ],
+    "rustfmt": "pass",
+    "actionlint": "1.7.12 pass"
+  },
+  "untested": [
+    "pinned macOS engine",
+    "native lifecycle",
+    "config transactions",
+    "installer and signing",
+    "Intel macOS",
+    "live provider traffic"
+  ]
+}

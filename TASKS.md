@@ -681,7 +681,7 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ### H048 — macOS portu, paketleme ve native kabul
 - [ ] Tauri/Rust uygulaması ve pinned runtime macOS'ta port edilir; yerel paket ve gerçek native yaşam döngüsü doğrulanır.
-- **H048-a aktif.** İlk doğrulama hedefi standart macOS ARM64 runner'ında gömülü frontend içeren Apple Silicon ikilisi. [Kabul ve sınırlar](docs/validation/macos.md).
+- **H048-a geçti, H048-b aktif.** Standart runner macOS 15.8.2 üzerinde gömülü frontend içeren ARM64 ikiliyi üretti. Sabitlenmiş motor, ayar işlemleri ve native paket kabulleri açık. [Kabul ve sınırlar](docs/validation/macos.md).
 - **Alt dilimler:** H048-a port/build; H048-b pinned engine ve config-transaction uyarlaması; H048-c native paket ve gerçek yaşam döngüsü kabulü. Her dilim 1–5 kaynak dosyasıyla başlar; ana görev üç dilim de bitene kadar açık kalır.
 - **Kabul:** Kaynak/derleme/paket/runtime/istemci sınırları ayrı raporlanır; Windows kanıtı macOS desteği sayılmaz. Native job, yalnız H047'nin doğruladığı ücretsiz standard GitHub-hosted macOS runner kotası/hard-stop altında elle (`workflow_dispatch`) başlatılabilir. Paid/larger runner, kota üstü aşım ve ayrı cloud-Mac aboneliği yok; masrafsız yol doğrulanamazsa blocked/not_tested.
 - **Doğrulama:** Elle başlatılan ücretsiz standard hosted macOS job'da typecheck/build/native start-stop/clean state; release/payload imzalama ve platform config transaction ayrıca doğrulanır. Cross-platform portable engine iddiası yalnız ölçülen mimari için yapılır.
