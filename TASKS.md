@@ -4,7 +4,7 @@
 
 **Kaynak:** [Ürün spesifikasyonu 0.5](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H008, H011, H013–H036, H038, H040, H046 ve **H047 tamamlandı: 36/51.** H041’in yerel Windows 10 kabulü geçti, canlı API-key ve Windows 11 kanıtı bekliyor. H037’nin temiz Windows ve yayın kontrolleri açık. macOS H048 ve Linux H049 native CI planlı. Mevcut Actions akışı elle başlatılan Ubuntu kaynak kontrolüdür. Her yeni CI koşusu öncesi ücretsiz kota ve harcama sınırı kontrol edilir. Hesap ve sohbetler H050/H051’de planlı.
+**Durum:** H001–H005, H007–H008, H011, H013–H036, H038, H040, H046 ve **H047 tamamlandı: 36/51.** H042-a yerel imza ve bütünlük kabulü geçti. H041’in yerel Windows 10 kabulü geçti, canlı API-key ve Windows 11 kanıtı bekliyor. H037’nin temiz Windows ve yayın kontrolleri açık. macOS H048 ve Linux H049 native CI planlı. Mevcut Actions akışı elle başlatılan Ubuntu kaynak kontrolüdür. Her yeni CI koşusu öncesi ücretsiz kota ve harcama sınırı kontrol edilir. Hesap ve sohbetler H050/H051’de planlı.
 
 **Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. H041–H045 başlamadı.
 
@@ -610,8 +610,9 @@ flowchart TD
 - **Dosyalar:** `bench/optimization/`, `tests/fixtures/optimization/`, `docs/validation/optimization-benefit.md`, `docs/USER_GUIDE.md` (planlanan).
 
 ### H042 — İmzalı uygulama güncellemesi ve kurtarma
+- **Durum:** 10 Kasım, H041 ve H037 dış kontrolleri açıkken kullanıcı H042-a’nın yerel dilimine geçişi onayladı. İmza ve sürüm güvenini ana ajan üstlendi. H042-a kabul edildi. Ana H042 ve b/c dilimleri açık. [Güven sözleşmesi](docs/decisions/028-update-trust.md).
 - [ ] Güncelleme denetimi, indirme doğrulama, uygun zamanda uygulama ve son çalışan sürüme dönüş gerçek ürün akışına bağlanır.
-- [ ] **H042-a:** Sürüm/kanal/manifest ve imza/hash doğrulama sözleşmesi; uygulama ile pinned motor ayrımı.
+- [x] **H042-a yerel imza ve bütünlük.** İmzalı manifest, SemVer, kararlı/deneme kanalı, uygulama/hedef ve sabit motor pini birlikte doğrulanır. Kurucunun boyutu ve SHA-256 değeri akışta kontrol edilir. Dört gerçek Tauri fixture imzası ve sekiz odaklı Rust testiyle geçti. [Doğrulama](docs/validation/windows-update.md), [kanıt](docs/proofs/windows-update-trust.json).
 - [ ] **H042-b:** Güncelleme UI'sı ve backend; kullanıcıya sürüm/not/boyut gösterimi, aktif stream varken bekletme.
 - [ ] **H042-c:** Kesinti/bozuk imza/disk dolu/migration hatası ve iki Windows'ta güncelle→aç/geri dön kanıtı.
 - **Kabul:** İmza/hash uyuşmazlığında kurulum yok; kararlı/deneme kanalı açık seçimdir. Floating motor güncellemesi, aktif stream'i zorla kesme veya kullanıcı config/state'ini eski yedekle ezme yok. Kaynak doğrulanır; diagnostic dışa aktarımıyla secret taşınmaz.

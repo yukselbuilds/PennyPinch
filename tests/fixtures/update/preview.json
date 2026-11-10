@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "app_identifier": "dev.headroom.desktop",
+  "target": "windows-x86_64",
+  "channel": "preview",
+  "version": "0.1.1-rc.1",
+  "notes": "Yerel imza örneği.",
+  "engine": {
+    "version": "0.41.0",
+    "runtime_manifest_sha256": "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908"
+  },
+  "installer": {
+    "size_bytes": 39,
+    "sha256": "bd88afd6dacac8b00ae3493b4747d72668a881d4d9be5dd26501ce0be2281c23"
+  }
+}

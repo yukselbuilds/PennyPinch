@@ -121,7 +121,7 @@ fn startup_diagnostic_for_test() -> StartupDiagnostic {
         .unwrap_or_default()
 }
 
-const EXPECTED_ENGINE_VERSION: &str = "0.41.0";
+pub(crate) const EXPECTED_ENGINE_VERSION: &str = "0.41.0";
 const EXPECTED_MANIFEST_SHA256: &str =
     "4217e8f67946c96caa028e0a0d4e9a41e2e6894e4cafcd7e23adb00ad7cd1c03";
 const EXPECTED_WINDOWS_MANIFEST_SHA256: &str =
@@ -146,7 +146,7 @@ const EXPECTED_OPTIMIZATION_SHA256: &str =
     "972c0e60fb791fb9ccd27167e561bf31cef735da88e3423b0e607b2205c8a283";
 const EXPECTED_OPTIMIZATION_SOURCES_SHA256: &str =
     "f96b93d2c574a2155012c7e587aaed2a2c86f6fe288cd88f847e81e9a27b4bfa";
-const EXPECTED_RUNTIME_MANIFEST_SHA256: &str =
+pub(crate) const EXPECTED_RUNTIME_MANIFEST_SHA256: &str =
     "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908";
 const EXPECTED_RUNNER_SHA256: &str =
     "bf887b6f783f4385debc84836353340f39e3773433782305376a3247be0f4ac1";

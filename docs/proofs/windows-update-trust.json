@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "task": "H042-a",
+  "local_status": "pass",
+  "main_status": "open",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "toolchain": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0"
+  },
+  "tauri_signer_version": "2.12.3",
+  "dependencies": {
+    "minisign-verify": {
+      "version": "0.3.0",
+      "license": "MIT",
+      "sha256": "871285dc19d8d0ebe0eef3d0e99a205f2a71363b122632cbbfa4a6c370a960ce"
+    },
+    "base64": {
+      "version": "0.23.1",
+      "license": "MIT OR Apache-2.0",
+      "sha256": "ac07cdecf99051d9a5238b80f35af32cdeba5b336e55d957b318b50137e18da5"
+    },
+    "semver": {
+      "version": "1.0.28",
+      "license": "MIT OR Apache-2.0",
+      "sha256": "8a7852d02fc848982e0c167ef163aaff9cd91dc640ba85e263cb1ce46fae51cd"
+    },
+    "sha2": {
+      "version": "0.10.9",
+      "license": "MIT OR Apache-2.0",
+      "sha256": "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283"
+    }
+  },
+  "source_and_tool_fingerprints_matched": 281,
+  "focused_tests_passed": 8,
+  "format_check_passed": true,
+  "tests": [
+    "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 402 filtered out; finished in 0.02s"
+  ],
+  "manifest_fixture_signatures": 4,
+  "private_fixture_keys_removed": true,
+  "pinned_engine": {
+    "version": "0.41.0",
+    "runtime_manifest_sha256": "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908"
+  },
+  "download_or_install": "not_tested",
+  "production_signing_key": "not_configured",
+  "windows11": "not_tested",
+  "evidence": {
+    "verification": {
+      "path": "work/proofs/update/runs/f22e81e0-6721-416a-bb46-d2973a311f24/local-acceptance.json",
+      "sha256": "801e8e8b657d0ee4c671f510a0a034cba5fee78120dd10dd2089dc688529e299"
+    },
+    "fixture_signing": {
+      "path": "work/proofs/update/fixture-sign/de5af320-ca7e-42be-9d28-f9159d4ff3d8/result.json",
+      "sha256": "5aa3da12653d954f63f064a53d9805acc536d974184832312d9080a6bc31f6d8"
+    }
+  }
+}

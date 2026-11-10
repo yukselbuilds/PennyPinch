@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 10 Kasım 2026.
 
+## H042-a — yerel imza ve bütünlük kabul edildi
+
+- Kullanıcı H041 ve H037’nin dış kabulleri açıkken H042-a’nın yerel dilimini onayladı. Ana ajan imza, kaynak ve sürüm güvenini üstlendi. H042-a, kararlı ve deneme sürümlerinin imzalı manifestinden doğrulanmış metadata üretir. Kurucu boyutu ve SHA-256 değeri akışta kontrol edilir. Motor sürümü ve payload manifesti mevcut pinlerle aynı olmalıdır. [Karar](decisions/028-update-trust.md).
+- Tauri CLI 2.12.3 ile dört sentetik manifest imzalandı. Yerel fixture özel anahtarları silindi. Windows 10 x64 build 19045’te fmt ve sekiz odaklı Rust testi geçti. 281 kaynak ve araç girdisi eşleşti. CodeGraph dört değişen dosyayı güncelledi. [Kanıt](proofs/windows-update-trust.json), [kapsam](validation/windows-update.md).
+- **Devir noktası.** H042-b, doğrulayıcıyı güvenilen indirme ve kullanıcı ekranına bağlar. H042-c gerçek paket değişimini ve geri dönüşü sınar. H042 ana kutusu açık, toplam 36/51. H041 ve H037’nin açık dış kabulleri korunur. Geliştirme token tasarrufu ölçülmedi.
+
 ## H041 — yerel kabul tamam · Dış doğrulama bekliyor
 
 - Kullanıcının sonraki görev isteğiyle H041 başladı. H039’un bu göreve ve H042’ye bağımlılığı sürüyor. Ana ajan token/ölçüm semantiği ve performans doğrulamasını üstlendi. [Plan027](decisions/027-optimization-regression.md).
