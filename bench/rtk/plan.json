@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "task": "H043",
+  "version": "1.1.0",
+  "commit": "753a3b0e939f2e4490fc24e3a1984010f40a103c",
+  "edition": "rtk-oss",
+  "license": "Apache-2.0",
+  "asset": "rtk-oss-x86_64-pc-windows-msvc.zip",
+  "asset_sha256": "9b076379be9d86011ca3f3a0264d0be4851da5535453a47f67fa46b4e893fbb2",
+  "process_runs": 3,
+  "rounds": 3,
+  "token_encoding": "o200k_base",
+  "token_basis": "canonical_full_request_json_including_added_tool_schemas",
+  "thresholds": {
+    "command_timeout_seconds": 30,
+    "startup_timeout_seconds": 100,
+    "request_timeout_seconds": 30,
+    "warm_command_added_p95_ms": 250,
+    "warm_combined_added_p95_ms": 1000,
+    "minimum_command_saved_fraction": 0.1
+  },
+  "scope": "Owned Windows 10 x64 command fixtures and Responses HTTP/SSE loopback engine; no user hook or client settings changes",
+  "integrity": "Source and exact numerical bytes, stderr and exit status preserved; unique test/build failures remain visible; compressed originals recoverable byte-exactly or filter rejected",
+  "cases": ["git_status", "git_diff", "test_pass", "test_fail", "build_fail", "json_exact", "source_read", "stderr_exit"],
+  "arms": ["control", "headroom", "rtk", "rtk_headroom"],
+  "provider_calls": 0,
+  "cache": "First process invocation separate from warm rounds; OS disk cache not reset; provider cache unknown",
+  "baseline_reuse": "Check H041 fingerprints; new command fixtures require fresh paired control/Headroom unless byte-identical request and runtime/environment inputs match"
+}

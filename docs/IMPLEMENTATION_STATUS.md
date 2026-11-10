@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 10 Kasım 2026.
 
+## H043 — RTK yerel değerlendirmesi tamamlandı
+
+- **38/51.** Ana ajan ölçüm, geri alma ve Windows izolasyonunu üstlendi. Aynı tek Luna xhigh sabit istemci kaynaklarını dar kapsamda inceledi. Ana ajan gerçek RTK hook/PowerShell ve OpenCode plugin fixture’larını ayrıca çalıştırdı. Apache-2.0 RTK-OSS 1.1.0 arşivi ve exe doğrulandı. [Kabul](proofs/rtk.md), [ölçüm](proofs/rtk.json), [yüzeyler](proofs/rtk-surfaces.md).
+- 72 komut olayı, 288 eşlenmiş istek, 72 bire bir bypass, 54 CCR geri alma ve üç temiz motor kapanışı. H041’in 592 girdisi eşleşti. Yeni komut/istek girdileri nedeniyle iki taban kol yeniden ölçüldü. İlk yanlış CCR karşılaştırması başarısız kayıt olarak korundu. Son kıyasta 661, yüzey koşusunda 12 girdi eşleşti. Mevcut kullanıcı RTK dizinleri oluşmadı. Değişiklik benchmark ve kanıtla sınırlı. Geliştirme token tasarrufu ölçülmedi.
+- **Karar ve devir.** Sekiz komut yolunun hiçbiri H044’e uygun değil. Başarısız test stderr alanını kaybetti, kesin sayılı JSON çıktı biçimini kaybetti, başarılı testte özgün çıktı geri alınamadı. Üç hata örneği birleşik recall verdi. Gerçek istemci, Desktop ve alt ajan kapsamı `not_tested`. H044 uygun aday bekliyor. H045 RTK’ya bağlı olmayan sıradaki isteğe bağlı adaydır. H043 sonunda duruldu. H037/H041/H042 dış kabul sınırları ve H048/H049 planı geçerlidir.
+
 ## H039 — Yerel son aday kabulü tamamlandı
 
 - **37/51.** Kullanıcı ücretli Windows 11 ortamı kullanmadan devamı seçti. H041/H042 dış kabulleri açık tutulup H039’un yerel kapsamı tamamlandı. Ana ajan paket/native/config/ölçüm kabulünü üstlendi; aynı tek Luna xhigh README’yi dar inceleyip kullanıcı kılavuzunu taslakladı. Ana ajan kaynak ve UI ile karşılaştırarak devraldı. [Kabul](proofs/release-candidate.json), [doğrulama](validation/release-candidate.md), [inceleme](reviews/H039.md), [kılavuz](USER_GUIDE.md).

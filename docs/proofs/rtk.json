@@ -1,0 +1,551 @@
+{
+  "schema_version": 1,
+  "task": "H043",
+  "date": "2026-11-10",
+  "status": "complete",
+  "h044_supported_scopes": [],
+  "evaluation_scope": "Windows 10 22H2 x64, isolated commands, loopback Responses HTTP/SSE and hook contract fixtures",
+  "environment": {
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+    "logical_cpus": 16
+  },
+  "tool": {
+    "version": "1.1.0",
+    "edition": "rtk-oss",
+    "commit": "753a3b0e939f2e4490fc24e3a1984010f40a103c",
+    "license": "Apache-2.0",
+    "archive": {
+      "path": "work/proofs/rtk/toolchain/1.1.0/rtk-oss-x86_64-pc-windows-msvc.zip",
+      "sha256": "9b076379be9d86011ca3f3a0264d0be4851da5535453a47f67fa46b4e893fbb2",
+      "bytes": 5781191
+    },
+    "executable": {
+      "path": "work/proofs/rtk/toolchain/1.1.0/rtk.exe",
+      "sha256": "431abf30cf72213ad85bcc4526b67c55ca519336efbbf3c1630e388a1f3f4b0f"
+    },
+    "upstream_license": {
+      "path": "work/proofs/rtk/toolchain/1.1.0/source/LICENSE",
+      "sha256": "33f694a31d9f9df3e292a9413a3cdb0113fa72698e2c719f657ff6b53165dcc4"
+    },
+    "source_receipt": {
+      "path": "work/proofs/rtk/toolchain/1.1.0/receipt.json",
+      "sha256": "9ae289c84ab5eb08586cd6f678995080252b746b31aa4a96c75dc3a1eecb3a51"
+    },
+    "verification": "Release API SHA-256 and published checksums over HTTPS; not a signature"
+  },
+  "plan": {
+    "path": "bench/rtk/plan.json",
+    "sha256": "57d4c6a27524401331815cbdb46e5568b97cd1795f2543980e9800964ce31a60"
+  },
+  "benchmark": {
+    "evidence": {
+      "path": "work/proofs/rtk/runs/ea4146b3-b449-42db-8732-ca2800c5338b/result.json",
+      "sha256": "47d4a867e64228ca9bb4e9fe414579fced5309ddc3487ffb96742b6937f6a5e3"
+    },
+    "source_tool_config_inputs_matched": 661,
+    "owned_engines_gracefully_stopped": 3,
+    "paired_command_events": 72,
+    "loopback_requests": 288,
+    "bypass_byte_exact_events": 72,
+    "headroom_ccr_verified": 54,
+    "baseline": {
+      "evidence": {
+        "path": "work/proofs/optimization/runs/bcb9d7d6-360f-4ac8-a7cc-eea058d0f8aa/result.json",
+        "sha256": "f01d441302fc30d8c12ea532afa492aa46c2a50c6741f94597d2d74c908d523d"
+      },
+      "reused": false,
+      "reason": "new_command_outputs_and_request_bodies_not_H041_fixtures",
+      "matched_inputs": 592,
+      "changed_inputs": [],
+      "unavailable_inputs": [],
+      "old_cases": [
+        "source_read",
+        "numeric_read",
+        "repetitive_logs",
+        "short_json"
+      ],
+      "new_cases": [
+        "git_status",
+        "git_diff",
+        "test_pass",
+        "test_fail",
+        "build_fail",
+        "json_exact",
+        "source_read",
+        "stderr_exit"
+      ]
+    },
+    "token_basis": "canonical_full_request_json_including_added_tool_schemas",
+    "token_encoding": "o200k_base",
+    "thresholds": {
+      "command_timeout_seconds": 30,
+      "startup_timeout_seconds": 100,
+      "request_timeout_seconds": 30,
+      "warm_command_added_p95_ms": 250,
+      "warm_combined_added_p95_ms": 1000,
+      "minimum_command_saved_fraction": 0.1
+    },
+    "max_case_warm_command_added_p95_ms": 87.14449999752105,
+    "max_case_warm_combined_added_p95_ms": 95.54919999936828,
+    "cache_scope": "Repeated fixture rounds with unique request identity, not appended multi-turn cache or provider billing",
+    "resources": "H041 owned harness/controller/helper/engine sampler; RTK child CPU/RAM not measured; Rust ingress excluded",
+    "provider_cache_discount": null,
+    "invoice_savings": null,
+    "response_quality": null,
+    "external_provider_calls": 0,
+    "fixture_network": {
+      "hf_hub_offline": true,
+      "transformers_offline": true,
+      "upstream": "owned_loopback_fixture",
+      "huggingface_hub_payload_bytes": 0,
+      "packet_capture": false
+    },
+    "cases": {
+      "git_status": {
+        "support": "rejected_for_this_fixture",
+        "reasons": [
+          "original_stdout_not_recoverable",
+          "below_minimum_byte_benefit"
+        ],
+        "warm_command_added_p95_ms": 60.53819999578991,
+        "warm_combined_added_p95_ms": 72.4186999941594,
+        "minimum_byte_saved_percent": 5.616498464238701,
+        "arms": {
+          "control": {
+            "minimum_saved_percent": 0.0,
+            "maximum_saved_percent": 0.0
+          },
+          "headroom": {
+            "minimum_saved_percent": 85.1024208566108,
+            "maximum_saved_percent": 85.1024208566108
+          },
+          "rtk": {
+            "minimum_saved_percent": 10.707635009310987,
+            "maximum_saved_percent": 10.707635009310987
+          },
+          "rtk_headroom": {
+            "minimum_saved_percent": 85.28864059590316,
+            "maximum_saved_percent": 85.28864059590316
+          }
+        },
+        "command_bytes": {
+          "control": 2279,
+          "rtk": 2151
+        },
+        "bytes_div_4_estimate": {
+          "original": 569.75,
+          "filtered": 537.75
+        },
+        "stderr_bytes": {
+          "control": 0,
+          "rtk": 0
+        },
+        "exit_code": 0,
+        "recall_merged_exact": 0,
+        "recall_stdout_exact": 0
+      },
+      "git_diff": {
+        "support": "rejected_for_this_fixture",
+        "reasons": [
+          "original_stdout_not_recoverable",
+          "source_bytes_changed",
+          "below_minimum_byte_benefit"
+        ],
+        "warm_command_added_p95_ms": 87.14449999752105,
+        "warm_combined_added_p95_ms": 95.54919999936828,
+        "minimum_byte_saved_percent": 1.2012012012012012,
+        "arms": {
+          "control": {
+            "minimum_saved_percent": 0.0,
+            "maximum_saved_percent": 0.0
+          },
+          "headroom": {
+            "minimum_saved_percent": 0.0,
+            "maximum_saved_percent": 0.0
+          },
+          "rtk": {
+            "minimum_saved_percent": -0.3460207612456747,
+            "maximum_saved_percent": -0.3460207612456747
+          },
+          "rtk_headroom": {
+            "minimum_saved_percent": -0.3460207612456747,
+            "maximum_saved_percent": -0.3460207612456747
+          }
+        },
+        "command_bytes": {
+          "control": 333,
+          "rtk": 329
+        },
+        "bytes_div_4_estimate": {
+          "original": 83.25,
+          "filtered": 82.25
+        },
+        "stderr_bytes": {
+          "control": 0,
+          "rtk": 0
+        },
+        "exit_code": 0,
+        "recall_merged_exact": 0,
+        "recall_stdout_exact": 0
+      },
+      "test_pass": {
+        "support": "rejected_for_this_fixture",
+        "reasons": [
+          "original_stdout_not_recoverable"
+        ],
+        "warm_command_added_p95_ms": 29.28030000111903,
+        "warm_combined_added_p95_ms": 41.83359999660752,
+        "minimum_byte_saved_percent": 93.08839578028373,
+        "arms": {
+          "control": {
+            "minimum_saved_percent": 0.0,
+            "maximum_saved_percent": 0.0
+          },
+          "headroom": {
+            "minimum_saved_percent": 85.13257575757575,
+            "maximum_saved_percent": 85.13257575757575
+          },
+          "rtk": {
+            "minimum_saved_percent": 80.49242424242425,
+            "maximum_saved_percent": 80.49242424242425
+          },
+          "rtk_headroom": {
+            "minimum_saved_percent": 80.49242424242425,
+            "maximum_saved_percent": 80.49242424242425
+          }
+        },
+        "command_bytes": {
+          "control": 2749,
+          "rtk": 190
+        },
+        "bytes_div_4_estimate": {
+          "original": 687.25,
+          "filtered": 47.5
+        },
+        "stderr_bytes": {
+          "control": 0,
+          "rtk": 0
+        },
+        "exit_code": 0,
+        "recall_merged_exact": 0,
+        "recall_stdout_exact": 0
+      },
+      "test_fail": {
+        "support": "rejected_for_this_fixture",
+        "reasons": [
+          "original_stdout_not_recoverable",
+          "stderr_changed_or_moved"
+        ],
+        "warm_command_added_p95_ms": 32.08620000441442,
+        "warm_combined_added_p95_ms": 50.04310000731493,
+        "minimum_byte_saved_percent": 89.6094839609484,
+        "arms": {
+          "control": {
+            "minimum_saved_percent": 0.0,
+            "maximum_saved_percent": 0.0
+          },
+          "headroom": {
+            "minimum_saved_percent": 83.15018315018315,
+            "maximum_saved_percent": 83.15018315018315
+          },
+          "rtk": {
+            "minimum_saved_percent": 77.83882783882784,
+            "maximum_saved_percent": 77.83882783882784
+          },
+          "rtk_headroom": {
+            "minimum_saved_percent": 77.83882783882784,
+            "maximum_saved_percent": 77.83882783882784
+          }
+        },
+        "command_bytes": {
+          "control": 2868,
+          "rtk": 298
+        },
+        "bytes_div_4_estimate": {
+          "original": 717.0,
+          "filtered": 74.5
+        },
+        "stderr_bytes": {
+          "control": 80,
+          "rtk": 0
+        },
+        "exit_code": 1,
+        "recall_merged_exact": 9,
+        "recall_stdout_exact": 0
+      },
+      "build_fail": {
+        "support": "rejected_for_this_fixture",
+        "reasons": [
+          "original_stdout_not_recoverable"
+        ],
+        "warm_command_added_p95_ms": 37.392499998532,
+        "warm_combined_added_p95_ms": 82.00220000071567,
+        "minimum_byte_saved_percent": 96.32501685772084,
+        "arms": {
+          "control": {
+            "minimum_saved_percent": 0.0,
+            "maximum_saved_percent": 0.0
+          },
+          "headroom": {
+            "minimum_saved_percent": 88.11813186813187,
+            "maximum_saved_percent": 88.11813186813187
+          },
+          "rtk": {
+            "minimum_saved_percent": 87.91208791208791,
+            "maximum_saved_percent": 87.91208791208791
+          },
+          "rtk_headroom": {
+            "minimum_saved_percent": 87.91208791208791,
+            "maximum_saved_percent": 87.91208791208791
+          }
+        },
+        "command_bytes": {
+          "control": 2966,
+          "rtk": 109
+        },
+        "bytes_div_4_estimate": {
+          "original": 741.5,
+          "filtered": 27.25
+        },
+        "stderr_bytes": {
+          "control": 66,
+          "rtk": 66
+        },
+        "exit_code": 2,
+        "recall_merged_exact": 9,
+        "recall_stdout_exact": 0
+      },
+      "json_exact": {
+        "support": "rejected_for_this_fixture",
+        "reasons": [
+          "filtered_output_not_json",
+          "original_stdout_not_recoverable"
+        ],
+        "warm_command_added_p95_ms": -70.14049999997951,
+        "warm_combined_added_p95_ms": -62.5752999985707,
+        "minimum_byte_saved_percent": 97.01884092535178,
+        "arms": {
+          "control": {
+            "minimum_saved_percent": 0.0,
+            "maximum_saved_percent": 0.0
+          },
+          "headroom": {
+            "minimum_saved_percent": 0.0,
+            "maximum_saved_percent": 0.0
+          },
+          "rtk": {
+            "minimum_saved_percent": 91.26126126126127,
+            "maximum_saved_percent": 91.26126126126127
+          },
+          "rtk_headroom": {
+            "minimum_saved_percent": 91.26126126126127,
+            "maximum_saved_percent": 91.26126126126127
+          }
+        },
+        "command_bytes": {
+          "control": 4193,
+          "rtk": 125
+        },
+        "bytes_div_4_estimate": {
+          "original": 1048.25,
+          "filtered": 31.25
+        },
+        "stderr_bytes": {
+          "control": 0,
+          "rtk": 0
+        },
+        "exit_code": 0,
+        "recall_merged_exact": 0,
+        "recall_stdout_exact": 0
+      },
+      "source_read": {
+        "support": "rejected_for_this_fixture",
+        "reasons": [
+          "below_minimum_byte_benefit"
+        ],
+        "warm_command_added_p95_ms": -73.41010000163806,
+        "warm_combined_added_p95_ms": -52.5482999983069,
+        "minimum_byte_saved_percent": 0.0,
+        "arms": {
+          "control": {
+            "minimum_saved_percent": 0.0,
+            "maximum_saved_percent": 0.0
+          },
+          "headroom": {
+            "minimum_saved_percent": 0.0,
+            "maximum_saved_percent": 0.0
+          },
+          "rtk": {
+            "minimum_saved_percent": 0.0,
+            "maximum_saved_percent": 0.0
+          },
+          "rtk_headroom": {
+            "minimum_saved_percent": 0.0,
+            "maximum_saved_percent": 0.0
+          }
+        },
+        "command_bytes": {
+          "control": 5720,
+          "rtk": 5720
+        },
+        "bytes_div_4_estimate": {
+          "original": 1430.0,
+          "filtered": 1430.0
+        },
+        "stderr_bytes": {
+          "control": 0,
+          "rtk": 0
+        },
+        "exit_code": 0,
+        "recall_merged_exact": 0,
+        "recall_stdout_exact": 0
+      },
+      "stderr_exit": {
+        "support": "rejected_for_this_fixture",
+        "reasons": [
+          "original_stdout_not_recoverable"
+        ],
+        "warm_command_added_p95_ms": 37.5038999991375,
+        "warm_combined_added_p95_ms": 60.29769999804557,
+        "minimum_byte_saved_percent": 99.2256025286448,
+        "arms": {
+          "control": {
+            "minimum_saved_percent": 0.0,
+            "maximum_saved_percent": 0.0
+          },
+          "headroom": {
+            "minimum_saved_percent": 95.29255319148936,
+            "maximum_saved_percent": 95.29255319148936
+          },
+          "rtk": {
+            "minimum_saved_percent": 95.2127659574468,
+            "maximum_saved_percent": 95.2127659574468
+          },
+          "rtk_headroom": {
+            "minimum_saved_percent": 95.2127659574468,
+            "maximum_saved_percent": 95.2127659574468
+          }
+        },
+        "command_bytes": {
+          "control": 12655,
+          "rtk": 98
+        },
+        "bytes_div_4_estimate": {
+          "original": 3163.75,
+          "filtered": 24.5
+        },
+        "stderr_bytes": {
+          "control": 55,
+          "rtk": 55
+        },
+        "exit_code": 23,
+        "recall_merged_exact": 9,
+        "recall_stdout_exact": 0
+      }
+    }
+  },
+  "surface_fixtures": {
+    "evidence": {
+      "path": "work/proofs/rtk/surfaces/c78a6689-48ee-45bf-8f6e-4aa7762ea4ea/result.json",
+      "sha256": "6f8deec6345dbe9f1de49b42dda8490aa4d6048b3f03d454d720ea623bafff8b"
+    },
+    "inputs_matched": 12,
+    "scope": "Explicit Windows PowerShell 5.1 invocation, RTK hook stdin and OpenCode plugin gates; no client launch or provider calls",
+    "observations": {
+      "powershell_explicit_git_status": {
+        "exit_codes_preserved": true,
+        "bypass_byte_exact": true,
+        "control": {
+          "exit_code": 0,
+          "total_ms": 516.5871999997762,
+          "stdout_bytes": 2279,
+          "stdout_sha256": "aecb9c2994e916a0ba67464bab4762be1f11832ce980466337597d42bcae0f2c",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "rtk": {
+          "exit_code": 0,
+          "total_ms": 218.9935999995214,
+          "stdout_bytes": 2151,
+          "stdout_sha256": "74b9e64efa45be2ce40ce5c3c159e4d4ba3f713429f97e4fd3a523a007c1f4c3",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "codex_native_hook_fixture": {
+        "bash_rewrite": true,
+        "protocol_permission_decision": "allow",
+        "ignored_tools": [
+          "shell_command",
+          "Read",
+          "Grep"
+        ],
+        "unknown_permission_mode_passthrough": true
+      },
+      "claude_native_hook_fixture": {
+        "bash_rewrite": true,
+        "permission_decision": null,
+        "native_read_without_command_passthrough": true
+      },
+      "opencode_plugin_fixture": {
+        "ignored_tools": [
+          "read",
+          "grep"
+        ],
+        "disabled_passthrough": [
+          "bash",
+          "shell"
+        ]
+      }
+    }
+  },
+  "not_tested": [
+    "automatic Codex CLI or Desktop interception",
+    "actual Claude Code shell hook installation",
+    "actual OpenCode plugin loading",
+    "subagent interception",
+    "Windows 11",
+    "macOS",
+    "Linux"
+  ],
+  "earlier_rejected_run": {
+    "evidence": {
+      "path": "work/proofs/rtk/runs/75cfbe3a-ad3f-4c85-aeff-12447cbbccb6/result.json",
+      "sha256": "1412f0ff8f457b1d0d26107078d2f659969fde80d7b367ec9042a5fe6c7b71ed"
+    },
+    "reason": "ccr_original_mismatch"
+  },
+  "diagnostic_only": {
+    "path": "work/proofs/rtk/runs/cc69bbeb-2503-4dca-8711-51f637821492/result.json",
+    "sha256": "266088dddb5ca3203e93753d590638d051151278040dd93ff545605959411815"
+  },
+  "source_inputs": [
+    {
+      "path": "bench/rtk/fixtures.py",
+      "sha256": "6bba8d97d0c4385c5ef7e298f6d5f8f05c9d9efb12036c0b8c646c89f021b86e"
+    },
+    {
+      "path": "bench/rtk/prepare.py",
+      "sha256": "0199330c87acf35810e715d73378c71a9692ef06c822d617ade4d5633d228ea2"
+    },
+    {
+      "path": "bench/rtk/replay.py",
+      "sha256": "adb6017686b3e86ee2743ea57089676d090d4d88f46d9ac79674774f46bf4831"
+    },
+    {
+      "path": "bench/rtk/surfaces.py",
+      "sha256": "bf132e0160931f9ee6b4708d56e0facb3b81733b56520e1a2a4de98251c9e22d"
+    },
+    {
+      "path": "bench/rtk/plan.json",
+      "sha256": "57d4c6a27524401331815cbdb46e5568b97cd1795f2543980e9800964ce31a60"
+    }
+  ]
+}
