@@ -8,5 +8,5 @@ pub(crate) mod update;
 #[cfg(all(windows, any(test, not(debug_assertions))))]
 mod update_commit;
 pub(crate) mod update_flow;
-#[cfg(all(windows, not(debug_assertions)))]
+#[cfg(all(windows, any(test, not(debug_assertions))))]
 pub(crate) mod update_install;

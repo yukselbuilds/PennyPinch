@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "task": "H042-c2",
+  "windows10_local_status": "pass",
+  "main_status": "open",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "toolchain": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0"
+  },
+  "focused_update_tests_passed": 19,
+  "signed_windows_fixture_tests_passed": 2,
+  "full_rust_tests_passed": 413,
+  "full_rust_opt_in_not_run": 14,
+  "reused_frontend_tests_passed": 179,
+  "frontend_reuse_input_fingerprints": 123,
+  "focused_input_fingerprints_matched": 250,
+  "final_input_fingerprints_matched": 237,
+  "build_input_fingerprints_matched": 22521,
+  "common_source_fingerprints_matched": 167,
+  "fault_scope": {
+    "disk_full": "ERROR_DISK_FULL injected after a partial write in the test build",
+    "publish_interruption": "owned test process terminated immediately before and after MoveFileExW",
+    "startup_failure": "signed Windows exe passes probe then exits 7; installed file, registry version and user data restored",
+    "history_limit": "32 signed records pruned; current rollback, locked record, bad signature and foreign file preserved",
+    "history_retry": "locked obsolete record removed after unlock; equivalent rollback records deduplicated"
+  },
+  "native_checks": {
+    "signed_candidate_can_install": true,
+    "running_engine_blocks_install": true,
+    "confirmation_can_cancel": true,
+    "updated_app_reopened": true,
+    "preferences_survived_update": true,
+    "previous_app_reopened": true,
+    "preferences_survived_restore": true,
+    "normal_exit": true
+  },
+  "crash_checks": {
+    "updated_app_opened": true,
+    "owned_updated_process_terminated": true,
+    "recovery_worker_reopened_previous_app": true,
+    "preferences_preserved": true,
+    "normal_exit": true
+  },
+  "obsolete_history_removed_in_installed_app": true,
+  "preferences_and_user_data_preserved": true,
+  "owned_ports_closed": true,
+  "staging_files_remaining": 0,
+  "live_provider_requests": 0,
+  "qa_build_exception": "Explicit fixture feature accepts loopback only in this copied release-mode workspace.",
+  "qa_release_lto": false,
+  "qa_release_codegen_units": 16,
+  "open_acceptance": [
+    "windows11_x64",
+    "production_update_feed",
+    "production_signing_key"
+  ],
+  "power_loss_during_win32_call": "not_tested",
+  "evidence": {
+    "focused": {
+      "path": "work/proofs/update/faults/888931d7/focused.json",
+      "sha256": "23e0b5642a6ea1a6668309bed75678b820035651f3e506223d94e1c3bbe99066"
+    },
+    "quality": {
+      "path": "work/proofs/update/fault-final/85e0f045/quality.json",
+      "sha256": "d0c061a30ab1d1cd8670db91949e0e27ff1c2fde212a0fcb8a102f66b2ac32a3"
+    },
+    "build": {
+      "path": "work/i42/7088752f/build.json",
+      "sha256": "e4ad97256496ff7ceefebe05366f00afb6d825d23c266d33aff5399911876d67"
+    },
+    "native": {
+      "path": "work/i42/7088752f/attempts/9384b7ed/native.json",
+      "sha256": "bc605381c5633e5648b6912c355ddcdf1fd8ea87c1be274ba1b71c0e439968b3"
+    },
+    "interruption": {
+      "path": "work/i42/7088752f/attempts/d69f6b04/native.json",
+      "sha256": "13f5faa2ecf52bdca8af2f49fbf0e4ee406725fd909d43a9be7891e7bfb0fc98"
+    },
+    "screenshots": {
+      "native/apply.png": {
+        "path": "work/i42/7088752f/attempts/9384b7ed/apply.png",
+        "sha256": "7901f698755446f69c3db4c7573f89366200d349af5ca0ae345689c2422c0345"
+      },
+      "native/updated.png": {
+        "path": "work/i42/7088752f/attempts/9384b7ed/updated.png",
+        "sha256": "bd0e6a3f27d1ef2db08591e4ed03542cf220594ca9e475ab74f77f2fd92d4c5a"
+      },
+      "native/restored.png": {
+        "path": "work/i42/7088752f/attempts/9384b7ed/restored.png",
+        "sha256": "f3b8c7f668e3ba126de635e7bd7aa766c821627024f9c4404778de3fd568f73d"
+      },
+      "interruption/before-crash.png": {
+        "path": "work/i42/7088752f/attempts/d69f6b04/before-crash.png",
+        "sha256": "bd0e6a3f27d1ef2db08591e4ed03542cf220594ca9e475ab74f77f2fd92d4c5a"
+      },
+      "interruption/recovered.png": {
+        "path": "work/i42/7088752f/attempts/d69f6b04/recovered.png",
+        "sha256": "f3b8c7f668e3ba126de635e7bd7aa766c821627024f9c4404778de3fd568f73d"
+      }
+    },
+    "cleanup": {
+      "path": "work/proofs/update/cleanup-fault-installed.json",
+      "sha256": "27f618b7d27b7c9ea99a782938442ef359fb7b2124316e9b13fdeea4439f15dc"
+    }
+  },
+  "qa_installation_and_test_state_removed": true,
+  "disposable_private_keys_removed": true
+}

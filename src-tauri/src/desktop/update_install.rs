@@ -8,6 +8,7 @@ use super::update_flow::Recovery;
 use crate::integrations::config_io::{pin_existing_directory_chain, PinnedDirectoryChain};
 use semver::Version;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::ffi::{OsStr, OsString};
 use std::fs::{self, File};
 use std::io::{self, Seek, SeekFrom};
@@ -288,6 +289,7 @@ impl Installation {
             Err(error) => return Err(error),
         }
         let _root_pins = pin(&root)?;
+        self.prune_history(&installed.exe, &previous)?;
         if fs::read_dir(&root)?.take(MAX_RECORDS).count() >= MAX_RECORDS {
             return Err(invalid("update_recovery_limit"));
         }
@@ -366,12 +368,13 @@ impl Installation {
         let signature = read_small(&directory.join(SIGNATURE), SIGNATURE_LIMIT as u64)?;
         let signature =
             std::str::from_utf8(&signature).map_err(|_| invalid("update_signed_record"))?;
+        let previous_version = as_version(&record.previous_version)?;
         let verified = verify_manifest(
             &manifest,
             signature,
             &UpdatePolicy {
                 app_identifier: &self.identifier,
-                installed_version: &self.version,
+                installed_version: &previous_version,
                 channel: record.channel,
                 trusted_tauri_public_key: public_key,
             },
@@ -383,6 +386,104 @@ impl Installation {
             return Err(invalid("update_signed_record"));
         }
         Ok(verified)
+    }
+
+    fn prune_history(&self, live: &Path, current: &FileDigest) -> io::Result<()> {
+        let root = self.recovery_root();
+        let _root_pins = pin(&root)?;
+        let mut entries = fs::read_dir(&root)?
+            .take(MAX_RECORDS + 1)
+            .collect::<io::Result<Vec<_>>>()?;
+        if entries.len() > MAX_RECORDS {
+            return Err(invalid("update_recovery_limit"));
+        }
+        entries.sort_by_key(|entry| entry.file_name());
+        let mut kept = HashSet::new();
+        for entry in entries {
+            let name = entry.file_name();
+            let Some(id) = name.to_str().and_then(|name| Uuid::parse_str(name).ok()) else {
+                continue;
+            };
+            if id.is_nil() || name != OsStr::new(&id.to_string()) {
+                continue;
+            }
+            let directory = self.recovery_dir(id);
+            let Ok(pins) = pin(&directory) else {
+                continue;
+            };
+            let Ok(files) =
+                fs::read_dir(&directory).and_then(|files| files.collect::<io::Result<Vec<_>>>())
+            else {
+                continue;
+            };
+            if files.iter().any(|file| {
+                ![APP, MANIFEST, SIGNATURE, RECORD, WORKER]
+                    .iter()
+                    .any(|name| file.file_name() == OsStr::new(name))
+            }) {
+                continue;
+            }
+            let snapshots = files
+                .iter()
+                .map(|entry| {
+                    let path = entry.path();
+                    let mut lease = read_owned(&path)?;
+                    let digest = FileDigest::from_file(&mut lease)?;
+                    Ok((path, lease, digest))
+                })
+                .collect::<io::Result<Vec<_>>>();
+            let Ok(snapshots) = snapshots else { continue };
+            let Ok(record) = read_record(&directory).map(|(_, record)| record) else {
+                continue;
+            };
+            if record.exe != live {
+                continue;
+            }
+            let Ok(signed) = self.signed_record(&directory, &record) else {
+                continue;
+            };
+            if signed.application_size() != Some(record.next.size)
+                || signed.application_sha256() != Some(record.next.sha256.as_str())
+            {
+                continue;
+            }
+            let Ok(mut backup) = read_owned(&directory.join(WORKER)) else {
+                continue;
+            };
+            if record.previous.check(&mut backup).is_err() {
+                continue;
+            }
+            drop(backup);
+            if record.next == *current
+                && kept.insert((
+                    record.previous.size,
+                    record.previous.sha256.clone(),
+                    record.previous_version.clone(),
+                ))
+            {
+                continue;
+            }
+            if directory.join(APP).exists() {
+                let Ok(mut application) = read_owned(&directory.join(APP)) else {
+                    continue;
+                };
+                if record.next.check(&mut application).is_err() {
+                    continue;
+                }
+            }
+            let expected: Vec<_> = snapshots
+                .into_iter()
+                .map(|(path, lease, digest)| {
+                    drop(lease);
+                    (path, digest)
+                })
+                .collect();
+            if remove_history_files(&pins, &expected).is_ok() {
+                drop(pins);
+                let _ = fs::remove_dir(&directory);
+            }
+        }
+        Ok(())
     }
 
     fn apply(&self, directory: &Path, record: &Record) -> io::Result<()> {
@@ -472,6 +573,48 @@ fn remove_record(directory: &Path) {
     }
     drop(pins);
     let _ = fs::remove_dir(directory);
+}
+
+fn remove_history_files(
+    pins: &PinnedDirectoryChain,
+    entries: &[(PathBuf, FileDigest)],
+) -> io::Result<()> {
+    use std::fs::OpenOptions;
+    use std::os::windows::{fs::OpenOptionsExt, io::AsRawHandle};
+    use windows_sys::Win32::Foundation::GENERIC_READ;
+    use windows_sys::Win32::Storage::FileSystem::{
+        FileDispositionInfo, SetFileInformationByHandle, DELETE, FILE_DISPOSITION_INFO,
+        FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ,
+    };
+    let mut files = Vec::new();
+    for (path, expected) in entries {
+        let mut file = OpenOptions::new()
+            .read(true)
+            .access_mode(GENERIC_READ | DELETE)
+            .share_mode(FILE_SHARE_READ)
+            .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT)
+            .open(path)?;
+        expected.check(&mut file)?;
+        files.push(file);
+    }
+    pins.validate()
+        .map_err(|_| invalid("update_recovery_path"))?;
+    for file in &files {
+        let disposition = FILE_DISPOSITION_INFO { DeleteFile: true };
+        if unsafe {
+            SetFileInformationByHandle(
+                file.as_raw_handle(),
+                FileDispositionInfo,
+                std::ptr::addr_of!(disposition).cast(),
+                size_of_val(&disposition) as u32,
+            )
+        } == 0
+        {
+            return Err(io::Error::last_os_error());
+        }
+    }
+    drop(files);
+    Ok(())
 }
 
 impl Launch {
@@ -626,3 +769,7 @@ pub(crate) fn enter(config: &tauri::Config, version: &Version) {
     }
     std::process::exit(if result.is_ok() { 0 } else { 2 });
 }
+
+#[cfg(test)]
+#[path = "update_install_tests.rs"]
+mod tests;

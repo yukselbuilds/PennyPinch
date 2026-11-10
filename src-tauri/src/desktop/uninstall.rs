@@ -37,7 +37,7 @@ pub(crate) fn enter(config: &tauri::Config) -> File {
     open_desktop_use(&root).unwrap_or_else(|_| std::process::exit(12))
 }
 
-#[cfg(not(debug_assertions))]
+#[cfg(any(test, not(debug_assertions)))]
 pub(super) fn app_local_data(identifier: &str) -> Option<PathBuf> {
     use std::ffi::OsString;
     use std::os::windows::ffi::OsStringExt;
@@ -52,7 +52,7 @@ pub(super) fn app_local_data(identifier: &str) -> Option<PathBuf> {
     Some(base.join(identifier))
 }
 
-#[cfg(not(debug_assertions))]
+#[cfg(any(test, not(debug_assertions)))]
 pub(super) fn open_update_gate(root: &Path) -> io::Result<File> {
     open_gate(root, 0, OPEN_EXISTING)
 }

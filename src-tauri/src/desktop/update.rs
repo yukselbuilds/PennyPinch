@@ -100,7 +100,7 @@ pub(crate) struct VerifiedUpdate {
     notes: String,
     installer: Artifact,
     application: Option<Artifact>,
-    #[cfg(all(windows, not(debug_assertions)))]
+    #[cfg(all(windows, any(test, not(debug_assertions))))]
     signed: Option<(Vec<u8>, String)>,
 }
 
@@ -139,6 +139,11 @@ impl VerifiedUpdate {
         self.application.as_ref().map(|file| file.size_bytes)
     }
 
+    #[cfg(windows)]
+    pub(super) fn application_sha256(&self) -> Option<&str> {
+        self.application.as_ref().map(|file| file.sha256.as_str())
+    }
+
     #[cfg(any(windows, test))]
     pub(super) fn verify_application(&self, application: impl Read) -> Result<(), UpdateError> {
         self.application
@@ -147,7 +152,7 @@ impl VerifiedUpdate {
             .verify(application)
     }
 
-    #[cfg(all(windows, not(debug_assertions)))]
+    #[cfg(all(windows, any(test, not(debug_assertions))))]
     pub(super) fn signed(&self) -> Option<(&[u8], &str)> {
         self.signed
             .as_ref()
@@ -196,7 +201,7 @@ pub(crate) fn verify_manifest(
     key.verify(bytes, &signature, false)
         .map_err(|_| UpdateError::InvalidSignature)?;
     let verified = parse_manifest(bytes, policy)?;
-    #[cfg(all(windows, not(debug_assertions)))]
+    #[cfg(all(windows, any(test, not(debug_assertions))))]
     let verified = VerifiedUpdate {
         signed: Some((bytes.to_vec(), tauri_signature.to_owned())),
         ..verified
@@ -270,7 +275,7 @@ fn parse_manifest(bytes: &[u8], policy: &UpdatePolicy<'_>) -> Result<VerifiedUpd
         notes: manifest.notes,
         installer: manifest.installer,
         application,
-        #[cfg(all(windows, not(debug_assertions)))]
+        #[cfg(all(windows, any(test, not(debug_assertions))))]
         signed: None,
     })
 }

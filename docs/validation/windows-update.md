@@ -57,6 +57,20 @@ Son yerel kapı 179 uygulama testi, TypeScript/Vite, fmt, 411 Rust testi ve cust
 
 İlk denemedeki NSIS paket türü işareti farkı, sabit Tauri Utils 2.10.2 kaynağındaki `__TAURI_BUNDLE_TYPE_VAR_NSS` sözleşmesiyle doğrulandı. Eski staging kaynağı da motorun pin kontrolünde reddedildi ve güncel kaynaklardan tekrar hazırlandı. Bu teşhis koşuları kabul kanıtı olarak kullanılmadı.
 
-H042 ve c2 açık kalır. Disk dolu, dosya yayımlanırken kesinti, erken açılış hatasında otomatik dönüş, kurtarma kaydı sınırında bakım ve Windows 11 x64 kabulü sürmektedir. Üretim yayın kaynağı ve açık anahtarı da yapılandırılmalıdır. Gerçek sağlayıcı isteği yapılmadı.
+Bu ilk kurulu adaydan sonraki Windows 10 hata kabulü aşağıdaki bölümde kaydedildi. Windows 11 x64 ve üretim yayın kaynağı/açık anahtarı ayrı kabulde sürer. Gerçek sağlayıcı isteği yapılmadı.
 
 Kabulden sonra iki QA kurulumu kendi kaldırıcılarıyla kaldırıldı. İki uygulama kaydı ve yalnız bu testlere ait LocalAppData kökleri temizlendi. [Temizlik kaydı](../../work/proofs/update/cleanup-installed.json).
+
+## H042-c2 — Kalan Windows 10 hata kabulü
+
+10 Kasım 2026. Son kaynakta Windows 10 x64 build 19045 yerel kabulü geçti. 19 odaklı güncelleme/dosya testi ve iki imzalı exe/HKCU fixture testi başarılı. Son kapı 413 Rust testi, fmt ve custom-protocol derlemesiyle geçti. Arayüz kaynakları ve araçları aynı kaldığı için 179 test ve derleme, 123 girdi eşleşmesiyle yeniden kullanıldı. [Kanıt](../proofs/windows-update-faults.json).
+
+Test derlemesi kısmi yazıdan sonra `ERROR_DISK_FULL` verdi. İşlem yarım dosyayı kaldırdı ve canlı exe aynı kaldı. Ayrı bir sahipli test süreci `MoveFileExW` çağrısından hemen önce ve hemen sonra sonlandırıldı. Hedefte tam önceki veya tam yeni dosya bulundu, önceki yedek korundu ve yeni dosyadan eskiye dönüş geçti. Bu, API sınırlarında süreç kesintisi deneyidir. Ani güç kaybı durumu ölçülmedi.
+
+Gerçek bir Windows fixture exe’si ön kontrolü geçtikten sonra normal açılışta kod 7 ile çıktı. Üretimin uygulama ve geri dönüş fonksiyonları, geçerli imzalı manifest ve ayrı HKCU kurulum kaydıyla çalıştı. Önceki exe, kayıtlı sürüm ve örnek kullanıcı dosyası aynı kaldı. Fixture anahtarı geçiciydi ve özel kısmı silindi.
+
+32 kayıtlık geçmişte güncel geri dönüş saklandı, eşdeğer tekrarlar bir kayda indirildi ve imzalı eski kayıtlar temizlendi. Kilitli kayıt, yanlış imza ve yabancı kullanıcı dosyası korundu. Kilit bırakıldıktan sonra eski kayıt yeniden denemede kaldırıldı. Doğrulama boyunca dosyalar yazmaya/silmeye karşı açık tutulur. Silme erişimi alınırken aynı özetler tekrar kontrol edilir. Son silme sabitlenmiş dizinde açık dosya handle’ları üzerinden yapılır.
+
+Güncel aday `dev.headroom.desktop.h042-7088752f` kimliğiyle ayrı gerçek NSIS kurulumunda sınandı. Sekiz normal ve beş çökme/kurtarma kontrolü geçti. Tercih ve kullanıcı dosyası özetleri korundu. İkinci gerçek güncellemede eski kayıt temizlendi ve bir yeni kayıt kaldı. Son durumda test portları kapandı. QA uygulaması kendi kaldırıcısıyla kaldırıldı, kurulum kaydı ve test state kökü temizlendi.
+
+Bu QA derlemesi yerel yayın fixture’ını kabul eden açık derleme koşulunu kullanır. LTO kapalı ve codegen birimi 16’dır. Motor kaynakları önceki doğrulanmış paketle dosya ve kaynak özetleri eşleşerek yeniden kullanıldı. Windows 11 x64, üretim yayın kaynağı ve gerçek açık anahtar H042’nin açık dış kabulleridir.

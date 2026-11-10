@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 10 Kasım 2026.
 
+## H042-c2 — Windows 10 yerel hata kabulü tamam
+
+- Ana ajan dosya/süreç ve kurtarma sahipliğini üstlendi. Kısmi yazıdan sonra `ERROR_DISK_FULL` enjeksiyonu, yayımlama API’sinin iki yanında sahipli süreci sonlandırma ve imzalı exe’nin erken açılış hatasında dosya/registry/veri koruması geçti. İmzalı geçmiş bakımı güncel yedeği, kilitli kayıtları, yanlış imzayı ve yabancı dosyayı korur. Silme erişimi alınırken doğrulanmış özetler tekrar karşılaştırılır.
+- Odaklı adayda 19 güncelleme/dosya ve 2 imzalı Windows exe/HKCU fixture testi geçti. Son kapıda 413 Rust testi, fmt ve custom-protocol derlemesi başarılı. Değişmeyen 179 frontend testi ve derleme 123 eşleşen girdiyle yeniden kullanıldı. 14 opt-in test tam kapıda ayrı tutuldu, ilgili iki hata fixture’ı odaklı koşuda çalıştırıldı. [Kanıt](proofs/windows-update-faults.json), [inceleme](reviews/H042.md).
+- Güncel kaynak, aynı motor dosyalarının tam fingerprint eşleşmesiyle ayrı release QA kurucusuna bağlandı. Gerçek NSIS kurulumu 8 normal ve 5 çökme/kurtarma kontrolünü geçti. Tercihler ve kullanıcı dosyası korundu. Tekrarlanan güncellemede eski kurtarma kaydı temizlendi ve bir geçerli yeni kayıt kaldı. Test portları kapandı, QA uygulama/registry/test verisi temizlendi.
+- **Sonraki somut adım.** Ayrı Windows 11 x64 kabulü ve gerçek yayın kaynağı/açık anahtarı. Windows 10’daki belirtilen yerel hata kabulleri tamam. Ani güç kaybı deneyi yapılmadı. Ana H042 ve c2 kutuları dış kabul için açık, toplam 36/51. Geliştirme token tasarrufu ölçülmedi.
+
 ## H042-c2 — Windows 10 geçişi ve çökme sonrası kurtarma geçti
 
 - Ana ajan dosya/süreç sahipliği ve kurtarmayı üstlendi. Ayarlar onayı, durmuş motor rezervasyonu, temiz çıkış sonrası yardımcı süreç ve aynı diskte exe değişimi bağlandı. Normal kapanışın henüz kabul edilmeyen kurulumu tetiklemesi, kuyruk yaşam döngüsü kilidi altında etkinleştirilerek düzeltildi.

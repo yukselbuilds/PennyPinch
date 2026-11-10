@@ -87,6 +87,13 @@ pub(super) fn copy_verified(path: &Path, source: &mut File, digest: &FileDigest)
     source.seek(SeekFrom::Start(0))?;
     let mut file = new_file(path)?;
     let result = (|| {
+        #[cfg(test)]
+        if fault::take_disk_full() {
+            io::copy(&mut (&mut *source).take(3), &mut file)?;
+            return Err(io::Error::from_raw_os_error(
+                windows_sys::Win32::Foundation::ERROR_DISK_FULL as i32,
+            ));
+        }
         io::copy(&mut source.take(digest.size.saturating_add(1)), &mut file)?;
         digest.check(&mut file)?;
         file.sync_all()
@@ -146,6 +153,8 @@ impl Swap {
         };
         let source = wide(&self.staged);
         let target = wide(&self.live);
+        #[cfg(test)]
+        fault::checkpoint("before_publish");
         if unsafe {
             MoveFileExW(
                 source.as_ptr(),
@@ -156,6 +165,8 @@ impl Swap {
         {
             return Err(io::Error::last_os_error());
         }
+        #[cfg(test)]
+        fault::checkpoint("after_publish");
         Ok(())
     }
 }
@@ -171,3 +182,38 @@ impl Drop for Swap {
 #[cfg(test)]
 #[path = "update_commit_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+pub(super) mod fault {
+    use super::*;
+    use std::cell::Cell;
+    use std::time::Duration;
+
+    thread_local! { static DISK_FULL: Cell<bool> = const { Cell::new(false) }; }
+
+    pub(super) fn disk_full_next_copy() {
+        DISK_FULL.set(true);
+    }
+
+    pub(super) fn take_disk_full() -> bool {
+        DISK_FULL.replace(false)
+    }
+
+    pub(super) fn checkpoint(point: &str) {
+        if std::env::var("HEADROOM_TEST_SWAP_POINT").as_deref() != Ok(point) {
+            return;
+        }
+        let directory = PathBuf::from(std::env::var_os("HEADROOM_TEST_SWAP_ROOT").unwrap());
+        let boundary = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .join("work/proofs/update/swap");
+        assert!(fs::canonicalize(&directory)
+            .unwrap()
+            .starts_with(fs::canonicalize(&boundary).unwrap()));
+        create_bytes(&directory.join("checkpoint"), point.as_bytes()).unwrap();
+        loop {
+            std::thread::sleep(Duration::from_millis(50));
+        }
+    }
+}
