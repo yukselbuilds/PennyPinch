@@ -2,7 +2,7 @@
 
 use socket2::{Domain, SockAddr, Socket, Type};
 use std::fs;
-use std::os::fd::AsRawFd;
+use std::os::fd::{AsRawFd, OwnedFd};
 use std::os::unix::ffi::OsStrExt;
 use std::os::unix::fs::{FileTypeExt, MetadataExt};
 use std::os::unix::net::UnixStream;
@@ -62,7 +62,7 @@ impl UnixTarget<'_> {
         {
             return Err(UnixBackendError::OwnershipLost);
         }
-        Ok(socket.into())
+        Ok(UnixStream::from(OwnedFd::from(socket)))
     }
 }
 
