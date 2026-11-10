@@ -1353,6 +1353,7 @@ fn is_expected_closed_socket_error(kind: std::io::ErrorKind) -> bool {
 
 #[test]
 #[ignore = "opt-in pinned runtime lifecycle proof; local /readyz only, no provider API"]
+#[cfg(windows)]
 fn live_manager_stable_ingress_survives_pinned_engine_restart() {
     let project =
         fs::canonicalize(PathBuf::from(env!("CARGO_MANIFEST_DIR")).parent().unwrap()).unwrap();

@@ -109,18 +109,13 @@ pub(crate) fn request(
     operation: ControlOperation,
     is_alive: impl Fn() -> bool,
 ) -> Result<OptimizationState, ControlError> {
-    if !valid_id(id)
-        || !valid_secret(target.secret)
-        || !valid_secret(target.generation)
-        || target.port == 0
-        || target.owner_pid == 0
-        || matches!(operation,ControlOperation::Set{expected_revision,..} if expected_revision>MAX_CONTROL_COUNTER)
-    {
+    if target.port == 0 || target.owner_pid == 0 {
         return Err(ControlError::InvalidInput);
     }
+    let frame = encode_request(id, target.generation, target.secret, operation)?;
     #[cfg(not(windows))]
     {
-        let _ = (target, id, operation, is_alive);
+        let _ = (target, id, operation, is_alive, frame);
         Err(ControlError::Unavailable)
     }
     #[cfg(windows)]
@@ -149,24 +144,11 @@ pub(crate) fn request(
         if !is_alive() {
             return Err(ControlError::OwnershipLost);
         }
-        let mut body = json!({"schema_version":1,"request_id":id,"runtime_generation":target.generation,"action":"read"});
-        if let ControlOperation::Set {
-            expected_revision,
-            enabled,
-        } = operation
-        {
-            body["action"] = json!("set");
-            body["expected_revision"] = json!(expected_revision);
-            body["enabled"] = json!(enabled);
-        }
-        let body = serde_json::to_vec(&body).map_err(|_| ControlError::InvalidInput)?;
-        let headers=format!("POST /__headroom_desktop/control HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\nX-Headroom-Desktop-Control: {}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",target.secret,body.len());
         stream
             .set_write_timeout(Some(deadline.saturating_duration_since(Instant::now())))
             .map_err(|_| ControlError::Transport)?;
         stream
-            .write_all(headers.as_bytes())
-            .and_then(|_| stream.write_all(&body))
+            .write_all(&frame)
             .map_err(|_| ControlError::Transport)?;
         let (status, body) = super::manager::read_http_body_with_limit(&mut stream, deadline, 2048)
             .ok_or(ControlError::Transport)?;
@@ -175,6 +157,69 @@ pub(crate) fn request(
         }
         parse_reply(status, &body, id, target.generation, operation)
     }
+}
+
+fn encode_request(
+    id: &str,
+    generation: &str,
+    secret: &str,
+    operation: ControlOperation,
+) -> Result<Vec<u8>, ControlError> {
+    if !valid_id(id)
+        || !valid_secret(secret)
+        || !valid_secret(generation)
+        || matches!(operation, ControlOperation::Set { expected_revision, .. } if expected_revision > MAX_CONTROL_COUNTER)
+    {
+        return Err(ControlError::InvalidInput);
+    }
+    let mut body =
+        json!({"schema_version":1,"request_id":id,"runtime_generation":generation,"action":"read"});
+    if let ControlOperation::Set {
+        expected_revision,
+        enabled,
+    } = operation
+    {
+        body["action"] = json!("set");
+        body["expected_revision"] = json!(expected_revision);
+        body["enabled"] = json!(enabled);
+    }
+    let body = serde_json::to_vec(&body).map_err(|_| ControlError::InvalidInput)?;
+    let mut frame = format!("POST /__headroom_desktop/control HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\nX-Headroom-Desktop-Control: {secret}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n", body.len()).into_bytes();
+    frame.extend_from_slice(&body);
+    Ok(frame)
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn request_unix(
+    target: super::unix_backend::UnixTarget<'_>,
+    generation: &str,
+    secret: &str,
+    id: &str,
+    operation: ControlOperation,
+    is_alive: impl Fn() -> bool,
+) -> Result<OptimizationState, ControlError> {
+    use super::unix_backend::UnixBackendError;
+    use std::io::Write;
+    use std::time::{Duration, Instant};
+
+    let frame = encode_request(id, generation, secret, operation)?;
+    let deadline = Instant::now() + Duration::from_millis(1500);
+    let mut stream = target.connect(&is_alive).map_err(|error| match error {
+        UnixBackendError::Transport => ControlError::Transport,
+        _ => ControlError::OwnershipLost,
+    })?;
+    stream
+        .set_write_timeout(Some(deadline.saturating_duration_since(Instant::now())))
+        .map_err(|_| ControlError::Transport)?;
+    stream
+        .write_all(&frame)
+        .map_err(|_| ControlError::Transport)?;
+    let (status, body) = super::manager::read_http_body_with_limit(&mut stream, deadline, 2048)
+        .ok_or(ControlError::Transport)?;
+    if !is_alive() {
+        return Err(ControlError::OwnershipLost);
+    }
+    parse_reply(status, &body, id, generation, operation)
 }
 
 #[cfg(test)]

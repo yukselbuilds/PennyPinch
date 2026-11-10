@@ -32,6 +32,8 @@ Windows'ta envanter kodunun 9 testi çalıştırıldı. Casefold dosya sistemi, 
 
 ## Sıradaki dikey dilim
 
+İlk Rust dilimi ortak sınırlı HTTP ayrıştırıcısını UnixStream üzerinde kullanır. Kontrol ve metrik istekleri özel 0700 dizin, soket inode'u ve UID'si, gerçek LOCAL_PEERPID ve süreç yaşamı doğrulanmadan iletilmez. İzin/bağlantı/PID hatası, yaşam kaybı ve eski istek/sürüm yanıtı native testlerin kapsamındadır. Mevcut Windows TCP davranışına ait odaklı regresyonlar da çalıştırılır. Bu bağlantı diliminden sonra yönetilen motor oturumunun uygulama ve relay bağlantısı gelir.
+
 Kanıtlı Unix soketi yolu RuntimeManager tarafından yönetilen oturuma alınacak. UI başlat/durdur isteği, süreç ömrüne bağlı soket sahipliği, kontrol ve metrik okuması ile stable relay üzerinden incelenmeli. Çocuk süreç yaşamıyor veya soket PID'si eşleşmiyorsa istemci/auth baytı iletilmemeli. Uygulama kapanışı ve beklenmeyen kaybı sonrasında yalnız sahipli motorun temizlenmesi gerçek native testte doğrulanmalı. Bu davranışlar mevcut bağımsız motor deneyiyle kabul edilmiş sayılmaz.
 
 ## Açık kabuller

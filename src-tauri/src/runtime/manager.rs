@@ -2406,8 +2406,25 @@ fn read_http_body(stream: &mut TcpStream, deadline: Instant) -> Option<(u16, Vec
     read_http_body_with_limit(stream, deadline, 64 * 1024)
 }
 
+pub(super) trait TimedRead: Read {
+    fn set_read_timeout(&self, timeout: Option<Duration>) -> io::Result<()>;
+}
+
+impl TimedRead for TcpStream {
+    fn set_read_timeout(&self, timeout: Option<Duration>) -> io::Result<()> {
+        TcpStream::set_read_timeout(self, timeout)
+    }
+}
+
+#[cfg(target_os = "macos")]
+impl TimedRead for std::os::unix::net::UnixStream {
+    fn set_read_timeout(&self, timeout: Option<Duration>) -> io::Result<()> {
+        std::os::unix::net::UnixStream::set_read_timeout(self, timeout)
+    }
+}
+
 pub(super) fn read_http_body_with_limit(
-    stream: &mut TcpStream,
+    stream: &mut impl TimedRead,
     deadline: Instant,
     max_body: usize,
 ) -> Option<(u16, Vec<u8>)> {

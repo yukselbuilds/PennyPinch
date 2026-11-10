@@ -98,6 +98,51 @@ pub(crate) fn read_owned_projection(
     }
 }
 
+#[cfg(target_os = "macos")]
+pub(crate) fn read_owned_projection_unix(
+    target: super::unix_backend::UnixTarget<'_>,
+    generation: &str,
+    is_alive: impl Fn() -> bool,
+) -> Result<OwnedMetricsSnapshot, RuntimeMetricsError> {
+    use super::unix_backend::UnixBackendError;
+    use crate::metrics::normalize::{project_headroom_041, Source, MAX_SNAPSHOT_BYTES};
+    use std::io::Write;
+    use std::time::{Duration, Instant};
+
+    let parsed =
+        uuid::Uuid::parse_str(generation).map_err(|_| RuntimeMetricsError::InvalidSnapshot)?;
+    if parsed.is_nil() || !super::manager::valid_generation(generation) {
+        return Err(RuntimeMetricsError::InvalidSnapshot);
+    }
+    let deadline = Instant::now() + Duration::from_millis(1500);
+    let mut connection = target.connect(&is_alive).map_err(|error| match error {
+        UnixBackendError::Transport => RuntimeMetricsError::Transport,
+        _ => RuntimeMetricsError::OwnershipLost,
+    })?;
+    connection
+        .set_write_timeout(Some(deadline.saturating_duration_since(Instant::now())))
+        .map_err(|_| RuntimeMetricsError::Transport)?;
+    connection
+        .write_all(b"GET /stats?cached=1 HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n")
+        .map_err(|_| RuntimeMetricsError::Transport)?;
+    let (status, body) =
+        super::manager::read_http_body_with_limit(&mut connection, deadline, MAX_SNAPSHOT_BYTES)
+            .ok_or(RuntimeMetricsError::Transport)?;
+    if !is_alive() {
+        return Err(RuntimeMetricsError::OwnershipLost);
+    }
+    if status != 200 {
+        return Err(RuntimeMetricsError::Transport);
+    }
+    let projection = project_headroom_041(&body, generation, "0.41.0", Source::Proxy)
+        .map_err(|_| RuntimeMetricsError::InvalidSnapshot)?;
+    Ok(OwnedMetricsSnapshot {
+        generation: generation.to_owned(),
+        captured_at: Utc::now(),
+        projection,
+    })
+}
+
 #[cfg(all(test, windows))]
 mod tests {
     use super::*;
