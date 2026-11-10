@@ -2122,6 +2122,7 @@ impl ControllerSession {
         }
     }
 
+    #[cfg(windows)]
     fn healthy(&mut self) -> bool {
         match self.child.try_wait() {
             Ok(Some(_)) | Err(_) => false,
@@ -2143,6 +2144,11 @@ impl ControllerSession {
                 }
             }
         }
+    }
+
+    #[cfg(not(windows))]
+    fn healthy(&mut self) -> bool {
+        false
     }
 
     fn graceful_stop(&mut self, request_id: &str) -> Result<(), StopFailure> {
