@@ -124,5 +124,7 @@ if __name__ == "__main__":
         sys.exit("usage: macos-payload.py <absolute-payload-root>")
     try:
         print(json.dumps(measure(Path(sys.argv[1])), sort_keys=True, separators=(",", ":")))
-    except (OSError, ValueError):
+    except ValueError as error:
+        sys.exit(f"macOS payload inventory failed: {error}")
+    except OSError:
         sys.exit("macOS payload inventory failed: unsafe or changed input")

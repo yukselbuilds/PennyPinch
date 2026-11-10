@@ -71,6 +71,19 @@ class MacOSPayloadTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             macos_payload.measure(tree)
 
+    @unittest.skipUnless(os.name == 'posix', 'POSIX file permissions require a native host')
+    def test_rejects_group_writable_files_and_directories(self):
+        tree = self.root / 'permissions'
+        self.tree(tree, [('payload.bin', b'payload')])
+        path = tree / 'payload.bin'
+        path.chmod(0o664)
+        with self.assertRaises(ValueError):
+            macos_payload.measure(tree)
+        path.chmod(0o644)
+        tree.chmod(0o770)
+        with self.assertRaises(ValueError):
+            macos_payload.measure(tree)
+
     def test_rejects_private_file_names_and_env_variants(self):
         for name in ('auth.json', 'credentials.json', '.env', '.env.local', '.ENV.production'):
             with self.subTest(name=name):

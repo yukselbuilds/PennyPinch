@@ -38,6 +38,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          umask 077
           test "$(uname -m)" = arm64
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           git diff --quiet HEAD --
@@ -58,7 +59,7 @@ jobs:
             'https://github.com/astral-sh/uv/releases/download/0.13.5/uv-aarch64-apple-darwin.tar.gz' \
             '743f85035a1996ecb350659e01cd9faea9709829be09b1b4b03c73eaf3c9cd73'
           mkdir "$stage/payload" "$stage/tools"
-          tar -xzf "$stage/python.tgz" -C "$stage/payload"
+          tar --no-same-permissions -xzf "$stage/python.tgz" -C "$stage/payload"
           tar -xzf "$stage/uv.tgz" -C "$stage/tools" --strip-components=1
           uv="$stage/tools/uv"
           python="$stage/payload/python/bin/python3.13"
