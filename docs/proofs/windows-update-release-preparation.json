@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "task": "H042-d",
+  "local_status": "pass",
+  "main_status": "open",
+  "date": "2026-11-10",
+  "scope": "local_native_fixture_not_a_production_release",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "toolchain": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0"
+  },
+  "python_tests_passed": 7,
+  "rust_tests_passed": 9,
+  "rust_opt_in_not_run_in_focused": 1,
+  "native_signed_channels_passed": [
+    "stable",
+    "preview"
+  ],
+  "native_negative_cases": [
+    "existing_output",
+    "wrong_private_signing_key",
+    "equal_installed_version"
+  ],
+  "unit_boundaries": [
+    "wrong_channel",
+    "wrong_embedded_public_key",
+    "existing_output",
+    "tool_failure",
+    "rust_verification_rejection",
+    "changed_inputs",
+    "wrong_extracted_executable",
+    "concurrent_output",
+    "unexpected_output_file",
+    "password_isolated_to_signer"
+  ],
+  "private_fixture_keys_remaining": 0,
+  "owned_partial_directories_remaining": 0,
+  "published": false,
+  "new_public_repository_created": false,
+  "ci_dispatched": false,
+  "provider_requests": 0,
+  "user_client_settings_changed": false,
+  "input_fingerprints_matched": 231,
+  "artifacts": [
+    {
+      "channel": "stable",
+      "version": "0.1.0",
+      "receipt": {
+        "path": "work/proofs/update/release-preparation/native-d3529295/stable-prepared/release-receipt.json",
+        "sha256": "808dbf500951e26b6bd0fc29307b669da6752fd04df7cd5762ffacaf8ae30f2c"
+      },
+      "files": {
+        "manifest.json": "15ad8ec1d92af39fa9407038ee002a1154e897f6c5e980fa676cce93188fa2bf",
+        "manifest.json.sig": "09529112dd08e11083c97bf70716b52e01816321f18b018dfb4f9a623a6f53f7",
+        "Headroom_0.1.0_x64-update.exe": "9e1f9ab240542df063cf13014543239b202222f1697c946951dc7ed4efeb57e5"
+      },
+      "input_fingerprints_matched": 195,
+      "tool_fingerprints_matched": 4
+    },
+    {
+      "channel": "preview",
+      "version": "0.1.1-rc.1",
+      "receipt": {
+        "path": "work/proofs/update/release-preparation/native-d3529295/preview-prepared/release-receipt.json",
+        "sha256": "9191f37520b791981a5f267298d13101b82d0acbea0cf2e96d32b2e41adae136"
+      },
+      "files": {
+        "manifest.json": "02fef2383ab5824bfd20f4ba346a9be7019e5fb2e2765c9908fd4ac200b15d82",
+        "manifest.json.sig": "9f8158175d3545ee481e0631215b524c4aea7101f8f593f1cefb5bcc9a658be9",
+        "Headroom_0.1.1-rc.1_x64-update.exe": "603e3a0f20756e409d6d4de665439325a785e7dda5cd7229511f3dee1ae2c1f3"
+      },
+      "input_fingerprints_matched": 195,
+      "tool_fingerprints_matched": 4
+    }
+  ],
+  "evidence": {
+    "focused": {
+      "path": "work/proofs/update/release-preparation/final-1.json",
+      "sha256": "20593dc5cdfc63fce4ba7a4a2778c755a2fbf9b19f85992fe35a71bc7853bfe3"
+    },
+    "native": {
+      "path": "work/proofs/update/release-preparation/native-d3529295/native.json",
+      "sha256": "14ac1c1b95f6209733b753ba6f1b796b186b417272b25a63c77e7fd71278c30e"
+    },
+    "red_output_allowlist": {
+      "path": "work/proofs/update/release-preparation/extra-file-red.json",
+      "sha256": "d25526cb00ed5bb780cae841722a6e2a1c5e2164b34f529f34e314a4a370c9cf"
+    }
+  },
+  "source_fingerprints": {
+    "scripts/package-windows.py": "fca368c2c25728575eca8a226bb4720aca9fdfd7a72c0561761d705f1df9d668",
+    "scripts/prepare-windows-update.py": "3e8ac5e1f54b9734cb63424c1308e13d14b2296b59ffa381afe0e954e8e0448a",
+    "src-tauri/src/desktop/update.rs": "3924f8248ad308a82efcfed9f812707a91cc33736493e0bb8f43a60d9418948e",
+    "src-tauri/src/desktop/update_tests.rs": "afbbd8c03401c95f8d669082ec6e8fb3d8c8f6c92f2d6adecd33a5ca6d2bf590",
+    "tests/runtime/test_windows_update_package.py": "d031cc4ff758fd3238ba9384f7785ad66a5313c89050495fdec13ef7e633f28c"
+  },
+  "open_acceptance": [
+    "windows11_x64",
+    "production_update_feed",
+    "production_signing_key",
+    "production_release_executable_and_https_delivery"
+  ],
+  "not_repeated": "Full app tests/build: no product runtime, UI or dependency change in this tooling slice.",
+  "development_token_savings": "not_measured"
+}

@@ -74,3 +74,26 @@ Gerçek bir Windows fixture exe’si ön kontrolü geçtikten sonra normal açı
 Güncel aday `dev.headroom.desktop.h042-7088752f` kimliğiyle ayrı gerçek NSIS kurulumunda sınandı. Sekiz normal ve beş çökme/kurtarma kontrolü geçti. Tercih ve kullanıcı dosyası özetleri korundu. İkinci gerçek güncellemede eski kayıt temizlendi ve bir yeni kayıt kaldı. Son durumda test portları kapandı. QA uygulaması kendi kaldırıcısıyla kaldırıldı, kurulum kaydı ve test state kökü temizlendi.
 
 Bu QA derlemesi yerel yayın fixture’ını kabul eden açık derleme koşulunu kullanır. LTO kapalı ve codegen birimi 16’dır. Motor kaynakları önceki doğrulanmış paketle dosya ve kaynak özetleri eşleşerek yeniden kullanıldı. Windows 11 x64, üretim yayın kaynağı ve gerçek açık anahtar H042’nin açık dış kabulleridir.
+
+## H042-d — Yerel yayın hazırlama komutu
+
+10 Kasım 2026. Windows 10 x64 build 19045’te 7 Python ve 9 normal Rust testi ile fmt geçti. Gerçek NSIS 3.13, Tauri CLI 2.12.3 ve üretimdeki Rust doğrulayıcı kullanılarak kararlı ve deneme kanalları ayrı hazırlandı. Yanlış özel imza anahtarı, mevcut sürümle eşit sürüm ve var olan çıktı dizini reddedildi. İki yerel paketin çıkarılan x64 exe’si hash ve sürüm/kimlik/veri biçimi probe’unu geçti. 231 girdi önce/sonra eşleşti. [Kanıt](../proofs/windows-update-release-preparation.json).
+
+Bu komut geliştiricinin yayın hazırlığı içindir; uygulamayı kullanan kişinin çalıştırması gerekmez. Derlenmiş gerçek release exe’si ve onunla aynı sürüm/kimliği taşıyan config gerekir. Açık anahtar exe’ye derleme sırasında gömülmüş olmalıdır. Komut uygulamayı derlemez, sürüm artırmaz veya anahtar üretmez. Parola gerekiyorsa `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` süreç ortamından yalnız signer’a aktarılır; komut satırına veya makbuza yazılmaz. Özel anahtarın içeriği veya özeti makbuza alınmaz.
+
+Örnek yollar bir şablondur; bu girdiler gerçek yayın anahtarı ve release derlemesi belirlendikten sonra sağlanır. Repo kökünden:
+
+```powershell
+& .\work\proofs\engine\toolchain\cpython-3.13.13-windows-x86_64-none\python.exe -I -B .\scripts\prepare-windows-update.py `
+  --application .\work\releases\inputs\headroom-desktop.exe `
+  --config .\work\releases\inputs\tauri.release.conf.json `
+  --output .\work\releases\0.1.1 `
+  --public-key .\work\releases\keys\release.key.pub `
+  --private-key .\work\releases\keys\release.key `
+  --notes .\work\releases\inputs\notes.md `
+  --channel stable --from-version 0.1.0
+```
+
+Çıktı proje `work` kökü içindedir ve mevcut dizinin üzerine yazılmaz. `stable` veya `preview` kanalında yalnız `manifest.json`, `manifest.json.sig` ve `Headroom_<sürüm>_x64-update.exe` bulunur. Bir üstteki `release-receipt.json`, dosya/kaynak/araç özetlerini ve `published: false` bilgisini tutar. JSON ve imza ham baytları teslimde korunmalıdır. Kanal dizinine fazladan dosya karışması veya girdi değişimi hazırlamayı iptal eder. Çakışan çıktı korunur; sahipli yarım dizin temizlenir.
+
+Test exe’si, yalnız güncelleme probe’unu uygulayan küçük bir native fixture’dır; gerçek Headroom release exe’si veya kurulu güncelleme kabulü değildir. Özel fixture anahtarları koşu sonunda silindi. Üretim exe’sinin gerçek HTTPS kaynağına bağlanması, aynı güven anahtarına sahip kurulu sürümden teslim ve Windows 11 x64 kabulü açık kalır. Kullanıcının yerel hazırlık seçimine uygun olarak public depo veya yayın oluşturulmadı, CI tetiklenmedi. Ürün çalışma zamanı ve UI değişmediği için tam ürün kapısı tekrarlanmadı; H042-c2’nin önceki ürün kanıtları kendi kapsamını korur.

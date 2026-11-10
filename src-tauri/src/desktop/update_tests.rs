@@ -318,3 +318,85 @@ fn detects_changed_truncated_overlong_and_unreadable_installer_data() {
         Err(UpdateError::InstallerRead)
     );
 }
+
+#[cfg(windows)]
+#[test]
+#[ignore = "requires a local package prepared by scripts/prepare-windows-update.py"]
+fn verifies_prepared_release_directory() {
+    use std::fs::{self, File, OpenOptions};
+    use std::io::Write;
+    use std::path::{Path, PathBuf};
+
+    let input = |name| std::env::var(name).expect("local release verifier input missing");
+    let work = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("work")
+        .canonicalize()
+        .unwrap();
+    let directory = PathBuf::from(input("HEADROOM_PREPARED_UPDATE_DIRECTORY"))
+        .canonicalize()
+        .unwrap();
+    let application = PathBuf::from(input("HEADROOM_PREPARED_UPDATE_APPLICATION"))
+        .canonicalize()
+        .unwrap();
+    assert!(directory.starts_with(&work) && application.starts_with(&work));
+    assert_eq!(application.parent(), directory.parent());
+    let installed = Version::parse(&input("HEADROOM_PREPARED_UPDATE_FROM_VERSION")).unwrap();
+    let channel = match input("HEADROOM_PREPARED_UPDATE_CHANNEL").as_str() {
+        "stable" => UpdateChannel::Stable,
+        "preview" => UpdateChannel::Preview,
+        _ => panic!("invalid local release channel"),
+    };
+    let identifier = input("HEADROOM_PREPARED_UPDATE_IDENTIFIER");
+    let key = input("HEADROOM_PREPARED_UPDATE_PUBLIC_KEY");
+    let manifest = directory.join("manifest.json");
+    let signature = directory.join("manifest.json.sig");
+    assert!(fs::metadata(&manifest).unwrap().len() <= MANIFEST_LIMIT as u64);
+    assert!(fs::metadata(&signature).unwrap().len() <= SIGNATURE_LIMIT as u64);
+    let update = verify_manifest(
+        &fs::read(&manifest).unwrap(),
+        &fs::read_to_string(&signature).unwrap(),
+        &UpdatePolicy {
+            app_identifier: &identifier,
+            installed_version: &installed,
+            channel,
+            trusted_tauri_public_key: &key,
+        },
+    )
+    .expect("prepared release manifest rejected");
+    assert!(update.application_size().is_some());
+    let installer = directory.join(update.installer_name());
+    update
+        .verify_installer(File::open(&installer).unwrap())
+        .unwrap();
+    update
+        .verify_application(File::open(&application).unwrap())
+        .unwrap();
+    let mut hashes = serde_json::Map::new();
+    for path in [&manifest, &signature, &installer, &application] {
+        let mut file = File::open(path).unwrap();
+        let mut hash = Sha256::new();
+        let mut buffer = [0; 64 * 1024];
+        loop {
+            let count = file.read(&mut buffer).unwrap();
+            if count == 0 {
+                break;
+            }
+            hash.update(&buffer[..count]);
+        }
+        hashes.insert(
+            path.file_name().unwrap().to_str().unwrap().into(),
+            json!(format!("{:x}", hash.finalize())),
+        );
+    }
+    let mut receipt = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(directory.parent().unwrap().join("verification.json"))
+        .unwrap();
+    receipt
+        .write_all(&serde_json::to_vec(&hashes).unwrap())
+        .unwrap();
+    receipt.sync_all().unwrap();
+}

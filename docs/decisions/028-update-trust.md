@@ -57,3 +57,17 @@ Kalan yerel kabulde ana ajan imza, kayıt ve süreç sahipliğini üstlenir. Dis
 Erken açılış testinde gerçek bir Windows exe’si kimlik kontrolünü geçip normal açılışta hata koduyla çıkar. İmzalı paket ve ayrı HKCU test kaydı üzerinden üretimin uygulama/geri dönüş yolu çağrılır. Önceki exe, kayıtlı sürüm ve örnek kullanıcı dosyası korunmalıdır.
 
 Geçmiş bakımı yalnız sabitlenmiş UUID dizinlerindeki imzalı kayıtları ve doğrulanan dosyaları temizler. Güncel exe’ye dönüş sağlayan kayıt saklanır. Aynı yedeğe ait tekrarlar bir kayda indirilebilir. Bilinmeyen dosya, yanlış imza veya kilitli kayıt korunur. 32 sınırı, temizlenemeyen kayıtlarla birlikte hâlâ doluysa yeni hazırlama güvenle hata verir. Windows 11 ve gerçek yayın kaynağı kendi kabulünde kalır.
+
+## H042-d — Yerel yayın hazırlığı
+
+Kullanıcı 10 Kasım’da ayrı public depo yerine şimdilik yerel hazırlığı seçti. Ana ajan paket/imza güvenini üstlenir. `scripts/prepare-windows-update.py`, açıkça verilen release exe, uygulama config’i, anahtar dosyaları ve notlardan tek kanal dizini hazırlar. Public depo, ağ yüklemesi, gerçek yayın anahtarı üretimi veya CI çalıştırma kapsam dışıdır. Mevcut kurulum ve hesap ayarlarına dokunulmaz.
+
+Sürüm/kimlik/veri biçimi exe’nin güncelleme probe’uyla, açık anahtar exe içindeki değerle karşılaştırılır. Aynı NSIS şablonu uygulamayı paketler. Manifestin imzası, motor pini, kanal, SemVer ve paket/uygulama özetleri üretimdeki Rust doğrulayıcıyla kontrol edilir. Paket açıldıktan sonra çıkan exe’nin özeti ve probe’u tekrar geçmelidir. Kaynaklar ve araçlar önce/sonra fingerprint’leriyle bağlanır. Özel anahtar/parola çıktıya veya makbuza kopyalanmaz; parola yalnız imzalayan alt sürece aktarılır.
+
+Kabul senaryoları:
+
+1. Yerel, geçici anahtarlı x64 fixture → hazırlama → kanalda yalnız manifest, imza ve paket; yanında içeriksiz doğrulama makbuzu. Bu, üretim release exe’si veya gerçek HTTPS teslimi kanıtı değildir.
+2. Yanlış kanal/anahtar/sürüm, geçersiz imza veya farklı çıkan exe → hata → hazır çıktı yok.
+3. Mevcut çıktı, araç hatası veya hazırlık sırasında değişen girdi → reddet → önceki çıktı ve özgün girdiler korunur, sahipli yarım dizin kaldırılır.
+
+Odaklı kapı pinned Python ile `test_windows_update_package.py`, normal güncelleme Rust testleri ve gerçek NSIS/Tauri signer/Rust doğrulayıcı koşusudur. Ürün çalışma zamanı/arayüzü değişmez. Windows 11 x64 ve üretim kaynağı/anahtarı ana H042’de açık kalır.

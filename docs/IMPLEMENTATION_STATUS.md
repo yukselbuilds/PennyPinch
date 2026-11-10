@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 10 Kasım 2026.
 
+## H042-d — Yerel yayın hazırlığı tamam
+
+- Kullanıcı ayrı public depo yerine yerel hazırlığı seçti. Ana ajan imza/paket güvenini üstlendi; yeni çalışan veya bağımlılık eklenmedi. `scripts/prepare-windows-update.py` aynı motor/veri biçimi için NSIS paketini, imzalı manifesti ve içeriksiz doğrulama makbuzunu hazırlar. Üretimdeki Rust doğrulayıcı, paket açma ve exe probe’u geçmeden çıktı yayımlanmaz. Bu, yerel dizinin atomik oluşturulmasıdır; ağ yayını yapılmadı.
+- Son adayda 7 Python ve 9 Rust testi, fmt ve gerçek NSIS/Tauri signer ile iki kanal geçti. Yanlış imza anahtarı, eşit sürüm ve mevcut çıktı gerçek komutta reddedildi. İncelemede bulunan fazladan çıktı dosyası açığı, başarısız regresyon testi ve dosya izin listesiyle kapandı. 231 kaynak/araç girdisi eşleşti; iki hazırlamada da makbuzların önce/sonra özetleri aynı. Özel fixture anahtarları silindi. [Kanıt](proofs/windows-update-release-preparation.json), [kullanım](validation/windows-update.md#h042-d--yerel-yayın-hazırlama-komutu), [inceleme](reviews/H042.md).
+- **Devir noktası.** H042-d yerel dilimi kapalı; ana H042 ve c2, Windows 11 x64 ve gerçek yayın kaynağı/anahtarı kabulü için açık. Public depo, gerçek yayın anahtarı, dağıtım veya CI çalıştırması yapılmadı. Kaynak deposu private kalır. Ürün runtime/arayüzü değişmediğinden tam ürün kapısı bu araç diliminde tekrarlanmadı. Toplam 36/51; sonraki ana göreve geçilmedi. Geliştirme token tasarrufu ölçülmedi.
+
 ## H042-c2 — Windows 10 yerel hata kabulü tamam
 
 - Ana ajan dosya/süreç ve kurtarma sahipliğini üstlendi. Kısmi yazıdan sonra `ERROR_DISK_FULL` enjeksiyonu, yayımlama API’sinin iki yanında sahipli süreci sonlandırma ve imzalı exe’nin erken açılış hatasında dosya/registry/veri koruması geçti. İmzalı geçmiş bakımı güncel yedeği, kilitli kayıtları, yanlış imzayı ve yabancı dosyayı korur. Silme erişimi alınırken doğrulanmış özetler tekrar karşılaştırılır.
