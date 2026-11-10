@@ -737,6 +737,7 @@ fn expired_ready_snapshot_becomes_unknown_and_recovers_after_fresh_health() {
         view: Arc::clone(&shared_view),
         ingress_view: Arc::new(RwLock::new(IngressView::starting())),
         shutting_down: Arc::new(AtomicBool::new(false)),
+        update_start_gate: Arc::new(std::sync::Mutex::new(false)),
         actor_available: true,
     };
     let RuntimeReply::Snapshot(stale) = manager.get_runtime_snapshot(REQUEST_ID.to_owned()) else {
@@ -852,8 +853,37 @@ fn manager_for_endpoint_test(runtime: RuntimeView, ingress: IngressView) -> Runt
         view: Arc::new(RwLock::new(runtime)),
         ingress_view: Arc::new(RwLock::new(ingress)),
         shutting_down: Arc::new(AtomicBool::new(false)),
+        update_start_gate: Arc::new(std::sync::Mutex::new(false)),
         actor_available: false,
     }
+}
+
+#[cfg(windows)]
+#[test]
+fn update_reservation_requires_a_clean_stop_and_excludes_another_reservation() {
+    let mut manager = manager_for_endpoint_test(
+        RuntimeView::new(EngineStatus::Stopped),
+        IngressView::starting(),
+    );
+    manager.actor_available = true;
+    assert!(manager.reserve_for_update());
+    assert!(!manager.reserve_for_update());
+    manager.release_update_reservation();
+    manager.view.write().unwrap().cleanup_uncertain = true;
+    assert!(!manager.reserve_for_update());
+    manager.view.write().unwrap().cleanup_uncertain = false;
+    manager
+        .ingress_view
+        .write()
+        .unwrap()
+        .active_connection_count = Some(1);
+    assert!(!manager.reserve_for_update());
+    manager
+        .ingress_view
+        .write()
+        .unwrap()
+        .active_connection_count = Some(0);
+    assert!(manager.reserve_for_update());
 }
 
 #[test]
@@ -975,6 +1005,7 @@ fn ingress_snapshot_downgrades_expired_ready_health_and_hides_stale_count() {
         view: shared_runtime,
         ingress_view: Arc::new(RwLock::new(ingress_view)),
         shutting_down: Arc::new(AtomicBool::new(false)),
+        update_start_gate: Arc::new(std::sync::Mutex::new(false)),
         actor_available: false,
     };
 
@@ -1012,6 +1043,7 @@ fn expired_endpoint_observation_becomes_unknown_when_engine_is_stopped() {
         view: runtime_view,
         ingress_view: Arc::new(RwLock::new(ingress_view)),
         shutting_down: Arc::new(AtomicBool::new(false)),
+        update_start_gate: Arc::new(std::sync::Mutex::new(false)),
         actor_available: false,
     };
 

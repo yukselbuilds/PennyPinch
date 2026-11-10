@@ -3601,6 +3601,7 @@ mod metrics_actor_tests {
                 view: Arc::new(RwLock::new(view)),
                 ingress_view: Arc::new(RwLock::new(IngressView::starting())),
                 shutting_down: Arc::new(AtomicBool::new(false)),
+                update_start_gate: Arc::new(std::sync::Mutex::new(false)),
                 actor_available: true,
             },
             receiver,
@@ -3676,6 +3677,7 @@ pub struct RuntimeManager {
     view: Arc<RwLock<RuntimeView>>,
     ingress_view: Arc<RwLock<IngressView>>,
     shutting_down: Arc<AtomicBool>,
+    update_start_gate: Arc<std::sync::Mutex<bool>>,
     actor_available: bool,
 }
 
@@ -3788,10 +3790,12 @@ impl RuntimeManager {
             ),
         }));
         let shutting_down = Arc::new(AtomicBool::new(false));
+        let update_start_gate = Arc::new(std::sync::Mutex::new(false));
         let (sender, receiver) = mpsc::sync_channel(ACTOR_QUEUE_CAPACITY);
         let actor_view = Arc::clone(&view);
         let actor_ingress_view = Arc::clone(&ingress_view);
         let actor_shutdown = Arc::clone(&shutting_down);
+        let actor_update_gate = Arc::clone(&update_start_gate);
         let actor_available = thread::Builder::new()
             .name("headroom-runtime-manager".to_owned())
             .spawn(move || {
@@ -3801,6 +3805,7 @@ impl RuntimeManager {
                     actor_view,
                     actor_ingress_view,
                     actor_shutdown,
+                    actor_update_gate,
                 )
             })
             .is_ok();
@@ -3818,6 +3823,7 @@ impl RuntimeManager {
             view,
             ingress_view,
             shutting_down,
+            update_start_gate,
             actor_available,
         }
     }
@@ -3847,6 +3853,26 @@ impl RuntimeManager {
             && runtime.runtime_generation.is_none()
             && ingress.route_status == "none"
             && ingress.active_connection_count == Some(0)
+    }
+
+    #[cfg(all(windows, any(test, not(debug_assertions))))]
+    pub(crate) fn reserve_for_update(&self) -> bool {
+        let Ok(mut gate) = self.update_start_gate.try_lock() else {
+            return false;
+        };
+        if *gate || !self.update_engine_stopped() {
+            return false;
+        }
+        *gate = true;
+        true
+    }
+
+    #[cfg(all(windows, any(test, not(debug_assertions))))]
+    pub(crate) fn release_update_reservation(&self) {
+        *self
+            .update_start_gate
+            .lock()
+            .unwrap_or_else(|error| error.into_inner()) = false;
     }
 
     pub(crate) fn catalog_runtime(&self) -> CatalogRuntime {
@@ -4264,6 +4290,7 @@ fn run_actor(
     view: Arc<RwLock<RuntimeView>>,
     ingress_view: Arc<RwLock<IngressView>>,
     shutting_down: Arc<AtomicBool>,
+    update_start_gate: Arc<std::sync::Mutex<bool>>,
 ) {
     let mut ingress = ManagedIngress::open(&layout, Arc::clone(&ingress_view));
     if let Some(error) = ingress.startup_error() {
@@ -4353,6 +4380,14 @@ fn run_actor(
                 let _ = reply.send(result);
             }
             Ok(ActorCommand::Start { request_id, reply }) => {
+                let Ok(start_gate) = update_start_gate.try_lock() else {
+                    let _ = reply.send(snapshot_error(&request_id, PublicError::Busy));
+                    continue;
+                };
+                if *start_gate {
+                    let _ = reply.send(snapshot_error(&request_id, PublicError::Busy));
+                    continue;
+                }
                 if shutting_down.load(Ordering::SeqCst) {
                     let _ =
                         reply.send(snapshot_error(&request_id, PublicError::EnvironmentBlocked));

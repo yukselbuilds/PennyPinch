@@ -44,3 +44,19 @@ Gerçek NSIS paketi üç geçici Tauri imzasıyla yerel HTTP fixture’ında sı
 Ayrı Tauri penceresinde `0.0.9` test sürümü, Ayarlar üzerinden `0.1.0` paketini indirip hazırladı. Deneme kanalındaki yanlış özet hata gösterdi ve yeniden indirme düğmesi kullanılabilir kaldı. Motor durmuş kaldı. Normal kapanışın ardından hazırlık dosyaları ile iki test portu temizlendi. 14 odaklı Rust, 1 gerçek NSIS, 177 uygulama testi, üretim arayüzü derlemesi ve 5 native kontrol geçti. 314 paket/araç girdisi, 189 native girdi ve iki koşunun ortak 166 girdisi eşleşti.
 
 Paket derlemesi, sabitlenmiş NSIS ve aynı sürümün gerçek release exe’siyle `src-tauri/windows-update.nsi` şablonuna `APPLICATION` ve `OUTPUT` tanımlarını geçirir. Üretimde bununla aynı sürüme ait imzalı v2 manifest ve uygulama özeti kullanılır. Sonraki doğrulama ayrı QA kurulumunda exe değişimi, açılış ve geri dönüştür. Disk dolu ve kesinti senaryoları, gerçek yayın kaynağı ve Windows 11 masaüstü kabulü açık kalır.
+
+## H042-c2 — Kurulu geçiş ve kurtarma
+
+10 Kasım 2026. Windows 10 x64 build 19045 üzerinde ayrı `dev.headroom.desktop.h042-c9eb52e7` kimliğiyle gerçek NSIS kurulumu yapıldı. Yeni ve önceki uygulama aynı kaynaklardan, farklı sürüm bilgisiyle derlendi. Güncel motor kaynakları ayrı paketleme alanında pinlerle doğrulandı. QA derlemesinde yalnız yerel yayın fixture’ını kabul eden derleme koşulu ve fixture anahtarı değiştirildi. Release LTO kapalı, codegen birimi 16 idi. Üretim HTTPS kaynağı bu koşunun kapsamı dışındadır. [Kanıt](../proofs/windows-update-install.json).
+
+Normal koşunun 8 kontrolü Ayarlar’da imzalı paketi hazırlama, motor çalışırken kurulumu reddetme, onayı iptal etme, yeniden onaylayıp yeni sürümü açma ve önceki sürüme dönüşü kapsadı. `0.1.0 → 0.1.1 → 0.1.0` geçişlerinde tercih dosyasının SHA-256 değeri aynı kaldı. Örnek kullanıcı dosyası korundu. Windows kayıtlı sürümü geri döndü. Kurulu ilk exe ile geri dönen exe’nin SHA-256 değerleri eşleşti.
+
+İkinci koşunun 5 kontrolünde yeni sürüm açıldıktan sonra yalnız test Job’una ait uygulama süreci kod 42 ile sonlandırıldı. Saklanan kurtarma exe’si, imzalı kayıt ve dosyaları tekrar denetleyerek önceki sürümü açtı. Tercih ve kullanıcı dosyası özetleri korundu. Her iki koşunun sonunda test portları kapandı ve hazırlık dosyası kalmadı. Dosya yayımlama anındaki kesinti ayrı kabulde açık.
+
+Son yerel kapı 179 uygulama testi, TypeScript/Vite, fmt, 411 Rust testi ve custom-protocol derlemesiyle geçti. 11 opt-in test bu kapıda çalıştırılmadı. Dosya testleri normal değişim/geri dönüş, yarım hazırlık, oynanmış kaynak, kilitli hedef ve kullanıcı tarafından değişen canlı dosyayı korumayı kapsar. Motor rezervasyonu ve kapanış kabulü ayrıca sınandı. Kalite kapısı ile release QA derlemesinin ortak 165 girdisi eşleşti. Test çıktıları kendi önce/sonra parmak izlerine bağlıdır.
+
+İlk denemedeki NSIS paket türü işareti farkı, sabit Tauri Utils 2.10.2 kaynağındaki `__TAURI_BUNDLE_TYPE_VAR_NSS` sözleşmesiyle doğrulandı. Eski staging kaynağı da motorun pin kontrolünde reddedildi ve güncel kaynaklardan tekrar hazırlandı. Bu teşhis koşuları kabul kanıtı olarak kullanılmadı.
+
+H042 ve c2 açık kalır. Disk dolu, dosya yayımlanırken kesinti, erken açılış hatasında otomatik dönüş, kurtarma kaydı sınırında bakım ve Windows 11 x64 kabulü sürmektedir. Üretim yayın kaynağı ve açık anahtarı da yapılandırılmalıdır. Gerçek sağlayıcı isteği yapılmadı.
+
+Kabulden sonra iki QA kurulumu kendi kaldırıcılarıyla kaldırıldı. İki uygulama kaydı ve yalnız bu testlere ait LocalAppData kökleri temizlendi. [Temizlik kaydı](../../work/proofs/update/cleanup-installed.json).

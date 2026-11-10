@@ -20,6 +20,15 @@ enum Action {
     Snapshot,
     Check { channel: UpdateChannel },
     Download { candidate_id: String },
+    Apply { candidate_id: String },
+    Rollback { recovery_id: String },
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub(crate) struct Recovery {
+    pub(crate) id: String,
+    pub(crate) version: String,
+    pub(crate) can_restore: bool,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
@@ -35,6 +44,7 @@ pub(crate) enum Failure {
     DownloadFailed,
     IntegrityFailed,
     PreparationFailed,
+    EngineRunning,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
@@ -46,6 +56,8 @@ enum Status {
     Available,
     WaitingForEngine,
     Ready,
+    #[cfg(all(windows, not(debug_assertions)))]
+    Exiting,
     Error,
 }
 
@@ -58,6 +70,26 @@ pub(crate) struct Reply {
     channel: Option<UpdateChannel>,
     candidate: Option<CandidateView>,
     error: Option<Failure>,
+    can_apply: bool,
+    recovery: Option<Recovery>,
+}
+
+#[cfg(all(windows, not(debug_assertions)))]
+impl Reply {
+    pub(crate) fn installed_actions(
+        &mut self,
+        installation: &super::update_install::Installation,
+        stopped: bool,
+    ) {
+        if self.status == Status::Error {
+            return;
+        }
+        self.can_apply = self.can_apply && installation.can_apply();
+        self.recovery = installation.recovery().map(|mut item| {
+            item.can_restore = stopped;
+            item
+        });
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -91,6 +123,14 @@ struct Inner {
     installed_version: semver::Version,
     app_data: Option<PathBuf>,
     phase: Mutex<Phase>,
+    #[cfg(all(windows, not(debug_assertions)))]
+    pending: Mutex<Option<PendingInstall>>,
+}
+
+#[cfg(all(windows, not(debug_assertions)))]
+struct PendingInstall {
+    launch: super::update_install::Launch,
+    armed: bool,
 }
 
 fn valid_id(id: &str) -> bool {
@@ -130,6 +170,8 @@ impl UpdateFlow {
             installed_version,
             app_data,
             phase: Mutex::default(),
+            #[cfg(all(windows, not(debug_assertions)))]
+            pending: Mutex::default(),
         }))
     }
 
@@ -146,6 +188,8 @@ impl UpdateFlow {
             channel: None,
             candidate: None,
             error: Some(error),
+            can_apply: false,
+            recovery: None,
         }
     }
 
@@ -204,6 +248,19 @@ impl UpdateFlow {
                     }
                 }
             }
+            Action::Apply { candidate_id }
+            | Action::Rollback {
+                recovery_id: candidate_id,
+            } => {
+                return self.error(
+                    &id,
+                    if valid_id(&candidate_id) {
+                        Failure::Unavailable
+                    } else {
+                        Failure::ValidationFailed
+                    },
+                );
+            }
         }
         match &*phase {
             Phase::Idle => self.snapshot(id, Status::Idle, None, None),
@@ -216,7 +273,7 @@ impl UpdateFlow {
                 } else {
                     Status::WaitingForEngine
                 };
-                self.snapshot(
+                let reply = self.snapshot(
                     id,
                     status,
                     Some(candidate.update.channel()),
@@ -226,7 +283,14 @@ impl UpdateFlow {
                         notes: candidate.update.notes().to_owned(),
                         size_bytes: candidate.update.installer_size(),
                     }),
-                )
+                );
+                #[cfg(all(windows, not(debug_assertions)))]
+                let reply = Reply {
+                    can_apply: status == Status::Ready
+                        && candidate.update.application_size().is_some(),
+                    ..reply
+                };
+                reply
             }
         }
     }
@@ -246,7 +310,108 @@ impl UpdateFlow {
             channel,
             candidate,
             error: None,
+            can_apply: false,
+            recovery: None,
         }
+    }
+}
+
+#[cfg(all(windows, not(debug_assertions)))]
+impl UpdateFlow {
+    pub(crate) fn queue_install(
+        &self,
+        launch: super::update_install::Launch,
+    ) -> Result<(), Failure> {
+        let mut pending = self.0.pending.try_lock().map_err(|_| Failure::Busy)?;
+        if pending.is_some() {
+            return Err(Failure::Busy);
+        }
+        *pending = Some(PendingInstall {
+            launch,
+            armed: false,
+        });
+        Ok(())
+    }
+
+    pub(crate) fn arm_install(&self) -> bool {
+        let mut pending = self
+            .0
+            .pending
+            .lock()
+            .unwrap_or_else(|error| error.into_inner());
+        let Some(pending) = pending.as_mut() else {
+            return false;
+        };
+        pending.armed = true;
+        true
+    }
+
+    pub(crate) fn finish_install(&self, clean: bool) -> bool {
+        let launch = self
+            .0
+            .pending
+            .lock()
+            .unwrap_or_else(|error| error.into_inner())
+            .take();
+        match launch {
+            Some(pending) if clean && pending.armed => pending.launch.spawn().is_ok(),
+            _ => true,
+        }
+    }
+
+    pub(crate) fn cancel_install(&self) {
+        self.0
+            .pending
+            .lock()
+            .unwrap_or_else(|error| error.into_inner())
+            .take();
+    }
+
+    pub(crate) fn exiting(&self, id: String) -> Reply {
+        self.snapshot(id, Status::Exiting, None, None)
+    }
+
+    pub(crate) fn prepare_install(
+        &self,
+        request: &Request,
+        installation: &super::update_install::Installation,
+    ) -> Result<super::update_install::Launch, Failure> {
+        if !valid_id(&request.request_id) {
+            return Err(Failure::ValidationFailed);
+        }
+        match &request.action {
+            Action::Apply { candidate_id } => {
+                if !valid_id(candidate_id) {
+                    return Err(Failure::ValidationFailed);
+                }
+                let mut phase = self.0.phase.try_lock().map_err(|_| Failure::Busy)?;
+                let Phase::Candidate(candidate) = &mut *phase else {
+                    return Err(Failure::CandidateChanged);
+                };
+                if candidate.id.to_string() != *candidate_id
+                    || candidate.update.application_size().is_none()
+                {
+                    return Err(Failure::CandidateChanged);
+                }
+                let staged = candidate.staged.as_mut().ok_or(Failure::CandidateChanged)?;
+                installation
+                    .prepare(&candidate.update, staged)
+                    .map_err(|_| Failure::PreparationFailed)
+            }
+            Action::Rollback { recovery_id } if valid_id(recovery_id) => installation
+                .prepare_restore(
+                    Uuid::parse_str(recovery_id).map_err(|_| Failure::ValidationFailed)?,
+                )
+                .map_err(|_| Failure::PreparationFailed),
+            _ => Err(Failure::ValidationFailed),
+        }
+    }
+}
+
+#[cfg(all(windows, not(debug_assertions)))]
+impl Request {
+    pub(crate) fn changes_installation(&self) -> bool {
+        matches!(self.action, Action::Apply { .. } | Action::Rollback { .. })
     }
 }
 

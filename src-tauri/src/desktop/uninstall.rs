@@ -38,7 +38,7 @@ pub(crate) fn enter(config: &tauri::Config) -> File {
 }
 
 #[cfg(not(debug_assertions))]
-fn app_local_data(identifier: &str) -> Option<PathBuf> {
+pub(super) fn app_local_data(identifier: &str) -> Option<PathBuf> {
     use std::ffi::OsString;
     use std::os::windows::ffi::OsStringExt;
     use windows::Win32::{
@@ -50,6 +50,11 @@ fn app_local_data(identifier: &str) -> Option<PathBuf> {
     let base = PathBuf::from(OsString::from_wide(unsafe { folder.as_wide() }));
     unsafe { CoTaskMemFree(Some(folder.0.cast())) };
     Some(base.join(identifier))
+}
+
+#[cfg(not(debug_assertions))]
+pub(super) fn open_update_gate(root: &Path) -> io::Result<File> {
+    open_gate(root, 0, OPEN_EXISTING)
 }
 
 #[cfg(not(debug_assertions))]

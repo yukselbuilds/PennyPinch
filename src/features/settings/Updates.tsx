@@ -20,6 +20,17 @@ const copy = {
     available: "İmzalı bir güncelleme bulundu.",
     waiting_for_engine: "Paket doğrulandı. Motorun durması bekleniyor.",
     ready: "Paket doğrulandı ve bu oturum için hazır.",
+    exiting: "Uygulama yeniden açılmak üzere kapanıyor…",
+    applying: "Güncelleme hazırlanıyor…",
+    restoring: "Önceki sürüme dönüş hazırlanıyor…",
+    apply: "Güncelle ve yeniden aç",
+    restore: "Önceki sürüme dön",
+    previous: "Önceki sürüm",
+    confirm: "Devam et",
+    cancel: "Vazgeç",
+    confirmApply: "Headroom kapanacak, güncelleme uygulanacak ve uygulama yeniden açılacak.",
+    confirmRestore: "Headroom kapanacak ve önceki uygulama sürümüyle yeniden açılacak. Güncel tercihler ve geçmiş korunur.",
+    stopFirst: "Devam etmek için önce Genel bakış’tan motoru durdur.",
     version: "Yeni sürüm",
     size: "İndirme boyutu",
     notes: "Sürüm notları",
@@ -34,6 +45,7 @@ const copy = {
       download_failed: "İndirme kesildi. Yeniden deneyebilirsin.",
       integrity_failed: "Paket imzalı sürümle eşleşmedi.",
       preparation_failed: "Güncelleme paketi hazırlanamadı. Boş disk alanını kontrol edip yeniden dene.",
+      engine_running: "Motor durduğu doğrulanamadı. Motoru durdurup yeniden dene.",
       invalid_response: "Güncelleme yanıtı doğrulanamadı.",
       request_failed: "Güncelleme durumu alınamadı.",
     },
@@ -55,6 +67,17 @@ const copy = {
     available: "A signed update is available.",
     waiting_for_engine: "Package verified. Waiting for the engine to stop.",
     ready: "Package verified and ready for this session.",
+    exiting: "The app is closing to restart…",
+    applying: "Preparing the update…",
+    restoring: "Preparing the previous version…",
+    apply: "Update and restart",
+    restore: "Restore previous version",
+    previous: "Previous version",
+    confirm: "Continue",
+    cancel: "Cancel",
+    confirmApply: "Headroom will close, apply the update, and reopen.",
+    confirmRestore: "Headroom will close and reopen the previous app version. Current preferences and history are preserved.",
+    stopFirst: "Stop the engine from Overview before continuing.",
     version: "New version",
     size: "Download size",
     notes: "Release notes",
@@ -69,6 +92,7 @@ const copy = {
       download_failed: "The download was interrupted. You can retry.",
       integrity_failed: "The package did not match the signed release.",
       preparation_failed: "The update package could not be prepared. Check available disk space and retry.",
+      engine_running: "The engine could not be confirmed stopped. Stop the engine and try again.",
       invalid_response: "The update response could not be validated.",
       request_failed: "The update status could not be read.",
     },
@@ -86,7 +110,8 @@ export function Updates({ language, runtimeKey }: { language: PreferenceLanguage
   const [snapshot, setSnapshot] = useState<UpdateSnapshot | null>(null);
   const [readFailure, setReadFailure] = useState<UpdateFailure | null>(null);
   const [actionFailure, setActionFailure] = useState<UpdateFailure | null>(null);
-  const [pending, setPending] = useState<"check" | "download" | null>(null);
+  const [pending, setPending] = useState<"check" | "download" | "apply" | "rollback" | null>(null);
+  const [confirmation, setConfirmation] = useState<Extract<UpdateAction, { kind: "apply" | "rollback" }> | null>(null);
   const [refresh, setRefresh] = useState(0);
   const firstRead = useRef(true);
   const inFlight = useRef(false);
@@ -113,20 +138,23 @@ export function Updates({ language, runtimeKey }: { language: PreferenceLanguage
     if (inFlight.current) return;
     inFlight.current = true;
     setPending(action.kind);
+    setConfirmation(null);
     setActionFailure(null);
     if (action.kind === "check") setSnapshot(current => current && { ...current, status: "idle", channel: null, candidate: null });
     const result = await updateClient.request(action);
     inFlight.current = false;
     if (result.kind === "error") setActionFailure(result.code);
     else setSnapshot(result.snapshot);
-    setPending(null);
+    if (result.kind !== "snapshot" || result.snapshot.status !== "exiting") setPending(null);
   }
 
-  const available = snapshot !== null && snapshot.status !== "unavailable";
+  const available = snapshot !== null && snapshot.status !== "unavailable" && snapshot.status !== "exiting";
   const selected = snapshot?.channel === channel ? snapshot : null;
   const candidate = selected?.candidate;
   const status = selected?.status;
   const line = pending === "check" ? text.checking : pending === "download" ? text.downloading
+    : snapshot?.status === "exiting" ? text.exiting
+    : pending === "apply" ? text.applying : pending === "rollback" ? text.restoring
     : snapshot?.status === "unavailable" || readFailure === "unavailable" ? text.unavailable
       : !snapshot && !readFailure ? text.loading
         : status && status !== "idle" ? text[status] : "";
@@ -142,6 +170,7 @@ export function Updates({ language, runtimeKey }: { language: PreferenceLanguage
           <select value={channel} disabled={pending !== null} onChange={event => {
             setChannel(event.target.value === "preview" ? "preview" : "stable");
             setActionFailure(null);
+            setConfirmation(null);
           }}>
             <option value="stable">{text.stable}</option><option value="preview">{text.preview}</option>
           </select>
@@ -161,6 +190,21 @@ export function Updates({ language, runtimeKey }: { language: PreferenceLanguage
         {candidate.notes && <div><h4>{text.notes}</h4><p className="update-candidate__notes">{candidate.notes}</p></div>}
         {status === "available" && <button className="button button-primary" type="button" disabled={pending !== null}
           onClick={() => void run({ kind: "download", candidate_id: candidate.id })}>{text.download}</button>}
+        {snapshot?.can_apply && <button className="button button-primary" type="button" disabled={pending !== null}
+          onClick={() => setConfirmation({ kind: "apply", candidate_id: candidate.id })}>{text.apply}</button>}
+      </div>}
+      {snapshot?.recovery && <div className="update-candidate">
+        <p>{text.previous} {snapshot.recovery.version}</p>
+        {!snapshot.recovery.can_restore && <p className="operating-settings__status-line">{text.stopFirst}</p>}
+        <button className="button" type="button" disabled={pending !== null || !snapshot.recovery.can_restore}
+          onClick={() => setConfirmation({ kind: "rollback", recovery_id: snapshot.recovery!.id })}>{text.restore}</button>
+      </div>}
+      {confirmation && <div className="update-candidate" role="group" aria-label={confirmation.kind === "apply" ? text.apply : text.restore}>
+        <p>{confirmation.kind === "apply" ? text.confirmApply : text.confirmRestore}</p>
+        <div className="update-confirmation-actions">
+          <button className="button button-primary" type="button" onClick={() => void run(confirmation)}>{text.confirm}</button>
+          <button className="button" type="button" onClick={() => setConfirmation(null)}>{text.cancel}</button>
+        </div>
       </div>}
     </div>
   </section>;

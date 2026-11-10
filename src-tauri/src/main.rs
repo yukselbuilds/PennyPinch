@@ -270,6 +270,7 @@ async fn get_activity_detail(
 }
 #[tauri::command]
 async fn manage_updates(
+    app: tauri::AppHandle,
     state: tauri::State<'_, desktop::update_flow::UpdateFlow>,
     runtime: tauri::State<'_, RuntimeManager>,
     lifecycle: tauri::State<'_, desktop::lifecycle::Lifecycle>,
@@ -282,11 +283,56 @@ async fn manage_updates(
     let id = request.request_id.clone();
     let flow = state.inner().clone();
     let runtime = runtime.inner().clone();
-    Ok(tauri::async_runtime::spawn_blocking(move || {
-        flow.handle(request, || runtime.update_engine_stopped())
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        #[cfg(all(windows, not(debug_assertions)))]
+        {
+            use desktop::update_install::Installation;
+            let installed = Installation::new(app.config(), app.package_info().version.clone());
+            if request.changes_installation() {
+                let Some(installed) = installed else {
+                    return flow.error(&request.request_id, Failure::Unavailable);
+                };
+                if !runtime.reserve_for_update() {
+                    return flow.error(&request.request_id, Failure::EngineRunning);
+                }
+                let launch = flow
+                    .prepare_install(&request, &installed)
+                    .and_then(|launch| flow.queue_install(launch));
+                if let Err(error) = launch {
+                    runtime.release_update_reservation();
+                    return flow.error(&request.request_id, error);
+                }
+                let began = app
+                    .state::<desktop::lifecycle::Lifecycle>()
+                    .begin_update(|| {
+                        app.state::<export::report::ReportManager>()
+                            .hold_for_exit(|| app.state::<Arc<PlanManager>>().hold_for_exit())
+                            && flow.arm_install()
+                    });
+                if !began {
+                    flow.cancel_install();
+                    runtime.release_update_reservation();
+                    return flow.error(&request.request_id, Failure::Busy);
+                }
+                let reply = flow.exiting(request.request_id);
+                app.exit(0);
+                return reply;
+            }
+            let mut reply = flow.handle(request, || runtime.update_engine_stopped());
+            if let Some(installed) = installed {
+                reply.installed_actions(&installed, runtime.update_engine_stopped());
+            }
+            reply
+        }
+        #[cfg(not(all(windows, not(debug_assertions))))]
+        {
+            let _ = app;
+            flow.handle(request, || runtime.update_engine_stopped())
+        }
     })
     .await
-    .unwrap_or_else(|_| state.error(&id, Failure::Unavailable)))
+    .unwrap_or_else(|_| state.error(&id, Failure::Unavailable));
+    Ok(result)
 }
 
 #[tauri::command]
@@ -623,6 +669,8 @@ async fn select_client_file(
 fn main() {
     let context = tauri::generate_context!();
     #[cfg(all(windows, not(debug_assertions)))]
+    desktop::update_install::enter(context.config(), &context.package_info().version);
+    #[cfg(all(windows, not(debug_assertions)))]
     let _desktop_use = desktop::uninstall::enter(context.config());
     let app = tauri::Builder::default()
         .setup(|app| {
@@ -815,6 +863,11 @@ fn main() {
                         exit_start.elapsed().as_millis()
                     );
                     let clean = verifier_clean && collector_clean && runtime_clean && tray_clean;
+                    #[cfg(all(windows, not(debug_assertions)))]
+                    let clean = app_handle
+                        .state::<desktop::update_flow::UpdateFlow>()
+                        .finish_install(clean)
+                        && clean;
                     let exit_code = if clean { code.unwrap_or(0) } else { 1 };
                     EXIT_GATE.complete();
                     #[cfg(debug_assertions)]

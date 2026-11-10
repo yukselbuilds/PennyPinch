@@ -14,6 +14,8 @@ function reply(overrides = {}) {
     channel: "stable",
     candidate: { id: candidateId, version: "0.1.1", size_bytes: 131036003, notes: "Release note" },
     error: null,
+    can_apply: false,
+    recovery: null,
     ...overrides,
   };
 }
@@ -63,4 +65,25 @@ test("does not use browser transport and preserves safe retry errors", async () 
   const error = reply({ status: "error", channel: null, candidate: null, error: "integrity_failed" });
   assert.deepEqual(decodeUpdateReply(error, requestId), { kind: "error", code: "integrity_failed" });
   assert.deepEqual(decodeUpdateReply({ ...error, error: "file C:\\fixture.exe" }, requestId), invalid);
+});
+
+test("installation capability is native and bound to a ready candidate", () => {
+  const ready = reply({ status: "ready", can_apply: true });
+  assert.equal(decodeUpdateReply(ready, requestId).snapshot.can_apply, true);
+  for (const patch of [{ status: "waiting_for_engine" }, { status: "available" }, { can_apply: "true" }]) {
+    assert.deepEqual(decodeUpdateReply({ ...ready, ...patch }, requestId), invalid);
+  }
+  const recovery = { id: candidateId, version: "0.0.9", can_restore: false };
+  const status = decodeUpdateReply(reply({ status: "unavailable", channel: null, candidate: null, recovery }), requestId);
+  assert.deepEqual(status.snapshot.recovery, recovery);
+  assert.deepEqual(decodeUpdateReply(reply({ recovery: { ...recovery, path: "D:\\private.exe" } }), requestId), invalid);
+});
+
+test("apply and restore acknowledge the actual exit transition", async () => {
+  let response = reply({ status: "ready", can_apply: true });
+  const client = createUpdateClient({ isNative: () => true, requestId: () => requestId, invoke: async () => response });
+  assert.deepEqual(await client.request({ kind: "apply", candidate_id: candidateId }), invalid);
+  response = reply({ status: "exiting", channel: null, candidate: null });
+  assert.equal((await client.request({ kind: "apply", candidate_id: candidateId })).snapshot.status, "exiting");
+  assert.equal((await client.request({ kind: "rollback", recovery_id: candidateId })).snapshot.status, "exiting");
 });

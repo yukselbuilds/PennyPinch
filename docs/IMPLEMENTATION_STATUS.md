@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 10 Kasım 2026.
 
+## H042-c2 — Windows 10 geçişi ve çökme sonrası kurtarma geçti
+
+- Ana ajan dosya/süreç sahipliği ve kurtarmayı üstlendi. Ayarlar onayı, durmuş motor rezervasyonu, temiz çıkış sonrası yardımcı süreç ve aynı diskte exe değişimi bağlandı. Normal kapanışın henüz kabul edilmeyen kurulumu tetiklemesi, kuyruk yaşam döngüsü kilidi altında etkinleştirilerek düzeltildi.
+- Son adayın tam yerel kapısı 179 uygulama testi, TypeScript/Vite, fmt, 411 Rust testi ve custom-protocol derlemesiyle geçti. 11 Rust opt-in testi bu kapıda çalışmadı. Aynı kaynaklarla iki release-mode QA exe’si ve gerçek NSIS kurucusu üretildi. [Kanıt](proofs/windows-update-install.json), [inceleme](reviews/H042.md).
+- Ayrı Windows 10 x64 kurulumunda 8 native kontrol geçti. Çalışan motor kurulumu reddetti. Ayarlar’dan `0.1.0 → 0.1.1 → 0.1.0` açılışları, tercih ve kullanıcı dosyası özetleri doğrulandı. Sonraki koşunun 5 kontrolünde güncellenmiş süreç kontrollü sonlandırıldı ve kurtarma exe’si önceki sürümü açtı. Test portları kapandı. İki QA kurulumunun uygulama, registry ve test verisi temizlendi.
+- **Sonraki somut adım.** H042-c2’nin disk dolu, dosya yayımlanırken kesinti ve erken açılış hatası kontrolleri. Kurtarma kayıtlarının 32 sınırında bakım davranışı da ele alınmalı. Windows 11 x64 ve gerçek yayın kaynağı/anahtarı açık. Ana H042 ve c2 kutuları açık, toplam 36/51. Önceki `work/i42/c13bda7b` koşusu yalnız hata teşhisidir. Geliştirme token tasarrufu ölçülmedi.
+
 ## H042-c1 — imzalı uygulama paketi yerel kabulü geçti
 
 - Ana ajan paket ve süreç güvenini üstlendi. NSIS güncelleme paketi aynı motor pini ve veri biçimiyle yalnız uygulama dosyasını geçici alanda hazırlar. İmza, paket özeti ve çıkarılan exe’nin özeti ayrı doğrulanır. [Karar](decisions/028-update-trust.md).

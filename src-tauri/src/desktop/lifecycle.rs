@@ -87,6 +87,16 @@ impl State {
 }
 
 impl Lifecycle {
+    #[cfg(all(windows, any(test, not(debug_assertions))))]
+    pub(crate) fn begin_update(&self, hold_actions: impl FnOnce() -> bool) -> bool {
+        let mut state = self.0.lock().unwrap_or_else(|error| error.into_inner());
+        if state.exiting || state.confirmation.is_some() || !hold_actions() {
+            return false;
+        }
+        state.exiting = true;
+        true
+    }
+
     pub(crate) fn set_close_to_tray(&self, enabled: bool) {
         self.0
             .lock()
@@ -161,6 +171,26 @@ impl Lifecycle {
 
 pub(crate) fn notify(app: &tauri::AppHandle) {
     let _ = app.emit(CHANGED, ());
+}
+
+#[cfg(all(test, windows))]
+mod update_exit_tests {
+    use super::*;
+
+    #[test]
+    fn update_exit_does_not_arm_a_worker_after_another_exit_was_requested() {
+        let lifecycle = Lifecycle::default();
+        let id = Uuid::new_v4().to_string();
+        lifecycle.request(&id);
+        assert!(!lifecycle.begin_update(|| panic!("unrelated exit must not arm installation")));
+        assert!(!lifecycle.is_exiting());
+        let empty = Lifecycle::default();
+        assert!(!empty.begin_update(|| false));
+        assert!(!empty.is_exiting());
+        assert!(empty.begin_update(|| true));
+        assert!(empty.is_exiting());
+        assert!(!empty.begin_update(|| panic!("a second exit must not run")));
+    }
 }
 pub(crate) fn show(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {

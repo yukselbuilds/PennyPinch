@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "task": "H042-c2",
+  "status": "partial",
+  "main_status": "open",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "toolchain": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0"
+  },
+  "app_tests_passed": 179,
+  "rust_tests_passed": 411,
+  "rust_opt_in_not_run": 11,
+  "frontend_build_passed": true,
+  "format_check_passed": true,
+  "custom_protocol_build_passed": true,
+  "source_and_tool_fingerprints_matched": 240,
+  "release_build_input_fingerprints_matched": 185,
+  "common_source_fingerprints_matched": 165,
+  "normal_native_checks": {
+    "signed_candidate_can_install": true,
+    "running_engine_blocks_install": true,
+    "confirmation_can_cancel": true,
+    "updated_app_reopened": true,
+    "preferences_survived_update": true,
+    "previous_app_reopened": true,
+    "preferences_survived_restore": true,
+    "normal_exit": true
+  },
+  "interruption_checks": {
+    "updated_app_opened": true,
+    "owned_updated_process_terminated": true,
+    "recovery_worker_reopened_previous_app": true,
+    "preferences_preserved": true,
+    "normal_exit": true
+  },
+  "preferences_preserved": true,
+  "user_data_preserved": true,
+  "registry_version_restored": "0.1.0",
+  "previous_installed_sha256": "cd2cb17ec78a5e001b8b22fd7d6167855e1b431d6e92b4bfd94488af81fe6ec2",
+  "restored_installed_sha256": "cd2cb17ec78a5e001b8b22fd7d6167855e1b431d6e92b4bfd94488af81fe6ec2",
+  "live_provider_requests": 0,
+  "owned_ports_closed": true,
+  "qa_build_exception": "Explicit fixture feature accepts loopback only in this copied release-mode workspace.",
+  "qa_release_lto": false,
+  "qa_release_codegen_units": 16,
+  "open_acceptance": [
+    "disk_full",
+    "termination_during_file_publish",
+    "early_app_startup_failure",
+    "windows11_x64",
+    "recovery_record_retention"
+  ],
+  "release_feed": "not_configured",
+  "production_signing_key": "not_configured",
+  "evidence": {
+    "build": {
+      "path": "work/i42/c9eb52e7/build.json",
+      "sha256": "78f2b6439d909cfbe2a48704e806e9377b0b8eac4d00fbf1a2f15604a855e4c6"
+    },
+    "native": {
+      "path": "work/i42/c9eb52e7/attempts/d1cd8b52/native.json",
+      "sha256": "ae08f7bb3ab8d667572d3cf1a519b89ec2747c9cd3684ed92dcc893dd88f4809"
+    },
+    "interruption": {
+      "path": "work/i42/c9eb52e7/attempts/16d2c0a9/native.json",
+      "sha256": "fe4afc1f322b18dcd44923d36d97978455cc3fee2bd56fa401922078b674e8c8"
+    },
+    "quality": {
+      "path": "work/proofs/update/install-final/add2c1bf/quality.json",
+      "sha256": "5eba92a689389b0515119495135e9be81147e729d1e08192bf061af8f9f99ae8"
+    },
+    "screenshots": {
+      "native/apply.png": {
+        "path": "work/i42/c9eb52e7/attempts/d1cd8b52/apply.png",
+        "sha256": "7901f698755446f69c3db4c7573f89366200d349af5ca0ae345689c2422c0345"
+      },
+      "native/updated.png": {
+        "path": "work/i42/c9eb52e7/attempts/d1cd8b52/updated.png",
+        "sha256": "bd0e6a3f27d1ef2db08591e4ed03542cf220594ca9e475ab74f77f2fd92d4c5a"
+      },
+      "native/restored.png": {
+        "path": "work/i42/c9eb52e7/attempts/d1cd8b52/restored.png",
+        "sha256": "f3b8c7f668e3ba126de635e7bd7aa766c821627024f9c4404778de3fd568f73d"
+      },
+      "interruption/before-crash.png": {
+        "path": "work/i42/c9eb52e7/attempts/16d2c0a9/before-crash.png",
+        "sha256": "bd0e6a3f27d1ef2db08591e4ed03542cf220594ca9e475ab74f77f2fd92d4c5a"
+      },
+      "interruption/recovered.png": {
+        "path": "work/i42/c9eb52e7/attempts/16d2c0a9/recovered.png",
+        "sha256": "f3b8c7f668e3ba126de635e7bd7aa766c821627024f9c4404778de3fd568f73d"
+      }
+    },
+    "cleanup": {
+      "path": "work/proofs/update/cleanup-installed.json",
+      "sha256": "e41485b833098831574f10eff500e05d91c3b92e5e28aaeec9341465c8c1ac7a"
+    }
+  },
+  "qa_installations_removed": true
+}

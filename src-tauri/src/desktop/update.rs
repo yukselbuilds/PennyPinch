@@ -15,7 +15,7 @@ const NOTES_LIMIT: usize = 4 * 1024;
 const VERSION_LIMIT: usize = 64;
 const INSTALLER_LIMIT: u64 = 1024 * 1024 * 1024;
 const APPLICATION_LIMIT: u64 = 128 * 1024 * 1024;
-const UPDATE_STATE_FORMAT: u32 = 1;
+pub(super) const UPDATE_STATE_FORMAT: u32 = 1;
 const WINDOWS_TARGET: &str = "windows-x86_64";
 
 #[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq, Serialize)]
@@ -100,6 +100,8 @@ pub(crate) struct VerifiedUpdate {
     notes: String,
     installer: Artifact,
     application: Option<Artifact>,
+    #[cfg(all(windows, not(debug_assertions)))]
+    signed: Option<(Vec<u8>, String)>,
 }
 
 impl VerifiedUpdate {
@@ -144,6 +146,13 @@ impl VerifiedUpdate {
             .ok_or(UpdateError::UnsupportedSchema)?
             .verify(application)
     }
+
+    #[cfg(all(windows, not(debug_assertions)))]
+    pub(super) fn signed(&self) -> Option<(&[u8], &str)> {
+        self.signed
+            .as_ref()
+            .map(|(bytes, sig)| (bytes.as_slice(), sig.as_str()))
+    }
 }
 
 impl Artifact {
@@ -186,7 +195,13 @@ pub(crate) fn verify_manifest(
         .ok_or(UpdateError::InvalidSignature)?;
     key.verify(bytes, &signature, false)
         .map_err(|_| UpdateError::InvalidSignature)?;
-    parse_manifest(bytes, policy)
+    let verified = parse_manifest(bytes, policy)?;
+    #[cfg(all(windows, not(debug_assertions)))]
+    let verified = VerifiedUpdate {
+        signed: Some((bytes.to_vec(), tauri_signature.to_owned())),
+        ..verified
+    };
+    Ok(verified)
 }
 
 fn decode_tauri_text(text: &str, limit: usize) -> Option<String> {
@@ -255,6 +270,8 @@ fn parse_manifest(bytes: &[u8], policy: &UpdatePolicy<'_>) -> Result<VerifiedUpd
         notes: manifest.notes,
         installer: manifest.installer,
         application,
+        #[cfg(all(windows, not(debug_assertions)))]
+        signed: None,
     })
 }
 
