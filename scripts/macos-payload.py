@@ -24,7 +24,10 @@ def trusted_entry(path):
         raise ValueError("reparse_point_rejected")
     if os.name == "posix" and not stat.S_ISLNK(info.st_mode):
         if info.st_uid != os.geteuid() or info.st_mode & 0o022:
-            raise ValueError("untrusted_payload_entry")
+            raise ValueError(
+                f"untrusted_payload_entry owner_match={info.st_uid == os.geteuid()} "
+                f"mode={stat.S_IMODE(info.st_mode):04o}"
+            )
     if stat.S_ISREG(info.st_mode) and info.st_nlink != 1:
         raise ValueError("hardlink_payload_entry")
     return info

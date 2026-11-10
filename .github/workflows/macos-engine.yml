@@ -74,6 +74,8 @@ jobs:
             --target "$stage/payload/site-packages" "$stage/requirements.txt" \
             > "$log" 2>&1 || { echo "::error::Pinned binary wheel install failed."; exit 1; }
 
+          find -P "$stage/payload" -type d -exec chmod go-w {} +
+          find -P "$stage/payload" -type f -exec chmod go-w {} +
           mv "$stage/payload" "$stage/relocated"
           python="$stage/relocated/python/bin/python3.13"
           if ! "$python" -I -B -m unittest discover -s tests/runtime -p test_macos_payload.py -v > "$log" 2>&1; then
