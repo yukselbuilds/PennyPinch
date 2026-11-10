@@ -20,7 +20,19 @@ Standart ARM64 runner üzerinde sabitlenmiş CPython 3.13.13 ve Headroom 0.41.0 
 
 10 Kasım 2026. macOS 15.8.2 ARM64 üzerinde taşınmış CPython 3.13.13 ve Headroom 0.41.0 gerçek süreçle açıldı. Kilitteki ONNX Runtime 1.31.0 native modülü yüklendi. Hazır yanıtından önce LOCAL_PEERPID ile doğrudan çocuk süreç doğrulandı. Yabancı sokete HTTP baytı gönderilmedi. Yerel telemetri açık, anonim beacon kapalı ve normal kapanış başarılıydı. Bu deneyde sağlayıcı erişilebilirlik kontrolü kapalıydı. [Koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/42870582936), [makine kanıtı](../proofs/macos-engine.json).
 
-Bir sonraki motor koşusu, Python ve kilit dosyasına ek olarak bütün paket dosyalarının ve göreli bağlantılarının önce/sonra eşitliğini ölçecek. Sabitlenmiş Python dağıtımının paket içindeki dosya bağlantıları korunurken kök dışı bağlantı, dizin bağlantısı, özel dosya, isim çakışması ve sır dosyaları reddedilecek.
+## H048-b — Tam paket envanteri geçti
+
+10 Kasım 2026. scripts/macos-payload.py paket kökünden bağımsız içerik özeti üretir. Normal dosyaların içeriği ve izinleri, göreli dosya bağlantılarının metni ve dizin izinleri ölçülür. Kök dışı, mutlak veya bozuk bağlantı, dizin bağlantısı, hardlink, özel dosya, casefold isim çakışması ve sır dosyaları reddedilir. Paket girdileri mevcut kullanıcıya ait olmalı ve grup/genel yazma izni taşımamalıdır.
+
+İlk iki native envanter koşusunda dosya sistemi sözleşme testleri geçti, paket hazırlığı izin kontrolünde durdu. Sabitlenmiş Python arşivinin 1.635 girdisi grup/genel yazma izni taşıyor. Arşivi özel umask ile açmak tek başına yeterli olmadı. Wheel kurulumu tamamlandıktan sonra kopyalanmış normal dosyaların ve dizinlerin grup/genel yazma izinleri kaldırıldı. Hazırlama sırasında sembolik bağlantılar izlenmez. Son envanterde aynı sahiplik ve izin kabulü uygulanır.
+
+Son native koşuda 16.640 dosya ve 597.415.285 bayt ölçüldü. Motor açılışından önce ve temiz kapanıştan sonra bütün paket özeti eşleşti. Envanterin symlink sözleşme testleri macOS'ta atlanmadı. Normal motor readiness, yabancı soketin reddi, yerel telemetri ve kapalı beacon tekrar doğrulandı. [Başarılı koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/42875188912), [iki hata ve son aday kanıtı](../proofs/macos-payload.json).
+
+Windows'ta envanter kodunun 9 testi çalıştırıldı. Casefold dosya sistemi, symlink yetkisi ve POSIX izinleri nedeniyle 5 test skipped kaldı. Windows stat ve fstat çağrılarının yeniden yazılmış dosyada farklı ctime göstermesi, dosya kimliği karşılaştırmasında platforma göre ele alındı. macOS karşılaştırması ctime dahil kalır. Tek bayt içerik değişimi ve hardlink regresyonu yerel kontrole dahildir.
+
+## Sıradaki dikey dilim
+
+Kanıtlı Unix soketi yolu RuntimeManager tarafından yönetilen oturuma alınacak. UI başlat/durdur isteği, süreç ömrüne bağlı soket sahipliği, kontrol ve metrik okuması ile stable relay üzerinden incelenmeli. Çocuk süreç yaşamıyor veya soket PID'si eşleşmiyorsa istemci/auth baytı iletilmemeli. Uygulama kapanışı ve beklenmeyen kaybı sonrasında yalnız sahipli motorun temizlenmesi gerçek native testte doğrulanmalı. Bu davranışlar mevcut bağımsız motor deneyiyle kabul edilmiş sayılmaz.
 
 ## Açık kabuller
 

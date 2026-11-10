@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "task": "H048-b",
+  "slice": "full payload integrity",
+  "status": "pass",
+  "verified_at_utc": "2026-11-10T18:28:08.002740+00:00",
+  "runs": [
+    {
+      "run_id": 42873859815,
+      "job_id": 130031865695,
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/42873859815",
+      "commit": "4d69e9a9e3e86f3744ddec5ea79a5481cfa09004",
+      "conclusion": "failure",
+      "runner": "macos-15 standard",
+      "started_at": "2026-11-10T18:18:33Z",
+      "completed_at": "2026-11-10T18:18:44Z",
+      "dispatch_allowance": {
+        "observed_via": "authenticated GitHub Billing and Budgets and alerts",
+        "period": "2026-11-01 through 2026-11-30",
+        "recorded_at_utc": "2026-11-10T18:18:28.1002260Z",
+        "plan": "GitHub Free",
+        "included_compute_usd": 12,
+        "used_compute_usd": 0.31,
+        "billable_usd": 0,
+        "account_actions_budget_usd": 0,
+        "overage_usage_blocked": true,
+        "included_storage_gb": 0.5,
+        "used_storage_gb": 0,
+        "runner": "macos-15 arm64 standard",
+        "timeout_minutes": 10,
+        "maximum_job_compute_usd": 0.62,
+        "workflow_sha256": "47440b00553df507402a6b527f787cc48f1e52b4e9ec7655e6756c5f5cbe4fbe",
+        "candidate_sha": "4d69e9a9e3e86f3744ddec5ea79a5481cfa09004",
+        "billing_note": "Included usage 0.31/12 USD; account Actions overage budget 0/0 spent with Usage blocked. Billing updates can be delayed.",
+        "refresh_reason": "Changed native input validation and copy-only materialization; verify full payload and native symlink contracts."
+      },
+      "stage": "full payload measurement before engine startup",
+      "diagnostic": "macOS payload inventory failed: unsafe or changed input"
+    },
+    {
+      "run_id": 42874575522,
+      "job_id": 130034375657,
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/42874575522",
+      "commit": "b21f60cf68988f9a1d5bcbf7d8bbb4476a381127",
+      "conclusion": "failure",
+      "runner": "macos-15 standard",
+      "started_at": "2026-11-10T18:22:47Z",
+      "completed_at": "2026-11-10T18:23:03Z",
+      "dispatch_allowance": {
+        "observed_via": "authenticated GitHub Billing and Budgets and alerts",
+        "period": "2026-11-01 through 2026-11-30",
+        "recorded_at_utc": "2026-11-10T18:22:40.5883209Z",
+        "plan": "GitHub Free",
+        "included_compute_usd": 12,
+        "used_compute_usd": 0.31,
+        "billable_usd": 0,
+        "account_actions_budget_usd": 0,
+        "overage_usage_blocked": true,
+        "included_storage_gb": 0.5,
+        "used_storage_gb": 0,
+        "runner": "macos-15 arm64 standard",
+        "timeout_minutes": 10,
+        "maximum_job_compute_usd": 0.62,
+        "workflow_sha256": "63caa0f0e3eb34a9c7a476461c73ac73efd74babe7f6a61e13940bac9c0fc84c",
+        "candidate_sha": "b21f60cf68988f9a1d5bcbf7d8bbb4476a381127",
+        "billing_note": "Included usage 0.31/12 USD; account Actions overage budget 0/0 spent with Usage blocked. Billing updates can be delayed.",
+        "refresh_reason": "CPython archive has group-writable entries; extract with umask 077 and no-same-permissions, preserving strict inventory acceptance.",
+        "previous_run_id": 42873859815
+      },
+      "stage": "full payload measurement before engine startup",
+      "diagnostic": "macOS payload inventory failed: untrusted_payload_entry"
+    },
+    {
+      "run_id": 42875188912,
+      "job_id": 130036497710,
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/42875188912",
+      "commit": "284b8ef56d7bb598e8eb598e88f68ed724bd1bf5",
+      "conclusion": "success",
+      "runner": "macos-15 standard",
+      "started_at": "2026-11-10T18:26:23Z",
+      "completed_at": "2026-11-10T18:26:51Z",
+      "dispatch_allowance": {
+        "observed_via": "authenticated GitHub Billing and Budgets and alerts",
+        "period": "2026-11-01 through 2026-11-30",
+        "recorded_at_utc": "2026-11-10T18:26:17.7370609Z",
+        "plan": "GitHub Free",
+        "included_compute_usd": 12,
+        "used_compute_usd": 0.31,
+        "billable_usd": 0,
+        "account_actions_budget_usd": 0,
+        "overage_usage_blocked": true,
+        "included_storage_gb": 0.5,
+        "used_storage_gb": 0,
+        "runner": "macos-15 arm64 standard",
+        "timeout_minutes": 10,
+        "maximum_job_compute_usd": 0.62,
+        "workflow_sha256": "c05197222b7dddf378bfe2aac2680d4c06c62922e2af95bc5f9f915830eed6d9",
+        "candidate_sha": "284b8ef56d7bb598e8eb598e88f68ed724bd1bf5",
+        "billing_note": "Included usage 0.31/12 USD; account Actions overage budget 0/0 spent with Usage blocked. Billing updates can be delayed.",
+        "refresh_reason": "Normalize copied file and directory modes after wheel installation; keep inventory owner/link/permission rejection unchanged.",
+        "previous_run_id": 42874575522
+      },
+      "git_tree": "db3feb61be11678a091ae6c844cf42c13728fc4f",
+      "inputs_before": "ca88b1a4ee9cbb75c95caf328dc02807d6942e5c3b150afadb63ecf5be5b1197",
+      "inputs_after": "ca88b1a4ee9cbb75c95caf328dc02807d6942e5c3b150afadb63ecf5be5b1197",
+      "payload": {
+        "bytes": 597415285,
+        "files": 16640,
+        "tree_sha256": "43325ada6a13701d5bbdaece443c3895041dd9daab99c6261fbf05e787956509"
+      },
+      "environment": {
+        "macos": "15.8.2",
+        "macos_build": "24H232",
+        "architecture": "arm64",
+        "python": "3.13.13",
+        "uv": "0.13.5"
+      },
+      "checks": {
+        "native_inventory_contracts": "pass",
+        "symlink_contracts_not_skipped": true,
+        "full_payload_unchanged": true,
+        "relocated_engine_ready": true,
+        "foreign_socket_received_http": false,
+        "local_telemetry": true,
+        "anonymous_beacon": false,
+        "clean_stop": true
+      }
+    }
+  ],
+  "local_tests": {
+    "commands": [
+      {
+        "command": [
+          "D:\\Projeler\\Headroom\\work\\proofs\\engine\\toolchain\\cpython-3.13.13-windows-x86_64-none\\python.exe",
+          "-I",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests/runtime",
+          "-p",
+          "test_macos_payload.py",
+          "-v"
+        ],
+        "exit_code": 0,
+        "summary": [
+          "Ran 9 tests in 0.036s",
+          "OK (skipped=5)"
+        ]
+      },
+      {
+        "command": [
+          "D:\\Projeler\\Headroom\\work\\proofs\\macos\\h048-a\\actionlint-1.7.12\\actionlint.exe",
+          "-color=false",
+          ".github/workflows/macos-engine.yml"
+        ],
+        "exit_code": 0,
+        "summary": []
+      }
+    ],
+    "source_and_tool_fingerprints": {
+      "D:\\Projeler\\Headroom\\scripts\\macos-payload.py": "5beadaa0d3beea3be66a14a195b2b8f5c4ef4de7ed55ae9a7075329769f82265",
+      "D:\\Projeler\\Headroom\\tests\\runtime\\test_macos_payload.py": "2912f08873efe6b356d4dc9a6f643b4cb14b124dbcfe44f94d0b933fe4f40e65",
+      "D:\\Projeler\\Headroom\\.github\\workflows\\macos-engine.yml": "c05197222b7dddf378bfe2aac2680d4c06c62922e2af95bc5f9f915830eed6d9",
+      "D:\\Projeler\\Headroom\\work\\proofs\\engine\\toolchain\\cpython-3.13.13-windows-x86_64-none\\python.exe": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+      "D:\\Projeler\\Headroom\\work\\proofs\\macos\\h048-a\\actionlint-1.7.12\\actionlint.exe": "54ca21be3de4c7cfa26914aa8b61bd76bf573ef3caac5f80d110558cdf241718"
+    },
+    "platform": "win32"
+  },
+  "pinned_archive_group_or_world_writable_entries": 1635,
+  "limitation": "Direct native engine and packaging preparation. Tauri management, client transactions and packaged native lifecycle remain untested."
+}
