@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "surfaces": ["chat_http_sse", "anthropic_http_sse", "responses_websocket"],
+  "models": {
+    "chat_http_sse": "o4-mini",
+    "anthropic_http_sse": "claude-sonnet-4-20250514",
+    "responses_websocket": "o4-mini"
+  }
+}

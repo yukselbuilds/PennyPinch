@@ -1,0 +1,65 @@
+{
+  "passed": true,
+  "load_resources": {
+    "harness_cpu_ms": 8015.625,
+    "engine_cpu_ms": 5171.875,
+    "observed_engine_private_bytes": 1194127360,
+    "observed_harness_private_bytes": 94851072,
+    "observed_working_set_bytes": 800772096,
+    "resource_samples": 4797
+  },
+  "elapsed_seconds": 300.00050349999947,
+  "completed_pairs": 300,
+  "pairs_per_surface": {
+    "responses_http_sse": 84,
+    "chat_http_sse": 72,
+    "anthropic_http_sse": 72,
+    "responses_websocket": 72
+  },
+  "engine_private_after_warmup_bytes": 1135222784,
+  "engine_private_at_end_bytes": 941187072,
+  "engine_private_growth_after_warmup_bytes": 58904576,
+  "combined_load_cpu_one_core_percent": 4.395825955672112,
+  "warm_added_p95_ms": 49.88239999875077,
+  "warm_cpu_p95_ms": 46.875,
+  "checks": {
+    "duration": true,
+    "load": true,
+    "memory": true,
+    "cpu": true,
+    "latency": true
+  },
+  "environment": {
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "logical_cpus": 16
+  },
+  "external_provider_calls": 0,
+  "token_basis": "canonical_full_request_json_including_added_tool_schemas",
+  "token_encoding": "o200k_base",
+  "stderr_status": "controller_redirected_to_null_contents_unknown",
+  "inputs_unchanged": true,
+  "schema_version": 1,
+  "task": "H041",
+  "main_status": "open",
+  "local_status": "pass",
+  "evidence": {
+    "path": "work/proofs/optimization/stability/4c204b17-ecf7-44fd-a329-34d8e2667cb9/result.json",
+    "sha256": "0e479a753929946f9a17b7ee8b3fb18dc2e09db8a440642f6f551068f466bbbd"
+  },
+  "source_fingerprints_matched": 647,
+  "measured_requests": 600,
+  "warmup_requests": 96,
+  "engine_stop": {
+    "shutdown": "graceful",
+    "engine_exit_code": 0,
+    "owned_port_closed": true,
+    "force_fallback": false
+  },
+  "ccr_retrievals_verified": 249,
+  "scope": "Five minutes, one serial workload pair per second; not multi-hour or concurrent-user capacity."
+}

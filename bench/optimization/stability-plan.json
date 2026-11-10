@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "surfaces": ["responses_http_sse", "chat_http_sse", "anthropic_http_sse", "responses_websocket"],
+  "duration_seconds": 300,
+  "pair_interval_seconds": 1,
+  "conversation_turns": 3,
+  "memory_sample_interval_ms": 50,
+  "thresholds": {
+    "minimum_completed_pairs": 250,
+    "minimum_pairs_per_surface": 50,
+    "engine_observed_private_bytes": 1610612736,
+    "engine_private_growth_after_warmup_bytes": 134217728,
+    "combined_load_cpu_one_core_percent": 25,
+    "warm_added_p95_ms": 1000,
+    "warm_cpu_p95_ms": 2000
+  }
+}

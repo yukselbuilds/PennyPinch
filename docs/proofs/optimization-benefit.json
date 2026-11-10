@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "task": "H041",
+  "main_status": "open",
+  "local_slice": "H041-a1 Responses HTTP/SSE",
+  "local_status": "pass",
+  "host_windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "paired_workloads": 36,
+  "measured_requests": 72,
+  "process_runs": 3,
+  "source_fingerprints_matched": 586,
+  "warm_added_p95_ms": 67.3010999980761,
+  "warm_cpu_p95_ms": 62.5,
+  "maximum_observed_engine_private_bytes": 1127063552.0,
+  "cases": {
+    "source_read": {
+      "measured_requests": 9,
+      "minimum_saved_percent": 0.0,
+      "maximum_saved_percent": 0.0,
+      "ccr_retrievals_verified": 0.0
+    },
+    "numeric_read": {
+      "measured_requests": 9,
+      "minimum_saved_percent": 0.0,
+      "maximum_saved_percent": 0.0,
+      "ccr_retrievals_verified": 0.0
+    },
+    "repetitive_logs": {
+      "measured_requests": 9,
+      "minimum_saved_percent": 98.1510432325176,
+      "maximum_saved_percent": 98.22882817828058,
+      "ccr_retrievals_verified": 45.0
+    },
+    "short_json": {
+      "measured_requests": 9,
+      "minimum_saved_percent": 0.0,
+      "maximum_saved_percent": 0.0,
+      "ccr_retrievals_verified": 0.0
+    }
+  },
+  "token_basis": "canonical_full_request_json_including_added_tool_schemas",
+  "token_encoding": "o200k_base",
+  "external_provider_calls": 0,
+  "error_responses_verified": 6,
+  "error_upstream_attempts_per_request": {
+    "control": 1,
+    "headroom": 3
+  },
+  "provider_cache_discount": "unknown",
+  "model_ttft": "not_measured",
+  "response_quality": "not_measured",
+  "evidence": {
+    "path": "work/proofs/optimization/runs/6da3a8de-c1ff-457f-bcaa-9924b94b524b/result.json",
+    "sha256": "6e7e97709b4c3bcbcc0141118a250d51c2665b523f00635a5821ba1e595be9e4"
+  },
+  "earlier_driver_failure": {
+    "path": "work/proofs/optimization/runs/8bf20cf0-21cd-4e56-af74-6f0089743b63/result.json",
+    "code": "error_request_identity",
+    "reason": "The first driver expected one attempt for an upstream 429; pinned engine defaults to three.",
+    "thresholds_unchanged": true
+  }
+}

@@ -619,6 +619,185 @@ fn delayed_client_reader_receives_large_response_without_truncation() {
     assert!(shutdown.complete);
 }
 
+#[test]
+#[ignore = "H041 bounded 30s blocked-peer A/B; use bench/optimization/backpressure.py for resources"]
+fn long_blocked_peer_reports_real_relay_backpressure_and_preserves_bytes() {
+    use sha2::{Digest, Sha256};
+
+    let project = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap();
+    let plan: serde_json::Value = serde_json::from_slice(
+        &fs::read(project.join("bench/optimization/backpressure-plan.json")).unwrap(),
+    )
+    .unwrap();
+    let payload_bytes = plan["payload_bytes"].as_u64().unwrap() as usize;
+    let chunk_bytes = plan["chunk_bytes"].as_u64().unwrap() as usize;
+    let interval = plan["counter_interval_seconds"].as_u64().unwrap();
+    let blocked_seconds = plan["blocked_seconds"].as_u64().unwrap();
+    assert_eq!(payload_bytes, 4 * 1024 * 1024);
+    assert_eq!(chunk_bytes, 64 * 1024);
+    assert_eq!(blocked_seconds, 30);
+    assert_eq!(interval, 10);
+    let chunk: Vec<u8> = (0..chunk_bytes)
+        .map(|n| ((n * 31 + 7) % 251) as u8)
+        .collect();
+    let mut expected_hash = Sha256::new();
+    for _ in 0..payload_bytes / chunk_bytes {
+        expected_hash.update(&chunk);
+    }
+    let expected_hash = expected_hash.finalize();
+    let mut relay_observed = false;
+
+    for arm in ["direct", "relay"] {
+        let fixture = FixtureRoot::new();
+        let backend = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
+        backend.set_nonblocking(true).unwrap();
+        let port = backend.local_addr().unwrap().port();
+        let (accepted_tx, accepted_rx) = std::sync::mpsc::channel();
+        let backend_chunk = chunk.clone();
+        let backend_thread = thread::spawn(move || {
+            let Some((mut socket, _)) = accept_bounded(&backend, Duration::from_secs(2)) else {
+                return false;
+            };
+            let _ = accepted_tx.send(());
+            let _ = socket.set_read_timeout(Some(Duration::from_secs(5)));
+            let _ = socket.set_write_timeout(Some(Duration::from_secs(60)));
+            let mut request = [0u8; 1];
+            if socket.read_exact(&mut request).is_err() || request != [0x41] {
+                return false;
+            }
+            for _ in 0..payload_bytes / chunk_bytes {
+                if socket.write_all(&backend_chunk).is_err() {
+                    return false;
+                }
+            }
+            socket.shutdown(Shutdown::Write).is_ok()
+        });
+        let mut relay = if arm == "relay" {
+            let stable = StableIngress::open_or_create(&fixture.path).unwrap();
+            let mut relay = IngressRelay::new(stable, RelayLimits::default()).unwrap();
+            relay
+                .set_backend(test_target_waiting_for_accept(port, accepted_rx))
+                .unwrap();
+            Some(relay)
+        } else {
+            None
+        };
+        let address = relay.as_ref().map_or(
+            SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, port)),
+            IngressRelay::local_addr,
+        );
+        let (mut client, receive_buffer) = connect_with_receive_buffer(
+            address,
+            plan["receive_buffer_bytes"].as_i64().unwrap() as i32,
+        );
+        client
+            .set_read_timeout(Some(Duration::from_secs(15)))
+            .unwrap();
+        let session = relay.as_ref().map(|relay| {
+            assert!(wait_for_active(relay, 1));
+            relay
+                .shared
+                .control
+                .lock()
+                .unwrap()
+                .active
+                .values()
+                .next()
+                .unwrap()
+                .session
+                .clone()
+        });
+        client.write_all(&[0x41]).unwrap();
+        client.shutdown(Shutdown::Write).unwrap();
+        let blocked_start = Instant::now();
+        println!(
+            "H041_BACKPRESSURE {}",
+            serde_json::json!({
+                "arm": arm, "phase": "blocked_begin", "receive_buffer_bytes": receive_buffer,
+                "payload_bytes": payload_bytes, "cfg_test_counters": true
+            })
+        );
+        std::io::stdout().flush().unwrap();
+        let mut counter_samples = Vec::new();
+        for _ in 0..blocked_seconds / interval {
+            thread::sleep(Duration::from_secs(interval));
+            if let Some(session) = &session {
+                counter_samples.push([
+                    session.downstream_would_block.load(Ordering::Relaxed),
+                    session.downstream_bytes_written.load(Ordering::Relaxed),
+                ]);
+            }
+        }
+        let sustained = session.as_ref().map(|_| {
+            counter_samples.len() == 3
+                && counter_samples[1][0] > counter_samples[0][0]
+                && counter_samples[2][0] > counter_samples[1][0]
+                && counter_samples[2][1] < payload_bytes as u64
+        });
+        println!(
+            "H041_BACKPRESSURE {}",
+            serde_json::json!({
+                "arm": arm, "phase": "blocked_end",
+                "blocked_elapsed_ms": blocked_start.elapsed().as_secs_f64() * 1000.0,
+                "counter_samples": counter_samples, "sustained_backpressure": sustained
+            })
+        );
+        std::io::stdout().flush().unwrap();
+        thread::sleep(Duration::from_millis(
+            plan["post_phase_grace_ms"].as_u64().unwrap(),
+        ));
+
+        let mut received = 0usize;
+        let mut actual_hash = Sha256::new();
+        let mut buffer = vec![0; chunk_bytes];
+        let mut read_ok = true;
+        let read_started = Instant::now();
+        loop {
+            match client.read(&mut buffer) {
+                Ok(0) => break,
+                Ok(size) => {
+                    received += size;
+                    actual_hash.update(&buffer[..size]);
+                }
+                Err(_) => {
+                    read_ok = false;
+                    break;
+                }
+            }
+        }
+        let read_elapsed_ms = read_started.elapsed().as_secs_f64() * 1000.0;
+        let response_elapsed_ms = blocked_start.elapsed().as_secs_f64() * 1000.0;
+        drop(client);
+        let sent = join_bounded(backend_thread, Duration::from_secs(3)).unwrap_or(false);
+        let drained = relay
+            .as_mut()
+            .is_none_or(|relay| relay.shutdown(Duration::from_secs(1)).complete);
+        let exact = read_ok
+            && sent
+            && drained
+            && received == payload_bytes
+            && actual_hash.finalize() == expected_hash;
+        println!(
+            "H041_BACKPRESSURE {}",
+            serde_json::json!({
+                "arm": arm, "phase": "complete", "received_bytes": received,
+                "byte_exact": exact, "relay_drained": drained,
+                "read_elapsed_ms": read_elapsed_ms, "response_elapsed_ms": response_elapsed_ms
+            })
+        );
+        std::io::stdout().flush().unwrap();
+        fixture.cleanup();
+        assert!(exact, "blocked-peer payload or cleanup failed");
+        if arm == "relay" {
+            relay_observed = sustained == Some(true);
+        }
+    }
+    assert!(
+        relay_observed,
+        "real sustained relay-side WouldBlock was not observed"
+    );
+}
+
 fn connect_with_receive_buffer(address: SocketAddr, requested: i32) -> (TcpStream, usize) {
     use std::os::windows::io::{FromRawSocket, RawSocket};
     use windows_sys::Win32::Networking::WinSock::{

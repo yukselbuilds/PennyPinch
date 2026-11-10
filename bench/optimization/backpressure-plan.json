@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "payload_bytes": 4194304,
+  "chunk_bytes": 65536,
+  "receive_buffer_bytes": 2048,
+  "blocked_seconds": 30,
+  "counter_interval_seconds": 10,
+  "post_phase_grace_ms": 1000,
+  "thresholds": {
+    "one_core_cpu_percent": 10,
+    "private_growth_bytes": 33554432,
+    "test_timeout_seconds": 120
+  }
+}

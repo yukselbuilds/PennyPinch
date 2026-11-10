@@ -29,6 +29,8 @@ PROFILE_ENV = {
     "HEADROOM_MODEL_ROUTER_ENABLED": "0",
     "HEADROOM_NO_MEMORY_TOOLS": "1",
     "HEADROOM_NO_MEMORY_CONTEXT": "1",
+    # Load Kompress only when compression needs it, rather than in a daemon after ready.
+    "HEADROOM_KOMPRESS_WARMUP": "0",
 }
 SHIM_MARKER = re.compile(
     rb"headroom-desktop-cache-shim:version=(0\.41\.0);prefix_sha256=([0-9a-f]{64});shim_sha256=([0-9a-f]{64})"

@@ -1,5 +1,18 @@
 # Headroom Desktop — güncel devir
-9 Kasım 2026.
+10 Kasım 2026.
+
+## H041 — yerel kabul tamam · Dış doğrulama bekliyor
+
+- Kullanıcının sonraki görev isteğiyle H041 başladı. H039’un bu göreve ve H042’ye bağımlılığı sürüyor. Ana ajan token/ölçüm semantiği ve performans doğrulamasını üstlendi. [Plan027](decisions/027-optimization-regression.md).
+- H041-a1 geçti. Üç yeni motor süreci, dört fixture ve üç tur için 36 iş yükü iki kolda çalıştırıldı. Kaynak/sayısal veri ve prefix/araç kimlikleri korundu, CCR özgün içeriğe döndü. Isınmış ek p95 67,30 ms, CPU p95 62,5 ms. Sentetik log token azalması %98,15–98,23. [Kanıt](proofs/optimization-benefit.json).
+- İlk koşucu 429 için tek upstream denemesi bekledi ve `error_request_identity` ile durdu. Sabit motorun üç deneme sözleşmesine göre koşucu düzeltildi, hata denemeleri ve maliyetleri ayrıca kaydedildi. İlk başarısız kayıt korundu, performans eşikleri değişmedi.
+- H041-a2 geçti. İki kolda 4 MiB veri, 2048 bayt alım tamponu ve 30 saniye okumayan istemci. Gerçek relay istemci yazıcısında üç örneğin son iki penceresinde WouldBlock arttı. Okuma açılınca byte-exact veri ve cleanup geçti. Native test varyantı ortalama %0,052 CPU tek çekirdek ve gözlenen özel bellek artışı 0. [Kanıt](proofs/relay-backpressure.json).
+- H041-a3 protokol kolları geçti: üç yeni süreç/216 istek, 642 girdi eşleşti. Chat/Anthropic/WebSocket ısınmış ek p95 52,81/36,07/15,95 ms. Küçük Anthropic örneğinde yerel tam JSON token sayısı %20–28 arttı; negatif fayda korundu. [Kanıt](proofs/optimization-surfaces.json).
+- İlk beş dakikalık yükte 300 çift tamamlandı. Özel bellek artışı yaklaşık 605 MiB ile 128 MiB sınırını aştı. CPU ve gecikme geçti. Motor normal kod 0 ile kapandı. [Başarısızlık kaydı](proofs/optimization-stability-failure.json).
+- 120 saniyelik tanı artışı motor sürecine ayırdı. İzlenen içerik depoları yaklaşık 0,2 MiB idi. Uygulamanın açtığı motorda Kompress arka plan yüklemesi kapatıldı ve helper SHA güncellendi. Aynı 300 saniye planıyla bellek artışı 56,18 MiB, tepe 1138,81 MiB ve ek p95 49,88 ms ölçüldü. İki koşunun ayrı cache’inde isteğe bağlı model dosyaları da bulundu. [Aday koşu](proofs/optimization-stability.json).
+- Model dosyaları kapalı güncel tekrar 288 protokol isteği ve altı 429 yanıtıyla geçti. Beş dakikalık 600 istekte 24,12 MiB özel bellek artışı, 47,04 ms ek p95 ve tek çekirdeğin %4,09’u ölçüldü. 653 girdi eşleşti. Yeni relay tekrarında iki kolun aktarım süreleri ve byte eşitliği kaydedildi. [Güncel yerel kanıt](proofs/optimization-local-acceptance.json).
+- Yedi son yerel kontrol geçti. 173 arayüz testi, 392 Rust testi ve ayrı gerçek motor yeniden başlatma testi başarılı. 10 opt-in Rust testi normal test komutunda ignored. Kabulde 227 yerel kaynak ve araç girdisi eşleşti. CodeGraph beş değişen dosyayı güncelledi. [İnceleme](reviews/H041.md).
+- **Devir noktası.** Canlı Codex API-key ve Windows 11 kabulü açık. Bir sonraki doğrulama bu ortamlardan biri kullanılabildiğinde ayrı kanıt üretmektir. Ana görev kutusu açık, toplam 36/51. Ana ajan ölçüm ve runtime kararlarını üstlendi. Geliştirme token tasarrufu ölçülmedi.
 
 ## H038 — tamamlandı · Kaldırma ve veri tercihleri
 

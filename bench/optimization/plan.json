@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "surface": "responses_http_sse",
+  "process_runs": 3,
+  "conversation_turns": 3,
+  "cases": ["source_read", "numeric_read", "repetitive_logs", "short_json"],
+  "model": "o4-mini",
+  "reasoning_effort": "high",
+  "token_encoding": "o200k_base",
+  "token_basis": "canonical_full_request_json_including_added_tool_schemas",
+  "memory_sample_interval_ms": 50,
+  "upstream_error_expected_attempts": {"control": 1, "headroom": 3},
+  "thresholds": {
+    "startup_timeout_seconds": 100,
+    "request_timeout_seconds": 30,
+    "warm_added_p95_ms": 1000,
+    "warm_cpu_p95_ms": 2000,
+    "engine_observed_private_bytes": 1610612736,
+    "repetitive_logs_min_saved_fraction": 0.1
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "task": "H041-a2",
+  "main_status": "open",
+  "status": "pass",
+  "host_windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "scope": "cfg(test) Rust relay plus fixture threads; current private bytes; kernel buffers excluded",
+  "payload_bytes": 4194304,
+  "blocked_seconds": 30,
+  "receive_buffer_bytes": 2048,
+  "relay_counter_samples": [
+    [
+      3602,
+      65536
+    ],
+    [
+      7198,
+      65536
+    ],
+    [
+      10796,
+      65536
+    ]
+  ],
+  "measurements": {
+    "direct": {
+      "harness_cpu_ms": 0,
+      "engine_cpu_ms": 0.0,
+      "observed_engine_private_bytes": 1449984,
+      "observed_harness_private_bytes": 0,
+      "observed_working_set_bytes": 7208960,
+      "resource_samples": 480,
+      "one_core_cpu_percent": 0.0,
+      "private_growth_bytes": 0,
+      "blocked_elapsed_ms": 30003.987399999998
+    },
+    "relay": {
+      "harness_cpu_ms": 0,
+      "engine_cpu_ms": 15.625,
+      "observed_engine_private_bytes": 1589248,
+      "observed_harness_private_bytes": 0,
+      "observed_working_set_bytes": 8404992,
+      "resource_samples": 481,
+      "one_core_cpu_percent": 0.05208136049139792,
+      "private_growth_bytes": 0,
+      "blocked_elapsed_ms": 30001.1364
+    }
+  },
+  "byte_exact_both_arms": true,
+  "test_binary_sha256": "6f01604a9f33941319943bf54e7c1d45c9c26020c5661c581ae7af8fb2283b79",
+  "evidence": {
+    "path": "work/proofs/optimization/backpressure/11ad1255-32af-4290-b9cb-1c458698eb9b/result.json",
+    "sha256": "013c1626c6ccabcb72064fcd799596a9c7b61abe530ffdb6006386d0e3efcc06"
+  }
+}

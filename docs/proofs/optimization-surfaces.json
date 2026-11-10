@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "task": "H041",
+  "main_status": "open",
+  "local_status": "pass",
+  "host_windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "measured_requests": 216,
+  "process_runs": 3,
+  "source_fingerprints_matched": 642,
+  "protocols": {
+    "chat_http_sse": {
+      "warm_added_p95_ms": 52.80680000214488,
+      "warm_cpu_p95_ms": 62.5,
+      "paired_workloads": 36,
+      "cases": {
+        "numeric_read": {
+          "requests": 9,
+          "minimum_saved_percent": -0.06773346880027094,
+          "maximum_saved_percent": -0.04523607577042692,
+          "ccr_retrievals_verified": 0
+        },
+        "repetitive_logs": {
+          "requests": 9,
+          "minimum_saved_percent": 24.640439932318106,
+          "maximum_saved_percent": 49.34088526969282,
+          "ccr_retrievals_verified": 18
+        },
+        "short_json": {
+          "requests": 9,
+          "minimum_saved_percent": -2.5,
+          "maximum_saved_percent": -1.7857142857142858,
+          "ccr_retrievals_verified": 0
+        },
+        "source_read": {
+          "requests": 9,
+          "minimum_saved_percent": -0.1046709407300798,
+          "maximum_saved_percent": -0.06997288550686609,
+          "ccr_retrievals_verified": 0
+        }
+      },
+      "maximum_observed_engine_private_bytes": 1123860480
+    },
+    "anthropic_http_sse": {
+      "warm_added_p95_ms": 36.07370000099763,
+      "warm_cpu_p95_ms": 46.875,
+      "paired_workloads": 36,
+      "cases": {
+        "numeric_read": {
+          "requests": 9,
+          "minimum_saved_percent": -0.8439530762089628,
+          "maximum_saved_percent": -0.5641748942172073,
+          "ccr_retrievals_verified": 0
+        },
+        "repetitive_logs": {
+          "requests": 9,
+          "minimum_saved_percent": 16.23902360428583,
+          "maximum_saved_percent": 24.334520432184462,
+          "ccr_retrievals_verified": 9
+        },
+        "short_json": {
+          "requests": 9,
+          "minimum_saved_percent": -27.932960893854748,
+          "maximum_saved_percent": -20.491803278688526,
+          "ccr_retrievals_verified": 0
+        },
+        "source_read": {
+          "requests": 9,
+          "minimum_saved_percent": -1.3019138133055592,
+          "maximum_saved_percent": -0.8716116098666434,
+          "ccr_retrievals_verified": 0
+        }
+      },
+      "maximum_observed_engine_private_bytes": 1128431616
+    },
+    "responses_websocket": {
+      "warm_added_p95_ms": 15.949700000419398,
+      "warm_cpu_p95_ms": 46.875,
+      "paired_workloads": 36,
+      "cases": {
+        "numeric_read": {
+          "requests": 9,
+          "minimum_saved_percent": 0.0,
+          "maximum_saved_percent": 0.0,
+          "ccr_retrievals_verified": 0
+        },
+        "repetitive_logs": {
+          "requests": 9,
+          "minimum_saved_percent": 98.14809247512251,
+          "maximum_saved_percent": 98.22685788787484,
+          "ccr_retrievals_verified": 45
+        },
+        "short_json": {
+          "requests": 9,
+          "minimum_saved_percent": 0.0,
+          "maximum_saved_percent": 0.0,
+          "ccr_retrievals_verified": 0
+        },
+        "source_read": {
+          "requests": 9,
+          "minimum_saved_percent": 0.0,
+          "maximum_saved_percent": 0.0,
+          "ccr_retrievals_verified": 0
+        }
+      },
+      "maximum_observed_engine_private_bytes": 1134321664
+    }
+  },
+  "engine_stops": [
+    {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    },
+    {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    },
+    {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    }
+  ],
+  "token_basis": "canonical_full_request_json_including_added_tool_schemas",
+  "token_encoding": "o200k_base",
+  "model_ttft": null,
+  "provider_cache_discount": null,
+  "invoice_savings": null,
+  "response_quality": null,
+  "external_provider_calls": 0,
+  "evidence": {
+    "path": "work/proofs/optimization/surfaces/51cd1c80-41ee-45c2-a136-91fcc4239c93/result.json",
+    "sha256": "1fe7f1b6aba6452bcc66cea5e12819cfa4d0bd5cb9efd7e93a9cb1dac81ab5d5"
+  }
+}

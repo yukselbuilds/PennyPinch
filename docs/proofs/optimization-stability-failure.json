@@ -1,0 +1,65 @@
+{
+  "passed": false,
+  "load_resources": {
+    "harness_cpu_ms": 6281.25,
+    "engine_cpu_ms": 12453.125,
+    "observed_engine_private_bytes": 1541111808,
+    "observed_harness_private_bytes": 95559680,
+    "observed_working_set_bytes": 1129041920,
+    "resource_samples": 4794
+  },
+  "elapsed_seconds": 300.00066030000016,
+  "completed_pairs": 300,
+  "pairs_per_surface": {
+    "responses_http_sse": 84,
+    "chat_http_sse": 72,
+    "anthropic_http_sse": 72,
+    "responses_websocket": 72
+  },
+  "engine_private_after_warmup_bytes": 907218944,
+  "engine_private_at_end_bytes": 1265778688,
+  "engine_private_growth_after_warmup_bytes": 633892864,
+  "combined_load_cpu_one_core_percent": 6.244777921910457,
+  "warm_added_p95_ms": 48.66729999957897,
+  "warm_cpu_p95_ms": 31.25,
+  "checks": {
+    "duration": true,
+    "load": true,
+    "memory": false,
+    "cpu": true,
+    "latency": true
+  },
+  "environment": {
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "logical_cpus": 16
+  },
+  "external_provider_calls": 0,
+  "token_basis": "canonical_full_request_json_including_added_tool_schemas",
+  "token_encoding": "o200k_base",
+  "stderr_status": "controller_redirected_to_null_contents_unknown",
+  "inputs_unchanged": true,
+  "schema_version": 1,
+  "task": "H041",
+  "main_status": "open",
+  "local_status": "fail",
+  "evidence": {
+    "path": "work/proofs/optimization/stability/fb948098-85cf-4e71-a2ab-258f8c82795a/result.json",
+    "sha256": "4607cc24b1ea580cc1d1305ed71ac83e168b9ed7813d19b76723dc6ba76edac8"
+  },
+  "source_fingerprints_matched": 646,
+  "measured_requests": 600,
+  "warmup_requests": 96,
+  "engine_stop": {
+    "shutdown": "graceful",
+    "engine_exit_code": 0,
+    "owned_port_closed": true,
+    "force_fallback": false
+  },
+  "ccr_retrievals_verified": 249,
+  "scope": "Five minutes, one serial workload pair per second; not multi-hour or concurrent-user capacity."
+}

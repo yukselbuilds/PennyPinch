@@ -1,0 +1,62 @@
+# H041 — Optimizasyon ve gecikme
+
+10 Kasım 2026. Windows 10 x64 build 19045 yerel kabulü geçti. H041’in canlı API-key ve Windows 11 doğrulamaları açık. [Plan](../decisions/027-optimization-regression.md), [güncel yerel kanıt](../proofs/optimization-local-acceptance.json).
+
+`bench/optimization/replay.py --run` proje içindeki sabitlenmiş CPython 3.13.13 ile çalışır. Geliştirme manifestinin işaret ettiği payload ve hazırlanmış tokenizer verisi gerekir. `--self-check` dört fixture’ın çağrı kimlikleri ve geçmiş ekleme yapısını ağ çağrısı olmadan denetler. `--run`, ölçüm ve sağlık isteklerini loopback fixture’a yönlendirir. Kopyalanan test katmanında Hugging Face ve Transformers dosya indirmeleri kapalıdır. Sıfır model cache yükü ve parmak izi kontrolü kaydedilir. Ağ paketi izlemesi yapılmadı.
+
+Üç yeni controller/helper/engine süreci ve her örnekte üç konuşma turu kullanıldı. Aynı 36 iş yükü doğrudan loopback kontrolüne ve Headroom’a gönderildi. Model, reasoning ve sentetik auth korundu. Kaynak kodu ve kesin sayısal JSON `Read` aracında aynen kaldı. İletilmiş geçmiş prefix’i ve araç şemaları yeni turlarda eşleşti. CCR özgün logu döndürdü.
+
+| Fixture | Headroom isteği | Yerel token azalması |
+| --- | --- | --- |
+| Kaynak kodu | 9 | %0, içerik korundu |
+| Kesin sayısal JSON | 9 | %0, içerik korundu |
+| Tekrarlayan sentetik log | 9 | %98,15–98,23 |
+| Kısa JSON | 9 | %0 |
+
+Tokenlar iki kolda aynı `o200k_base` kodlamasıyla tam sıralanmış JSON üzerinden sayıldı. Eklenen araç şemaları dahil edildi. Bu örnek sonucu sağlayıcı cache indirimi veya fatura tasarrufu olarak sunulmaz. Gerçek model TTFT’si ve yanıt kalitesi ölçülmedi. İlk fixture içerik delta süresi, toplam süre ve CPU/RAM her normal istek kaydında var.
+
+Güncel koşuda ısınmış ek p95 gecikme 72,45 ms, istek CPU p95 78,125 ms. Gözlenen motor özel belleği en çok 855,67 MiB. Önceden belirlenen 1000 ms, 2000 ms ve 1536 MiB sınırları geçti. Bellek 50 ms aralıkla ve istek sınırlarında gözlendi. CPU kapsamı benchmark/fixture ve ilgili controller/helper/engine süreçleridir. Rust ingress ayrı ölçüldü.
+
+İlk koşu 24 normal isteği tamamladıktan sonra hata testinin tek upstream çağrısı varsayımında durdu. Sabit ProxyConfig 429 için üç deneme tanımlar. Koşucu bunu doğrulayacak ve gecikmesini kaydedecek biçimde düzeltildi. Son koşuda doğrudan kol 1, Headroom kolu 3 denemeyle 429 ve Retry-After değerini korudu. Headroom hata yanıtları yaklaşık 2,02–2,07 s sürdü. Eşikler değiştirilmedi. [İlk Responses ölçümü](../proofs/optimization-benefit.json).
+
+Üç süreç normal/graceful kod 0 ile kapandı, portlar kapandı. Ham istek, auth, kontrol sırrı ve stderr dökümü raporda tutulmadı. Stderr içeriği bilinmiyor olarak işaretlendi. Dış sağlayıcı çağrısı 0. Diğer yerel protokol ve relay sonuçları aşağıdadır. Gerçek API-key ve dış işletim sistemi kontrolleri açık.
+
+## Relay ve okumayan istemci
+
+`bench/optimization/backpressure.py` aynı 4 MiB veriyi doğrudan TCP ve Rust relay kolunda sınadı. İstemci alım tamponu 2048 bayt, okumadığı süre 30 s. Önceki 180 ms delayed-reader testi kendi kapsamıyla korundu. Yeni sayaçlar yalnız test derlemesinde, relay’in istemciye yazdığı noktadaki gerçek WouldBlock ve yazılan baytları kaydetti.
+
+10/20/30 s örneklerinde son iki aralık boyunca WouldBlock arttı ve aktarım bitmemişti. İstemci okumaya başladığında iki kolda da 4 MiB SHA-256 eşitliği ve cleanup geçti. Kaynak, plan ve test binary’si değişmedi. [Backpressure kanıtı](../proofs/relay-backpressure.json).
+
+Native test süreci dışarıdan örneklendi. Son tekrarda relay kolunda 46,875 ms CPU ile yaklaşık 30 s boyunca tek çekirdeğin %0,156’sı ve gözlenen özel bellek artışı 0 ölçüldü. Okumaya başlanmasından EOF’a kadar doğrudan kol 174,97 ms, relay kolu 143,71 ms sürdü. Bu süreler aynı makinedeki tek bir çiftin gözlemidir. Önceden belirlenmiş %10 CPU ve 32 MiB büyüme sınırları geçti. Ölçüm tek bağlantı ve test derlemesi kapsamındadır. [İlk backpressure ölçümü](../proofs/relay-backpressure.json).
+
+## Diğer protokoller
+
+`bench/optimization/surfaces.py --run` üç yeni motor süreciyle aynı dört içerik/üç turu Chat HTTP/SSE, Anthropic HTTP/SSE ve Responses WebSocket üzerinden çalıştırdı. 108 eşlenmiş iş yükünde 216 istek geçti. Kaynak/sayısal içerik, araç kimlikleri, model/reasoning, sentetik auth ve iletilmiş geçmiş prefix’i korundu. Bulunan CCR işaretlerinin özgün çıktıları geri alındı.
+
+| Yüzey | Sentetik log token azalması | Isınmış ek p95 | Isınmış CPU p95 |
+| --- | --- | --- | --- |
+| Chat HTTP/SSE | %24,64–49,34 | 60,18 ms | 62,5 ms |
+| Anthropic HTTP/SSE | %16,24–24,33 | 48,93 ms | 46,875 ms |
+| Responses WebSocket | %98,15–98,23 | 13,60 ms | 31,25 ms |
+
+Tablodaki log örnekleri farklı protokol zarflarıyla taşınır; sonuçlar bütün işlere uygulanacak genel tasarruf oranı değildir. Ek araç şemaları tam JSON token hesabına dahildir. Gerçek Anthropic tokenizer’ı/faturası, sağlayıcı cache isabeti, gerçek model TTFT’si ve yanıt kalitesi ölçülmedi. Anthropic kolunda istemcinin açık cache işareti sabit tutuldu. WebSocket konuşması aynı bağlantıda üç tur sürdü; açılış el sıkışması istek zamanlamasına dahil değil. Her yeni motorun başlangıç süresi ayrıca kaydedildi, işletim sistemi dosya cache’i sıfırlanmadı.
+
+Küçük veya korumalı içerikte ek şemaların maliyeti de korundu. Aşağıdaki negatif azalma token artışı demektir; korumalı araç çıktısının değiştiği anlamına gelmez.
+
+| Yüzey | Kaynak kodu | Kesin sayısal JSON | Kısa JSON |
+| --- | --- | --- | --- |
+| Chat HTTP/SSE | −%0,10…−%0,07 | −%0,07…−%0,05 | −%2,50…−%1,79 |
+| Anthropic HTTP/SSE | −%1,30…−%0,87 | −%0,84…−%0,56 | −%27,93…−%20,49 |
+| Responses WebSocket | %0 | %0 | %0 |
+
+Üç motor normal kod 0 ile kapandı, portlar kapandı. Güncel koşuda 648 kaynak ve araç girdisi önce ve sonra eşleşti. İlk koşunun doğrudan WebSocket bağlantısı uyarısı, sabit kütüphanenin açık `legacy=True` seçimiyle giderildi. Bağlantı yaşam döngüsü kontrollü biçimde sonlandırıldı. [İlk protokol ölçümü](../proofs/optimization-surfaces.json).
+
+## Süreli yük ve başlangıçta Kompress yüklemesi
+
+`bench/optimization/stability.py --run`, önce dört yüzey × dört içerik × üç tur × iki kol ile 96 isteği ısıttı. Ardından 300 saniye boyunca saniyede bir eşlenmiş iş yükü gönderdi. 300 çift/600 istek, kaynak/sayısal/araç/prefix/CCR kontrollerini tamamladı. CPU birleşik benchmark/fixture/controller/helper/engine kapsamıyla tek çekirdeğin %6,24’ü, ek p95 48,67 ms ve istek CPU p95 31,25 ms idi.
+
+İlk koşuda ısınma sonrası gözlenen özel bellek artışı yaklaşık 605 MiB ile 128 MiB sınırını aştı. Tepe yaklaşık 1470 MiB, bitiş yaklaşık 1207 MiB idi. Normal çıkış 0 ve port kapanışı geçti. 646 girdi eşleşti. [Başarısız koşu](../proofs/optimization-stability-failure.json).
+
+120 saniyelik tanıda izlenen içerik ve kayıt depoları yaklaşık 0,2 MiB düzeyinde kaldı. Artış motor sürecinde gözlendi. Sabit kaynakta model başlatıldıktan sonra Kompress’i arka planda yükleyen yol belirlendi. Headroom Desktop bu arka plan yüklemesini kendi motorunda kapattı. İstek gerektiğinde Kompress’i kullanma yolu korunur. Aynı 300 saniye planıyla sonraki koşuda özel bellek artışı 56,18 MiB, tepe 1138,81 MiB ve ek p95 49,88 ms ölçüldü. İki koşuda da ayrı Kompress dosyaları cache’e yazıldı. Bu gözlemler model dosyasının indirilme maliyeti ile yüklenme maliyetini tek başına ayırmaz. [Varsayılan motor ayarlarıyla düzeltme sonrası koşu](../proofs/optimization-stability.json).
+
+Model dosyası indirmeleri kapalı güncel koşu, aynı planla 300 çift, 600 istek ve 249 CCR geri alımı tamamladı. Artış 24,12 MiB, özel bellek tepesi 889,40 MiB, birleşik CPU tek çekirdeğin %4,09’u ve ek p95 47,04 ms oldu. Beş dakikalık pencere için önceden belirlenen bütün eşikler geçti. 653 girdi eşleşti. Motor normal çıkış kodu 0 ile kapandı ve port serbest kaldı. Hugging Face hub cache’inde model yükü sıfır bayttı. Sağlayıcı modeli, eşzamanlı çok istemci yükü ve saatlerce açık kalma ayrı kapsamda kalır.

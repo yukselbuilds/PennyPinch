@@ -158,6 +158,10 @@ struct Shared {
 
 struct ConnectionControl {
     cancelled: AtomicBool,
+    #[cfg(test)]
+    downstream_would_block: AtomicU64,
+    #[cfg(test)]
+    downstream_bytes_written: AtomicU64,
     started: Instant,
     last_activity: Mutex<Instant>,
     sockets: Mutex<Option<(TcpStream, TcpStream)>>,
@@ -168,6 +172,10 @@ impl ConnectionControl {
         let now = Instant::now();
         Self {
             cancelled: AtomicBool::new(false),
+            #[cfg(test)]
+            downstream_would_block: AtomicU64::new(0),
+            #[cfg(test)]
+            downstream_bytes_written: AtomicU64::new(0),
             started: now,
             last_activity: Mutex::new(now),
             sockets: Mutex::new(None),
@@ -746,11 +754,22 @@ fn relay_bidirectional(
                     return Err(RelayError::ClientWriteFailed);
                 }
                 Ok(written) => {
+                    #[cfg(test)]
+                    session
+                        .downstream_bytes_written
+                        .fetch_add(written as u64, Ordering::Relaxed);
                     downstream.consume(written);
                     session.note_activity();
                     progressed = true;
                 }
-                Err(error) if is_retryable_nonblocking(&error) => {}
+                Err(error) if is_retryable_nonblocking(&error) => {
+                    #[cfg(test)]
+                    if error.kind() == io::ErrorKind::WouldBlock {
+                        session
+                            .downstream_would_block
+                            .fetch_add(1, Ordering::Relaxed);
+                    }
+                }
                 Err(_) => {
                     session.cancel();
                     return Err(RelayError::ClientWriteFailed);
