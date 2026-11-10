@@ -150,6 +150,16 @@ fn rejects_signed_metadata_with_duplicate_version_or_mismatched_engine_pin() {
         verify_manifest(wrong_pin, wrong_pin_sig, &trusted).unwrap_err(),
         UpdateError::EnginePinMismatch
     );
+    let installed = Version::new(0, 1, 1);
+    assert_eq!(
+        verify_manifest(
+            wrong_pin,
+            wrong_pin_sig,
+            &policy(&installed, UpdateChannel::Stable)
+        )
+        .unwrap_err(),
+        UpdateError::EnginePinMismatch
+    );
 }
 
 #[test]

@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "task": "H042-b",
+  "local_status": "pass",
+  "main_status": "open",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "toolchain": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0"
+  },
+  "focused_rust_tests_passed": 13,
+  "app_tests_passed": 177,
+  "format_check_passed": true,
+  "focused_source_and_tool_fingerprints_matched": 336,
+  "native_input_fingerprints_matched": 182,
+  "common_source_fingerprints_matched": 165,
+  "native_app_sha256": "c5843db257227b2325c5a6d4c22d57fce51e0e8b045b51cf72c9a866c2124b9c",
+  "native_checks": {
+    "stream_began": true,
+    "metadata_visible": true,
+    "waiting_with_live_stream": true,
+    "stream_completed": true,
+    "ready_after_stop": true,
+    "english_visible": true,
+    "preview_separate": true,
+    "normal_exit_requested": true
+  },
+  "staged_files_remaining": 0,
+  "owned_ports_closed": true,
+  "live_model_provider_requests": 0,
+  "optional_model_cache_payload_bytes": 0,
+  "production_feed": "not_configured",
+  "production_signing_key": "not_configured",
+  "windows11": "not_tested",
+  "install_and_rollback": "not_tested",
+  "evidence": {
+    "focused": {
+      "path": "work/proofs/update/runs/4fafa0ee-169e-481c-8fc0-1610f6c5f257/flow-acceptance.json",
+      "sha256": "2fe6ce1cc9bb6e785e186548c0234072d897e9599d08e7159a6a9ad05cabf394"
+    },
+    "native": {
+      "path": "work/u42/d3144f76/result.json",
+      "sha256": "ea3bb0299e4f4afe51bc04c872dca3042b249f7264cb8952d46bf1ea32700ef3"
+    },
+    "screenshots": {
+      "waiting-tr.png": {
+        "path": "work/u42/d3144f76/waiting-tr.png",
+        "sha256": "4c1dd91a71efa42d7727e1339ff30f9ac756cfe236dee30c354a6ef3bb0311aa"
+      },
+      "ready-en.png": {
+        "path": "work/u42/d3144f76/ready-en.png",
+        "sha256": "ad30b6f9613064767ef896c0b1e06978bfd111eceb009cdab09b34ab5f8a6fcd"
+      }
+    }
+  }
+}

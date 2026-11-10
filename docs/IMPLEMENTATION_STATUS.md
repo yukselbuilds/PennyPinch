@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 10 Kasım 2026.
 
+## H042-b — yerel güncelleme ekranı ve indirme kabul edildi
+
+- Ayarlar’da kararlı/deneme kanalı, imzalı sürüm bilgileri ve boyut/hash doğrulamalı indirme var. Ana ajan kaynak güveni, geçici dosya sahipliği ve motor durumunun doğrulanmasını üstlendi. [Karar](decisions/028-update-trust.md).
+- Windows 10 x64 build 19045’te 13 odaklı Rust testi, 177 uygulama testi ve ayrı Tauri penceresinde 8 native kontrol geçti. Açık akış tamamlandı ve paket motor durunca hazır göründü. Kanal değişimi ve normal çıkışın ardından geçici dosya kalmadı, iki test portu kapandı. [Doğrulama](validation/windows-update.md), [kanıt](proofs/windows-update-flow.json).
+- **Devir noktası.** H042-c gerçek kurucu geçişi, hata kurtarma ve son çalışan sürüme dönüş. H042 ana kutusu açık, toplam 36/51. Üretim kaynağı ve açık anahtar yayın yapılandırmasına kaldı. H041 ve H037’nin açık dış kabulleri korunur. Geliştirme token tasarrufu ölçülmedi.
+
 ## H042-a — yerel imza ve bütünlük kabul edildi
 
 - Kullanıcı H041 ve H037’nin dış kabulleri açıkken H042-a’nın yerel dilimini onayladı. Ana ajan imza, kaynak ve sürüm güvenini üstlendi. H042-a, kararlı ve deneme sürümlerinin imzalı manifestinden doğrulanmış metadata üretir. Kurucu boyutu ve SHA-256 değeri akışta kontrol edilir. Motor sürümü ve payload manifesti mevcut pinlerle aynı olmalıdır. [Karar](decisions/028-update-trust.md).

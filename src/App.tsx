@@ -34,6 +34,7 @@ import { HeadroomMark, Icon } from "./components/Icon";
 import { ProblemNotice } from "./components/ProblemNotice";
 import { DesktopLifecycle } from "./components/DesktopLifecycle";
 import { Settings } from "./features/settings/Settings";
+import { Updates } from "./features/settings/Updates";
 
 type Screen = "overview" | "applications" | "activity" | "settings";
 type LifecycleAction = RuntimeAction;
@@ -429,6 +430,7 @@ export default function App() {
     persistedPreferences.current.operating,
     (operating) => changePreferences({ operating }),
     onApplicationsBusy,
+    `${snapshot?.runtime_generation ?? "none"}:${snapshot?.engine.status ?? "unknown"}`,
   );
 
   return <div className="app-shell">
@@ -480,6 +482,7 @@ function renderSettings(
   operating: OperatingPreferences,
   onOperatingSave: (preferences: OperatingPreferences) => Promise<void>,
   onOperatingBusy: (busy: boolean) => void,
+  runtimeKey: string,
 ) {
   const preferencesBusy = preferencesStatus === "loading" || preferencesStatus === "saving";
   const preferencesUnavailable = preferencesBusy || preferencesStatus === "error";
@@ -504,5 +507,6 @@ function renderSettings(
       <button className="text-button" disabled={preferencesBusy} onClick={onPreferencesRetry}>{labels.preferencesRetry}</button>
     </div>}
     <Settings language={language} preferences={operating} status={preferencesStatus} onSave={onOperatingSave} onBusyChange={onOperatingBusy} />
+    <Updates language={language} runtimeKey={runtimeKey} />
   </section>;
 }

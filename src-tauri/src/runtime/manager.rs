@@ -3834,6 +3834,21 @@ impl RuntimeManager {
         view.snapshot(request_id)
     }
 
+    pub(crate) fn update_engine_stopped(&self) -> bool {
+        if !self.actor_available || self.shutting_down.load(Ordering::SeqCst) {
+            return false;
+        }
+        let (Ok(runtime), Ok(ingress)) = (self.view.try_read(), self.ingress_view.try_read())
+        else {
+            return false;
+        };
+        runtime.status == EngineStatus::Stopped
+            && !runtime.cleanup_uncertain
+            && runtime.runtime_generation.is_none()
+            && ingress.route_status == "none"
+            && ingress.active_connection_count == Some(0)
+    }
+
     pub(crate) fn catalog_runtime(&self) -> CatalogRuntime {
         let mut view = self.view.write().unwrap_or_else(|p| p.into_inner());
         expire_stale_ready_view(&mut view, Instant::now());

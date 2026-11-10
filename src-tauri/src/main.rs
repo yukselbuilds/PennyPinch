@@ -269,6 +269,27 @@ async fn get_activity_detail(
     )
 }
 #[tauri::command]
+async fn manage_updates(
+    state: tauri::State<'_, desktop::update_flow::UpdateFlow>,
+    runtime: tauri::State<'_, RuntimeManager>,
+    lifecycle: tauri::State<'_, desktop::lifecycle::Lifecycle>,
+    request: desktop::update_flow::Request,
+) -> Result<desktop::update_flow::Reply, desktop::update_flow::Reply> {
+    use desktop::update_flow::Failure;
+    if lifecycle.is_exiting() {
+        return Ok(state.error(&request.request_id, Failure::Busy));
+    }
+    let id = request.request_id.clone();
+    let flow = state.inner().clone();
+    let runtime = runtime.inner().clone();
+    Ok(tauri::async_runtime::spawn_blocking(move || {
+        flow.handle(request, || runtime.update_engine_stopped())
+    })
+    .await
+    .unwrap_or_else(|_| state.error(&id, Failure::Unavailable)))
+}
+
+#[tauri::command]
 fn get_preferences(
     state: tauri::State<'_, PreferenceStore>,
     request_id: String,
@@ -640,6 +661,11 @@ fn main() {
                     }),
             );
             let codex_verifier = CodexVerifyManager::new(app_local_data_dir.clone());
+            app.manage(desktop::update_flow::UpdateFlow::new(
+                app.config().identifier.clone(),
+                app.package_info().version.clone(),
+                app_local_data_dir.clone(),
+            ));
             let metrics =
                 MetricsStore::new(app_local_data_dir).with_preferences(preferences.clone());
             let overview = OverviewManager::new(runtime.clone(), metrics.clone());
@@ -691,6 +717,7 @@ fn main() {
             export_report,
             get_activity_snapshot,
             get_activity_detail,
+            manage_updates,
             get_preferences,
             save_preferences,
             get_operating_snapshot,

@@ -4,19 +4,19 @@ use crate::runtime::manager::{EXPECTED_ENGINE_VERSION, EXPECTED_RUNTIME_MANIFEST
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use minisign_verify::{PublicKey, Signature};
 use semver::Version;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::io::{self, Read};
 
-const MANIFEST_LIMIT: usize = 32 * 1024;
-const SIGNATURE_LIMIT: usize = 4 * 1024;
+pub(super) const MANIFEST_LIMIT: usize = 32 * 1024;
+pub(super) const SIGNATURE_LIMIT: usize = 4 * 1024;
 const PUBLIC_KEY_LIMIT: usize = 1024;
 const NOTES_LIMIT: usize = 4 * 1024;
 const VERSION_LIMIT: usize = 64;
 const INSTALLER_LIMIT: u64 = 1024 * 1024 * 1024;
 const WINDOWS_TARGET: &str = "windows-x86_64";
 
-#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub(crate) enum UpdateChannel {
     Stable,
@@ -179,13 +179,13 @@ fn parse_manifest(bytes: &[u8], policy: &UpdatePolicy<'_>) -> Result<VerifiedUpd
     if version.pre.is_empty() != (manifest.channel == UpdateChannel::Stable) {
         return Err(UpdateError::WrongChannel);
     }
-    if !version.cmp_precedence(policy.installed_version).is_gt() {
-        return Err(UpdateError::VersionNotNewer);
-    }
     if manifest.engine.version != EXPECTED_ENGINE_VERSION
         || manifest.engine.runtime_manifest_sha256 != EXPECTED_RUNTIME_MANIFEST_SHA256
     {
         return Err(UpdateError::EnginePinMismatch);
+    }
+    if !version.cmp_precedence(policy.installed_version).is_gt() {
+        return Err(UpdateError::VersionNotNewer);
     }
     Ok(VerifiedUpdate {
         version,

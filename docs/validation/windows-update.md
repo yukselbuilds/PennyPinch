@@ -1,4 +1,6 @@
-# H042-a — Yerel güncelleme güveni
+# H042 — Windows güncelleme doğrulaması
+
+## H042-a — Yerel güncelleme güveni
 
 10 Kasım 2026. Windows 10 x64 build 19045 üzerinde yerel manifest ve kurucu bütünlüğü kabulü geçti. Ana H042’nin uygulama bağlantısı, gerçek güncelleme ve geri dönüş dilimleri açık. [Karar](../decisions/028-update-trust.md), [doğrulama kaydı](../proofs/windows-update-trust.json).
 
@@ -16,3 +18,19 @@ cargo test --offline --locked --manifest-path src-tauri/Cargo.toml desktop::upda
 ```
 
 Ana ajan imza kontrolünün ayrıştırmadan önce yapıldığını, manifestin güven anahtarı veya URL seçemediğini ve doğrulanmış metadata ile kurucu boyut/hash denetiminin aynı Rust tipi üzerinden geçtiğini inceledi. `minisign-verify` 0.3.0, mevcut Base64, SemVer ve SHA-256 bağımlılıklarıyla kullanıldı. H042-b yerel doğrulayıcıyı güvenilen kaynağa, sahipliği korunan indirmeye ve uygulama ekranına bağlar. H042-c kurulu sürüm geçişini ve son çalışan sürüme dönüşü gerçek paketlerle sınar.
+
+## H042-b — Güncelleme ekranı ve indirme
+
+10 Kasım 2026. Windows 10 x64 build 19045 üzerinde 13 odaklı Rust testi, 177 uygulama testi ve 8 native kontrol geçti. Doğrulama öncesi ve sonrası 336 odaklı kaynak/araç girdisi ve 182 native girdi eşleşti. İki koşunun ortak 165 girdisi de aynıydı. [Kanıt](../proofs/windows-update-flow.json).
+
+Türkçe Ayarlar ekranı ayrı bir Tauri/WebView2 test penceresinde kararlı `0.1.1` sürümünü, imzalı notu ve 39 baytlık fixture boyutunu gösterdi. Başlatılmış yerel model akışı, güncelleme indirilip doğrulanırken açık kaldı ve son yanıtı teslim etti. Paket, motor çalıştığı sürece bekledi ve motor durdurulunca hazır göründü. İngilizce ekran hazır durumu, deneme kanalı `0.1.1-rc.1` sürümünü gösterdi. Normal çıkıştan sonra geçici dosya kalmadı. Motor giriş portu ve test WebView portu kapandı. İlk koşulardaki bağlantı sayısı, durdurma düğmesi ve port gözlemi sorunları test sürücüsünde düzeltildi.
+
+Odaklı testler yanlış imzayı, yanlış hash’i, kesilen indirmeyi, HTTP yönlendirmesini ve önceki kanala ait aday kimliğini reddetti. Yanlış motor pini, kurulu sürümle aynı sürüm numarasında da reddedilir. Ana ajan arayüz eyleminden Tauri komutuna, kaynak ve açık dosya doğrulamasından motor durumuna kadar bağlı akışı inceledi. Bekleme kararı, motorun durduğuna dair doğrulama gerektirir. Kurulum sırasında durum yeniden doğrulanacaktır.
+
+Yerel test imzalı sentetik paket ve loopback kullanır. Üretim derlemesi doğrudan HTTPS tabanı ve güvenilen açık anahtarı `HEADROOM_DESKTOP_UPDATE_BASE_URL` ve `HEADROOM_DESKTOP_UPDATE_PUBLIC_KEY` üzerinden alır. Yayın yapılandırması, gerçek kurucu geçişi ve geri dönüş ile Windows 11 doğrulaması açık kalır.
+
+```powershell
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+cargo test --offline --locked --manifest-path src-tauri/Cargo.toml desktop::update -- --test-threads=1
+pnpm.cmd test:app
+```

@@ -399,6 +399,13 @@ h1 { color: var(--text); margin-bottom: 8px; font-size: clamp(28px, 2.9vw, 38px)
 .operating-settings__pins { color: var(--text); }
 .operating-settings__tools-applied { color: var(--quiet); }
 .operating-settings__section--status > .button { justify-self: start; }
+.update-refresh { justify-self: start; }
+.update-candidate { display: grid; gap: 13px; min-width: 0; padding: 13px; border: 1px solid var(--border); border-radius: 8px; }
+.update-candidate__details { display: flex; flex-wrap: wrap; gap: 12px 25px; margin: 0; }
+.update-candidate__details dt { color: var(--muted); font-size: 12px; }
+.update-candidate__details dd { margin: 3px 0 0; color: var(--text); font-size: 14px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.update-candidate__notes { max-height: 180px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.update-candidate > .button { justify-self: start; }
 @media (max-width: 520px) {
   .operating-settings__toggle, .operating-settings__retention { align-items: flex-start; }
   .operating-settings__retention { flex-direction: column; }
