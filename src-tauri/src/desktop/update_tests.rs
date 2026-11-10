@@ -187,7 +187,8 @@ fn enforces_installed_identity_and_closes_the_manifest_schema() {
     );
     let trusted = policy(&installed, UpdateChannel::Stable);
     let cases = [
-        ("/schema_version", json!(2), UpdateError::UnsupportedSchema),
+        ("/schema_version", json!(2), UpdateError::InvalidManifest),
+        ("/schema_version", json!(3), UpdateError::UnsupportedSchema),
         (
             "/target",
             json!("windows-aarch64"),
@@ -241,6 +242,49 @@ fn enforces_installed_identity_and_closes_the_manifest_schema() {
         parse_manifest(&serde_json::to_vec(&manifest).unwrap(), &trusted).unwrap_err(),
         UpdateError::InvalidManifest
     );
+}
+
+#[test]
+fn verifies_application_bytes_only_for_the_same_state_format() {
+    let installed = current_version();
+    let trusted = policy(&installed, UpdateChannel::Stable);
+    let mut manifest: Value = serde_json::from_slice(STABLE).unwrap();
+    let application = json!({
+        "state_format": 1,
+        "size_bytes": INSTALLER.len(),
+        "sha256": format!("{:x}", Sha256::digest(INSTALLER)),
+    });
+    manifest["application"] = application.clone();
+    assert_eq!(
+        parse_manifest(&serde_json::to_vec(&manifest).unwrap(), &trusted).unwrap_err(),
+        UpdateError::InvalidManifest
+    );
+    manifest["schema_version"] = json!(2);
+    let update = parse_manifest(&serde_json::to_vec(&manifest).unwrap(), &trusted).unwrap();
+    assert_eq!(update.installer_name(), "Headroom_0.1.1_x64-update.exe");
+    assert_eq!(update.application_size(), Some(INSTALLER.len() as u64));
+    update.verify_application(INSTALLER).unwrap();
+    assert_eq!(
+        update.verify_application(&vec![0; INSTALLER.len()][..]),
+        Err(UpdateError::InstallerHashMismatch)
+    );
+    assert_eq!(
+        update.verify_application(&INSTALLER[..INSTALLER.len() - 1]),
+        Err(UpdateError::InstallerSizeMismatch)
+    );
+
+    let mut other_format = application;
+    other_format["state_format"] = json!(2);
+    for (replacement, error) in [
+        (Value::Null, UpdateError::InvalidManifest),
+        (other_format, UpdateError::StateFormatMismatch),
+    ] {
+        manifest["application"] = replacement;
+        assert_eq!(
+            parse_manifest(&serde_json::to_vec(&manifest).unwrap(), &trusted).unwrap_err(),
+            error
+        );
+    }
 }
 
 #[test]

@@ -7,15 +7,18 @@ use reqwest::{
 };
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Seek, SeekFrom};
-use std::os::windows::fs::OpenOptionsExt;
+use std::os::windows::fs::{MetadataExt, OpenOptionsExt};
+use std::os::windows::process::CommandExt;
 use std::path::Path;
-use std::time::Duration;
+use std::process::{Command, Stdio};
+use std::time::{Duration, Instant};
 use uuid::Uuid;
 use windows_sys::Win32::Foundation::{GENERIC_READ, GENERIC_WRITE};
 use windows_sys::Win32::Storage::FileSystem::{
-    DELETE, FILE_ATTRIBUTE_TEMPORARY, FILE_FLAG_DELETE_ON_CLOSE, FILE_FLAG_OPEN_REPARSE_POINT,
-    FILE_FLAG_SEQUENTIAL_SCAN,
+    DELETE, FILE_ATTRIBUTE_REPARSE_POINT, FILE_ATTRIBUTE_TEMPORARY, FILE_FLAG_DELETE_ON_CLOSE,
+    FILE_FLAG_OPEN_REPARSE_POINT, FILE_FLAG_SEQUENTIAL_SCAN, FILE_SHARE_READ,
 };
+use windows_sys::Win32::System::Threading::CREATE_NO_WINDOW;
 
 pub(super) struct ReleaseSource {
     base: Url,
@@ -188,8 +191,119 @@ impl ReleaseSource {
         pins.validate().map_err(|_| Failure::StorageFailed)?;
         file.seek(SeekFrom::Start(0))
             .map_err(|_| Failure::StorageFailed)?;
+        if let Some(size) = update.application_size() {
+            return prepare_application(app_data, &mut file, update, size);
+        }
         Ok(file)
     }
+}
+
+fn prepare_application(
+    app_data: &Path,
+    package: &mut File,
+    update: &VerifiedUpdate,
+    size: u64,
+) -> Result<File, Failure> {
+    let scratch = app_data.join(format!(".headroom-extract-{}", Uuid::new_v4()));
+    fs::create_dir(&scratch).map_err(|_| Failure::StorageFailed)?;
+    let pins = pin_existing_directory_chain(&scratch).map_err(|_| Failure::StorageFailed)?;
+    let result = extract_application(&scratch, app_data, package, update, size);
+    pins.validate().map_err(|_| Failure::StorageFailed)?;
+    for name in ["package.exe", "application.exe"] {
+        match fs::remove_file(scratch.join(name)) {
+            Ok(()) => (),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => (),
+            Err(_) => return Err(Failure::StorageFailed),
+        }
+    }
+    drop(pins);
+    fs::remove_dir(&scratch).map_err(|_| Failure::StorageFailed)?;
+    result
+}
+
+fn extract_application(
+    scratch: &Path,
+    app_data: &Path,
+    package: &mut File,
+    update: &VerifiedUpdate,
+    size: u64,
+) -> Result<File, Failure> {
+    let path = scratch.join("package.exe");
+    let mut executable = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .share_mode(0)
+        .open(&path)
+        .map_err(|_| Failure::StorageFailed)?;
+    io::copy(package, &mut executable).map_err(|_| Failure::StorageFailed)?;
+    executable.sync_all().map_err(|_| Failure::StorageFailed)?;
+    drop(executable);
+
+    let mut locked_package = open_extraction_file(&path)?;
+    update
+        .verify_installer(&mut locked_package)
+        .map_err(|_| Failure::IntegrityFailed)?;
+    run_extraction(&path, scratch)?;
+
+    let extracted = open_extraction_file(&scratch.join("application.exe"))?;
+    let (mut application, pins) = create_staging_file(app_data)?;
+    let copied = io::copy(&mut extracted.take(size + 1), &mut application)
+        .map_err(|_| Failure::StorageFailed)?;
+    if copied != size {
+        return Err(Failure::IntegrityFailed);
+    }
+    application.sync_all().map_err(|_| Failure::StorageFailed)?;
+    application
+        .seek(SeekFrom::Start(0))
+        .map_err(|_| Failure::StorageFailed)?;
+    update
+        .verify_application(&mut application)
+        .map_err(|_| Failure::IntegrityFailed)?;
+    pins.validate().map_err(|_| Failure::StorageFailed)?;
+    application
+        .seek(SeekFrom::Start(0))
+        .map_err(|_| Failure::StorageFailed)?;
+    Ok(application)
+}
+
+fn open_extraction_file(path: &Path) -> Result<File, Failure> {
+    let file = OpenOptions::new()
+        .read(true)
+        .share_mode(FILE_SHARE_READ)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT)
+        .open(path)
+        .map_err(|_| Failure::PreparationFailed)?;
+    let metadata = file.metadata().map_err(|_| Failure::PreparationFailed)?;
+    if !metadata.is_file() || metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0 {
+        return Err(Failure::PreparationFailed);
+    }
+    Ok(file)
+}
+
+fn run_extraction(package: &Path, scratch: &Path) -> Result<(), Failure> {
+    let mut child = Command::new(package)
+        .arg("/HEADROOM-EXTRACT")
+        .current_dir(scratch)
+        .env("TEMP", scratch)
+        .env("TMP", scratch)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .creation_flags(CREATE_NO_WINDOW)
+        .spawn()
+        .map_err(|_| Failure::PreparationFailed)?;
+    let deadline = Instant::now() + Duration::from_secs(90);
+    while Instant::now() < deadline {
+        match child.try_wait() {
+            Ok(Some(status)) if status.success() => return Ok(()),
+            Ok(Some(_)) => return Err(Failure::PreparationFailed),
+            Ok(None) => std::thread::sleep(Duration::from_millis(25)),
+            Err(_) => break,
+        }
+    }
+    let _ = child.kill();
+    let _ = child.wait();
+    Err(Failure::PreparationFailed)
 }
 
 fn create_staging_file(app_data: &Path) -> Result<(File, PinnedDirectoryChain), Failure> {

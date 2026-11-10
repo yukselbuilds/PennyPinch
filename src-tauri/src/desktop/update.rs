@@ -14,6 +14,8 @@ const PUBLIC_KEY_LIMIT: usize = 1024;
 const NOTES_LIMIT: usize = 4 * 1024;
 const VERSION_LIMIT: usize = 64;
 const INSTALLER_LIMIT: u64 = 1024 * 1024 * 1024;
+const APPLICATION_LIMIT: u64 = 128 * 1024 * 1024;
+const UPDATE_STATE_FORMAT: u32 = 1;
 const WINDOWS_TARGET: &str = "windows-x86_64";
 
 #[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq, Serialize)]
@@ -42,6 +44,7 @@ pub(crate) enum UpdateError {
     WrongChannel,
     VersionNotNewer,
     EnginePinMismatch,
+    StateFormatMismatch,
     InstallerRead,
     InstallerSizeMismatch,
     InstallerHashMismatch,
@@ -57,7 +60,9 @@ struct Manifest {
     version: String,
     notes: String,
     engine: EnginePin,
-    installer: Installer,
+    installer: Artifact,
+    #[serde(default, deserialize_with = "present_application")]
+    application: Option<Application>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -69,9 +74,23 @@ struct EnginePin {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Installer {
+struct Artifact {
     size_bytes: u64,
     sha256: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Application {
+    state_format: u32,
+    size_bytes: u64,
+    sha256: String,
+}
+
+fn present_application<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<Application>, D::Error> {
+    Application::deserialize(deserializer).map(Some)
 }
 
 #[derive(Debug)]
@@ -79,7 +98,8 @@ pub(crate) struct VerifiedUpdate {
     version: Version,
     channel: UpdateChannel,
     notes: String,
-    installer: Installer,
+    installer: Artifact,
+    application: Option<Artifact>,
 }
 
 impl VerifiedUpdate {
@@ -100,17 +120,50 @@ impl VerifiedUpdate {
     }
 
     pub(crate) fn installer_name(&self) -> String {
-        format!("Headroom_{}_x64-setup.exe", self.version)
+        let kind = if self.application.is_some() {
+            "update"
+        } else {
+            "setup"
+        };
+        format!("Headroom_{}_x64-{kind}.exe", self.version)
     }
 
     pub(crate) fn verify_installer(&self, installer: impl Read) -> Result<(), UpdateError> {
+        self.installer.verify(installer)
+    }
+
+    #[cfg(any(windows, test))]
+    pub(super) fn application_size(&self) -> Option<u64> {
+        self.application.as_ref().map(|file| file.size_bytes)
+    }
+
+    #[cfg(any(windows, test))]
+    pub(super) fn verify_application(&self, application: impl Read) -> Result<(), UpdateError> {
+        self.application
+            .as_ref()
+            .ok_or(UpdateError::UnsupportedSchema)?
+            .verify(application)
+    }
+}
+
+impl Artifact {
+    fn valid(&self, limit: u64) -> bool {
+        (1..=limit).contains(&self.size_bytes)
+            && self.sha256.len() == 64
+            && self
+                .sha256
+                .bytes()
+                .all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
+    }
+
+    fn verify(&self, bytes: impl Read) -> Result<(), UpdateError> {
         let mut hasher = Sha256::new();
-        let mut bounded = installer.take(self.installer.size_bytes + 1);
+        let mut bounded = bytes.take(self.size_bytes + 1);
         let size = io::copy(&mut bounded, &mut hasher).map_err(|_| UpdateError::InstallerRead)?;
-        if size != self.installer.size_bytes {
+        if size != self.size_bytes {
             return Err(UpdateError::InstallerSizeMismatch);
         }
-        if format!("{:x}", hasher.finalize()) != self.installer.sha256 {
+        if format!("{:x}", hasher.finalize()) != self.sha256 {
             return Err(UpdateError::InstallerHashMismatch);
         }
         Ok(())
@@ -147,9 +200,24 @@ fn decode_tauri_text(text: &str, limit: usize) -> Option<String> {
 fn parse_manifest(bytes: &[u8], policy: &UpdatePolicy<'_>) -> Result<VerifiedUpdate, UpdateError> {
     let manifest: Manifest =
         serde_json::from_slice(bytes).map_err(|_| UpdateError::InvalidManifest)?;
-    if manifest.schema_version != 1 {
-        return Err(UpdateError::UnsupportedSchema);
-    }
+    let application = match (manifest.schema_version, manifest.application) {
+        (1, None) => None,
+        (2, Some(application)) => {
+            if application.state_format != UPDATE_STATE_FORMAT {
+                return Err(UpdateError::StateFormatMismatch);
+            }
+            let artifact = Artifact {
+                size_bytes: application.size_bytes,
+                sha256: application.sha256,
+            };
+            if !artifact.valid(APPLICATION_LIMIT) {
+                return Err(UpdateError::InvalidManifest);
+            }
+            Some(artifact)
+        }
+        (1 | 2, _) => return Err(UpdateError::InvalidManifest),
+        _ => return Err(UpdateError::UnsupportedSchema),
+    };
     if manifest.app_identifier != policy.app_identifier || manifest.target != WINDOWS_TARGET {
         return Err(UpdateError::WrongAppOrTarget);
     }
@@ -162,13 +230,7 @@ fn parse_manifest(bytes: &[u8], policy: &UpdatePolicy<'_>) -> Result<VerifiedUpd
             .notes
             .chars()
             .any(|c| c.is_control() && !matches!(c, '\t' | '\n' | '\r'))
-        || !(1..=INSTALLER_LIMIT).contains(&manifest.installer.size_bytes)
-        || manifest.installer.sha256.len() != 64
-        || !manifest
-            .installer
-            .sha256
-            .bytes()
-            .all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
+        || !manifest.installer.valid(INSTALLER_LIMIT)
     {
         return Err(UpdateError::InvalidManifest);
     }
@@ -192,6 +254,7 @@ fn parse_manifest(bytes: &[u8], policy: &UpdatePolicy<'_>) -> Result<VerifiedUpd
         channel: manifest.channel,
         notes: manifest.notes,
         installer: manifest.installer,
+        application,
     })
 }
 

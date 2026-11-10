@@ -338,3 +338,75 @@ fn configures_only_a_credential_free_https_source_or_explicit_loopback_fixture()
         Status::Unavailable
     );
 }
+
+#[test]
+#[ignore = "requires the isolated H042 signed NSIS fixture feed"]
+fn prepares_the_signed_nsis_application_and_refuses_incompatible_output() {
+    let base = std::env::var("HEADROOM_H042_PACKAGE_FIXTURE_URL").unwrap();
+    let key =
+        fs::read_to_string(std::env::var_os("HEADROOM_H042_PACKAGE_FIXTURE_PUBLIC_KEY").unwrap())
+            .unwrap();
+    assert!(key.len() <= 1024);
+    let key = Box::leak(key.into_boxed_str());
+    let root = test_root().join("app-data");
+    let flow = |base: &str| {
+        UpdateFlow::with_source(
+            "dev.headroom.desktop.h038-qa".into(),
+            semver::Version::new(0, 0, 9),
+            Some(root.clone()),
+            Some(ReleaseSource::new(base, key, true).unwrap()),
+        )
+    };
+    let update = flow(&base);
+    let candidate = check(&update, UpdateChannel::Stable);
+    let reply = request(
+        &update,
+        Action::Download {
+            candidate_id: candidate.id,
+        },
+        false,
+    );
+    assert_eq!(reply.status, Status::WaitingForEngine, "{:?}", reply.error);
+    {
+        let mut phase = update.0.phase.lock().unwrap();
+        let Phase::Candidate(candidate) = &mut *phase else {
+            panic!("staged candidate missing")
+        };
+        candidate
+            .update
+            .verify_application(candidate.staged.as_mut().unwrap())
+            .unwrap();
+    }
+    assert_eq!(
+        request(&update, Action::Snapshot, true).status,
+        Status::Ready
+    );
+    assert_eq!(fs::read_dir(&root).unwrap().count(), 1);
+
+    let changed = check(&update, UpdateChannel::Preview);
+    assert_eq!(fs::read_dir(&root).unwrap().count(), 0);
+    let reply = request(
+        &update,
+        Action::Download {
+            candidate_id: changed.id,
+        },
+        true,
+    );
+    assert_eq!(reply.error, Some(Failure::IntegrityFailed));
+    assert_eq!(
+        request(&update, Action::Snapshot, true).status,
+        Status::Available
+    );
+    assert_eq!(fs::read_dir(&root).unwrap().count(), 0);
+
+    let mismatch = flow(&format!("{base}state-format/"));
+    let reply = request(
+        &mismatch,
+        Action::Check {
+            channel: UpdateChannel::Stable,
+        },
+        true,
+    );
+    assert_eq!(reply.error, Some(Failure::InvalidRelease));
+    assert_eq!(fs::read_dir(&root).unwrap().count(), 0);
+}

@@ -34,3 +34,13 @@ cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
 cargo test --offline --locked --manifest-path src-tauri/Cargo.toml desktop::update -- --test-threads=1
 pnpm.cmd test:app
 ```
+
+## H042-c1 — İmzalı NSIS hazırlığı
+
+10 Kasım 2026. Windows 10 x64 build 19045’te NSIS 3.13, önceki doğrulanmış H038 QA exe’sinden 2.943.643 baytlık güncelleme paketi üretti. Paket hazırlama komutu olmadan kod 2 ile çıktı. Hedefteki mevcut dosyayı korudu. Normal çıkarma kaynak exe ile aynı SHA-256 değerini verdi. [Kanıt](../proofs/windows-update-package.json).
+
+Gerçek NSIS paketi üç geçici Tauri imzasıyla yerel HTTP fixture’ında sınandı. İmza ve paket özeti doğrulanınca NSIS ayrı dizinde çalıştı. Çıkarılan uygulama tekrar boyut ve özet kontrolünden geçti. Aynı boyuttaki yanlış özet ve uyumsuz veri biçimi ayrı reddedildi. Veri biçimi uyuşmazlığında paket isteği yapılmadı. İlk koşuda kalan NSIS geçici dizini, çıkarmayı mevcut çalışma dizinini değiştirmeden yapan yerleşik NSIS komutuyla düzeltildi. Fixture özel anahtarı silindi.
+
+Ayrı Tauri penceresinde `0.0.9` test sürümü, Ayarlar üzerinden `0.1.0` paketini indirip hazırladı. Deneme kanalındaki yanlış özet hata gösterdi ve yeniden indirme düğmesi kullanılabilir kaldı. Motor durmuş kaldı. Normal kapanışın ardından hazırlık dosyaları ile iki test portu temizlendi. 14 odaklı Rust, 1 gerçek NSIS, 177 uygulama testi, üretim arayüzü derlemesi ve 5 native kontrol geçti. 314 paket/araç girdisi, 189 native girdi ve iki koşunun ortak 166 girdisi eşleşti.
+
+Paket derlemesi, sabitlenmiş NSIS ve aynı sürümün gerçek release exe’siyle `src-tauri/windows-update.nsi` şablonuna `APPLICATION` ve `OUTPUT` tanımlarını geçirir. Üretimde bununla aynı sürüme ait imzalı v2 manifest ve uygulama özeti kullanılır. Sonraki doğrulama ayrı QA kurulumunda exe değişimi, açılış ve geri dönüştür. Disk dolu ve kesinti senaryoları, gerçek yayın kaynağı ve Windows 11 masaüstü kabulü açık kalır.

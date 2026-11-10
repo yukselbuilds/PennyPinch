@@ -34,6 +34,7 @@ pub(crate) enum Failure {
     StorageFailed,
     DownloadFailed,
     IntegrityFailed,
+    PreparationFailed,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]

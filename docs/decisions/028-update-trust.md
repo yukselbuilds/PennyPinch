@@ -27,3 +27,15 @@ Doğrulanmış adayın kimliği oturuma özeldir. Yeni kanal kontrolü eski aday
 Motorun aktif stream sayısı bilinmiyor. Bu yüzden indirme sonrası durum yalnız sahipli motorun durduğu doğrulanırsa hazır görünür. Çalışan, geçişteki veya durumu belirsiz motorda bekler. Bu gözlem kurulum izni olarak kullanılmaz. Motoru durdurma veya trafik kesme eylemi bu kontrolden çıkmaz.
 
 Kabul, geçerli yerel fixture’la kontrol→metadata→indirme→doğrulama, geçersiz imza/yanlış hash/yarım indirme/yönlendirme reddi, beklemede motor durumunun korunması ve TR/EN ayarlar akışını kapsar. Üretim imzası ve gerçek güncelleme/geri dönüş ayrı kanıttır.
+
+## H042-c1 — İmzalı uygulama paketi
+
+10 Kasım 2026. Ana ajan paket biçimi, çalıştırılan dosyanın güveni ve geçici alan sahipliğini üstlenir. Mevcut tam NSIS kurucusu temiz kurulum ve onarım yolunu korur. İlk güncelleme protokolü aynı motor pini, aynı kurulum kaynakları ve aynı yerel veri biçimiyle yalnız gömülü arayüzü taşıyan uygulama exe’sini hazırlar.
+
+İmzalı `schema_version: 2` manifest, `application` alanında `state_format: 1`, uygulamanın tam bayt sayısı ve SHA-256 değerini taşır. Boyut sınırı 128 MiB’dir. Paket adı `Headroom_<sürüm>_x64-update.exe` olur. v1 manifestleri H042-a/b’nin indirme sözleşmesini sürdürür. Kurulu uygulamayı değiştirme yetkisi için v2 hazırlanmış uygulama gerekir. Uyumsuz veri biçimi paket indirilmeden reddedilir.
+
+`src-tauri/windows-update.nsi` yalnız `/HEADROOM-EXTRACT` komutuyla çalışır. Tam kurucu yolu ve registry işlemleri ayrı kalır. Paket doğrulandıktan sonra, uygulama veri kökünde sabitlenmiş ayrı bir dizinde yalnız okumayı paylaşan açık handle ile çalıştırılır. NSIS dosyayı geçici dizinde çıkarır ve hedefte aynı ad varsa hata verir. Çıkan dosyanın boyutu ve SHA-256 değeri imzalı manifestle eşleşirse bir oturumluk, kapanınca silinen dosyaya aktarılır. [NSIS taşıma sözleşmesi](https://nsis.sourceforge.io/Reference/Rename).
+
+Yerel kabul için gerçek NSIS 3.13 paketi ve daha önce doğrulanmış QA exe’si kullanılır. İmzalı normal paket, aynı boyutta yanlış uygulama özeti, uyumsuz veri biçimi, komutsuz çalıştırma ve dolu hedef adı sınanır. Normal hazırlama ve bozuk çıktı reddinde geçici dosyaların kaldırıldığı gözlenir. Kullanıcının gerçek kurulum dosyaları ve veri kökü ayrı kalır.
+
+Sonraki dilim kurulu Windows uygulamasının sahipliğini doğrular. Motor ve bağlantı işlemleri güvenle kapandıktan sonra özel `.desktop-use` kilidini alır. Aynı diskteki tek uygulama dosyası atomik değiştirilir. Önceki çalışır exe ve kurulum sürüm bilgisi, mevcut kullanıcı verisine dokunmadan geri dönüşe bağlanır. Süreç kesintisi, disk dolu ve açılış uyumsuzluğu ayrı hata senaryolarıdır. İki masaüstü Windows kabulü açık kalır.

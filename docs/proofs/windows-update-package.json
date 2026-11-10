@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "task": "H042-c1",
+  "local_status": "pass",
+  "main_status": "open",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "toolchain": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0",
+    "nsis": "v3.13"
+  },
+  "focused_rust_tests_passed": 14,
+  "signed_nsis_test_passed": 1,
+  "app_tests_passed": 177,
+  "frontend_build_passed": true,
+  "package_checks": {
+    "exact_extraction": true,
+    "command_required": true,
+    "existing_file_preserved": true,
+    "signed_http_preparation": true,
+    "private_fixture_key_removed": true
+  },
+  "native_checks": {
+    "signed_package_listed": true,
+    "nsis_prepared_from_ui": true,
+    "bad_application_hash_refused": true,
+    "engine_remained_stopped": true,
+    "normal_exit_requested": true
+  },
+  "package_and_tool_fingerprints_matched": 314,
+  "native_input_fingerprints_matched": 189,
+  "common_input_fingerprints_matched": 166,
+  "installer": {
+    "size_bytes": 2943643,
+    "sha256": "e1dbeaecbb0bc40bf770b6853f61814fd2064ea65d3cf4534648a188deffd2b2"
+  },
+  "application": {
+    "size_bytes": 8760320,
+    "sha256": "381a94938ef70929202d0fc4377e65f8632acf2b75c38657691ee576a3bee750"
+  },
+  "owned_ports_closed": true,
+  "staged_files_remaining": 0,
+  "live_provider_requests": 0,
+  "installed_update_or_rollback": "not_tested",
+  "windows11": "not_tested",
+  "release_feed": "not_configured",
+  "evidence": {
+    "package": {
+      "path": "work/proofs/update/package/052429ae/result.json",
+      "sha256": "be89e8986662b0486e152b40b6291aaae3df1f97baf6f6f8e27154d03856f241"
+    },
+    "focused": {
+      "path": "work/proofs/update/package/052429ae/focused.json",
+      "sha256": "d1b471a05d1d9590123d892a24ff6b8ea9b6ba27b9f428b7cd3039eda244db38"
+    },
+    "native": {
+      "path": "work/u43/fe4a0f7c/result.json",
+      "sha256": "ddc4d9527840d88f500d472e7278f17e95ddce2844c2845f818557b06c4535d1"
+    },
+    "screenshots": {
+      "package-ready.png": {
+        "path": "work/u43/fe4a0f7c/package-ready.png",
+        "sha256": "fa73c0f157bd5786aaa7f32922009e2b1e8bec8f04d65afda6972ec015b7d875"
+      },
+      "package-refused.png": {
+        "path": "work/u43/fe4a0f7c/package-refused.png",
+        "sha256": "849f51bffc3e5c1792e4468b9558b92c6b73bc74e00bca0875c94e17f180cfea"
+      }
+    }
+  }
+}

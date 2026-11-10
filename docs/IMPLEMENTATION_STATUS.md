@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 10 Kasım 2026.
 
+## H042-c1 — imzalı uygulama paketi yerel kabulü geçti
+
+- Ana ajan paket ve süreç güvenini üstlendi. NSIS güncelleme paketi aynı motor pini ve veri biçimiyle yalnız uygulama dosyasını geçici alanda hazırlar. İmza, paket özeti ve çıkarılan exe’nin özeti ayrı doğrulanır. [Karar](decisions/028-update-trust.md).
+- Windows 10 x64 build 19045’te 14 odaklı Rust, 1 imzalı gerçek NSIS, 177 uygulama testi ve 5 native kontrol geçti. Ayarlar’dan geçerli paket hazırlandı, imzalı manifestteki yanlış exe özeti reddedildi ve test çıkışında hazırlık dosyası kalmadı. Uyumsuz veri biçimi indirmeden önce reddedildi. [Doğrulama](validation/windows-update.md), [kanıt](proofs/windows-update-package.json).
+- **Devir noktası.** H042-c2, kurulu exe’nin temiz kapanış sonrası atomik değiştirilmesi ve kullanıcı verisini koruyan geri dönüş. Gerçek kurulum, kesinti/disk dolu/açılış hatası ve Windows 11 x64 kabulü açık. Ana H042 açık, toplam 36/51. H041 ve H037’nin dış kabulleri korunur. Geliştirme token tasarrufu ölçülmedi.
+
 ## H042-b — yerel güncelleme ekranı ve indirme kabul edildi
 
 - Ayarlar’da kararlı/deneme kanalı, imzalı sürüm bilgileri ve boyut/hash doğrulamalı indirme var. Ana ajan kaynak güveni, geçici dosya sahipliği ve motor durumunun doğrulanmasını üstlendi. [Karar](decisions/028-update-trust.md).
