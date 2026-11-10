@@ -86,6 +86,8 @@ H035/H036 ek kapıları: `pnpm.cmd test:a11y` gerçek App'i izole transport ile 
 
 H038 kaldırma kabulü, Windows 10’da gerçek NSIS ve ayrı uygulama kimliğiyle yapıldı. Yerel kapıdan sonra ürün girdileri aynıysa testler yeniden çalıştırılmaz. Kaldırıcıyla ilgili değişiklikte açık uygulama, config kilidi/çatışması ve yerel veriyi saklama/silme yeniden gözlenir. Etkileşimsiz kaldırma veriyi saklar. Güncelleme yolu ayrı kabul edilir. [Kaldırma doğrulaması](../validation/uninstall.md).
 
+H039 Windows release kontrolü: `build-windows.ps1`, paketleme sonrası `HEADROOM_RELEASE_EXE_CANDIDATE` değişkenini sahipli release exe’sine ayarlayıp `test_windows_release_executable.py` çalıştırır ve önceki süreç ortamını geri yükler. Test gerçek dosyanın PE/x64/PE32+/GUI subsystem=2 alanlarını okur; kaynakta nitelik metni aramak değildir. Doğrudan testte bu ortam değişkeni verilmezse kontrol açıkça skipped olur ve release kabulü sayılmaz. [Son aday kanıtı](../validation/release-candidate.md).
+
 ## Geçmiş kod denetiminin sınırı
 
 DEV002'nin ilk raporu config Apply/Undo ve sahiplik → runtime/proxy → UI bağlantı yollarını önceliklendirir. CodeGraph ilişkileri keşfeder; raporlayacak ajan ilgili gerçek kaynağı okur. Her bulgu dosya/satır, oluşma koşulu, kullanıcı etkisi ve en küçük düzeltmeyle desteklenir. Kontrol edilmeyen alanlar yazılır. Rapor üretmek, bütün düzeltmeleri uygulamak veya ana görevleri kapatmak değildir.

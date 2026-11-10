@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "task": "H039",
+  "date": "2026-11-10",
+  "local_status": "pass",
+  "release_status": "local_candidate_only_not_a_public_or_clean_os_release",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "toolchain": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0"
+  },
+  "python_packaging_tests_passed": 18,
+  "rust_tests_passed": 413,
+  "rust_opt_in_not_run": 15,
+  "frontend_tests_reused": 179,
+  "frontend_input_fingerprints_matched": 112,
+  "final_source_fingerprints_matched": 232,
+  "profile": {
+    "lto": true,
+    "codegen_units": 1,
+    "strip": true,
+    "panic": "abort"
+  },
+  "nsis_compression": "lzma",
+  "installed_resources_verified": 22333,
+  "console_regression": {
+    "before_subsystem": 3,
+    "after_subsystem": 2,
+    "test": "tests/runtime/test_windows_release_executable.py",
+    "windows_packaging_guard": "scripts/build-windows.ps1"
+  },
+  "native_checks": {
+    "three_completed_scans_retained_manual_candidate": true,
+    "screen_remount_retained_manual_candidate": true,
+    "exit_cancel_preserved_app_and_candidate": true,
+    "normal_exit_code": 0,
+    "discovery_trace_observed": false
+  },
+  "human_assistance": [
+    "one Open confirmation in the native file picker"
+  ],
+  "automation": "open-computer-use accessibility patterns and window messages",
+  "file_picker_cancel_native_this_run": "not_tested",
+  "screenshot_limit": "Some background captures showed the foreground Codex window; those images were ignored. Assertions used the target Headroom accessibility tree and owned process exit proof.",
+  "packaging_transform": {
+    "kind": "tauri_nsis_bundle_type_marker",
+    "old": "__TAURI_BUNDLE_TYPE_VAR_UNK",
+    "new": "__TAURI_BUNDLE_TYPE_VAR_NSS",
+    "occurrences": 1,
+    "all_other_bytes_identical": true,
+    "primary_source": "work/caches/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-utils-2.10.2/src/platform.rs",
+    "primary_source_sha256": "5e12803d943b7728147c6223fe3e49ba532a0485b122fc47537398160f4092bc"
+  },
+  "installed_application": {
+    "path": "work/rc39/e8da13c3/packaged-application.bin",
+    "sha256": "bb24dee8b9366a3cde4937483d0a8ca4fd110ec4f398afd1e95e82de7d0a60b0"
+  },
+  "installer": {
+    "path": "work/rc39/e8da13c3/setup.exe",
+    "sha256": "fa5f3e86dbbe70ad8582d8689482b98fcfd5f5072dd944813ba4527bfb3934d6"
+  },
+  "cleanup": {
+    "uninstaller_exit_code": 0,
+    "registered_install_remaining": false,
+    "installed_application_remaining": false,
+    "qa_state_remaining": false,
+    "qa_sidecar_lock_remaining": false,
+    "interrupted_build_artifacts_retained_in_project": true
+  },
+  "platform_status": {
+    "windows_10_x64": "local_pass_build_19045",
+    "windows_11_x64": "not_tested_free_only_user_exception",
+    "macos": "port_pending",
+    "linux": "port_pending"
+  },
+  "open_external_acceptance": [
+    "H037_clean_windows_and_webview2_absent_environment",
+    "H041_live_codex_api_key",
+    "H042_production_feed_key_https_delivery",
+    "windows11_x64"
+  ],
+  "published": false,
+  "ci_dispatched": false,
+  "provider_requests": 0,
+  "evidence": {
+    "quality": {
+      "path": "work/rc39/e8da13c3/quality-acceptance.json",
+      "sha256": "e75a95d1dc4899ec0d1d7ced323589cb3f3f4b0de256ccf2747d4fdbc7d8a531"
+    },
+    "installed": {
+      "path": "work/rc39/e8da13c3/installed-acceptance.json",
+      "sha256": "c2207710a7a02ae62475751f165994b9aa5d3766d1efc469272cc95822af9b22"
+    },
+    "native": {
+      "path": "work/rc39/e8da13c3/native-exit.json",
+      "sha256": "1abb74cd3b0664c373b4a08a84c19b79325b39b44a57749e75e61ac31740926e"
+    },
+    "ui": {
+      "path": "work/rc39/e8da13c3/ui-observations.json",
+      "sha256": "c3f689a416729deb9d66de9e93f64aa48b6e71b2b71143d15e3cbbce29aedb26"
+    },
+    "cleanup": {
+      "path": "work/rc39/e8da13c3/cleanup.json",
+      "sha256": "a145a81bbc554177109ece959871d555358129e1b8bf4af0125fdb52f9dbf729"
+    },
+    "console_red": {
+      "path": "work/rc39/e8da13c3/console-red.json",
+      "sha256": "76e28fd3cddf36fdaa70e6c40ef15fe679c09641bbae29e63d0e66077b91cafd"
+    },
+    "rejected_console": {
+      "path": "work/rc39/e8da13c3/rejected-console.json",
+      "sha256": "5385cb98a32ad3e6db6430d315bb10195404505f23d3dfe255af060c29a40777"
+    }
+  },
+  "source_fingerprints": {
+    "src-tauri/src/main.rs": "cb13959ed2d3c11ba13ead176fbb73b9cca6f8165957f2d8620d8f2771cf5be0",
+    "scripts/build-windows.ps1": "bcdd90b620748e9878bad7b933de17ae269411fb4fa385e7eba0283125f547d6",
+    "tests/runtime/test_windows_release_executable.py": "4a357f970d06b46ae2bcc89dfd44a1c542accfbcb149ff533316df426b44b2e8"
+  },
+  "worker": {
+    "model": "gpt-6-luna",
+    "reasoning_effort": "xhigh",
+    "count": 1,
+    "scope": "README claim review and Turkish user guide draft"
+  },
+  "development_token_savings": "not_measured"
+}
