@@ -71,3 +71,9 @@ Kabul senaryoları:
 3. Mevcut çıktı, araç hatası veya hazırlık sırasında değişen girdi → reddet → önceki çıktı ve özgün girdiler korunur, sahipli yarım dizin kaldırılır.
 
 Odaklı kapı pinned Python ile `test_windows_update_package.py`, normal güncelleme Rust testleri ve gerçek NSIS/Tauri signer/Rust doğrulayıcı koşusudur. Ürün çalışma zamanı/arayüzü değişmez. Windows 11 x64 ve üretim kaynağı/anahtarı ana H042’de açık kalır.
+
+### H042-d2 — Gerçek uygulamayla yerel hazırlama
+
+Kullanıcının devam isteğiyle yerel hazırlık kapsamındaki kalan bağlantı doğrulanır: küçük probe fixture’ı yerine güncel Headroom kaynağından release modunda üretilen exe aynı komuttan geçer. Kaynak değiştirilmeden `TAURI_CONFIG` ile ayrı QA kimliği/sürümü ve derleme ortamında geçici açık anahtar kullanılır. HTTPS kaynağı ve `update-fixture` özelliği eklenmez. Önceden kullanılan LTO kapalı/16 codegen birimli QA profili korunur; bu, dağıtılabilir üretim derlemesi veya üretim performans kabulü sayılmaz.
+
+Geçerli uygulama → hazırlama → imza/hash/çıkarma/probe ve önce/sonra girdi eşitliği geçer. Gerçek exe ile config’in sürümü/kimliği veya açık anahtar farklıysa hazır çıktı oluşmaz. Test anahtarının özel kısmı sonunda silinir; mevcut kurulum/veri köküne yazılmaz. Değişmeyen testler ve frontend derlemesi yalnız kaynak/araç eşleşmesiyle yeniden kullanılır. Derleme ve hazırlama kanıtı yeni koşudan gelir; dış kabuller açık kalır.

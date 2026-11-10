@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 10 Kasım 2026.
 
+## H042-d2 — Gerçek uygulamayla yerel hazırlama tamam
+
+- Ana ajan imza/derleme sözleşmesini ve kabulü üstlendi. Güncel gerçek Headroom kaynağı değiştirilmeden `dev.headroom.desktop.h042d-557cd46e` QA kimliği ve geçici açık anahtarla release modunda derlendi. H042-d komutu paketi imzaladı; Rust doğrulaması, çıkarılan gerçek exe’nin hash’i ve probe’u geçti. Yanlış sürüm ve kimlikle native probe kod 2, hazırlama kod 1 verdi. Yanlış açık anahtar da hazır çıktı üretmeden reddedildi. [Kanıt](proofs/windows-update-real-application.json).
+- Önce/sonra 236 girdi ve araç sürümleri aynı. Frontend’in 60 girdisi son kabul edilen build ile aynı olduğundan yeniden derlenmedi; 7 Python/9 Rust testi 231 eşleşen girdiyle korundu. Özel test anahtarı silindi; yarım dizin ve QA uygulama verisi oluşmadı. Kaynak/arayüz/çalışma zamanı değişmedi; CodeGraph ve tam ürün testleri tekrarlanmadı. LTO kapalı/16 codegen birimli QA profili, üretim performansı veya kurulu uygulama kabulü sayılmaz.
+- **Devir noktası.** H042’nin yerel hazırlık dilimleri kapalı. Sonraki kabul gerçek yayın kaynağı/açık anahtarı, üretim profili ve HTTPS teslimi ile Windows 11 x64 doğrulamasıdır. Public repo, üretim anahtarı veya CI eklenmedi. Ana H042 açık, toplam 36/51. Sonraki ana göreve geçilmedi; yerel QA exe’si dağıtılmaz. Geliştirme token tasarrufu ölçülmedi.
+
 ## H042-d — Yerel yayın hazırlığı tamam
 
 - Kullanıcı ayrı public depo yerine yerel hazırlığı seçti. Ana ajan imza/paket güvenini üstlendi; yeni çalışan veya bağımlılık eklenmedi. `scripts/prepare-windows-update.py` aynı motor/veri biçimi için NSIS paketini, imzalı manifesti ve içeriksiz doğrulama makbuzunu hazırlar. Üretimdeki Rust doğrulayıcı, paket açma ve exe probe’u geçmeden çıktı yayımlanmaz. Bu, yerel dizinin atomik oluşturulmasıdır; ağ yayını yapılmadı.

@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "task": "H042-d2",
+  "date": "2026-11-10",
+  "local_status": "pass",
+  "main_status": "open",
+  "scope": "actual_headroom_release_mode_qa_no_source_overrides_or_fixture_feature",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "identifier": "dev.headroom.desktop.h042d-557cd46e",
+  "version": "0.1.1",
+  "release_profile": {
+    "lto": false,
+    "codegen_units": 16,
+    "strip": true
+  },
+  "toolchain": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0"
+  },
+  "source_overrides": false,
+  "update_fixture_feature": false,
+  "update_source_configured": false,
+  "frontend_and_embedded_assets_reused": 60,
+  "reused_python_tests_passed": 7,
+  "reused_rust_tests_passed": 9,
+  "reused_test_input_fingerprints_matched": 231,
+  "build_and_probe_input_fingerprints_matched": 236,
+  "application": {
+    "path": "work/proofs/update/release-preparation/application-557cd46e/headroom-desktop.exe",
+    "size_bytes": 9915392,
+    "sha256": "955273737dafd11c4324f400e6744ef105b0e8d13b0c006f9f04b352ab5503af"
+  },
+  "release_receipt": {
+    "path": "work/proofs/update/release-preparation/application-557cd46e/prepared/release-receipt.json",
+    "sha256": "c2f75cbe3fb91e9dbb2a156851c81ee2f75698cfb6446069b462ff65aef44e20"
+  },
+  "files": {
+    "manifest.json": "959c5c4b1505b144759e1fde30caa399fa7631b8f5c3d63ec794c45afcc11233",
+    "manifest.json.sig": "e7995b2021af0a1e05838e9edd38acdd4f7c7e4f67e7e35d87542df150e15638",
+    "Headroom_0.1.1_x64-update.exe": "7cbaff2f6af977b595464bfa27f20244256d5c7a8286072e527e2e5a036e6871"
+  },
+  "commands": [
+    {
+      "name": "temporary-fixture-key",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "actual-headroom-release-build",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "actual-application-probe",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "prepare-real-headroom-package",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "wrong-version-native-probe",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "passed": true
+    },
+    {
+      "name": "wrong-version-preparation-refused",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "wrong-identifier-native-probe",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "passed": true
+    },
+    {
+      "name": "wrong-identifier-preparation-refused",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "wrong-embedded-key-refused",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "passed": true
+    }
+  ],
+  "private_fixture_key_removed": true,
+  "owned_partial_directories_remaining": 0,
+  "qa_state_created": false,
+  "published": false,
+  "new_public_repository_created": false,
+  "ci_dispatched": false,
+  "provider_requests": 0,
+  "evidence": {
+    "native": {
+      "path": "work/proofs/update/release-preparation/application-557cd46e/application.json",
+      "sha256": "3b6df544b065950e8b5993572d5bf3d640fb202a2d81516c6726542e5964c8eb"
+    },
+    "reused_tests": {
+      "path": "work/proofs/update/release-preparation/final-1.json",
+      "sha256": "20593dc5cdfc63fce4ba7a4a2778c755a2fbf9b19f85992fe35a71bc7853bfe3"
+    }
+  },
+  "source_fingerprints": {
+    "src-tauri/src/main.rs": "b7bb3e8748d8fac8c32333bcf130bf93b66e17627d92de7cc2df7c58f7fc1ded",
+    "src-tauri/src/desktop/update_install.rs": "7ae01742ead7eb7a4c395e32d1f6a0fac5d815fc4e80786afdb4b3131503c617",
+    "src-tauri/src/desktop/update_source.rs": "64aadcf5953fd794cc76de4e4411b4f3d8d9eb1ba7c397ea8951a48a18d0b60d",
+    "scripts/prepare-windows-update.py": "3e8ac5e1f54b9734cb63424c1308e13d14b2296b59ffa381afe0e954e8e0448a"
+  },
+  "open_acceptance": [
+    "windows11_x64",
+    "production_update_feed",
+    "production_signing_key",
+    "production_release_profile_and_https_delivery"
+  ],
+  "not_tested": [
+    "native_ui_in_this_run",
+    "installed_update_in_this_run",
+    "production_lto_profile"
+  ],
+  "development_token_savings": "not_measured"
+}
