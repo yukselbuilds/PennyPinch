@@ -1061,10 +1061,16 @@ mod windows_impl {
 #[cfg(windows)]
 pub(crate) use windows_impl::FileTransaction;
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+#[path = "transaction_macos.rs"]
+mod macos_impl;
+#[cfg(target_os = "macos")]
+pub(crate) use macos_impl::FileTransaction;
+
+#[cfg(not(any(windows, target_os = "macos")))]
 pub(crate) struct FileTransaction;
 
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "macos")))]
 impl FileTransaction {
     pub(crate) fn begin() -> Result<Self, TransactionFsError> {
         Err(TransactionFsError::Unsupported)

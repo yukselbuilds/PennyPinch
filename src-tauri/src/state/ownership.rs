@@ -411,7 +411,14 @@ impl OwnershipStore {
                         chain.validate().map_err(map_config_io_error)?;
                     }
                     self.verify_boundary()?;
-                    match fs::create_dir(&current) {
+                    #[cfg(target_os = "macos")]
+                    let creation = {
+                        use std::os::unix::fs::DirBuilderExt;
+                        fs::DirBuilder::new().mode(0o700).create(&current)
+                    };
+                    #[cfg(not(target_os = "macos"))]
+                    let creation = fs::create_dir(&current);
+                    match creation {
                         Ok(()) => {}
                         Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {}
                         Err(_) => return Err(OwnershipError::Unavailable),
@@ -452,6 +459,10 @@ impl OwnershipStore {
         let slot_path = root
             .unwrap_or_else(|| self.boundary.join(&self.relative_root))
             .join(slot_filename(kind));
+        #[cfg(target_os = "macos")]
+        transaction
+            .bind_ownership_path(&slot_path, Some(config_path_binding_sha256))
+            .map_err(map_transaction_error)?;
         let metadata = match fs::symlink_metadata(&slot_path) {
             Ok(metadata) => metadata,
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
@@ -469,7 +480,7 @@ impl OwnershipStore {
         if !metadata.is_file() || is_reparse(&metadata) {
             return Err(OwnershipError::UnsafePath);
         }
-        #[cfg(windows)]
+        #[cfg(any(windows, target_os = "macos"))]
         {
             let (token, FileSnapshot { bytes, .. }) = transaction
                 .open_existing(&slot_path, MAX_RECORD_BYTES)
@@ -492,7 +503,7 @@ impl OwnershipStore {
                 record_fingerprint: Some(content_hash(&bytes)),
             })
         }
-        #[cfg(not(windows))]
+        #[cfg(not(any(windows, target_os = "macos")))]
         {
             let _ = transaction;
             Err(OwnershipError::Unsupported)
@@ -510,6 +521,10 @@ impl OwnershipStore {
             return Ok(None);
         };
         let slot_path = root.join(slot_filename(kind));
+        #[cfg(target_os = "macos")]
+        transaction
+            .bind_ownership_path(&slot_path, None)
+            .map_err(map_transaction_error)?;
         let metadata = match fs::symlink_metadata(&slot_path) {
             Ok(metadata) => metadata,
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
@@ -518,7 +533,7 @@ impl OwnershipStore {
         if !metadata.is_file() || is_reparse(&metadata) {
             return Err(OwnershipError::UnsafePath);
         }
-        #[cfg(windows)]
+        #[cfg(any(windows, target_os = "macos"))]
         {
             let (_, FileSnapshot { bytes, .. }) = transaction
                 .open_existing(&slot_path, MAX_RECORD_BYTES)
@@ -532,7 +547,7 @@ impl OwnershipStore {
                 record_fingerprint: content_hash(&bytes),
             }))
         }
-        #[cfg(not(windows))]
+        #[cfg(not(any(windows, target_os = "macos")))]
         {
             let _ = transaction;
             Err(OwnershipError::Unsupported)
@@ -569,14 +584,14 @@ impl OwnershipStore {
                 if next.state() != OwnershipState::Active || next.revision() != 1 {
                     return Err(OwnershipError::Conflict);
                 }
-                #[cfg(windows)]
+                #[cfg(any(windows, target_os = "macos"))]
                 {
                     let (token, _) = transaction
                         .create_missing(&current.slot_path, MAX_RECORD_BYTES)
                         .map_err(map_transaction_error)?;
                     token
                 }
-                #[cfg(not(windows))]
+                #[cfg(not(any(windows, target_os = "macos")))]
                 return Err(OwnershipError::Unsupported);
             }
             Some(previous) => {
@@ -586,13 +601,13 @@ impl OwnershipStore {
                 current.token.ok_or(OwnershipError::Conflict)?
             }
         };
-        #[cfg(windows)]
+        #[cfg(any(windows, target_os = "macos"))]
         {
             transaction
                 .replace_contents(token, &bytes)
                 .map_err(map_transaction_error)
         }
-        #[cfg(not(windows))]
+        #[cfg(not(any(windows, target_os = "macos")))]
         {
             let _ = (transaction, token, bytes);
             Err(OwnershipError::Unsupported)
@@ -645,6 +660,73 @@ impl OwnershipStore {
     pub(super) fn file_path_for_test(&self, kind: ClientKind) -> PathBuf {
         self.slot_path(kind)
     }
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn validate_macos_publication(
+    config_path: &Path,
+    owner_filename: &str,
+    previous_owner: Option<&[u8]>,
+    next_owner: &[u8],
+    before_config: Option<&[u8]>,
+    after_config: &[u8],
+) -> Result<(), OwnershipError> {
+    let next = OwnershipRecord::decode(next_owner)?;
+    let previous = previous_owner.map(OwnershipRecord::decode).transpose()?;
+    let kind = next.client_kind().ok_or(OwnershipError::Invalid)?;
+    let expected_leaf = match (next.config_source(), next.config_scope()) {
+        (Some(ConfigSource::CodexToml), Some(ConfigScope::UserConfig)) => "config.toml",
+        (Some(ConfigSource::ClaudeJson), Some(ConfigScope::UserConfig)) => "settings.json",
+        (Some(ConfigSource::ClaudeJson), Some(ConfigScope::ProjectLocalConfig)) => {
+            "settings.local.json"
+        }
+        (Some(ConfigSource::OpenCodeJson), Some(ConfigScope::UserConfig)) => "opencode.json",
+        (Some(ConfigSource::OpenCodeJsonc), Some(ConfigScope::UserConfig)) => "opencode.jsonc",
+        _ => return Err(OwnershipError::Invalid),
+    };
+    if owner_filename != slot_filename(kind)
+        || config_path.file_name().and_then(|value| value.to_str()) != Some(expected_leaf)
+        || config_path_binding(config_path)? != next.config_path_binding_sha256()
+        || !previous.as_ref().map_or(
+            next.state() == OwnershipState::Active && next.revision() == 1,
+            |previous| valid_transition(previous, &next),
+        )
+    {
+        return Err(OwnershipError::Conflict);
+    }
+    let empty: &[u8] = if kind == ClientKind::Codex {
+        b""
+    } else {
+        b"{}"
+    };
+    let before = before_config.unwrap_or(empty);
+    match next.state() {
+        OwnershipState::Active => {
+            if next.config_was_missing() != before_config.is_none()
+                || next.stored.before_config_sha256 != content_hash(before)
+                || next.stored.after_config_sha256 != content_hash(after_config)
+                || crate::integrations::transaction::undo_owned_endpoint(
+                    &next.patch_receipt()?,
+                    after_config,
+                )
+                .is_err()
+            {
+                return Err(OwnershipError::Conflict);
+            }
+        }
+        OwnershipState::Released => {
+            if before_config.is_none()
+                || !crate::integrations::transaction::undo_owned_endpoint(
+                    &next.patch_receipt()?,
+                    before,
+                )
+                .is_ok_and(|bytes| bytes == after_config)
+            {
+                return Err(OwnershipError::Conflict);
+            }
+        }
+    }
+    Ok(())
 }
 
 fn valid_transition(previous: &OwnershipRecord, next: &OwnershipRecord) -> bool {

@@ -34,4 +34,12 @@ Microsoft [yeni TxF bağımlılıkları yerine alternatifleri öneriyor ve ileri
 
 ## Kabul sırası
 
+### macOS APFS adayı — H048-b6b
+
+Windows'un TxF sözleşmesi macOS'a genellenmez. APFS adayı config ve sahipliği ayrı atomik adlarla yayımlar. İki adım arasındaki kesinti, özel uygulama dizinindeki bounded intent ve inode/birth/metadata/içerik özetleriyle tanınır. Yeniden başlatma, eski planı config yazmak için canlandırmaz. Açık kullanıcı eylemi yalnız yayımlanmış config ile eşleşen sahiplik adımını tamamlayabilir; henüz yayımlanmamış intent iptal işareti alır. Salt okunur keşif/snapshot kurtarma yazımı yapmaz.
+
+Kurtarmayı doğru hedefle eşleştirmek için config'in kayıpsız mutlak yol baytları minimum metadata olarak özel state'te tutulur. Kaydedilmiş yol tek başına dosya açma yetkisi değildir; aktif backend hedefi, path binding ve parent kimliği eşleşmelidir. Başka proje hedefi açılmaz. Ham config, auth ve xattr değerleri bu state'e yazılmaz. Mevcut dosyanın staging kopyası kendi istemci dizinindedir; ACL/izin/xattr metadata'sı açık kaynak descriptor'dan `fcopyfile(COPYFILE_METADATA)` ile aktarılır. [Apple copyfile kılavuzu](https://github.com/apple-oss-distributions/copyfile/blob/main/copyfile.3).
+
+Swap ile taşınan eski inode otomatik silinmez. Açık descriptor'a geç yazım korunur ve yeni aynı-hedef eylemini conflict ile durdurur. 64 intent sınırı veri silerek aşılmaz. Bu sınırın kullanıcıya sunumu ve korunmuş sürümlerin güvenli çözümü H048'in açık kabulüdür. Bu bir çok dosyalı katı CAS veya fiziksel güç kaybı garantisi değildir. Mevcut dizindeki config dosyası ilk yazım kapsamıdır; eksik Claude proje dizini ayrıca açıktır. Üretim yazım kodunun native kabulü henüz tamamlanmadı.
+
 H018-a gerçek Windows primitive/yayın deneyi; H018-b byte-preserving patch/undo ve sırsız sahiplik kaydı; H018-c manager/typed komut/UI bağı; H018-d inceleme, son kalite kapısı ve gerçek native fixture akışı. Alt dilim PASS'i ana görevi tamamlamaz. [Görev listesi](../../TASKS.md), [devir noktası](../IMPLEMENTATION_STATUS.md).

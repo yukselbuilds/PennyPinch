@@ -87,7 +87,8 @@ jobs:
           if [[ "$HEADROOM_VERIFY_CONFIG_RECOVERY" == true ]]; then
             test_filters=(state::ownership::macos_recovery::
                           state::ownership::codec_tests::macos_
-                          integrations::config_io::macos::)
+                          integrations::config_io::macos::
+                          integrations::transaction_fs::macos_impl::)
           fi
           fingerprint() {
             git rev-parse HEAD 'HEAD^{tree}'
@@ -131,7 +132,7 @@ jobs:
                 detail > 0 { print substr($0, 1, 240); detail-- }
                 /^test .* \.\.\. FAILED$/ || /^test result: / { print substr($0, 1, 240) }' "$build_log"
             else
-              awk '/^test state::ownership::/ || /^test integrations::config_io::macos::/ || /^test result: / { print }' "$build_log"
+              awk '/^test state::ownership::/ || /^test integrations::config_io::macos::/ || /^test integrations::transaction_fs::macos_impl::/ || /^test result: / { print }' "$build_log"
               if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
                 cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
                   --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
@@ -172,9 +173,9 @@ jobs:
           printf '%s\n' '## macOS build' '' "- Commit: $GITHUB_SHA" \
             '- Frontend typecheck/build, selected native Rust tests and locked Tauri build passed.' \
             "- Apple Silicon executable SHA-256: $binary_sha" \
-            '- Scope: native executable build. Client config writes, signing, bundle and UI lifecycle untested.' >> "$GITHUB_STEP_SUMMARY"
+            '- Scope: native executable build. Installed client configs, signing, bundle and UI lifecycle untested.' >> "$GITHUB_STEP_SUMMARY"
           if [[ "$HEADROOM_VERIFY_CONFIG_RECOVERY" == true ]]; then
-            printf '%s\n' '- Native test scope: APFS recovery in private fixtures using the application patch and ownership record.' >> "$GITHUB_STEP_SUMMARY"
+            printf '%s\n' '- Native test scope: application config actions and APFS recovery in private fixtures using the typed patch and ownership record.' >> "$GITHUB_STEP_SUMMARY"
           fi
           if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
             printf '%s\n' '- Additional scope: pinned resources, native process readiness/control/metrics, normal stop/restart and exact parent-loss exit passed.' \

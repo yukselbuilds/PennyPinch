@@ -102,5 +102,11 @@ Bu kabul üretim ayarı okuma ve önizleme kimliğini kapsar. macOS FileTransact
 
 ## Açık kabuller
 
+H048-b6b sıradaki uygulama dilimi ana ajandadır. Ortak FileTransaction yüzeyi macOS'a bağlanır; Windows TxF yolu korunur. İlk yazım kapsamı mevcut, kullanıcıya ait APFS dizini içindeki Codex/Claude/OpenCode config dosyasıdır. Eksik Claude proje dizinini oluşturma ayrı kabul olarak açık kalır. Model/auth/reasoning/ajan ayarları yamanın kapsamına girmez.
+
+Config ile sahiplik dosyası ayrı atomik rename adımlarıdır; çok dosyalı katı CAS iddia edilmez. Özel uygulama dizinindeki sırsız intent, gerekli config yolunu kayıpsız bayt metadata'sı olarak, parent/dosya kimliklerini ve içerik özetlerini tutar. Config içeriği yalnız kendi istemci dizinindeki eşsiz staging dosyasında kalır. Taşınan eski inode otomatik silinmez; geç yazım korunur ve sonraki aynı-hedef işleminde conflict verir. Geçmiş 64 intent ile sınırlıdır; sınırda sessiz veri silmek yerine yeni yazım reddedilir. Keşif kurtarma yazımı başlatmaz. Açık kullanıcı eylemi yarım kalmış config yayınının yalnız sahiplik adımını tamamlayabilir; henüz yayımlanmamış eski plan yeniden çalıştırılmaz.
+
+Kabul senaryoları gerçek ortak manager yolunda uygulanır. Normal Apply → yeniden açılış → kullanıcıya ait ilgisiz düzenleme → Undo, alan/izin/metadata ve sırsız kayıt korumasıyla doğrulanır. Commit öncesi hata kaynağı değiştirmez. Config yayını sonrası süreç kaybı ve eski tanıtıcıya geç yazım, ayrı süreç ve yeniden açılan kurtarma ile doğrulanır. Bu kod ve yeni native testler önceki okuyucu PASS'inin kapsamını genişletmez. Odaklı Windows kapısı `cargo test --offline --manifest-path src-tauri/Cargo.toml -- integrations::config_io state::ownership integrations::connection_actions --test-threads=1`; native kapı aynı manuel macOS workflow'unda ilgili macOS transaction test filtresiyle çalışır. Her yeni CI öncesi güncel kota ve sıfır ücret sınırı doğrulanır.
+
 - H048-b için platforma ve mimariye özel sabitlenmiş motor ve doğrulanabilir süreç/loopback sahipliği, atomik ayar işlemleri ve çatışmayı koruyan geri alma gerekir.
 - H048-c için paketlenmiş uygulamanın gerçek açılışı, başlat/durdur ve temiz state kabulü ile paket ve motor imzasının ayrı doğrulanması gerekir. Apple Silicon sonucu Intel, Windows 11 veya Linux'a aktarılmaz. Üretim yayını veya ücretli imzalama bu koşuların kapsamı dışındadır.

@@ -123,6 +123,217 @@ fn codex_config(home: &Path) -> PathBuf {
     home.join("config.toml")
 }
 
+fn manager_fixture(
+    fixture: &Fixture,
+    client: &str,
+    home: &Path,
+) -> (PlanManager, String, u64, ConfigRootInputs) {
+    use crate::integrations::discovery::{DiscoveryInputs, DiscoveryManager, DiscoveryReply};
+    let (package, version, bin, discovery_kind) = match client {
+        "codex" => ("@openai/codex", "0.163.0-alpha.10.2", "codex", "codex"),
+        "claude_code" => (
+            "@anthropic-ai/claude-code",
+            "2.1.158",
+            "claude",
+            "claude_code",
+        ),
+        "opencode_v1" => ("opencode-ai", "1.19.3", "opencode", "opencode"),
+        _ => panic!("unknown fixture adapter"),
+    };
+    let npm = fixture.child("npm");
+    let root = npm.join("node_modules").join(package);
+    fs::create_dir_all(root.join("bin")).unwrap();
+    let manifest =
+        serde_json::json!({ "name": package, "version": version, "bin": {(bin): "bin/cli.js"} });
+    fixture.write(
+        &root.join("package.json"),
+        &serde_json::to_vec(&manifest).unwrap(),
+        0o600,
+    );
+    fixture.write(
+        &root.join("bin/cli.js"),
+        b"metadata fixture only; never execute",
+        0o600,
+    );
+    let discovery = DiscoveryManager::with_choice_store(None);
+    let DiscoveryReply::Snapshot(scan) = discovery.scan_with_inputs(
+        Uuid::new_v4().to_string(),
+        DiscoveryInputs {
+            npm_roots: vec![npm],
+            ..DiscoveryInputs::default()
+        },
+    ) else {
+        panic!("fixture discovery failed");
+    };
+    let installation = scan
+        .installations
+        .iter()
+        .find(|item| item.client_kind == discovery_kind)
+        .expect("native metadata fixture should be discoverable");
+    let mut roots = ConfigRootInputs {
+        claude_test_managed_settings: Some(fixture.child("managed-missing.json")),
+        claude_test_route_environment: Some(Vec::new()),
+        ..ConfigRootInputs::default()
+    };
+    match client {
+        "codex" => roots.codex_home = Some(home.to_owned()),
+        "claude_code" => roots.claude_config_dir = Some(home.to_owned()),
+        "opencode_v1" => roots.xdg_config_home = Some(home.to_owned()),
+        _ => unreachable!(),
+    }
+    let manager = PlanManager::with_test_sources(discovery, roots.clone(), manager_endpoint())
+        .with_ownership_store(
+            crate::state::ownership::OwnershipStore::new(
+                &fixture.path,
+                Path::new("state/ownership"),
+            )
+            .unwrap(),
+        );
+    (
+        manager,
+        installation.installation_id.clone(),
+        scan.scan_generation,
+        roots,
+    )
+}
+
+fn manager_endpoint() -> Result<
+    crate::runtime::manager::ReadyStableEndpoint,
+    crate::runtime::manager::StableEndpointAccessError,
+> {
+    Ok(crate::runtime::manager::ReadyStableEndpoint {
+        endpoint_id: "019a0000-0000-7000-8000-d00000000042".to_owned(),
+        host: "127.0.0.1",
+        port: 41731,
+    })
+}
+
+fn manager_plan(
+    manager: &PlanManager,
+    installation_id: String,
+    scan_generation: u64,
+) -> crate::integrations::plan::ConnectionPlan {
+    match manager.preview(PreviewRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        installation_id,
+        scan_generation,
+        scope: "user_config".into(),
+    }) {
+        PlanReply::Preview(reply) => {
+            assert!(reply.plan.blockers.is_empty(), "fixture plan is blocked");
+            reply.plan
+        }
+        PlanReply::Error(_) => panic!("fixture preview failed"),
+    }
+}
+
+fn manager_success(reply: ConnectionActionReply) -> ConnectionActionSuccess {
+    match reply {
+        ConnectionActionReply::Success(reply) => reply,
+        ConnectionActionReply::Error(reply) => panic!("native action failed: {}", reply.error.code),
+    }
+}
+
+#[test]
+fn native_manager_apply_and_reopened_undo_for_all_adapters() {
+    for (client, relative, original) in [
+        ("codex", "config.toml", b"model = 'any-main-model'\n# keep reasoning and agents unchanged\n".as_slice()),
+        ("claude_code", "settings.json", b"{\"model\":\"any-main-model\",\"env\":{\"KEEP_THIS\":\"yes\"}}".as_slice()),
+        ("opencode_v1", "opencode/opencode.json", b"{\"provider\":{\"openai\":{\"npm\":\"@ai-sdk/openai\",\"models\":{\"any-main-model\":{}}}}}".as_slice()),
+    ] {
+        let fixture = Fixture::new();
+        let home = fixture.child("client");
+        fixture.mkdir(&home, 0o755);
+        let config = home.join(relative);
+        if config.parent().unwrap() != home { fixture.mkdir(config.parent().unwrap(), 0o755); }
+        fixture.write(&config, original, 0o644);
+        let (manager, id, generation, roots) = manager_fixture(&fixture, client, &home);
+        let plan = manager_plan(&manager, id, generation);
+        let applied = manager_success(manager.apply_connection(ApplyConnectionRequest {
+            schema_version: 1, request_id: Uuid::new_v4().to_string(), plan_id: plan.plan_id,
+            expected_config_fingerprint: plan.config_fingerprint,
+        }));
+        assert_eq!(applied.status, "applied");
+        let owned = applied.ownership.unwrap();
+        let discovery = manager.discovery.clone();
+        drop(manager);
+        let reopened = PlanManager::with_test_sources(discovery, roots, manager_endpoint())
+            .with_ownership_store(crate::state::ownership::OwnershipStore::new(&fixture.path, Path::new("state/ownership")).unwrap());
+        let snapshot = manager_success(reopened.ownership_snapshot(OwnershipSnapshotRequest {
+            schema_version: 1, request_id: Uuid::new_v4().to_string(), client_kind: client.into(),
+        }));
+        assert_eq!(snapshot.ownership.unwrap().record_fingerprint, owned.record_fingerprint);
+        let released = manager_success(reopened.undo_connection(UndoConnectionRequest {
+            schema_version: 1, request_id: Uuid::new_v4().to_string(), client_kind: client.into(),
+            owner_id: owned.owner_id, expected_revision: owned.revision, expected_record_fingerprint: owned.record_fingerprint,
+        }));
+        assert_eq!(released.status, "released");
+        assert_eq!(fs::read(&config).unwrap(), original);
+        assert_eq!(fs::metadata(&config).unwrap().mode() & 0o7777, 0o644);
+    }
+}
+
+#[test]
+fn native_manager_preserves_unrelated_edit_and_precommit_fault() {
+    let fixture = Fixture::new();
+    let home = fixture.child("client");
+    fixture.mkdir(&home, 0o755);
+    let config = home.join("config.toml");
+    let original = b"model = 'arbitrary-main-model'\n";
+    fixture.write(&config, original, 0o644);
+    let (manager, id, generation, _) = manager_fixture(&fixture, "codex", &home);
+    let plan = manager_plan(&manager, id.clone(), generation);
+    let manager = manager.with_action_commit_fault();
+    assert!(matches!(
+        manager.apply_connection(ApplyConnectionRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            plan_id: plan.plan_id,
+            expected_config_fingerprint: plan.config_fingerprint,
+        }),
+        ConnectionActionReply::Error(_)
+    ));
+    assert_eq!(fs::read(&config).unwrap(), original);
+    assert!(!fixture.child("state/ownership/codex.json").exists());
+    let discovery = manager.discovery.clone();
+    let roots = (manager.roots_provider)();
+    drop(manager);
+    let manager = PlanManager::with_test_sources(discovery, roots, manager_endpoint())
+        .with_ownership_store(
+            crate::state::ownership::OwnershipStore::new(
+                &fixture.path,
+                Path::new("state/ownership"),
+            )
+            .unwrap(),
+        );
+    let plan = manager_plan(&manager, id, generation);
+    let owned = manager_success(manager.apply_connection(ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        plan_id: plan.plan_id,
+        expected_config_fingerprint: plan.config_fingerprint,
+    }))
+    .ownership
+    .unwrap();
+    let mut edited = fs::read(&config).unwrap();
+    edited.extend_from_slice(b"# unrelated user edit\n");
+    fs::write(&config, edited).unwrap();
+    let released = manager_success(manager.undo_connection(UndoConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        client_kind: "codex".into(),
+        owner_id: owned.owner_id,
+        expected_revision: owned.revision,
+        expected_record_fingerprint: owned.record_fingerprint,
+    }));
+    assert_eq!(released.status, "released");
+    assert_eq!(
+        fs::read(&config).unwrap(),
+        [original.as_slice(), b"# unrelated user edit\n"].concat()
+    );
+}
+
 fn assert_supported_directory_chain(path: &Path) {
     for (depth, directory) in path.ancestors().enumerate() {
         if super::open_directory(directory).is_err() {

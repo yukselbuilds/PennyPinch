@@ -2031,7 +2031,12 @@ fn is_local_fixed_volume(path: &Path) -> bool {
     unsafe { GetDriveTypeW(wide.as_ptr()) == DRIVE_FIXED }
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+fn is_local_fixed_volume(path: &Path) -> bool {
+    super::config_io::ensure_fixed_volume(path).is_ok()
+}
+
+#[cfg(not(any(windows, target_os = "macos")))]
 fn is_local_fixed_volume(_path: &Path) -> bool {
     false
 }
