@@ -32,7 +32,7 @@ pub(super) fn add_cli_candidates(
     candidates: &mut HashMap<String, Candidate>,
     warnings: &mut BTreeSet<&'static str>,
     candidate_count: &mut usize,
-) {
+) -> HashMap<(&'static str, PathBuf), InstallationObservation> {
     let home_bins = inputs
         .macos_home
         .iter()
@@ -50,6 +50,7 @@ pub(super) fn add_cli_candidates(
         );
     let mut seen_dirs = HashSet::new();
     let mut seen_files = HashSet::new();
+    let mut observations = HashMap::new();
     let mut hash_budget = MAX_HASH_BYTES;
     for (root, source, location_label) in roots {
         if is_network_or_device_path(&root) {
@@ -65,17 +66,18 @@ pub(super) fn add_cli_candidates(
         for product in PRODUCTS {
             if *candidate_count == MAX_CANDIDATES {
                 warnings.insert("candidate_limit_reached");
-                return;
+                return observations;
             }
             *candidate_count += 1;
             let Some(path) = resolve_command(root.join(product.command)) else {
                 continue;
             };
-            let Some(version) =
+            let Some((version, observed)) =
                 inspect_command(product.kind, &path, &mut hash_budget, &mut seen_files)
             else {
                 continue;
             };
+            observations.insert((product.kind, path.clone()), observed);
             insert_candidate(
                 candidates,
                 Candidate {
@@ -90,6 +92,7 @@ pub(super) fn add_cli_candidates(
             );
         }
     }
+    observations
 }
 
 fn resolve_command(mut path: PathBuf) -> Option<PathBuf> {
@@ -134,7 +137,7 @@ fn inspect_command(
     path: &Path,
     hash_budget: &mut u64,
     seen_files: &mut HashSet<(&'static str, u64, u64)>,
-) -> Option<Option<String>> {
+) -> Option<(Option<String>, InstallationObservation)> {
     let mut file = open_command(path)?;
     let before = file.metadata().ok()?;
     if !before.is_file()
@@ -178,7 +181,17 @@ fn inspect_command(
         return None;
     }
     seen_files.insert(identity);
-    Some(version)
+    Some((
+        version,
+        InstallationObservation {
+            identity: FileIdentity {
+                volume_serial: before.dev().try_into().ok()?,
+                file_index: before.ino(),
+            },
+            size_bytes: before.len(),
+            macos_change_time: Some(MacChangeTime::from_metadata(&before)),
+        },
+    ))
 }
 
 fn file_stamp(info: &Metadata) -> (u64, u64, u32, u32, u64, u64, i64, i64, i64, i64) {

@@ -1343,3 +1343,6 @@ mod tests;
 
 #[path = "transaction_macos_retained.rs"]
 pub(crate) mod retained_versions;
+
+#[path = "transaction_macos_choices.rs"]
+pub(crate) mod choices;

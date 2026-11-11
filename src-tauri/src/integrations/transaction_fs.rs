@@ -1066,6 +1066,8 @@ pub(crate) use windows_impl::FileTransaction;
 #[path = "transaction_macos.rs"]
 mod macos_impl;
 #[cfg(target_os = "macos")]
+pub(crate) use macos_impl::choices::SelectionFile as MacSelectionFile;
+#[cfg(target_os = "macos")]
 pub(crate) use macos_impl::retained_versions as macos_retained_versions;
 #[cfg(target_os = "macos")]
 pub(crate) use macos_impl::FileTransaction;

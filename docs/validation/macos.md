@@ -168,6 +168,18 @@ Doğrulama `macos-build.yml` içindeki isteğe bağlı native CLI adımında yap
 
 Windows `cargo test --offline --manifest-path src-tauri/Cargo.toml discovery -- --test-threads=1` koşusunda 30 test geçti, iki opt-in test atlandı. fmt ve actionlint geçti. Manuel macOS koşusu öncesi dahil compute kullanımı 3,97/12 dolar, ücretli kullanım 0 ve Actions bütçesi 0 dolar ile Usage blocked durumundaydı. [Koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43079382814) · [Makine kanıtı](../proofs/macos-cli-discovery.json).
 
+## H048-c2 — Kurulum seçiminin kalıcılığı
+
+macOS'ta kurulum seçimi mevcut `ChoiceStore` ve aynı IPC sözleşmesini kullanır. Seçim, uygulamanın kendi `onboarding/selections.json` dosyasına yazılır. İlk okuma pasiftir. Yazma yalnız açık seçimden sonra 0700 dizin ve 0600 dosyayla yapılır. Yerel APFS dizin tanıtıcısı, süreçler arası kilit ve atomik yayın kullanılır. Mevcut kayıt yapısı ve Windows TxF yolu korunur.
+
+| Başlangıç ve eylem | Beklenen gözlem |
+| --- | --- |
+| Boş uygulama verisi → tarama → bir istemci seç → yeni manager ile yeniden aç ve tara | İlk okuma dosya oluşturmaz. Seçim taze tarama kimliğine bağlanır. Diğer istemci seçimleri ve varsa Claude kapsamı korunur. |
+| Seçilen ikili aynı boyutta düzenlenir veya başka inode ile değiştirilir | Eski seçim kullanılamaz görünür. Yeni bir dosya kendiliğinden seçilmez. Eski taramadan kayıt isteği reddedilir. |
+| İki yazıcı aynı anda erişir, süreç yayın öncesi veya sonrası kesilir, mevcut kayıt bozulur veya yol güvenliği değişir | Kilit çakışmayı durdurur. Yeniden açılış yalnız tam eski veya yeni kaydı okur. Bozuk kayıt ve yabancı dosyalar otomatik değiştirilmez. |
+
+Ana ajan kayıt, yol güvenliği, seçim eşlemesi ve CI kabulünü üstlenir. Tek Luna macOS depo testlerini hazırlar. Native `macos-build.yml` koşusu gerçek kurulum taramasını, yeniden açılış ve APFS kayıt testlerini kapsar. Desktop ve picker sonraki kabulde kalır.
+
 ## Açık kabuller
 
 - H048-c'de sıradaki adım macOS kurulum seçimi kaydının güvenli yazım ve yeniden açılış kabulüdür. Codex Desktop keşfi ve gerçek dosya seçici de açık.

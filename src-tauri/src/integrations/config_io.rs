@@ -879,7 +879,7 @@ fn volume_root(path: &Path) -> Result<PathBuf, ConfigIoError> {
 }
 
 #[cfg(target_os = "macos")]
-pub(super) use macos::ensure_fixed_volume;
+pub(crate) use macos::ensure_fixed_volume;
 
 #[cfg(not(target_os = "macos"))]
 pub(super) fn ensure_fixed_volume(path: &Path) -> Result<(), ConfigIoError> {

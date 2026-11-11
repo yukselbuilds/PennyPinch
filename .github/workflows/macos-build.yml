@@ -19,7 +19,7 @@ on:
         type: boolean
         default: false
       verify_cli_discovery:
-        description: Verify read-only discovery with pinned native Codex, Claude Code, and OpenCode V1 binaries.
+        description: Verify native CLI discovery and explicit saved selections with pinned client binaries.
         required: false
         type: boolean
         default: false
@@ -108,7 +108,10 @@ jobs:
             test_filters+=(integrations::discovery::macos::
                            integrations::discovery_tests::installation_selection_is_bound
                            integrations::discovery_tests::npm_metadata_is_separate
-                           integrations::discovery_tests::path_and_metadata_limits)
+                           integrations::discovery_tests::path_and_metadata_limits
+                           integrations::config_io::macos::tests::native_manager
+                           state::choices::macos_tests::
+                           integrations::transaction_fs::macos_impl::choices::tests::)
           fi
           fingerprint() {
             git rev-parse HEAD 'HEAD^{tree}'
@@ -160,7 +163,7 @@ jobs:
                 detail > 0 { print substr($0, 1, 240); detail-- }
                 /^test .* \.\.\. FAILED$/ || /^test result: / { print substr($0, 1, 240) }' "$build_log"
             else
-              awk '/^test state::ownership::/ || /^test integrations::config_io::macos::/ || /^test integrations::transaction_fs::macos_impl::/ || /^test integrations::discovery::macos::/ || /^test integrations::discovery_tests::/ || /^test result: / { print }' "$build_log"
+              awk '/^test state::ownership::/ || /^test state::choices::macos_tests::/ || /^test integrations::config_io::macos::/ || /^test integrations::transaction_fs::macos_impl::/ || /^test integrations::discovery::macos::/ || /^test integrations::discovery_tests::/ || /^test result: / { print }' "$build_log"
               if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
                 cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
                   --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
@@ -206,7 +209,7 @@ jobs:
             printf '%s\n' '- Native test scope: application config actions and APFS recovery in private fixtures using the typed patch and ownership record.' >> "$GITHUB_STEP_SUMMARY"
           fi
           if [[ "$HEADROOM_VERIFY_CLI_DISCOVERY" == true ]]; then
-            printf '%s\n' '- Native discovery verified pinned Apple Silicon CLI binaries in isolated PATH and HOME layouts.' >> "$GITHUB_STEP_SUMMARY"
+            printf '%s\n' '- Native discovery and saved selections verified with pinned Apple Silicon CLI binaries in isolated PATH, HOME and app-data layouts.' >> "$GITHUB_STEP_SUMMARY"
           fi
           if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
             printf '%s\n' '- Additional scope: pinned resources, native process readiness/control/metrics, normal stop/restart and exact parent-loss exit passed.' \

@@ -1,9 +1,11 @@
 //! Explicit, non-secret selections that can be rebound to a fresh discovery scan.
 
 use crate::integrations::config_io::{pin_existing_directory_chain, PinnedDirectoryChain};
-use crate::integrations::transaction_fs::{
-    FileIdentity, FileSnapshot, FileToken, FileTransaction, TransactionFsError,
-};
+#[cfg(target_os = "macos")]
+use crate::integrations::transaction_fs::MacSelectionFile;
+use crate::integrations::transaction_fs::{FileIdentity, TransactionFsError};
+#[cfg(not(target_os = "macos"))]
+use crate::integrations::transaction_fs::{FileSnapshot, FileToken, FileTransaction};
 use crate::state::ownership::{OwnershipError, OwnershipStore};
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -17,6 +19,7 @@ const MAX_PATH_BYTES: usize = 32 * 1024;
 const MAX_VERSION_BYTES: usize = 128;
 const MAX_INSTALLATION_BYTES: u64 = 2 * 1024 * 1024 * 1024;
 const MAX_SAFE_REVISION: u64 = 9_007_199_254_740_991;
+#[cfg(any(test, not(target_os = "macos")))]
 const CHOICES_FILE: &str = "selections.json";
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -68,6 +71,31 @@ pub(crate) struct InstallationChoice {
     pub(crate) size_bytes: u64,
     pub(crate) version: Option<String>,
     pub(crate) availability: ChoiceAvailability,
+    #[cfg(target_os = "macos")]
+    pub(crate) macos_change_time: Option<MacChangeTime>,
+}
+
+#[cfg(target_os = "macos")]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct MacChangeTime {
+    seconds: i64,
+    nanos: i64,
+}
+
+#[cfg(target_os = "macos")]
+impl MacChangeTime {
+    pub(crate) fn from_metadata(info: &fs::Metadata) -> Self {
+        use std::os::unix::fs::MetadataExt;
+        Self {
+            seconds: info.ctime(),
+            nanos: info.ctime_nsec(),
+        }
+    }
+
+    fn valid(self) -> bool {
+        (0..1_000_000_000).contains(&self.nanos)
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -139,6 +167,9 @@ struct StoredInstallationChoice {
     identity: StoredIdentity,
     size_bytes: u64,
     version: Option<String>,
+    #[cfg(target_os = "macos")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    macos_change_time: Option<MacChangeTime>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -149,6 +180,7 @@ struct StoredClaudeChoice {
     project_identity: Option<StoredIdentity>,
 }
 
+#[cfg(not(target_os = "macos"))]
 struct LoadedChoices {
     document: StoredChoices,
     token: Option<FileToken>,
@@ -158,6 +190,8 @@ struct InspectedPath {
     canonical_path: String,
     identity: FileIdentity,
     size_bytes: u64,
+    #[cfg(target_os = "macos")]
+    macos_change_time: Option<MacChangeTime>,
 }
 
 impl StoredChoices {
@@ -191,6 +225,10 @@ impl StoredChoices {
                 || choice.identity.file_index == 0
                 || !valid_version(choice.version.as_deref())
             {
+                return Err(ChoiceError::Invalid);
+            }
+            #[cfg(target_os = "macos")]
+            if choice.macos_change_time.is_some_and(|time| !time.valid()) {
                 return Err(ChoiceError::Invalid);
             }
         }
@@ -278,6 +316,7 @@ impl StoreLocation {
         self.verify_root_under_boundary_pin(&boundary_pin)
     }
 
+    #[cfg(not(target_os = "macos"))]
     fn file_path(&self) -> PathBuf {
         self.root.join(CHOICES_FILE)
     }
@@ -288,7 +327,7 @@ impl ChoiceStore {
     pub(crate) fn for_app_local_data(
         app_local_data_dir: Option<PathBuf>,
     ) -> Result<Self, ChoiceError> {
-        if cfg!(debug_assertions) {
+        if cfg!(debug_assertions) && !cfg!(target_os = "macos") {
             let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
             let project_root = manifest_dir.parent().ok_or(ChoiceError::UnsafePath)?;
             return Self::new(
@@ -298,11 +337,23 @@ impl ChoiceStore {
         }
 
         let app_local_data_dir = app_local_data_dir.ok_or(ChoiceError::Unavailable)?;
-        let parent = app_local_data_dir.parent().ok_or(ChoiceError::UnsafePath)?;
-        let app_dir_name = app_local_data_dir
-            .file_name()
-            .ok_or(ChoiceError::UnsafePath)?;
-        Self::new(parent, PathBuf::from(app_dir_name).join("onboarding"))
+        #[cfg(target_os = "macos")]
+        {
+            crate::integrations::config_io::validate_lexical_path(&app_local_data_dir)
+                .map_err(map_config_io_error)?;
+            let (boundary, relative) =
+                super::store::canonical_existing_ancestor(&app_local_data_dir)
+                    .map_err(|_| ChoiceError::UnsafePath)?;
+            Self::new(boundary, relative.join("onboarding"))
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let parent = app_local_data_dir.parent().ok_or(ChoiceError::UnsafePath)?;
+            let app_dir_name = app_local_data_dir
+                .file_name()
+                .ok_or(ChoiceError::UnsafePath)?;
+            Self::new(parent, PathBuf::from(app_dir_name).join("onboarding"))
+        }
     }
 
     /// Construct without creating the store directory or file.
@@ -329,28 +380,40 @@ impl ChoiceStore {
         let Some(root_pin) = self.inner.location.verify_root()? else {
             return Ok(snapshot_from_document(StoredChoices::empty()));
         };
-        let path = self.inner.location.file_path();
-        match fs::symlink_metadata(&path) {
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                root_pin.validate().map_err(map_config_io_error)?;
-                return Ok(snapshot_from_document(StoredChoices::empty()));
-            }
-            Err(_) => return Err(ChoiceError::UnsafePath),
-            Ok(metadata) if !metadata.is_file() || metadata_is_reparse(&metadata) => {
-                return Err(ChoiceError::UnsafePath);
-            }
-            Ok(_) => {}
-        }
+        #[cfg(target_os = "macos")]
+        let document = MacSelectionFile::open(&self.inner.location.root, MAX_CHOICES_BYTES, false)
+            .map_err(map_transaction_error)?
+            .bytes()
+            .map(decode_document)
+            .transpose()?
+            .unwrap_or_else(StoredChoices::empty);
 
-        let mut transaction = FileTransaction::begin().map_err(map_transaction_error)?;
-        let (token, snapshot) = transaction
-            .open_existing(&path, MAX_CHOICES_BYTES)
-            .map_err(map_transaction_error)?;
-        let document = decode_document(&snapshot.bytes)?;
+        #[cfg(not(target_os = "macos"))]
+        let document = {
+            let path = self.inner.location.file_path();
+            match fs::symlink_metadata(&path) {
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                    root_pin.validate().map_err(map_config_io_error)?;
+                    return Ok(snapshot_from_document(StoredChoices::empty()));
+                }
+                Err(_) => return Err(ChoiceError::UnsafePath),
+                Ok(metadata) if !metadata.is_file() || metadata_is_reparse(&metadata) => {
+                    return Err(ChoiceError::UnsafePath);
+                }
+                Ok(_) => {}
+            }
+
+            let mut transaction = FileTransaction::begin().map_err(map_transaction_error)?;
+            let (token, snapshot) = transaction
+                .open_existing(&path, MAX_CHOICES_BYTES)
+                .map_err(map_transaction_error)?;
+            let document = decode_document(&snapshot.bytes)?;
+            root_pin.validate().map_err(map_config_io_error)?;
+            transaction.rollback().map_err(map_transaction_error)?;
+            let _ = token;
+            document
+        };
         root_pin.validate().map_err(map_config_io_error)?;
-        transaction.rollback().map_err(map_transaction_error)?;
-        root_pin.validate().map_err(map_config_io_error)?;
-        let _ = token;
         Ok(snapshot_from_document(document))
     }
 
@@ -359,8 +422,13 @@ impl ChoiceStore {
         &self,
         choice: InstallationChoice,
     ) -> Result<ChoicesSnapshot, ChoiceError> {
+        #[cfg(not(target_os = "macos"))]
         let stored = validate_new_installation(&choice)?;
+        #[cfg(target_os = "macos")]
+        validate_new_installation(&choice)?;
         self.update(|document| {
+            #[cfg(target_os = "macos")]
+            let stored = validate_new_installation(&choice)?;
             let existing = document
                 .installations
                 .iter_mut()
@@ -400,6 +468,8 @@ impl ChoiceStore {
             size_bytes: inspected.size_bytes,
             version,
             availability: ChoiceAvailability::Available,
+            #[cfg(target_os = "macos")]
+            macos_change_time: inspected.macos_change_time,
         })
     }
 
@@ -417,7 +487,7 @@ impl ChoiceStore {
 
     fn update(
         &self,
-        mut change: impl FnMut(&mut StoredChoices) -> Result<bool, ChoiceError>,
+        change: impl FnOnce(&mut StoredChoices) -> Result<bool, ChoiceError>,
     ) -> Result<ChoicesSnapshot, ChoiceError> {
         let _guard = self
             .inner
@@ -435,46 +505,55 @@ impl ChoiceStore {
             .location
             .verify_root_under_boundary_pin(&boundary_pin)?
             .ok_or(ChoiceError::Unavailable)?;
-        let path = self.inner.location.file_path();
-        let mut transaction = FileTransaction::begin().map_err(map_transaction_error)?;
-        let loaded = read_document_in_transaction(&mut transaction, &path)?;
-        let mut document = loaded
-            .as_ref()
-            .map(|loaded| loaded.document.clone())
-            .unwrap_or_else(StoredChoices::empty);
-        let changed = change(&mut document)?;
-        if !changed {
-            transaction.rollback().map_err(map_transaction_error)?;
+        #[cfg(target_os = "macos")]
+        {
+            let file = MacSelectionFile::open(&self.inner.location.root, MAX_CHOICES_BYTES, true)
+                .map_err(map_transaction_error)?;
+            let mut document = file
+                .bytes()
+                .map(decode_document)
+                .transpose()?
+                .unwrap_or_else(StoredChoices::empty);
+            let next = change_document(&mut document, change)?;
             root_pin.validate().map_err(map_config_io_error)?;
-            return Ok(snapshot_from_document(document));
-        }
-        document.revision = document
-            .revision
-            .checked_add(1)
-            .filter(|revision| *revision <= MAX_SAFE_REVISION)
-            .ok_or(ChoiceError::Conflict)?;
-        document.validate_structure()?;
-        let bytes = serde_json::to_vec(&document).map_err(|_| ChoiceError::Invalid)?;
-        if bytes.len() > MAX_CHOICES_BYTES {
-            return Err(ChoiceError::TooLarge);
-        }
-        let token = match loaded.and_then(|loaded| loaded.token) {
-            Some(token) => token,
-            None => {
-                transaction
-                    .create_missing(&path, MAX_CHOICES_BYTES)
-                    .map_err(map_transaction_error)?
-                    .0
+            boundary_pin.validate().map_err(map_config_io_error)?;
+            if let Some(bytes) = next {
+                file.publish(&bytes).map_err(map_transaction_error)?;
             }
-        };
-        transaction
-            .replace_contents(token, &bytes)
-            .map_err(map_transaction_error)?;
-        transaction.seal().map_err(map_transaction_error)?;
-        root_pin.validate().map_err(map_config_io_error)?;
-        boundary_pin.validate().map_err(map_config_io_error)?;
-        transaction.commit().map_err(map_transaction_error)?;
-        Ok(snapshot_from_document(document))
+            Ok(snapshot_from_document(document))
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let path = self.inner.location.file_path();
+            let mut transaction = FileTransaction::begin().map_err(map_transaction_error)?;
+            let loaded = read_document_in_transaction(&mut transaction, &path)?;
+            let mut document = loaded
+                .as_ref()
+                .map(|loaded| loaded.document.clone())
+                .unwrap_or_else(StoredChoices::empty);
+            let Some(bytes) = change_document(&mut document, change)? else {
+                transaction.rollback().map_err(map_transaction_error)?;
+                root_pin.validate().map_err(map_config_io_error)?;
+                return Ok(snapshot_from_document(document));
+            };
+            let token = match loaded.and_then(|loaded| loaded.token) {
+                Some(token) => token,
+                None => {
+                    transaction
+                        .create_missing(&path, MAX_CHOICES_BYTES)
+                        .map_err(map_transaction_error)?
+                        .0
+                }
+            };
+            transaction
+                .replace_contents(token, &bytes)
+                .map_err(map_transaction_error)?;
+            transaction.seal().map_err(map_transaction_error)?;
+            root_pin.validate().map_err(map_config_io_error)?;
+            boundary_pin.validate().map_err(map_config_io_error)?;
+            transaction.commit().map_err(map_transaction_error)?;
+            Ok(snapshot_from_document(document))
+        }
     }
 
     #[cfg(test)]
@@ -492,6 +571,8 @@ impl ChoiceStore {
             size_bytes: inspected.size_bytes,
             version: None,
             availability: ChoiceAvailability::Available,
+            #[cfg(target_os = "macos")]
+            macos_change_time: inspected.macos_change_time,
         })
     }
 
@@ -507,6 +588,27 @@ impl ChoiceStore {
     }
 }
 
+fn change_document(
+    document: &mut StoredChoices,
+    change: impl FnOnce(&mut StoredChoices) -> Result<bool, ChoiceError>,
+) -> Result<Option<Vec<u8>>, ChoiceError> {
+    if !change(document)? {
+        return Ok(None);
+    }
+    document.revision = document
+        .revision
+        .checked_add(1)
+        .filter(|revision| *revision <= MAX_SAFE_REVISION)
+        .ok_or(ChoiceError::Conflict)?;
+    document.validate_structure()?;
+    let bytes = serde_json::to_vec(document).map_err(|_| ChoiceError::Invalid)?;
+    if bytes.len() > MAX_CHOICES_BYTES {
+        return Err(ChoiceError::TooLarge);
+    }
+    Ok(Some(bytes))
+}
+
+#[cfg(not(target_os = "macos"))]
 fn read_document_in_transaction(
     transaction: &mut FileTransaction,
     path: &Path,
@@ -549,7 +651,18 @@ fn snapshot_from_document(document: StoredChoices) -> ChoicesSnapshot {
                 Ok(value)
                     if value.canonical_path == stored.executable_path
                         && value.identity == to_identity(stored.identity)
-                        && value.size_bytes == stored.size_bytes =>
+                        && value.size_bytes == stored.size_bytes
+                        && {
+                            #[cfg(target_os = "macos")]
+                            {
+                                stored.macos_change_time.is_some()
+                                    && stored.macos_change_time == value.macos_change_time
+                            }
+                            #[cfg(not(target_os = "macos"))]
+                            {
+                                true
+                            }
+                        } =>
                 {
                     ChoiceAvailability::Available
                 }
@@ -564,6 +677,8 @@ fn snapshot_from_document(document: StoredChoices) -> ChoicesSnapshot {
                 size_bytes: stored.size_bytes,
                 version: stored.version,
                 availability,
+                #[cfg(target_os = "macos")]
+                macos_change_time: stored.macos_change_time,
             }
         })
         .collect();
@@ -618,6 +733,11 @@ fn validate_new_installation(
     {
         return Err(ChoiceError::Conflict);
     }
+    #[cfg(target_os = "macos")]
+    if choice.macos_change_time.is_none() || choice.macos_change_time != inspected.macos_change_time
+    {
+        return Err(ChoiceError::Conflict);
+    }
     Ok(StoredInstallationChoice {
         client: choice.client,
         surface: choice.surface,
@@ -626,6 +746,8 @@ fn validate_new_installation(
         identity: from_identity(inspected.identity),
         size_bytes: inspected.size_bytes,
         version: choice.version.clone(),
+        #[cfg(target_os = "macos")]
+        macos_change_time: inspected.macos_change_time,
     })
 }
 
@@ -667,10 +789,16 @@ fn inspect_path(path: &Path, directory: bool) -> Result<InspectedPath, ChoiceErr
     if before.identity != after.identity || before.size_bytes != after.size_bytes {
         return Err(ChoiceError::Conflict);
     }
+    #[cfg(target_os = "macos")]
+    if before.macos_change_time != after.macos_change_time {
+        return Err(ChoiceError::Conflict);
+    }
     Ok(InspectedPath {
         canonical_path: canonical_string,
         identity: after.identity,
         size_bytes: after.size_bytes,
+        #[cfg(target_os = "macos")]
+        macos_change_time: after.macos_change_time,
     })
 }
 
@@ -748,7 +876,55 @@ fn native_identity(path: &Path, directory: bool) -> Result<NativeIdentity, Choic
     })
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+fn native_identity(path: &Path, directory: bool) -> Result<NativeIdentity, ChoiceError> {
+    use crate::integrations::config_io::ensure_fixed_volume;
+    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+    if directory {
+        ensure_fixed_volume(&path.join(".headroom-choice-volume"))
+    } else {
+        ensure_fixed_volume(path)
+    }
+    .map_err(map_config_io_error)?;
+    let flags = libc::O_NOFOLLOW_ANY
+        | libc::O_NONBLOCK
+        | libc::O_CLOEXEC
+        | if directory { libc::O_DIRECTORY } else { 0 };
+    let file = fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(flags)
+        .open(path)
+        .map_err(|error| {
+            if error.kind() == std::io::ErrorKind::NotFound {
+                ChoiceError::Unavailable
+            } else {
+                ChoiceError::UnsafePath
+            }
+        })?;
+    let info = file.metadata().map_err(|_| ChoiceError::Unavailable)?;
+    let uid = unsafe { libc::geteuid() };
+    let safe = if directory {
+        info.is_dir() && info.uid() == uid && info.mode() & 0o022 == 0
+    } else {
+        info.is_file()
+            && info.nlink() == 1
+            && info.mode() & 0o7022 == 0
+            && (info.uid() == uid || info.uid() == 0)
+    };
+    if !safe {
+        return Err(ChoiceError::UnsafePath);
+    }
+    Ok(NativeIdentity {
+        identity: FileIdentity {
+            volume_serial: info.dev().try_into().map_err(|_| ChoiceError::UnsafePath)?,
+            file_index: info.ino(),
+        },
+        size_bytes: if directory { 0 } else { info.len() },
+        macos_change_time: (!directory).then(|| MacChangeTime::from_metadata(&info)),
+    })
+}
+
+#[cfg(not(any(windows, target_os = "macos")))]
 fn native_identity(_path: &Path, _directory: bool) -> Result<NativeIdentity, ChoiceError> {
     Err(ChoiceError::Unsupported)
 }
@@ -756,6 +932,8 @@ fn native_identity(_path: &Path, _directory: bool) -> Result<NativeIdentity, Cho
 struct NativeIdentity {
     identity: FileIdentity,
     size_bytes: u64,
+    #[cfg(target_os = "macos")]
+    macos_change_time: Option<MacChangeTime>,
 }
 
 fn validate_path_shape(path: &Path) -> Result<(), ChoiceError> {
@@ -767,9 +945,12 @@ fn validate_path_shape(path: &Path) -> Result<(), ChoiceError> {
     {
         return Err(ChoiceError::UnsafePath);
     }
+    #[cfg(target_os = "macos")]
+    crate::integrations::config_io::validate_lexical_path(path).map_err(map_config_io_error)?;
     for component in path.components() {
         match component {
             Component::ParentDir | Component::CurDir => return Err(ChoiceError::UnsafePath),
+            #[cfg(windows)]
             Component::Normal(name) if name.to_string_lossy().contains(':') => {
                 return Err(ChoiceError::UnsafePath)
             }
@@ -797,7 +978,10 @@ fn normalized_canonical_string(path: &Path) -> Result<String, ChoiceError> {
     let text = path.to_str().ok_or(ChoiceError::UnsafePath)?;
     #[cfg(windows)]
     let text = text.strip_prefix(r"\\?\").unwrap_or(text);
+    #[cfg(windows)]
     let normalized = text.replace('/', "\\");
+    #[cfg(not(windows))]
+    let normalized = text.to_owned();
     validate_stored_path(&normalized)?;
     Ok(normalized)
 }
@@ -897,3 +1081,7 @@ fn metadata_is_reparse(metadata: &fs::Metadata) -> bool {
 fn metadata_is_reparse(metadata: &fs::Metadata) -> bool {
     metadata.file_type().is_symlink()
 }
+
+#[cfg(all(test, target_os = "macos"))]
+#[path = "choices_macos_tests.rs"]
+mod macos_tests;

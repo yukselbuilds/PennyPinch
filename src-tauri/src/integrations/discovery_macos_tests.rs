@@ -1,4 +1,5 @@
 use super::*;
+use std::io::{Seek, SeekFrom, Write};
 use std::os::unix::fs::{symlink, DirBuilderExt, PermissionsExt};
 use std::process::{Command, Stdio};
 use std::thread;
@@ -162,7 +163,13 @@ fn installed_cli_discovery_uses_actual_environment_and_does_not_execute_candidat
 #[ignore = "owned child is invoked with isolated PATH and HOME"]
 fn isolated_installed_cli_scan_child() {
     let root = proof_root();
-    let manager = DiscoveryManager::new();
+    let app_data = root.join("choice-app-data");
+    let open_manager = || {
+        DiscoveryManager::with_choice_store(Some(
+            ChoiceStore::for_app_local_data(Some(app_data.clone())).unwrap(),
+        ))
+    };
+    let manager = open_manager();
     let DiscoveryReply::Snapshot(scan) = manager.scan(Uuid::new_v4().to_string()) else {
         panic!("CLI scan failed");
     };
@@ -177,6 +184,7 @@ fn isolated_installed_cli_scan_child() {
     let serialized = serde_json::to_string(&scan).unwrap();
     assert!(!serialized.contains(root.to_str().unwrap()));
     assert!(!serialized.contains("clients/bin"));
+    assert!(!app_data.exists(), "a scan must not create saved choices");
     let mut selected = Vec::new();
     for (client, relative_path, version, source) in [
         ("codex", "clients/bin/codex", "0.163.0-alpha.11.1", "path"),
@@ -206,17 +214,91 @@ fn isolated_installed_cli_scan_child() {
             .select_installation_with_path(&row.installation_id, scan.scan_generation)
             .unwrap();
         assert_eq!(path, root.join(relative_path));
-        selected.push(row.installation_id.clone());
+        let request_id = Uuid::new_v4().to_string();
+        let SavedInstallationChoiceReply::Snapshot(saved) =
+            manager.remember_installation_choice(RememberInstallationChoiceRequest {
+                schema_version: 1,
+                request_id: request_id.clone(),
+                scan_generation: scan.scan_generation,
+                installation_id: row.installation_id.clone(),
+            })
+        else {
+            panic!("explicit choice failed");
+        };
+        assert_eq!(saved.status, "saved");
+        assert_eq!(saved.request_id, request_id);
+        selected.push((client, row.installation_id.clone()));
     }
-    let DiscoveryReply::Snapshot(next) = manager.scan(Uuid::new_v4().to_string()) else {
-        panic!("rescan failed");
+    drop(manager);
+    let reopened = open_manager();
+    let read = |kind: &str| {
+        let reply = reopened.saved_installation_choice(SavedInstallationChoiceRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            client_kind: kind.to_owned(),
+        });
+        let output = serde_json::to_string(&reply).unwrap();
+        assert!(!output.contains(root.to_str().unwrap()));
+        let SavedInstallationChoiceReply::Snapshot(snapshot) = reply else {
+            panic!("saved choice lookup failed");
+        };
+        snapshot
     };
-    assert!(next.scan_generation > scan.scan_generation);
-    for id in selected {
-        assert!(matches!(
-            manager.select_installation_with_path(&id, scan.scan_generation),
-            Err(InstallationSelectionError::StaleScanGeneration)
-        ));
+    assert_eq!(read("codex").status, "not_scanned");
+    let DiscoveryReply::Snapshot(next) = reopened.scan(Uuid::new_v4().to_string()) else {
+        panic!("reopen scan failed");
+    };
+    for (kind, old_id) in selected {
+        let saved = read(kind);
+        assert_eq!(saved.status, "available");
+        assert_eq!(saved.scan_generation, Some(next.scan_generation));
+        let id = saved.installation_id.unwrap();
+        assert_ne!(id, old_id);
+        assert!(next
+            .installations
+            .iter()
+            .any(|row| row.installation_id == id && row.client_kind == kind));
     }
+
+    let before = fs::read(app_data.join("onboarding/selections.json")).unwrap();
+    let opencode = read("opencode").installation_id.unwrap();
+    let path = root.join("home/.opencode/bin/opencode");
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(&path)
+        .unwrap();
+    let length = file.metadata().unwrap().len();
+    file.seek(SeekFrom::End(-1)).unwrap();
+    let mut byte = [0];
+    file.read_exact(&mut byte).unwrap();
+    file.seek(SeekFrom::End(-1)).unwrap();
+    file.write_all(&[byte[0] ^ 1]).unwrap();
+    file.sync_all().unwrap();
+    assert_eq!(file.metadata().unwrap().len(), length);
+    assert!(matches!(
+        reopened.select_installation_with_path(&opencode, next.scan_generation),
+        Err(InstallationSelectionError::StaleScanGeneration)
+    ));
+    assert!(matches!(
+        reopened.remember_installation_choice(RememberInstallationChoiceRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            scan_generation: next.scan_generation,
+            installation_id: opencode.clone(),
+        }),
+        SavedInstallationChoiceReply::Error(_)
+    ));
+    assert_eq!(read("opencode").status, "unavailable");
+    let DiscoveryReply::Snapshot(refreshed) = reopened.scan(Uuid::new_v4().to_string()) else {
+        panic!("changed client scan failed");
+    };
+    assert!(refreshed.scan_generation > next.scan_generation);
+    assert_eq!(read("opencode").status, "unavailable");
+    assert_eq!(read("codex").status, "available");
+    assert_eq!(
+        fs::read(app_data.join("onboarding/selections.json")).unwrap(),
+        before
+    );
     std::process::exit(44);
 }

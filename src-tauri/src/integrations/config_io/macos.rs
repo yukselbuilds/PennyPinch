@@ -121,7 +121,7 @@ pub(super) fn validate_pinned_directories(pins: &DirectoryPins) -> Result<(), Co
     Ok(())
 }
 
-pub(in crate::integrations) fn ensure_fixed_volume(path: &Path) -> Result<(), ConfigIoError> {
+pub(crate) fn ensure_fixed_volume(path: &Path) -> Result<(), ConfigIoError> {
     validate_lexical_path(path)?;
     let mut ancestor = path.parent().ok_or(ConfigIoError::InvalidRoot)?;
     loop {

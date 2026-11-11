@@ -1,4 +1,6 @@
 use crate::integrations::transaction_fs::FileIdentity;
+#[cfg(target_os = "macos")]
+use crate::state::choices::MacChangeTime;
 use crate::state::choices::{
     ChoiceAvailability, ChoiceClient, ChoiceOrigin, ChoiceStore, ChoiceSurface, InstallationChoice,
 };
@@ -99,7 +101,10 @@ struct DiscoveryState {
 struct InstallationObservation {
     identity: FileIdentity,
     size_bytes: u64,
+    #[cfg(not(target_os = "macos"))]
     modified: std::time::SystemTime,
+    #[cfg(target_os = "macos")]
+    macos_change_time: Option<MacChangeTime>,
 }
 
 pub(crate) struct RecoveryScan {
@@ -338,6 +343,14 @@ impl DiscoveryManager {
             .get(installation_id)
             .cloned()
             .ok_or(InstallationSelectionError::InstallationNotFound)?;
+        #[cfg(target_os = "macos")]
+        if state
+            .observations
+            .get(installation_id)
+            .is_some_and(|seen| observe_installation(&installation, &path) != Some(*seen))
+        {
+            return Err(InstallationSelectionError::StaleScanGeneration);
+        }
         Ok((installation, path))
     }
 
@@ -421,10 +434,7 @@ impl DiscoveryManager {
                     && state
                         .observations
                         .get(&installation.installation_id)
-                        .is_some_and(|observed| {
-                            observed.identity == saved.identity
-                                && observed.size_bytes == saved.size_bytes
-                        })
+                        .is_some_and(|observed| observation_matches_choice(observed, saved))
             })
             .map(|installation| installation.installation_id.clone());
         SavedInstallationChoiceReply::Snapshot(SavedInstallationChoiceSnapshot {
@@ -511,8 +521,7 @@ impl DiscoveryManager {
                 return saved_choice_error(&request.request_id, ErrorCode::EnvironmentBlocked)
             }
         };
-        if choice.identity != observed.identity
-            || choice.size_bytes != observed.size_bytes
+        if !observation_matches_choice(&observed, &choice)
             || path_key(&choice.executable_path) != path_key(&path)
         {
             return saved_choice_error(&request.request_id, ErrorCode::ValidationFailed);
@@ -636,7 +645,7 @@ impl DiscoveryManager {
                 );
             }
         }
-        let observations = collect_observations(&report.installations, &report.paths);
+        let observations = collect_observations(&report);
         let manual_retained = retained_manual.len();
         let installation_count = report.installations.len();
         {
@@ -1025,43 +1034,80 @@ fn report_contains_executable(report: &DiscoveryReport, client_kind: &str, path:
 }
 
 fn observe_candidate(candidate: &Candidate) -> Option<InstallationObservation> {
-    let choice = ChoiceStore::capture_installation(
-        choice_client_kind(candidate.kind)?,
-        choice_surface(candidate.surface)?,
-        choice_origin(candidate.source)?,
-        candidate.executable_path.clone(),
-        candidate.version.clone(),
+    capture_observation(
+        ChoiceStore::capture_installation(
+            choice_client_kind(candidate.kind)?,
+            choice_surface(candidate.surface)?,
+            choice_origin(candidate.source)?,
+            candidate.executable_path.clone(),
+            candidate.version.clone(),
+        )
+        .ok()?,
     )
-    .ok()?;
+}
+
+fn observe_installation(
+    summary: &InstallationSummary,
+    path: &Path,
+) -> Option<InstallationObservation> {
+    capture_observation(
+        ChoiceStore::capture_installation(
+            choice_client_kind(summary.client_kind)?,
+            choice_surface(summary.surface)?,
+            choice_origin(summary.source)?,
+            path.to_owned(),
+            summary.version.clone(),
+        )
+        .ok()?,
+    )
+}
+
+fn capture_observation(choice: InstallationChoice) -> Option<InstallationObservation> {
     Some(InstallationObservation {
         identity: choice.identity,
         size_bytes: choice.size_bytes,
+        #[cfg(not(target_os = "macos"))]
         modified: fs::metadata(&choice.executable_path)
             .ok()?
             .modified()
             .ok()?,
+        #[cfg(target_os = "macos")]
+        macos_change_time: choice.macos_change_time,
     })
 }
 
-fn collect_observations(
-    installations: &[InstallationSummary],
-    paths: &HashMap<String, PathBuf>,
-) -> HashMap<String, InstallationObservation> {
+fn observation_matches_choice(
+    observed: &InstallationObservation,
+    choice: &InstallationChoice,
+) -> bool {
+    if observed.identity != choice.identity || observed.size_bytes != choice.size_bytes {
+        return false;
+    }
+    #[cfg(target_os = "macos")]
+    {
+        choice.macos_change_time.is_some() && observed.macos_change_time == choice.macos_change_time
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        true
+    }
+}
+
+fn collect_observations(report: &DiscoveryReport) -> HashMap<String, InstallationObservation> {
     let mut observations = HashMap::new();
-    for installation in installations {
-        let Some(path) = paths.get(&installation.installation_id) else {
+    for installation in &report.installations {
+        #[cfg(target_os = "macos")]
+        if let Some(observation) = report
+            .native_observations
+            .get(&installation.installation_id)
+        {
+            observations.insert(installation.installation_id.clone(), *observation);
+            continue;
+        }
+        let Some(path) = report.paths.get(&installation.installation_id) else {
             continue;
         };
-        let candidate = Candidate {
-            kind: installation.client_kind,
-            surface: installation.surface,
-            version: installation.version.clone(),
-            source: installation.source,
-            location_label: installation.location_label,
-            identity_path: path.clone(),
-            executable_path: path.clone(),
-        };
-        if let Some(observation) = observe_candidate(&candidate) {
+        if let Some(observation) = observe_installation(installation, path) {
             observations.insert(installation.installation_id.clone(), observation);
         }
     }
@@ -1087,8 +1133,7 @@ fn append_saved_manual_candidates(
         let Some(observation) = observe_candidate(&candidate) else {
             continue;
         };
-        if observation.identity != choice.identity
-            || observation.size_bytes != choice.size_bytes
+        if !observation_matches_choice(&observation, &choice)
             || path_key(&candidate.executable_path) != path_key(&choice.executable_path)
             || report_contains_executable(report, kind, &candidate.executable_path)
         {
@@ -1235,6 +1280,8 @@ struct DiscoveryReport {
     installations: Vec<InstallationSummary>,
     paths: HashMap<String, PathBuf>,
     warnings: BTreeSet<&'static str>,
+    #[cfg(target_os = "macos")]
+    native_observations: HashMap<String, InstallationObservation>,
 }
 
 fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
@@ -1303,7 +1350,7 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
     }
 
     #[cfg(target_os = "macos")]
-    macos::add_cli_candidates(
+    let cli_observations = macos::add_cli_candidates(
         &inputs,
         &mut candidates,
         &mut warnings,
@@ -1389,10 +1436,18 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
         ))
     });
     let mut paths = HashMap::new();
+    #[cfg(target_os = "macos")]
+    let mut native_observations = HashMap::new();
     let installations = candidate_list
         .into_iter()
         .map(|candidate| {
             let id = Uuid::new_v4().to_string();
+            #[cfg(target_os = "macos")]
+            if let Some(observed) =
+                cli_observations.get(&(candidate.kind, candidate.executable_path.clone()))
+            {
+                native_observations.insert(id.clone(), *observed);
+            }
             paths.insert(id.clone(), candidate.executable_path);
             InstallationSummary {
                 installation_id: id,
@@ -1411,6 +1466,8 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
         installations,
         paths,
         warnings,
+        #[cfg(target_os = "macos")]
+        native_observations,
     }
 }
 

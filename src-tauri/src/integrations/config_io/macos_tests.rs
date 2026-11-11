@@ -447,7 +447,14 @@ fn native_manager_missing_claude_project_directory_reopens_and_preserves_user_ad
     fixture.mkdir(&project, 0o700);
     let (manager, id, generation, roots) = manager_fixture(&fixture, "claude_code", &home);
     let picker_project = project.clone();
-    let manager = manager.with_claude_project_picker(move || Ok(Some(picker_project.clone())));
+    let choices_path = fixture.child("choice-app-data");
+    let open_choices = || {
+        crate::state::choices::ChoiceStore::for_app_local_data(Some(choices_path.clone())).unwrap()
+    };
+    let manager = manager
+        .with_claude_choice_store(Some(open_choices()))
+        .with_claude_project_picker(move || Ok(Some(picker_project.clone())));
+    assert!(!choices_path.exists());
     let selection = manager.select_claude_scope(ClaudeScopeSelectionRequest {
         schema_version: 1,
         request_id: Uuid::new_v4().to_string(),
@@ -486,7 +493,6 @@ fn native_manager_missing_claude_project_directory_reopens_and_preserves_user_ad
     fixture.write(&note, b"user additions stay", 0o600);
     let discovery = manager.discovery.clone();
     drop(manager);
-    let reopened_project = project.clone();
     let reopened = PlanManager::with_test_sources(discovery, roots, manager_endpoint())
         .with_ownership_store(
             crate::state::ownership::OwnershipStore::new(
@@ -495,15 +501,13 @@ fn native_manager_missing_claude_project_directory_reopens_and_preserves_user_ad
             )
             .unwrap(),
         )
-        .with_claude_project_picker(move || Ok(Some(reopened_project.clone())));
-    let selection = reopened.select_claude_scope(ClaudeScopeSelectionRequest {
-        schema_version: 1,
-        request_id: Uuid::new_v4().to_string(),
-        scope: "project_local_config".into(),
-    });
-    assert_eq!(
-        serde_json::to_value(selection).unwrap()["status"],
-        "selected"
+        .with_claude_choice_store(Some(open_choices()));
+    let (reopened_roots, reopened_scope) = reopened
+        .config_roots_for_context(ClientKind::ClaudeCode)
+        .unwrap();
+    assert_eq!(reopened_scope, ConfigScope::ProjectLocalConfig);
+    assert!(
+        matches!(reopened_roots.target(ClientKind::ClaudeCode).unwrap(), ConfigTarget::Single { path, .. } if path == config)
     );
     let released = manager_success(reopened.undo_connection(UndoConnectionRequest {
         schema_version: 1,
