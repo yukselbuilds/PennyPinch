@@ -44,13 +44,14 @@ jobs:
           source=tests/native/macos_config_transaction.c
           recipe=.github/workflows/macos-config-transaction.yml
           compiler="$(xcrun --find clang)"
+          sdk="$(xcrun --sdk macosx --show-sdk-path)"
 
           fingerprint() {
             git rev-parse HEAD 'HEAD^{tree}'
             sw_vers
             uname -m
             xcodebuild -version
-            xcrun --show-sdk-version
+            xcrun --sdk macosx --show-sdk-version
             "$compiler" --version
             printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}"
             shasum -a 256 "$source" "$recipe"
@@ -62,7 +63,7 @@ jobs:
           printf '%s\n' "$before"
           printf 'Inputs before: %s\n' "$(printf '%s' "$before" | shasum -a 256 | cut -d' ' -f1)"
           status=0
-          if "$compiler" -std=c17 -D_DARWIN_C_SOURCE -Wall -Wextra -Werror \
+          if "$compiler" -isysroot "$sdk" -std=c17 -D_DARWIN_C_SOURCE -Wall -Wextra -Werror \
               "$source" -o "$stage/probe" > "$stage/build.log" 2>&1; then
             result="$(cd "$stage/fixture" && "$stage/probe")" || status=$?
             if [[ "$status" == 0 ]]; then
