@@ -13,6 +13,11 @@ on:
         required: true
         type: boolean
         default: false
+      verify_config_recovery:
+        description: Focus the native Rust test run on isolated APFS config recovery fixtures.
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -33,6 +38,7 @@ jobs:
       CARGO_PROFILE_DEV_DEBUG: '0'
       CARGO_PROFILE_TEST_DEBUG: '0'
       npm_config_cache: ${{ github.workspace }}/work/caches/npm
+      HEADROOM_VERIFY_CONFIG_RECOVERY: ${{ inputs.verify_config_recovery }}
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -75,6 +81,12 @@ jobs:
           rustup toolchain install 1.92.0 --profile minimal --no-self-update \
             > "$build_log" 2>&1 || { echo "::error::Pinned Rust toolchain install failed."; exit 1; }
 
+          test_filters=(runtime::unix_backend:: runtime::control::tests:: runtime::macos_session::
+                        runtime::ingress:: runtime::ingress_relay:: runtime::manager::macos_tests::
+                        state::store_tests::)
+          if [[ "$HEADROOM_VERIFY_CONFIG_RECOVERY" == true ]]; then
+            test_filters=(state::ownership::macos_recovery::)
+          fi
           fingerprint() {
             git rev-parse HEAD 'HEAD^{tree}'
             sw_vers
@@ -85,6 +97,7 @@ jobs:
             rustc +1.92.0 --version --verbose
             cargo +1.92.0 --version
             printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}" "$CARGO_PROFILE_DEV_DEBUG" "$CARGO_PROFILE_TEST_DEBUG"
+            printf '%s\n' "${test_filters[@]}"
             stat -f '%u %p' "$HEADROOM_MACOS_PROOF_ROOT"
             shasum -a 256 /usr/sbin/netstat
             umask
@@ -106,19 +119,17 @@ jobs:
             echo "Frontend typecheck/build: passed."
             cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
               --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
-              -- runtime::unix_backend:: runtime::control::tests:: runtime::macos_session:: \
-                 runtime::ingress:: runtime::ingress_relay:: runtime::manager::macos_tests:: \
-                 state::store_tests:: --test-threads=1 \
+              -- "${test_filters[@]}" --test-threads=1 \
               > "$build_log" 2>&1 || status=$?
             if [[ "$status" != 0 ]]; then
-              echo "::error::Native Unix protocol and relay tests failed."
+              echo "::error::Selected native Rust tests failed."
               awk '/^error(\[[A-Z][0-9]+\])?: / { show = ++count <= 10; if (show) print substr($0, 1, 300) }
                 show && /^ *--> src\// { print substr($0, 1, 180); show = 0 }
                 /^thread .* panicked at / { detail = 3; print substr($0, 1, 240); next }
                 detail > 0 { print substr($0, 1, 240); detail-- }
                 /^test .* \.\.\. FAILED$/ || /^test result: / { print substr($0, 1, 240) }' "$build_log"
             else
-              awk '/^test result: / { print "Native Unix protocol and relay " $0 }' "$build_log"
+              awk '/^test state::ownership::macos_recovery::/ || /^test result: / { print }' "$build_log"
               if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
                 cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
                   --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
@@ -157,9 +168,12 @@ jobs:
           binary_sha="$(shasum -a 256 "$binary" | cut -d' ' -f1)"
           printf '%s\n' "Executable SHA-256: $binary_sha" "Native executable architecture: arm64."
           printf '%s\n' '## macOS build' '' "- Commit: $GITHUB_SHA" \
-            '- Frontend typecheck/build, native Unix transport/control/ingress/relay tests and locked Tauri build passed.' \
+            '- Frontend typecheck/build, selected native Rust tests and locked Tauri build passed.' \
             "- Apple Silicon executable SHA-256: $binary_sha" \
             '- Scope: native executable build. Client config writes, signing, bundle and UI lifecycle untested.' >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$HEADROOM_VERIFY_CONFIG_RECOVERY" == true ]]; then
+            printf '%s\n' '- Native test scope: APFS recovery in private fixtures using the application patch and ownership record.' >> "$GITHUB_STEP_SUMMARY"
+          fi
           if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
             printf '%s\n' '- Additional scope: pinned resources, native process readiness/control/metrics, normal stop/restart and exact parent-loss exit passed.' \
               '- Application RuntimeManager verified through the stable relay with the real engine. Webview interaction, client config writes, signing and bundled lifecycle remain untested.' >> "$GITHUB_STEP_SUMMARY"

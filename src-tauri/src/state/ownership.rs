@@ -1055,6 +1055,10 @@ fn map_config_io_error(error: crate::integrations::config_io::ConfigIoError) -> 
     }
 }
 
+#[cfg(all(test, target_os = "macos"))]
+#[path = "ownership_macos_recovery.rs"]
+mod macos_recovery;
+
 #[cfg(test)]
 mod codec_tests {
     use super::*;
