@@ -1035,6 +1035,20 @@ fn missing_claude_rollback_and_new_action_abort_do_not_publish_old_plan() {
 
 #[test]
 fn competing_claude_directory_and_replaced_project_are_preserved() {
+    let token_fixture = ClaudeProjectFixture::create();
+    let mut original_transaction = FileTransaction::begin().unwrap();
+    let (directory_token, _) = original_transaction
+        .create_claude_directory(&token_fixture.project)
+        .unwrap();
+    let mut unrelated_transaction = FileTransaction::begin().unwrap();
+    assert!(matches!(
+        unrelated_transaction
+            .create_claude_settings_file(directory_token, MAX_TRANSACTION_FILE_BYTES),
+        Err(TransactionFsError::Conflict)
+    ));
+    assert!(!token_fixture.claude_dir.exists());
+    original_transaction.rollback().unwrap();
+
     let fixture = ClaudeProjectFixture::create();
     let StagedClaudeApply {
         mut transaction, ..

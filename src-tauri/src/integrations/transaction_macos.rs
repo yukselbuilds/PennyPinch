@@ -1,7 +1,9 @@
 use super::{ClaudeDirectoryToken, FileIdentity, FileSnapshot, FileToken, TransactionFsError};
 use super::{MAX_TRANSACTION_FILES, MAX_TRANSACTION_FILE_BYTES};
 use crate::integrations::config_io::{self, ConfigIoError, PinnedDirectoryChain};
-use crate::state::ownership::{config_path_binding, validate_macos_publication};
+use crate::state::ownership::{
+    config_path_binding, config_path_binding_for_claude_project_target, validate_macos_publication,
+};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::ffi::{CStr, CString, OsString};
@@ -37,6 +39,29 @@ fn map_path(error: ConfigIoError) -> TransactionFsError {
 fn component(path: &Path) -> Result<CString, TransactionFsError> {
     let value = path.file_name().ok_or(TransactionFsError::UnsafePath)?;
     CString::new(value.as_bytes()).map_err(|_| TransactionFsError::UnsafePath)
+}
+
+fn path_binding(path: &Path) -> Result<String, TransactionFsError> {
+    if path.file_name() == Some(std::ffi::OsStr::new("settings.local.json"))
+        && path.parent().and_then(Path::file_name) == Some(std::ffi::OsStr::new(".claude"))
+    {
+        config_path_binding_for_claude_project_target(
+            path.parent()
+                .and_then(Path::parent)
+                .ok_or(TransactionFsError::UnsafePath)?,
+            path,
+        )
+        .map_err(|_| TransactionFsError::UnsafePath)
+    } else {
+        config_path_binding(path).map_err(|_| TransactionFsError::UnsafePath)
+    }
+}
+
+fn require_absent(path: &Path) -> Result<(), TransactionFsError> {
+    match fs::symlink_metadata(path) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        _ => Err(TransactionFsError::Conflict),
+    }
 }
 
 fn metadata_hash(file: &File) -> Result<String, TransactionFsError> {
@@ -308,6 +333,20 @@ impl Directory {
         Ok(staged)
     }
 
+    fn create_claude_stage(&self, id: &str) -> Result<Directory, TransactionFsError> {
+        self.verify()?;
+        let leaf = name(id, "claude")?;
+        if unsafe { libc::mkdirat(self.file.as_raw_fd(), leaf.as_ptr(), 0o700) } != 0 {
+            return Err(TransactionFsError::Conflict);
+        }
+        self.file.sync_all().map_err(|_| TransactionFsError::Io)?;
+        self.verify()?;
+        Directory::open(
+            &self.path.join(OsString::from_vec(leaf.to_bytes().to_vec())),
+            true,
+        )
+    }
+
     fn publish(
         &self,
         stage: &CStr,
@@ -354,6 +393,8 @@ struct Journal {
     before_owner: Option<Version>,
     after_owner: Version,
     absent_guards: Vec<Vec<u8>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    claude_project: Option<Object>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
@@ -405,6 +446,15 @@ impl Journal {
             return Err(TransactionFsError::Conflict);
         }
         name(&self.id, "json")?;
+        if self.claude_project.is_some()
+            && (path.file_name() != Some(std::ffi::OsStr::new("settings.local.json"))
+                || path.parent().and_then(Path::file_name) != Some(std::ffi::OsStr::new(".claude"))
+                || self.owner_filename != "claude_code.json"
+                || self.before_config.is_some()
+                || !self.absent_guards.is_empty())
+        {
+            return Err(TransactionFsError::Conflict);
+        }
         for raw in &self.absent_guards {
             let guard = PathBuf::from(OsString::from_vec(raw.clone()));
             config_io::validate_lexical_path(&guard).map_err(map_path)?;
@@ -479,16 +529,74 @@ impl Journal {
     ) -> Result<(), TransactionFsError> {
         let path = self.target()?;
         if path != expected_path
-            || config_path_binding(&path).ok().as_deref() != Some(self.binding.as_str())
+            || path_binding(&path).ok().as_deref() != Some(self.binding.as_str())
         {
             return Err(TransactionFsError::Conflict);
         }
-        let config = Directory::open(path.parent().ok_or(TransactionFsError::UnsafePath)?, false)?;
+        if self.owner_directory != state.object {
+            return Err(TransactionFsError::Conflict);
+        }
+        let disposition = self.marker(state, digest)?;
+        if let Some(expected_project) = &self.claude_project {
+            let project = Directory::open(
+                path.parent()
+                    .and_then(Path::parent)
+                    .ok_or(TransactionFsError::UnsafePath)?,
+                false,
+            )?;
+            if &project.object != expected_project {
+                return Err(TransactionFsError::Conflict);
+            }
+            if disposition == Some(Disposition::Aborted) {
+                return Ok(());
+            }
+            if fs::symlink_metadata(path.parent().unwrap())
+                .is_err_and(|error| error.kind() == std::io::ErrorKind::NotFound)
+            {
+                if disposition.is_some() {
+                    return Err(TransactionFsError::Conflict);
+                }
+                let staged = Directory::open(
+                    &project.path.join(OsString::from_vec(
+                        name(&self.id, "claude")?.to_bytes().to_vec(),
+                    )),
+                    true,
+                )?;
+                let config = staged.snapshot(c"settings.local.json", MAX_TRANSACTION_FILE_BYTES)?;
+                let owner_name = CString::new(self.owner_filename.as_str())
+                    .map_err(|_| TransactionFsError::UnsafePath)?;
+                let owner = state.snapshot(&owner_name, MAX_TRANSACTION_FILE_BYTES)?;
+                let staged_owner =
+                    state.snapshot(&name(&self.id, "owner")?, MAX_TRANSACTION_FILE_BYTES)?;
+                if staged.object != self.config_directory
+                    || version(&config) != Some(&self.after_config)
+                    || version(&owner) != self.before_owner.as_ref()
+                    || version(&staged_owner) != Some(&self.after_owner)
+                {
+                    return Err(TransactionFsError::Conflict);
+                }
+                validate_macos_publication(
+                    &path,
+                    &self.owner_filename,
+                    owner.as_ref().map(|file| file.bytes.as_slice()),
+                    &staged_owner.as_ref().unwrap().bytes,
+                    None,
+                    &config.as_ref().unwrap().bytes,
+                )
+                .map_err(|_| TransactionFsError::Conflict)?;
+                require_absent(path.parent().unwrap())?;
+                return self.mark(state, digest, Disposition::Aborted);
+            }
+        }
+        let config = Directory::open(
+            path.parent().ok_or(TransactionFsError::UnsafePath)?,
+            self.claude_project.is_some(),
+        )?;
         if self.config_directory != config.object || self.owner_directory != state.object {
             return Err(TransactionFsError::Conflict);
         }
         let old = config.snapshot(&config_stage(&self.id)?, MAX_TRANSACTION_FILE_BYTES)?;
-        if let Some(disposition) = self.marker(state, digest)? {
+        if let Some(disposition) = disposition {
             return if disposition == Disposition::Aborted
                 || version(&old) == self.before_config.as_ref()
             {
@@ -612,7 +720,7 @@ fn check_history(
     path: &Path,
     except: Option<&str>,
 ) -> Result<(), TransactionFsError> {
-    let binding = config_path_binding(path).map_err(|_| TransactionFsError::UnsafePath)?;
+    let binding = path_binding(path)?;
     for (journal, digest) in journals(state)? {
         if Some(journal.id.as_str()) == except
             || journal.binding != binding
@@ -663,6 +771,7 @@ struct Entry {
     before: Option<Snapshot>,
     after: Option<Vec<u8>>,
     limit: usize,
+    new_claude_directory: bool,
 }
 
 struct Prepared {
@@ -680,6 +789,7 @@ pub(crate) struct FileTransaction {
     owner_directory: Option<Directory>,
     lock: Option<File>,
     prepared: Option<Prepared>,
+    claude_project: Option<Directory>,
 }
 
 impl FileTransaction {
@@ -697,6 +807,7 @@ impl FileTransaction {
             owner_directory: None,
             lock: None,
             prepared: None,
+            claude_project: None,
         })
     }
 
@@ -780,6 +891,7 @@ impl FileTransaction {
             before,
             after: None,
             limit,
+            new_claude_directory: false,
         });
         Ok((token, public))
     }
@@ -811,17 +923,75 @@ impl FileTransaction {
 
     pub(crate) fn create_claude_directory(
         &mut self,
-        _root: &Path,
+        root: &Path,
     ) -> Result<(ClaudeDirectoryToken, FileIdentity), TransactionFsError> {
-        Err(TransactionFsError::Unsupported)
+        self.check()?;
+        if self.claude_project.is_some()
+            || !self.entries.is_empty()
+            || !self.absent.is_empty()
+            || self.prepared.is_some()
+        {
+            return Err(TransactionFsError::Conflict);
+        }
+        let project = Directory::open(root, false)?;
+        require_absent(&root.join(".claude"))?;
+        self.claude_project = Some(project);
+        Ok((
+            ClaudeDirectoryToken {
+                transaction_id: self.id,
+                entry_index: 0,
+            },
+            FileIdentity {
+                volume_serial: 0,
+                file_index: 0,
+            },
+        ))
     }
 
     pub(crate) fn create_claude_settings_file(
         &mut self,
-        _directory: ClaudeDirectoryToken,
-        _max_bytes: usize,
+        directory: ClaudeDirectoryToken,
+        max_bytes: usize,
     ) -> Result<(FileToken, FileIdentity), TransactionFsError> {
-        Err(TransactionFsError::Unsupported)
+        self.check()?;
+        if directory.transaction_id != self.id
+            || directory.entry_index != 0
+            || !self.entries.is_empty()
+            || self.prepared.is_some()
+        {
+            return Err(TransactionFsError::Conflict);
+        }
+        if max_bytes > MAX_TRANSACTION_FILE_BYTES {
+            return Err(TransactionFsError::TooLarge);
+        }
+        let project = self
+            .claude_project
+            .as_ref()
+            .ok_or(TransactionFsError::Conflict)?;
+        project.verify()?;
+        require_absent(&project.path.join(".claude"))?;
+        let path = project.path.join(".claude/settings.local.json");
+        config_io::validate_lexical_path(&path).map_err(map_path)?;
+        let directory = Directory::open(&project.path, false)?;
+        let token = FileToken {
+            transaction_id: self.id,
+            entry_index: 0,
+        };
+        self.entries.push(Entry {
+            path,
+            directory,
+            before: None,
+            after: None,
+            limit: max_bytes,
+            new_claude_directory: true,
+        });
+        Ok((
+            token,
+            FileIdentity {
+                volume_serial: 0,
+                file_index: 0,
+            },
+        ))
     }
 
     pub(crate) fn canonical_target(&self, token: FileToken) -> Result<PathBuf, TransactionFsError> {
@@ -933,6 +1103,11 @@ impl FileTransaction {
     fn validate_entries(&self) -> Result<(), TransactionFsError> {
         self.check()?;
         for entry in &self.entries {
+            if entry.new_claude_directory {
+                entry.directory.verify()?;
+                require_absent(entry.path.parent().ok_or(TransactionFsError::UnsafePath)?)?;
+                continue;
+            }
             let current = entry
                 .directory
                 .snapshot(&component(&entry.path)?, entry.limit)?;
@@ -995,19 +1170,30 @@ impl FileTransaction {
         )
         .map_err(|_| TransactionFsError::Conflict)?;
         let id = Uuid::new_v4().to_string();
-        let staged_config =
-            config
-                .directory
-                .create(&config_stage(&id)?, after_config, config.before.as_ref())?;
+        let (staged_config, config_directory) = if config.new_claude_directory {
+            let staged = config.directory.create_claude_stage(&id)?;
+            (
+                staged.create(c"settings.local.json", after_config, None)?,
+                staged.object,
+            )
+        } else {
+            (
+                config.directory.create(
+                    &config_stage(&id)?,
+                    after_config,
+                    config.before.as_ref(),
+                )?,
+                config.directory.object.clone(),
+            )
+        };
         let staged_owner = state.create(&name(&id, "owner")?, after_owner, None)?;
         self.validate_entries()?;
         let journal = Journal {
             schema_version: 1,
             id,
             config_path: config.path.as_os_str().as_bytes().to_vec(),
-            binding: config_path_binding(&config.path)
-                .map_err(|_| TransactionFsError::UnsafePath)?,
-            config_directory: config.directory.object.clone(),
+            binding: path_binding(&config.path)?,
+            config_directory,
             owner_directory: state.object.clone(),
             owner_filename: owner_filename.to_owned(),
             before_config: version(&config.before).cloned(),
@@ -1019,6 +1205,9 @@ impl FileTransaction {
                 .iter()
                 .map(|path| path.as_os_str().as_bytes().to_vec())
                 .collect(),
+            claude_project: config
+                .new_claude_directory
+                .then(|| config.directory.object.clone()),
         };
         journal.target()?;
         let bytes = serde_json::to_vec(&journal).map_err(|_| TransactionFsError::Io)?;
@@ -1066,18 +1255,36 @@ impl FileTransaction {
             .iter()
             .find(|entry| entry.path == path)
             .ok_or(TransactionFsError::Conflict)?;
-        if version(&config.directory.snapshot(
-            &config_stage(&prepared.journal.id)?,
-            MAX_TRANSACTION_FILE_BYTES,
-        )?) != Some(&prepared.journal.after_config)
-        {
-            return Err(TransactionFsError::Conflict);
+        if config.new_claude_directory {
+            let stage_name = name(&prepared.journal.id, "claude")?;
+            let staged = Directory::open(
+                &config
+                    .directory
+                    .path
+                    .join(OsString::from_vec(stage_name.to_bytes().to_vec())),
+                true,
+            )?;
+            if staged.object != prepared.journal.config_directory
+                || version(&staged.snapshot(c"settings.local.json", MAX_TRANSACTION_FILE_BYTES)?)
+                    != Some(&prepared.journal.after_config)
+            {
+                return Err(TransactionFsError::Conflict);
+            }
+            config.directory.publish(&stage_name, c".claude", false)?;
+        } else {
+            if version(&config.directory.snapshot(
+                &config_stage(&prepared.journal.id)?,
+                MAX_TRANSACTION_FILE_BYTES,
+            )?) != Some(&prepared.journal.after_config)
+            {
+                return Err(TransactionFsError::Conflict);
+            }
+            config.directory.publish(
+                &config_stage(&prepared.journal.id)?,
+                &component(&path)?,
+                config.before.is_some(),
+            )?;
         }
-        config.directory.publish(
-            &config_stage(&prepared.journal.id)?,
-            &component(&path)?,
-            config.before.is_some(),
-        )?;
         after_config();
         let outcome = (|| {
             check_history(
@@ -1089,13 +1296,14 @@ impl FileTransaction {
             prepared
                 .journal
                 .recover(&prepared.state, &prepared.digest, &path)?;
+            let published = Directory::open(
+                path.parent().ok_or(TransactionFsError::UnsafePath)?,
+                config.new_claude_directory,
+            )?;
             if prepared.journal.marker(&prepared.state, &prepared.digest)?
                 != Some(Disposition::Committed)
-                || version(
-                    &config
-                        .directory
-                        .snapshot(&component(&path)?, MAX_TRANSACTION_FILE_BYTES)?,
-                ) != Some(&prepared.journal.after_config)
+                || version(&published.snapshot(&component(&path)?, MAX_TRANSACTION_FILE_BYTES)?)
+                    != Some(&prepared.journal.after_config)
                 || version(
                     &prepared
                         .state

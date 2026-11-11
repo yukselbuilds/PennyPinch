@@ -684,9 +684,22 @@ pub(crate) fn validate_macos_publication(
         (Some(ConfigSource::OpenCodeJsonc), Some(ConfigScope::UserConfig)) => "opencode.jsonc",
         _ => return Err(OwnershipError::Invalid),
     };
+    let binding = if next.config_source() == Some(ConfigSource::ClaudeJson)
+        && next.config_scope() == Some(ConfigScope::ProjectLocalConfig)
+    {
+        config_path_binding_for_claude_project_target(
+            config_path
+                .parent()
+                .and_then(Path::parent)
+                .ok_or(OwnershipError::UnsafePath)?,
+            config_path,
+        )?
+    } else {
+        config_path_binding(config_path)?
+    };
     if owner_filename != slot_filename(kind)
         || config_path.file_name().and_then(|value| value.to_str()) != Some(expected_leaf)
-        || config_path_binding(config_path)? != next.config_path_binding_sha256()
+        || binding != next.config_path_binding_sha256()
         || !previous.as_ref().map_or(
             next.state() == OwnershipState::Active && next.revision() == 1,
             |previous| valid_transition(previous, &next),

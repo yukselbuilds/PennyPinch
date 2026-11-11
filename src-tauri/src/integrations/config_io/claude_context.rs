@@ -1,3 +1,7 @@
+#[cfg(target_os = "macos")]
+use super::{
+    ensure_fixed_volume, is_reparse, pin_existing_directory_chain, same_path, validate_lexical_path,
+};
 #[cfg(windows)]
 use super::{
     ensure_fixed_volume, is_reparse, pin_existing_directory_chain, same_path,
@@ -7,7 +11,7 @@ use super::{ConfigIoError, PlanManager, PreviewGuard};
 use crate::integrations::plan::ConfigScope;
 use crate::state::choices::{ChoiceAvailability, ChoiceStore, ClaudeChoice, ClaudeChoiceScope};
 use serde::{Deserialize, Serialize};
-#[cfg(windows)]
+#[cfg(any(windows, target_os = "macos"))]
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -428,13 +432,14 @@ fn valid_uuid(value: &str) -> bool {
 }
 
 fn validate_project_directory(path: &Path) -> Result<ValidatedProjectDirectory, ConfigIoError> {
-    #[cfg(not(windows))]
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         let _ = path;
         return Err(ConfigIoError::InvalidRoot);
     }
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "macos"))]
     {
+        #[cfg(windows)]
         use std::os::windows::ffi::OsStrExt;
 
         validate_lexical_path(path)?;
@@ -461,11 +466,14 @@ fn validate_project_directory(path: &Path) -> Result<ValidatedProjectDirectory, 
         {
             return Err(ConfigIoError::UnsafePath);
         }
-        let canonical_text = canonical.as_os_str().encode_wide().collect::<Vec<_>>();
-        if canonical.to_str().is_none()
-            || canonical_text.contains(&0)
-            || canonical_text.len() > MAX_CONFIG_PATH_UNITS
+        #[cfg(windows)]
         {
+            let canonical_text = canonical.as_os_str().encode_wide().collect::<Vec<_>>();
+            if canonical_text.contains(&0) || canonical_text.len() > MAX_CONFIG_PATH_UNITS {
+                return Err(ConfigIoError::UnsafePath);
+            }
+        }
+        if canonical.to_str().is_none() {
             return Err(ConfigIoError::UnsafePath);
         }
         let identity = project_directory_identity(&canonical)?;
@@ -488,6 +496,37 @@ fn project_directory_identity(path: &Path) -> Result<ProjectDirectoryIdentity, C
         file_index_high: pin.high,
         file_index_low: pin.low,
     })
+}
+
+#[cfg(target_os = "macos")]
+fn project_directory_identity(path: &Path) -> Result<ProjectDirectoryIdentity, ConfigIoError> {
+    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+    let directory = fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW_ANY | libc::O_CLOEXEC)
+        .open(path)
+        .map_err(|_| ConfigIoError::UnsafePath)?;
+    let info = directory
+        .metadata()
+        .map_err(|_| ConfigIoError::Unavailable)?;
+    if !info.is_dir() || info.uid() != unsafe { libc::geteuid() } || info.mode() & 0o022 != 0 {
+        return Err(ConfigIoError::UnsafePath);
+    }
+    Ok(ProjectDirectoryIdentity {
+        volume: info
+            .dev()
+            .try_into()
+            .map_err(|_| ConfigIoError::UnsafePath)?,
+        file_index_high: (info.ino() >> 32) as u32,
+        file_index_low: info.ino() as u32,
+    })
+}
+
+#[cfg(target_os = "macos")]
+fn normalize_canonical_directory(path: &Path) -> Result<PathBuf, ConfigIoError> {
+    validate_lexical_path(path)?;
+    ensure_fixed_volume(&path.join(".headroom-project-volume"))?;
+    Ok(path.to_owned())
 }
 
 #[cfg(windows)]
