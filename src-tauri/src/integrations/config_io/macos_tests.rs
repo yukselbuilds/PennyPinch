@@ -129,9 +129,7 @@ fn assert_supported_directory_chain(path: &Path) {
             let info = fs::symlink_metadata(directory).unwrap();
             let open_errno = OpenOptions::new()
                 .read(true)
-                .custom_flags(
-                    libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_NOFOLLOW_ANY | libc::O_CLOEXEC,
-                )
+                .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW_ANY | libc::O_CLOEXEC)
                 .open(directory)
                 .err()
                 .and_then(|error| error.raw_os_error());
@@ -250,6 +248,10 @@ fn codex_reader_rejects_symlink_hardlink_and_fifo_entries_without_blocking() {
 
     let symlink_home = fixture.child("symlink-codex");
     std::os::unix::fs::symlink(&real_home, &symlink_home).unwrap();
+    let nested = real_home.join("nested");
+    fixture.mkdir(&nested, 0o700);
+    assert!(super::open_directory(&symlink_home.join("nested")).is_err());
+    fs::remove_dir(nested).unwrap();
     let symlink_inputs = fixture.codex_inputs(&symlink_home);
     assert!(matches!(
         read_user_config(ClientKind::Codex, &symlink_inputs),

@@ -65,7 +65,8 @@ pub(crate) fn validate_lexical_path(path: &Path) -> Result<(), ConfigIoError> {
 fn open_directory(path: &Path) -> Result<DirectoryPin, ConfigIoError> {
     let file = OpenOptions::new()
         .read(true)
-        .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_NOFOLLOW_ANY | libc::O_CLOEXEC)
+        // Darwin rejects combining O_NOFOLLOW with O_NOFOLLOW_ANY (EINVAL).
+        .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW_ANY | libc::O_CLOEXEC)
         .open(path)
         .map_err(|_| ConfigIoError::UnsafePath)?;
     let info = file.metadata().map_err(|_| ConfigIoError::Unavailable)?;
