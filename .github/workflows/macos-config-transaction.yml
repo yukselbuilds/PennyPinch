@@ -1,0 +1,83 @@
+name: macOS config transaction probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      free_only_confirmed:
+        description: Confirm that this run fits the current included compute and account hard stop.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-config-transaction-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  config-transaction-probe:
+    if: ${{ inputs.free_only_confirmed == true }}
+    name: Apple Silicon APFS config transaction probe
+    runs-on: macos-15
+    timeout-minutes: 5
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Probe APFS with isolated files
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$(uname -m)" = arm64
+          test "$(pwd -P)" = "$GITHUB_WORKSPACE"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --quiet HEAD --
+          mkdir -p work
+          stage="$(mktemp -d "$GITHUB_WORKSPACE/work/mac-config.XXXXXX")"
+          mkdir -m 700 "$stage/fixture"
+          source=tests/native/macos_config_transaction.c
+          recipe=.github/workflows/macos-config-transaction.yml
+          compiler="$(xcrun --find clang)"
+
+          fingerprint() {
+            git rev-parse HEAD 'HEAD^{tree}'
+            sw_vers
+            uname -m
+            xcodebuild -version
+            xcrun --show-sdk-version
+            "$compiler" --version
+            printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}"
+            shasum -a 256 "$source" "$recipe"
+            stat -f '%u %p' "$stage/fixture"
+            umask
+          }
+
+          before="$(fingerprint)"
+          printf '%s\n' "$before"
+          printf 'Inputs before: %s\n' "$(printf '%s' "$before" | shasum -a 256 | cut -d' ' -f1)"
+          status=0
+          if "$compiler" -std=c17 -D_DARWIN_C_SOURCE -Wall -Wextra -Werror \
+              "$source" -o "$stage/probe" > "$stage/build.log" 2>&1; then
+            result="$(cd "$stage/fixture" && "$stage/probe")" || status=$?
+            if [[ "$status" == 0 ]]; then
+              printf 'APFS probe: %s\n' "$result"
+            fi
+          else
+            echo '::error::Native APFS probe compilation failed.'
+            awk '/error:/ && ++count <= 5 { print substr($0, 1, 240) }' "$stage/build.log"
+            status=1
+          fi
+          after="$(fingerprint)"
+          printf 'Inputs after: %s\n' "$(printf '%s' "$after" | shasum -a 256 | cut -d' ' -f1)"
+          test "$before" = "$after"
+          git diff --quiet HEAD --
+          test "$status" = 0
+          printf '%s\n' '## APFS file transaction probe' '' "- Commit: $GITHUB_SHA" \
+            "- Observations: $result" \
+            '- Scope: isolated fixture files and process exit on this runner.' >> "$GITHUB_STEP_SUMMARY"

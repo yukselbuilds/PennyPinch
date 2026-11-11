@@ -60,7 +60,19 @@ Parent kaybı testinde yalnız testin kendi motoru durduruldu; sahipli ebeveyn s
 
 İlk koşu Windows'a özgü tercih kilidi nedeniyle uygulama başlangıcında durdu. macOS'a 0600 sahipli dosya kilidi ve özel geçici yazım eklendi. Son koşuda 31 protokol/aktarım/tercih ve 4 yönetilen motor/uygulama testi geçti. Python kontrolleri 17 başarılı, 1 skipped. ARM64 Tauri derlemesi, 16.640 dosyalı payload ve aynı önce/sonra girdi parmak izi doğrulandı. Windows odaklı 69 test geçti, 5 opt-in ignored. [Koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43009523997), [makine kanıtı](../proofs/macos-application-manager.json).
 
-İstemci ayar işlemleri H048-b6, paket ve gerçek webview yaşam döngüsü H048-c kapsamında açık. Bu koşu yerel readiness ve metrik trafiği kullandı. Canlı sağlayıcı trafiği ile tasarruf ölçümü yapılmadı.
+Bu koşu yerel readiness ve metrik trafiği kullandı. Canlı sağlayıcı trafiği ile tasarruf ölçümü yapılmadı.
+
+## H048-b6a — APFS config yayını deneyi
+
+H048-b6'nın ilk adımı APFS dosya işlemlerini standart Apple Silicon runner'da sınar. Uygulamanın mevcut plan/Apply/Undo sözleşmesi [005 kararında](../decisions/005-config-transaction.md) tanımlıdır. Apple, `RENAME_EXCL` için hedef varsa çakışma ve `RENAME_SWAP` için iki adın atomik takasını tanımlar. `flock` işbirlikli kilittir. [Apple rename kılavuzu](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/man/man2/rename.2) · [Apple flock kılavuzu](https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/flock.2.html).
+
+| Başlangıç ve eylem | Beklenen gözlem |
+| --- | --- |
+| Mevcut dosya ve parent descriptor açıkken ayrı süreç kilit, yazma, replace ve unlink dener | İkinci işbirlikli kilit reddedilir. Normal dosya işlemlerinin gerçek sonucu ve dosya kimliği doğrulanır. |
+| Hedef boşken ve doluyken exclusive yayın, son okumadan sonra bağımsız replace ve swap | Boş hedefe tam dosya yayınlanır. Dolu hedef korunur. Swap sonrası taşınan gerçek dosya kimliği ve baytlarıyla yarış saptanır. Ek yazma yokken geri swap, yarışan dosyayı korur. |
+| Config swap tamamlanınca çocuk süreç ayrı sahiplik yazımından önce sonlanır | Yeni config, taşınmış eski config ve eski sahiplik kaydı gözlenir. Sonuç süreç kaybı sınırını ölçer. |
+
+Deney yalnız özel proje dizinindeki sabit sentetik dosyaları kullanır. Windows NTFS kabulü ayrı kalır. Uygulama düzeyinde kesinti kurtarma, istemci ayar yazımı ve undo H048-b6b kabulünde açık. [Manuel workflow](../../.github/workflows/macos-config-transaction.yml).
 
 ## Açık kabuller
 
