@@ -750,8 +750,7 @@ fn expired_ready_snapshot_becomes_unknown_and_recovers_after_fresh_health() {
     mark_ready_view(
         &shared_view,
         GENERATION,
-        48631,
-        302,
+        Some((48631, 302)),
         Instant::now(),
         None,
         Vec::new(),

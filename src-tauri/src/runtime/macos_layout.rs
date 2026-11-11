@@ -8,7 +8,7 @@ use std::io::Read;
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::path::{Component, Path, PathBuf};
 
-const COMPILED_MANIFEST_SHA256: Option<&str> =
+pub(super) const COMPILED_MANIFEST_SHA256: Option<&str> =
     option_env!("HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256");
 const MAX_PAYLOAD_BYTES: u64 = 2 * 1024 * 1024 * 1024;
 const MAX_ENTRIES: usize = 100_000;
@@ -74,10 +74,6 @@ impl MacRuntime {
     pub(crate) fn open(root: &Path) -> Result<Self, MacRuntimeError> {
         let expected = COMPILED_MANIFEST_SHA256.ok_or(MacRuntimeError::Unavailable)?;
         verify(root, expected)
-    }
-
-    pub(crate) fn revalidate(&self) -> Result<(), MacRuntimeError> {
-        Self::open(&self.root).map(|_| ())
     }
 
     pub(crate) fn python(&self) -> PathBuf {

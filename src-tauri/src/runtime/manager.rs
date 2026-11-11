@@ -19,6 +19,12 @@ use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
+#[cfg(target_os = "macos")]
+#[path = "manager_macos.rs"]
+mod macos;
+#[cfg(target_os = "macos")]
+use macos::ControllerSession;
+
 const DTO_SCHEMA_VERSION: u8 = 1;
 const HELPER_PROTOCOL_VERSION: u8 = 1;
 const MAX_HELPER_FRAME_BYTES: usize = 8192;
@@ -339,6 +345,7 @@ struct StopFailure {
     stage: &'static str,
 }
 
+#[cfg(not(target_os = "macos"))]
 #[derive(Clone, Copy, Debug)]
 struct ForceStopReport {
     controller_exited: bool,
@@ -348,13 +355,24 @@ struct ForceStopReport {
     reader_stopped: bool,
 }
 
+#[cfg(target_os = "macos")]
+#[derive(Clone, Copy, Debug)]
+struct ForceStopReport {
+    owned_child_and_socket_released: bool,
+}
+
 impl ForceStopReport {
     fn clean(self) -> bool {
-        self.controller_exited
-            && self.process_tree_absent
-            && self.port_closed
-            && self.job_empty
-            && self.reader_stopped
+        #[cfg(not(target_os = "macos"))]
+        {
+            self.controller_exited
+                && self.process_tree_absent
+                && self.port_closed
+                && self.job_empty
+                && self.reader_stopped
+        }
+        #[cfg(target_os = "macos")]
+        self.owned_child_and_socket_released
     }
 }
 
@@ -829,7 +847,7 @@ fn cleanup_result_error(original: PublicError, cleanup_verified: bool) -> Public
     }
 }
 
-#[cfg(windows)]
+#[cfg(any(windows, target_os = "macos"))]
 fn map_ingress_error(error: super::ingress::IngressError) -> PublicError {
     use super::ingress::IngressError;
     match error {
@@ -838,6 +856,7 @@ fn map_ingress_error(error: super::ingress::IngressError) -> PublicError {
         IngressError::InvalidRoot
         | IngressError::StateUnavailable
         | IngressError::SocketUnavailable => PublicError::EnvironmentBlocked,
+        #[cfg(windows)]
         IngressError::PeerOwnerUnknown
         | IngressError::PeerOwnerTableUnavailable
         | IngressError::PeerOwnerMissing
@@ -862,7 +881,7 @@ impl RuntimeLayout {
         resource_dir: Option<PathBuf>,
         app_data_dir: Option<PathBuf>,
     ) -> Result<Self, PublicError> {
-        if cfg!(debug_assertions) {
+        if cfg!(debug_assertions) && !cfg!(target_os = "macos") {
             let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
             let project_root = manifest_dir
                 .parent()
@@ -881,7 +900,10 @@ impl RuntimeLayout {
 
         let resource_dir = resource_dir.ok_or(PublicError::EnvironmentBlocked)?;
         let app_data_dir = app_data_dir.ok_or(PublicError::EnvironmentBlocked)?;
-        Self::from_bundle(resource_dir, app_data_dir)
+        #[cfg(not(target_os = "macos"))]
+        return Self::from_bundle(resource_dir, app_data_dir);
+        #[cfg(target_os = "macos")]
+        Self::from_macos_bundle(resource_dir, app_data_dir)
     }
 
     fn from_bundle(resource_dir: PathBuf, app_data_dir: PathBuf) -> Result<Self, PublicError> {
@@ -963,6 +985,7 @@ impl RuntimeLayout {
         Ok((root, workspace, config))
     }
 
+    #[cfg(not(target_os = "macos"))]
     fn state_runtime_root(&self) -> Result<PathBuf, PublicError> {
         ensure_existing_ancestor_inside(&self.state_boundary_root, &self.state_root)?;
         fs::create_dir_all(&self.state_root).map_err(|_| PublicError::EnvironmentBlocked)?;
@@ -1029,12 +1052,16 @@ impl RuntimeLayout {
             workspace,
             config,
             python_path: python,
-            protected_tools: self.preferences.as_ref().map_or(Ok(Vec::new()), |store| {
-                store
-                    .operating()
-                    .map(|p| p.protected_tools)
-                    .map_err(|_| PublicError::ConfigConflict)
-            })?,
+            protected_tools: self.protected_tools()?,
+        })
+    }
+
+    fn protected_tools(&self) -> Result<Vec<String>, PublicError> {
+        self.preferences.as_ref().map_or(Ok(Vec::new()), |store| {
+            store
+                .operating()
+                .map(|p| p.protected_tools)
+                .map_err(|_| PublicError::ConfigConflict)
         })
     }
 }
@@ -1806,6 +1833,7 @@ fn safe_environment(state_root: &Path) -> Result<Vec<(String, String)>, PublicEr
     ])
 }
 
+#[cfg(not(target_os = "macos"))]
 struct ControllerSession {
     protected_tools: Vec<String>,
     control_secret: ControlSecret,
@@ -1826,7 +1854,17 @@ struct ControllerSession {
     last_health: Instant,
 }
 
+#[cfg(not(target_os = "macos"))]
 impl ControllerSession {
+    fn tcp_listener(&self) -> Option<(u16, u32)> {
+        Some((self.listener_port, self.engine_pid))
+    }
+
+    #[cfg(windows)]
+    fn backend_is_alive(&self) -> bool {
+        self.backend_lease.is_alive_for(&self.generation)
+    }
+
     fn optimization_control(
         &self,
         id: &str,
@@ -2295,6 +2333,7 @@ impl ControllerSession {
     }
 }
 
+#[cfg(not(target_os = "macos"))]
 impl Drop for ControllerSession {
     fn drop(&mut self) {
         if self.child.try_wait().ok().flatten().is_none() {
@@ -3229,21 +3268,28 @@ struct IngressDrainResult {
 }
 
 struct ManagedIngress {
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "macos"))]
     relay: Option<super::ingress_relay::IngressRelay>,
     startup_error: Option<PublicError>,
     view: Arc<RwLock<IngressView>>,
 }
 
 impl ManagedIngress {
-    fn open(layout: &Result<RuntimeLayout, PublicError>, view: Arc<RwLock<IngressView>>) -> Self {
+    #[cfg(any(windows, target_os = "macos"))]
+    fn endpoint_is_current(relay: &super::ingress_relay::IngressRelay) -> bool {
         #[cfg(windows)]
+        return relay.is_accepting();
+        #[cfg(target_os = "macos")]
+        relay.owns_endpoint()
+    }
+
+    fn open(layout: &Result<RuntimeLayout, PublicError>, view: Arc<RwLock<IngressView>>) -> Self {
+        #[cfg(any(windows, target_os = "macos"))]
         {
             let opened = layout
                 .as_ref()
                 .map_err(|error| *error)
                 .and_then(|layout| layout.state_runtime_root())
-                .map_err(|error| error)
                 .and_then(|root| {
                     let stable = super::ingress::StableIngress::open_or_create(&root)
                         .map_err(map_ingress_error)?;
@@ -3272,7 +3318,7 @@ impl ManagedIngress {
                         }
                     };
                     let endpoint_id = relay.endpoint_id().map(str::to_owned);
-                    if endpoint_id.is_none() || !relay.is_accepting() {
+                    if endpoint_id.is_none() || !Self::endpoint_is_current(&relay) {
                         let mut relay = relay;
                         let _ = relay.shutdown(INGRESS_SHUTDOWN_TIMEOUT);
                         return Self::unavailable(view, PublicError::EnvironmentBlocked);
@@ -3297,7 +3343,7 @@ impl ManagedIngress {
                 Err(error) => Self::unavailable(view, error),
             }
         }
-        #[cfg(not(windows))]
+        #[cfg(not(any(windows, target_os = "macos")))]
         {
             let error = layout
                 .as_ref()
@@ -3318,7 +3364,7 @@ impl ManagedIngress {
             *state = IngressView::unavailable(error, status)
         });
         Self {
-            #[cfg(windows)]
+            #[cfg(any(windows, target_os = "macos"))]
             relay: None,
             startup_error: Some(error),
             view,
@@ -3330,13 +3376,13 @@ impl ManagedIngress {
     }
 
     fn observe_endpoint(&self) -> bool {
-        #[cfg(windows)]
+        #[cfg(any(windows, target_os = "macos"))]
         {
             let Some(relay) = self.relay.as_ref() else {
                 self.mark_endpoint_unavailable();
                 return false;
             };
-            if !relay.is_accepting() {
+            if !Self::endpoint_is_current(relay) {
                 self.mark_endpoint_unavailable();
                 return false;
             }
@@ -3346,7 +3392,7 @@ impl ManagedIngress {
             });
             true
         }
-        #[cfg(not(windows))]
+        #[cfg(not(any(windows, target_os = "macos")))]
         {
             self.mark_endpoint_unavailable();
             false
@@ -3380,7 +3426,7 @@ impl ManagedIngress {
         });
     }
 
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "macos"))]
     fn publish_route(&mut self, session: &ControllerSession) -> Result<(), PublicError> {
         #[cfg(test)]
         set_startup_diagnostic_stage("route_publish_precheck");
@@ -3388,13 +3434,13 @@ impl ManagedIngress {
             self.startup_error
                 .unwrap_or(PublicError::EnvironmentBlocked)
         })?;
-        let relay_accepting = relay.is_accepting();
+        let relay_accepting = Self::endpoint_is_current(relay);
         #[cfg(test)]
         update_startup_diagnostic(|diagnostic| {
             diagnostic.stage = "route_publish_precheck";
             diagnostic.relay_accepting = Some(relay_accepting);
         });
-        if !relay_accepting || !session.backend_lease.is_alive_for(&session.generation) {
+        if !relay_accepting || !session.backend_is_alive() {
             return Err(PublicError::OwnershipLost);
         }
         #[cfg(test)]
@@ -3407,7 +3453,7 @@ impl ManagedIngress {
         set_startup_diagnostic_stage("route_verify_generation");
         let expected =
             Uuid::parse_str(&session.generation).map_err(|_| PublicError::OwnershipLost)?;
-        let relay_accepting = relay.is_accepting();
+        let relay_accepting = Self::endpoint_is_current(relay);
         let route_generation_match = relay.route_generation() == Some(expected);
         #[cfg(test)]
         update_startup_diagnostic(|diagnostic| {
@@ -3430,27 +3476,27 @@ impl ManagedIngress {
         Ok(())
     }
 
-    #[cfg(not(windows))]
+    #[cfg(not(any(windows, target_os = "macos")))]
     fn publish_route(&mut self, _session: &ControllerSession) -> Result<(), PublicError> {
         Err(PublicError::EnvironmentBlocked)
     }
 
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "macos"))]
     fn route_healthy(&self, generation: &str) -> bool {
         let Some(relay) = self.relay.as_ref() else {
             return false;
         };
         Uuid::parse_str(generation).is_ok_and(|generation| {
-            relay.is_accepting() && relay.route_generation() == Some(generation)
+            Self::endpoint_is_current(relay) && relay.route_generation() == Some(generation)
         })
     }
 
-    #[cfg(not(windows))]
+    #[cfg(not(any(windows, target_os = "macos")))]
     fn route_healthy(&self, _generation: &str) -> bool {
         false
     }
 
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "macos"))]
     fn begin_drain(&mut self) -> Result<(), PublicError> {
         let Some(relay) = self.relay.as_ref() else {
             return Err(self
@@ -3468,12 +3514,12 @@ impl ManagedIngress {
         Ok(())
     }
 
-    #[cfg(not(windows))]
+    #[cfg(not(any(windows, target_os = "macos")))]
     fn begin_drain(&mut self) -> Result<(), PublicError> {
         Err(PublicError::EnvironmentBlocked)
     }
 
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "macos"))]
     fn finish_drain(&mut self, timeout: Duration) -> IngressDrainResult {
         let report = self
             .relay
@@ -3512,7 +3558,7 @@ impl ManagedIngress {
         }
     }
 
-    #[cfg(not(windows))]
+    #[cfg(not(any(windows, target_os = "macos")))]
     fn finish_drain(&mut self, _timeout: Duration) -> IngressDrainResult {
         IngressDrainResult {
             complete: false,
@@ -3522,7 +3568,7 @@ impl ManagedIngress {
         }
     }
 
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "macos"))]
     fn shutdown(&mut self, timeout: Duration) -> IngressDrainResult {
         let report = self
             .relay
@@ -3562,7 +3608,7 @@ impl ManagedIngress {
         }
     }
 
-    #[cfg(not(windows))]
+    #[cfg(not(any(windows, target_os = "macos")))]
     fn shutdown(&mut self, _timeout: Duration) -> IngressDrainResult {
         IngressDrainResult {
             complete: self.startup_error.is_some(),
@@ -3903,7 +3949,10 @@ impl RuntimeManager {
         expire_stale_ready_view(&mut view, Instant::now());
         CatalogRuntime {
             pinned_version: EXPECTED_ENGINE_VERSION,
+            #[cfg(not(target_os = "macos"))]
             manifest_sha256: ACTIVE_MANIFEST_SHA256,
+            #[cfg(target_os = "macos")]
+            manifest_sha256: super::macos_layout::COMPILED_MANIFEST_SHA256.unwrap_or(""),
             active_version: view.engine_version.clone(),
             engine_status: view.status.label(),
         }
@@ -4197,8 +4246,7 @@ fn set_ready_view(view: &Arc<RwLock<RuntimeView>>, session: &ControllerSession) 
     mark_ready_view(
         view,
         &session.generation,
-        session.listener_port,
-        session.engine_pid,
+        session.tcp_listener(),
         session.last_health,
         session.optimization,
         session.protected_tools.clone(),
@@ -4208,8 +4256,7 @@ fn set_ready_view(view: &Arc<RwLock<RuntimeView>>, session: &ControllerSession) 
 fn mark_ready_view(
     view: &Arc<RwLock<RuntimeView>>,
     generation: &str,
-    listener_port: u16,
-    listener_owner_pid: u32,
+    listener: Option<(u16, u32)>,
     last_health: Instant,
     optimization: Option<OptimizationState>,
     protected_tools: Vec<String>,
@@ -4220,8 +4267,8 @@ fn mark_ready_view(
         state.cleanup_uncertain = false;
         state.runtime_generation = Some(generation.to_owned());
         state.engine_version = Some(EXPECTED_ENGINE_VERSION.to_owned());
-        state.listener_port = Some(listener_port);
-        state.listener_owner_pid = Some(listener_owner_pid);
+        state.listener_port = listener.map(|(port, _)| port);
+        state.listener_owner_pid = listener.map(|(_, pid)| pid);
         state.last_health = Some(last_health);
         state.optimization = optimization;
         state.protected_tools = Some(protected_tools);
@@ -4258,8 +4305,9 @@ fn mark_cleanup_uncertain(view: &Arc<RwLock<RuntimeView>>, session: &ControllerS
         state.cleanup_uncertain = true;
         state.runtime_generation = Some(session.generation.clone());
         state.engine_version = Some(EXPECTED_ENGINE_VERSION.to_owned());
-        state.listener_port = Some(session.listener_port);
-        state.listener_owner_pid = Some(session.engine_pid);
+        let listener = session.tcp_listener();
+        state.listener_port = listener.map(|(port, _)| port);
+        state.listener_owner_pid = listener.map(|(_, pid)| pid);
         state.last_health = Some(session.last_health);
     });
 }
@@ -4622,7 +4670,10 @@ fn run_actor(
             }
             Ok(ActorCommand::Shutdown { reply }) => {
                 let mut graceful = true;
-                let mut lifecycle_clean = true;
+                let mut lifecycle_clean = !view
+                    .read()
+                    .unwrap_or_else(|poisoned| poisoned.into_inner())
+                    .cleanup_uncertain;
                 if let Some(mut session) = active.take() {
                     set_status(&view, EngineStatus::Stopping);
                     let request_id = Uuid::new_v4().to_string();
@@ -4732,6 +4783,10 @@ fn run_actor(
 #[cfg(test)]
 #[path = "manager_tests.rs"]
 mod tests;
+
+#[cfg(all(test, target_os = "macos"))]
+#[path = "manager_macos_tests.rs"]
+mod macos_tests;
 
 #[cfg(all(test, windows))]
 #[path = "settings_live.rs"]

@@ -19,6 +19,12 @@ fn runtime() -> MacRuntime {
     MacRuntime::open(&path).expect("compiled manifest and complete payload must match")
 }
 
+fn start_engine(runtime: &MacRuntime, state: &Path, tools: &[String]) -> MacEngineSession {
+    MacEngineSession::start(&runtime.root, state, tools, &AtomicBool::new(false))
+        .expect("owned engine ready")
+        .0
+}
+
 #[test]
 #[ignore = "requires the pinned native macOS resource tree"]
 fn managed_engine_lifecycle() {
@@ -41,11 +47,9 @@ fn managed_engine_lifecycle() {
     let rejected = MacRuntime::open(&runtime.root).err();
     fs::remove_file(injected).unwrap();
     assert_eq!(rejected, Some(MacRuntimeError::Integrity));
-    runtime.revalidate().unwrap();
     let state = state();
     let tools = vec!["exec_command".to_owned(), "headroom_retrieve".to_owned()];
-    let mut session =
-        MacEngineSession::start(&runtime, &state, &tools).expect("owned engine ready");
+    let mut session = start_engine(&runtime, &state, &tools);
     assert!(session.is_alive());
     assert_eq!(state_lock(&state).err(), Some(MacRuntimeError::Busy));
     let first_generation = session.generation().to_owned();
@@ -65,29 +69,38 @@ fn managed_engine_lifecycle() {
     }
 
     let paused = session
-        .optimization(ControlOperation::Set {
-            expected_revision: 0,
-            enabled: false,
-        })
+        .optimization(
+            &Uuid::new_v4().to_string(),
+            ControlOperation::Set {
+                expected_revision: 0,
+                enabled: false,
+            },
+        )
         .unwrap();
     assert!(!paused.enabled && paused.revision == 1);
     assert!(session
-        .optimization(ControlOperation::Set {
-            expected_revision: 0,
-            enabled: true
-        })
+        .optimization(
+            &Uuid::new_v4().to_string(),
+            ControlOperation::Set {
+                expected_revision: 0,
+                enabled: true
+            }
+        )
         .is_err());
     assert!(
         !session
-            .optimization(ControlOperation::Read)
+            .optimization(&Uuid::new_v4().to_string(), ControlOperation::Read)
             .unwrap()
             .enabled
     );
     let resumed = session
-        .optimization(ControlOperation::Set {
-            expected_revision: 1,
-            enabled: true,
-        })
+        .optimization(
+            &Uuid::new_v4().to_string(),
+            ControlOperation::Set {
+                expected_revision: 1,
+                enabled: true,
+            },
+        )
         .unwrap();
     assert!(resumed.enabled && resumed.revision == 2);
     let marker = state.join("cache/keep.fixture");
@@ -97,7 +110,7 @@ fn managed_engine_lifecycle() {
     assert!(session.stop().expect("idempotent stop"));
     assert!(!session.is_alive() && !endpoint.exists());
     drop(session);
-    let mut restarted = MacEngineSession::start(&runtime, &state, &tools).unwrap();
+    let mut restarted = start_engine(&runtime, &state, &tools);
     assert_ne!(restarted.generation(), first_generation);
     assert_eq!(fs::read(&marker).unwrap(), b"persistent local cache");
     assert!(restarted.stop().unwrap());
@@ -115,9 +128,9 @@ fn parent_helper() {
         return;
     }
     let state = PathBuf::from(std::env::var_os("HEADROOM_MACOS_HELPER_STATE").unwrap());
-    let session = MacEngineSession::start(&runtime(), &state, &[]).unwrap();
+    let session = start_engine(&runtime(), &state, &[]);
     {
-        let mut child = session.child.lock().unwrap();
+        let mut child = session.engine.child.lock().unwrap();
         assert!(child.try_wait().unwrap().is_none());
         // A live unreaped owned child cannot have its PID recycled here.
         assert_eq!(unsafe { libc::kill(child.id() as i32, libc::SIGSTOP) }, 0);

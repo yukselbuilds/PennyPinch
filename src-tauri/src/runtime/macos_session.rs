@@ -1,24 +1,47 @@
 //! Own one macOS engine process, its parent-pipe lifetime and inherited state lock.
 
-use super::control::{self, ControlOperation, OptimizationState};
+use super::control::{self, ControlError, ControlOperation, OptimizationState};
+use super::ingress_relay::BackendTarget;
 use super::macos_layout::{MacRuntime, MacRuntimeError};
-use super::metrics_read::{self, OwnedMetricsSnapshot};
+use super::manager::EXPECTED_ENGINE_VERSION;
+use super::metrics_read::{self, OwnedMetricsSnapshot, RuntimeMetricsError};
 use super::unix_backend::UnixTarget;
 use serde_json::{json, Value};
 use std::fs::{self, DirBuilder, File, OpenOptions};
 use std::io::{self, Write};
 use std::os::fd::AsRawFd;
+use std::os::unix::ffi::OsStrExt;
 use std::os::unix::fs::{DirBuilderExt, FileTypeExt, MetadataExt, OpenOptionsExt};
 use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, Command, ExitStatus, Stdio};
-use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 use uuid::Uuid;
 
-pub(crate) struct MacEngineSession {
+struct OwnedEngine {
     child: Mutex<Child>,
+    route_revoked: AtomicBool,
+}
+
+impl OwnedEngine {
+    fn is_alive(&self) -> bool {
+        self.child
+            .lock()
+            .ok()
+            .and_then(|mut child| child.try_wait().ok())
+            .is_some_and(|status| status.is_none())
+    }
+
+    fn can_route(&self) -> bool {
+        !self.route_revoked.load(Ordering::Acquire) && self.is_alive()
+    }
+}
+
+pub(crate) struct MacEngineSession {
+    engine: Arc<OwnedEngine>,
     stdin: Option<ChildStdin>,
     lock: Option<File>,
     endpoint_root: PathBuf,
@@ -32,10 +55,13 @@ pub(crate) struct MacEngineSession {
 
 impl MacEngineSession {
     pub(crate) fn start(
-        runtime: &MacRuntime,
+        runtime_root: &Path,
         state: &Path,
         protected_tools: &[String],
-    ) -> Result<Self, MacRuntimeError> {
+        shutting_down: &AtomicBool,
+    ) -> Result<(Self, OptimizationState), MacRuntimeError> {
+        let deadline = Instant::now() + Duration::from_secs(85);
+        check_startup(deadline, shutting_down)?;
         if protected_tools.len() > 32
             || protected_tools.windows(2).any(|pair| pair[0] >= pair[1])
             || protected_tools.iter().any(|name| {
@@ -50,7 +76,7 @@ impl MacEngineSession {
         }
         private_directory(state)?;
         let lock = state_lock(state)?;
-        runtime.revalidate()?;
+        let runtime = MacRuntime::open(runtime_root)?;
         for name in ["home", "temp", "workspace", "config", "cache"] {
             let path = state.join(name);
             if !path.exists() {
@@ -63,19 +89,6 @@ impl MacEngineSession {
         }
         let generation = Uuid::new_v4().simple().to_string();
         let secret = Uuid::new_v4().simple().to_string();
-        let endpoint_root = state.join(format!("e-{}", &generation[..8]));
-        let endpoint = endpoint_root.join("s");
-        use std::os::unix::ffi::OsStrExt;
-        if endpoint.as_os_str().as_bytes().len() >= 104 {
-            return Err(MacRuntimeError::UnsafeState);
-        }
-        DirBuilder::new()
-            .mode(0o700)
-            .create(&endpoint_root)
-            .map_err(|_| MacRuntimeError::UnsafeState)?;
-        let root_info =
-            fs::symlink_metadata(&endpoint_root).map_err(|_| MacRuntimeError::UnsafeState)?;
-        let endpoint_root_identity = (root_info.dev(), root_info.ino());
         let frame = serde_json::to_vec(&json!({
             "schema_version": 1,
             "generation": generation,
@@ -84,9 +97,14 @@ impl MacEngineSession {
         }))
         .map_err(|_| MacRuntimeError::InvalidProfile)?;
         if frame.len() + 1 > 4096 {
-            let _ = fs::remove_dir(&endpoint_root);
             return Err(MacRuntimeError::InvalidProfile);
         }
+        check_startup(deadline, shutting_down)?;
+        let endpoint_root = create_endpoint_directory(state, &generation)?;
+        let endpoint = endpoint_root.join("s");
+        let root_info =
+            fs::symlink_metadata(&endpoint_root).map_err(|_| MacRuntimeError::UnsafeState)?;
+        let endpoint_root_identity = (root_info.dev(), root_info.ino());
         let lock_fd = lock.as_raw_fd();
         let mut command = Command::new(runtime.python());
         command
@@ -107,6 +125,8 @@ impl MacEngineSession {
             .env("PATH", "/usr/bin:/bin")
             .env("HOME", state.join("home"))
             .env("TMPDIR", state.join("temp"))
+            // Local readiness must not depend on an unrelated provider's availability.
+            .env("HEADROOM_SKIP_UPSTREAM_CHECK", "1")
             // libmalloc reads these at process start, before Python embedding.
             .env("MallocAggressiveMadvise", "1")
             .env("MallocLargeCache", "0")
@@ -116,7 +136,6 @@ impl MacEngineSession {
         #[cfg(test)]
         command
             .stderr(Stdio::inherit())
-            .env("HEADROOM_SKIP_UPSTREAM_CHECK", "1")
             .env("HF_HUB_OFFLINE", "1")
             .env("TRANSFORMERS_OFFLINE", "1");
         // SAFETY: the post-fork closure only changes one live descriptor flag.
@@ -133,14 +152,22 @@ impl MacEngineSession {
         let mut child = match command.spawn() {
             Ok(child) => child,
             Err(_) => {
-                let _ = fs::remove_dir(&endpoint_root);
-                return Err(MacRuntimeError::Spawn);
+                return Err(
+                    if remove_endpoint(&endpoint_root, endpoint_root_identity, None).is_ok() {
+                        MacRuntimeError::Spawn
+                    } else {
+                        MacRuntimeError::Cleanup
+                    },
+                );
             }
         };
         let stdin = child.stdin.take();
         let pid = child.id();
         let mut session = Self {
-            child: Mutex::new(child),
+            engine: Arc::new(OwnedEngine {
+                child: Mutex::new(child),
+                route_revoked: AtomicBool::new(false),
+            }),
             stdin,
             lock: Some(lock),
             endpoint_root,
@@ -151,37 +178,43 @@ impl MacEngineSession {
             secret,
             pid,
         };
-        let writer = session.stdin.as_mut().ok_or(MacRuntimeError::Spawn)?;
+        match session.confirm_startup(&frame, protected_tools, deadline, shutting_down) {
+            Ok(initial) => Ok((session, initial)),
+            Err(error) if session.force_stop().is_ok() => Err(error),
+            Err(_) => Err(MacRuntimeError::Cleanup),
+        }
+    }
+
+    fn confirm_startup(
+        &mut self,
+        frame: &[u8],
+        protected_tools: &[String],
+        deadline: Instant,
+        shutting_down: &AtomicBool,
+    ) -> Result<OptimizationState, MacRuntimeError> {
+        let writer = self.stdin.as_mut().ok_or(MacRuntimeError::Spawn)?;
         writer
-            .write_all(&frame)
+            .write_all(frame)
             .and_then(|_| writer.write_all(b"\n"))
             .and_then(|_| writer.flush())
             .map_err(|_| MacRuntimeError::Spawn)?;
-        let deadline = Instant::now() + Duration::from_secs(90);
         loop {
-            if !session.is_alive() {
+            check_startup(deadline, shutting_down)?;
+            if !self.is_alive() {
                 return Err(MacRuntimeError::NotReady);
             }
-            if session.endpoint.exists() {
-                match session.get_json("/readyz") {
-                    Ok(ready)
-                        if ready.get("ready") == Some(&Value::Bool(true))
-                            && ready.get("version").and_then(Value::as_str) == Some("0.41.0") =>
-                    {
-                        break
-                    }
+            if self.endpoint.exists() {
+                match self.ready() {
+                    Ok(()) => break,
                     Err(MacRuntimeError::OwnershipLost) => {
                         return Err(MacRuntimeError::OwnershipLost)
                     }
                     _ => {}
                 }
             }
-            if Instant::now() >= deadline {
-                return Err(MacRuntimeError::NotReady);
-            }
             thread::sleep(Duration::from_millis(50));
         }
-        let health = session.get_json("/health")?;
+        let health = self.get_json("/health")?;
         let config = health.get("config").ok_or(MacRuntimeError::NotReady)?;
         let tools = config
             .get("exclude_tools")
@@ -197,22 +230,23 @@ impl MacEngineSession {
         {
             return Err(MacRuntimeError::NotReady);
         }
-        let initial = session.optimization(ControlOperation::Read)?;
+        let initial = self
+            .optimization(&Uuid::new_v4().to_string(), ControlOperation::Read)
+            .map_err(|_| MacRuntimeError::Control)?;
         if !initial.enabled || initial.revision != 0 || !initial.can_pause {
             return Err(MacRuntimeError::Control);
         }
-        session.capture_metrics()?;
-        Ok(session)
+        self.capture_metrics()
+            .map_err(|_| MacRuntimeError::Control)?;
+        check_startup(deadline, shutting_down)?;
+        Ok(initial)
     }
 
     pub(crate) fn is_alive(&self) -> bool {
-        self.child
-            .lock()
-            .ok()
-            .and_then(|mut child| child.try_wait().ok())
-            .is_some_and(|status| status.is_none())
+        self.engine.is_alive()
     }
 
+    #[cfg(test)]
     pub(crate) fn pid(&self) -> u32 {
         self.pid
     }
@@ -221,7 +255,7 @@ impl MacEngineSession {
         &self.generation
     }
 
-    pub(crate) fn target(&self) -> UnixTarget<'_> {
+    fn target(&self) -> UnixTarget<'_> {
         UnixTarget {
             socket_path: &self.endpoint,
             expected_pid: self.pid,
@@ -230,27 +264,58 @@ impl MacEngineSession {
 
     pub(crate) fn optimization(
         &self,
+        request_id: &str,
         operation: ControlOperation,
-    ) -> Result<OptimizationState, MacRuntimeError> {
+    ) -> Result<OptimizationState, ControlError> {
         control::request_unix(
             self.target(),
             &self.generation,
             &self.secret,
-            &Uuid::new_v4().to_string(),
+            request_id,
             operation,
             || self.is_alive(),
         )
-        .map_err(|_| MacRuntimeError::Control)
     }
 
-    pub(crate) fn capture_metrics(&self) -> Result<OwnedMetricsSnapshot, MacRuntimeError> {
+    pub(crate) fn capture_metrics(&self) -> Result<OwnedMetricsSnapshot, RuntimeMetricsError> {
         metrics_read::read_owned_projection_unix(
             self.target(),
             &self.generation,
             &self.secret,
             || self.is_alive(),
         )
-        .map_err(|_| MacRuntimeError::Control)
+    }
+
+    pub(super) fn backend_target(&self) -> Result<BackendTarget, MacRuntimeError> {
+        let generation =
+            Uuid::parse_str(&self.generation).map_err(|_| MacRuntimeError::OwnershipLost)?;
+        let engine = Arc::downgrade(&self.engine);
+        BackendTarget::new_unix(
+            self.endpoint.clone(),
+            generation,
+            self.pid,
+            Arc::new(move || engine.upgrade().is_some_and(|engine| engine.can_route())),
+        )
+        .map_err(|_| MacRuntimeError::OwnershipLost)
+    }
+
+    pub(super) fn can_route(&self) -> bool {
+        self.engine.can_route()
+    }
+
+    pub(super) fn revoke_route(&self) {
+        self.engine.route_revoked.store(true, Ordering::Release);
+    }
+
+    pub(super) fn ready(&mut self) -> Result<(), MacRuntimeError> {
+        let ready = self.get_json("/readyz")?;
+        if ready.get("ready") == Some(&Value::Bool(true))
+            && ready.get("version").and_then(Value::as_str) == Some(EXPECTED_ENGINE_VERSION)
+        {
+            Ok(())
+        } else {
+            Err(MacRuntimeError::NotReady)
+        }
     }
 
     fn get_json(&mut self, path: &str) -> Result<Value, MacRuntimeError> {
@@ -294,6 +359,15 @@ impl MacEngineSession {
     }
 
     pub(crate) fn stop(&mut self) -> Result<bool, MacRuntimeError> {
+        self.stop_owned(true)
+    }
+
+    pub(super) fn force_stop(&mut self) -> Result<(), MacRuntimeError> {
+        self.stop_owned(false).map(|_| ())
+    }
+
+    fn stop_owned(&mut self, graceful: bool) -> Result<bool, MacRuntimeError> {
+        self.revoke_route();
         if self.lock.is_none() {
             return self
                 .exit_status()?
@@ -301,62 +375,116 @@ impl MacEngineSession {
                 .ok_or(MacRuntimeError::Cleanup);
         }
         drop(self.stdin.take());
-        let deadline = Instant::now() + Duration::from_secs(25);
-        let mut status = self.exit_status()?;
-        while status.is_none() && Instant::now() < deadline {
-            thread::sleep(Duration::from_millis(25));
-            status = self.exit_status()?;
-        }
+        let mut status = if graceful {
+            self.wait_for_exit(Duration::from_secs(25))?
+        } else {
+            self.exit_status()?
+        };
         if status.is_none() {
-            self.child
+            let kill = self
+                .engine
+                .child
                 .lock()
                 .map_err(|_| MacRuntimeError::Cleanup)?
-                .kill()
-                .map_err(|_| MacRuntimeError::Cleanup)?;
-            let deadline = Instant::now() + Duration::from_secs(5);
-            while status.is_none() && Instant::now() < deadline {
-                thread::sleep(Duration::from_millis(25));
-                status = self.exit_status()?;
+                .kill();
+            status = self.wait_for_exit(Duration::from_secs(5))?;
+            if kill.is_err() && status.is_none() {
+                return Err(MacRuntimeError::Cleanup);
             }
         }
         let status = status.ok_or(MacRuntimeError::Cleanup)?;
-        let root =
-            fs::symlink_metadata(&self.endpoint_root).map_err(|_| MacRuntimeError::Cleanup)?;
-        if !root.is_dir() || (root.dev(), root.ino()) != self.endpoint_root_identity {
-            return Err(MacRuntimeError::Cleanup);
-        }
-        match fs::symlink_metadata(&self.endpoint) {
-            Ok(info)
-                if self.socket_identity == Some((info.dev(), info.ino()))
-                    && info.file_type().is_socket() =>
-            {
-                fs::remove_file(&self.endpoint).map_err(|_| MacRuntimeError::Cleanup)?;
-            }
-            Ok(_) => return Err(MacRuntimeError::Cleanup),
-            Err(error) if error.kind() == io::ErrorKind::NotFound => {}
-            Err(_) => return Err(MacRuntimeError::Cleanup),
-        }
-        fs::remove_dir(&self.endpoint_root).map_err(|_| MacRuntimeError::Cleanup)?;
+        remove_endpoint(
+            &self.endpoint_root,
+            self.endpoint_root_identity,
+            self.socket_identity,
+        )?;
         drop(self.lock.take());
         Ok(status.success())
     }
 
     fn exit_status(&self) -> Result<Option<ExitStatus>, MacRuntimeError> {
-        self.child
+        self.engine
+            .child
             .lock()
             .map_err(|_| MacRuntimeError::Cleanup)?
             .try_wait()
             .map_err(|_| MacRuntimeError::Cleanup)
     }
+
+    fn wait_for_exit(&self, timeout: Duration) -> Result<Option<ExitStatus>, MacRuntimeError> {
+        let deadline = Instant::now() + timeout;
+        loop {
+            let status = self.exit_status()?;
+            if status.is_some() || Instant::now() >= deadline {
+                return Ok(status);
+            }
+            thread::sleep(Duration::from_millis(25));
+        }
+    }
 }
 
 impl Drop for MacEngineSession {
     fn drop(&mut self) {
-        let _ = self.stop();
+        if self.lock.is_some() {
+            let _ = self.force_stop();
+        }
     }
 }
 
-fn private_directory(path: &Path) -> Result<(), MacRuntimeError> {
+fn check_startup(deadline: Instant, shutting_down: &AtomicBool) -> Result<(), MacRuntimeError> {
+    if shutting_down.load(Ordering::Acquire) {
+        Err(MacRuntimeError::Unavailable)
+    } else if Instant::now() >= deadline {
+        Err(MacRuntimeError::NotReady)
+    } else {
+        Ok(())
+    }
+}
+
+fn create_endpoint_directory(state: &Path, generation: &str) -> Result<PathBuf, MacRuntimeError> {
+    let mut directory = state.join(format!("e-{}", &generation[..8]));
+    if directory.join("s").as_os_str().as_bytes().len() >= 104 {
+        // Darwin's socket address limit can be shorter than the user's app data path.
+        let temporary =
+            fs::canonicalize(std::env::temp_dir()).map_err(|_| MacRuntimeError::UnsafeState)?;
+        private_directory(&temporary)?;
+        directory = temporary.join(format!("hr-{}", &generation[..16]));
+        if directory.join("s").as_os_str().as_bytes().len() >= 104 {
+            return Err(MacRuntimeError::UnsafeState);
+        }
+    }
+    DirBuilder::new()
+        .mode(0o700)
+        .create(&directory)
+        .map_err(|_| MacRuntimeError::UnsafeState)?;
+    Ok(directory)
+}
+
+fn remove_endpoint(
+    directory: &Path,
+    directory_identity: (u64, u64),
+    socket_identity: Option<(u64, u64)>,
+) -> Result<(), MacRuntimeError> {
+    let root = fs::symlink_metadata(directory).map_err(|_| MacRuntimeError::Cleanup)?;
+    if !root.is_dir() || (root.dev(), root.ino()) != directory_identity {
+        return Err(MacRuntimeError::Cleanup);
+    }
+    let endpoint = directory.join("s");
+    match fs::symlink_metadata(&endpoint) {
+        Ok(info)
+            if socket_identity == Some((info.dev(), info.ino()))
+                && info.file_type().is_socket() =>
+        {
+            fs::remove_file(endpoint).map_err(|_| MacRuntimeError::Cleanup)?;
+        }
+        Ok(_) => return Err(MacRuntimeError::Cleanup),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+        Err(_) => return Err(MacRuntimeError::Cleanup),
+    }
+    fs::remove_dir(directory).map_err(|_| MacRuntimeError::Cleanup)
+}
+
+pub(super) fn private_directory(path: &Path) -> Result<(), MacRuntimeError> {
     let info = fs::symlink_metadata(path).map_err(|_| MacRuntimeError::UnsafeState)?;
     // SAFETY: geteuid has no memory preconditions.
     let uid = unsafe { libc::geteuid() };

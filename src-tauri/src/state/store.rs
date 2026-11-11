@@ -42,7 +42,7 @@ struct LoadedDocument {
 }
 
 #[derive(Clone, Copy, Debug)]
-enum StoreError {
+pub(crate) enum StoreError {
     ValidationFailed,
     UnsupportedSchema,
     EnvironmentBlocked,
@@ -445,7 +445,7 @@ impl StoreLocation {
     }
 }
 
-fn canonical_existing_ancestor(path: &Path) -> Result<(PathBuf, PathBuf), StoreError> {
+pub(crate) fn canonical_existing_ancestor(path: &Path) -> Result<(PathBuf, PathBuf), StoreError> {
     let absolute = if path.is_absolute() {
         path.to_path_buf()
     } else {

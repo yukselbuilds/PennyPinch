@@ -107,7 +107,7 @@ jobs:
             cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
               --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
               -- runtime::unix_backend:: runtime::control::tests:: runtime::macos_session:: \
-                 runtime::ingress:: runtime::ingress_relay:: --test-threads=1 \
+                 runtime::ingress:: runtime::ingress_relay:: runtime::manager::macos_tests:: --test-threads=1 \
               > "$build_log" 2>&1 || status=$?
             if [[ "$status" != 0 ]]; then
               echo "::error::Native Unix protocol and relay tests failed."
@@ -121,14 +121,15 @@ jobs:
               if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
                 cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
                   --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
-                  -- runtime::macos_session::tests::managed_engine_ --ignored --test-threads=1 \
+                  -- runtime::macos_session::tests::managed_engine_ runtime::manager::macos_tests::managed_app_engine_lifecycle \
+                     --ignored --test-threads=1 \
                   > "$build_log" 2>&1 || status=$?
                 awk '/^thread .* panicked at / { detail = 3; print substr($0, 1, 240); next }
                   detail > 0 { print substr($0, 1, 240); detail-- }
                   /^headroom-macos-error=[A-Za-z0-9_]+$/ { print }
                   /^test .* \.\.\. FAILED$/ || /^test result: / { print substr($0, 1, 240) }' "$build_log"
                 if [[ "$status" != 0 ]]; then
-                  echo '::error::Owned native engine lifecycle tests failed.'
+                  echo '::error::Owned native engine or application manager lifecycle tests failed.'
                 fi
               fi
             fi
@@ -160,5 +161,5 @@ jobs:
             '- Scope: native executable build. Client config writes, signing, bundle and UI lifecycle untested.' >> "$GITHUB_STEP_SUMMARY"
           if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
             printf '%s\n' '- Additional scope: pinned resources, native process readiness/control/metrics, normal stop/restart and exact parent-loss exit passed.' \
-              '- UI/relay integration, client config writes, signing and bundled application lifecycle remain untested.' >> "$GITHUB_STEP_SUMMARY"
+              '- Application RuntimeManager verified through the stable relay with the real engine. Webview interaction, client config writes, signing and bundled lifecycle remain untested.' >> "$GITHUB_STEP_SUMMARY"
           fi
