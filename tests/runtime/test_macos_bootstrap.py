@@ -74,6 +74,21 @@ class MacOSBootstrapTests(unittest.TestCase):
                     headers={"host": "127.0.0.1", "x-headroom-desktop-control": SECRET})
                 self.assertFalse(server._request_is_loopback(request))
 
+    def test_embedded_cli_keeps_bootstrap_entrypoint_and_owned_socket(self):
+        package = types.ModuleType("headroom")
+        cli = types.ModuleType("headroom.cli")
+        observed = []
+        cli.main = lambda **kwargs: observed.append((list(sys.argv), kwargs))
+        package.cli = cli
+        endpoint = ROOT / "work/proofs/macos/bootstrap-fixture.sock"
+        with patch.dict(sys.modules, {"headroom": package, "headroom.cli": cli}), patch.object(sys, "argv", []):
+            engine.serve(endpoint)
+        argv, options = observed[0]
+        self.assertEqual(Path(argv[0]), Path(engine.__file__))
+        self.assertEqual(argv[1:], ["proxy", "--uds", str(endpoint), "--workers", "1",
+                                    "--no-learn", "--no-memory-tools", "--no-memory-context"])
+        self.assertEqual(options, {"prog_name": "headroom"})
+
 
 if __name__ == "__main__":
     unittest.main()

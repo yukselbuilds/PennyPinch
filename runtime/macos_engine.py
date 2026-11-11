@@ -124,6 +124,15 @@ def install_private_dashboard(secret):
     server._request_is_loopback = private_request
 
 
+def serve(endpoint):
+    from headroom.cli import main
+
+    # The pinned CLI recognizes an embedder and preserves its hooks and -I/-B flags.
+    sys.argv = [__file__, "proxy", "--uds", str(endpoint), "--workers", "1",
+                "--no-learn", "--no-memory-tools", "--no-memory-context"]
+    main(prog_name="headroom")
+
+
 def run(args):
     if sys.platform != "darwin" or platform.machine() != "arm64" or sys.version_info[:3] != (3, 13, 13):
         raise StartupError("unsupported_runtime")
@@ -178,11 +187,7 @@ def run(args):
         raise StartupError("cache_shim_inactive")
     optimization_control.install(request["generation"], request["secret"])
     install_private_dashboard(request["secret"])
-    from headroom.cli import main
-
-    sys.argv = ["headroom", "proxy", "--uds", str(endpoint), "--workers", "1",
-                "--no-learn", "--no-memory-tools", "--no-memory-context"]
-    main()
+    serve(endpoint)
 
 
 if __name__ == "__main__":

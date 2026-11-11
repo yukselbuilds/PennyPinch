@@ -107,6 +107,9 @@ impl MacEngineSession {
             .env("PATH", "/usr/bin:/bin")
             .env("HOME", state.join("home"))
             .env("TMPDIR", state.join("temp"))
+            // libmalloc reads these at process start, before Python embedding.
+            .env("MallocAggressiveMadvise", "1")
+            .env("MallocLargeCache", "0")
             .stdin(Stdio::piped())
             .stdout(Stdio::null())
             .stderr(Stdio::null());
