@@ -123,19 +123,20 @@ pub(crate) fn read_owned_projection_unix(
         UnixBackendError::Transport => RuntimeMetricsError::Transport,
         _ => RuntimeMetricsError::OwnershipLost,
     })?;
-    connection
-        .set_write_timeout(Some(deadline.saturating_duration_since(Instant::now())))
-        .map_err(|_| RuntimeMetricsError::Transport)?;
     let request = format!("GET /stats?cached=1 HTTP/1.1\r\nHost: 127.0.0.1\r\nX-Headroom-Desktop-Control: {secret}\r\nConnection: close\r\n\r\n");
-    connection
-        .write_all(request.as_bytes())
-        .map_err(|_| RuntimeMetricsError::Transport)?;
-    let (status, body) =
+    let reply = if connection
+        .set_write_timeout(Some(deadline.saturating_duration_since(Instant::now())))
+        .and_then(|_| connection.write_all(request.as_bytes()))
+        .is_ok()
+    {
         super::manager::read_http_body_with_limit(&mut connection, deadline, MAX_SNAPSHOT_BYTES)
-            .ok_or(RuntimeMetricsError::Transport)?;
+    } else {
+        None
+    };
     if !is_alive() {
         return Err(RuntimeMetricsError::OwnershipLost);
     }
+    let (status, body) = reply.ok_or(RuntimeMetricsError::Transport)?;
     if status != 200 {
         return Err(RuntimeMetricsError::Transport);
     }

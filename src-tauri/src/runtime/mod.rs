@@ -12,6 +12,9 @@ pub(crate) mod macos_layout;
 #[cfg(target_os = "macos")]
 pub(crate) mod macos_session;
 
+#[cfg(target_os = "macos")]
+pub(crate) mod macos_ports;
+
 #[cfg(windows)]
 pub mod ingress;
 

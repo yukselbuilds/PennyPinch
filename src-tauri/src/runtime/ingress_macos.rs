@@ -247,6 +247,9 @@ impl StableIngress {
         }
         let previous = read_endpoint(&root)?;
         let port = previous.as_ref().map_or(0, |value| value.0.port);
+        if port != 0 && super::macos_ports::observe_port(port)?.wildcard {
+            return Err(IngressError::EndpointConflict);
+        }
         let socket = Socket::new(Domain::IPV4, Type::STREAM, Some(Protocol::TCP))
             .map_err(|_| IngressError::SocketUnavailable)?;
         // Reuse a drained saved port after TIME_WAIT; SO_REUSEPORT remains disabled.
@@ -265,6 +268,17 @@ impl StableIngress {
             .listen(128)
             .map_err(|_| IngressError::SocketUnavailable)?;
         let listener = TcpListener::from(socket);
+        let bound_port = listener
+            .local_addr()
+            .map_err(|_| IngressError::SocketUnavailable)?
+            .port();
+        let listeners = super::macos_ports::observe_port(bound_port)?;
+        if listeners.wildcard {
+            return Err(IngressError::EndpointConflict);
+        }
+        if !listeners.loopback {
+            return Err(IngressError::StateUnavailable);
+        }
         let record = match previous {
             Some((record, _)) => record,
             None => {

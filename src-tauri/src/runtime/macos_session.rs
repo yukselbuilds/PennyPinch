@@ -273,19 +273,20 @@ impl MacEngineSession {
         }
         self.socket_identity = Some(identity);
         let deadline = Instant::now() + Duration::from_secs(2);
-        stream
-            .set_write_timeout(Some(Duration::from_secs(1)))
-            .map_err(|_| MacRuntimeError::NotReady)?;
         let request = format!("GET {path} HTTP/1.1\r\nHost: 127.0.0.1\r\nX-Headroom-Desktop-Control: {}\r\nConnection: close\r\n\r\n", self.secret);
-        stream
-            .write_all(request.as_bytes())
-            .map_err(|_| MacRuntimeError::NotReady)?;
-        let (status, body) =
+        let reply = if stream
+            .set_write_timeout(Some(Duration::from_secs(1)))
+            .and_then(|_| stream.write_all(request.as_bytes()))
+            .is_ok()
+        {
             super::manager::read_http_body_with_limit(&mut stream, deadline, 64 * 1024)
-                .ok_or(MacRuntimeError::NotReady)?;
+        } else {
+            None
+        };
         if !self.is_alive() {
             return Err(MacRuntimeError::OwnershipLost);
         }
+        let (status, body) = reply.ok_or(MacRuntimeError::NotReady)?;
         if status != 200 {
             return Err(MacRuntimeError::NotReady);
         }

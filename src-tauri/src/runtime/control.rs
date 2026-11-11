@@ -208,17 +208,19 @@ pub(crate) fn request_unix(
         UnixBackendError::Transport => ControlError::Transport,
         _ => ControlError::OwnershipLost,
     })?;
-    stream
+    let reply = if stream
         .set_write_timeout(Some(deadline.saturating_duration_since(Instant::now())))
-        .map_err(|_| ControlError::Transport)?;
-    stream
-        .write_all(&frame)
-        .map_err(|_| ControlError::Transport)?;
-    let (status, body) = super::manager::read_http_body_with_limit(&mut stream, deadline, 2048)
-        .ok_or(ControlError::Transport)?;
+        .and_then(|_| stream.write_all(&frame))
+        .is_ok()
+    {
+        super::manager::read_http_body_with_limit(&mut stream, deadline, 2048)
+    } else {
+        None
+    };
     if !is_alive() {
         return Err(ControlError::OwnershipLost);
     }
+    let (status, body) = reply.ok_or(ControlError::Transport)?;
     parse_reply(status, &body, id, generation, operation)
 }
 

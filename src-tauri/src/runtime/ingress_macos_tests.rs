@@ -251,3 +251,62 @@ fn malformed_and_symlink_endpoint_records_are_rejected_and_preserved() {
         .is_symlink());
     assert_eq!(fs::read(target).unwrap(), content);
 }
+
+#[test]
+fn parses_synthetic_netstat_port_table_strictly() {
+    use crate::runtime::macos_ports::{parse_port_table, PortListeners};
+
+    let cases = [
+        (
+            "wildcard tcp4 and tcp46",
+            "Proto Recv-Q Send-Q Local Address Foreign Address (state)\ntcp4 0 0 *.43210 *.* LISTEN\ntcp46 0 0 *.43210 *.* LISTEN",
+            Ok(PortListeners {
+                loopback: false,
+                wildcard: true,
+            }),
+        ),
+        (
+            "loopback only",
+            "Proto Recv-Q Send-Q Local Address Foreign Address (state)\ntcp4 0 0 127.0.0.1.43210 *.* LISTEN",
+            Ok(PortListeners {
+                loopback: true,
+                wildcard: false,
+            }),
+        ),
+        (
+            "non-listening target and other port",
+            "Proto Recv-Q Send-Q Local Address Foreign Address (state)\ntcp4 0 0 *.43210 *.* TIME_WAIT\ntcp4 0 0 *.43211 *.* LISTEN\ntcp6 0 0 *.43210 *.* LISTEN",
+            Ok(PortListeners {
+                loopback: false,
+                wildcard: false,
+            }),
+        ),
+        (
+            "empty output",
+            "",
+            Ok(PortListeners {
+                loopback: false,
+                wildcard: false,
+            }),
+        ),
+        (
+            "malformed tcp row",
+            "Proto Recv-Q Send-Q Local Address Foreign Address (state)\ntcp4 broken",
+            Err(crate::runtime::ingress::IngressError::StateUnavailable),
+        ),
+        (
+            "unrecognized protocol",
+            "Proto Recv-Q Send-Q Local Address Foreign Address (state)\nudp4 0 0 *.43210 *.* LISTEN",
+            Err(crate::runtime::ingress::IngressError::StateUnavailable),
+        ),
+        (
+            "unrecognized nonempty output",
+            "netstat unavailable",
+            Err(crate::runtime::ingress::IngressError::StateUnavailable),
+        ),
+    ];
+
+    for (case, table, expected) in cases {
+        assert_eq!(parse_port_table(table, 43210), expected, "{case}");
+    }
+}

@@ -86,6 +86,7 @@ jobs:
             cargo +1.92.0 --version
             printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}" "$CARGO_PROFILE_DEV_DEBUG" "$CARGO_PROFILE_TEST_DEBUG"
             stat -f '%u %p' "$HEADROOM_MACOS_PROOF_ROOT"
+            shasum -a 256 /usr/sbin/netstat
             umask
             if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
               printf '%s\n' "$HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256"
