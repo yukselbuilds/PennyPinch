@@ -5,8 +5,8 @@ use crate::integrations::plan::{
 };
 use crate::integrations::transaction::{apply_missing_endpoint, undo_owned_endpoint, ApplyResult};
 use crate::state::ownership::{
-    config_path_binding, OwnershipError, OwnershipRecord, OwnershipSnapshot, OwnershipState,
-    OwnershipStore,
+    config_path_binding, config_path_binding_for_claude_project_target, OwnershipError,
+    OwnershipRecord, OwnershipSnapshot, OwnershipState, OwnershipStore,
 };
 use std::ffi::CString;
 use std::fs::{self, OpenOptions};
@@ -27,7 +27,11 @@ const MODEL_SENTINEL: &[u8] = b"fixture-model";
 const PROMPT_SENTINEL: &[u8] = b"fixture-prompt";
 const EXIT_AFTER_CONFIG: i32 = 42;
 const CHILD_TEST: &str = "crash_after_config_publication_before_owner";
+const CLAUDE_CHILD_TEST: &str = "crash_after_claude_config_publication_before_owner";
 const CONFIG_NAME: &str = "config.toml";
+const CLAUDE_SETTINGS_NAME: &str = "settings.local.json";
+const CLAUDE_BEFORE: &[u8] = b"{}";
+const CLAUDE_USER_FILE: &[u8] = b"{\"api_key\":\"SYNTHETIC_AUTH_SENTINEL\"}";
 
 struct Fixture {
     id: String,
@@ -38,6 +42,22 @@ struct Fixture {
 }
 
 struct StagedApply {
+    transaction: FileTransaction,
+    record: OwnershipRecord,
+    after: Vec<u8>,
+}
+
+struct ClaudeProjectFixture {
+    id: String,
+    root: PathBuf,
+    project: PathBuf,
+    claude_dir: PathBuf,
+    config: PathBuf,
+    user_file: PathBuf,
+    store: OwnershipStore,
+}
+
+struct StagedClaudeApply {
     transaction: FileTransaction,
     record: OwnershipRecord,
     after: Vec<u8>,
@@ -70,6 +90,60 @@ fn create_private_dir(path: &Path) {
     assert!(metadata.is_dir() && !metadata.file_type().is_symlink());
     assert_eq!(metadata.uid(), unsafe { libc::geteuid() });
     assert_eq!(metadata.mode() & 0o7777, 0o700);
+}
+
+impl ClaudeProjectFixture {
+    fn create() -> Self {
+        let id = Uuid::new_v4().to_string();
+        let root = proof_root().join(&id);
+        create_private_dir(&root);
+        let project = root.join("project");
+        create_private_dir(&project);
+        let user_file = project.join("user-settings.json");
+        fs::write(&user_file, CLAUDE_USER_FILE).expect("write synthetic unrelated project file");
+        fs::set_permissions(&user_file, fs::Permissions::from_mode(0o600))
+            .expect("set unrelated fixture file mode");
+        let claude_dir = project.join(".claude");
+        let config = claude_dir.join(CLAUDE_SETTINGS_NAME);
+        let store = OwnershipStore::new(root.clone(), Path::new("state"))
+            .expect("construct Claude project ownership store");
+        Self {
+            id,
+            root,
+            project,
+            claude_dir,
+            config,
+            user_file,
+            store,
+        }
+    }
+
+    fn open(id: &str) -> Self {
+        let uuid = Uuid::parse_str(id).expect("Claude fixture UUID");
+        assert!(!uuid.is_nil() && uuid.to_string() == id);
+        let proof = proof_root();
+        let root = proof.join(id);
+        assert_eq!(root.parent(), Some(proof.as_path()));
+        let metadata = fs::symlink_metadata(&root).expect("Claude fixture root metadata");
+        assert!(metadata.is_dir() && !metadata.file_type().is_symlink());
+        assert_eq!(metadata.uid(), unsafe { libc::geteuid() });
+        assert_eq!(metadata.mode() & 0o7777, 0o700);
+        let project = root.join("project");
+        let claude_dir = project.join(".claude");
+        let config = claude_dir.join(CLAUDE_SETTINGS_NAME);
+        let user_file = project.join("user-settings.json");
+        let store = OwnershipStore::new(root.clone(), Path::new("state"))
+            .expect("reopen Claude project ownership store");
+        Self {
+            id: id.to_owned(),
+            root,
+            project,
+            claude_dir,
+            config,
+            user_file,
+            store,
+        }
+    }
 }
 
 impl Fixture {
@@ -152,6 +226,33 @@ fn plan_for(bytes: &[u8]) -> crate::integrations::plan::ConnectionPlan {
     plan
 }
 
+fn claude_plan_for_missing() -> crate::integrations::plan::ConnectionPlan {
+    let context = PlanContext {
+        request_id: "019a0000-0000-7000-8000-d00000000011".to_owned(),
+        installation_id: "019a0000-0000-7000-8000-d00000000012".to_owned(),
+        client_kind: ClientKind::ClaudeCode,
+        config_source: ConfigSource::ClaudeJson,
+        surface: "cli".to_owned(),
+        version: Some("2.1.158".to_owned()),
+        scope: ConfigScope::ProjectLocalConfig,
+        scan_generation: 1,
+        endpoint: StableEndpoint {
+            endpoint_id: "019a0000-0000-7000-8000-d00000000013".to_owned(),
+            host: "127.0.0.1".to_owned(),
+            port: 41731,
+        },
+        now_unix_seconds: 1_800_000_000,
+    };
+    let plan = preview_config_with_presence(&context, CLAUDE_BEFORE, ConfigPresence::Missing)
+        .expect("synthetic missing Claude project plan");
+    assert_eq!(
+        plan.status,
+        PlanStatus::Preview,
+        "Claude fixture plan should be eligible"
+    );
+    plan
+}
+
 fn expected_patched(bytes: &[u8]) -> (Vec<u8>, crate::integrations::transaction::PatchReceipt) {
     match apply_missing_endpoint(&plan_for(bytes), bytes).expect("typed synthetic patch") {
         ApplyResult::Patched { bytes, receipt } => (bytes, receipt),
@@ -206,6 +307,157 @@ fn stage_apply(fixture: &Fixture) -> StagedApply {
         transaction,
         record,
         after,
+    }
+}
+
+fn stage_claude_apply(fixture: &ClaudeProjectFixture) -> StagedClaudeApply {
+    fixture
+        .store
+        .prepare_for_apply()
+        .expect("prepare Claude fixture state root");
+    let mut transaction = FileTransaction::begin().expect("begin Claude project transaction");
+    let (directory_token, _) = transaction
+        .create_claude_directory(&fixture.project)
+        .expect("stage missing Claude directory");
+    let (config_token, _) = transaction
+        .create_claude_settings_file(directory_token, MAX_TRANSACTION_FILE_BYTES)
+        .expect("stage missing Claude settings file");
+    let target = transaction
+        .canonical_target(config_token)
+        .expect("Claude project target");
+    assert_eq!(
+        target, fixture.config,
+        "target is the fixed project-local leaf"
+    );
+    assert!(
+        !fixture.claude_dir.exists() && !fixture.config.exists(),
+        "staging does not expose the missing directory or file"
+    );
+
+    let plan = claude_plan_for_missing();
+    let binding = config_path_binding_for_claude_project_target(&fixture.project, &target)
+        .expect("bind fixed Claude project target");
+    let ownership = fixture
+        .store
+        .read_in_transaction(&mut transaction, ClientKind::ClaudeCode, &binding)
+        .expect("read Claude ownership in transaction");
+    assert!(
+        ownership.current().is_none(),
+        "fixture starts without ownership"
+    );
+    let ApplyResult::Patched {
+        bytes: after,
+        receipt,
+    } = apply_missing_endpoint(&plan, CLAUDE_BEFORE).expect("typed Claude project patch")
+    else {
+        panic!("missing Claude project target requires a patch");
+    };
+    let record = OwnershipRecord::active_from_scoped_patch_with_binding(
+        &Uuid::new_v4().to_string(),
+        &plan.endpoint_id,
+        1,
+        1_800_000_000,
+        CLAUDE_BEFORE,
+        &after,
+        &receipt,
+        ConfigScope::ProjectLocalConfig,
+        &binding,
+    )
+    .expect("create scoped Claude ownership record");
+    transaction
+        .replace_contents(config_token, &after)
+        .expect("stage Claude endpoint bytes");
+    fixture
+        .store
+        .stage_in_transaction(&mut transaction, ownership, &record)
+        .expect("stage Claude ownership record");
+    assert!(
+        !fixture.claude_dir.exists() && !fixture.config.exists(),
+        "preview and staging remain invisible before commit"
+    );
+    StagedClaudeApply {
+        transaction,
+        record,
+        after,
+    }
+}
+
+fn read_claude_snapshot(fixture: &ClaudeProjectFixture) -> Option<OwnershipSnapshot> {
+    let mut transaction = FileTransaction::begin().expect("begin Claude owner snapshot");
+    let result = fixture
+        .store
+        .read_snapshot_in_transaction(&mut transaction, ClientKind::ClaudeCode)
+        .expect("read Claude ownership snapshot");
+    transaction.rollback().expect("finish Claude snapshot read");
+    result
+}
+
+fn recover_claude_owner(fixture: &ClaudeProjectFixture) -> OwnershipRecord {
+    let mut transaction = FileTransaction::begin().expect("begin explicit Claude recovery action");
+    transaction
+        .open_existing(&fixture.config, MAX_TRANSACTION_FILE_BYTES)
+        .expect("pin published Claude settings file");
+    let binding = config_path_binding_for_claude_project_target(&fixture.project, &fixture.config)
+        .expect("bind existing Claude project target");
+    let ownership = fixture
+        .store
+        .read_in_transaction(&mut transaction, ClientKind::ClaudeCode, &binding)
+        .expect("recover pending Claude owner publication");
+    let record = ownership
+        .current()
+        .expect("active Claude ownership after explicit recovery")
+        .clone();
+    transaction.rollback().expect("finish Claude recovery read");
+    record
+}
+
+fn undo_claude(fixture: &ClaudeProjectFixture) -> OwnershipRecord {
+    let mut transaction = FileTransaction::begin().expect("begin Claude undo");
+    let (config_token, config_snapshot) = transaction
+        .open_existing(&fixture.config, MAX_TRANSACTION_FILE_BYTES)
+        .expect("pin Claude settings for undo");
+    let binding = config_path_binding_for_claude_project_target(&fixture.project, &fixture.config)
+        .expect("bind Claude settings for undo");
+    let ownership = fixture
+        .store
+        .read_in_transaction(&mut transaction, ClientKind::ClaudeCode, &binding)
+        .expect("read current Claude ownership");
+    let record = ownership
+        .current()
+        .expect("active Claude ownership exists")
+        .clone();
+    assert_eq!(record.state(), OwnershipState::Active);
+    let restored = undo_owned_endpoint(
+        &record.patch_receipt().expect("Claude typed receipt"),
+        &config_snapshot.bytes,
+    )
+    .expect("typed Claude endpoint undo");
+    transaction
+        .replace_contents(config_token, &restored)
+        .expect("stage restored Claude settings");
+    let released = record
+        .released(1_800_000_001)
+        .expect("release Claude ownership");
+    fixture
+        .store
+        .stage_in_transaction(&mut transaction, ownership, &released)
+        .expect("stage released Claude record");
+    transaction.seal().expect("seal Claude undo");
+    transaction.commit().expect("commit Claude undo");
+    released
+}
+
+fn assert_no_claude_state_secrets(fixture: &ClaudeProjectFixture) {
+    let state = fixture.root.join("state");
+    for entry in fs::read_dir(state).expect("read Claude state directory") {
+        let entry = entry.expect("state entry");
+        let name = entry.file_name();
+        if name.to_string_lossy().ends_with(".json") || name.to_string_lossy().ends_with(".done") {
+            let bytes = fs::read(entry.path()).expect("read synthetic transaction metadata");
+            assert!(!contains(&bytes, AUTH_SENTINEL));
+            assert!(!contains(&bytes, MODEL_SENTINEL));
+            assert!(!contains(&bytes, PROMPT_SENTINEL));
+        }
     }
 }
 
@@ -624,6 +876,247 @@ fn crash_after_config_publication_before_owner() {
     transaction
         .commit_inner(|| std::process::exit(EXIT_AFTER_CONFIG))
         .expect("commit hook is only reached after successful publication");
+}
+
+fn spawn_claude_crash_child(id: &str) {
+    let executable = std::env::current_exe().expect("test executable");
+    let crate_prefix = format!("{}::", env!("CARGO_CRATE_NAME"));
+    let module = module_path!()
+        .strip_prefix(&crate_prefix)
+        .unwrap_or(module_path!());
+    let filter = format!("{module}::{CLAUDE_CHILD_TEST}");
+    let proof = proof_root();
+    let mut child = Command::new(executable)
+        .args(["--exact", &filter, "--ignored", "--test-threads=1"])
+        .env_clear()
+        .env("HEADROOM_MACOS_PROOF_ROOT", proof)
+        .env("HEADROOM_MACOS_CLAUDE_FIXTURE", id)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .expect("spawn owned Claude transaction child");
+    let deadline = Instant::now() + Duration::from_secs(12);
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                assert_eq!(status.code(), Some(EXIT_AFTER_CONFIG));
+                break;
+            }
+            Ok(None) if Instant::now() < deadline => thread::sleep(Duration::from_millis(20)),
+            _ => {
+                let _ = child.kill();
+                let _ = child.wait();
+                panic!("Claude fixture child exceeded its time budget");
+            }
+        }
+    }
+}
+
+#[test]
+fn missing_claude_project_apply_and_typed_undo_keep_user_additions() {
+    let fixture = ClaudeProjectFixture::create();
+    let unrelated_before = fs::read(&fixture.user_file).expect("unrelated file bytes");
+    let StagedClaudeApply {
+        mut transaction,
+        record,
+        after,
+    } = stage_claude_apply(&fixture);
+    assert!(!fixture.claude_dir.exists() && !fixture.config.exists());
+    transaction.seal().expect("seal Claude directory and file");
+    transaction.commit().expect("commit Claude project apply");
+
+    let directory_metadata =
+        fs::symlink_metadata(&fixture.claude_dir).expect("published directory");
+    assert!(
+        directory_metadata.ino() > 0,
+        "published directory has a real inode"
+    );
+    assert_eq!(directory_metadata.mode() & 0o7777, 0o700);
+    let config_metadata = fs::symlink_metadata(&fixture.config).expect("published settings");
+    assert!(
+        config_metadata.ino() > 0,
+        "published settings have a real inode"
+    );
+    assert_eq!(config_metadata.mode() & 0o7777, 0o600);
+    assert_eq!(config_metadata.uid(), unsafe { libc::geteuid() });
+    assert_eq!(fs::read(&fixture.config).unwrap(), after);
+    assert_eq!(
+        read_claude_snapshot(&fixture)
+            .expect("active ownership snapshot")
+            .record
+            .state(),
+        OwnershipState::Active
+    );
+
+    let mut edited: serde_json::Value = serde_json::from_slice(&after).expect("patched JSON");
+    let object = edited.as_object_mut().expect("settings object");
+    object.insert(
+        "userSetting".to_owned(),
+        serde_json::Value::String("keep this value".to_owned()),
+    );
+    object.insert(
+        "apiKey".to_owned(),
+        serde_json::Value::String("SYNTHETIC_AUTH_SENTINEL".to_owned()),
+    );
+    let edited_bytes = serde_json::to_vec(&edited).expect("edited synthetic settings");
+    let mut editor = OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open(&fixture.config)
+        .expect("edit synthetic settings in place");
+    editor.write_all(&edited_bytes).unwrap();
+    editor.sync_all().unwrap();
+    fs::write(&fixture.project.join("later-user-file.txt"), USER_EDIT)
+        .expect("add unrelated project file");
+
+    let released = undo_claude(&fixture);
+    assert_eq!(released.state(), OwnershipState::Released);
+    let restored: serde_json::Value =
+        serde_json::from_slice(&fs::read(&fixture.config).unwrap()).expect("restored settings");
+    assert!(
+        restored.get("env").is_none(),
+        "owned endpoint ancestor is removed"
+    );
+    assert_eq!(restored["userSetting"], "keep this value");
+    assert_eq!(restored["apiKey"], "SYNTHETIC_AUTH_SENTINEL");
+    assert!(
+        fixture.claude_dir.is_dir(),
+        "Undo keeps the project directory"
+    );
+    assert_eq!(
+        fs::read(&fixture.project.join("later-user-file.txt")).unwrap(),
+        USER_EDIT
+    );
+    assert_eq!(fs::read(&fixture.user_file).unwrap(), unrelated_before);
+    assert_eq!(
+        fs::read(&fixture.user_file).unwrap(),
+        CLAUDE_USER_FILE,
+        "an existing user file stays byte-exact"
+    );
+    assert_no_claude_state_secrets(&fixture);
+    assert_eq!(record.state(), OwnershipState::Active);
+}
+
+#[test]
+fn missing_claude_rollback_and_new_action_abort_do_not_publish_old_plan() {
+    let fixture = ClaudeProjectFixture::create();
+    let StagedClaudeApply { transaction, .. } = stage_claude_apply(&fixture);
+    transaction.rollback().expect("rollback before seal");
+    assert!(!fixture.claude_dir.exists() && !fixture.config.exists());
+    assert!(!fixture.root.join("state/claude_code.json").exists());
+
+    let StagedClaudeApply {
+        mut transaction, ..
+    } = stage_claude_apply(&fixture);
+    transaction.seal().expect("seal staged Claude lease");
+    drop(transaction);
+    assert!(!fixture.claude_dir.exists() && !fixture.config.exists());
+
+    // A fresh explicit operation binds the same missing target and aborts the
+    // abandoned intent instead of publishing its old config/ownership lease.
+    let StagedClaudeApply { transaction, .. } = stage_claude_apply(&fixture);
+    transaction
+        .rollback()
+        .expect("finish explicit recovery action");
+    assert!(!fixture.claude_dir.exists() && !fixture.config.exists());
+    assert!(!fixture.root.join("state/claude_code.json").exists());
+    assert!(
+        fs::read_dir(fixture.root.join("state"))
+            .unwrap()
+            .any(|entry| {
+                entry
+                    .ok()
+                    .is_some_and(|entry| entry.file_name().to_string_lossy().ends_with(".done"))
+            }),
+        "fresh action records the abandoned plan as aborted"
+    );
+}
+
+#[test]
+fn competing_claude_directory_and_replaced_project_are_preserved() {
+    let fixture = ClaudeProjectFixture::create();
+    let StagedClaudeApply {
+        mut transaction, ..
+    } = stage_claude_apply(&fixture);
+    create_private_dir(&fixture.claude_dir);
+    let competitor = fixture.config.clone();
+    fs::write(&competitor, b"{\"competitor\":true}").expect("write competing settings");
+    let result = match transaction.seal() {
+        Ok(()) => transaction.commit(),
+        Err(error) => Err(error),
+    };
+    assert!(
+        result.is_err(),
+        "competing .claude creation blocks publication"
+    );
+    assert_eq!(fs::read(&competitor).unwrap(), b"{\"competitor\":true}");
+    assert!(!fixture.root.join("state/claude_code.json").exists());
+
+    let drift = ClaudeProjectFixture::create();
+    let StagedClaudeApply {
+        mut transaction, ..
+    } = stage_claude_apply(&drift);
+    let moved_project = drift.root.join("project-moved");
+    fs::rename(&drift.project, &moved_project).expect("move pinned project directory");
+    create_private_dir(&drift.project);
+    let result = match transaction.seal() {
+        Ok(()) => transaction.commit(),
+        Err(error) => Err(error),
+    };
+    assert!(
+        result.is_err(),
+        "replacement project identity blocks publication"
+    );
+    assert!(!drift.claude_dir.exists() && !drift.config.exists());
+    assert!(!moved_project.join(".claude").exists());
+    assert!(!drift.root.join("state/claude_code.json").exists());
+}
+
+#[test]
+fn claude_directory_publication_crash_recovers_owner_on_explicit_action() {
+    let fixture = ClaudeProjectFixture::create();
+    let (_, expected) = {
+        let plan = claude_plan_for_missing();
+        match apply_missing_endpoint(&plan, CLAUDE_BEFORE).unwrap() {
+            ApplyResult::Patched { bytes, .. } => (plan, bytes),
+            ApplyResult::Unchanged => panic!("Claude fixture requires a patch"),
+        }
+    };
+    spawn_claude_crash_child(&fixture.id);
+    assert!(
+        fixture.claude_dir.is_dir(),
+        "commit publishes the staged directory"
+    );
+    assert_eq!(fs::read(&fixture.config).unwrap(), expected);
+    assert!(
+        !fixture.root.join("state/claude_code.json").exists(),
+        "child exits between config and ownership publication"
+    );
+
+    let reopened = ClaudeProjectFixture::open(&fixture.id);
+    let recovered = recover_claude_owner(&reopened);
+    assert_eq!(recovered.state(), OwnershipState::Active);
+    assert_eq!(
+        recovered.config_scope(),
+        Some(ConfigScope::ProjectLocalConfig)
+    );
+    assert_eq!(recovered.config_source(), Some(ConfigSource::ClaudeJson));
+    assert_no_claude_state_secrets(&reopened);
+}
+
+#[test]
+#[ignore = "owned child invoked by Claude project transaction recovery test"]
+fn crash_after_claude_config_publication_before_owner() {
+    let id = std::env::var("HEADROOM_MACOS_CLAUDE_FIXTURE").expect("owned Claude fixture id");
+    let fixture = ClaudeProjectFixture::open(&id);
+    let StagedClaudeApply {
+        mut transaction, ..
+    } = stage_claude_apply(&fixture);
+    transaction.seal().expect("seal child Claude transaction");
+    transaction
+        .commit_inner(|| std::process::exit(EXIT_AFTER_CONFIG))
+        .expect("child exit hook follows directory and config publication");
 }
 
 #[test]

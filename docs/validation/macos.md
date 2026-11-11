@@ -120,5 +120,9 @@ Bu kabul gerçek dosya backend'ini ve ortak manager kodunu kapsar. Npm istemci m
 
 ## Açık kabuller
 
+H048-b6b eksik Claude proje dizini dilimi ana ajandadır. İlk kabuldeki mevcut dosya akışı korunur. Önce manager/store testleri `Unsupported` davranışını gösterir; ardından `.claude/settings.local.json` için dar dizin yayını eklenir. Önizleme/create/seal görünür `.claude` oluşturmaz. Seal sırasında proje içinde eşsiz 0700 staging dizinine yalnız yeni settings.local.json yazılır; commit dizini RENAME_EXCL ile yayımlar. Başka sürecin oluşturduğu hedefe dokunulmaz. Proje parent kimliği ve yeni dizin kimliği intent'e eklenir; önceki intent'ler uyumlu okunur. Dizin yayını öncesi kesintide eski plan tekrar yayımlanmaz; sonrası kesintide yalnız eşleşen sahiplik tamamlanır. Undo kullanıcı eklerini ve dizini korur. Yeni auth, gerçek istemci ayarı, global ortam veya ücretli çağrı kapsamda değildir.
+
+Normal kabul proje seçimi → eksik config önizlemesi → Apply → manager yeniden açılışı → kullanıcı ekleriyle Undo; hata kabulü commit öncesi fault/drop ve ayrı süreçte yayın sonrası exit; sınır kabulü yarışan `.claude`, taşınan proje kimliği ve token'ın başka transaction'da kullanılmasıdır. Mevcut manuel macOS workflow'unda config_io::macos ve transaction_fs::macos_impl filtreleri kullanılır. Önceki başarılı kontroller yalnız ilgili kaynak/araç/ortam parmak izleri eşleşirse korunur. Her yeni dispatch öncesi ücretsiz kota ve 0 dolar hard-stop yenilenir.
+
 - H048-b için platforma ve mimariye özel sabitlenmiş motor ve doğrulanabilir süreç/loopback sahipliği, atomik ayar işlemleri ve çatışmayı koruyan geri alma gerekir.
 - H048-c için paketlenmiş uygulamanın gerçek açılışı, başlat/durdur ve temiz state kabulü ile paket ve motor imzasının ayrı doğrulanması gerekir. Apple Silicon sonucu Intel, Windows 11 veya Linux'a aktarılmaz. Üretim yayını veya ücretli imzalama bu koşuların kapsamı dışındadır.

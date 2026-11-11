@@ -213,12 +213,21 @@ fn manager_plan(
     installation_id: String,
     scan_generation: u64,
 ) -> crate::integrations::plan::ConnectionPlan {
+    manager_plan_in_scope(manager, installation_id, scan_generation, "user_config")
+}
+
+fn manager_plan_in_scope(
+    manager: &PlanManager,
+    installation_id: String,
+    scan_generation: u64,
+    scope: &str,
+) -> crate::integrations::plan::ConnectionPlan {
     match manager.preview(PreviewRequest {
         schema_version: 1,
         request_id: Uuid::new_v4().to_string(),
         installation_id,
         scan_generation,
-        scope: "user_config".into(),
+        scope: scope.into(),
     }) {
         PlanReply::Preview(reply) => {
             assert!(reply.plan.blockers.is_empty(), "fixture plan is blocked");
@@ -332,6 +341,128 @@ fn native_manager_preserves_unrelated_edit_and_precommit_fault() {
         fs::read(&config).unwrap(),
         [original.as_slice(), b"# unrelated user edit\n"].concat()
     );
+}
+
+#[test]
+fn native_manager_missing_claude_project_directory_reopens_and_preserves_user_additions() {
+    let fixture = Fixture::new();
+    let home = fixture.child("user-config");
+    fixture.mkdir(&home, 0o700);
+    let project = fixture.child("project");
+    fixture.mkdir(&project, 0o700);
+    let (manager, id, generation, roots) = manager_fixture(&fixture, "claude_code", &home);
+    let picker_project = project.clone();
+    let manager = manager.with_claude_project_picker(move || Ok(Some(picker_project.clone())));
+    let selection = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        scope: "project_local_config".into(),
+    });
+    assert_eq!(
+        serde_json::to_value(selection).unwrap()["status"],
+        "selected"
+    );
+    let plan = manager_plan_in_scope(&manager, id, generation, "project_local_config");
+    assert_eq!(plan.config_presence, ConfigPresence::Missing);
+    assert!(
+        !project.join(".claude").exists(),
+        "preview must not create a client directory"
+    );
+    let applied = manager_success(manager.apply_connection(ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        plan_id: plan.plan_id,
+        expected_config_fingerprint: plan.config_fingerprint,
+    }));
+    let owned = applied.ownership.unwrap();
+    assert_eq!(owned.scope, "project_local_config");
+    let config = project.join(".claude/settings.local.json");
+    assert_eq!(
+        fs::metadata(config.parent().unwrap()).unwrap().mode() & 0o7777,
+        0o700
+    );
+    assert_eq!(fs::metadata(&config).unwrap().mode() & 0o7777, 0o600);
+    let mut user_edit: serde_json::Value =
+        serde_json::from_slice(&fs::read(&config).unwrap()).unwrap();
+    user_edit["model"] = serde_json::json!("arbitrary-user-model");
+    user_edit["env"]["USER_SETTING"] = serde_json::json!("keep");
+    fs::write(&config, serde_json::to_vec_pretty(&user_edit).unwrap()).unwrap();
+    let note = project.join(".claude/user-note.txt");
+    fixture.write(&note, b"user additions stay", 0o600);
+    let discovery = manager.discovery.clone();
+    drop(manager);
+    let reopened_project = project.clone();
+    let reopened = PlanManager::with_test_sources(discovery, roots, manager_endpoint())
+        .with_ownership_store(
+            crate::state::ownership::OwnershipStore::new(
+                &fixture.path,
+                Path::new("state/ownership"),
+            )
+            .unwrap(),
+        )
+        .with_claude_project_picker(move || Ok(Some(reopened_project.clone())));
+    let selection = reopened.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        scope: "project_local_config".into(),
+    });
+    assert_eq!(
+        serde_json::to_value(selection).unwrap()["status"],
+        "selected"
+    );
+    let released = manager_success(reopened.undo_connection(UndoConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        client_kind: "claude_code".into(),
+        owner_id: owned.owner_id,
+        expected_revision: owned.revision,
+        expected_record_fingerprint: owned.record_fingerprint,
+    }));
+    assert_eq!(released.status, "released");
+    let after: serde_json::Value = serde_json::from_slice(&fs::read(&config).unwrap()).unwrap();
+    assert_eq!(after["model"], "arbitrary-user-model");
+    assert_eq!(after["env"]["USER_SETTING"], "keep");
+    assert!(after["env"].get("ANTHROPIC_BASE_URL").is_none());
+    assert_eq!(fs::read(note).unwrap(), b"user additions stay");
+    assert!(
+        !home.join("settings.json").exists(),
+        "user scope is unchanged"
+    );
+}
+
+#[test]
+fn native_manager_missing_claude_project_directory_precommit_fault_is_passive() {
+    let fixture = Fixture::new();
+    let home = fixture.child("user-config");
+    fixture.mkdir(&home, 0o700);
+    let project = fixture.child("project");
+    fixture.mkdir(&project, 0o700);
+    let (manager, id, generation, _) = manager_fixture(&fixture, "claude_code", &home);
+    let selected_project = project.clone();
+    let manager = manager
+        .with_claude_project_picker(move || Ok(Some(selected_project.clone())))
+        .with_action_commit_fault();
+    let selection = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        scope: "project_local_config".into(),
+    });
+    assert_eq!(
+        serde_json::to_value(selection).unwrap()["status"],
+        "selected"
+    );
+    let plan = manager_plan_in_scope(&manager, id, generation, "project_local_config");
+    assert!(matches!(
+        manager.apply_connection(ApplyConnectionRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            plan_id: plan.plan_id,
+            expected_config_fingerprint: plan.config_fingerprint,
+        }),
+        ConnectionActionReply::Error(_)
+    ));
+    assert!(!project.join(".claude").exists());
+    assert!(!fixture.child("state/ownership/claude_code.json").exists());
 }
 
 fn assert_supported_directory_chain(path: &Path) {
