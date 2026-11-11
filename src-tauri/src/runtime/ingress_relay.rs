@@ -3,10 +3,20 @@
 //! This module never parses HTTP, retries a backend request, or logs/persists
 //! stream content. Each accepted TCP connection receives one immutable target.
 
-use crate::runtime::ingress::{verify_backend_peer, IngressError, StableIngress};
+use crate::runtime::ingress::StableIngress;
+#[cfg(windows)]
+use crate::runtime::ingress::{verify_backend_peer, IngressError};
 use std::collections::HashMap;
 use std::io::{self, Read, Write};
-use std::net::{Shutdown, SocketAddr, SocketAddrV4, TcpListener, TcpStream};
+#[cfg(windows)]
+use std::net::SocketAddrV4;
+use std::net::{Shutdown, SocketAddr, TcpListener, TcpStream};
+#[cfg(target_os = "macos")]
+use std::path::PathBuf;
+#[cfg(windows)]
+type BackendStream = TcpStream;
+#[cfg(target_os = "macos")]
+type BackendStream = std::os::unix::net::UnixStream;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Condvar, Mutex};
@@ -24,13 +34,17 @@ const ACCEPT_JOIN_RESERVE: Duration = Duration::from_millis(50);
 /// An internal lease for one pinned backend generation.
 #[derive(Clone)]
 pub struct BackendTarget {
+    #[cfg(windows)]
     address: SocketAddrV4,
+    #[cfg(target_os = "macos")]
+    socket_path: PathBuf,
     generation: Uuid,
     expected_engine_pid: u32,
     liveness: Arc<dyn Fn() -> bool + Send + Sync>,
 }
 
 impl BackendTarget {
+    #[cfg(windows)]
     pub fn new(
         port: u16,
         generation: Uuid,
@@ -42,6 +56,30 @@ impl BackendTarget {
         }
         Ok(Self {
             address: SocketAddrV4::new(std::net::Ipv4Addr::LOCALHOST, port),
+            generation,
+            expected_engine_pid,
+            liveness,
+        })
+    }
+
+    #[cfg(target_os = "macos")]
+    pub fn new_unix(
+        socket_path: PathBuf,
+        generation: Uuid,
+        expected_engine_pid: u32,
+        liveness: Arc<dyn Fn() -> bool + Send + Sync>,
+    ) -> Result<Self, RelayError> {
+        use std::os::unix::ffi::OsStrExt;
+        if !socket_path.is_absolute()
+            || socket_path.as_os_str().as_bytes().len() >= 104
+            || generation.is_nil()
+            || expected_engine_pid == 0
+            || expected_engine_pid > i32::MAX as u32
+        {
+            return Err(RelayError::InvalidTarget);
+        }
+        Ok(Self {
+            socket_path,
             generation,
             expected_engine_pid,
             liveness,
@@ -164,7 +202,7 @@ struct ConnectionControl {
     downstream_bytes_written: AtomicU64,
     started: Instant,
     last_activity: Mutex<Instant>,
-    sockets: Mutex<Option<(TcpStream, TcpStream)>>,
+    sockets: Mutex<Option<(TcpStream, BackendStream)>>,
 }
 
 impl ConnectionControl {
@@ -198,7 +236,7 @@ impl ConnectionControl {
         }
     }
 
-    fn set_sockets(&self, client: &TcpStream, backend: &TcpStream) -> io::Result<()> {
+    fn set_sockets(&self, client: &TcpStream, backend: &BackendStream) -> io::Result<()> {
         let client_control = client.try_clone()?;
         let backend_control = backend.try_clone()?;
         let mut sockets = self
@@ -224,6 +262,10 @@ pub struct IngressRelay {
 }
 
 impl IngressRelay {
+    #[cfg(target_os = "macos")]
+    pub fn owns_endpoint(&self) -> bool {
+        self.is_accepting() && self.stable.as_ref().is_some_and(StableIngress::is_owned)
+    }
     pub fn new(stable: StableIngress, limits: RelayLimits) -> Result<Self, RelayError> {
         let limits = limits.validate()?;
         let address = stable
@@ -610,10 +652,22 @@ fn run_connection(
             RelayError::TargetNotAlive
         });
     }
+    #[cfg(windows)]
     let backend_address = SocketAddr::V4(target.address);
+    #[cfg(windows)]
     let Ok(backend) = TcpStream::connect_timeout(&backend_address, limits.connect_timeout) else {
         return Err(RelayError::ConnectFailed);
     };
+    #[cfg(target_os = "macos")]
+    let backend = crate::runtime::unix_backend::UnixTarget {
+        socket_path: &target.socket_path,
+        expected_pid: target.expected_engine_pid,
+    }
+    .connect_with_timeout(limits.connect_timeout, || target.is_alive())
+    .map_err(|error| match error {
+        crate::runtime::unix_backend::UnixBackendError::Transport => RelayError::ConnectFailed,
+        _ => RelayError::PeerOwnerMismatch,
+    })?;
     if !target.is_alive() || session.cancelled.load(Ordering::Acquire) {
         return Err(if session.cancelled.load(Ordering::Acquire) {
             RelayError::Cancelled
@@ -621,6 +675,7 @@ fn run_connection(
             RelayError::TargetNotAlive
         });
     }
+    #[cfg(windows)]
     verify_backend_peer_before_payload(&backend, target.expected_engine_pid).map_err(|error| {
         match error {
             IngressError::PeerOwnerMismatch => RelayError::PeerOwnerMismatch,
@@ -645,6 +700,7 @@ fn run_connection(
         return Err(RelayError::Cancelled);
     }
     let _ = client.set_nodelay(true);
+    #[cfg(windows)]
     let _ = backend.set_nodelay(true);
     relay_bidirectional(client, backend, session, limits)
 }
@@ -653,6 +709,7 @@ fn run_connection(
 /// a missing row receives a tiny bounded visibility wait; a known PID
 /// mismatch or ambiguous tuple fails immediately. No client byte is read while
 /// this check runs.
+#[cfg(windows)]
 fn verify_backend_peer_before_payload(
     backend: &TcpStream,
     expected_engine_pid: u32,
@@ -670,7 +727,7 @@ fn verify_backend_peer_before_payload(
 
 fn relay_bidirectional(
     mut client: TcpStream,
-    mut backend: TcpStream,
+    mut backend: BackendStream,
     session: Arc<ConnectionControl>,
     limits: RelayLimits,
 ) -> Result<(), RelayError> {
@@ -878,6 +935,10 @@ fn check_deadlines(session: &ConnectionControl, limits: RelayLimits) -> Result<(
     Ok(())
 }
 
-#[cfg(test)]
+#[cfg(all(test, windows))]
 #[path = "ingress_relay_tests.rs"]
+mod tests;
+
+#[cfg(all(test, target_os = "macos"))]
+#[path = "ingress_relay_macos_tests.rs"]
 mod tests;

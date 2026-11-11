@@ -15,5 +15,9 @@ pub(crate) mod macos_session;
 #[cfg(windows)]
 pub mod ingress;
 
-#[cfg(windows)]
+#[cfg(target_os = "macos")]
+#[path = "ingress_macos.rs"]
+pub mod ingress;
+
+#[cfg(any(windows, target_os = "macos"))]
 pub mod ingress_relay;

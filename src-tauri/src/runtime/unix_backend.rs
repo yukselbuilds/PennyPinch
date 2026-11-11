@@ -27,6 +27,14 @@ impl UnixTarget<'_> {
         &self,
         is_alive: impl Fn() -> bool,
     ) -> Result<UnixStream, UnixBackendError> {
+        self.connect_with_timeout(Duration::from_millis(300), is_alive)
+    }
+
+    pub(crate) fn connect_with_timeout(
+        &self,
+        timeout: Duration,
+        is_alive: impl Fn() -> bool,
+    ) -> Result<UnixStream, UnixBackendError> {
         if self.expected_pid == 0 || self.expected_pid > i32::MAX as u32 {
             return Err(UnixBackendError::InvalidEndpoint);
         }
@@ -39,7 +47,7 @@ impl UnixTarget<'_> {
         let socket = Socket::new(Domain::UNIX, Type::STREAM, None)
             .map_err(|_| UnixBackendError::Transport)?;
         socket
-            .connect_timeout(&address, Duration::from_millis(300))
+            .connect_timeout(&address, timeout.min(Duration::from_millis(300)))
             .map_err(|_| UnixBackendError::Transport)?;
         let mut pid: libc::pid_t = 0;
         let mut length = std::mem::size_of_val(&pid) as libc::socklen_t;

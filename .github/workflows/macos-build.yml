@@ -58,6 +58,11 @@ jobs:
           test "$(uname -m)" = arm64
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           git diff --quiet HEAD --
+          umask 077
+          if [[ -z "${HEADROOM_MACOS_PROOF_ROOT:-}" ]]; then
+            mkdir -p work
+            export HEADROOM_MACOS_PROOF_ROOT="$(mktemp -d "$GITHUB_WORKSPACE/work/m5.XXXXXX")"
+          fi
 
           build_log="$(mktemp "$RUNNER_TEMP/headroom-build.XXXXXX")"
           trap 'rm -f "$build_log"' EXIT
@@ -80,6 +85,8 @@ jobs:
             rustc +1.92.0 --version --verbose
             cargo +1.92.0 --version
             printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}" "$CARGO_PROFILE_DEV_DEBUG" "$CARGO_PROFILE_TEST_DEBUG"
+            stat -f '%u %p' "$HEADROOM_MACOS_PROOF_ROOT"
+            umask
             if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
               printf '%s\n' "$HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256"
               shasum -a 256 "$HEADROOM_MACOS_RUNTIME_ROOT"/manifest.json "$HEADROOM_MACOS_RUNTIME_ROOT"/*.py
@@ -98,17 +105,18 @@ jobs:
             echo "Frontend typecheck/build: passed."
             cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
               --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
-              -- runtime::unix_backend:: runtime::control::tests:: runtime::macos_session:: --test-threads=1 \
+              -- runtime::unix_backend:: runtime::control::tests:: runtime::macos_session:: \
+                 runtime::ingress:: runtime::ingress_relay:: --test-threads=1 \
               > "$build_log" 2>&1 || status=$?
             if [[ "$status" != 0 ]]; then
-              echo "::error::Native Unix transport/control tests failed."
+              echo "::error::Native Unix protocol and relay tests failed."
               awk '/^error(\[[A-Z][0-9]+\])?: / { show = ++count <= 10; if (show) print substr($0, 1, 300) }
                 show && /^ *--> src\// { print substr($0, 1, 180); show = 0 }
                 /^thread .* panicked at / { detail = 3; print substr($0, 1, 240); next }
                 detail > 0 { print substr($0, 1, 240); detail-- }
                 /^test .* \.\.\. FAILED$/ || /^test result: / { print substr($0, 1, 240) }' "$build_log"
             else
-              awk '/^test result: / { print "Native Unix transport/control " $0 }' "$build_log"
+              awk '/^test result: / { print "Native Unix protocol and relay " $0 }' "$build_log"
               if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
                 cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
                   --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
@@ -146,7 +154,7 @@ jobs:
           binary_sha="$(shasum -a 256 "$binary" | cut -d' ' -f1)"
           printf '%s\n' "Executable SHA-256: $binary_sha" "Native executable architecture: arm64."
           printf '%s\n' '## macOS build' '' "- Commit: $GITHUB_SHA" \
-            '- Frontend typecheck/build, native Unix transport/control tests and locked Tauri build passed.' \
+            '- Frontend typecheck/build, native Unix transport/control/ingress/relay tests and locked Tauri build passed.' \
             "- Apple Silicon executable SHA-256: $binary_sha" \
             '- Scope: native executable build. Client config writes, signing, bundle and UI lifecycle untested.' >> "$GITHUB_STEP_SUMMARY"
           if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
