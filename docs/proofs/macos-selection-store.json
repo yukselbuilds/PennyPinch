@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "task": "H048-c2",
+  "status": "pass",
+  "main_task_complete": false,
+  "verified_at_utc": "2026-11-11T19:03:49.009850+00:00",
+  "scope": "Persistent installation choices with official pinned Apple Silicon CLI files and private APFS fixtures",
+  "native": {
+    "run_id": 43083203659,
+    "job_id": 130740827233,
+    "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43083203659",
+    "commit": "e3cadae33086e10b6f9b63686f8b4495eb048a4e",
+    "os": "15.8.2",
+    "build": "24H232",
+    "arch": "arm64",
+    "rust": "1.92.0",
+    "python": "3.15.2",
+    "inputs_before": "8d690101992132d42bfc61b9a2baa3e711879e69250fde6dd4d8128a902813a0",
+    "inputs_after": "8d690101992132d42bfc61b9a2baa3e711879e69250fde6dd4d8128a902813a0",
+    "test_summary": "test result: ok. 15 passed; 0 failed; 2 ignored; 0 measured; 313 filtered out; finished in 8.33s",
+    "tests": [
+      "integrations::config_io::macos::tests::native_manager_apply_and_reopened_undo_for_all_adapters",
+      "integrations::config_io::macos::tests::native_manager_missing_claude_project_directory_precommit_fault_is_passive",
+      "integrations::config_io::macos::tests::native_manager_missing_claude_project_directory_reopens_and_preserves_user_additions",
+      "integrations::config_io::macos::tests::native_manager_preserves_unrelated_edit_and_precommit_fault",
+      "integrations::config_io::macos::tests::native_manager_retained_review_archive_and_reopened_undo_for_all_adapters",
+      "integrations::discovery::macos::tests::installed_cli_discovery_uses_actual_environment_and_does_not_execute_candidates",
+      "integrations::discovery_tests::installation_selection_is_bound_to_scan_generation_and_returns_no_path",
+      "integrations::discovery_tests::npm_metadata_is_separate_from_unverified_path_wrappers_and_scan_is_read_only",
+      "integrations::discovery_tests::path_and_metadata_limits_are_reported_and_network_candidates_are_skipped",
+      "integrations::transaction_fs::macos_impl::choices::tests::late_selection_replacement_is_preserved_and_reported_as_conflict",
+      "integrations::transaction_fs::macos_impl::choices::tests::selection_file_serializes_writers_and_reopens_after_process_exit",
+      "state::choices::macos_tests::app_local_selection_store_is_passive_then_roundtrips_explicit_choices",
+      "state::choices::macos_tests::executable_replacement_and_same_size_edit_make_saved_choices_unavailable",
+      "state::choices::macos_tests::malformed_and_oversized_selection_files_are_rejected_without_rewrite",
+      "state::choices::macos_tests::unsafe_selection_roots_and_files_fail_closed_without_touching_targets"
+    ],
+    "directly_ignored_helpers_invoked_by_parent_tests": [
+      "integrations::discovery::macos::tests::isolated_installed_cli_scan_child",
+      "integrations::transaction_fs::macos_impl::choices::tests::owned_selection_file_child"
+    ],
+    "binary_sha256": "96026507d75dc40aee269fe88901ce41205c93d8882202eab13a525d04776b92",
+    "allowance": {
+      "checked_at": "2026-11-11T19:01:02.8711930Z",
+      "account": "Protocol272",
+      "period": "2026-11",
+      "included_compute_used_usd": 4.15,
+      "included_compute_total_usd": 12,
+      "paid_actions_budget_usd": 0,
+      "billable_usage_usd": 0,
+      "usage_blocked": true,
+      "candidate_sha": "e3cadae33086e10b6f9b63686f8b4495eb048a4e",
+      "workflow_sha256": "bea1db56112e2ebf8849679add56fc846728c57d888f689c570f080e37cbeac5",
+      "run_id": "43083203659",
+      "runner": "macos-15",
+      "timeout_minutes": 20,
+      "verify_cli_discovery": true,
+      "verify_managed_engine": false,
+      "verify_config_recovery": false,
+      "source": "Authenticated GitHub Actions overview and account budget immediately before dispatch"
+    }
+  },
+  "official_binaries": [
+    {
+      "command": "codex",
+      "version": "0.163.0-alpha.11.1",
+      "size": 249449504,
+      "sha256": "c43dfdedd0f4c6f9e2c8e03070233db63ad041cc299f53b57a325f06494d1954"
+    },
+    {
+      "command": "claude",
+      "version": "2.1.158",
+      "size": 215233824,
+      "sha256": "536a0517fa64d48ddcbc8eb511a3d08027d47e06d148872332a8041d72c22768"
+    },
+    {
+      "command": "opencode",
+      "version": "1.19.3",
+      "size": 144634848,
+      "sha256": "6d3e6458fce4b649edf974c19959d5dbfe1e7f255a503dcfc01215b24ad3ea5b"
+    }
+  ],
+  "source_sha256": {
+    ".github/workflows/macos-build.yml": "bea1db56112e2ebf8849679add56fc846728c57d888f689c570f080e37cbeac5",
+    "pnpm-lock.yaml": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3",
+    "scripts/prepare-macos-ci-clients.py": "6bf36cf51bb348a689c5a84b8f3bdc996ab14ac7f68176d6a308d028fc7e434a",
+    "src-tauri/Cargo.lock": "86d9be0d2fcd716bf8d37d382f4ed786e0f60538c01f3894359e0438b4e6bf8b",
+    "src-tauri/src/integrations/config_io.rs": "f1ac25a275670f8f309f51dc61b3a3026bf3a38817f44b4fb8120c8aac3a8dfb",
+    "src-tauri/src/integrations/config_io/macos.rs": "40b8d7381624bc5668b1ca3eda18e25f42e767e9e6e6a548e0f0ed9589cbb0b5",
+    "src-tauri/src/integrations/config_io/macos_tests.rs": "c6bd6463997c4f63ce54de98f13f258e6663aac0653a98c618dd283ed2d90925",
+    "src-tauri/src/integrations/discovery.rs": "0eb8a1d83e342989d9798085250f9284f2a646f40520a725706957293559534a",
+    "src-tauri/src/integrations/discovery_macos.rs": "64dfe678018c9dc7316308367d18a8e1c5dc2b03dafd5ceaaa9a8ed6cbe61633",
+    "src-tauri/src/integrations/discovery_macos_tests.rs": "02f046f511ac5c6bab05fc0d40ade4e694cda5614a35a0eb8d07dc650ab993f4",
+    "src-tauri/src/integrations/transaction_fs.rs": "2996c794f80dc6dbbac166b42ea374ad7d441ddb47f38f8c926af36d088fafc0",
+    "src-tauri/src/integrations/transaction_macos.rs": "7655dc0828dad7b473bd9844c4672a40bb3b30aa8312664638b085139a0e6a4f",
+    "src-tauri/src/integrations/transaction_macos_choices.rs": "af9f4874700685e8f86583641f140e2338b0571b388be66cf35bb11d53b00b68",
+    "src-tauri/src/integrations/transaction_macos_choices_tests.rs": "81a7715942d97b2a5c466e6e7a5b67f8dfe80e228f2193f3b5a4050834aa5a51",
+    "src-tauri/src/state/choices.rs": "8fc012d48f2ff521e6c7a8f7ed3e61313de155f99e1baa9980d7da0228e7011e",
+    "src-tauri/src/state/choices_macos_tests.rs": "a81c6d956b8c95126f28a8300134842f62239a51212e7342bfd265ad05e3dce3"
+  },
+  "windows": {
+    "commands": [
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "--",
+          "state::choices_tests::",
+          "integrations::discovery_tests::",
+          "integrations::config_io::",
+          "integrations::config_io_tests::",
+          "--test-threads=1"
+        ],
+        "exit_code": 0,
+        "seconds": 12.523,
+        "test_summary": [
+          "test result: ok. 107 passed; 0 failed; 2 ignored; 0 measured; 325 filtered out; finished in 3.21s"
+        ],
+        "node_summary": [],
+        "failed_tests": []
+      },
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 1.154,
+        "test_summary": [],
+        "node_summary": [],
+        "failed_tests": []
+      },
+      {
+        "command": [
+          "D:\\Projeler\\Headroom\\work\\proofs\\macos\\h048-a\\actionlint-1.7.12\\actionlint.exe",
+          "-color",
+          ".github/workflows/macos-build.yml"
+        ],
+        "exit_code": 0,
+        "seconds": 0.111,
+        "test_summary": [],
+        "node_summary": [],
+        "failed_tests": []
+      }
+    ],
+    "toolchain": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "environment": {
+      "workspace": "D:\\Projeler\\Headroom",
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "windows_build": [
+        10,
+        0,
+        19045
+      ]
+    },
+    "proof_sha256": "972eb73c20e148b67b7844fd920b811c534e509a6769a4f1e9691f74956fe29c",
+    "matching_inputs": 281
+  },
+  "verified": [
+    "Passive initial scan and three explicitly selected CLI installations rebound on a fresh scan after manager restart",
+    "Persisted Claude project selection is available to a new PlanManager and scoped undo preserves user additions",
+    "Same-size edits and replaced executable identities invalidate stale selections and writes",
+    "Malformed, oversized, symlinked, hardlinked or insecure records fail closed without rewriting targets",
+    "APFS lock contention, late competing file and child process exits before and after atomic publication"
+  ],
+  "remaining": [
+    "Codex Desktop discovery",
+    "native file picker",
+    "packaged window and engine lifecycle",
+    "live provider traffic"
+  ],
+  "development_token_savings": "not_measured"
+}

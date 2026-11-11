@@ -178,10 +178,12 @@ macOS'ta kurulum seçimi mevcut `ChoiceStore` ve aynı IPC sözleşmesini kullan
 | Seçilen ikili aynı boyutta düzenlenir veya başka inode ile değiştirilir | Eski seçim kullanılamaz görünür. Yeni bir dosya kendiliğinden seçilmez. Eski taramadan kayıt isteği reddedilir. |
 | İki yazıcı aynı anda erişir, süreç yayın öncesi veya sonrası kesilir, mevcut kayıt bozulur veya yol güvenliği değişir | Kilit çakışmayı durdurur. Yeniden açılış yalnız tam eski veya yeni kaydı okur. Bozuk kayıt ve yabancı dosyalar otomatik değiştirilmez. |
 
-Ana ajan kayıt, yol güvenliği, seçim eşlemesi ve CI kabulünü üstlenir. Tek Luna macOS depo testlerini hazırlar. Native `macos-build.yml` koşusu gerçek kurulum taramasını, yeniden açılış ve APFS kayıt testlerini kapsar. Desktop ve picker sonraki kabulde kalır.
+Apple Silicon macOS 15.8.2 üzerinde resmî üç CLI ikilisiyle gerçek tarama ve yeni yöneticiye yeniden bağlama geçti. Claude proje seçimi de yeni `PlanManager` ile geri yüklendi ve geri alma kullanıcının sonraki eklerini korudu. APFS testleri yarışan yazıyı, süreçler arası kilidi, atomik yayının iki yanında süreç çıkışını ve geçersiz kayıtları kapsadı. 15 macOS testi, frontend ve kilitli ARM64 derlemesi geçti. İki çocuk süreç yardımcısı ilgili testlerde çağrıldı. 107 odaklı Windows testi geçti, iki opt-in test atlandı. [Makine kanıtı](../proofs/macos-selection-store.json) · [Koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43083203659).
+
+Yönetici yeniden oluşturularak açılış eşlemesi doğrulandı. Claude proje testi, seçilen yolu testten aldı. Gerçek dosya seçici ve paketlenmiş pencerenin yeniden açılışı kendi kabullerinde sınanacak.
 
 ## Açık kabuller
 
-- H048-c'de sıradaki adım macOS kurulum seçimi kaydının güvenli yazım ve yeniden açılış kabulüdür. Codex Desktop keşfi ve gerçek dosya seçici de açık.
+- H048-c'de sıradaki adım macOS Codex Desktop keşfidir. Gerçek dosya seçici de açık.
 - H048-b için platforma ve mimariye özel sabitlenmiş motor ve doğrulanabilir süreç/loopback sahipliği, atomik ayar işlemleri ve çatışmayı koruyan geri alma gerekir.
 - H048-c için paketlenmiş uygulamanın gerçek açılışı, başlat/durdur ve temiz state kabulü ile paket ve motor imzasının ayrı doğrulanması gerekir. Apple Silicon sonucu Intel, Windows 11 veya Linux'a aktarılmaz. Üretim yayını veya ücretli imzalama bu koşuların kapsamı dışındadır.
