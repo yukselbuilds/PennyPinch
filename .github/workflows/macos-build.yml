@@ -8,6 +8,11 @@ on:
         required: true
         type: boolean
         default: false
+      verify_managed_engine:
+        description: Also assemble pinned resources and verify the owned native engine lifecycle.
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -41,6 +46,11 @@ jobs:
           node-version-file: .node-version
           package-manager-cache: false
 
+      - name: Prepare pinned native engine resources
+        if: ${{ inputs.verify_managed_engine == true }}
+        shell: bash
+        run: bash scripts/prepare-macos-ci-runtime.sh
+
       - name: Build and verify the native executable
         shell: bash
         run: |
@@ -70,6 +80,12 @@ jobs:
             rustc +1.92.0 --version --verbose
             cargo +1.92.0 --version
             printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}" "$CARGO_PROFILE_DEV_DEBUG" "$CARGO_PROFILE_TEST_DEBUG"
+            if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
+              printf '%s\n' "$HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256"
+              shasum -a 256 "$HEADROOM_MACOS_RUNTIME_ROOT"/manifest.json "$HEADROOM_MACOS_RUNTIME_ROOT"/*.py
+              "$HEADROOM_MACOS_RUNTIME_ROOT/payload/python/bin/python3.13" -I -B \
+                scripts/macos-payload.py "$HEADROOM_MACOS_RUNTIME_ROOT/payload"
+            fi
           }
           before="$(fingerprint)"
           echo "$before"
@@ -82,7 +98,7 @@ jobs:
             echo "Frontend typecheck/build: passed."
             cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
               --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
-              -- runtime::unix_backend:: runtime::control::tests:: --test-threads=1 \
+              -- runtime::unix_backend:: runtime::control::tests:: runtime::macos_session:: --test-threads=1 \
               > "$build_log" 2>&1 || status=$?
             if [[ "$status" != 0 ]]; then
               echo "::error::Native Unix transport/control tests failed."
@@ -93,6 +109,21 @@ jobs:
                 /^test .* \.\.\. FAILED$/ || /^test result: / { print substr($0, 1, 240) }' "$build_log"
             else
               awk '/^test result: / { print "Native Unix transport/control " $0 }' "$build_log"
+              if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
+                cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
+                  --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
+                  -- runtime::macos_session::tests::managed_engine_ --ignored --test-threads=1 \
+                  > "$build_log" 2>&1 || status=$?
+                awk '/^thread .* panicked at / { detail = 3; print substr($0, 1, 240); next }
+                  detail > 0 { print substr($0, 1, 240); detail-- }
+                  /^headroom-macos-error=[A-Za-z0-9_]+$/ { print }
+                  /^test .* \.\.\. FAILED$/ || /^test result: / { print substr($0, 1, 240) }' "$build_log"
+                if [[ "$status" != 0 ]]; then
+                  echo '::error::Owned native engine lifecycle tests failed.'
+                fi
+              fi
+            fi
+            if [[ "$status" == 0 ]]; then
               cargo +1.92.0 build --locked --manifest-path src-tauri/Cargo.toml \
                 --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
                 > "$build_log" 2>&1 || status=$?
@@ -117,4 +148,8 @@ jobs:
           printf '%s\n' '## macOS build' '' "- Commit: $GITHUB_SHA" \
             '- Frontend typecheck/build, native Unix transport/control tests and locked Tauri build passed.' \
             "- Apple Silicon executable SHA-256: $binary_sha" \
-            '- Scope: build only. Engine, config writes, bundle and native lifecycle not tested.' >> "$GITHUB_STEP_SUMMARY"
+            '- Scope: native executable build. Client config writes, signing, bundle and UI lifecycle untested.' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
+            printf '%s\n' '- Additional scope: pinned resources, native process readiness/control/metrics, normal stop/restart and exact parent-loss exit passed.' \
+              '- UI/relay integration, client config writes, signing and bundled application lifecycle remain untested.' >> "$GITHUB_STEP_SUMMARY"
+          fi

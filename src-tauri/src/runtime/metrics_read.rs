@@ -102,6 +102,7 @@ pub(crate) fn read_owned_projection(
 pub(crate) fn read_owned_projection_unix(
     target: super::unix_backend::UnixTarget<'_>,
     generation: &str,
+    secret: &str,
     is_alive: impl Fn() -> bool,
 ) -> Result<OwnedMetricsSnapshot, RuntimeMetricsError> {
     use super::unix_backend::UnixBackendError;
@@ -111,7 +112,10 @@ pub(crate) fn read_owned_projection_unix(
 
     let parsed =
         uuid::Uuid::parse_str(generation).map_err(|_| RuntimeMetricsError::InvalidSnapshot)?;
-    if parsed.is_nil() || !super::manager::valid_generation(generation) {
+    if parsed.is_nil()
+        || !super::manager::valid_generation(generation)
+        || !super::control::valid_secret(secret)
+    {
         return Err(RuntimeMetricsError::InvalidSnapshot);
     }
     let deadline = Instant::now() + Duration::from_millis(1500);
@@ -122,8 +126,9 @@ pub(crate) fn read_owned_projection_unix(
     connection
         .set_write_timeout(Some(deadline.saturating_duration_since(Instant::now())))
         .map_err(|_| RuntimeMetricsError::Transport)?;
+    let request = format!("GET /stats?cached=1 HTTP/1.1\r\nHost: 127.0.0.1\r\nX-Headroom-Desktop-Control: {secret}\r\nConnection: close\r\n\r\n");
     connection
-        .write_all(b"GET /stats?cached=1 HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n")
+        .write_all(request.as_bytes())
         .map_err(|_| RuntimeMetricsError::Transport)?;
     let (status, body) =
         super::manager::read_http_body_with_limit(&mut connection, deadline, MAX_SNAPSHOT_BYTES)
@@ -133,6 +138,11 @@ pub(crate) fn read_owned_projection_unix(
     }
     if status != 200 {
         return Err(RuntimeMetricsError::Transport);
+    }
+    let shape: serde_json::Value =
+        serde_json::from_slice(&body).map_err(|_| RuntimeMetricsError::InvalidSnapshot)?;
+    if shape.get("recent_requests").is_none() && shape.get("request_logs").is_none() {
+        return Err(RuntimeMetricsError::InvalidSnapshot);
     }
     let projection = project_headroom_041(&body, generation, "0.41.0", Source::Proxy)
         .map_err(|_| RuntimeMetricsError::InvalidSnapshot)?;

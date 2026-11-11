@@ -49,7 +49,7 @@ def regular_hash(path, expected):
     return digest.hexdigest()
 
 
-def measure(root):
+def inventory(root):
     root = Path(root)
     if not root.is_absolute():
         raise ValueError("payload_root_must_be_absolute")
@@ -114,12 +114,17 @@ def measure(root):
         current = trusted_entry(directory)
         if not stat.S_ISDIR(current.st_mode) or identity(current) != expected:
             raise ValueError("payload_directory_changed")
-    encoded = json.dumps(sorted(rows), ensure_ascii=True, separators=(",", ":")).encode("ascii")
+    ordered = sorted(rows)
+    encoded = json.dumps(ordered, ensure_ascii=True, separators=(",", ":")).encode("ascii")
     return {
         "tree_sha256": hashlib.sha256(encoded).hexdigest(),
         "files": file_count,
         "bytes": byte_count,
-    }
+    }, ordered
+
+
+def measure(root):
+    return inventory(root)[0]
 
 
 if __name__ == "__main__":

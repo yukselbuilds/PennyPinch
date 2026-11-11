@@ -300,6 +300,7 @@ fn stats_rejects_foreign_peer_before_sending_http() {
     let result = crate::runtime::metrics_read::read_owned_projection_unix(
         fixture.target(other_pid),
         GENERATION,
+        SECRET,
         || true,
     );
     assert!(matches!(
@@ -389,6 +390,7 @@ fn legacy_stats_keep_unknown_measurement_basis() {
     let snapshot = crate::runtime::metrics_read::read_owned_projection_unix(
         fixture.target(std::process::id()),
         GENERATION,
+        SECRET,
         || true,
     )
     .expect("read owned Unix stats projection");
