@@ -1336,3 +1336,6 @@ impl FileTransaction {
 #[cfg(test)]
 #[path = "transaction_macos_tests.rs"]
 mod tests;
+
+#[path = "transaction_macos_retained.rs"]
+pub(crate) mod retained_versions;

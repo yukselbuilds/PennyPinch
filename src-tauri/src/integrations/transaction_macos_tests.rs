@@ -276,7 +276,10 @@ fn stage_apply(fixture: &Fixture) -> StagedApply {
         .store
         .read_in_transaction(&mut transaction, ClientKind::Codex, &binding)
         .expect("read ownership in transaction");
-    assert!(ownership.current().is_none(), "fixture starts unowned");
+    let revision = ownership.current().map_or(1, |record| {
+        assert_eq!(record.state(), OwnershipState::Released);
+        record.revision() + 1
+    });
     let ApplyResult::Patched {
         bytes: after,
         receipt,
@@ -287,7 +290,7 @@ fn stage_apply(fixture: &Fixture) -> StagedApply {
     let record = OwnershipRecord::active_from_scoped_patch_with_binding(
         &Uuid::new_v4().to_string(),
         &plan.endpoint_id,
-        1,
+        revision,
         1_800_000_000,
         &before,
         &after,
@@ -1131,6 +1134,130 @@ fn crash_after_claude_config_publication_before_owner() {
     transaction
         .commit_inner(|| std::process::exit(EXIT_AFTER_CONFIG))
         .expect("child exit hook follows directory and config publication");
+}
+
+#[test]
+fn retained_review_is_passive_and_archive_keeps_displaced_edits_after_reopen() {
+    let fixture = Fixture::create();
+    let mut late = OpenOptions::new()
+        .append(true)
+        .open(&fixture.config)
+        .unwrap();
+    let (_, patched) = commit_apply(&fixture);
+    late.write_all(USER_EDIT).unwrap();
+    late.sync_all().unwrap();
+    let state = fixture.root.join("state");
+    let names_before: std::collections::BTreeSet<_> = fs::read_dir(&state)
+        .unwrap()
+        .flatten()
+        .map(|entry| entry.file_name())
+        .collect();
+    let review = retained_versions::inspect(&state, &fixture.config, "codex.json").unwrap();
+    assert_eq!(review.active_records, 1);
+    assert_eq!(review.selected_records, 1);
+    assert_eq!(review.changed_versions, 1);
+    assert!(review.can_archive);
+    assert_eq!(
+        names_before,
+        fs::read_dir(&state)
+            .unwrap()
+            .flatten()
+            .map(|entry| entry.file_name())
+            .collect()
+    );
+    let archived = retained_versions::archive(
+        &state,
+        &fixture.config,
+        "codex.json",
+        &review.review_fingerprint,
+    )
+    .unwrap();
+    assert_eq!(archived.active_records, 0);
+    assert_eq!(archived.completed_archives, 1);
+    assert_eq!(fs::read(&fixture.config).unwrap(), patched);
+    late.write_all(b"# another delayed write\n").unwrap();
+    late.sync_all().unwrap();
+    let reopened = Fixture::open(&fixture.id);
+    undo(&reopened);
+    assert_eq!(fs::read(&reopened.config).unwrap(), ORIGINAL);
+    assert!(fs::read_dir(&reopened.client)
+        .unwrap()
+        .flatten()
+        .any(|entry| entry
+            .file_name()
+            .to_str()
+            .is_some_and(|name| name.ends_with(".config"))
+            && fs::read(entry.path()).unwrap()
+                == [ORIGINAL, USER_EDIT, b"# another delayed write\n"].concat()));
+}
+
+#[test]
+fn retained_review_rejects_changed_config_and_cross_target_acceptance() {
+    let fixture = Fixture::create();
+    commit_apply(&fixture);
+    let state = fixture.root.join("state");
+    let review = retained_versions::inspect(&state, &fixture.config, "codex.json").unwrap();
+    let other = Fixture::create();
+    assert_eq!(
+        retained_versions::archive(
+            &state,
+            &other.config,
+            "codex.json",
+            &review.review_fingerprint
+        )
+        .unwrap_err(),
+        TransactionFsError::Conflict
+    );
+    let mut file = OpenOptions::new()
+        .append(true)
+        .open(&fixture.config)
+        .unwrap();
+    file.write_all(USER_EDIT).unwrap();
+    file.sync_all().unwrap();
+    assert_eq!(
+        retained_versions::archive(
+            &state,
+            &fixture.config,
+            "codex.json",
+            &review.review_fingerprint
+        )
+        .unwrap_err(),
+        TransactionFsError::Conflict
+    );
+    assert_eq!(
+        retained_versions::inspect(&state, &fixture.config, "codex.json")
+            .unwrap()
+            .active_records,
+        1
+    );
+}
+
+#[test]
+fn retained_record_capacity_can_be_archived_without_discarding_config_versions() {
+    let fixture = Fixture::create();
+    for _ in 0..32 {
+        commit_apply(&fixture);
+        undo(&fixture);
+    }
+    let state = fixture.root.join("state");
+    let review = retained_versions::inspect(&state, &fixture.config, "codex.json").unwrap();
+    assert_eq!(review.active_records, 64);
+    assert_eq!(review.selected_records, 64);
+    let mut blocked = stage_apply(&fixture).transaction;
+    assert!(blocked.seal().is_err());
+    drop(blocked);
+    let after = retained_versions::archive(
+        &state,
+        &fixture.config,
+        "codex.json",
+        &review.review_fingerprint,
+    )
+    .unwrap();
+    assert_eq!(after.active_records, 0);
+    assert_eq!(after.completed_archives, 1);
+    commit_apply(&fixture);
+    undo(&fixture);
+    assert_eq!(fs::read(&fixture.config).unwrap(), ORIGINAL);
 }
 
 #[test]
