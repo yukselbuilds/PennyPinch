@@ -118,11 +118,23 @@ Odaklı Windows kapısı `cargo test --offline --manifest-path src-tauri/Cargo.t
 
 Bu kabul gerçek dosya backend'ini ve ortak manager kodunu kapsar. Npm istemci metadata'sı ve ready endpoint nesnesi test girdisidir. Kurulu istemci keşfi, canlı sağlayıcı, pencere etkileşimi, eksik Claude proje dizini, korunmuş sürümlerin kullanıcı tarafından güvenli çözümü ve 64 intent sınırının sunumu açık. Tam yerel ürün kapısı H048'in son ana görev adayında çalıştırılır; bu alt dilimde odaklı doğrulama kullanıldı.
 
+## H048-b6b — Eksik Claude proje dizini geçti
+
+11 Kasım 2026. Ana ajan eksik `.claude/settings.local.json` için dar dizin yayını ekledi. Mevcut dosya akışı korundu. Aynı tek Luna xhigh dört transaction/store testi ve ayrı süreç yardımcısını hazırladı; ana ajan manager akışını ve farklı transaction token'ı kontrolünü ekledi. Native RED koşusunda önceki 19 test geçti, altı yeni test desteklenmeyen proje seçimi/dizin oluşturma yolunda durdu. Üretim değişikliği bundan sonra uygulandı.
+
+| Başlangıç ve eylem | Beklenen ve gözlenen |
+| --- | --- |
+| Proje seçimi → eksik config önizlemesi → Apply → manager yeniden açılışı → kullanıcı ekleriyle Undo | Önizleme/create/seal görünür `.claude` oluşturmadı. Commit özel 0700 staging dizinini yeni 0600 ayarıyla birlikte exclusive yayımladı. Kullanıcı JSON alanları, yan dosya ve dizin korundu; user config değişmedi. |
+| Commit öncesi fault/rollback veya seal sonrası drop; dizin yayını sonrası ayrı süreçte exit 42 | Kaynak hedef yok kaldı. Yeni açık eylem yayımlanmamış eski planı replay etmeden abort etti; yayımlanmış dizinde yalnız eşleşen sahiplik tamamlandı. |
+| Başka süreç `.claude` oluşturur, proje path'i başka inode ile değiştirilir veya klasör token'ı başka transaction'da kullanılır | Yayın reddedildi. Rakip içerik ve eski/yeni proje dizinleri korundu. Sahiplik oluşturulmadı. |
+
+Proje parent kimliği ve yeni dizin kimliği intent'e eklenir; eski dosya intent'leri opsiyonel alan olmadan okunur. Kaydedilmiş path, seçilmiş proje kimliği ve aktif hedef eşleşmeden açılmaz. Klasör yayını ve sahiplik ayrı rename adımlarıdır; çok dosyalı katı CAS veya güç kesintisi garantisi verilmez. Apple RENAME_EXCL mevcut hedefte EEXIST döndüğünü belgeler. [Apple rename kılavuzu](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/man/man2/rename.2).
+
+Son macOS 15.8.2 ARM64 koşusunda 25 test, frontend, kilitli Tauri derlemesi ve mimari kontrolü geçti. Üç çocuk süreç yardımcısı doğrudan ignored, ilgili testlerde ayrı süreçte çağrıldı. CI girdilerinin önce/sonra parmak izleri eşleşti ve 266 kaynak girdisi adayla aynı. Ortak proje seçimi dosyası değiştiği için Windows odaklı kapı yenilendi; 129 test geçti, 2 opt-in ignored. fmt ve actionlint geçti. Her yeni dispatch öncesi ücretsiz kota ve 0 dolar hard-stop doğrulandı. [RED koşusu](https://github.com/Protocol272/headroom-desktop/actions/runs/43062156522) · [GREEN koşusu](https://github.com/Protocol272/headroom-desktop/actions/runs/43063416122) · [Makine kanıtı](../proofs/macos-claude-project-directory.json).
+
+Bu sonuç özel native fixture, gerçek manager/transaction/ownership kodu ve test picker/endpoint verisini kapsar. Gerçek picker penceresi, kurulu istemci/sağlayıcı trafiği ve paket kabulü değildir. Korunmuş sürümlerin çözümü ile 64 intent sınırının kullanıcıya sunumu açık. Yeni auth, gerçek kullanıcı ayarları, global ortam veya ücretli çağrı kullanılmadı.
+
 ## Açık kabuller
-
-H048-b6b eksik Claude proje dizini dilimi ana ajandadır. İlk kabuldeki mevcut dosya akışı korunur. Önce manager/store testleri `Unsupported` davranışını gösterir; ardından `.claude/settings.local.json` için dar dizin yayını eklenir. Önizleme/create/seal görünür `.claude` oluşturmaz. Seal sırasında proje içinde eşsiz 0700 staging dizinine yalnız yeni settings.local.json yazılır; commit dizini RENAME_EXCL ile yayımlar. Başka sürecin oluşturduğu hedefe dokunulmaz. Proje parent kimliği ve yeni dizin kimliği intent'e eklenir; önceki intent'ler uyumlu okunur. Dizin yayını öncesi kesintide eski plan tekrar yayımlanmaz; sonrası kesintide yalnız eşleşen sahiplik tamamlanır. Undo kullanıcı eklerini ve dizini korur. Yeni auth, gerçek istemci ayarı, global ortam veya ücretli çağrı kapsamda değildir.
-
-Normal kabul proje seçimi → eksik config önizlemesi → Apply → manager yeniden açılışı → kullanıcı ekleriyle Undo; hata kabulü commit öncesi fault/drop ve ayrı süreçte yayın sonrası exit; sınır kabulü yarışan `.claude`, taşınan proje kimliği ve token'ın başka transaction'da kullanılmasıdır. Mevcut manuel macOS workflow'unda config_io::macos ve transaction_fs::macos_impl filtreleri kullanılır. Önceki başarılı kontroller yalnız ilgili kaynak/araç/ortam parmak izleri eşleşirse korunur. Her yeni dispatch öncesi ücretsiz kota ve 0 dolar hard-stop yenilenir.
 
 - H048-b için platforma ve mimariye özel sabitlenmiş motor ve doğrulanabilir süreç/loopback sahipliği, atomik ayar işlemleri ve çatışmayı koruyan geri alma gerekir.
 - H048-c için paketlenmiş uygulamanın gerçek açılışı, başlat/durdur ve temiz state kabulü ile paket ve motor imzasının ayrı doğrulanması gerekir. Apple Silicon sonucu Intel, Windows 11 veya Linux'a aktarılmaz. Üretim yayını veya ücretli imzalama bu koşuların kapsamı dışındadır.
