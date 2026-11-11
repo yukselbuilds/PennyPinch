@@ -152,6 +152,18 @@ Windows odaklı config_io/ownership/connection_actions filtrelerinde 72/33/38 te
 
 Odaklı Windows komutları `cargo test --offline --manifest-path src-tauri/Cargo.toml config_io -- --test-threads=1`, aynı komutta `ownership` ve `connection_actions_tests` filtreleridir. Panel komutu `pnpm exec playwright test --config tests/e2e/retained-versions.config.ts --max-failures=1`. Native job mevcut `macos-build.yml`, `verify_config_recovery=true` seçeneğidir. Son dispatch öncesi dahil compute 3,78/12 dolar, ücretli kullanım 0, hesap Actions bütçesi 0 dolar ve Usage blocked doğrulandı. Bu tutar ücret değildir. [RED](https://github.com/Protocol272/headroom-desktop/actions/runs/43068865595) · [GREEN](https://github.com/Protocol272/headroom-desktop/actions/runs/43074294190) · [Makine kanıtı](../proofs/macos-retained-versions.json) · [İnceleme](../reviews/H048.md).
 
+## H048-c1 — Kurulu CLI keşfi
+
+Standart Apple Silicon runner'da üç resmî sabit CLI ikilisi proje içindeki özel test dizinine yerleştirilir. DiscoveryManager, PATH ile `.local/bin` ve `.opencode/bin` altındaki uzantısız komutları salt okunur tarar. Sürüm etiketi eşleşen dosya boyutu ve SHA-256 ile verilir. Keşif, dosyanın çalıştırılabilir olduğunu izinlerinden okur. [Codex sürümü](https://github.com/openai/codex/releases/tag/rust-v0.163.0-alpha.11.1) · [Claude kurulum yerleşimi](https://code.claude.com/docs/en/setup#auto-updates) · [OpenCode V1 kurulum kaynağı](https://github.com/anomalyco/opencode/blob/v1.19.3/install).
+
+| Başlangıç ve eylem | Beklenen gözlem |
+| --- | --- |
+| Sabit Codex, Claude Code ve OpenCode V1 ikilileri PATH, `.local/bin` ve `.opencode/bin` altında bulunur | Gerçek ortamdan tarama üç aracı doğru sürümle bulur. Aynı hedefe iki yerel bağlantı tek satıra iner ve IPC yanıtında yol görünmez. |
+| Sürümü bilinmeyen çalıştırılabilir dosya, yazılabilir dosya, çalıştırılamayan dosya ve döngülü bağlantı vardır | Bilinmeyen sürüm ayrı görünür. Güvensiz adaylar elenir. Hiçbiri çalıştırılmaz ve tarama ayar dosyası oluşturmaz. |
+| Keşif sonucundaki kurulum kimliği bir sonraki taramadan sonra kullanılır | Eski taramaya ait seçim reddedilir. Sürüm tanıma, canlı bağlantı durumu olarak gösterilmez. |
+
+Doğrulama `macos-build.yml` içindeki isteğe bağlı native CLI adımında yapılır. Sabit paketler, ikili özetleri, kaynak commit, araç zinciri ve ortam kaydedilir. Windows'ta odaklı keşif testleri ortak kaynak farkını kontrol eder. Ana ajan yol ve sürüm güvenini üstlenir. Luna yalnız resmî test artefaktlarını ve hazırlama komutunu hazırlar. Codex Desktop, gerçek picker, kalıcı kurulum seçimi ve paket yaşam döngüsü sonraki H048-c dilimleridir.
+
 ## Açık kabuller
 
 - H048-b için platforma ve mimariye özel sabitlenmiş motor ve doğrulanabilir süreç/loopback sahipliği, atomik ayar işlemleri ve çatışmayı koruyan geri alma gerekir.

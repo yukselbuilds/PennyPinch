@@ -14,6 +14,10 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
 use uuid::Uuid;
 
+#[cfg(target_os = "macos")]
+#[path = "discovery_macos.rs"]
+mod macos;
+
 #[cfg(windows)]
 use std::ffi::c_void;
 #[cfg(windows)]
@@ -1144,6 +1148,8 @@ pub(super) struct DiscoveryInputs {
     pub(super) user_profile: Option<PathBuf>,
     pub(super) program_files: Option<PathBuf>,
     pub(super) registered_codex_packages: Vec<PathBuf>,
+    #[cfg(target_os = "macos")]
+    pub(super) macos_home: Option<PathBuf>,
 }
 
 impl DiscoveryInputs {
@@ -1163,17 +1169,24 @@ impl DiscoveryInputs {
                 inputs.path_entries.push(entry);
             }
         }
-        if let Some(app_data) = env::var_os("APPDATA") {
-            inputs.npm_roots.push(PathBuf::from(app_data).join("npm"));
+        #[cfg(target_os = "macos")]
+        {
+            inputs.macos_home = env::var_os("HOME").map(PathBuf::from);
         }
-        if let Some(local_app_data) = env::var_os("LOCALAPPDATA") {
-            inputs.local_app_data = Some(PathBuf::from(&local_app_data));
-            inputs
-                .npm_roots
-                .push(PathBuf::from(local_app_data).join("npm"));
+        #[cfg(not(target_os = "macos"))]
+        {
+            if let Some(app_data) = env::var_os("APPDATA") {
+                inputs.npm_roots.push(PathBuf::from(app_data).join("npm"));
+            }
+            if let Some(local_app_data) = env::var_os("LOCALAPPDATA") {
+                inputs.local_app_data = Some(PathBuf::from(&local_app_data));
+                inputs
+                    .npm_roots
+                    .push(PathBuf::from(local_app_data).join("npm"));
+            }
+            inputs.user_profile = env::var_os("USERPROFILE").map(PathBuf::from);
+            inputs.program_files = env::var_os("ProgramFiles").map(PathBuf::from);
         }
-        inputs.user_profile = env::var_os("USERPROFILE").map(PathBuf::from);
-        inputs.program_files = env::var_os("ProgramFiles").map(PathBuf::from);
         inputs
     }
 }
@@ -1289,7 +1302,17 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
         }
     }
 
+    #[cfg(target_os = "macos")]
+    macos::add_cli_candidates(
+        &inputs,
+        &mut candidates,
+        &mut warnings,
+        &mut candidate_count,
+    );
+
+    #[cfg(not(target_os = "macos"))]
     let mut path_entries = HashSet::new();
+    #[cfg(not(target_os = "macos"))]
     for entry in inputs.path_entries.into_iter().take(MAX_PATH_ENTRIES) {
         if is_network_or_device_path(&entry) {
             warnings.insert("network_location_skipped");
@@ -2052,6 +2075,9 @@ fn is_reparse_point(_metadata: &fs::Metadata) -> bool {
 }
 
 fn path_key(path: &Path) -> String {
+    #[cfg(target_os = "macos")]
+    return path.to_string_lossy().into_owned();
+    #[cfg(not(target_os = "macos"))]
     path.to_string_lossy().to_lowercase()
 }
 

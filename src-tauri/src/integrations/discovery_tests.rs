@@ -193,6 +193,12 @@ fn write_file(path: &Path, bytes: &[u8]) {
     fs::write(path, bytes).unwrap();
 }
 
+#[cfg(target_os = "macos")]
+fn make_executable(path: &Path) {
+    use std::os::unix::fs::PermissionsExt;
+    fs::set_permissions(path, fs::Permissions::from_mode(0o700)).unwrap();
+}
+
 fn snapshot(reply: DiscoveryReply) -> super::discovery::DiscoverySnapshot {
     match reply {
         DiscoveryReply::Snapshot(value) => value,
@@ -478,8 +484,14 @@ fn remember_rejects_executable_identity_drift_after_scan() {
 fn installation_selection_is_bound_to_scan_generation_and_returns_no_path() {
     let mut fixture = Fixture::new();
     let bin = fixture.at("Selected Codex");
-    let executable = bin.join("codex.cmd");
+    let executable = bin.join(if cfg!(target_os = "macos") {
+        "codex"
+    } else {
+        "codex.cmd"
+    });
     write_file(&executable, b"fixture command stub");
+    #[cfg(target_os = "macos")]
+    make_executable(&executable);
     let manager = DiscoveryManager::new();
     let scanned = snapshot(manager.scan_with_inputs(
         REQUEST_ID.to_owned(),
@@ -527,6 +539,7 @@ fn installation_selection_is_bound_to_scan_generation_and_returns_no_path() {
     fixture.cleanup();
 }
 
+#[cfg(windows)]
 #[test]
 fn path_keeps_multiple_installations_and_deduplicates_case_insensitive_same_file() {
     let mut fixture = Fixture::new();
@@ -580,7 +593,15 @@ fn npm_metadata_is_separate_from_unverified_path_wrappers_and_scan_is_read_only(
     );
     write_file(&codex.join("package.json"), codex_manifest);
     write_file(&codex.join("bin/codex.js"), b"fixture executable data");
-    write_file(&npm.join("codex.cmd"), b"independent PATH wrapper");
+    let wrapper_name = if cfg!(target_os = "macos") {
+        "codex"
+    } else {
+        "codex.cmd"
+    };
+    let wrapper = npm.join(wrapper_name);
+    write_file(&wrapper, b"independent PATH wrapper");
+    #[cfg(target_os = "macos")]
+    make_executable(&wrapper);
     write_file(&claude.join("package.json"), claude_manifest);
     write_file(&claude.join("cli.js"), b"fixture executable data");
     write_file(
@@ -621,7 +642,7 @@ fn npm_metadata_is_separate_from_unverified_path_wrappers_and_scan_is_read_only(
     let path_executable = manager
         .installation_path(&path_entry.installation_id)
         .unwrap();
-    assert!(path_executable.ends_with("codex.cmd"));
+    assert!(path_executable.ends_with(wrapper_name));
     assert_eq!(claude_entry.version, None);
     assert!(!result
         .installations
@@ -643,13 +664,11 @@ fn npm_metadata_is_separate_from_unverified_path_wrappers_and_scan_is_read_only(
         fs::read(codex.join("bin/codex.js")).unwrap(),
         b"fixture executable data"
     );
-    assert_eq!(
-        fs::read(npm.join("codex.cmd")).unwrap(),
-        b"independent PATH wrapper"
-    );
+    assert_eq!(fs::read(wrapper).unwrap(), b"independent PATH wrapper");
     fixture.cleanup();
 }
 
+#[cfg(windows)]
 #[test]
 fn candidate_scan_is_bounded() {
     let mut fixture = Fixture::new();
@@ -680,7 +699,14 @@ fn candidate_scan_is_bounded() {
 fn path_and_metadata_limits_are_reported_and_network_candidates_are_skipped() {
     let mut fixture = Fixture::new();
     let local = fixture.at("local-bin");
-    write_file(&local.join("opencode.exe"), b"fixture only");
+    let executable = local.join(if cfg!(target_os = "macos") {
+        "opencode"
+    } else {
+        "opencode.exe"
+    });
+    write_file(&executable, b"fixture only");
+    #[cfg(target_os = "macos")]
+    make_executable(&executable);
     let mut path_entries = vec![local.clone()];
     path_entries.extend((0..80).map(|_| PathBuf::from(r"\\nonexistent.invalid\share")));
     let manager = DiscoveryManager::new();
@@ -857,6 +883,7 @@ fn manual_picker_candidate_is_unverified_canonical_and_session_memory_only() {
     fixture.cleanup();
 }
 
+#[cfg(windows)]
 #[test]
 fn selecting_a_file_already_found_by_scan_does_not_duplicate_or_advance_generation() {
     let mut fixture = Fixture::new();
@@ -1030,6 +1057,7 @@ fn bundled_opencode_v1_version_requires_both_exact_size_and_sha256() {
     );
 }
 
+#[cfg(windows)]
 #[test]
 fn unknown_opencode_exes_remain_unversioned_on_path_native_and_manual_sources() {
     let mut fixture = Fixture::new();

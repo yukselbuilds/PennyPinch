@@ -18,6 +18,11 @@ on:
         required: true
         type: boolean
         default: false
+      verify_cli_discovery:
+        description: Verify read-only discovery with pinned native Codex, Claude Code, and OpenCode V1 binaries.
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -39,6 +44,7 @@ jobs:
       CARGO_PROFILE_TEST_DEBUG: '0'
       npm_config_cache: ${{ github.workspace }}/work/caches/npm
       HEADROOM_VERIFY_CONFIG_RECOVERY: ${{ inputs.verify_config_recovery }}
+      HEADROOM_VERIFY_CLI_DISCOVERY: ${{ inputs.verify_cli_discovery }}
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -80,6 +86,11 @@ jobs:
             > "$build_log" 2>&1 || { echo "::error::Frozen frontend dependency install failed."; exit 1; }
           rustup toolchain install 1.92.0 --profile minimal --no-self-update \
             > "$build_log" 2>&1 || { echo "::error::Pinned Rust toolchain install failed."; exit 1; }
+          if [[ "$HEADROOM_VERIFY_CLI_DISCOVERY" == true ]]; then
+            mkdir -p work/proofs/macos/h048-c1
+            export HEADROOM_MACOS_CLIENT_PROOF_ROOT="$(mktemp -d "$GITHUB_WORKSPACE/work/proofs/macos/h048-c1/cli.XXXXXX")"
+            python3 -I -B scripts/prepare-macos-ci-clients.py "$HEADROOM_MACOS_CLIENT_PROOF_ROOT"
+          fi
 
           test_filters=(runtime::unix_backend:: runtime::control::tests:: runtime::macos_session::
                         runtime::ingress:: runtime::ingress_relay:: runtime::manager::macos_tests::
@@ -89,6 +100,15 @@ jobs:
                           state::ownership::codec_tests::macos_
                           integrations::config_io::macos::
                           integrations::transaction_fs::macos_impl::)
+          fi
+          if [[ "$HEADROOM_VERIFY_CLI_DISCOVERY" == true ]]; then
+            if [[ "$HEADROOM_VERIFY_CONFIG_RECOVERY" != true && -z "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
+              test_filters=()
+            fi
+            test_filters+=(integrations::discovery::macos::
+                           integrations::discovery_tests::installation_selection_is_bound
+                           integrations::discovery_tests::npm_metadata_is_separate
+                           integrations::discovery_tests::path_and_metadata_limits)
           fi
           fingerprint() {
             git rev-parse HEAD 'HEAD^{tree}'
@@ -102,6 +122,14 @@ jobs:
             printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}" "$CARGO_PROFILE_DEV_DEBUG" "$CARGO_PROFILE_TEST_DEBUG"
             printf '%s\n' "${test_filters[@]}"
             stat -f '%u %p' "$HEADROOM_MACOS_PROOF_ROOT"
+            if [[ "$HEADROOM_VERIFY_CLI_DISCOVERY" == true ]]; then
+              python3 --version
+              stat -f 'CLI fixture root: %u %p' "$HEADROOM_MACOS_CLIENT_PROOF_ROOT"
+              for command in codex claude opencode; do
+                local executable="$HEADROOM_MACOS_CLIENT_PROOF_ROOT/clients/bin/$command"
+                printf 'CLI input %s %s %s\n' "$command" "$(stat -f '%z' "$executable")" "$(shasum -a 256 "$executable" | cut -d' ' -f1)"
+              done
+            fi
             shasum -a 256 /usr/sbin/netstat
             umask
             if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
@@ -132,7 +160,7 @@ jobs:
                 detail > 0 { print substr($0, 1, 240); detail-- }
                 /^test .* \.\.\. FAILED$/ || /^test result: / { print substr($0, 1, 240) }' "$build_log"
             else
-              awk '/^test state::ownership::/ || /^test integrations::config_io::macos::/ || /^test integrations::transaction_fs::macos_impl::/ || /^test result: / { print }' "$build_log"
+              awk '/^test state::ownership::/ || /^test integrations::config_io::macos::/ || /^test integrations::transaction_fs::macos_impl::/ || /^test integrations::discovery::macos::/ || /^test integrations::discovery_tests::/ || /^test result: / { print }' "$build_log"
               if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
                 cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
                   --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
@@ -176,6 +204,9 @@ jobs:
             '- Scope: native executable build. Installed client configs, signing, bundle and UI lifecycle untested.' >> "$GITHUB_STEP_SUMMARY"
           if [[ "$HEADROOM_VERIFY_CONFIG_RECOVERY" == true ]]; then
             printf '%s\n' '- Native test scope: application config actions and APFS recovery in private fixtures using the typed patch and ownership record.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [[ "$HEADROOM_VERIFY_CLI_DISCOVERY" == true ]]; then
+            printf '%s\n' '- Native discovery verified pinned Apple Silicon CLI binaries in isolated PATH and HOME layouts.' >> "$GITHUB_STEP_SUMMARY"
           fi
           if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
             printf '%s\n' '- Additional scope: pinned resources, native process readiness/control/metrics, normal stop/restart and exact parent-loss exit passed.' \
