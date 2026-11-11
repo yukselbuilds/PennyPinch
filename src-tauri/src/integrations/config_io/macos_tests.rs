@@ -123,6 +123,28 @@ fn codex_config(home: &Path) -> PathBuf {
     home.join("config.toml")
 }
 
+fn assert_supported_directory_chain(path: &Path) {
+    for (depth, directory) in path.ancestors().enumerate() {
+        if super::open_directory(directory).is_err() {
+            let info = fs::symlink_metadata(directory).unwrap();
+            let open_errno = OpenOptions::new()
+                .read(true)
+                .custom_flags(
+                    libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_NOFOLLOW_ANY | libc::O_CLOEXEC,
+                )
+                .open(directory)
+                .err()
+                .and_then(|error| error.raw_os_error());
+            panic!(
+                "directory-chain depth={depth} uid={} euid={} mode={:o} open_errno={open_errno:?}",
+                info.uid(),
+                unsafe { libc::geteuid() },
+                info.mode()
+            );
+        }
+    }
+}
+
 #[test]
 fn codex_read_preserves_exact_bytes_and_ordinary_user_permissions() {
     const CONFIG: &[u8] = b"# synthetic user configuration\nmodel = \"fixture-model\"\nmodel_reasoning_effort = \"high\"\nopenai_base_url = \"http://127.0.0.1:43127/v1\"\n# auth sentinel must remain opaque\napi_key = \"AUTH_SENTINEL_DO_NOT_LOG\"\n";
@@ -134,6 +156,7 @@ fn codex_read_preserves_exact_bytes_and_ordinary_user_permissions() {
     fixture.write(&path, CONFIG, 0o644);
     let inputs = fixture.codex_inputs(&home);
 
+    assert_supported_directory_chain(&home);
     let read = read_user_config(ClientKind::Codex, &inputs).expect("read user Codex config");
     assert_eq!(read.presence, ConfigPresence::Present);
     assert_eq!(read.bytes, CONFIG);
