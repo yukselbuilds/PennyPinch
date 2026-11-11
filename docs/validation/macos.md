@@ -38,7 +38,17 @@ H048-b3 geçti. Ortak sınırlı HTTP ayrıştırıcısı UnixStream üzerinde k
 
 İlk derleme, doğrudan Socket → UnixStream dönüşümünde durdu. Kilitli sürümdeki OwnedFd dönüşümüyle düzeltildi. Testlerin Mac hata ayrıntısı, timeout ayarının zaten kapalı bir Unix soketinde EINVAL verdiğini gösterdi. Test düzeneği yalnız gerçek EOF veya kapalı bağlantı doğrulandığında sıfır bayt kabul eder. Canlı fixture stream'i blocking ve süre sınırlıdır. Kabul edilen kimlik veya bayt koşulu gevşetilmedi. Native testler sabitlenmiş model/sağlayıcı hesabına bağlanmaz.
 
-Kanıtlı Unix soketi yolu RuntimeManager tarafından yönetilen oturuma alınacak. UI başlat/durdur isteği, süreç ömrüne bağlı soket sahipliği, kontrol ve metrik okuması ile stable relay üzerinden incelenmeli. Çocuk süreç yaşamıyor veya soket PID'si eşleşmiyorsa istemci/auth baytı iletilmemeli. Uygulama kapanışı ve beklenmeyen kaybı sonrasında yalnız sahipli motorun temizlenmesi gerçek native testte doğrulanmalı. Bu davranışlar mevcut bağımsız motor deneyiyle kabul edilmiş sayılmaz.
+## H048-b4 — Yönetilen motor oturumu geçti
+
+11 Kasım 2026. macOS 15.8.2 ARM64 üzerinde sabitlenmiş CPython 3.13.13 ve Headroom 0.41.0, Rust'ın doğrudan çocuk süreci olarak doğrulandı. Kaynaklar derlemeye gömülen manifest özetiyle açılır; izlenmeyen overlay ve değiştirilmiş dosya reddedilir. Geçici kontrol sırrı argv, ortam veya dosyaya yazılmadan stdin üzerinden gider. Private UDS'nin gerçek PID doğrulaması HTTP öncesinde kalır. Yetkili /health ve /stats okumaları ayrıntılı metadata alır; yanlış sırda yalnız redakte edilmiş cevap gelir.
+
+Son koşuda 18 Python kontrolü tamamlandı, 1 kontrol skipped; native symlink kontrollerinin atlanması workflow tarafından reddedilir. 9 Unix protokol ve 3 yönetilen oturum Rust testi geçti. Normal stop, tekrarlı stop, aynı state'te yeniden açılış ve sentetik cache işaret dosyasının korunması doğrulandı. Pause/resume revizyonu ve eski revizyonlu yazım çatışması geçti. Gerçek CCR retrieval veya aktif model stream'i bu dilimde sınanmadı.
+
+Parent kaybı testinde yalnız testin kendi motoru durduruldu; sahipli ebeveyn süreç sonlandırıldıktan sonra miras alınan flock kilidi hâlâ ikinci açılışı engelledi. Motor devam ettirilince parent pipe EOF'u sonrası gerçek süreç çıkışı kqueue NOTE_EXIT ile doğrulandı; ardından state kilidi açıldı. Gerçek süreç çıkışını kernel doğrular. Model/sağlayıcı trafiği ve çıkmış parent'ın endpoint kalıntılarının otomatik temizliği bu dilimin kapsamı dışındadır.
+
+İlk native koşu CLI'nin macOS malloc re-exec davranışında durdu. Gerçek embedding giriş adı ve Python başlamadan verilen allocator ortamı, bootstrap hook'ları ile -I/-B bayraklarını korur. Başarılı koşuda 16.640 dosya / 597.415.256 bayt payload, önce/sonra aynı CI girdi parmak izi ve ARM64 Tauri ikilisi doğrulandı. [Koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/42990619381), [makine kanıtı ve ilk hata](../proofs/macos-managed-session.json).
+
+Sıradaki H048-b5, bu oturumu RuntimeManager actor'üne ve stable relay'e bağlar. Arayüzün motor başlatma kabiliyeti ve UI başlat/durdur isteği → yönetici → motor/istemci yolu o dilimde native doğrulanır.
 
 ## Açık kabuller
 
