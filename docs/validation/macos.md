@@ -164,7 +164,12 @@ Standart Apple Silicon runner'da üç resmî sabit CLI ikilisi proje içindeki �
 
 Doğrulama `macos-build.yml` içindeki isteğe bağlı native CLI adımında yapılır. Sabit paketler, ikili özetleri, kaynak commit, araç zinciri ve ortam kaydedilir. Windows'ta odaklı keşif testleri ortak kaynak farkını kontrol eder. Ana ajan yol ve sürüm güvenini üstlenir. Luna yalnız resmî test artefaktlarını ve hazırlama komutunu hazırlar. Codex Desktop, gerçek picker, kalıcı kurulum seçimi ve paket yaşam döngüsü sonraki H048-c dilimleridir.
 
+11 Kasım 2026. macOS 15.8.2 ARM64 üzerinde dört test, frontend ve kilitli ARM64 Tauri derlemesi geçti. Gerçek DiscoveryManager, ayrı sürecin PATH ve HOME ortamından Codex CLI 0.163.0-alpha.11.1, Claude Code 2.1.158 ve OpenCode V1 1.19.3'ü buldu. Claude bağlantısı sürüm klasörüne, OpenCode doğrudan kullanıcı bin dizinine yerleştirildi. İki Codex bağlantısı tek satır verdi. Aynı boyutta farklı içerik taşıyan dosya sürümü bilinmiyor kaldı. Yazılabilir, çalıştırılamayan ve döngülü adaylar elendi. Yanıtta dosya yolu görünmedi. Eski tarama kimliği reddedildi ve test istemci komutu çalıştırmadı. Üç ikili ve CI girdilerinin önce/sonra özetleri eşleşti.
+
+Windows `cargo test --offline --manifest-path src-tauri/Cargo.toml discovery -- --test-threads=1` koşusunda 30 test geçti, iki opt-in test atlandı. fmt ve actionlint geçti. Manuel macOS koşusu öncesi dahil compute kullanımı 3,97/12 dolar, ücretli kullanım 0 ve Actions bütçesi 0 dolar ile Usage blocked durumundaydı. [Koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43079382814) · [Makine kanıtı](../proofs/macos-cli-discovery.json).
+
 ## Açık kabuller
 
+- H048-c'de sıradaki adım macOS kurulum seçimi kaydının güvenli yazım ve yeniden açılış kabulüdür. Codex Desktop keşfi ve gerçek dosya seçici de açık.
 - H048-b için platforma ve mimariye özel sabitlenmiş motor ve doğrulanabilir süreç/loopback sahipliği, atomik ayar işlemleri ve çatışmayı koruyan geri alma gerekir.
 - H048-c için paketlenmiş uygulamanın gerçek açılışı, başlat/durdur ve temiz state kabulü ile paket ve motor imzasının ayrı doğrulanması gerekir. Apple Silicon sonucu Intel, Windows 11 veya Linux'a aktarılmaz. Üretim yayını veya ücretli imzalama bu koşuların kapsamı dışındadır.

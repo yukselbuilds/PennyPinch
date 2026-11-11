@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "task": "H048-c1",
+  "status": "pass",
+  "main_task_complete": false,
+  "verified_at_utc": "2026-11-11T18:39:17.088882+00:00",
+  "scope": "Apple Silicon read-only CLI discovery with official native executables in isolated PATH and HOME layouts",
+  "native": {
+    "run_id": 43079382814,
+    "job_id": 130727602888,
+    "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43079382814",
+    "commit": "b13a0ea48ff9b4e95c580412607128388974589e",
+    "os": "15.8.2",
+    "build": "24H232",
+    "arch": "arm64",
+    "rust": "1.92.0",
+    "python": "3.15.2",
+    "inputs_before": "818a453eae7f095d94cdbad9fa5e7354513cc8c04b21a0f03ad4cfe80f34e46f",
+    "inputs_after": "818a453eae7f095d94cdbad9fa5e7354513cc8c04b21a0f03ad4cfe80f34e46f",
+    "test_summary": "test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 318 filtered out; finished in 4.95s",
+    "tests": [
+      "integrations::discovery::macos::tests::installed_cli_discovery_uses_actual_environment_and_does_not_execute_candidates",
+      "integrations::discovery_tests::installation_selection_is_bound_to_scan_generation_and_returns_no_path",
+      "integrations::discovery_tests::npm_metadata_is_separate_from_unverified_path_wrappers_and_scan_is_read_only",
+      "integrations::discovery_tests::path_and_metadata_limits_are_reported_and_network_candidates_are_skipped"
+    ],
+    "binary_sha256": "fdb04b67b982941196b015f88309907b9f4a0911eff5f7a24d229b6acff2a57f",
+    "allowance": {
+      "checked_at": "2026-11-11T18:36:27.9756680Z",
+      "account": "Protocol272",
+      "period": "2026-11",
+      "included_compute_used_usd": 3.97,
+      "included_compute_total_usd": 12,
+      "paid_actions_budget_usd": 0,
+      "billable_usage_usd": 0,
+      "usage_blocked": true,
+      "candidate_sha": "b13a0ea48ff9b4e95c580412607128388974589e",
+      "workflow_sha256": "fb94b75e31cdf0490757e457bebb8691116dcef82f9492aab69b4a593c790904",
+      "run_id": 43079382814,
+      "runner": "macos-15",
+      "timeout_minutes": 20,
+      "verify_cli_discovery": true,
+      "verify_managed_engine": false,
+      "verify_config_recovery": false,
+      "source": "Authenticated GitHub Actions overview and account budget"
+    }
+  },
+  "official_binaries": [
+    {
+      "command": "codex",
+      "version": "0.163.0-alpha.11.1",
+      "size": 249449504,
+      "sha256": "c43dfdedd0f4c6f9e2c8e03070233db63ad041cc299f53b57a325f06494d1954",
+      "archive_size": 97306649,
+      "archive_sha256": "f37985a88b8438cabefaf46392ad10f7390384209ae88b8bf315cd8d6e9e21dd",
+      "archive_member": "codex-aarch64-apple-darwin"
+    },
+    {
+      "command": "claude",
+      "version": "2.1.158",
+      "size": 215233824,
+      "sha256": "536a0517fa64d48ddcbc8eb511a3d08027d47e06d148872332a8041d72c22768",
+      "archive_size": 63594392,
+      "archive_sha256": "a822fd6958bb01dd8f0ee2e88981a7fd9ca78319827f6ec96a4e89e10ca0df16",
+      "archive_member": "package/claude"
+    },
+    {
+      "command": "opencode",
+      "version": "1.19.3",
+      "size": 144634848,
+      "sha256": "6d3e6458fce4b649edf974c19959d5dbfe1e7f255a503dcfc01215b24ad3ea5b",
+      "archive_size": 45587801,
+      "archive_sha256": "c2d0fecd27acf6e08be02c1f5d384614d07495587766bcc4a6bff3971749bb64",
+      "archive_member": "opencode"
+    }
+  ],
+  "source_sha256": {
+    ".github/workflows/macos-build.yml": "fb94b75e31cdf0490757e457bebb8691116dcef82f9492aab69b4a593c790904",
+    "scripts/prepare-macos-ci-clients.py": "6bf36cf51bb348a689c5a84b8f3bdc996ab14ac7f68176d6a308d028fc7e434a",
+    "src-tauri/src/integrations/discovery.rs": "2b9d64fc45a43d3638d97228057d00be446f004ab4c5577e74d986fa337559ed",
+    "src-tauri/src/integrations/discovery_tests.rs": "dbbb347d75639401012a8bfa5e1cfba895872ec8d0455a388613305d29a6aa16",
+    "src-tauri/src/integrations/discovery_macos.rs": "279d6952dfd229df6d1370ed1344fff7d33650fedd27177761129b7b71565367",
+    "src-tauri/src/integrations/discovery_macos_tests.rs": "e490a12a831078c14a793a2ccb5ab5e53330320db99249359b5cf1f4b3c6e71e",
+    "src-tauri/Cargo.lock": "86d9be0d2fcd716bf8d37d382f4ed786e0f60538c01f3894359e0438b4e6bf8b",
+    "pnpm-lock.yaml": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3"
+  },
+  "offline_preparation": {
+    "proof": "work/proofs/macos/h048-c1/run-60e2a4def3a84ed8b577215a0bf12af5/summary.json",
+    "proof_sha256": "563b34ecd728d42e22cfb7ef25ec2d9c2a8a1ed1e94e2f03613e6b05a24298f9",
+    "root_guard_checked": true,
+    "macho_arm64_checked": true,
+    "cli_executions": 0
+  },
+  "windows": {
+    "commands": [
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "discovery",
+          "--",
+          "--test-threads=1"
+        ],
+        "exit_code": 0,
+        "seconds": 9.59,
+        "test_summary": [
+          "test result: ok. 30 passed; 0 failed; 2 ignored; 0 measured; 402 filtered out; finished in 1.11s"
+        ],
+        "node_summary": [],
+        "failed_tests": []
+      },
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 1.065,
+        "test_summary": [],
+        "node_summary": [],
+        "failed_tests": []
+      },
+      {
+        "command": [
+          "D:\\Projeler\\Headroom\\work\\proofs\\macos\\h048-a\\actionlint-1.7.12\\actionlint.exe",
+          "-color",
+          ".github/workflows/macos-build.yml"
+        ],
+        "exit_code": 0,
+        "seconds": 0.108,
+        "test_summary": [],
+        "node_summary": [],
+        "failed_tests": []
+      }
+    ],
+    "toolchain": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "environment": {
+      "workspace": "D:\\Projeler\\Headroom",
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "windows_build": [
+        10,
+        0,
+        19045
+      ]
+    },
+    "proof_sha256": "9a472e1e701ad94566a94acce7019ee064de234dd4e976f2a64c5c6cfec53125",
+    "matching_inputs": 278
+  },
+  "verified": [
+    "Actual DiscoveryManager scan with isolated process PATH and HOME",
+    "Official pinned size and digest for all three CLI binaries",
+    "Relative and absolute symlink resolution and duplicate collapse",
+    "Wrong digest at the same size stays version unknown",
+    "Writable, non-executable and cyclic entries are skipped",
+    "No client execution, paths in response, or client settings written",
+    "Installation IDs from an earlier scan are rejected"
+  ],
+  "remaining": [
+    "Codex Desktop discovery",
+    "native file picker and persisted selection",
+    "packaged app lifecycle and live provider traffic"
+  ],
+  "development_token_savings": "not_measured"
+}
