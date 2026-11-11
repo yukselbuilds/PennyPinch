@@ -84,6 +84,22 @@ Eski tanıtıcıdan kurtarma öncesi veya sonrası gelen yazım iki sürüm koru
 
 Kurtarma prototipi native testlere dahil edildi. Taşınmış dosya ve bekleyen kayıt test boyunca saklandı. Gerçek istemciye Apply/Undo bağlanmadan önce bu dosyaya geç gelen yazımı koruyan çözüm ve uygulama komutlarıyla native doğrulama açık.
 
+## H048-b6b — Gerçek okuyucu ve önizleme kimliği geçti
+
+11 Kasım 2026. Uygulamanın kullandığı config okuyucusu ve app-data sahiplik factory'si özel native fixture'larda çalıştırıldı. macOS HOME ve kayıpsız POSIX yol bağlaması kullanılır. Yerel APFS, UID, dosya türü, izin, link sayısı ve açık dizin/dosya kimliği kontrol edilir. Keşif uygulama veri dizinini oluşturmaz. Kullanıcının gerçek istemci ayarları ve hesapları bu koşuda kullanılmadı.
+
+| Başlangıç ve eylem | Beklenen ve gözlenen |
+| --- | --- |
+| Kullanıcıya ait 0755 dizin ve 0644 Codex config okunur; olmayan config keşfedilir | Baytlar ve izinler korunur. Eksik klasör/dosya oluşturulmaz. Gerçek app-data factory verilen kökü kullanır. |
+| Önizlemeden sonra aynı baytlarla inode değişir, dosya yerinde düzenlenir, parent değiştirilir veya eksik dosya oluşturulur | Tutulan önizleme kimliği geçersiz olur. Eski görünüm geçerli sayılmaz. |
+| Symlink, ara dizin symlink'i, hardlink, FIFO veya grup/genel yazılabilir hedef okunur | Güvensiz yol reddedilir; FIFO beklemeye yol açmaz. OpenCode'un çift config'i belirsiz kalır ve Claude iç içe env baytları değiştirilmez. |
+
+İlk iki native koşuda beş okuyucu/factory testi UnsafePath ile durdu. Yalnız dizin derinliği, UID, izin ve errno kullanan tanı EINVAL 22 gösterdi. Apple XNU, O_NOFOLLOW ile O_NOFOLLOW_ANY birlikte verildiğinde EINVAL döndürür. Yalnız bütün yolda symlink takibini engelleyen O_NOFOLLOW_ANY bırakıldı; ara dizin symlink reddi native testle korundu. [Apple çekirdek kaynağı](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/vfs/vfs_vnops.c).
+
+Son macOS 15.8.2 ARM64 koşusunda yedi gerçek okuyucu/factory testi, bir yol codec testi ve dört mevcut kurtarma testi geçti. Bir çocuk süreç yardımcısı doğrudan ignored kaldı ve kurtarma testlerinde ayrı süreçte çağrıldı. Frontend, kilitli Tauri derlemesi ve mimari kontrolü geçti. CI girdileri önce/sonra aynı ve 264 kaynak girdisi adayla eşleşti. Windows'taki 91 odaklı testin sonrasındaki farklar yalnız macOS modülündedir; diğer fingerprint'ler ve araç zinciri eşleştiği için Windows testleri yinelenmedi. Son aday fmt ve actionlint kontrolünü geçti. [Koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43025755374) · [İki başarısız koşu ve son adayın makine kanıtı](../proofs/macos-config-reader.json).
+
+Bu kabul üretim ayarı okuma ve önizleme kimliğini kapsar. macOS FileTransaction ve gerçek Apply/Undo akışı henüz açılmadı. Kurulu istemci keşfi, sağlayıcı hesabı, gerçek paketli pencere yaşam döngüsü veya Intel macOS desteği bu testlerden çıkarılmaz.
+
 ## Açık kabuller
 
 - H048-b için platforma ve mimariye özel sabitlenmiş motor ve doğrulanabilir süreç/loopback sahipliği, atomik ayar işlemleri ve çatışmayı koruyan geri alma gerekir.
