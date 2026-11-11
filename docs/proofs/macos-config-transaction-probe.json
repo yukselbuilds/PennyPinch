@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "task": "H048-b6a",
+  "status": "pass",
+  "main_task_complete": false,
+  "verified_at_utc": "2026-11-11T11:40:57.182308+00:00",
+  "implementer": "Main agent designed and reviewed the acceptance, CI and integration boundaries; one Luna xhigh worker wrote the native fixture.",
+  "native": {
+    "run_id": 43013886985,
+    "job_id": 130500016501,
+    "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43013886985",
+    "commit": "5b1b4664126f9485ab174d9d80dbeae96b94a68e",
+    "tree": "6bbac87bbfc5604951bb6231b767517cb5aa6120",
+    "os": "15.8.2",
+    "build": "24H232",
+    "arch": "arm64",
+    "xcode": "16.4",
+    "apple_clang": "Apple clang version 17.0.0 (clang-1700.0.13.5)",
+    "inputs_before": "07432176420ceba3989ace245a35c3c17c550c05d52c67c873b41175525f3e3d",
+    "inputs_after": "07432176420ceba3989ace245a35c3c17c550c05d52c67c873b41175525f3e3d",
+    "source_sha256": {
+      "tests/native/macos_config_transaction.c": "7848026400804981a023bb8aeeda985f602539015d61f5fbed40d56e5af2104b",
+      ".github/workflows/macos-config-transaction.yml": "5fe0dcca625008e190645c5095086701487d25fd1e1c5be75c20c906cc8577ee"
+    },
+    "observations": {
+      "filesystem": "apfs",
+      "architecture": "arm64",
+      "cwd_private_0700": true,
+      "advisory_flock_rejected": true,
+      "in_place_write_succeeded": true,
+      "atomic_replacement_succeeded": true,
+      "unlink_succeeded": true,
+      "rename_excl_create": true,
+      "rename_excl_eexist_preserves_both": true,
+      "postcheck_racing_replacement_observed": true,
+      "swap_displaced_racing_inode_and_bytes": true,
+      "displaced_inode_remains_writable": true,
+      "swap_back_preserved_racing_inode_and_bytes": true,
+      "child_killed_after_config_swap_before_owner_publication": true,
+      "displaced_original_and_owner_unchanged": true
+    },
+    "dispatch_allowance": {
+      "checked_at": "2026-11-11T11:40:27.9277189Z",
+      "account": "Protocol272",
+      "period": "2026-11",
+      "included_compute_used_usd": 2.29,
+      "included_compute_total_usd": 12,
+      "paid_actions_budget_usd": 0,
+      "usage_blocked": true,
+      "source": "Authenticated GitHub billing overview and account Actions budget",
+      "candidate_sha": "5b1b4664126f9485ab174d9d80dbeae96b94a68e",
+      "workflow_sha256": "5fe0dcca625008e190645c5095086701487d25fd1e1c5be75c20c906cc8577ee",
+      "run_id": 43013886985,
+      "runner": "macos-15",
+      "timeout_minutes": 5,
+      "free_only_confirmed": true,
+      "remote_head_matches": true,
+      "local_proof": "probe-sdk-local.json",
+      "previous_native": {
+        "failure": "clang required explicit macOS SDK sysroot; fixture did not run",
+        "job_id": 130499099929,
+        "inputs_before_after_equal": true,
+        "run_id": 43013615899
+      }
+    }
+  },
+  "local": {
+    "passed": true,
+    "before": {
+      "tests/native/macos_config_transaction.c": "7848026400804981a023bb8aeeda985f602539015d61f5fbed40d56e5af2104b",
+      ".github/workflows/macos-config-transaction.yml": "5fe0dcca625008e190645c5095086701487d25fd1e1c5be75c20c906cc8577ee"
+    },
+    "after": {
+      "tests/native/macos_config_transaction.c": "7848026400804981a023bb8aeeda985f602539015d61f5fbed40d56e5af2104b",
+      ".github/workflows/macos-config-transaction.yml": "5fe0dcca625008e190645c5095086701487d25fd1e1c5be75c20c906cc8577ee"
+    },
+    "actionlint": "1.7.12",
+    "python": "3.13.13",
+    "platform": "win32",
+    "scope": "Workflow syntax and source fingerprint; macOS SDK compilation is native only.",
+    "proof": "work/proofs/macos/h048-b6/probe-sdk-local.json"
+  },
+  "limits": [
+    "Only disposable fixture files on local APFS were exercised. Production apply and undo are still unverified on macOS.",
+    "Swap preserves the displaced file for inspection. The experiment did not establish a strict compare-and-swap or a two-file atomic commit.",
+    "The controlled process exit is not a power-loss test. Config, credentials and model traffic of installed clients were outside the experiment."
+  ],
+  "next_step": "Design and test ownership recovery and conflict handling before enabling native client configuration writes.",
+  "development_token_savings": "not_measured"
+}
