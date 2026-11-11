@@ -48,7 +48,13 @@ Parent kaybı testinde yalnız testin kendi motoru durduruldu; sahipli ebeveyn s
 
 İlk native koşu CLI'nin macOS malloc re-exec davranışında durdu. Gerçek embedding giriş adı ve Python başlamadan verilen allocator ortamı, bootstrap hook'ları ile -I/-B bayraklarını korur. Başarılı koşuda 16.640 dosya / 597.415.256 bayt payload, önce/sonra aynı CI girdi parmak izi ve ARM64 Tauri ikilisi doğrulandı. [Koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/42990619381), [makine kanıtı ve ilk hata](../proofs/macos-managed-session.json).
 
-Sıradaki H048-b5, bu oturumu RuntimeManager actor'üne ve stable relay'e bağlar. Arayüzün motor başlatma kabiliyeti ve UI başlat/durdur isteği → yönetici → motor/istemci yolu o dilimde native doğrulanır.
+## H048-b5a — Sabit giriş ve Unix aktarımı geçti
+
+11 Kasım 2026. macOS 15.8.2 ARM64 üzerinde private 0700 dizin, 0600 kayıt ve kilit, yeniden açılışta aynı loopback kimliği/portu, çatışmada kayıt ve yabancı listener'ın korunması doğrulandı. TCP giriş, istemci baytlarını iletmeden önce Unix peer PID'sini ve sahip olunan süreci doğrular. Native fixture, terminalden önce delta, half-close ve drain sırasında mevcut bağlantının tamamlanmasını doğruladı.
+
+İlk native koşu Darwin wildcard listener çakışmasını ve bağlantı kapanışında kaybedilen sahipliğin yanlış hata olarak dönmesini buldu. Kayıtlı portta bağlama öncesi ve sonrası bounded listener gözlemi eklendi. Kontrol, metrik ve sağlık okumalarında süreç kaybı I/O hatasından önce değerlendirilir. Son koşuda 18 native protokol/ingress/relay ve 3 yönetilen motor oturumu testi geçti. Python kontrolleri 17 başarılı, 1 skipped. Önce/sonra kaynak ve 16.640 dosyalı payload parmak izleri aynı. Windows'ta 30 odaklı test geçti, 1 opt-in test ignored. [Koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43002575695), [makine kanıtı ve ilk hata](../proofs/macos-stable-ingress.json).
+
+H048-b5b bu katmanları mevcut RuntimeManager'a bağlar. Başlat/durdur, readiness, kontrol revizyonu, metrik ve yeniden açılış gerçek motorla ölçülür. Arayüzden başlayıp istemciye uzanan native kabul ve gerçek model trafiği henüz açık.
 
 ## Açık kabuller
 

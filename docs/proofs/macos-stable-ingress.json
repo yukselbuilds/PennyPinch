@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "task": "H048-b5a",
+  "status": "pass",
+  "main_task_complete": false,
+  "verified_at_utc": "2026-11-11T10:39:57.558175+00:00",
+  "implementer": "Main agent implemented ingress ownership and relay, reviewed native failures and fixed the wildcard/liveness guards. One Luna xhigh worker prepared native fixture tests.",
+  "native": {
+    "run_id": 43002575695,
+    "job_id": 130462066869,
+    "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43002575695",
+    "commit": "ecdb9cb72c04381edd84b12ded1bcdc8d0b94f6d",
+    "git_tree": "4a8a67805a084135edf3e3ad6056e7a3419957b4",
+    "conclusion": "success",
+    "platform": "macOS 15.8.2 ARM64",
+    "runner_image": "20261104.0514.1",
+    "toolchain": {
+      "xcode": "16.4",
+      "rust": "1.92.0",
+      "node": "25.2.1",
+      "pnpm": "11.25.0",
+      "python": "3.13.13",
+      "engine": "0.41.0"
+    },
+    "python": {
+      "total": 18,
+      "passed": 17,
+      "skipped": 1
+    },
+    "unix_control_ingress_relay": {
+      "passed": 18,
+      "failed": 0,
+      "ignored": 4
+    },
+    "managed_session": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 42.0
+    },
+    "payload": {
+      "files": 16640,
+      "bytes": 597415256,
+      "source_unchanged": true
+    },
+    "frontend_build": "pass",
+    "tauri_build": "pass",
+    "executable_architecture": "arm64",
+    "ci_inputs_before_after_equal": true,
+    "ci_fingerprint_record": "Build and verify the native executable step in the linked run; includes the native netstat tool, build inputs, payload and binary.",
+    "dispatch_allowance": {
+      "checked_at": "2026-11-11T10:18:33.172436+00:00",
+      "account": "Protocol272",
+      "period": "2026-11",
+      "included_compute_used_usd": 1.55,
+      "included_compute_total_usd": 12,
+      "paid_actions_budget_usd": 0,
+      "usage_blocked": true,
+      "workflow_sha256": "32093a31a73b8f98065669e9822f4cd0f3a4819b8c3f96a5a00ed654f03ee04f",
+      "runner": "macos-15",
+      "timeout_minutes": 20,
+      "remote_head_matches": true
+    }
+  },
+  "previous_native_failure": {
+    "run_id": 42998214542,
+    "commit": "70df9e3cf21d0eee128944d7296557a83aa3b209",
+    "passed": 15,
+    "failed": 2,
+    "ignored": 4,
+    "inputs_before_after_equal": true,
+    "failures": [
+      "foreign_listener_blocks_reopen_and_preserves_saved_record",
+      "control_discards_reply_after_runtime_liveness_is_lost"
+    ]
+  },
+  "scenarios": [
+    "Private locked endpoint record survives a restart and rejects unsafe state or competing lock ownership.",
+    "Foreign loopback and wildcard listeners prevent reopening without changing the saved record or closing the foreign listener.",
+    "Owned Unix peer gets the request and streams the delta before terminal completion; drain and half-close preserve the established connection.",
+    "Wrong Unix peer and lost liveness fail closed; foreign peer receives zero client bytes."
+  ],
+  "windows": {
+    "passed": 30,
+    "failed": 0,
+    "ignored": 1,
+    "fmt": "pass",
+    "inputs_unchanged": true,
+    "local_proof": "work/proofs/macos/h048-b5/port-guard-focused.json",
+    "local_proof_sha256": "9b3a6602811f0f12306e21d64485fccb809312998ed32d3597ee3c1770561b80"
+  },
+  "source_scope": {
+    "files": 268,
+    "before": "f30f8354d32ebc6cdf9e317a89660c2ec06f949215ad00f39374a0ab119f89be",
+    "after": "f30f8354d32ebc6cdf9e317a89660c2ec06f949215ad00f39374a0ab119f89be",
+    "matches_passed_commit": true
+  },
+  "limits": [
+    "Relay scenarios use owned native fixtures. RuntimeManager, packaged UI and live provider paths are still pending.",
+    "Listener conflict checks cover observation before and immediately after binding the saved port.",
+    "Apple Silicon evidence only; signing, client config transactions, long-running stability and performance remain untested."
+  ],
+  "next_step": "H048-b5b: connect the verified engine and ingress to the existing application actor, then verify actual app start/stop and measurement.",
+  "development_token_savings": "not_measured"
+}
