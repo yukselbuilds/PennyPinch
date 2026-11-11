@@ -8,7 +8,7 @@ use uuid::Uuid;
 const REQUEST_ID: &str = "7132bced-3ce0-4c1b-8f48-d93d7b96f7ce";
 
 #[test]
-#[cfg(windows)]
+#[cfg(any(windows, target_os = "macos"))]
 fn concurrent_readers_restore_saved_appearance() {
     let fixture = Fixture::new();
     snapshot(fixture.store.save_preferences(
@@ -44,6 +44,35 @@ fn concurrent_readers_restore_saved_appearance() {
         assert_eq!(loaded.revision, 1);
     }
     assert_eq!(fs::read(&path).unwrap(), original);
+    fixture.cleanup();
+}
+
+#[test]
+#[cfg(target_os = "macos")]
+fn redirected_preference_lock_preserves_both_files() {
+    let fixture = Fixture::new();
+    snapshot(fixture.store.save_preferences(
+        REQUEST_ID.into(),
+        "tr".into(),
+        "dark".into(),
+        0,
+        None,
+    ));
+    let preferences = fixture.store.file_path_for_test();
+    let before = fs::read(&preferences).unwrap();
+    let lock = fixture.root().join(".preferences.lock");
+    let original_lock = fixture.root().join("preserved.lock");
+    fs::rename(&lock, &original_lock).unwrap();
+    std::os::unix::fs::symlink(&preferences, &lock).unwrap();
+    let reply = fixture.store.get_preferences(REQUEST_ID.into());
+    let lock_still_redirected = fs::symlink_metadata(&lock)
+        .unwrap()
+        .file_type()
+        .is_symlink();
+    fs::remove_file(&lock).unwrap();
+    assert!(lock_still_redirected && original_lock.is_file());
+    assert_eq!(error_code(reply), "environment_blocked");
+    assert_eq!(fs::read(&preferences).unwrap(), before);
     fixture.cleanup();
 }
 

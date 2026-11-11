@@ -203,7 +203,7 @@ impl PreferenceStore {
     /// Create a store without touching disk. Invalid or unavailable roots are
     /// retained as a fixed error so app setup and the runtime manager survive.
     pub fn new(app_data_dir: Option<PathBuf>) -> Self {
-        let location = if cfg!(debug_assertions) {
+        let location = if cfg!(debug_assertions) && !cfg!(target_os = "macos") {
             let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
             manifest_dir
                 .parent()
@@ -256,7 +256,7 @@ impl PreferenceStore {
             Ok(guard) => guard,
             Err(_) => return error_reply(&request_id, StoreError::EnvironmentBlocked),
         };
-        let _lock = match StoreLock::acquire(location) {
+        let _lock = match StoreLock::acquire(location, false) {
             Ok(lock) => lock,
             Err(error) => return error_reply(&request_id, error),
         };
@@ -316,7 +316,7 @@ impl PreferenceStore {
             Ok(guard) => guard,
             Err(_) => return error_reply(&request_id, StoreError::EnvironmentBlocked),
         };
-        let _lock = match StoreLock::acquire(location) {
+        let _lock = match StoreLock::acquire(location, true) {
             Ok(lock) => lock,
             Err(error) => return error_reply(&request_id, error),
         };
@@ -428,6 +428,16 @@ impl StoreLocation {
                     if !create {
                         return Ok(None);
                     }
+                    #[cfg(target_os = "macos")]
+                    {
+                        use std::os::unix::fs::DirBuilderExt;
+                        match fs::DirBuilder::new().mode(0o700).create(&current) {
+                            Ok(()) => {}
+                            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {}
+                            Err(_) => return Err(StoreError::EnvironmentBlocked),
+                        }
+                    }
+                    #[cfg(not(target_os = "macos"))]
                     fs::create_dir(&current).map_err(|_| StoreError::EnvironmentBlocked)?;
                     let metadata = fs::symlink_metadata(&current)
                         .map_err(|_| StoreError::EnvironmentBlocked)?;
@@ -614,9 +624,14 @@ fn save_document(
     let temp = root.join(format!("preferences-{}.tmp", Uuid::new_v4().simple()));
     let mut temp_owned = false;
     let result = (|| {
-        let mut file = OpenOptions::new()
-            .write(true)
-            .create_new(true)
+        let mut options = OpenOptions::new();
+        options.write(true).create_new(true);
+        #[cfg(target_os = "macos")]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            options.mode(0o600);
+        }
+        let mut file = options
             .open(&temp)
             .map_err(|_| StoreError::EnvironmentBlocked)?;
         temp_owned = true;
@@ -724,10 +739,12 @@ fn sync_directory(path: &Path) -> Result<(), StoreError> {
 struct StoreLock {
     #[cfg(windows)]
     handle: windows_sys::Win32::Foundation::HANDLE,
+    #[cfg(target_os = "macos")]
+    _file: Option<File>,
 }
 
 impl StoreLock {
-    fn acquire(location: &StoreLocation) -> Result<Self, StoreError> {
+    fn acquire(location: &StoreLocation, _create: bool) -> Result<Self, StoreError> {
         #[cfg(windows)]
         {
             use std::os::windows::ffi::OsStrExt;
@@ -756,7 +773,64 @@ impl StoreLock {
                 Err(StoreError::EnvironmentBlocked)
             }
         }
-        #[cfg(not(windows))]
+        #[cfg(target_os = "macos")]
+        {
+            use std::os::fd::AsRawFd;
+            use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+            let Some(root) = location.verify_root(_create)? else {
+                return Ok(Self { _file: None });
+            };
+            let root_info =
+                fs::symlink_metadata(&root).map_err(|_| StoreError::EnvironmentBlocked)?;
+            // SAFETY: geteuid has no memory preconditions.
+            let uid = unsafe { libc::geteuid() };
+            if !root_info.is_dir() || root_info.uid() != uid || root_info.mode() & 0o022 != 0 {
+                return Err(StoreError::EnvironmentBlocked);
+            }
+            let path = root.join(".preferences.lock");
+            let file = OpenOptions::new()
+                .read(true)
+                .write(true)
+                .create(true)
+                .truncate(false)
+                .mode(0o600)
+                .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_NONBLOCK)
+                .open(&path)
+                .map_err(|_| StoreError::EnvironmentBlocked)?;
+            let info = file
+                .metadata()
+                .map_err(|_| StoreError::EnvironmentBlocked)?;
+            if !info.is_file()
+                || info.uid() != uid
+                || info.nlink() != 1
+                || info.mode() & 0o7777 != 0o600
+            {
+                return Err(StoreError::EnvironmentBlocked);
+            }
+            // SAFETY: the file owns the live descriptor through the lock lifetime.
+            if unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
+                return Err(
+                    if std::io::Error::last_os_error().kind() == std::io::ErrorKind::WouldBlock {
+                        StoreError::Busy
+                    } else {
+                        StoreError::EnvironmentBlocked
+                    },
+                );
+            }
+            let current_root =
+                fs::symlink_metadata(&root).map_err(|_| StoreError::EnvironmentBlocked)?;
+            let current_lock =
+                fs::symlink_metadata(&path).map_err(|_| StoreError::EnvironmentBlocked)?;
+            if !current_root.is_dir()
+                || (current_root.dev(), current_root.ino()) != (root_info.dev(), root_info.ino())
+                || !current_lock.is_file()
+                || (current_lock.dev(), current_lock.ino()) != (info.dev(), info.ino())
+            {
+                return Err(StoreError::EnvironmentBlocked);
+            }
+            Ok(Self { _file: Some(file) })
+        }
+        #[cfg(not(any(windows, target_os = "macos")))]
         {
             let _ = location;
             Err(StoreError::EnvironmentBlocked)

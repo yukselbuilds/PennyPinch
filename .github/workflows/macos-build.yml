@@ -107,7 +107,8 @@ jobs:
             cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
               --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
               -- runtime::unix_backend:: runtime::control::tests:: runtime::macos_session:: \
-                 runtime::ingress:: runtime::ingress_relay:: runtime::manager::macos_tests:: --test-threads=1 \
+                 runtime::ingress:: runtime::ingress_relay:: runtime::manager::macos_tests:: \
+                 state::store_tests:: --test-threads=1 \
               > "$build_log" 2>&1 || status=$?
             if [[ "$status" != 0 ]]; then
               echo "::error::Native Unix protocol and relay tests failed."

@@ -89,6 +89,16 @@ fn assert_error(reply: impl Serialize, expected: &str) {
     assert_eq!(reply["error"]["code"], expected);
 }
 
+fn start_ready(manager: &RuntimeManager) -> Value {
+    let reply = value(manager.start_engine(Uuid::new_v4().to_string()));
+    assert_eq!(
+        reply["engine"]["status"], "ready",
+        "start_error={}",
+        reply["error"]["code"]
+    );
+    reply
+}
+
 fn request_readyz(port: u16) {
     let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), port);
     let mut stream = TcpStream::connect_timeout(&address, Duration::from_secs(2))
@@ -138,10 +148,26 @@ fn assert_no_route(port: u16) {
 #[test]
 #[ignore = "opt-in pinned macOS runtime manager lifecycle; local readiness and stats only, no provider API"]
 fn managed_app_engine_lifecycle() {
+    use crate::state::store::{OperatingPreferences, PreferenceStore, PreferencesReply};
     let (resources, state) = isolated_paths();
-    let preferences =
-        crate::state::store::PreferenceStore::for_test(state.clone(), PathBuf::from("preferences"))
-            .expect("isolated preferences");
+    let preferences = PreferenceStore::new(Some(state.clone()));
+    let saved = preferences.save_with_operating(
+        Uuid::new_v4().to_string(),
+        "en".into(),
+        "dark".into(),
+        Some(OperatingPreferences {
+            protected_tools: vec!["exec_command".to_owned()],
+            ..Default::default()
+        }),
+        None,
+        0,
+        None,
+    );
+    assert!(
+        matches!(&saved, PreferencesReply::Snapshot(snapshot) if snapshot.revision == 1),
+        "save_error={}",
+        value(saved)["error"]["code"]
+    );
     let manager =
         RuntimeManager::with_preferences(Some(resources.clone()), Some(state.clone()), preferences);
     let _cleanup = ShutdownOnDrop(manager.clone());
@@ -150,9 +176,12 @@ fn managed_app_engine_lifecycle() {
     assert_eq!(initial_ingress["backend"]["status"], "stopped");
     assert_runtime_status(&manager, "stopped");
 
-    let started = value(manager.start_engine(Uuid::new_v4().to_string()));
-    assert_eq!(started["engine"]["status"], "ready");
+    let started = start_ready(&manager);
     assert_eq!(started["engine_version"], EXPECTED_ENGINE_VERSION);
+    assert_eq!(
+        manager.settings_observation()["protected_tools"],
+        json!(["exec_command"])
+    );
     let first_generation = started["runtime_generation"]
         .as_str()
         .expect("ready generation")
@@ -234,8 +263,7 @@ fn managed_app_engine_lifecycle() {
     assert_eq!(stopped_ingress["active_connection_count"], 0);
     assert_no_route(port);
 
-    let restarted = value(manager.start_engine(Uuid::new_v4().to_string()));
-    assert_eq!(restarted["engine"]["status"], "ready");
+    let restarted = start_ready(&manager);
     let second_generation = restarted["runtime_generation"]
         .as_str()
         .expect("restarted generation")
