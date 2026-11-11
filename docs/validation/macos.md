@@ -76,6 +76,14 @@ H048-b6'nın ilk adımı APFS dosya işlemlerini standart Apple Silicon runner'd
 
 Bu gözlemlerle `flock` ve rename kullanarak mevcut istemci dosyasını yazan üretim yolu açılmaz. H048-b6b için kesinti sonrası sahiplik ve hedef durumunu sırsız kimlik ve fingerprint ile doğrulayan kurtarma modeli gerekir. Eski tanıtıcı üzerinden yazılan düzenlemenin de korunabildiği ölçülür. Kanıt eksikse ilgili istemci yazımı kapalı kalır. Deney yalnız sentetik dosyalarda süreç kaybını ölçtü. Güç kesintisi, gerçek istemci ayar yazımı ve undo açık. [Manuel workflow](../../.github/workflows/macos-config-transaction.yml).
 
+## H048-b6b — APFS kurtarma deneyi geçti
+
+11 Kasım 2026. Yerel APFS fixture'ında uygulamanın Codex ayar yaması ve sahiplik kaydı kullanıldı. Bekleyen işlem kaydı iki dosya sürümünün kimliklerini ve özetlerini tutar. Ayrı süreç config takasını tamamladıktan sonra sahiplik yayını öncesinde çıktı. Yeniden açılan kurtarma aynı sürümleri ve hazırlanan sahiplik kaydını doğrulayıp yalnız sahiplik kaydını yayımladı. Yeniden deneme aynı sonucu verdi.
+
+Eski tanıtıcıdan kurtarma öncesi veya sonrası gelen yazım iki sürüm korunarak çatışma verdi. Aynı baytlarla yeniden oluşturulan dosya da sahiplik kanıtı sayılmadı. Gerçek Undo yaması sonradan eklenen ayarı korudu ve kesintiden sonra bırakılmış sahiplik kaydı yayımlandı. macOS 15.8.2 ARM64 üzerinde dört test ve kilitli Tauri derlemesi geçti. Doğrudan çalıştırılması atlanan çocuk testini ilgili testler ayrı süreçte çağırdı. CI girdilerinin önce ve sonra parmak izleri eşleşti. [Koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43020691783) · [Makine kanıtı](../proofs/macos-config-recovery.json).
+
+Kurtarma prototipi native testlere dahil edildi. Taşınmış dosya ve bekleyen kayıt test boyunca saklandı. Gerçek istemciye Apply/Undo bağlanmadan önce bu dosyaya geç gelen yazımı koruyan çözüm ve uygulama komutlarıyla native doğrulama açık.
+
 ## Açık kabuller
 
 - H048-b için platforma ve mimariye özel sabitlenmiş motor ve doğrulanabilir süreç/loopback sahipliği, atomik ayar işlemleri ve çatışmayı koruyan geri alma gerekir.

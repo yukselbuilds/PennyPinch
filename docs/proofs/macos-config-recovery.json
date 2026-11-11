@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "task": "H048-b6b",
+  "scope": "native recovery prototype",
+  "status": "pass",
+  "main_task_complete": false,
+  "production_apply_undo_verified": false,
+  "verified_at_utc": "2026-11-11T12:31:41.680622+00:00",
+  "implementer": "Main agent implemented and verified the isolated recovery prototype and native acceptance.",
+  "native": {
+    "run_id": 43020691783,
+    "job_id": 130522863120,
+    "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43020691783",
+    "commit": "654e0eb3b5260772b56829c9a6bea0aa1a6251ce",
+    "tree": "650584424742e1df3839cf1f29e8188d60b8a5e7",
+    "os": "15.8.2",
+    "build": "24H232",
+    "arch": "arm64",
+    "filesystem": "local APFS",
+    "xcode": "16.4",
+    "rust": "1.92.0",
+    "inputs_before": "3eeb241e61333e350d8811677a1bc4f3c49e5e4652b861a3c85dce89124f1770",
+    "inputs_after": "3eeb241e61333e350d8811677a1bc4f3c49e5e4652b861a3c85dce89124f1770",
+    "tests_passed": [
+      "identical_bytes_in_replacement_inode_do_not_prove_ownership",
+      "late_writer_is_preserved_and_blocks_claiming_ownership",
+      "owned_apply_recovers_metadata_after_process_exit_and_reopens",
+      "owned_undo_recovers_release_and_preserves_later_settings"
+    ],
+    "helper_direct_runs_ignored": 1,
+    "frontend_build": "pass",
+    "locked_tauri_build": "pass",
+    "dispatch_allowance": {
+      "checked_at": "2026-11-11T12:28:52.1596778Z",
+      "account": "Protocol272",
+      "period": "2026-11",
+      "included_compute_used_usd": 2.42,
+      "included_compute_total_usd": 12,
+      "paid_actions_budget_usd": 0,
+      "usage_blocked": true,
+      "source": "Authenticated GitHub billing overview and account Actions budget",
+      "candidate_sha": "654e0eb3b5260772b56829c9a6bea0aa1a6251ce",
+      "workflow_sha256": "40a6c4c5254cdd8d5f1dcf2b909a0ea229a46f72239981c5d7b9f7ca5176dcaa",
+      "run_id": 43020691783,
+      "runner": "macos-15",
+      "timeout_minutes": 20,
+      "free_only_confirmed": true,
+      "verify_managed_engine": false,
+      "verify_config_recovery": true,
+      "remote_head_matches": true,
+      "local_proof": "recovery-local.json"
+    }
+  },
+  "source_sha256": {
+    "src-tauri/src/state/ownership.rs": "5599808e10767c30e1ae521845fdd72a46ac2a6088bb3ca6ec14f0b20ebdc0e7",
+    "src-tauri/src/state/ownership_macos_recovery.rs": "1e3180f8e4e1d0f3ce9d30d26414446aaabfc4152b373cc3eecda8527f3844df",
+    "src-tauri/src/state/ownership_macos_recovery_tests.rs": "bbb3d827f6609abf3847bafa001af1946e2e3ff4810b5c3ed3dfb23e77a6d884",
+    ".github/workflows/macos-build.yml": "40a6c4c5254cdd8d5f1dcf2b909a0ea229a46f72239981c5d7b9f7ca5176dcaa",
+    "src-tauri/Cargo.lock": "86d9be0d2fcd716bf8d37d382f4ed786e0f60538c01f3894359e0438b4e6bf8b",
+    "src-tauri/Cargo.toml": "13b9f5624c86d349086cb48d0bf8cf733e7a14bcd7135030235aa0d44b0ba72d",
+    "src-tauri/src/integrations/plan.rs": "2136279a0a38e85083fa06e2f403203cea4eca40ca9060376febed9d7ced7e64",
+    "src-tauri/src/integrations/transaction.rs": "5fd7112d7c44fe2f37c8cf97b0bd4ecca5c648a1ce54b7b4484d6660aa5d6541",
+    "src-tauri/src/integrations/config_document.rs": "89d66ac6b2f5a42418590821f29b895e67fe658b24fc41f984974b9b22906b3f"
+  },
+  "windows_static_checks": {
+    "proof": "work/proofs/macos/h048-b6/recovery-local.json",
+    "proof_sha256": "1c1948a991c7072962cf10b2a67b6f92f354b6fd80ef4ddd477bd0f6ed9f0ef4",
+    "rustfmt": "rustfmt 1.8.0-stable (ded5c06cf2 2025-12-08)",
+    "actionlint": "1.7.12",
+    "inputs_unchanged": true
+  },
+  "observations": [
+    "A separate owned process exits after APFS config swap. A new recovery instance finishes only the matching ownership publication and can reopen it again.",
+    "Writes through the displaced file descriptor before or after recovery leave both config versions intact and cause conflict on inspection.",
+    "A different inode containing the same bytes cannot prove an owned publication.",
+    "The product's typed Undo patch and released ownership receipt survive the cut while preserving a later setting."
+  ],
+  "limits": [
+    "The prototype is compiled into native tests only and works with isolated Codex-shaped config and ownership fixtures.",
+    "Both config versions and the intent remain available. This test does not establish safe disposal of an externally writable displaced file.",
+    "Real client Apply/Undo, installer and app UI lifecycle, and physical power-loss durability remain unverified."
+  ],
+  "development_token_savings": "not_measured"
+}
