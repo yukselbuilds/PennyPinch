@@ -85,7 +85,9 @@ jobs:
                         runtime::ingress:: runtime::ingress_relay:: runtime::manager::macos_tests::
                         state::store_tests::)
           if [[ "$HEADROOM_VERIFY_CONFIG_RECOVERY" == true ]]; then
-            test_filters=(state::ownership::macos_recovery::)
+            test_filters=(state::ownership::macos_recovery::
+                          state::ownership::codec_tests::macos_
+                          integrations::config_io::macos::)
           fi
           fingerprint() {
             git rev-parse HEAD 'HEAD^{tree}'
@@ -129,7 +131,7 @@ jobs:
                 detail > 0 { print substr($0, 1, 240); detail-- }
                 /^test .* \.\.\. FAILED$/ || /^test result: / { print substr($0, 1, 240) }' "$build_log"
             else
-              awk '/^test state::ownership::macos_recovery::/ || /^test result: / { print }' "$build_log"
+              awk '/^test state::ownership::/ || /^test integrations::config_io::macos::/ || /^test result: / { print }' "$build_log"
               if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
                 cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
                   --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \

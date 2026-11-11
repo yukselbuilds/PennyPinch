@@ -842,18 +842,35 @@ pub(crate) fn config_path_binding_for_claude_project_target(
 }
 
 fn hash_config_path_binding(binding_path: &Path) -> Result<String, OwnershipError> {
-    let units: Vec<u16> = binding_path.as_os_str().encode_wide_compat();
-    let mut digest = Sha256::new();
-    digest.update(b"headroom-ownership-config-path/v1\0");
-    digest.update((units.len() as u64).to_le_bytes());
-    for unit in units {
-        digest.update(unit.to_le_bytes());
+    #[cfg(target_os = "macos")]
+    {
+        use std::os::unix::ffi::OsStrExt;
+        let bytes = binding_path.as_os_str().as_bytes();
+        let mut digest = Sha256::new();
+        digest.update(b"headroom-ownership-config-path/posix-v1\0");
+        digest.update((bytes.len() as u64).to_le_bytes());
+        digest.update(bytes);
+        return Ok(digest
+            .finalize()
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect());
     }
-    Ok(digest
-        .finalize()
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect())
+    #[cfg(not(target_os = "macos"))]
+    {
+        let units: Vec<u16> = binding_path.as_os_str().encode_wide_compat();
+        let mut digest = Sha256::new();
+        digest.update(b"headroom-ownership-config-path/v1\0");
+        digest.update((units.len() as u64).to_le_bytes());
+        for unit in units {
+            digest.update(unit.to_le_bytes());
+        }
+        Ok(digest
+            .finalize()
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect())
+    }
 }
 
 trait EncodePathUnits {
@@ -914,6 +931,12 @@ fn make_absolute(path: &Path) -> Result<PathBuf, OwnershipError> {
     }
 }
 
+#[cfg(target_os = "macos")]
+fn validate_absolute_local_path(path: &Path) -> Result<(), OwnershipError> {
+    crate::integrations::config_io::validate_lexical_path(path).map_err(map_config_io_error)
+}
+
+#[cfg(not(target_os = "macos"))]
 fn validate_absolute_local_path(path: &Path) -> Result<(), OwnershipError> {
     let mut components = path.components();
     let Some(Component::Prefix(prefix)) = components.next() else {
@@ -938,6 +961,14 @@ fn validate_absolute_local_path(path: &Path) -> Result<(), OwnershipError> {
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
+fn validate_existing_directory_chain(path: &Path) -> Result<(), OwnershipError> {
+    crate::integrations::config_io::pin_existing_directory_chain(path)
+        .and_then(|chain| chain.validate())
+        .map_err(map_config_io_error)
+}
+
+#[cfg(not(target_os = "macos"))]
 fn validate_existing_directory_chain(path: &Path) -> Result<(), OwnershipError> {
     validate_absolute_local_path(path)?;
     let mut components = path.components();
@@ -983,12 +1014,24 @@ fn verify_directory(
     Ok(())
 }
 
+#[cfg(not(target_os = "macos"))]
 fn within_boundary(path: &Path, boundary: &Path) -> bool {
     let child = path_key(path);
     let parent = path_key(boundary);
     child == parent || child.starts_with(&(parent + "\\"))
 }
 
+#[cfg(target_os = "macos")]
+fn within_boundary(path: &Path, boundary: &Path) -> bool {
+    path.starts_with(boundary)
+}
+
+#[cfg(target_os = "macos")]
+fn same_path(left: &Path, right: &Path) -> bool {
+    left == right
+}
+
+#[cfg(not(target_os = "macos"))]
 fn same_path(left: &Path, right: &Path) -> bool {
     path_key(left).eq_ignore_ascii_case(&path_key(right))
 }
@@ -1062,6 +1105,37 @@ mod macos_recovery;
 #[cfg(test)]
 mod codec_tests {
     use super::*;
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn macos_path_bindings_preserve_native_bytes_and_directory_boundaries() {
+        use std::ffi::OsString;
+        use std::os::unix::ffi::OsStringExt;
+        let first = PathBuf::from(OsString::from_vec(
+            b"/Users/fixture/\xff/config.toml".to_vec(),
+        ));
+        let second = PathBuf::from(OsString::from_vec(
+            b"/Users/fixture/\xfe/config.toml".to_vec(),
+        ));
+        assert!(validate_absolute_local_path(&first).is_ok());
+        assert_ne!(
+            hash_config_path_binding(&first).unwrap(),
+            hash_config_path_binding(&second).unwrap()
+        );
+        assert!(within_boundary(
+            Path::new("/Users/fixture/.codex/config.toml"),
+            Path::new("/Users/fixture")
+        ));
+        assert!(!within_boundary(
+            Path::new("/Users/fixture-other/config.toml"),
+            Path::new("/Users/fixture")
+        ));
+        assert!(!same_path(
+            Path::new("/Users/fixture/A"),
+            Path::new("/Users/fixture/a")
+        ));
+        assert!(validate_absolute_local_path(Path::new("/Users/fixture/../other")).is_err());
+    }
 
     #[test]
     fn legacy_opencode_receipt_without_optional_route_rows_decodes() {
