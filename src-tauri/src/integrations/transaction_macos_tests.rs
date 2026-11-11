@@ -330,7 +330,27 @@ fn assert_config_mode(path: &Path) {
 
 fn fixture_acl(path: &Path, set: bool) -> Vec<String> {
     if set {
-        let rule = format!("user:{} allow read,write", unsafe { libc::geteuid() });
+        let mut account = std::mem::MaybeUninit::<libc::passwd>::uninit();
+        let mut buffer = [0_i8; 4096];
+        let mut found = std::ptr::null_mut();
+        // chmod's ACL parser resolves a username, not the decimal UID string.
+        let error = unsafe {
+            libc::getpwuid_r(
+                libc::geteuid(),
+                account.as_mut_ptr(),
+                buffer.as_mut_ptr(),
+                buffer.len(),
+                &mut found,
+            )
+        };
+        assert!(
+            error == 0 && !found.is_null(),
+            "resolve fixture ACL account"
+        );
+        let account_name = unsafe { CStr::from_ptr((*found).pw_name) }
+            .to_str()
+            .unwrap();
+        let rule = format!("user:{account_name} allow read,write");
         let status = Command::new("/bin/chmod")
             .args(["+a", rule.as_str()])
             .arg(path)
