@@ -134,11 +134,25 @@ Son macOS 15.8.2 ARM64 koşusunda 25 test, frontend, kilitli Tauri derlemesi ve 
 
 Bu sonuç özel native fixture, gerçek manager/transaction/ownership kodu ve test picker/endpoint verisini kapsar. Gerçek picker penceresi, kurulu istemci/sağlayıcı trafiği ve paket kabulü değildir. Korunmuş sürümlerin çözümü ile 64 intent sınırının kullanıcıya sunumu açık. Yeni auth, gerçek kullanıcı ayarları, global ortam veya ücretli çağrı kullanılmadı.
 
-## Açık kabuller
+## H048-b6b — Korunan sürümler ve kapasite alt kabulü geçti
 
 H048-b6b korunan sürümler dilimi. Ana ajan kayıt/yol/ölçüm ve sahiplik kararlarını üstlenir. Salt okunur inceleme seçili client/scope/config bağlamında güncel config ve intent/marker kimlikleriyle review fingerprint üretir; ham config, auth veya başka proje içeriği renderer'a çıkmaz. Kullanıcının “Mevcut ayarla devam et” eylemi bu fingerprint'i tekrar doğrular. Config dosyası veya korunan eski inode değiştirilmez/silinmez. Bekleyen sahiplik ancak typed receipt'in güncel belgeyle ve kayıttaki sahiplik geçişiyle eşleşmesi hâlinde açık eylemle tamamlanabilir; doğrulanamayan durum sabit hata verir. Geçmiş kayıtları dikkate almadan önce arşiv metadata'sı özel 0700 dizine kopyalanıp doğrulanır ve arşiv manifesti atomik yayımlanır. Bundan sonra eski metadata fd-relative exclusive rename ile arşive taşınabilir; kesinti config verisini kaybetmez ve tekrar açılış aynı manifesti doğrular. Eski config sürümleri istemci klasöründe kalır.
 
 Bir defada en çok 64 aktif kayıt ve en çok 64 arşiv grubu işlenir. Otomatik veri silme yoktur. Kullanıcıya saklanan kayıt ve kapasite sade biçimde gösterilir; sınırda sessiz generic hata yerine inceleme yolu sunulur. Mevcut Windows TxF yolu ve global/başka proje ayarları korunur. Normal kabul inceleme → açık kabul → yeniden açılış → normal Apply/Undo; hata kabulü incelemeden sonra config veya kayıt değişimi ve arşiv sırasında süreç kesintisi; sınır kabulü 64 kayıt ve dolu arşiv kapasitesidir. Native fixture ve gerçek manager yolu kanıtı, renderer sunumu ve gerçek pencere/paket kabulünden ayrı raporlanır.
+
+11 Kasım 2026. Native RED'de eski 25 test geçti, üç yeni arşiv testi Unsupported ile durdu. Son aday macOS 15.8.2 ARM64 üzerinde 34 testi, frontend derlemesini ve kilitli ARM64 Tauri derlemesini geçti. Dört doğrudan ignored çocuk yardımcısı ilgili testlerde ayrı süreçte çağrıldı. 275 kaynak girdisi adayla ve CI önce/sonra fingerprint'i kendi içinde eşleşti. Toplam native test süresi 59,96 saniyedir; bu bir performans veya uzun süreli kararlılık kabulü değildir.
+
+| Senaryo | Gözlenen |
+| --- | --- |
+| Gerçek manager ile üç adapter: pasif inceleme → açık arşiv → yeniden açılış → Undo | Mevcut config ve sahiplik korunur; yeniden açılan manager arşivi okur, typed Undo özgün ayarı geri verir. Başka config'e veya eski fingerprint'e açık kabul reddedilir. |
+| Geç eski descriptor yazımı; bekleyen sahiplik; değişmiş metadata/kopya; arşivin iki yanında süreç çıkışı | Eski inode düzenlemeleri saklanır. Uygun typed sahiplik tamamlanır, değişmiş owned endpoint reddedilir. Bozuk kopya manifest yayımlamaz. Ayrı süreçte kopyalar hazırken veya manifest sonrası exit 43, yeniden açılışta veri kaybetmeden sürdürülür. |
+| 64 aktif kayıt ve 64 arşiv grubu | İlk durumda veri silmeden arşiv sonrası yeni Apply/Undo çalışır. İkincide yeni arşiv sabit sınır hatası verir; önceki gruplar ve config değişmez. Yarım hazırlanmış gruplar da koruyucu grup sınırını tüketir. |
+
+Windows odaklı config_io/ownership/connection_actions filtrelerinde 72/33/38 test koşumu başarılı, 2 opt-in ignored (filtreler örtüşebilir). Başarılı 210 frontend testi/build ilgili girdi ve araç/ortam eşleşmesiyle korundu; sonradan düzeltilmiş Rust derleme hatası PASS sayılmadı. İzole Edge panelinde açık checkbox onayı, tam scope/fingerprint ile tek çağrı, pending/parent-busy kilidi, gerçek gecikmiş yanıt, TR/EN klavye ve hata/kapasite durumlarında beş test geçti. İlk worker fixture'ının mount'ta sıfırlanan gecikme kapısı ana ajan incelemesinde düzeltildi ve değişen beş test yenilendi. Görüntü incelendi; native pencere kanıtı sayılmaz.
+
+Odaklı Windows komutları `cargo test --offline --manifest-path src-tauri/Cargo.toml config_io -- --test-threads=1`, aynı komutta `ownership` ve `connection_actions_tests` filtreleridir. Panel komutu `pnpm exec playwright test --config tests/e2e/retained-versions.config.ts --max-failures=1`. Native job mevcut `macos-build.yml`, `verify_config_recovery=true` seçeneğidir. Son dispatch öncesi dahil compute 3,78/12 dolar, ücretli kullanım 0, hesap Actions bütçesi 0 dolar ve Usage blocked doğrulandı. Bu tutar ücret değildir. [RED](https://github.com/Protocol272/headroom-desktop/actions/runs/43068865595) · [GREEN](https://github.com/Protocol272/headroom-desktop/actions/runs/43074294190) · [Makine kanıtı](../proofs/macos-retained-versions.json) · [İnceleme](../reviews/H048.md).
+
+## Açık kabuller
 
 - H048-b için platforma ve mimariye özel sabitlenmiş motor ve doğrulanabilir süreç/loopback sahipliği, atomik ayar işlemleri ve çatışmayı koruyan geri alma gerekir.
 - H048-c için paketlenmiş uygulamanın gerçek açılışı, başlat/durdur ve temiz state kabulü ile paket ve motor imzasının ayrı doğrulanması gerekir. Apple Silicon sonucu Intel, Windows 11 veya Linux'a aktarılmaz. Üretim yayını veya ücretli imzalama bu koşuların kapsamı dışındadır.
