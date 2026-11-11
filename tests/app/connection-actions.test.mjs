@@ -112,6 +112,7 @@ function error(code = "config_conflict", overrides = {}) {
     config_unavailable: [true, "connection.config_unavailable"],
     unsupported_filesystem: [false, "connection.unsupported_filesystem"],
     commit_unknown: [true, "connection.commit_unknown"],
+    retained_versions_limit: [true, "connection.retained_versions_limit"],
   };
   const [retryable, message_key] = contracts[code];
   return {
@@ -326,7 +327,7 @@ test("fixed action error tuples are reconstructed and mismatched or raw errors a
   for (const code of [
     "validation_failed", "unsupported_schema", "busy", "not_found", "plan_expired",
     "config_conflict", "config_invalid", "config_unsafe", "config_unavailable",
-    "unsupported_filesystem", "commit_unknown",
+    "unsupported_filesystem", "commit_unknown", "retained_versions_limit",
   ]) {
     const decoded = await createClient(async () => error(code)).snapshot(clientKind);
     assert.equal(decoded.kind, "action_error", code);

@@ -9,6 +9,7 @@ import {
 } from "../../lib/claudeContext";
 import { ClaudeScopeSection } from "./ClaudeScopeSection";
 import { DisconnectDialog } from "./DisconnectDialog";
+import { RetainedVersions } from "./RetainedVersions";
 import {
   canApplyForConnectionScope,
   candidateSelectionKey,
@@ -196,6 +197,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
       config_invalid: "Yapılandırma artık geçerli değil.", config_unsafe: "Yapılandırma güvenli biçimde değiştirilemiyor.",
       config_unavailable: "Yapılandırma okunamıyor.", unsupported_filesystem: "Bu dosya sistemi güvenli bağlantı değişikliğini desteklemiyor.",
       commit_unknown: "Yazım sonucu belirsiz. Kaydı yeniden oku.",
+      retained_versions_limit: "Saklanan işlem sınırına ulaşıldı. Korunan sürümleri incele.",
     },
     loading: "Kullanıcı yapılandırması inceleniyor…", desktopUnavailable: "Bu önizleme için Headroom masaüstü bağlantısı gerekir.",
     invalidRequest: "Önizleme isteği doğrulanamadı.", invalidResponse: "Önizleme yanıtı doğrulanamadı.", requestFailed: "Önizleme tamamlanamadı. Yenileyip tekrar deneyebilirsin.",
@@ -278,6 +280,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
       config_invalid: "The configuration is no longer valid.", config_unsafe: "The configuration cannot be changed safely.",
       config_unavailable: "The configuration could not be read.", unsupported_filesystem: "This file system does not support a safe connection change.",
       commit_unknown: "The write outcome is uncertain. Reload the record.",
+      retained_versions_limit: "Saved operation capacity was reached. Review retained versions.",
     },
     loading: "Inspecting user configuration…", desktopUnavailable: "The Headroom desktop bridge is required for this preview.",
     invalidRequest: "The preview request could not be validated.", invalidResponse: "The preview response could not be validated.", requestFailed: "The preview could not be completed. Refresh and try again.",
@@ -422,6 +425,7 @@ export function ConnectDialog({
   const refreshAfterUnlock = useRef(false);
   const bridgeLock = useRef(false);
   const mutationLock = useRef(false);
+  const retainedLock = useRef(false);
   const scopePickerLock = useRef(false);
   const pendingAction = useRef<"apply" | "undo" | "connect" | null>(null);
   const idsKey = candidateSelectionKey(installations);
@@ -444,6 +448,8 @@ export function ConnectDialog({
   const [mutationPending, setMutationPending] = useState(false);
   const [disconnectOpen, setDisconnectOpen] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<ActionFeedback | null>(null);
+  const [retainedVisible, setRetainedVisible] = useState(false);
+  const [retainedPending, setRetainedPending] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const currentContext = { scanGeneration, installationIdsKey: idsKey };
   const isClaude = clientKind === "claude_code";
@@ -597,6 +603,41 @@ export function ConnectDialog({
     else void readOwnership();
   }
 
+  function retainedBusyChange(pending: boolean) {
+    if (pending) {
+      if (bridgeLock.current || mutationLock.current) throw new Error("connection_busy");
+      retainedLock.current = true;
+      bridgeLock.current = true;
+      mutationLock.current = true;
+      setBridgePending(true);
+      setRetainedPending(true);
+    } else if (retainedLock.current) {
+      retainedLock.current = false;
+      bridgeLock.current = false;
+      mutationLock.current = false;
+      if (mounted.current) {
+        setBridgePending(false);
+        setRetainedPending(false);
+      }
+      flushQueuedContextRefresh();
+    }
+  }
+
+  function retainedArchived() {
+    requestSequence.current += 1;
+    setPreviewState(null);
+    setOwnershipView({ kind: "refresh_required" });
+    refreshAfterUnlock.current = true;
+  }
+
+  function revealRetainedVersions(result: Awaited<ReturnType<typeof connectionActionClient.snapshot>>) {
+    if (result.kind === "action_error" && ["config_conflict", "retained_versions_limit", "commit_unknown"].includes(result.error.code)) {
+      setRetainedVisible(true);
+    }
+  }
+
+  useEffect(() => { setRetainedVisible(false); }, [clientKind, currentScope, claudeContext?.project_directory]);
+
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
@@ -659,6 +700,7 @@ export function ConnectDialog({
       || previous.clientKind !== clientKind;
     lastCandidateContext.current = { scanGeneration, installationIdsKey: idsKey, clientKind };
     if (!changed) return;
+    setRetainedVisible(false);
     requestSequence.current += 1;
     choiceSequence.current += 1;
     setSelectedId("");
@@ -715,6 +757,7 @@ export function ConnectDialog({
         const message = next.kind === "action_error" ? text.actionErrors[next.error.code]
           : next.kind === "desktop_unavailable" ? text.desktopUnavailable : text.ownershipReadError;
         setOwnershipView({ kind: "error", message });
+        revealRetainedVersions(next);
       }
     } catch {
       if (mounted.current && ownershipSequence.current === sequence) {
@@ -1007,6 +1050,7 @@ export function ConnectDialog({
         if (isClaude) await loadClaudeStateUnlocked(++claudeSequence.current, true);
       } else {
         const outcome = actionResultMessage(applied, text);
+        revealRetainedVersions(applied);
         setOwnershipView({ kind: "refresh_required" });
         setPreviewState(null);
         setActionFeedback({ kind: outcome.uncertain ? "uncertain" : "error", message: outcome.message });
@@ -1051,6 +1095,7 @@ export function ConnectDialog({
         if (isClaude) await loadClaudeStateUnlocked(++claudeSequence.current, true);
       } else {
         const outcome = actionResultMessage(next, text);
+        revealRetainedVersions(next);
         setOwnershipView({ kind: "refresh_required" });
         setActionFeedback({ kind: outcome.uncertain ? "uncertain" : "error", message: outcome.message });
       }
@@ -1113,7 +1158,7 @@ export function ConnectDialog({
             : text.scope}</div>
           <h2 id="connection-dialog-title">{text.title} · {clientTitles[clientKind]}</h2>
         </div>
-        <button ref={closeRef} className="connection-dialog__close" type="button" disabled={mutationPending || disconnectOpen || claudePickerPending || scopePickerLock.current} onClick={close} aria-label={text.close}>×</button>
+        <button ref={closeRef} className="connection-dialog__close" type="button" disabled={retainedPending || mutationPending || disconnectOpen || claudePickerPending || scopePickerLock.current} onClick={close} aria-label={text.close}>×</button>
       </header>
       <div className="connection-dialog__body">
         {isClaude
@@ -1155,6 +1200,12 @@ export function ConnectDialog({
           {actionFeedback && <p className={"connection-dialog__action-feedback is-" + actionFeedback.kind} role={actionFeedback.kind === "success" ? "status" : "alert"} aria-live="polite">{mutationPending ? (pendingAction.current === "undo" ? text.undoing : pendingAction.current === "connect" ? text.connecting : text.applying) : actionFeedback.message}</p>}
           {mutationPending && !actionFeedback && <p className="connection-dialog__action-feedback" role="status" aria-live="polite">{pendingAction.current === "undo" ? text.undoing : pendingAction.current === "connect" ? text.connecting : text.applying}</p>}
         </section>
+        {retainedVisible && currentScope && nativeAvailable && <RetainedVersions
+          key={`${clientKind}:${currentScope}:${claudeContext?.project_directory ?? ""}:${scanGeneration}`}
+          clientKind={actionClientKind(clientKind)} scope={currentScope} language={language}
+          disabled={bridgePending && !retainedPending}
+          onArchived={retainedArchived} onBusyChange={retainedBusyChange}
+        />}
         {selectedId && choiceView.kind === "ready" && <p className="connection-dialog__notice" role="status">
           {equivalentSelection
             ? language === "tr" ? "Codex kurulumları aynı kullanıcı ayarını ve desteklenen rotayı paylaşıyor. Tek bağlantı yeterli." : "Codex installations share the same user setting and supported route. One connection is enough."

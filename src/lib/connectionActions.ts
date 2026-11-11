@@ -43,6 +43,7 @@ const errorContracts: Record<ConnectionActionErrorCode, { retryable: boolean; me
   config_unavailable: { retryable: true, messageKey: "connection.config_unavailable" },
   unsupported_filesystem: { retryable: false, messageKey: "connection.unsupported_filesystem" },
   commit_unknown: { retryable: true, messageKey: "connection.commit_unknown" },
+  retained_versions_limit: { retryable: true, messageKey: "connection.retained_versions_limit" },
 };
 
 const clientKinds = ["codex", "claude_code", "opencode_v1"] as const;

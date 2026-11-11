@@ -86,6 +86,7 @@ export type ConnectionActionErrorCode =
   | "config_unsafe"
   | "config_unavailable"
   | "unsupported_filesystem"
+  | "retained_versions_limit"
   | "commit_unknown";
 
 export interface ApplyConnectionRequest {
