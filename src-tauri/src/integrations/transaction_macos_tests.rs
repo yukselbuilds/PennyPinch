@@ -1233,6 +1233,103 @@ fn retained_review_rejects_changed_config_and_cross_target_acceptance() {
 }
 
 #[test]
+fn retained_archive_rechecks_metadata_and_copies_before_publishing_manifest() {
+    let fixture = Fixture::create();
+    commit_apply(&fixture);
+    let state = fixture.root.join("state");
+    let initial = retained_versions::inspect(&state, &fixture.config, "codex.json").unwrap();
+    let marker = fs::read_dir(&state)
+        .unwrap()
+        .flatten()
+        .find(|entry| {
+            entry
+                .file_name()
+                .to_str()
+                .is_some_and(|name| name.ends_with(".done"))
+        })
+        .unwrap()
+        .path();
+    let mut changed_marker = fs::read(&marker).unwrap();
+    changed_marker.push(b'\n');
+    fs::write(&marker, changed_marker).unwrap();
+    assert_eq!(
+        retained_versions::archive(
+            &state,
+            &fixture.config,
+            "codex.json",
+            &initial.review_fingerprint
+        )
+        .unwrap_err(),
+        TransactionFsError::Conflict
+    );
+    let empty_group = state.join(format!(".apfs-archive-{}", Uuid::new_v4()));
+    create_private_dir(&empty_group);
+    let review = retained_versions::inspect(&state, &fixture.config, "codex.json").unwrap();
+    let result = retained_versions::archive_inner(
+        &state,
+        &fixture.config,
+        "codex.json",
+        &review.review_fingerprint,
+        |phase| {
+            if phase == retained_versions::ArchivePhase::CopiesReady {
+                for entry in fs::read_dir(&state)
+                    .unwrap()
+                    .flatten()
+                    .filter(|entry| entry.path().is_dir())
+                {
+                    for copy in fs::read_dir(entry.path())
+                        .unwrap()
+                        .flatten()
+                        .filter(|entry| {
+                            entry
+                                .file_name()
+                                .to_str()
+                                .is_some_and(|name| name.ends_with(".copy"))
+                        })
+                    {
+                        fs::write(copy.path(), b"invalid copied metadata").unwrap();
+                    }
+                }
+            }
+        },
+    );
+    assert_eq!(result.unwrap_err(), TransactionFsError::Conflict);
+    assert_eq!(
+        retained_versions::inspect(&state, &fixture.config, "codex.json")
+            .unwrap()
+            .active_records,
+        1
+    );
+    for entry in fs::read_dir(&state)
+        .unwrap()
+        .flatten()
+        .filter(|entry| entry.path().is_dir())
+    {
+        assert!(!entry.path().join("manifest.json").exists());
+        for copy in fs::read_dir(entry.path()).unwrap().flatten() {
+            if let Some(original) = copy
+                .file_name()
+                .to_str()
+                .and_then(|name| name.strip_suffix(".copy"))
+            {
+                fs::write(copy.path(), fs::read(state.join(original)).unwrap()).unwrap();
+            }
+        }
+    }
+    let restored = retained_versions::archive(
+        &state,
+        &fixture.config,
+        "codex.json",
+        &review.review_fingerprint,
+    )
+    .unwrap();
+    assert_eq!(restored.active_records, 0);
+    assert_eq!(restored.completed_archives, 1);
+    undo(&fixture);
+    assert_eq!(fs::read(&fixture.config).unwrap(), ORIGINAL);
+}
+
+#[test]
 fn retained_record_capacity_can_be_archived_without_discarding_config_versions() {
     let fixture = Fixture::create();
     for _ in 0..32 {
@@ -1258,6 +1355,237 @@ fn retained_record_capacity_can_be_archived_without_discarding_config_versions()
     commit_apply(&fixture);
     undo(&fixture);
     assert_eq!(fs::read(&fixture.config).unwrap(), ORIGINAL);
+}
+
+#[test]
+fn retained_acceptance_recovers_pending_owner_without_rewriting_current_config() {
+    let fixture = Fixture::create();
+    let mut old_writer = OpenOptions::new()
+        .append(true)
+        .open(&fixture.config)
+        .unwrap();
+    let mut staged = stage_apply(&fixture);
+    staged.transaction.seal().unwrap();
+    assert!(staged
+        .transaction
+        .commit_inner(|| {
+            old_writer.write_all(USER_EDIT).unwrap();
+            old_writer.sync_all().unwrap();
+        })
+        .is_err());
+    let mut current_writer = OpenOptions::new()
+        .append(true)
+        .open(&fixture.config)
+        .unwrap();
+    current_writer
+        .write_all(b"# current setting edit\n")
+        .unwrap();
+    current_writer.sync_all().unwrap();
+    let current = fs::read(&fixture.config).unwrap();
+    let state = fixture.root.join("state");
+    let review = retained_versions::inspect(&state, &fixture.config, "codex.json").unwrap();
+    assert_eq!(review.unresolved_records, 0);
+    assert!(review.can_archive);
+    assert!(!state.join("codex.json").exists());
+    retained_versions::archive(
+        &state,
+        &fixture.config,
+        "codex.json",
+        &review.review_fingerprint,
+    )
+    .unwrap();
+    assert_eq!(fs::read(&fixture.config).unwrap(), current);
+    undo(&Fixture::open(&fixture.id));
+    assert_eq!(
+        fs::read(&fixture.config).unwrap(),
+        [ORIGINAL, b"# current setting edit\n"].concat()
+    );
+    assert!(fs::read_dir(&fixture.client)
+        .unwrap()
+        .flatten()
+        .any(|entry| entry
+            .file_name()
+            .to_str()
+            .is_some_and(|name| name.ends_with(".config"))
+            && fs::read(entry.path()).unwrap() == [ORIGINAL, USER_EDIT].concat()));
+}
+
+#[test]
+fn retained_acceptance_refuses_pending_owner_after_owned_endpoint_changes() {
+    let fixture = Fixture::create();
+    let mut old_writer = OpenOptions::new()
+        .append(true)
+        .open(&fixture.config)
+        .unwrap();
+    let mut staged = stage_apply(&fixture);
+    staged.transaction.seal().unwrap();
+    assert!(staged
+        .transaction
+        .commit_inner(|| {
+            old_writer.write_all(USER_EDIT).unwrap();
+            old_writer.sync_all().unwrap();
+        })
+        .is_err());
+    fs::write(&fixture.config, ORIGINAL).unwrap();
+    let state = fixture.root.join("state");
+    let review = retained_versions::inspect(&state, &fixture.config, "codex.json").unwrap();
+    assert_eq!(review.unresolved_records, 1);
+    assert!(!review.can_archive);
+    assert_eq!(
+        retained_versions::archive(
+            &state,
+            &fixture.config,
+            "codex.json",
+            &review.review_fingerprint
+        )
+        .unwrap_err(),
+        TransactionFsError::Conflict
+    );
+    assert!(!state.join("codex.json").exists());
+    assert_eq!(fs::read(&fixture.config).unwrap(), ORIGINAL);
+}
+
+#[test]
+fn retained_archive_reopens_after_process_exit_on_both_sides_of_manifest_publication() {
+    for phase in ["copies", "manifest"] {
+        let fixture = Fixture::create();
+        let (_, patched) = commit_apply(&fixture);
+        let module = module_path!()
+            .strip_prefix(&format!("{}::", env!("CARGO_CRATE_NAME")))
+            .unwrap_or(module_path!());
+        let filter = format!("{module}::crash_during_retained_archive");
+        let mut child = Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", &filter, "--ignored", "--test-threads=1"])
+            .env_clear()
+            .env("HEADROOM_MACOS_PROOF_ROOT", proof_root())
+            .env("HEADROOM_MACOS_TXN_FIXTURE", &fixture.id)
+            .env("HEADROOM_MACOS_ARCHIVE_PHASE", phase)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap();
+        let deadline = Instant::now() + Duration::from_secs(20);
+        loop {
+            match child.try_wait().unwrap() {
+                Some(status) => {
+                    assert_eq!(
+                        status.code(),
+                        Some(43),
+                        "owned archive child stopped at hook"
+                    );
+                    break;
+                }
+                None if Instant::now() < deadline => thread::sleep(Duration::from_millis(20)),
+                _ => {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    panic!("archive child deadline");
+                }
+            }
+        }
+        let reopened = Fixture::open(&fixture.id);
+        assert_eq!(fs::read(&reopened.config).unwrap(), patched);
+        let state = reopened.root.join("state");
+        let review = retained_versions::inspect(&state, &reopened.config, "codex.json").unwrap();
+        if phase == "copies" {
+            assert_eq!(review.active_records, 1);
+            assert_eq!(review.completed_archives, 0);
+            retained_versions::archive(
+                &state,
+                &reopened.config,
+                "codex.json",
+                &review.review_fingerprint,
+            )
+            .unwrap();
+        } else {
+            assert_eq!(review.active_records, 0);
+            assert_eq!(review.completed_archives, 1);
+        }
+        undo(&reopened);
+        assert_eq!(fs::read(&reopened.config).unwrap(), ORIGINAL);
+    }
+}
+
+#[test]
+#[ignore = "owned child process invoked by retained archive crash test"]
+fn crash_during_retained_archive() {
+    let fixture = Fixture::open(&std::env::var("HEADROOM_MACOS_TXN_FIXTURE").unwrap());
+    let state = fixture.root.join("state");
+    let expected = std::env::var("HEADROOM_MACOS_ARCHIVE_PHASE").unwrap();
+    let review = retained_versions::inspect(&state, &fixture.config, "codex.json").unwrap();
+    retained_versions::archive_inner(
+        &state,
+        &fixture.config,
+        "codex.json",
+        &review.review_fingerprint,
+        |phase| {
+            if (expected == "copies" && phase == retained_versions::ArchivePhase::CopiesReady)
+                || (expected == "manifest"
+                    && phase == retained_versions::ArchivePhase::ManifestPublished)
+            {
+                std::process::exit(43);
+            }
+        },
+    )
+    .unwrap();
+    panic!("archive crash hook was not reached");
+}
+
+#[test]
+fn retained_archive_group_capacity_is_explicit_and_never_deletes_older_groups() {
+    let fixture = Fixture::create();
+    let state = fixture.root.join("state");
+    for index in 0..64 {
+        if index % 2 == 0 {
+            commit_apply(&fixture);
+        } else {
+            undo(&fixture);
+        }
+        let review = retained_versions::inspect(&state, &fixture.config, "codex.json").unwrap();
+        let after = retained_versions::archive(
+            &state,
+            &fixture.config,
+            "codex.json",
+            &review.review_fingerprint,
+        )
+        .unwrap();
+        assert_eq!(after.completed_archives, index + 1);
+        assert_eq!(after.active_records, 0);
+    }
+    commit_apply(&fixture);
+    let current = fs::read(&fixture.config).unwrap();
+    let review = retained_versions::inspect(&state, &fixture.config, "codex.json").unwrap();
+    assert!(!review.can_archive);
+    assert_eq!(review.completed_archives, 64);
+    assert_eq!(
+        retained_versions::archive(
+            &state,
+            &fixture.config,
+            "codex.json",
+            &review.review_fingerprint
+        )
+        .unwrap_err(),
+        TransactionFsError::RetainedVersionsLimit
+    );
+    assert_eq!(fs::read(&fixture.config).unwrap(), current);
+    assert_eq!(
+        retained_versions::inspect(&state, &fixture.config, "codex.json")
+            .unwrap()
+            .active_records,
+        1
+    );
+    assert_eq!(
+        fs::read_dir(&state)
+            .unwrap()
+            .flatten()
+            .filter(|entry| entry
+                .file_name()
+                .to_str()
+                .is_some_and(|name| name.starts_with(".apfs-archive-")))
+            .count(),
+        64
+    );
 }
 
 #[test]

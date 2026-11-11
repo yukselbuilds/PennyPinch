@@ -9,6 +9,7 @@ pub(crate) enum TransactionFsError {
     Conflict,
     TooLarge,
     TooManyFiles,
+    RetainedVersionsLimit,
     Expired,
     Io,
     CommitFailed,
@@ -1064,6 +1065,8 @@ pub(crate) use windows_impl::FileTransaction;
 #[cfg(target_os = "macos")]
 #[path = "transaction_macos.rs"]
 mod macos_impl;
+#[cfg(target_os = "macos")]
+pub(crate) use macos_impl::retained_versions as macos_retained_versions;
 #[cfg(target_os = "macos")]
 pub(crate) use macos_impl::FileTransaction;
 

@@ -868,7 +868,9 @@ fn map_transaction_error(error: TransactionFsError) -> ChoiceError {
         TransactionFsError::Unsupported => ChoiceError::Unsupported,
         TransactionFsError::UnsafePath | TransactionFsError::UnsafeFile => ChoiceError::UnsafePath,
         TransactionFsError::Conflict | TransactionFsError::Expired => ChoiceError::Conflict,
-        TransactionFsError::TooLarge | TransactionFsError::TooManyFiles => ChoiceError::TooLarge,
+        TransactionFsError::TooLarge
+        | TransactionFsError::TooManyFiles
+        | TransactionFsError::RetainedVersionsLimit => ChoiceError::TooLarge,
         TransactionFsError::Io
         | TransactionFsError::CommitFailed
         | TransactionFsError::RollbackFailed => ChoiceError::Unavailable,

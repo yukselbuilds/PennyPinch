@@ -351,6 +351,10 @@ pub(crate) struct OwnershipStore {
 }
 
 impl OwnershipStore {
+    #[cfg(target_os = "macos")]
+    pub(crate) fn retained_versions_root(&self) -> Result<Option<PathBuf>, OwnershipError> {
+        self.verify_root(false)
+    }
     /// Construct without creating directories or files. `boundary` must exist;
     /// only `relative_root` may be created later by `prepare_for_apply`.
     pub(crate) fn new(
@@ -673,38 +677,11 @@ pub(crate) fn validate_macos_publication(
 ) -> Result<(), OwnershipError> {
     let next = OwnershipRecord::decode(next_owner)?;
     let previous = previous_owner.map(OwnershipRecord::decode).transpose()?;
-    let kind = next.client_kind().ok_or(OwnershipError::Invalid)?;
-    let expected_leaf = match (next.config_source(), next.config_scope()) {
-        (Some(ConfigSource::CodexToml), Some(ConfigScope::UserConfig)) => "config.toml",
-        (Some(ConfigSource::ClaudeJson), Some(ConfigScope::UserConfig)) => "settings.json",
-        (Some(ConfigSource::ClaudeJson), Some(ConfigScope::ProjectLocalConfig)) => {
-            "settings.local.json"
-        }
-        (Some(ConfigSource::OpenCodeJson), Some(ConfigScope::UserConfig)) => "opencode.json",
-        (Some(ConfigSource::OpenCodeJsonc), Some(ConfigScope::UserConfig)) => "opencode.jsonc",
-        _ => return Err(OwnershipError::Invalid),
-    };
-    let binding = if next.config_source() == Some(ConfigSource::ClaudeJson)
-        && next.config_scope() == Some(ConfigScope::ProjectLocalConfig)
-    {
-        config_path_binding_for_claude_project_target(
-            config_path
-                .parent()
-                .and_then(Path::parent)
-                .ok_or(OwnershipError::UnsafePath)?,
-            config_path,
-        )?
-    } else {
-        config_path_binding(config_path)?
-    };
-    if owner_filename != slot_filename(kind)
-        || config_path.file_name().and_then(|value| value.to_str()) != Some(expected_leaf)
-        || binding != next.config_path_binding_sha256()
-        || !previous.as_ref().map_or(
-            next.state() == OwnershipState::Active && next.revision() == 1,
-            |previous| valid_transition(previous, &next),
-        )
-    {
+    let kind = validate_macos_owner_target(config_path, owner_filename, &next)?;
+    if !previous.as_ref().map_or(
+        next.state() == OwnershipState::Active && next.revision() == 1,
+        |previous| valid_transition(previous, &next),
+    ) {
         return Err(OwnershipError::Conflict);
     }
     let empty: &[u8] = if kind == ClientKind::Codex {
@@ -738,6 +715,85 @@ pub(crate) fn validate_macos_publication(
                 return Err(OwnershipError::Conflict);
             }
         }
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn validate_macos_owner_target(
+    config_path: &Path,
+    owner_filename: &str,
+    next: &OwnershipRecord,
+) -> Result<ClientKind, OwnershipError> {
+    let kind = next.client_kind().ok_or(OwnershipError::Invalid)?;
+    let expected_leaf = match (next.config_source(), next.config_scope()) {
+        (Some(ConfigSource::CodexToml), Some(ConfigScope::UserConfig)) => "config.toml",
+        (Some(ConfigSource::ClaudeJson), Some(ConfigScope::UserConfig)) => "settings.json",
+        (Some(ConfigSource::ClaudeJson), Some(ConfigScope::ProjectLocalConfig)) => {
+            "settings.local.json"
+        }
+        (Some(ConfigSource::OpenCodeJson), Some(ConfigScope::UserConfig)) => "opencode.json",
+        (Some(ConfigSource::OpenCodeJsonc), Some(ConfigScope::UserConfig)) => "opencode.jsonc",
+        _ => return Err(OwnershipError::Invalid),
+    };
+    let binding = if next.config_source() == Some(ConfigSource::ClaudeJson)
+        && next.config_scope() == Some(ConfigScope::ProjectLocalConfig)
+    {
+        config_path_binding_for_claude_project_target(
+            config_path
+                .parent()
+                .and_then(Path::parent)
+                .ok_or(OwnershipError::UnsafePath)?,
+            config_path,
+        )?
+    } else {
+        config_path_binding(config_path)?
+    };
+    if owner_filename != slot_filename(kind)
+        || config_path.file_name().and_then(|value| value.to_str()) != Some(expected_leaf)
+        || binding != next.config_path_binding_sha256()
+    {
+        return Err(OwnershipError::Conflict);
+    }
+    Ok(kind)
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn validate_macos_ownership_bytes(bytes: &[u8]) -> Result<(), OwnershipError> {
+    OwnershipRecord::decode(bytes).map(|_| ())
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn validate_macos_retained_adoption(
+    config_path: &Path,
+    owner_filename: &str,
+    previous_owner: Option<&[u8]>,
+    next_owner: &[u8],
+    current: &[u8],
+) -> Result<(), OwnershipError> {
+    let next = OwnershipRecord::decode(next_owner)?;
+    let previous = previous_owner.map(OwnershipRecord::decode).transpose()?;
+    let kind = validate_macos_owner_target(config_path, owner_filename, &next)?;
+    if !previous.as_ref().map_or(
+        next.state() == OwnershipState::Active && next.revision() == 1,
+        |previous| previous_owner == Some(next_owner) || valid_transition(previous, &next),
+    ) {
+        return Err(OwnershipError::Conflict);
+    }
+    crate::integrations::config_document::parse_document(kind, current)
+        .map_err(|_| OwnershipError::Conflict)?;
+    match next.state() {
+        OwnershipState::Active => {
+            if crate::integrations::transaction::undo_owned_endpoint(
+                &next.patch_receipt()?,
+                current,
+            )
+            .is_err()
+            {
+                return Err(OwnershipError::Conflict);
+            }
+        }
+        OwnershipState::Released => {}
     }
     Ok(())
 }
@@ -1174,7 +1230,9 @@ fn map_transaction_error(error: TransactionFsError) -> OwnershipError {
         TransactionFsError::UnsafePath | TransactionFsError::UnsafeFile => {
             OwnershipError::UnsafePath
         }
-        TransactionFsError::TooLarge | TransactionFsError::TooManyFiles => OwnershipError::TooLarge,
+        TransactionFsError::TooLarge
+        | TransactionFsError::TooManyFiles
+        | TransactionFsError::RetainedVersionsLimit => OwnershipError::TooLarge,
         TransactionFsError::Unsupported => OwnershipError::Unsupported,
         TransactionFsError::Expired
         | TransactionFsError::Io

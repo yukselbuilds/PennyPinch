@@ -677,12 +677,13 @@ impl Journal {
 
 fn journals(state: &Directory) -> Result<Vec<(Journal, String)>, TransactionFsError> {
     state.verify()?;
+    let archived = retained_versions::archived_ids(state)?;
     let mut found = Vec::new();
     for (count, entry) in fs::read_dir(&state.path)
         .map_err(|_| TransactionFsError::Io)?
         .enumerate()
     {
-        if count > MAX_JOURNALS * 4 + 16 {
+        if count >= retained_versions::MAX_ROOT_ENTRIES {
             return Err(TransactionFsError::TooManyFiles);
         }
         let entry = entry.map_err(|_| TransactionFsError::Io)?;
@@ -696,6 +697,9 @@ fn journals(state: &Directory) -> Result<Vec<(Journal, String)>, TransactionFsEr
         else {
             continue;
         };
+        if archived.contains(id) {
+            continue;
+        }
         let file = state
             .snapshot(&name(id, "json")?, MAX_JOURNAL_BYTES)?
             .ok_or(TransactionFsError::Conflict)?;
@@ -1137,7 +1141,7 @@ impl FileTransaction {
         self.ensure_lock(&state, true)?;
         let history = journals(&state)?;
         if history.len() >= MAX_JOURNALS {
-            return Err(TransactionFsError::TooManyFiles);
+            return Err(TransactionFsError::RetainedVersionsLimit);
         }
         let owner_index = self
             .entries

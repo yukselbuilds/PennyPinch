@@ -12,11 +12,11 @@ mod state;
 use integrations::config_io::{
     claude_context_failure_reply, claude_settings_snapshot_failure_reply, codex_connection_status,
     codex_status_failure_reply, codex_verify_failure_reply, ApplyConnectionRequest,
-    ClaudeContextReply, ClaudeContextSnapshotRequest, ClaudeScopeSelectionRequest,
-    ClaudeSettingsSnapshotReply, ClaudeSettingsSnapshotRequest, CodexStatusReply,
-    CodexStatusRequest, CodexVerifyManager, CodexVerifyReply, CodexVerifyRequest,
+    ArchiveRetainedRequest, ClaudeContextReply, ClaudeContextSnapshotRequest,
+    ClaudeScopeSelectionRequest, ClaudeSettingsSnapshotReply, ClaudeSettingsSnapshotRequest,
+    CodexStatusReply, CodexStatusRequest, CodexVerifyManager, CodexVerifyReply, CodexVerifyRequest,
     ConnectionActionReply, OwnershipSnapshotRequest, PlanManager, PlanReply, PreviewRequest,
-    UndoConnectionRequest,
+    RetainedReply, RetainedRequest, UndoConnectionRequest,
 };
 use integrations::discovery::{
     DiscoveryManager, DiscoveryReply, RememberInstallationChoiceRequest,
@@ -592,6 +592,34 @@ async fn get_connection_ownership(
 }
 
 #[tauri::command]
+async fn get_retained_config_versions(
+    state: tauri::State<'_, Arc<PlanManager>>,
+    request: RetainedRequest,
+) -> Result<RetainedReply, RetainedReply> {
+    let manager = Arc::clone(state.inner());
+    let id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || manager.retained_versions(request))
+            .await
+            .unwrap_or_else(|_| PlanManager::retained_failure_reply(id)),
+    )
+}
+
+#[tauri::command]
+async fn archive_retained_config_versions(
+    state: tauri::State<'_, Arc<PlanManager>>,
+    request: ArchiveRetainedRequest,
+) -> Result<RetainedReply, RetainedReply> {
+    let manager = Arc::clone(state.inner());
+    let id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || manager.archive_retained_versions(request))
+            .await
+            .unwrap_or_else(|_| PlanManager::retained_failure_reply(id)),
+    )
+}
+
+#[tauri::command]
 async fn get_codex_connection_status(
     plans: tauri::State<'_, Arc<PlanManager>>,
     runtime: tauri::State<'_, RuntimeManager>,
@@ -815,6 +843,8 @@ fn main() {
             apply_connection_plan,
             undo_connection,
             get_connection_ownership,
+            get_retained_config_versions,
+            archive_retained_config_versions,
             get_claude_context_snapshot,
             select_claude_scope,
             get_claude_settings_snapshot,

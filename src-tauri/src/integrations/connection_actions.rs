@@ -365,6 +365,7 @@ enum ActionFault {
     Unavailable,
     Unsupported,
     CommitUnknown,
+    RetainedLimit,
 }
 
 impl ActionFault {
@@ -387,6 +388,11 @@ impl ActionFault {
                 "connection.unsupported_filesystem",
             ),
             Self::CommitUnknown => ("commit_unknown", true, "connection.commit_unknown"),
+            Self::RetainedLimit => (
+                "retained_versions_limit",
+                true,
+                "connection.retained_versions_limit",
+            ),
         };
         ConnectionActionErrorDetail {
             code,
@@ -503,6 +509,7 @@ fn action_summary(
 
 fn map_transaction(error: TransactionFsError) -> ActionFault {
     match error {
+        TransactionFsError::RetainedVersionsLimit => ActionFault::RetainedLimit,
         TransactionFsError::Conflict => ActionFault::Conflict,
         TransactionFsError::UnsafePath | TransactionFsError::UnsafeFile => ActionFault::UnsafePath,
         TransactionFsError::TooLarge | TransactionFsError::TooManyFiles => {

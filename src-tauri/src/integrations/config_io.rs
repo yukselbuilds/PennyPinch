@@ -29,6 +29,9 @@ mod connection_actions;
 pub(super) mod opencode_environment;
 #[path = "config_io/recovery.rs"]
 mod recovery;
+#[path = "config_io/retained_versions.rs"]
+mod retained_versions;
+pub(crate) use retained_versions::{ArchiveRetainedRequest, RetainedReply, RetainedRequest};
 
 #[cfg(target_os = "macos")]
 mod macos;

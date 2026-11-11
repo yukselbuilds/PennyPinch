@@ -12,7 +12,7 @@ const MAX_DOCUMENT_BYTES: usize = 256 * 1024;
 const MAX_TREE_DEPTH: usize = 64;
 const MAX_TREE_NODES: usize = 32_768;
 
-pub(super) fn parse_document(kind: ClientKind, bytes: &[u8]) -> Result<Value, PlanError> {
+pub(crate) fn parse_document(kind: ClientKind, bytes: &[u8]) -> Result<Value, PlanError> {
     if bytes.len() > MAX_DOCUMENT_BYTES {
         return Err(PlanError::ConfigTooLarge);
     }

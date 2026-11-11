@@ -284,6 +284,101 @@ fn native_manager_apply_and_reopened_undo_for_all_adapters() {
 }
 
 #[test]
+fn native_manager_retained_review_archive_and_reopened_undo_for_all_adapters() {
+    for (client, relative, original) in [
+        ("codex", "config.toml", b"model = 'any-model'\n".as_slice()),
+        (
+            "claude_code",
+            "settings.json",
+            b"{\"model\":\"any-model\"}".as_slice(),
+        ),
+        (
+            "opencode_v1",
+            "opencode/opencode.json",
+            b"{\"provider\":{\"openai\":{\"npm\":\"@ai-sdk/openai\"}}}".as_slice(),
+        ),
+    ] {
+        let fixture = Fixture::new();
+        let home = fixture.child("client");
+        fixture.mkdir(&home, 0o755);
+        let config = home.join(relative);
+        if config.parent().unwrap() != home {
+            fixture.mkdir(config.parent().unwrap(), 0o755);
+        }
+        fixture.write(&config, original, 0o644);
+        let (manager, id, generation, roots) = manager_fixture(&fixture, client, &home);
+        let read = || RetainedRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            client_kind: client.into(),
+            scope: "user_config".into(),
+        };
+        let empty = serde_json::to_value(manager.retained_versions(read())).unwrap();
+        assert_eq!(empty["active_records"], 0);
+        assert_eq!(empty["supported"], true);
+        assert!(!fixture.child("state").exists());
+        let plan = manager_plan(&manager, id, generation);
+        let applied = manager_success(manager.apply_connection(ApplyConnectionRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            plan_id: plan.plan_id,
+            expected_config_fingerprint: plan.config_fingerprint,
+        }));
+        let owned = applied.ownership.unwrap();
+        let current = fs::read(&config).unwrap();
+        let review = serde_json::to_value(manager.retained_versions(read())).unwrap();
+        assert_eq!(review["selected_records"], 1);
+        assert_eq!(review["can_archive"], true);
+        let stale =
+            serde_json::to_value(manager.archive_retained_versions(ArchiveRetainedRequest {
+                schema_version: 1,
+                request_id: Uuid::new_v4().to_string(),
+                client_kind: client.into(),
+                scope: "user_config".into(),
+                expected_review_fingerprint: "0".repeat(64),
+            }))
+            .unwrap();
+        assert_eq!(stale["error"]["code"], "conflict");
+        let archived =
+            serde_json::to_value(manager.archive_retained_versions(ArchiveRetainedRequest {
+                schema_version: 1,
+                request_id: Uuid::new_v4().to_string(),
+                client_kind: client.into(),
+                scope: "user_config".into(),
+                expected_review_fingerprint: review["review_fingerprint"].as_str().unwrap().into(),
+            }))
+            .unwrap();
+        assert_eq!(archived["status"], "archived");
+        assert_eq!(archived["active_records"], 0);
+        assert_eq!(archived["completed_archives"], 1);
+        assert!(manager.leases.lock().unwrap().is_empty());
+        assert_eq!(fs::read(&config).unwrap(), current);
+        let discovery = manager.discovery.clone();
+        drop(manager);
+        let reopened = PlanManager::with_test_sources(discovery, roots, manager_endpoint())
+            .with_ownership_store(
+                crate::state::ownership::OwnershipStore::new(
+                    &fixture.path,
+                    Path::new("state/ownership"),
+                )
+                .unwrap(),
+            );
+        let reopened_review = serde_json::to_value(reopened.retained_versions(read())).unwrap();
+        assert_eq!(reopened_review["completed_archives"], 1);
+        let released = manager_success(reopened.undo_connection(UndoConnectionRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            client_kind: client.into(),
+            owner_id: owned.owner_id,
+            expected_revision: owned.revision,
+            expected_record_fingerprint: owned.record_fingerprint,
+        }));
+        assert_eq!(released.status, "released");
+        assert_eq!(fs::read(&config).unwrap(), original);
+    }
+}
+
+#[test]
 fn native_manager_preserves_unrelated_edit_and_precommit_fault() {
     let fixture = Fixture::new();
     let home = fixture.child("client");
