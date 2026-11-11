@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "task": "H048-b5b",
+  "status": "pass",
+  "main_task_complete": false,
+  "verified_at_utc": "2026-11-11T11:15:55.027311+00:00",
+  "implementer": "Main agent connected process, route, lifecycle and preference locking; one Luna xhigh worker prepared the native manager test. Main independently reviewed it and verified the CI result.",
+  "native": {
+    "run_id": 43009523997,
+    "job_id": 130485337295,
+    "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43009523997",
+    "commit": "7b08db312cbabbce8b5a0e5722bca28c84d9bf71",
+    "conclusion": "success",
+    "platform": "macOS 15.8.2 ARM64",
+    "platform_build": "24H232",
+    "runner_image": "20261104.0514.1",
+    "toolchain": {
+      "xcode": "16.4",
+      "rust": "1.92.0",
+      "node": "25.2.1",
+      "pnpm": "11.25.0",
+      "python": "3.13.13",
+      "engine": "0.41.0"
+    },
+    "python": {
+      "total": 18,
+      "passed": 17,
+      "skipped": 1
+    },
+    "protocol_relay_preferences": {
+      "passed": 31,
+      "failed": 0,
+      "ignored": 5
+    },
+    "managed": {
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 58.5
+    },
+    "payload": {
+      "files": 16640,
+      "bytes": 597415256,
+      "source_unchanged": true
+    },
+    "frontend_build": "pass",
+    "tauri_build": "pass",
+    "executable_architecture": "arm64",
+    "ci_inputs_before_after_equal": true,
+    "ci_fingerprint_record": "Build and verify the native executable step in the linked job. The build logs record matching before/after inputs and the executable digest.",
+    "git_tree": "98d03c5d9f84e1164b0717add56ba97fe7a83027",
+    "dispatch_allowance": {
+      "checked_at": "2026-11-11T11:09:40.4848121Z",
+      "account": "Protocol272",
+      "period": "2026-11",
+      "included_compute_used_usd": 1.92,
+      "included_compute_total_usd": 12,
+      "paid_actions_budget_usd": 0,
+      "usage_blocked": true,
+      "candidate_sha": "7b08db312cbabbce8b5a0e5722bca28c84d9bf71",
+      "workflow_sha256": "ebfe154a6daf6bf932dd7304a32b4f6ffc77520f7755f92831f3a12f36071671",
+      "run_id": 43009523997,
+      "timeout_minutes": 20,
+      "runner": "macos-15",
+      "free_only_confirmed": true,
+      "verify_managed_engine": true,
+      "remote_head_matches": true,
+      "local_proof": "work/proofs/macos/h048-b5/actor-windows-preferences-final.json",
+      "previous_native": {
+        "run_id": 43008120350,
+        "managed_passed": 3,
+        "candidate": "ec20e08bcb4225a4425e8a5392718d214c75cfa7",
+        "failure": "managed_app_engine_lifecycle failed before engine ready because macOS preference lock was unavailable",
+        "inputs_before_after_equal": true,
+        "native_protocol_passed": 18,
+        "job_id": 130480635606,
+        "managed_failed": 1
+      }
+    }
+  },
+  "windows": {
+    "passed": 69,
+    "failed": 0,
+    "ignored": 5,
+    "fmt": "pass",
+    "inputs_unchanged": true,
+    "local_proof": "work/proofs/macos/h048-b5/actor-windows-preferences-final.json",
+    "local_proof_sha256": "84f6a8c126a8d7211af30af72a67cdcaa32efef5a6a8c52b20c6a722dd5d34f0"
+  },
+  "source_scope": {
+    "files": 270,
+    "before": "67683d58105b177db86c509bfa9bce1f6198ba7e72fcf408380e1c30a6b4ed96",
+    "after": "67683d58105b177db86c509bfa9bce1f6198ba7e72fcf408380e1c30a6b4ed96",
+    "matches_passed_commit": true
+  },
+  "scenarios": [
+    "Application preference store saves a protected tool and the owned engine verifies that profile at startup.",
+    "The normal RuntimeManager opens the real pinned engine and forwards loopback readiness to its verified Unix peer, including a long app-data path.",
+    "Owned nonaggregate metrics share the active generation; pause and resume change the revision and reject stale writes.",
+    "Wrong generation stop is rejected, normal stop has no route, restart has a new generation and the same saved endpoint.",
+    "Shutdown releases the listener, foreign saved-port owner is preserved, and reopening restores the same loopback endpoint without a backend.",
+    "Preferences preserve revision and fingerprints under concurrent writes, keep prior bytes on an interrupted replacement and reject a redirected lock."
+  ],
+  "limits": [
+    "Native RuntimeManager and real engine over the owned relay were exercised in a private fixture. Actual webview, native package/signing and client configuration transactions are pending.",
+    "No live model/provider traffic, observed request savings, active user configuration writes, public release or charged runner usage.",
+    "The result covers Apple Silicon on the recorded macOS version."
+  ],
+  "next_step": "Native macOS client configuration transactions, then bundle and real application UI lifecycle acceptance.",
+  "development_token_savings": "not_measured"
+}

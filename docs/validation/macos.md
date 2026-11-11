@@ -54,7 +54,13 @@ Parent kaybı testinde yalnız testin kendi motoru durduruldu; sahipli ebeveyn s
 
 İlk native koşu Darwin wildcard listener çakışmasını ve bağlantı kapanışında kaybedilen sahipliğin yanlış hata olarak dönmesini buldu. Kayıtlı portta bağlama öncesi ve sonrası bounded listener gözlemi eklendi. Kontrol, metrik ve sağlık okumalarında süreç kaybı I/O hatasından önce değerlendirilir. Son koşuda 18 native protokol/ingress/relay ve 3 yönetilen motor oturumu testi geçti. Python kontrolleri 17 başarılı, 1 skipped. Önce/sonra kaynak ve 16.640 dosyalı payload parmak izleri aynı. Windows'ta 30 odaklı test geçti, 1 opt-in test ignored. [Koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43002575695), [makine kanıtı ve ilk hata](../proofs/macos-stable-ingress.json).
 
-H048-b5b bu katmanları mevcut RuntimeManager'a bağlar. Başlat/durdur, readiness, kontrol revizyonu, metrik ve yeniden açılış gerçek motorla ölçülür. Arayüzden başlayıp istemciye uzanan native kabul ve gerçek model trafiği henüz açık.
+## H048-b5b — Uygulama yöneticisi ve gerçek motor geçti
+
+11 Kasım 2026. macOS 15.8.2 ARM64 üzerinde uygulamanın kullandığı RuntimeManager ve tercih deposu gerçek sabitlenmiş motorla çalıştı. Kaydedilen korumalı araç ayarı açılışta doğrulandı. Uzun kullanıcı veri yolunda private Unix soketi açıldı ve temizlendi. Sabit loopback girişten /readyz yanıtı geldi. Metrikler aynı motor neslinden okundu. Duraklatma ve devam etme revizyonu değiştirirken eski yazım ve yanlış nesle durdurma isteği reddedildi. Durdurma sonrası giriş yeni isteği motora iletmedi. Yeniden başlatma ve yöneticinin yeniden açılışı aynı portu ve kimliği korudu. Yabancı port sahibine dokunulmadı.
+
+İlk koşu Windows'a özgü tercih kilidi nedeniyle uygulama başlangıcında durdu. macOS'a 0600 sahipli dosya kilidi ve özel geçici yazım eklendi. Son koşuda 31 protokol/aktarım/tercih ve 4 yönetilen motor/uygulama testi geçti. Python kontrolleri 17 başarılı, 1 skipped. ARM64 Tauri derlemesi, 16.640 dosyalı payload ve aynı önce/sonra girdi parmak izi doğrulandı. Windows odaklı 69 test geçti, 5 opt-in ignored. [Koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43009523997), [makine kanıtı](../proofs/macos-application-manager.json).
+
+İstemci ayar işlemleri H048-b6, paket ve gerçek webview yaşam döngüsü H048-c kapsamında açık. Bu koşu yerel readiness ve metrik trafiği kullandı. Canlı sağlayıcı trafiği ile tasarruf ölçümü yapılmadı.
 
 ## Açık kabuller
 
