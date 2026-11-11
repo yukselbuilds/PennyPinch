@@ -675,4 +675,41 @@ fn publication_rechecks_replacement_inode_and_late_write_before_claiming_owner()
         .collect();
     assert_eq!(saved, vec![[ORIGINAL, USER_EDIT].concat()]);
     assert_no_fixture_secrets_in_state(&fixture);
+
+    let fixture = Fixture::create();
+    let mut staged = stage_apply(&fixture);
+    staged.transaction.seal().unwrap();
+    let result = staged.transaction.commit_inner(|| {
+        let displaced = fs::read_dir(&fixture.client)
+            .unwrap()
+            .flatten()
+            .find(|entry| {
+                entry
+                    .file_name()
+                    .to_str()
+                    .is_some_and(|name| name.ends_with(".config"))
+            })
+            .unwrap();
+        let target = CString::new(fixture.config.as_os_str().as_bytes()).unwrap();
+        let displaced = CString::new(displaced.path().as_os_str().as_bytes()).unwrap();
+        assert_eq!(
+            unsafe {
+                libc::renameatx_np(
+                    libc::AT_FDCWD,
+                    target.as_ptr(),
+                    libc::AT_FDCWD,
+                    displaced.as_ptr(),
+                    libc::RENAME_SWAP,
+                )
+            },
+            0
+        );
+    });
+    assert_eq!(
+        result,
+        Err(TransactionFsError::Conflict),
+        "a reverted publication cannot report success"
+    );
+    assert_eq!(fs::read(&fixture.config).unwrap(), ORIGINAL);
+    assert!(!fixture.root.join("state/codex.json").exists());
 }

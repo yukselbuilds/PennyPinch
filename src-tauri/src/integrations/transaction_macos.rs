@@ -1089,6 +1089,22 @@ impl FileTransaction {
             prepared
                 .journal
                 .recover(&prepared.state, &prepared.digest, &path)?;
+            if prepared.journal.marker(&prepared.state, &prepared.digest)?
+                != Some(Disposition::Committed)
+                || version(
+                    &config
+                        .directory
+                        .snapshot(&component(&path)?, MAX_TRANSACTION_FILE_BYTES)?,
+                ) != Some(&prepared.journal.after_config)
+                || version(
+                    &prepared
+                        .state
+                        .snapshot(&component(owner_path)?, MAX_TRANSACTION_FILE_BYTES)?,
+                ) != Some(&prepared.journal.after_owner)
+            {
+                return Err(TransactionFsError::Conflict);
+            }
+            prepared.journal.check_guards()?;
             check_history(&prepared.state, owner_path, &path, None)
         })();
         outcome.map_err(|error| {
