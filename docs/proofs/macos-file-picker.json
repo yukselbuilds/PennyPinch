@@ -1,22 +1,23 @@
 {
   "schema_version": 1,
   "task": "H048-c4",
-  "status": "partial",
+  "status": "pass",
   "main_task_complete": false,
-  "verified_at_utc": "2026-11-12T11:53:45.234976+00:00",
-  "scope": "Native AppKit cancellation and folder main-thread dispatch, locked Apple Silicon build and separate actual manager persistence fixtures",
+  "verified_at_utc": "2026-11-12T12:25:55.866947+00:00",
+  "scope": "Real AppKit file and project directory selection, cancellation, exact returned paths, actual manager persistence after reopen and a locked Apple Silicon build",
   "native": {
-    "run_id": 43212626624,
-    "job_id": 131163826254,
-    "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43212626624",
-    "commit": "bb2b29ae139173ffbf5d42eb1e45b1d0fb640ec2",
+    "run_id": 43217388795,
+    "job_id": 131179989946,
+    "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43217388795",
+    "commit": "ed402fbca888cc6fcccf0de4848a0e95faba13ff",
     "os": "15.8.2",
     "build": "24H232",
     "arch": "arm64",
     "rust": "1.92.0",
-    "inputs_before": "0784c38554d52c12b977e22a17ecf6ea6a0a695c6cba2db72a4e9d0337d5e3fa",
-    "inputs_after": "0784c38554d52c12b977e22a17ecf6ea6a0a695c6cba2db72a4e9d0337d5e3fa",
-    "test_summary": "test result: ok. 16 passed; 0 failed; 2 ignored; 0 measured; 314 filtered out; finished in 10.56s",
+    "inputs_before": "705d3b14fe7c213f05f9cdec9c94553b6765bba75e42883344adc5ce5b0e0df0",
+    "inputs_after": "705d3b14fe7c213f05f9cdec9c94553b6765bba75e42883344adc5ce5b0e0df0",
+    "test_summary": "test result: ok. 16 passed; 0 failed; 2 ignored; 0 measured; 315 filtered out; finished in 9.51s",
+    "panel_manager_test_summary": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 332 filtered out; finished in 1.46s",
     "tests": [
       "integrations::config_io::macos::tests::native_manager_apply_and_reopened_undo_for_all_adapters",
       "integrations::config_io::macos::tests::native_manager_missing_claude_project_directory_precommit_fault_is_passive",
@@ -33,25 +34,32 @@
       "state::choices::macos_tests::app_local_selection_store_is_passive_then_roundtrips_explicit_choices",
       "state::choices::macos_tests::executable_replacement_and_same_size_edit_make_saved_choices_unavailable",
       "state::choices::macos_tests::malformed_and_oversized_selection_files_are_rejected_without_rewrite",
-      "state::choices::macos_tests::unsafe_selection_roots_and_files_fail_closed_without_touching_targets"
+      "state::choices::macos_tests::unsafe_selection_roots_and_files_fail_closed_without_touching_targets",
+      "integrations::config_io::macos::tests::native_picker_selections_reopen_in_actual_managers"
     ],
     "panel_cases": [
       "file_cancel",
-      "folder_background_dispatch_cancel"
+      "folder_background_dispatch_cancel",
+      "file",
+      "folder_background_dispatch"
     ],
+    "selected_cli_before": "c43dfdedd0f4c6f9e2c8e03070233db63ad041cc299f53b57a325f06494d1954",
+    "selected_cli_after": "c43dfdedd0f4c6f9e2c8e03070233db63ad041cc299f53b57a325f06494d1954",
+    "selected_cli_version": "0.163.0-alpha.11.1",
+    "panel_driver": "external System Events on the owned LaunchServices app",
     "binary_sha256": "02adc6b732409931688852a23c2ae90c8f8ec6a27843a6923e5fd4cc56ad6d6b",
     "allowance": {
-      "checked_at": "2026-11-12T11:50:42.4245381Z",
+      "checked_at": "2026-11-12T12:23:05.8526858Z",
       "account": "Protocol272",
       "period": "2026-11",
-      "included_compute_used_usd": 6.76,
+      "included_compute_used_usd": 7.38,
       "included_compute_total_usd": 12,
       "billable_usage_usd": 0,
       "paid_actions_budget_usd": 0,
       "usage_blocked": true,
-      "candidate_sha": "bb2b29ae139173ffbf5d42eb1e45b1d0fb640ec2",
-      "workflow_sha256": "00b923beab5b73a49851b8b865199ace1ac3fc3aea2aed66f4e744b2a18e6aad",
-      "run_id": "43212626624",
+      "candidate_sha": "ed402fbca888cc6fcccf0de4848a0e95faba13ff",
+      "workflow_sha256": "989ffb63cee6d510c4cfcfb07dd103ce6ddb2dcf4c1c8563f5b7036b07524ce9",
+      "run_id": "43217388795",
       "runner": "macos-15",
       "timeout_minutes": 20,
       "verify_cli_discovery": true,
@@ -63,18 +71,25 @@
     }
   },
   "source_sha256": {
-    ".github/workflows/macos-build.yml": "00b923beab5b73a49851b8b865199ace1ac3fc3aea2aed66f4e744b2a18e6aad",
+    ".github/workflows/macos-build.yml": "989ffb63cee6d510c4cfcfb07dd103ce6ddb2dcf4c1c8563f5b7036b07524ce9",
     "pnpm-lock.yaml": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3",
+    "scripts/macos-picker-input.applescript": "09a29b16b0a49cfe56abb250f856f1f2dc01b63aaa75a862c9be3c3293f6c72f",
+    "scripts/verify-macos-picker.sh": "0cc01cd20f507f1d8b91e91731f68d90ba1152bc95f554f242dd2f8297c97cfc",
     "src-tauri/Cargo.lock": "dac06959c740adeb4efd89108885fd1e1ef0197b8aeb6f3b0e65517d072a54da",
     "src-tauri/Cargo.toml": "b259f780faf69e41a6a94e50111cd86dd94086fc1252f379773f676d384d086a",
-    "src-tauri/examples/macos-picker-proof.rs": "59c89403c516f3f33befe8e75fc86bed989d4e1d98766545a0372082cfd7556f",
+    "src-tauri/examples/macos-picker-proof.rs": "cbd55d8a108833fe04aa9958c7e902bbcc2e95548dade5c7c3b7303634ef95dc",
     "src-tauri/src/integrations/config_io/claude_context.rs": "fb132ba2ab0483ecc55760e4890135b48936463e3784c99f3585359230521638",
+    "src-tauri/src/integrations/config_io/macos_tests.rs": "b8d35f8a84444d39ad8a34c40c4bb37e9c289b7398a3c9a2d6bfb958cf9ef2b0",
     "src-tauri/src/integrations/discovery.rs": "c3e8ce4770281a7a0cfa79c2f00d25da66012f1008830297f4cd5a008c81d2f3",
     "src-tauri/src/integrations/discovery_macos.rs": "2fef25d838836796b6857acabea3e58fe0e45b169660a121d3bdd10a0affe720",
     "src-tauri/src/integrations/discovery_macos_tests.rs": "98f42ade670af287ba665183f76f1846ed16d213860d8291dbdbf002f23bba10",
     "src-tauri/src/integrations/picker.rs": "df30450fd016864f7333d5f0889e239345051b1e96830c2c45c62aab6878df6e",
     "src-tauri/src/integrations/picker_macos.rs": "81add41969f47fcbb8193b42f32909bdc20392a8029f8c333612fd95f5adfd06",
     "src-tauri/src/main.rs": "ac69f2eb2f3a86d495752c7a21785e01a5d6843553a854a2b585b2be9a5c92cd"
+  },
+  "previous_partial_verification": {
+    "sha256": "26bda00b6660de09d731088138fc7f9a8ddb6b000ca536bccaa919bbb8859f82",
+    "native_run_id": 43212626624
   },
   "static_commands": [
     {
@@ -87,19 +102,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.98,
-      "test_summary": [],
-      "node_summary": [],
-      "failed_tests": []
-    },
-    {
-      "command": [
-        "work/proofs/macos/h048-a/actionlint-1.7.12/actionlint.exe",
-        "-color",
-        ".github/workflows/macos-build.yml"
-      ],
-      "exit_code": 0,
-      "seconds": 0.11,
+      "seconds": 0.997,
       "test_summary": [],
       "node_summary": [],
       "failed_tests": []
@@ -111,7 +114,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.033,
+      "seconds": 0.036,
       "test_summary": [],
       "node_summary": [],
       "failed_tests": []
@@ -187,12 +190,17 @@
       ]
     },
     "proof_sha256": "5818e1f3a2f92d45db9077a8fcf8a60a383c8b16475627ce752623cf88399185",
-    "matching_inputs": 282,
+    "matching_inputs": 281,
     "macos_only_exclusions": {
       "src-tauri/Cargo.toml": {
         "tested": "e1ee127738b50ef2db08b0747f312d95a19708b21e3c51933015d0308ded57b8",
         "candidate": "b259f780faf69e41a6a94e50111cd86dd94086fc1252f379773f676d384d086a",
         "reason": "macOS dev-dependency features only, Windows manifest projection matches"
+      },
+      "src-tauri/src/integrations/config_io/macos_tests.rs": {
+        "tested": "c6bd6463997c4f63ce54de98f13f258e6663aac0653a98c618dd283ed2d90925",
+        "candidate": "b8d35f8a84444d39ad8a34c40c4bb37e9c289b7398a3c9a2d6bfb958cf9ef2b0",
+        "reason": "macOS-only additional actual panel-to-manager persistence test"
       },
       "src-tauri/src/integrations/picker_macos.rs": {
         "tested": "52ab4fb866a657f7b2b36a8fd98e05b0aa181cbe5c7ff6d0e5b64499596d23c1",
@@ -201,12 +209,12 @@
       },
       ".github/workflows/macos-build.yml": {
         "tested": "ec22b621e2a1de977a5f4cee55930a15768bc767a995a8f0265cd0f4b04853a7",
-        "candidate": "00b923beab5b73a49851b8b865199ace1ac3fc3aea2aed66f4e744b2a18e6aad",
+        "candidate": "989ffb63cee6d510c4cfcfb07dd103ce6ddb2dcf4c1c8563f5b7036b07524ce9",
         "reason": "macOS-only GitHub Actions workflow verified natively"
       },
       "src-tauri/examples/macos-picker-proof.rs": {
         "tested": "10065a94ed7cb52051a87e17ef20017b1ca7f253e49eb4d4794e00fb399b2ea8",
-        "candidate": "59c89403c516f3f33befe8e75fc86bed989d4e1d98766545a0372082cfd7556f",
+        "candidate": "cbd55d8a108833fe04aa9958c7e902bbcc2e95548dade5c7c3b7303634ef95dc",
         "reason": "macOS-only test driver verified in the native GUI process"
       }
     },
@@ -379,10 +387,67 @@
       "inputs_before": "a253657598ae0856ebb0ad5bd48b9ad1404f162c6e64ac0b59757c787feac428",
       "inputs_after": "a253657598ae0856ebb0ad5bd48b9ad1404f162c6e64ac0b59757c787feac428",
       "verified_at_utc": "2026-11-12T11:49:38.702751+00:00"
+    },
+    {
+      "run_id": "43214623302",
+      "candidate": "1fc7535bbd85cab41c6fd90dc13492f99f3578a8",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43214623302",
+      "phase": "bundled_app_external_driver",
+      "native_cases": [
+        "file_cancel",
+        "folder_background_dispatch_cancel"
+      ],
+      "test_summary": "test result: ok. 16 passed; 0 failed; 2 ignored; 0 measured; 314 filtered out; finished in 9.86s",
+      "owned_panel_frontmost": true,
+      "go_to_folder_sheet_observed": true,
+      "path_confirmation": "sheet_did_not_close",
+      "inputs_before": "dd389e359418b972509026f331ead1a3a1b6823ad452ecb178cbb736ea91f302",
+      "inputs_after": "dd389e359418b972509026f331ead1a3a1b6823ad452ecb178cbb736ea91f302",
+      "verified_at_utc": "2026-11-12T12:09:24.555576+00:00"
+    },
+    {
+      "run_id": "43215422154",
+      "candidate": "2316e1391f1a762bbe74beebf9efd5cc204807c3",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43215422154",
+      "phase": "external_native_path_control",
+      "native_cases": [
+        "file_cancel",
+        "folder_background_dispatch_cancel",
+        "file",
+        "folder_background_dispatch"
+      ],
+      "test_summary": "test result: ok. 16 passed; 0 failed; 2 ignored; 0 measured; 314 filtered out; finished in 9.91s",
+      "path_observations": 2,
+      "cli_fixture": "nonexecuted_text_fixture",
+      "fixture_unchanged": true,
+      "locked_arm64_build": true,
+      "inputs_before": "a1d6e7ab38b44d5ebc87cf11d990b384eb665e4f75a88670521b87a465333a01",
+      "inputs_after": "a1d6e7ab38b44d5ebc87cf11d990b384eb665e4f75a88670521b87a465333a01",
+      "verified_at_utc": "2026-11-12T12:16:02.419630+00:00"
+    },
+    {
+      "run_id": "43216520646",
+      "candidate": "620ebf6b0bf2ea8b3ccd9ffb2f76413b7cde0fe3",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43216520646",
+      "phase": "official_cli_keyboard_confirmation",
+      "native_cases": [
+        "file_cancel",
+        "folder_background_dispatch_cancel"
+      ],
+      "test_summary": "test result: ok. 16 passed; 0 failed; 2 ignored; 0 measured; 315 filtered out; finished in 10.26s",
+      "owned_panel_frontmost": true,
+      "fixture_path_observed": true,
+      "file_confirmation": "panel_did_not_close",
+      "inputs_before": "05b89ff1390bc4ca30d18264df65e7e74bf67e6b0267f38933308e9b660a449c",
+      "inputs_after": "05b89ff1390bc4ca30d18264df65e7e74bf67e6b0267f38933308e9b660a449c",
+      "verified_at_utc": "2026-11-12T12:22:19.802229+00:00"
     }
   ],
   "verified": [
-    "Visible NSOpenPanel file and folder modes, single selection and actual cancel response",
+    "Visible NSOpenPanel file and folder modes, single selection and actual cancellation and confirmation responses",
+    "Actual Unicode extensionless CLI file and project folder paths returned by the production picker",
+    "System Events ran outside the proof app and observed the exact path field before confirming each owned foreground panel",
+    "Both actual native panel results were persisted by application managers and reopened from their saved choices",
     "Project folder panel dispatched from a background caller to the main AppKit thread",
     "Actual DiscoveryManager saves a manually selected canonical CLI target and rebinds it after manager restart",
     "Symlinked command resolves to a versioned file while the saved original file identity is enforced",
@@ -390,14 +455,13 @@
     "Actual Claude project manager persistence and no implicit .claude creation verified in native fixtures"
   ],
   "remaining": [
-    "confirmed CLI file and Claude project folder selections from the native panel",
     "packaged Tauri window and engine lifecycle",
     "live macOS Desktop traffic",
     "macOS report export"
   ],
   "limits": [
     "Panel proof invokes production picker functions in an owned AppKit example, without a packaged Tauri webview",
-    "Attempted keyboard and accessibility automation did not confirm a selected file; this is not a product incompatibility finding"
+    "The GUI driver needs the runner's existing accessibility permissions and was validated on macOS Apple Silicon"
   ],
   "development_token_savings": "not_measured"
 }
