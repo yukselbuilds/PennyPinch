@@ -28,6 +28,84 @@ fn private_dir(path: &Path) {
 }
 
 #[test]
+fn manual_cli_selection_keeps_a_saved_choice_across_fresh_scans() {
+    let root = proof_root().join("manual-selection");
+    private_dir(&root);
+    let executable = root.join("codex");
+    fs::copy(proof_root().join("clients/bin/codex"), &executable).unwrap();
+    let app_data = root.join("app-data");
+    let store = ChoiceStore::for_app_local_data(Some(app_data.clone())).unwrap();
+    let manager = DiscoveryManager::with_choice_store(Some(store.clone()));
+    let request_id = Uuid::new_v4().to_string();
+    let DiscoveryReply::Cancelled(cancelled) =
+        manager.select_client_file_with(request_id.clone(), "codex".into(), |_| Ok(None))
+    else {
+        panic!("picker cancellation was not correlated");
+    };
+    assert_eq!(cancelled.request_id, request_id);
+    assert!(!app_data.exists());
+    let DiscoveryReply::Snapshot(selected) =
+        manager.select_client_file_with(Uuid::new_v4().to_string(), "codex".into(), |_| {
+            Ok(Some(executable.clone()))
+        })
+    else {
+        panic!("native CLI picker result was rejected");
+    };
+    let row = &selected.installations[0];
+    assert_eq!(row.version.as_deref(), Some("0.163.0-alpha.11.1"));
+    assert_eq!(row.source, "manual_file");
+    assert!(matches!(
+        manager.remember_installation_choice(RememberInstallationChoiceRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            scan_generation: selected.scan_generation,
+            installation_id: row.installation_id.clone(),
+        }),
+        SavedInstallationChoiceReply::Snapshot(_)
+    ));
+    drop(manager);
+    let reopened = DiscoveryManager::with_choice_store(Some(store));
+    let DiscoveryReply::Snapshot(refreshed) =
+        reopened.scan_with_inputs(Uuid::new_v4().to_string(), DiscoveryInputs::default())
+    else {
+        panic!("manual selection rescan failed");
+    };
+    assert_eq!(refreshed.installations.len(), 1);
+    assert_eq!(refreshed.installations[0].source, "manual_file");
+    assert_ne!(
+        refreshed.installations[0].installation_id,
+        row.installation_id
+    );
+    let DiscoveryReply::Snapshot(cancelled_scan) =
+        reopened.list_snapshot(Uuid::new_v4().to_string())
+    else {
+        panic!("saved scan unavailable");
+    };
+    assert!(matches!(
+        reopened.select_client_file_with(Uuid::new_v4().to_string(), "codex".into(), |_| Ok(None)),
+        DiscoveryReply::Cancelled(_)
+    ));
+    let DiscoveryReply::Snapshot(after_cancel) = reopened.list_snapshot(Uuid::new_v4().to_string())
+    else {
+        panic!("scan after cancellation unavailable");
+    };
+    assert_eq!(after_cancel.scan_generation, cancelled_scan.scan_generation);
+    assert!(matches!(
+        reopened.select_client_file_with(Uuid::new_v4().to_string(), "claude_code".into(), |_| Ok(
+            Some(executable.clone())
+        )),
+        DiscoveryReply::Error(_)
+    ));
+    fs::set_permissions(&executable, fs::Permissions::from_mode(0o600)).unwrap();
+    let DiscoveryReply::Snapshot(changed) =
+        reopened.scan_with_inputs(Uuid::new_v4().to_string(), DiscoveryInputs::default())
+    else {
+        panic!("changed CLI rescan failed");
+    };
+    assert!(changed.installations.is_empty());
+}
+
+#[test]
 fn installed_cli_discovery_uses_actual_environment_and_does_not_execute_candidates() {
     let root = proof_root();
     let home = root.join("home");

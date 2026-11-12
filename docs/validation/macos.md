@@ -200,6 +200,18 @@ Ana ajan paket doğrulama, seçim ve bağlantı sınırlarını üstlenir. Tek L
 
 İmza denetimi yereldir. Çevrimiçi sertifika iptali, paket kaynaklarının tamamı, Intel mimarisi ve gerçek Desktop trafiği ayrıca doğrulama gerektirir. Bu aşamada macOS Desktop bağlantı planı kapalıdır.
 
+## H048-c4 — Yerel dosya ve klasör seçici
+
+İstemci dosyası ve Claude proje klasörü için mevcut IPC, sahiplik ve seçim deposu kullanılır. macOS AppKit paneli ana iş parçacığında açılır. Dosya seçimi uzantısız CLI komutlarını kabul eder ve mevcut dosya kimliği kontrolüne bağlanır. Klasör seçimi güvenli yerel projeyi kaydeder. Bu dilim rapor dışa aktarma veya yeni bağlantı yöntemi eklemez.
+
+| Başlangıç ve eylem | Beklenen gözlem |
+| --- | --- |
+| Dosyadan ekle → gerçek panelde CLI seç → tara ve yeniden aç | Doğru istemci dosyası doğrulanır. Seçim taze kimliğe bağlanır. Panel istemciyi çalıştırmaz. |
+| Claude proje kapsamı → gerçek panelde klasör seç → yeniden aç | Klasör mevcut PlanManager ve ChoiceStore akışına girer. Keşif veya seçim config dosyası oluşturmaz. |
+| Paneli iptal et, yanlış dosya seç veya dosyayı değiştir | İptal önceki seçimi korur. Yanlış dosya sabit hata verir. Değişmiş dosya eski seçime bağlanmaz. |
+
+Ana ajan ana iş parçacığı, yol doğrulama ve gerçek yönetici akışını uygular. Tek Luna sabitlenmiş AppKit API'lerini salt okunur inceler. Doğrulama mevcut ücretsiz macOS Actions koşusunda gerçek panel, kontrollü yerel dosyalar ve sınırlı süreli ayrı süreçle yapılır. Girdi/araç/ortam parmak izi alınır. Windows'ta etkilenen keşif ve Claude kapsamı testleri odaklı çalışır.
+
 ## Açık kabuller
 
 - H048-c'de sıradaki adım gerçek macOS dosya seçicidir. Desktop istemcisinden gerçek trafik ve bağlantı kabulü de açık.
