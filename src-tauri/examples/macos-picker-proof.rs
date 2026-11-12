@@ -6,39 +6,27 @@ mod picker;
 mod proof {
     use super::picker;
     use block2::RcBlock;
-    use core_foundation::base::{CFType, CFTypeRef, TCFType};
     use objc2::{rc::Retained, MainThreadMarker};
     use objc2_app_kit::{
-        NSApplication, NSApplicationActivationPolicy, NSEventModifierFlags,
-        NSModalPanelRunLoopMode, NSOpenPanel, NSPasteboard, NSPasteboardTypeString,
-        NSRunningApplication, NSWorkspace,
+        NSApplication, NSApplicationActivationPolicy, NSModalPanelRunLoopMode, NSOpenPanel,
+        NSPasteboard, NSPasteboardTypeString, NSRunningApplication, NSWorkspace,
     };
     use objc2_foundation::{NSDate, NSDefaultRunLoopMode, NSRunLoop, NSString, NSTimer};
     use sha2::{Digest, Sha256};
-    use std::cell::Cell;
+    use std::cell::{Cell, RefCell};
     use std::os::unix::fs::MetadataExt;
     use std::path::PathBuf;
+    use std::process::{Child, Command, Stdio};
     use std::rc::Rc;
     use std::sync::mpsc;
     use std::time::{Duration, Instant};
-
-    #[link(name = "CoreGraphics", kind = "framework")]
-    unsafe extern "C" {
-        fn CGPreflightPostEventAccess() -> bool;
-        fn CGEventCreateKeyboardEvent(source: CFTypeRef, key: u16, key_down: bool) -> CFTypeRef;
-        fn CGEventSetFlags(event: CFTypeRef, flags: u64);
-        fn CGEventPost(tap: u32, event: CFTypeRef);
-    }
-
-    const KEY_G: u16 = 5;
-    const KEY_V: u16 = 9;
-    const KEY_RETURN: u16 = 36;
-    const CG_SESSION_EVENT_TAP: u32 = 1;
 
     struct Driver {
         timer: Retained<NSTimer>,
         timed_out: Rc<Cell<bool>>,
         saw_panel: Rc<Cell<bool>>,
+        script: Rc<RefCell<Option<Child>>>,
+        script_ok: Rc<Cell<bool>>,
     }
 
     impl Driver {
@@ -46,10 +34,13 @@ mod proof {
             let start = Instant::now();
             let timed_out = Rc::new(Cell::new(false));
             let saw_panel = Rc::new(Cell::new(false));
-            let phase = Cell::new(0);
-            let previous_focus = Cell::new(None);
+            let script: Rc<RefCell<Option<Child>>> = Rc::new(RefCell::new(None));
+            let script_ok = Rc::new(Cell::new(selection.is_none()));
+            let script_started = Cell::new(false);
             let timeout_result = timed_out.clone();
             let panel_result = saw_panel.clone();
+            let child = script.clone();
+            let child_result = script_ok.clone();
             let proof_app = NSRunningApplication::currentApplication();
             let block = RcBlock::new(move |_: std::ptr::NonNull<NSTimer>| {
                 let app = NSApplication::sharedApplication(mtm);
@@ -62,7 +53,6 @@ mod proof {
                 panel_result.set(true);
                 if start.elapsed() > Duration::from_secs(20) {
                     timeout_result.set(true);
-                    println!("headroom-picker-input-timeout phase={}", phase.get());
                     unsafe { panel.cancel(None) };
                     return;
                 }
@@ -70,47 +60,57 @@ mod proof {
                     unsafe { panel.cancel(None) };
                     return;
                 };
-                let focus = (
-                    app.isActive(),
-                    NSWorkspace::sharedWorkspace()
-                        .frontmostApplication()
-                        .is_some_and(|front| front == proof_app),
-                    window.isVisible(),
-                    app.keyWindow().is_some(),
-                );
-                if previous_focus.replace(Some(focus)) != Some(focus) {
-                    let (active, foreground, visible, key_window) = focus;
-                    println!("headroom-picker-focus active={active} owned_foreground={foreground} visible={visible} key_window={key_window}");
-                }
-                if focus != (true, true, true, true) {
+                if script_started.get() {
+                    let finished = child.borrow_mut().as_mut().is_some_and(|process| {
+                        process.try_wait().is_ok_and(|status| status.is_some())
+                    });
+                    if finished {
+                        let ok = script_result(child.borrow_mut().take().unwrap());
+                        child_result.set(ok);
+                        if !ok {
+                            unsafe { panel.cancel(None) };
+                        }
+                    }
                     return;
                 }
-                // The native panel runs outside our process. The foreground guard
-                // confines session input to this test app's active modal picker.
-                let sent = match phase.get() {
-                    0 => key(
-                        KEY_G,
-                        NSEventModifierFlags::Command | NSEventModifierFlags::Shift,
-                    ),
-                    2 => {
-                        let pasteboard = NSPasteboard::generalPasteboard();
-                        pasteboard.clearContents();
-                        pasteboard.setString_forType(
-                            &NSString::from_str(&path.to_string_lossy()),
-                            unsafe { NSPasteboardTypeString },
-                        ) && key(KEY_V, NSEventModifierFlags::Command)
-                    }
-                    4 | 6 | 8 => key(KEY_RETURN, NSEventModifierFlags::empty()),
-                    _ => true,
-                };
-                if !sent {
-                    timeout_result.set(true);
+                if !app.isActive()
+                    || !window.isVisible()
+                    || app.keyWindow().is_none()
+                    || !NSWorkspace::sharedWorkspace()
+                        .frontmostApplication()
+                        .is_some_and(|front| front == proof_app)
+                {
+                    return;
+                }
+                let pasteboard = NSPasteboard::generalPasteboard();
+                pasteboard.clearContents();
+                if !pasteboard
+                    .setString_forType(&NSString::from_str(&path.to_string_lossy()), unsafe {
+                        NSPasteboardTypeString
+                    })
+                {
+                    println!("headroom-picker-system-events=fixture_pasteboard_unavailable");
                     unsafe { panel.cancel(None) };
+                    return;
                 }
-                if matches!(phase.get(), 0 | 2 | 4 | 6 | 8) {
-                    println!("headroom-picker-event={}", phase.get());
+                script_started.set(true);
+                let input_script = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                    .join("examples/macos-picker-input.applescript");
+                match Command::new("/usr/bin/osascript")
+                    .arg(input_script)
+                    .arg(std::process::id().to_string())
+                    .arg(path)
+                    .stdin(Stdio::null())
+                    .stdout(Stdio::piped())
+                    .stderr(Stdio::piped())
+                    .spawn()
+                {
+                    Ok(process) => *child.borrow_mut() = Some(process),
+                    Err(_) => {
+                        println!("headroom-picker-system-events=spawn_failed");
+                        unsafe { panel.cancel(None) };
+                    }
                 }
-                phase.set(phase.get() + 1);
             });
             let timer = unsafe { NSTimer::timerWithTimeInterval_repeats_block(0.5, true, &block) };
             let run_loop = NSRunLoop::mainRunLoop();
@@ -122,55 +122,53 @@ mod proof {
                 timer,
                 timed_out,
                 saw_panel,
+                script,
+                script_ok,
             }
         }
 
         fn verify(self) {
             self.timer.invalidate();
+            if let Some(mut child) = self.script.borrow_mut().take() {
+                if self.timed_out.get() {
+                    let _ = child.kill();
+                }
+                self.script_ok.set(script_result(child));
+            }
             assert!(self.saw_panel.get(), "native_panel_not_observed");
             assert!(!self.timed_out.get(), "native_panel_input_did_not_complete");
+            assert!(self.script_ok.get(), "native_panel_input_failed");
         }
     }
 
-    fn key(code: u16, flags: NSEventModifierFlags) -> bool {
-        if !unsafe { CGPreflightPostEventAccess() } {
+    fn script_result(child: Child) -> bool {
+        let Ok(output) = child.wait_with_output() else {
+            println!("headroom-picker-system-events=wait_failed");
             return false;
+        };
+        let result = String::from_utf8_lossy(&output.stdout);
+        let result = result.trim();
+        let known = result.len() <= 48
+            && !result.is_empty()
+            && result.bytes().all(|byte| {
+                byte.is_ascii_lowercase() || byte.is_ascii_digit() || matches!(byte, b'_' | b'-')
+            });
+        if known {
+            println!("headroom-picker-system-events={result}");
+        } else {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let code = stderr
+                .trim()
+                .rsplit_once(" (")
+                .and_then(|(_, code)| code.strip_suffix(')'))
+                .and_then(|code| code.parse::<i32>().ok());
+            println!(
+                "headroom-picker-system-events=execution_failed code={}",
+                code.unwrap_or_default()
+            );
         }
-        let modifiers = [
-            (NSEventModifierFlags::Command, 55),
-            (NSEventModifierFlags::Shift, 56),
-        ];
-        let mut pressed = NSEventModifierFlags::empty();
-        let mut sent = true;
-        for (modifier, key) in modifiers {
-            if flags.contains(modifier) {
-                pressed.insert(modifier);
-                sent &= post_key(key, true, pressed);
-            }
-        }
-        for down in [true, false] {
-            sent &= post_key(code, down, pressed);
-        }
-        for (modifier, key) in modifiers.into_iter().rev() {
-            if flags.contains(modifier) {
-                pressed.remove(modifier);
-                sent &= post_key(key, false, pressed);
-            }
-        }
-        sent
-    }
-
-    fn post_key(code: u16, down: bool, flags: NSEventModifierFlags) -> bool {
-        let raw = unsafe { CGEventCreateKeyboardEvent(std::ptr::null(), code, down) };
-        if raw.is_null() {
-            return false;
-        }
-        let event = unsafe { CFType::wrap_under_create_rule(raw) };
-        unsafe {
-            CGEventSetFlags(event.as_CFTypeRef(), flags.bits() as u64);
-            CGEventPost(CG_SESSION_EVENT_TAP, event.as_CFTypeRef());
-        }
-        true
+        output.status.success()
+            && matches!(result, "panel_closed_after_return" | "clicked_confirmation")
     }
 
     pub fn run() {
@@ -194,8 +192,6 @@ mod proof {
         assert_eq!(info.uid(), unsafe { libc::geteuid() });
         assert_eq!(info.mode() & 0o7777, 0o700);
         let app = NSApplication::sharedApplication(mtm);
-        let can_post_events = unsafe { CGPreflightPostEventAccess() };
-        println!("headroom-picker-post-event-access={can_post_events}");
         app.setActivationPolicy(NSApplicationActivationPolicy::Regular);
         app.finishLaunching();
         #[allow(deprecated)]
@@ -206,15 +202,15 @@ mod proof {
         assert_eq!(picker::select_file(1, "codex"), Ok(None));
         cancel.verify();
         println!("headroom-picker-case=cancel status=pass");
-        assert!(can_post_events, "native_picker_input_permission_missing");
 
         let command = root.join("CLI 工具/codex");
         std::fs::create_dir(command.parent().unwrap()).unwrap();
         std::fs::write(&command, b"owned nonexecuted picker fixture").unwrap();
         let before = Sha256::digest(std::fs::read(&command).unwrap());
         let select = Driver::new(mtm, Some(command.clone()));
-        assert_eq!(picker::select_file(1, "codex"), Ok(Some(command.clone())));
+        let selected = picker::select_file(1, "codex");
         select.verify();
+        assert_eq!(selected, Ok(Some(command.clone())));
         let after = Sha256::digest(std::fs::read(&command).unwrap());
         assert_eq!(before, after);
         println!("headroom-picker-input=cli before={before:x} after={after:x}");
@@ -240,8 +236,8 @@ mod proof {
             );
         };
         worker.join().unwrap();
-        assert_eq!(selected, Ok(Some(project.clone())));
         select.verify();
+        assert_eq!(selected, Ok(Some(project.clone())));
         assert!(!project.join(".claude").exists());
         println!("headroom-picker-case=folder_background_dispatch status=pass");
         println!("headroom-picker-proof=pass");
