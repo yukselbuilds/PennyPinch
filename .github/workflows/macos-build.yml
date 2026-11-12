@@ -29,7 +29,7 @@ on:
         type: boolean
         default: false
       verify_file_picker:
-        description: Check native AppKit picker cancellation and folder picker main-thread dispatch.
+        description: Verify native AppKit file and folder selection with the owned foreground proof app.
         required: false
         type: boolean
         default: false
@@ -217,11 +217,15 @@ jobs:
             fi
             if [[ "$status" == 0 ]]; then
               if [[ "$HEADROOM_VERIFY_FILE_PICKER" == true ]]; then
-                cargo +1.92.0 run --locked --manifest-path src-tauri/Cargo.toml \
+                cargo +1.92.0 build --locked --manifest-path src-tauri/Cargo.toml \
                   --example macos-picker-proof --features custom-protocol \
                   --target aarch64-apple-darwin --jobs 2 --color never \
-                  -- "$HEADROOM_MACOS_PICKER_PROOF_ROOT" \
                   > "$build_log" 2>&1 || status=$?
+                if [[ "$status" == 0 ]]; then
+                  bash scripts/verify-macos-picker.sh "$HEADROOM_MACOS_PICKER_PROOF_ROOT" \
+                    "$CARGO_TARGET_DIR/aarch64-apple-darwin/debug/examples/macos-picker-proof" \
+                    > "$build_log" 2>&1 || status=$?
+                fi
                 awk '/^headroom-picker-/ { print substr($0, 1, 240) }
                   /^error(\[[A-Z][0-9]+\])?: / { show = ++count <= 10; if (show) print substr($0, 1, 300) }
                   show && /^ *--> / { print substr($0, 1, 180); show = 0 }
@@ -262,7 +266,7 @@ jobs:
             printf '%s\n' '- Native discovery and saved selections verified with pinned Apple Silicon CLI binaries in isolated PATH, HOME and app-data layouts.' >> "$GITHUB_STEP_SUMMARY"
           fi
           if [[ "$HEADROOM_VERIFY_FILE_PICKER" == true ]]; then
-            printf '%s\n' '- AppKit file and folder picker cancellation passed, including folder picker dispatch to the main thread.' >> "$GITHUB_STEP_SUMMARY"
+            printf '%s\n' '- AppKit file and folder picker selection and cancellation passed, including folder picker dispatch to the main thread.' >> "$GITHUB_STEP_SUMMARY"
           fi
           if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
             printf '%s\n' '- Additional scope: pinned resources, native process readiness/control/metrics, normal stop/restart and exact parent-loss exit passed.' \

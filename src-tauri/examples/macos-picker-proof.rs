@@ -11,6 +11,7 @@ mod proof {
         NSApplication, NSApplicationActivationPolicy, NSModalPanelRunLoopMode, NSOpenPanel,
     };
     use objc2_foundation::{NSDate, NSDefaultRunLoopMode, NSRunLoop, NSTimer};
+    use sha2::{Digest, Sha256};
     use std::cell::Cell;
     use std::os::unix::fs::MetadataExt;
     use std::path::PathBuf;
@@ -70,7 +71,7 @@ mod proof {
         assert_eq!(std::env::var("GITHUB_ACTIONS").as_deref(), Ok("true"));
         assert_eq!(std::env::var("RUNNER_OS").as_deref(), Ok("macOS"));
         std::thread::spawn(|| {
-            std::thread::sleep(Duration::from_secs(45));
+            std::thread::sleep(Duration::from_secs(60));
             eprintln!("headroom-picker-timeout");
             std::process::exit(70);
         });
@@ -124,6 +125,40 @@ mod proof {
         folder.verify(true);
         assert!(std::fs::read_dir(&project).unwrap().next().is_none());
         println!("headroom-picker-case=folder_background_dispatch_cancel status=pass");
+
+        let command = root.join("CLI 工具/codex");
+        std::fs::create_dir(command.parent().unwrap()).unwrap();
+        std::fs::write(&command, b"owned nonexecuted picker fixture").unwrap();
+        let before = Sha256::digest(std::fs::read(&command).unwrap());
+        println!("headroom-picker-ready=file");
+        assert_eq!(picker::select_file(1, "codex"), Ok(Some(command.clone())));
+        let after = Sha256::digest(std::fs::read(&command).unwrap());
+        assert_eq!(before, after);
+        println!("headroom-picker-input=cli before={before:x} after={after:x}");
+        println!("headroom-picker-case=file status=pass");
+
+        println!("headroom-picker-ready=folder");
+        let initial = project.parent().map(std::path::Path::to_owned);
+        let (send, receive) = mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            let _ = send.send(picker::select_project_directory(1, initial));
+        });
+        let deadline = Instant::now() + Duration::from_secs(25);
+        let selected = loop {
+            if let Ok(value) = receive.try_recv() {
+                break value;
+            }
+            assert!(Instant::now() < deadline, "folder_selection_timeout");
+            NSRunLoop::mainRunLoop().runMode_beforeDate(
+                unsafe { NSDefaultRunLoopMode },
+                &NSDate::dateWithTimeIntervalSinceNow(0.05),
+            );
+        };
+        worker.join().unwrap();
+        assert_eq!(selected, Ok(Some(project.clone())));
+        assert!(std::fs::read_dir(&project).unwrap().next().is_none());
+        println!("headroom-picker-case=folder_background_dispatch status=pass");
+        println!("headroom-picker-proof=pass");
     }
 }
 
