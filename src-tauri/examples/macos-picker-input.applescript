@@ -1,52 +1,33 @@
 on run arguments
     set pickerPid to (item 1 of arguments) as integer
-    set fixturePath to item 2 of arguments
+    set fixtureName to item 2 of arguments
     with timeout of 6 seconds
         try
             tell application "System Events"
                 set pickerApp to first application process whose unix id is pickerPid
                 if (count of windows of pickerApp) is not 1 then return "panel_unavailable"
-                if not (frontmost of pickerApp) then
-                    set frontmost of pickerApp to true
-                    repeat 12 times
-                        if frontmost of pickerApp then exit repeat
-                        delay 0.15
-                    end repeat
-                end if
-                if not (frontmost of pickerApp) then return "not_frontmost_after_activation"
-                key code 5 using {command down, shift down}
-
-                set pathInput to missing value
-                repeat 16 times
-                    delay 0.15
-                    if not (frontmost of pickerApp) then return "focus_lost"
-                    set focusedItem to value of attribute "AXFocusedUIElement" of pickerApp
-                    if focusedItem is not missing value then
-                        if (role of focusedItem) is in {"AXTextField", "AXComboBox"} then
-                            set pathInput to focusedItem
-                            exit repeat
+                set panelWindow to first window of pickerApp
+                set controls to entire contents of panelWindow
+                if (count of controls) > 300 then return "fixture_controls_limit"
+                set fixtureFound to false
+                set fixtureSelected to false
+                repeat with controlRef in controls
+                    set controlItem to contents of controlRef
+                    if (role of controlItem) is in {"AXRow", "AXCell", "AXTextField", "AXStaticText", "AXImage"} then
+                        if my isFixture(controlItem, fixtureName) then
+                            set fixtureFound to true
+                            set fixtureSelected to my selectFixture(controlItem)
+                            if fixtureSelected then exit repeat
                         end if
                     end if
                 end repeat
-                if pathInput is missing value then return "path_input_unavailable"
-
-                key code 9 using {command down}
-                repeat 12 times
-                    if (value of pathInput) is fixturePath then exit repeat
-                    delay 0.15
-                end repeat
-                if (value of pathInput) is not fixturePath then return "paste_unobserved"
-                if not (frontmost of pickerApp) then return "focus_lost"
-                key code 36
-
-                repeat 16 times
-                    delay 0.15
-                    if (count of windows of pickerApp) is 0 then return "panel_closed_after_return"
-                    if not (frontmost of pickerApp) then return "focus_lost"
-                    set panelWindow to first window of pickerApp
-                    set confirmButton to value of attribute "AXDefaultButton" of panelWindow
-                    if confirmButton is not missing value then
-                        if (name of confirmButton) is in {"Open", "Choose"} and (enabled of confirmButton) then
+                if not fixtureFound then return "fixture_row_missing"
+                if not fixtureSelected then return "fixture_row_not_selectable"
+                repeat with confirmName in {"Open", "Choose"}
+                    set labelText to contents of confirmName
+                    if exists button labelText of panelWindow then
+                        set confirmButton to button labelText of panelWindow
+                        if enabled of confirmButton then
                             click confirmButton
                             return "clicked_confirmation"
                         end if
@@ -59,3 +40,39 @@ on run arguments
         end try
     end timeout
 end run
+
+on isFixture(controlItem, fixtureName)
+    tell application "System Events"
+        repeat with labelAttribute in {"AXFilename", "AXTitle", "AXValue", "AXDescription"}
+            try
+                if (value of attribute (contents of labelAttribute) of controlItem) is fixtureName then return true
+            end try
+        end repeat
+    end tell
+    return false
+end isFixture
+
+on selectFixture(controlItem)
+    tell application "System Events"
+        repeat 5 times
+            if controlItem is missing value then return false
+            set roleName to role of controlItem
+            if roleName is "AXWindow" then return false
+            if roleName is in {"AXRow", "AXCell", "AXImage"} then
+                try
+                    set value of attribute "AXSelected" of controlItem to true
+                    if (value of attribute "AXSelected" of controlItem) is true then return true
+                end try
+            end if
+            set parentItem to value of attribute "AXParent" of controlItem
+            if roleName is "AXRow" and parentItem is not missing value then
+                try
+                    set value of attribute "AXSelectedRows" of parentItem to {controlItem}
+                    if (value of attribute "AXSelected" of controlItem) is true then return true
+                end try
+            end if
+            set controlItem to parentItem
+        end repeat
+    end tell
+    return false
+end selectFixture

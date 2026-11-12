@@ -9,9 +9,9 @@ mod proof {
     use objc2::{rc::Retained, MainThreadMarker};
     use objc2_app_kit::{
         NSApplication, NSApplicationActivationPolicy, NSModalPanelRunLoopMode, NSOpenPanel,
-        NSPasteboard, NSPasteboardTypeString, NSRunningApplication, NSWorkspace,
+        NSRunningApplication, NSWorkspace,
     };
-    use objc2_foundation::{NSDate, NSDefaultRunLoopMode, NSRunLoop, NSString, NSTimer};
+    use objc2_foundation::{NSDate, NSDefaultRunLoopMode, NSRunLoop, NSString, NSTimer, NSURL};
     use sha2::{Digest, Sha256};
     use std::cell::{Cell, RefCell};
     use std::os::unix::fs::MetadataExt;
@@ -37,6 +37,7 @@ mod proof {
             let script: Rc<RefCell<Option<Child>>> = Rc::new(RefCell::new(None));
             let script_ok = Rc::new(Cell::new(selection.is_none()));
             let script_started = Cell::new(false);
+            let directory_set = Cell::new(false);
             let timeout_result = timed_out.clone();
             let panel_result = saw_panel.clone();
             let child = script.clone();
@@ -82,24 +83,27 @@ mod proof {
                 {
                     return;
                 }
-                let pasteboard = NSPasteboard::generalPasteboard();
-                pasteboard.clearContents();
-                if !pasteboard
-                    .setString_forType(&NSString::from_str(&path.to_string_lossy()), unsafe {
-                        NSPasteboardTypeString
-                    })
-                {
-                    println!("headroom-picker-system-events=fixture_pasteboard_unavailable");
-                    unsafe { panel.cancel(None) };
+                let directory = path.parent().unwrap().to_str().unwrap();
+                if !directory_set.replace(true) {
+                    let url =
+                        NSURL::fileURLWithPath_isDirectory(&NSString::from_str(directory), true);
+                    panel.setDirectoryURL(Some(&url));
                     return;
                 }
+                let observed_directory = panel.directoryURL().and_then(|url| url.path());
+                if !observed_directory
+                    .is_some_and(|observed| observed.to_string().trim_end_matches('/') == directory)
+                {
+                    return;
+                }
+                println!("headroom-picker-fixture-directory=visible");
                 script_started.set(true);
                 let input_script = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                     .join("examples/macos-picker-input.applescript");
                 match Command::new("/usr/bin/osascript")
                     .arg(input_script)
                     .arg(std::process::id().to_string())
-                    .arg(path)
+                    .arg(path.file_name().unwrap())
                     .stdin(Stdio::null())
                     .stdout(Stdio::piped())
                     .stderr(Stdio::piped())
@@ -167,8 +171,7 @@ mod proof {
                 code.unwrap_or_default()
             );
         }
-        output.status.success()
-            && matches!(result, "panel_closed_after_return" | "clicked_confirmation")
+        output.status.success() && result == "clicked_confirmation"
     }
 
     pub fn run() {
@@ -216,10 +219,10 @@ mod proof {
         println!("headroom-picker-input=cli before={before:x} after={after:x}");
         println!("headroom-picker-case=file status=pass");
 
-        let project = root.join("Claude 项目");
-        std::fs::create_dir(&project).unwrap();
+        let project = root.join("Project folders/Claude 项目");
+        std::fs::create_dir_all(&project).unwrap();
         let select = Driver::new(mtm, Some(project.clone()));
-        let initial = Some(root.clone());
+        let initial = project.parent().map(std::path::Path::to_owned);
         let (send, receive) = mpsc::channel();
         let worker = std::thread::spawn(move || {
             let _ = send.send(picker::select_project_directory(1, initial));
