@@ -12,6 +12,19 @@ SPEC.loader.exec_module(CDP)
 
 
 class DesktopCdpTests(unittest.TestCase):
+    def test_transport_failures_do_not_echo_response_or_credential_text(self):
+        class Socket:
+            def send(self, _):
+                pass
+
+            def recv(self, **_):
+                raise RuntimeError("test-only secret response must not be printed")
+
+        page = object.__new__(CDP.Page)
+        page.socket, page.next_id = Socket(), 0
+        with self.assertRaisesRegex(CDP.CdpError, "^debug_command_transport_failed$"):
+            page.call("Runtime.evaluate", {"expression": "1"})
+
     def test_port_record_is_bounded_and_browser_path_is_not_a_network_url(self):
         self.assertEqual(CDP.debug_port("41731\n/devtools/browser/test-id\n"), 41731)
         for value in ["80\n/devtools/browser/test", "41731\nhttps://other.invalid/x", "70000\n/devtools/browser/x", "41731\n/devtools/browser/x\nextra"]:

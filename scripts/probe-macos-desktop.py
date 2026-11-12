@@ -166,7 +166,7 @@ def owned_descendants(app, bundle):
     return owned
 
 
-def run(root):
+def run(root, traffic=None):
     core.require(sys.platform == "darwin" and os.environ.get("GITHUB_ACTIONS") == "true", "ci_macos_required")
     core.require(root.is_absolute() and root.resolve(strict=True) == root
                  and root.parent == (ROOT / "work").resolve(strict=True)
@@ -198,7 +198,7 @@ def run(root):
     server.observed_requests = 0
     serving = threading.Thread(target=server.serve_forever, daemon=True)
     serving.start()
-    endpoint = f"http://127.0.0.1:{server.server_address[1]}/v1"
+    endpoint = traffic.endpoint if traffic else f"http://127.0.0.1:{server.server_address[1]}/v1"
     config = state / "codex/config.toml"
     config.write_text(f'openai_base_url = "{endpoint}"\nmodel_provider = "openai"\ncli_auth_credentials_store = "file"\n'
                       '[analytics]\nenabled = false\n', encoding="utf-8")
@@ -206,6 +206,7 @@ def run(root):
     original_config = digest(config)
     owned, opening, descendants, vendor_pin = None, None, [], None
     renderer = None
+    traffic_result = None
     try:
         version = subprocess.run([str(backend), "--version"], env=environment, cwd=state,
                                  capture_output=True, text=True, timeout=10)
@@ -214,13 +215,23 @@ def run(root):
                      "unexpected_backend_version")
         contract = backend_config(backend, environment, state, endpoint)
         print("headroom-desktop-phase=isolated_backend_config_read", flush=True)
+        if traffic:
+            traffic.prepare(state, config)
+            original_config = digest(config)
+            # Both Chromium and the Rust child use a rejecting proxy for external traffic.
+            # This is a test-profile guard, not a claim of system-wide network isolation.
+            reject_proxy = f"http://127.0.0.1:{server.server_address[1]}"
+            environment.update(HTTP_PROXY=reject_proxy, HTTPS_PROXY=reject_proxy,
+                               NO_PROXY="127.0.0.1,localhost")
         args = ["/usr/bin/open", "-n", "-W"]
         for name, value in environment.items():
             args.extend(["--env", f"{name}={value}"])
         args.extend(["-a", str(bundle), "--args", f'--user-data-dir={state / "electron"}',
                      "--force-renderer-accessibility"])
-        if os.environ.get("HEADROOM_DESKTOP_RENDERER_PROBE") == "true":
+        if traffic or os.environ.get("HEADROOM_DESKTOP_RENDERER_PROBE") == "true":
             args.extend(["--remote-debugging-address=127.0.0.1", "--remote-debugging-port=0"])
+        if traffic:
+            args.append(f"--proxy-server={reject_proxy}")
         opening = subprocess.Popen(args, cwd=state, env=environment, stdin=subprocess.DEVNULL,
                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         owned = core.wait_for(lambda: core.find_app(launcher), "desktop_open_timeout", seconds=30)
@@ -231,7 +242,7 @@ def run(root):
         observed = gui_state("observe", owned[0])
         print("headroom-desktop-gui=" + json.dumps(observed, separators=(",", ":")), flush=True)
         core.require(observed["windows"] > 0, "desktop_window_disappeared")
-        if os.environ.get("HEADROOM_DESKTOP_RENDERER_PROBE") == "true":
+        if traffic or os.environ.get("HEADROOM_DESKTOP_RENDERER_PROBE") == "true":
             import site
 
             site.addsitedir(str(Path(os.environ["HEADROOM_MACOS_RUNTIME_ROOT"]) / "payload/site-packages"))
@@ -244,6 +255,8 @@ def run(root):
                         break
                     time.sleep(0.5)
                 print("headroom-desktop-renderer=" + json.dumps(renderer, separators=(",", ":")), flush=True)
+                if traffic:
+                    traffic_result = traffic.exercise(page)
             finally:
                 page.close()
         descendants = owned_descendants(owned, bundle)
@@ -286,6 +299,9 @@ def run(root):
                   "package_after": {path.relative_to(bundle).as_posix(): digest(path) for path in files}}
         if renderer is not None:
             result["renderer"] = renderer
+        if traffic_result is not None:
+            result.update(scope="desktop_controlled_response", model_turn_requested=True,
+                          desktop_headroom_route="controlled_fixture", controlled_traffic=traffic_result)
     finally:
         if owned and core.matches_process(owned):
             known = {item[0] for item in descendants}
@@ -333,6 +349,7 @@ def run(root):
     core.require(result["private_state_removed"], "private_state_left")
     core.require(result["vendor_application_state_removed"], "vendor_state_left")
     print("headroom-desktop-preflight=" + json.dumps(result, separators=(",", ":")), flush=True)
+    return result
 
 
 if __name__ == "__main__":

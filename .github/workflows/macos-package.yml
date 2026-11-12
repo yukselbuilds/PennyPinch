@@ -13,6 +13,11 @@ on:
         required: false
         type: boolean
         default: false
+      verify_desktop_traffic:
+        description: Verify a real isolated Codex Desktop GUI turn through Headroom to a local fixture.
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -25,7 +30,7 @@ jobs:
   native-package:
     if: ${{ inputs.free_only_confirmed == true }}
     runs-on: macos-15
-    timeout-minutes: 20
+    timeout-minutes: ${{ inputs.verify_desktop_traffic && 15 || 20 }}
     env:
       CARGO_HOME: ${{ github.workspace }}/work/caches/cargo-home
       CARGO_TARGET_DIR: ${{ github.workspace }}/work/caches/cargo-target
@@ -35,6 +40,7 @@ jobs:
       RUSTUP_TOOLCHAIN: '1.92.0'
       npm_config_cache: ${{ github.workspace }}/work/caches/npm
       HEADROOM_VERIFY_REPORT_EXPORT: ${{ inputs.verify_report_export }}
+      HEADROOM_VERIFY_DESKTOP_TRAFFIC: ${{ inputs.verify_desktop_traffic }}
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -55,6 +61,13 @@ jobs:
           /usr/bin/osacompile -o work/proofs/macos/h048-c5/package-input.scpt \
             scripts/macos-package-input.applescript
           bash scripts/prepare-macos-ci-runtime.sh
+          if [[ "$HEADROOM_VERIFY_DESKTOP_TRAFFIC" == true ]]; then
+            /usr/bin/osacompile -o work/proofs/macos/h048-c5/desktop-input.scpt \
+              scripts/macos-desktop-input.applescript
+            desktop_root="$(mktemp -d "$GITHUB_WORKSPACE/work/macos-desktop.XXXXXX")"
+            bash scripts/prepare-macos-ci-desktop.sh "$desktop_root"
+            printf 'HEADROOM_DESKTOP_ROOT=%s\n' "$desktop_root" >> "$GITHUB_ENV"
+          fi
       - name: Build and exercise the native application bundle
         shell: bash
         run: |
@@ -89,6 +102,9 @@ jobs:
               "$CARGO_PROFILE_RELEASE_LTO" "$CARGO_PROFILE_RELEASE_CODEGEN_UNITS" \
               "$HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256"
             "$build_python" -I -B scripts/macos-payload.py "$HEADROOM_MACOS_RUNTIME_ROOT/payload"
+            if [[ "$HEADROOM_VERIFY_DESKTOP_TRAFFIC" == true ]]; then
+              shasum -a 256 "$HEADROOM_DESKTOP_ROOT/Codex.dmg"
+            fi
           }
           before="$(fingerprint)"
           printf '%s\n' "$before"
@@ -114,7 +130,12 @@ jobs:
             bash scripts/build-macos.sh "$build_root" || status=$?
           fi
           if [[ "$status" == 0 ]]; then
-            "$build_python" -I -B scripts/probe-macos-package.py "$build_root" || status=$?
+            if [[ "$HEADROOM_VERIFY_DESKTOP_TRAFFIC" == true ]]; then
+              "$build_python" -I -B scripts/probe-macos-desktop-traffic.py \
+                "$build_root" "$HEADROOM_DESKTOP_ROOT" || status=$?
+            else
+              "$build_python" -I -B scripts/probe-macos-package.py "$build_root" || status=$?
+            fi
           fi
           after="$(fingerprint)"
           printf 'Inputs after: %s\n' "$(printf '%s' "$after" | shasum -a 256 | cut -d' ' -f1)"
@@ -124,5 +145,5 @@ jobs:
           printf '%s\n' '## macOS package lifecycle' '' "- Commit: $GITHUB_SHA" \
             '- Native Tauri app bundle with the pinned engine, private QA state and an ad-hoc signature.' \
             '- Release configuration uses LTO disabled and 16 codegen units for this QA run.' \
-            '- Scope: local native package and GUI lifecycle. Production signing, notarization and live client traffic remain separate.' \
+            '- Scope: local native package, GUI lifecycle and any explicitly selected local fixture checks. Production signing, notarization and live provider traffic remain separate.' \
             >> "$GITHUB_STEP_SUMMARY"

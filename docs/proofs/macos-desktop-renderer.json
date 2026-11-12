@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "task": "H048-c7b",
+  "scope": "owned_macOS_renderer_observation_only",
+  "status": "pass",
+  "candidate": "c6e825fd9a333a148b0a9f0b2d1b49dc24037f45",
+  "run_url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43278256460",
+  "inputs": {
+    "before": "77d3992e4b95379a9710935cf5cd7360bb384ea0bf5654ee2599096542204f59",
+    "after": "77d3992e4b95379a9710935cf5cd7360bb384ea0bf5654ee2599096542204f59"
+  },
+  "renderer": {
+    "ready": "complete",
+    "root_children": 5,
+    "body_characters": 66,
+    "visible_buttons": 4,
+    "known_buttons": [
+      "Sign in another way"
+    ],
+    "unknown_buttons": 3,
+    "editors": 0,
+    "password_inputs": 0
+  },
+  "desktop": {
+    "version": "26.1106.51428",
+    "backend_version": "codex-cli 0.167.0-alpha.4.1",
+    "package_before": {
+      "Contents/Info.plist": "3c3f175bca100cb25507b633742154f965cc2d456ca06282a69de6b1430c9c74",
+      "Contents/MacOS/ChatGPT": "7efa7738eb06887f95f3b915c085a7a228c437119a1fedaaa7d01c92687cff78",
+      "Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex": "7cb8700a47be3c81bb3c5efbf2d2adc716ce3db4806e9dc992f2925f78b2b194",
+      "Contents/Resources/app.asar": "3695c17edcab8d66c1e5f2faa03e07826a59a39bf78b369ec87854547d4843c1"
+    },
+    "package_after": {
+      "Contents/Info.plist": "3c3f175bca100cb25507b633742154f965cc2d456ca06282a69de6b1430c9c74",
+      "Contents/MacOS/ChatGPT": "7efa7738eb06887f95f3b915c085a7a228c437119a1fedaaa7d01c92687cff78",
+      "Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex": "7cb8700a47be3c81bb3c5efbf2d2adc716ce3db4806e9dc992f2925f78b2b194",
+      "Contents/Resources/app.asar": "3695c17edcab8d66c1e5f2faa03e07826a59a39bf78b369ec87854547d4843c1"
+    },
+    "normal_exit": true,
+    "observed_owned_children_exited": 13,
+    "private_state_removed": true,
+    "vendor_application_state_removed": true
+  },
+  "limits": {
+    "model_turn_requested": false,
+    "headroom_route": "not_tested",
+    "live_provider": "not_tested",
+    "H048_c7b": "open"
+  }
+}
