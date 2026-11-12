@@ -29,7 +29,7 @@ on:
         type: boolean
         default: false
       verify_file_picker:
-        description: Verify native AppKit file and directory panels in a bounded owned process.
+        description: Check native AppKit picker cancellation and folder picker main-thread dispatch.
         required: false
         type: boolean
         default: false
@@ -260,6 +260,9 @@ jobs:
           fi
           if [[ "$HEADROOM_VERIFY_CLI_DISCOVERY" == true ]]; then
             printf '%s\n' '- Native discovery and saved selections verified with pinned Apple Silicon CLI binaries in isolated PATH, HOME and app-data layouts.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [[ "$HEADROOM_VERIFY_FILE_PICKER" == true ]]; then
+            printf '%s\n' '- AppKit file and folder picker cancellation passed, including folder picker dispatch to the main thread.' >> "$GITHUB_STEP_SUMMARY"
           fi
           if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
             printf '%s\n' '- Additional scope: pinned resources, native process readiness/control/metrics, normal stop/restart and exact parent-loss exit passed.' \
