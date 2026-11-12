@@ -15,6 +15,7 @@ import sys
 import tempfile
 import threading
 import time
+import tomllib
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,6 +35,20 @@ def config_observation(reply, endpoint):
     core.require(config.get("openai_base_url") == endpoint, "isolated_endpoint_not_read")
     core.require(config.get("model_provider") == "openai", "provider_changed")
     return {"endpoint_matches": True, "built_in_provider": True}
+
+
+def config_change_observation(before, after):
+    core.require(len(before) <= 262144 and len(after) <= 262144, "test_config_limit")
+    before, after = (tomllib.loads(value.decode("utf-8")) for value in (before, after))
+    protected = ("openai_base_url", "model_provider", "model", "model_reasoning_effort", "cli_auth_credentials_store")
+    known = {*protected, "features", "personality", "sandbox_mode", "approval_policy", "projects", "notice",
+             "tui", "ui", "desktop", "permissions", "model_reasoning_summary", "model_providers",
+             "model_instructions_file", "base_instructions", "developer_instructions", "profile", "profiles",
+             "model_context_window", "model_auto_compact_token_limit", "service_tier", "web_search"}
+    changed = {key for key in before.keys() | after.keys()
+               if (key in before) != (key in after) or before.get(key) != after.get(key)}
+    return {"protected_fields_match": {key: key not in changed for key in protected},
+            "changed_known_fields": sorted(changed & known), "changed_other_fields": len(changed - known)}
 
 
 def isolated_environment(state):
@@ -204,6 +219,7 @@ def run(root, traffic=None):
                       '[analytics]\nenabled = false\n', encoding="utf-8")
     config.chmod(0o600)
     original_config = digest(config)
+    original_config_bytes = config.read_bytes()
     owned, opening, descendants, vendor_pin = None, None, [], None
     renderer = None
     traffic_result = None
@@ -218,6 +234,7 @@ def run(root, traffic=None):
         if traffic:
             traffic.prepare(state, config)
             original_config = digest(config)
+            original_config_bytes = config.read_bytes()
             # Both Chromium and the Rust child use a rejecting proxy for external traffic.
             # This is a test-profile guard, not a claim of system-wide network isolation.
             reject_proxy = f"http://127.0.0.1:{server.server_address[1]}"
@@ -266,6 +283,9 @@ def run(root, traffic=None):
         for child in descendants:
             core.wait_for(lambda: not core.matches_process(child), "desktop_child_alive", seconds=15)
         core.require(opening.wait(timeout=10) == 0, "desktop_launcher_unclean_exit")
+        if digest(config) != original_config:
+            print("headroom-desktop-config=" + json.dumps(config_change_observation(
+                original_config_bytes, config.read_bytes()), separators=(",", ":")), flush=True)
         core.require(digest(config) == original_config, "desktop_changed_endpoint_config")
         profiles = {key: profile_metadata(path) for key, path in zip(
             ("codex_home", "codex_app", "chatgpt_app", "bundle_app"), untouched)}
@@ -301,7 +321,7 @@ def run(root, traffic=None):
             result["renderer"] = renderer
         if traffic_result is not None:
             result.update(scope="desktop_controlled_response", model_turn_requested=True,
-                          desktop_headroom_route="controlled_fixture", controlled_traffic=traffic_result)
+                          desktop_headroom_route=traffic.headroom_route, controlled_traffic=traffic_result)
     finally:
         if owned and core.matches_process(owned):
             known = {item[0] for item in descendants}

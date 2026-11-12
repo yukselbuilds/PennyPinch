@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "task": "H048-c7b",
+  "status": "failed",
+  "candidate": "bd76b3a7c06984089c5a59299f88880172f99f57",
+  "run_url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43281362248",
+  "inputs": {
+    "before": "48a593fb9fcdea33f8ff64207f52741fa7bdee86a5f5343c7f0960213cc0170f",
+    "after": "48a593fb9fcdea33f8ff64207f52741fa7bdee86a5f5343c7f0960213cc0170f"
+  },
+  "native_python": {
+    "tests": 43,
+    "passed": 42,
+    "skipped": 1
+  },
+  "packaged_headroom_ready": true,
+  "gui_partial_and_final_rendered": true,
+  "fixture": {
+    "transport_counts": {
+      "websocket": 6
+    },
+    "auth_match_count": 6,
+    "auth_mismatch_count": 0,
+    "model_match_count": 2,
+    "model_mismatch_count": 4,
+    "reasoning_match_count": 2,
+    "reasoning_mismatch_count": 4,
+    "input_nonce_match_count": 4,
+    "input_nonce_mismatch_count": 2,
+    "request_count": 6,
+    "accepted_response_count": 1,
+    "rejected_request_count": 5,
+    "partial_sent": true,
+    "terminal_sent": true,
+    "error_counts": {
+      "model_mismatch": 4,
+      "nonce_missing": 1
+    },
+    "closed": true
+  },
+  "failed_gate": "desktop_changed_endpoint_config",
+  "headroom_collector": "not_reached",
+  "config_changed_fields": "not_yet_classified",
+  "limits": {
+    "full_controlled_traffic_acceptance": "open",
+    "live_provider": "not_tested",
+    "product_desktop_gate": "closed"
+  }
+}

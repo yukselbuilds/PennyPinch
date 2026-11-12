@@ -29,8 +29,9 @@ core = desktop.core
 
 
 class ControlledTurn:
-    def __init__(self, fixture, endpoint):
+    def __init__(self, fixture, endpoint, *, via_headroom=True):
         self.fixture, self.endpoint = fixture, endpoint
+        self.headroom_route = "controlled_fixture" if via_headroom else "not_tested_direct_fixture"
 
     def prepare(self, state, config):
         auth = state / "codex/auth.json"
@@ -102,6 +103,21 @@ def metrics_observed(state, model):
             "source": "actual_headroom_collector"} if matched else None
 
 
+def fixture():
+    module = load("_desktop_controlled_provider", "scripts/macos-desktop-fixture.py")
+    return module.DesktopResponsesFixture("sk-local-fixture-only-" + uuid.uuid4().hex,
+        "gpt-5.2-codex", "medium", uuid.uuid4().hex)
+
+
+def direct_diagnostic(vendor):
+    provider = fixture()
+    try:
+        desktop.run(vendor, ControlledTurn(provider, provider.base_url, via_headroom=False))
+    finally:
+        core.require(provider.close(), "fixture_cleanup_incomplete")
+        print("headroom-desktop-fixture=" + json.dumps(provider.report(), separators=(",", ":")), flush=True)
+
+
 def run(package, vendor):
     core.require(sys.platform == "darwin" and os.environ.get("GITHUB_ACTIONS") == "true", "ci_macos_required")
     core.require(package.is_absolute() and package.resolve(strict=True) == package
@@ -121,9 +137,7 @@ def run(package, vendor):
                  and not list(state.iterdir()), "qa_state_not_clean")
     before = core.bundle_inventory(bundle, Path(os.environ["HEADROOM_MACOS_RUNTIME_ROOT"]))
     binary_before = hashlib.sha256(executable.read_bytes()).hexdigest()
-    fixture_module = load("_desktop_controlled_provider", "scripts/macos-desktop-fixture.py")
-    fixture = fixture_module.DesktopResponsesFixture("sk-local-fixture-only-" + uuid.uuid4().hex,
-        "gpt-5.2-codex", "medium", uuid.uuid4().hex)
+    provider = fixture()
     app, engine, launcher, port, result = None, None, None, None, None
     try:
         # The normal pinned settings store supplies the operator's local upstream.
@@ -132,7 +146,7 @@ def run(package, vendor):
         workspace = state / "runtime/workspace"
         workspace.mkdir(mode=0o700)
         settings = workspace / "settings.json"
-        settings.write_text(json.dumps({"openai_base_url": fixture.origin}) + "\n", encoding="utf-8")
+        settings.write_text(json.dumps({"openai_base_url": provider.origin}) + "\n", encoding="utf-8")
         settings.chmod(0o600)
         core.require(core.find_app(executable) is None, "qa_app_already_open")
         launcher = subprocess.Popen(["/usr/bin/open", "-n", "-W", "-a", str(bundle)], cwd=package,
@@ -144,8 +158,8 @@ def run(package, vendor):
         engine = core.wait_for(lambda: core.find_engine(app, runtime), "headroom_engine_missing")
         core.require(not core.lock_available(state / "runtime/.engine.lock"), "headroom_engine_unowned")
         print("headroom-desktop-phase=packaged_headroom_ready", flush=True)
-        result = desktop.run(vendor, ControlledTurn(fixture, f"http://127.0.0.1:{port}/v1"))
-        metrics = core.wait_for(lambda: metrics_observed(state, fixture.model), "headroom_request_metrics_missing")
+        result = desktop.run(vendor, ControlledTurn(provider, f"http://127.0.0.1:{port}/v1"))
+        metrics = core.wait_for(lambda: metrics_observed(state, provider.model), "headroom_request_metrics_missing")
         core.run_ui("exit")
         core.wait_for(lambda: not core.matches_process(app), "headroom_exit_timeout")
         core.wait_for(lambda: not core.matches_process(engine), "headroom_engine_left")
@@ -174,15 +188,18 @@ def run(package, vendor):
         if launcher and launcher.poll() is None:
             launcher.terminate()
             launcher.wait(timeout=5)
-        core.require(fixture.close(), "fixture_cleanup_incomplete")
-        print("headroom-desktop-fixture=" + json.dumps(fixture.report(), separators=(",", ":")), flush=True)
+        core.require(provider.close(), "fixture_cleanup_incomplete")
+        print("headroom-desktop-fixture=" + json.dumps(provider.report(), separators=(",", ":")), flush=True)
     print("headroom-desktop-traffic=" + json.dumps(result, separators=(",", ":")), flush=True)
 
 
 if __name__ == "__main__":
     try:
         core.require(len(sys.argv) == 3, "package_and_desktop_roots_required")
-        run(Path(sys.argv[1]), Path(sys.argv[2]))
+        if sys.argv[1] == "--direct-fixture":
+            direct_diagnostic(Path(sys.argv[2]))
+        else:
+            run(Path(sys.argv[1]), Path(sys.argv[2]))
     except (core.ProbeError, desktop.cdp.CdpError) as error:
         print(f"headroom-desktop-error={error}", file=sys.stderr)
         sys.exit(2)

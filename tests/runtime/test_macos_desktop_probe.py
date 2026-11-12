@@ -13,6 +13,16 @@ SPEC.loader.exec_module(PROBE)
 
 
 class DesktopPreflightTests(unittest.TestCase):
+    def test_config_change_diagnosis_reports_names_and_matches_without_values(self):
+        before = b'model="model-before"\nopenai_base_url="http://127.0.0.1:41731/v1"\n'
+        after = b'model="PRIVATE_MODEL_VALUE"\nopenai_base_url="http://127.0.0.1:41731/v1"\npersonality="PRIVATE_VALUE"\nPRIVATE_UNKNOWN_KEY="PRIVATE_CONTENT"\n'
+        observed = PROBE.config_change_observation(before, after)
+        self.assertFalse(observed["protected_fields_match"]["model"])
+        self.assertTrue(observed["protected_fields_match"]["openai_base_url"])
+        self.assertEqual(observed["changed_known_fields"], ["model", "personality"])
+        self.assertEqual(observed["changed_other_fields"], 1)
+        self.assertNotIn("PRIVATE", repr(observed))
+
     def test_config_observation_requires_the_exact_isolated_endpoint(self):
         endpoint = "http://127.0.0.1:41731/v1"
         reply = {"result": {"config": {"openai_base_url": endpoint, "model_provider": "openai", "private": "DO_NOT_EXPORT"}}}

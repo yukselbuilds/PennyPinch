@@ -13,6 +13,11 @@ on:
         required: false
         type: boolean
         default: false
+      probe_direct_fixture:
+        description: Diagnose the disposable GUI profile using a direct local fixture; no Headroom route claim.
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -28,6 +33,7 @@ jobs:
     timeout-minutes: 10
     env:
       HEADROOM_DESKTOP_RENDERER_PROBE: ${{ inputs.inspect_renderer }}
+      HEADROOM_DESKTOP_DIRECT_FIXTURE: ${{ inputs.probe_direct_fixture }}
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -65,7 +71,11 @@ jobs:
           printf '%s\n' "$before"
           printf 'Inputs before: %s\n' "$(printf '%s' "$before" | shasum -a 256 | cut -d' ' -f1)"
           status=0
-          "$python" -I -B scripts/probe-macos-desktop.py "$HEADROOM_DESKTOP_ROOT" || status=$?
+          if [[ "$HEADROOM_DESKTOP_DIRECT_FIXTURE" == true ]]; then
+            "$python" -I -B scripts/probe-macos-desktop-traffic.py --direct-fixture "$HEADROOM_DESKTOP_ROOT" || status=$?
+          else
+            "$python" -I -B scripts/probe-macos-desktop.py "$HEADROOM_DESKTOP_ROOT" || status=$?
+          fi
           after="$(fingerprint)"
           printf 'Inputs after: %s\n' "$(printf '%s' "$after" | shasum -a 256 | cut -d' ' -f1)"
           test "$before" = "$after"
@@ -74,5 +84,6 @@ jobs:
           printf '%s\n' '## macOS Desktop preflight' '' "- Commit: $GITHUB_SHA" \
             '- Fresh-CI Desktop open/quit, private Codex/Electron core profiles and direct bundled backend config read.' \
             '- Additional vendor application state is owned and removed; full application state isolation is not established.' \
-            '- No account login or model turn. Headroom traffic and provider compatibility remain untested.' \
+            '- Default scope has no account or model turn. The optional direct-fixture diagnostic submits one synthetic GUI turn.' \
+            '- This workflow does not establish a Headroom route or live provider compatibility.' \
             >> "$GITHUB_STEP_SUMMARY"
