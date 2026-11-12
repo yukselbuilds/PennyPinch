@@ -8,6 +8,11 @@ on:
         required: true
         type: boolean
         default: false
+      inspect_renderer:
+        description: Inspect the isolated owned Electron renderer through a loopback-only debug port.
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -21,6 +26,8 @@ jobs:
     if: ${{ inputs.free_only_confirmed == true }}
     runs-on: macos-15
     timeout-minutes: 10
+    env:
+      HEADROOM_DESKTOP_RENDERER_PROBE: ${{ inputs.inspect_renderer }}
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -52,6 +59,7 @@ jobs:
             "$python" -I -B --version
             printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}" "$HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256"
             shasum -a 256 "$HEADROOM_DESKTOP_ROOT/Codex.dmg" "$python"
+            "$python" -I -B scripts/macos-payload.py "$HEADROOM_MACOS_RUNTIME_ROOT/payload"
           }
           before="$(fingerprint)"
           printf '%s\n' "$before"

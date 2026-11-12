@@ -21,6 +21,9 @@ ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("_headroom_owned_package", ROOT / "scripts/probe-macos-package.py")
 core = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(core)
+CDP_SPEC = importlib.util.spec_from_file_location("_headroom_desktop_cdp", ROOT / "scripts/macos-desktop-cdp.py")
+cdp = importlib.util.module_from_spec(CDP_SPEC)
+CDP_SPEC.loader.exec_module(cdp)
 
 
 def config_observation(reply, endpoint):
@@ -202,6 +205,7 @@ def run(root):
     config.chmod(0o600)
     original_config = digest(config)
     owned, opening, descendants, vendor_pin = None, None, [], None
+    renderer = None
     try:
         version = subprocess.run([str(backend), "--version"], env=environment, cwd=state,
                                  capture_output=True, text=True, timeout=10)
@@ -215,6 +219,8 @@ def run(root):
             args.extend(["--env", f"{name}={value}"])
         args.extend(["-a", str(bundle), "--args", f'--user-data-dir={state / "electron"}',
                      "--force-renderer-accessibility"])
+        if os.environ.get("HEADROOM_DESKTOP_RENDERER_PROBE") == "true":
+            args.extend(["--remote-debugging-address=127.0.0.1", "--remote-debugging-port=0"])
         opening = subprocess.Popen(args, cwd=state, env=environment, stdin=subprocess.DEVNULL,
                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         owned = core.wait_for(lambda: core.find_app(launcher), "desktop_open_timeout", seconds=30)
@@ -225,6 +231,21 @@ def run(root):
         observed = gui_state("observe", owned[0])
         print("headroom-desktop-gui=" + json.dumps(observed, separators=(",", ":")), flush=True)
         core.require(observed["windows"] > 0, "desktop_window_disappeared")
+        if os.environ.get("HEADROOM_DESKTOP_RENDERER_PROBE") == "true":
+            import site
+
+            site.addsitedir(str(Path(os.environ["HEADROOM_MACOS_RUNTIME_ROOT"]) / "payload/site-packages"))
+            page = cdp.Page(state / "electron", owned[0])
+            try:
+                deadline = time.monotonic() + 45
+                while True:
+                    renderer = page.observe()
+                    if renderer["editors"] > 0 or renderer["known_buttons"] or time.monotonic() >= deadline:
+                        break
+                    time.sleep(0.5)
+                print("headroom-desktop-renderer=" + json.dumps(renderer, separators=(",", ":")), flush=True)
+            finally:
+                page.close()
         descendants = owned_descendants(owned, bundle)
         children = [child for child in descendants if child[2] == backend]
         gui_state("quit", owned[0])
@@ -263,6 +284,8 @@ def run(root):
                   "model_turn_requested": False, "live_provider_traffic": "not_tested",
                   "desktop_headroom_route": "not_tested", "package_before": before,
                   "package_after": {path.relative_to(bundle).as_posix(): digest(path) for path in files}}
+        if renderer is not None:
+            result["renderer"] = renderer
     finally:
         if owned and core.matches_process(owned):
             known = {item[0] for item in descendants}
@@ -282,6 +305,13 @@ def run(root):
         server.shutdown()
         server.server_close()
         serving.join(timeout=5)
+        if vendor_pin is None and (untouched[3].exists() or untouched[3].is_symlink()):
+            vendor = untouched[3]
+            info = vendor.lstat()
+            core.require(vendor.resolve(strict=True) == vendor and stat.S_ISDIR(info.st_mode)
+                         and info.st_uid == os.geteuid() and info.st_mode & 0o022 == 0,
+                         "unsafe_vendor_application_state")
+            vendor_pin = (info.st_dev, info.st_ino)
         if vendor_pin:
             vendor = untouched[3]
             info = vendor.lstat()
@@ -310,6 +340,9 @@ if __name__ == "__main__":
         core.require(len(sys.argv) == 2, "desktop_root_required")
         run(Path(sys.argv[1]))
     except core.ProbeError as error:
+        print(f"headroom-desktop-error={error}", file=sys.stderr)
+        sys.exit(2)
+    except cdp.CdpError as error:
         print(f"headroom-desktop-error={error}", file=sys.stderr)
         sys.exit(2)
     except (OSError, ValueError, KeyError, subprocess.SubprocessError):

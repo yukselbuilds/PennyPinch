@@ -282,6 +282,8 @@ Gerçek Electron penceresi bir gözlenen bundled backend çocuğuyla açıldı. 
 
 Kaynak sınırı: [OpenAI gelişmiş yapılandırma](https://learn.chatgpt.com/docs/config-file/config-advanced) CODEX_HOME ve built-in provider endpoint'ini, [app-server protokolü](https://learn.chatgpt.com/docs/app-server) initialization/stdio/config okumayı açıklar. Bu belgeler sürümü sabitlenmiş gerçek GUI trafiğinin yerine geçmez.
 
+H048-c7b'de önce gerçek renderer'ın hazır durumu gözlenir. Dış sürücü yalnız özel Electron profilinin DevToolsActivePort kaydını ve aynı sahipli app PID'sinin 127.0.0.1 dinleyicisini kabul eder; başka port/host, kimlik bilgili URL, farklı sayfa veya birden çok app sayfası reddedilir. Okuma yalnız sabit UI etiketleri, görünür kontrol sayıları ve hazır durumu döndürür; bilinmeyen metin/hesap/içerik kaydedilmez. Hazır durumu veya auth yolu doğrulanmadan istek gönderildi denmez. Tam rota kabulü gerçek GUI girdisinden yerel sağlayıcıya koşuya özel eşleme, korunmuş model/efor/sentetik auth, terminal öncesi görünür yanıt ve temiz kapanış ister. Test profilindeki sentetik API anahtarı yalnız yerel fixture içindir; gerçek hesaba veya ücretli servise giriş yapılmaz. [OpenAI auth belgesi](https://learn.chatgpt.com/docs/auth) yerel Desktop API-key yolunu tanımlar; gerçek sürüm davranışı ayrıca sınanır.
+
 ## Açık kabuller
 
 - H048-c1–c6 tamamlandı. H048-c7 Desktop istemcisinden gerçek bağlantı/trafik ve c8 son görev kabulü açık.
