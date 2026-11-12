@@ -270,6 +270,21 @@ class MacOSBundleTests(unittest.TestCase):
                 bundle_module.verify(self.bundle, self.runtime, self.manifest_sha)
         self.assertEqual(calls, 4)
 
+    def test_endpoint_accepts_duplicate_owned_descriptors_and_rejects_other_addresses(self):
+        probe = _load("_headroom_package_probe", ROOT / "scripts/probe-macos-package.py")
+        app_state = self.root / "app-state"
+        (app_state / "runtime").mkdir(parents=True)
+        (app_state / "runtime/connection-endpoint.json").write_text(json.dumps({
+            "schema_version": 1, "bind_address": "127.0.0.1", "port": 41731,
+        }), encoding="utf-8")
+        observation = mock.Mock(returncode=0, stdout="p42\nn127.0.0.1:41731\nn127.0.0.1:41731\n")
+        with mock.patch.object(probe.subprocess, "run", return_value=observation), \
+                mock.patch.object(probe, "lock_available", return_value=False):
+            self.assertEqual(probe.endpoint_owned((42, None, None), app_state), 41731)
+            observation.stdout += "n0.0.0.0:41731\n"
+            with self.assertRaisesRegex(probe.ProbeError, "loopback_owner_mismatch"):
+                probe.endpoint_owned((42, None, None), app_state)
+
 
 if __name__ == "__main__":
     unittest.main()

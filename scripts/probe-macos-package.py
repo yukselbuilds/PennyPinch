@@ -128,7 +128,9 @@ def endpoint_owned(app, state):
     if result.returncode == 1 and not addresses:
         return None
     require(result.returncode == 0, "loopback_observation_failed")
-    require(addresses == [f'127.0.0.1:{value["port"]}'], "loopback_owner_mismatch")
+    print(f"headroom-package-endpoint=observed descriptors={len(addresses)} "
+          f"unique={len(set(addresses))}", flush=True)
+    require(set(addresses) == {f'127.0.0.1:{value["port"]}'}, "loopback_owner_mismatch")
     require(not lock_available(state / "runtime/.ingress.lock"), "ingress_lock_unheld")
     return value["port"]
 
@@ -221,7 +223,7 @@ def probe(root):
         result = {"schema_version": 1, "status": "pass", "binary_sha256": before_binary,
                   "runtime": before_inventory, "steps": steps, "openings": 2,
                   "engine_processes": len(owned_engines), "clean_shutdown": True,
-                  "signing": "ad_hoc", "live_provider_requests": 0,
+                  "signing": "ad_hoc", "live_provider_traffic": "not_tested",
                   "build_profile": {"release": True, "lto": False, "codegen_units": 16}}
         (root / "lifecycle.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
         print(json.dumps(result, separators=(",", ":")), flush=True)
