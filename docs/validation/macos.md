@@ -236,6 +236,19 @@ Paketin 16.640 dosya ve 597.415.256 baytlık runtime envanteri, manifest, overla
 
 İlk denemelerde testin umask varsayımı, aynı dinleyicinin kopya dosya tanıtıcıları ve render sırasında kaybolan AX nesnesi görüldü. Ana ajan fixture'ı gözlenen izinlere bağladı; port denetimi tek beklenen adres kümesini doğrular ve farklı adresi reddeder. Sürücü yalnız kaybolmuş okuma nesnesinde yeni snapshot alır; tıklama hatasını tekrar etmez. Tek Luna xhigh envanter yardımcı ve regresyonlarını hazırlayıp durdu; paketleme, süreç/ayar sahipliği, native sürücü ve sonuç kabulünü ana ajan yürüttü. [Makine kanıtı](../proofs/macos-package-lifecycle.json) · [Başarılı koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43227012806) · [İnceleme](../reviews/H048.md#paketlenmiş-pencere-ve-motor-yaşam-döngüsü).
 
+## H048-c6 — macOS rapor dışa aktarma
+
+Amaç mevcut Genel bakış → Dışa aktar → ReportManager → AppKit kaydetme paneli → güvenli yeni dosya yolunu macOS'a taşımaktır. Ana ajan dosya/panel sahipliği ve atomik yayın kararlarını üstlenir. Mevcut rapor alan izin listesi, snapshot kimliği, boyut sınırı, TR/EN CSV ve çıkış bariyeri korunur. Yeni ölçüm, sağlayıcı çağrısı, auth veya UI tasarımı eklenmez. Linux writer bu dilimde açılmaz.
+
+| Senaryo | Kabul |
+| --- | --- |
+| Gerçek pencereden istatistik JSON, CSV ve tanı JSON kaydet | Kaydet paneli görünür; seçilen yeni Unicode isimli dosyanın tamamı gerçek writer ile kaydedilir. JSON/CSV biçimi ve mevcut içerik dışlama sözleşmesi korunur. |
+| Kaydet panelini iptal et | Arayüz iptali gösterir; yeni dosya veya staging artığı oluşmaz, sonraki dışa aktarma çalışır. |
+| Hedef zaten var veya başka yazıcı aynı hedefi yayımlar | Üzerine yazılmaz. Tek tam dosya kalır, rakibin baytları korunur; başarısız staging temizlenir. |
+| Yanlış uzantı, boş/aşırı büyük rapor, symlink/alias parent veya güvenilmeyen dosya sistemi | Yazmadan reddedilir. Yerel APFS ve mevcut dizin kimliği denetimleri kullanılır. |
+
+Önce macOS writer testleri mevcut `unavailable` davranışında RED olarak çalıştırılır. Son aday `macos-package.yml` içindeki `verify_report_export` ile odaklı Rust rapor testlerini ve gerçek paket/panel akışını ücretsiz Actions'ta doğrular. Yerel Windows'ta değişen ortak picker yönlendirmesi ve rapor davranışının odaklı testleri kullanılır; tam ürün kapısı ana H048'in son adayına aittir. Kaynak, araç, ortam ve sonuç önce/sonra fingerprint ile kaydedilir. QA ad-hoc paket ve canlı trafik sınırları H048-c5 ile aynıdır.
+
 ## Açık kabuller
 
 - H048-c1–c5 tamamlandı. macOS rapor dışa aktarma ile Desktop istemcisinden gerçek bağlantı ve trafik kabulü açık.

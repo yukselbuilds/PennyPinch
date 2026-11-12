@@ -151,3 +151,7 @@ pub(super) fn save_new(_path: &Path, _extension: &str, _bytes: &[u8]) -> Result<
 #[cfg(all(test, windows))]
 #[path = "writer_tests.rs"]
 mod tests;
+
+#[cfg(all(test, target_os = "macos"))]
+#[path = "writer_macos_tests.rs"]
+mod macos_tests;

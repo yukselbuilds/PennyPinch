@@ -8,6 +8,11 @@ on:
         required: true
         type: boolean
         default: false
+      verify_report_export:
+        description: Also verify the native report writer and actual save/cancel workflow.
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -29,6 +34,7 @@ jobs:
       CARGO_PROFILE_RELEASE_CODEGEN_UNITS: '16'
       RUSTUP_TOOLCHAIN: '1.92.0'
       npm_config_cache: ${{ github.workspace }}/work/caches/npm
+      HEADROOM_VERIFY_REPORT_EXPORT: ${{ inputs.verify_report_export }}
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -88,7 +94,25 @@ jobs:
           printf '%s\n' "$before"
           printf 'Inputs before: %s\n' "$(printf '%s' "$before" | shasum -a 256 | cut -d' ' -f1)"
           status=0
-          bash scripts/build-macos.sh "$build_root" || status=$?
+          if [[ "$HEADROOM_VERIFY_REPORT_EXPORT" == true ]]; then
+            report_log="$build_root/report-tests.log"
+            if ! pnpm build > "$report_log" 2>&1; then
+              echo '::error::Report frontend build failed.'
+              status=1
+            elif ! cargo test --locked --manifest-path src-tauri/Cargo.toml --release \
+              --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
+              -- export:: --test-threads=1 > "$report_log" 2>&1; then
+              echo '::error::Native report tests failed.'
+              status=1
+            fi
+            awk '/^error(\[[A-Z][0-9]+\])?: / { show = ++count <= 8; if (show) print substr($0, 1, 240) }
+              show && /^ *--> / { print substr($0, 1, 160); show = 0 }
+              /^test export::/ || /^test result: / { print substr($0, 1, 220) }' "$report_log"
+            rm -f "$report_log"
+          fi
+          if [[ "$status" == 0 ]]; then
+            bash scripts/build-macos.sh "$build_root" || status=$?
+          fi
           if [[ "$status" == 0 ]]; then
             "$build_python" -I -B scripts/probe-macos-package.py "$build_root" || status=$?
           fi
