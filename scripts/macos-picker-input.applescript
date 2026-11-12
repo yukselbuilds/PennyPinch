@@ -12,7 +12,7 @@ on run arguments
 end run
 
 on chooseFixture(panelTitle, fixturePath)
-    with timeout of 20 seconds
+    with timeout of 25 seconds
         tell application "System Events"
             set pickerApp to missing value
             repeat 60 times
@@ -65,8 +65,19 @@ on chooseFixture(panelTitle, fixturePath)
             if exists sheet 1 of window panelTitle of pickerApp then error number 1705
             if not (exists window panelTitle of pickerApp) then return
             if not (frontmost of pickerApp) then error number 1706
-            key code 36
-            repeat 20 times
+            set confirmButton to missing value
+            repeat 40 times
+                if exists button "Open" of window panelTitle of pickerApp then
+                    set confirmButton to button "Open" of window panelTitle of pickerApp
+                    if enabled of confirmButton then exit repeat
+                end if
+                delay 0.15
+            end repeat
+            if confirmButton is missing value then error number 1711
+            if not (enabled of confirmButton) then error number 1712
+            log "headroom-picker-input-driver=confirmation_enabled"
+            click confirmButton
+            repeat 40 times
                 if not (exists window panelTitle of pickerApp) then return
                 delay 0.15
             end repeat

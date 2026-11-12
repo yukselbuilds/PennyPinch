@@ -68,6 +68,39 @@ mod proof {
         }
     }
 
+    fn observe_file_panel(mtm: MainThreadMarker, expected: PathBuf) -> Retained<NSTimer> {
+        let previous = Cell::new(None);
+        let observe = RcBlock::new(move |_: std::ptr::NonNull<NSTimer>| {
+            let app = NSApplication::sharedApplication(mtm);
+            let Some(window) = app.modalWindow() else {
+                return;
+            };
+            let Some(panel) = window.downcast_ref::<NSOpenPanel>() else {
+                return;
+            };
+            let urls = panel.URLs();
+            let selected = urls.count() == 1
+                && urls
+                    .objectAtIndex(0)
+                    .path()
+                    .is_some_and(|path| PathBuf::from(path.to_string()) == expected);
+            let parent = panel
+                .directoryURL()
+                .and_then(|url| url.path())
+                .is_some_and(|path| PathBuf::from(path.to_string()) == expected.parent().unwrap());
+            let state = (urls.count(), selected, parent);
+            if previous.replace(Some(state)) != Some(state) {
+                println!(
+                    "headroom-picker-file-state count={} selected={selected} parent={parent}",
+                    urls.count()
+                );
+            }
+        });
+        let timer = unsafe { NSTimer::timerWithTimeInterval_repeats_block(0.5, true, &observe) };
+        unsafe { NSRunLoop::mainRunLoop().addTimer_forMode(&timer, NSModalPanelRunLoopMode) };
+        timer
+    }
+
     pub fn run() {
         assert_eq!(std::env::var("GITHUB_ACTIONS").as_deref(), Ok("true"));
         assert_eq!(std::env::var("RUNNER_OS").as_deref(), Ok("macOS"));
@@ -136,7 +169,10 @@ mod proof {
         std::fs::copy(&source, &command).unwrap();
         let before = Sha256::digest(std::fs::read(&command).unwrap());
         println!("headroom-picker-ready=file");
-        assert_eq!(picker::select_file(1, "codex"), Ok(Some(command.clone())));
+        let observation = observe_file_panel(mtm, command.clone());
+        let chosen_file = picker::select_file(1, "codex");
+        observation.invalidate();
+        assert_eq!(chosen_file, Ok(Some(command.clone())));
         let after = Sha256::digest(std::fs::read(&command).unwrap());
         assert_eq!(before, after);
         println!("headroom-picker-input=cli before={before:x} after={after:x}");
