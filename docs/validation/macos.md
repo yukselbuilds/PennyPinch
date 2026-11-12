@@ -212,8 +212,12 @@ Ana ajan paket doğrulama, seçim ve bağlantı sınırlarını üstlenir. Tek L
 
 Ana ajan ana iş parçacığı, yol doğrulama ve gerçek yönetici akışını uygular. Tek Luna sabitlenmiş AppKit API'lerini salt okunur inceler. Doğrulama mevcut ücretsiz macOS Actions koşusunda gerçek panel, kontrollü yerel dosyalar ve sınırlı süreli ayrı süreçle yapılır. Girdi/araç/ortam parmak izi alınır. Windows'ta etkilenen keşif ve Claude kapsamı testleri odaklı çalışır.
 
+12 Kasım'da macOS 15.8.2 ARM64 koşusunda 16 odaklı test ve kilitli Tauri derlemesi geçti. AppKit örneği gerçek dosya ve klasör panellerinin tek seçim kiplerini ve iptal sonuçlarını gözledi. Klasör paneli arka plan çağrısından ana iş parçacığında açıldı. Ayrı yönetici testlerinde uzantısız CLI, sembolik bağlantı, hatalı seçim, taze tarama, yeniden açılış ve Claude proje kaydı sınandı. Windows'ta 46 odaklı test geçti. [Makine kanıtı](../proofs/macos-file-picker.json) · [Başarılı koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43212626624).
+
+Gerçek panelde dosya ve klasör onayı açık. Klavye denemelerinde onay dönmedi. Son erişilebilirlik denemesi test dizinini gördü ve dosya satırını bulamadı. Etkileşimli macOS kabulü için uygulamada **Dosyadan ekle** ile uzantısız CLI dosyası, Claude proje kapsamından bir test klasörü seçilir. Yeniden taramada ve uygulama yeniden açıldığında iki seçim doğrulanır. [Erişilebilirlik denemesi](https://github.com/Protocol272/headroom-desktop/actions/runs/43211721150).
+
 ## Açık kabuller
 
-- H048-c'de sıradaki adım gerçek macOS dosya seçicidir. Desktop istemcisinden gerçek trafik ve bağlantı kabulü de açık.
+- H048-c4'te sıradaki adım gerçek panelde dosya ve klasör onayıdır. Desktop istemcisinden gerçek trafik ve bağlantı kabulü de açık.
 - H048-b için platforma ve mimariye özel sabitlenmiş motor ve doğrulanabilir süreç/loopback sahipliği, atomik ayar işlemleri ve çatışmayı koruyan geri alma gerekir.
 - H048-c için paketlenmiş uygulamanın gerçek açılışı, başlat/durdur ve temiz state kabulü ile paket ve motor imzasının ayrı doğrulanması gerekir. Apple Silicon sonucu Intel, Windows 11 veya Linux'a aktarılmaz. Üretim yayını veya ücretli imzalama bu koşuların kapsamı dışındadır.
