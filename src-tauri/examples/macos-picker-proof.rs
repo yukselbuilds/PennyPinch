@@ -194,9 +194,8 @@ mod proof {
         assert_eq!(info.uid(), unsafe { libc::geteuid() });
         assert_eq!(info.mode() & 0o7777, 0o700);
         let app = NSApplication::sharedApplication(mtm);
-        println!("headroom-picker-post-event-access={}", unsafe {
-            CGPreflightPostEventAccess()
-        });
+        let can_post_events = unsafe { CGPreflightPostEventAccess() };
+        println!("headroom-picker-post-event-access={can_post_events}");
         app.setActivationPolicy(NSApplicationActivationPolicy::Regular);
         app.finishLaunching();
         #[allow(deprecated)]
@@ -207,6 +206,7 @@ mod proof {
         assert_eq!(picker::select_file(1, "codex"), Ok(None));
         cancel.verify();
         println!("headroom-picker-case=cancel status=pass");
+        assert!(can_post_events, "native_picker_input_permission_missing");
 
         let command = root.join("CLI 工具/codex");
         std::fs::create_dir(command.parent().unwrap()).unwrap();

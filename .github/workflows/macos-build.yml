@@ -217,36 +217,16 @@ jobs:
             fi
             if [[ "$status" == 0 ]]; then
               if [[ "$HEADROOM_VERIFY_FILE_PICKER" == true ]]; then
-                cargo +1.92.0 build --locked --manifest-path src-tauri/Cargo.toml \
+                cargo +1.92.0 run --locked --manifest-path src-tauri/Cargo.toml \
                   --example macos-picker-proof --features custom-protocol \
                   --target aarch64-apple-darwin --jobs 2 --color never \
+                  -- "$HEADROOM_MACOS_PICKER_PROOF_ROOT" \
                   > "$build_log" 2>&1 || status=$?
-                picker_errors="$HEADROOM_MACOS_PICKER_PROOF_ROOT/picker.stderr"
-                : > "$picker_errors"
-                if [[ "$status" == 0 ]]; then
-                  picker_app="$HEADROOM_MACOS_PICKER_PROOF_ROOT/HeadroomPickerProof.app"
-                  picker_plist="$picker_app/Contents/Info.plist"
-                  mkdir -p "$picker_app/Contents/MacOS"
-                  install -m 700 "$CARGO_TARGET_DIR/aarch64-apple-darwin/debug/examples/macos-picker-proof" \
-                    "$picker_app/Contents/MacOS/macos-picker-proof"
-                  /usr/bin/plutil -create xml1 "$picker_plist"
-                  /usr/bin/plutil -insert CFBundlePackageType -string APPL "$picker_plist"
-                  /usr/bin/plutil -insert CFBundleExecutable -string macos-picker-proof "$picker_plist"
-                  /usr/bin/plutil -insert CFBundleIdentifier -string dev.headroom.picker-proof "$picker_plist"
-                  : > "$build_log"
-                  /usr/bin/open -n -W -a "$picker_app" --stdout "$build_log" --stderr "$picker_errors" \
-                    --env "GITHUB_ACTIONS=$GITHUB_ACTIONS" --env "RUNNER_OS=$RUNNER_OS" \
-                    --args "$HEADROOM_MACOS_PICKER_PROOF_ROOT" || status=$?
-                  if ! grep -qx 'headroom-picker-proof=pass' "$build_log"; then
-                    echo '::error::Native picker proof did not finish its selection cases.'
-                    status=1
-                  fi
-                fi
                 awk '/^headroom-picker-/ { print substr($0, 1, 240) }
                   /^error(\[[A-Z][0-9]+\])?: / { show = ++count <= 10; if (show) print substr($0, 1, 300) }
                   show && /^ *--> / { print substr($0, 1, 180); show = 0 }
                   /^thread .* panicked at / { detail = 2; print substr($0, 1, 240); next }
-                  detail > 0 { print substr($0, 1, 240); detail-- }' "$build_log" "$picker_errors"
+                  detail > 0 { print substr($0, 1, 240); detail-- }' "$build_log"
               fi
             fi
             if [[ "$status" == 0 ]]; then
