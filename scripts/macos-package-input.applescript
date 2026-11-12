@@ -50,6 +50,7 @@ end run
 on waitControl(pickerApp, labelText, acceptedRoles, activateControl)
     set observedControls to 0
     set targetSeen to false
+    set staleReads to 0
     tell application "System Events"
         repeat 120 times
             if not (exists pickerApp) then error number 1802
@@ -87,10 +88,12 @@ on waitControl(pickerApp, labelText, acceptedRoles, activateControl)
                     end repeat
                 on error number failureCode
                     -- A WebView render can invalidate a read; clicks are never retried here.
-                    if failureCode is not -1728 then error number failureCode
+                    if failureCode is not -1728 and failureCode is not -1719 then error number failureCode
+                    set staleReads to staleReads + 1
                     set targetControl to missing value
                 end try
                 if targetControl is not missing value then
+                    if staleReads > 0 then log "headroom-package-ui=read_refreshes count=" & staleReads
                     if activateControl then
                         try
                             click targetControl
