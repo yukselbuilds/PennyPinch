@@ -189,11 +189,13 @@ class MacOSBundleTests(unittest.TestCase):
     @unittest.skipUnless(os.name == "posix", "POSIX permission bits are required")
     def test_rejects_permission_drift(self):
         target = self.bundle_runtime / "payload/site-packages/demo.py"
-        target.chmod(0o600)
+        original_file_mode = stat.S_IMODE(target.stat().st_mode)
+        target.chmod(original_file_mode ^ 0o100)
         with self.assertRaises(ValueError):
             bundle_module.verify(self.bundle, self.runtime, self.manifest_sha)
-        target.chmod(0o644)
-        (self.bundle_runtime / "payload").chmod(0o700)
+        target.chmod(original_file_mode)
+        payload = self.bundle_runtime / "payload"
+        payload.chmod(stat.S_IMODE(payload.stat().st_mode) ^ 0o010)
         with self.assertRaises(ValueError):
             bundle_module.verify(self.bundle, self.runtime, self.manifest_sha)
 
