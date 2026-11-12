@@ -249,8 +249,16 @@ Amaç mevcut Genel bakış → Dışa aktar → ReportManager → AppKit kaydetm
 
 Önce macOS writer testleri mevcut `unavailable` davranışında RED olarak çalıştırılır. Son aday `macos-package.yml` içindeki `verify_report_export` ile odaklı Rust rapor testlerini ve gerçek paket/panel akışını ücretsiz Actions'ta doğrular. Yerel Windows'ta değişen ortak picker yönlendirmesi ve rapor davranışının odaklı testleri kullanılır; tam ürün kapısı ana H048'in son adayına aittir. Kaynak, araç, ortam ve sonuç önce/sonra fingerprint ile kaydedilir. QA ad-hoc paket ve canlı trafik sınırları H048-c5 ile aynıdır.
 
+12 Kasım 2026. Son `cf4f4bc` adayı macOS 15.8.2 ARM64 üzerinde geçti. Gerçek Genel bakış menüsünden açılan NSSavePanel'de iptal, ardından istatistik JSON, TR CSV ve tanı JSON kaydı yapıldı. Üç dosya Unicode adlarıyla okundu; biçim/ölçüm kapsamı, 0600 izin ve staging artığı olmaması doğrulandı. Bunlar izole uygulamanın gözlediği yerel metriklerdir; canlı sağlayıcı trafiği veya tasarruf benchmarkı değildir.
+
+11 native Rust rapor testi geçti: gerçek ReportManager ile tüm biçimlerde kayıt ve mevcut dosyanın korunması; aynı hedefe altı eşzamanlı yazıcıdan tek tam kazanan; parent/hedef symlink, güvensiz dizin, yol/uzantı ve boyut sınırı; değişmiş staging kimliği ve yabancı değişimin korunması. Mevcut beş rapor testi negatif/sıfır/bilinmeyen ölçüm, içerik dışlama, snapshot, iptal ve çıkış bariyerini kapsadı. Native Python kontrollerinde 28 geçti/1 atlandı. Windows'ta 8 odaklı test geçti. Sonraki yalnız macOS/sürücü değişiklikleri dışında Windows girdileri ve picker dalı eşleşti; aynı başarılı testler tekrarlanmadı.
+
+Rapor panellerinden sonra gerçek paket iki kez açıldı, üç farklı motor süreci Başlat/Durdur/tekrar Başlat ve normal çıkış yoluyla doğrulandı. Aynı kayıtlı port ve kilitler serbest kaldı. Paket runtime envanteri ve ikili hash'i değişmedi. 294 yerel kaynak/workflow girdisi ile native önce/sonra fingerprint'leri eşleşti. Native koşular her dispatch öncesi gözlenen ücretsiz kota ve sıfır dolar harcama engeli altında başlatıldı.
+
+Önce dört test RED verdi. İlk uygulama derlemesinde bağımsız picker örneğinin rapor DTO'suna bağımlılığı ve URL dönüşüm tipi düzeltildi. Sonraki koşu raporları geçti; motor Başlat sonrası AX okuma dizini değişti. Dış sürücü yalnız -1728/-1719 eski nesne/dizin okumalarında yeni snapshot alır, tıklama hatasını tekrar etmez. [Makine kanıtı](../proofs/macos-report-export.json) · [Başarılı koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43261107448) · [İnceleme](../reviews/H048.md#macos-rapor-dışa-aktarma).
+
 ## Açık kabuller
 
-- H048-c1–c5 tamamlandı. macOS rapor dışa aktarma ile Desktop istemcisinden gerçek bağlantı ve trafik kabulü açık.
+- H048-c1–c6 tamamlandı. H048-c7 Desktop istemcisinden gerçek bağlantı/trafik ve c8 son görev kabulü açık.
 - Ana H048'in son adayında tam yerel kalite kapısı çalıştırılır. Alt dilimlerdeki odaklı sonuçlar ana görev kapanışı değildir.
 - QA ad-hoc imzası üretim uygulaması/motor imzası, notarizasyon veya yayın kabulü değildir. Apple Silicon sonucu Intel, diğer macOS sürümleri, Windows 11 veya Linux'a aktarılmaz. Üretim yayını veya ücretli imzalama bu koşuların kapsamı dışındadır.

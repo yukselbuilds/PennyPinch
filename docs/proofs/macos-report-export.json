@@ -1,0 +1,346 @@
+{
+  "schema_version": 1,
+  "task": "H048-c6",
+  "status": "pass",
+  "main_task_complete": false,
+  "verified_at_utc": "2026-11-12T16:48:19.648641+00:00",
+  "scope": "Actual macOS Tauri report save/cancel panels, atomic new-file writer and normal engine/app lifecycle after export",
+  "native": {
+    "run_id": "43261107448",
+    "job_id": 131332340406,
+    "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43261107448",
+    "commit": "cf4f4bc12122a3626064fd2b883267e00b9f87da",
+    "platform": {
+      "os": "macOS",
+      "version": "15.8.2",
+      "build": "24H232",
+      "arch": "arm64"
+    },
+    "inputs_before": "50e79885498727799a66d8dfdc318289a2c35a519ddc5d774f06207eb2976093",
+    "inputs_after": "50e79885498727799a66d8dfdc318289a2c35a519ddc5d774f06207eb2976093",
+    "test_summary": "test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 328 filtered out; finished in 0.32s",
+    "tests": [
+      "test export::report::tests::actual_manager_saves_all_formats_and_preserves_an_existing_report ... ok",
+      "test export::report::tests::cancellation_failure_and_exit_barrier_release_without_latching_failed_exit ... ok",
+      "test export::report::tests::frozen_job_survives_new_reads_and_bounded_cache_evicts_old_ids ... ok",
+      "test export::report::tests::invalid_or_expired_statistics_never_fall_back_and_diagnostics_need_no_metrics ... ok",
+      "test export::report::tests::json_preserves_signed_zero_and_unknown_without_private_basis_or_identity ... ok",
+      "test export::report::tests::locale_csv_is_utf8_bom_crlf_and_signed_numbers_stay_numeric ... ok",
+      "test export::writer::macos::tests::changed_staging_name_is_rejected_and_foreign_replacement_survives_cleanup ... ok",
+      "test export::writer::macos_tests::concurrent_exports_publish_one_complete_file_without_overwrite_or_staging_leaks ... ok",
+      "test export::writer::macos_tests::invalid_paths_and_size_limits_create_no_files ... ok",
+      "test export::writer::macos_tests::parent_and_destination_symlinks_never_redirect_a_report ... ok",
+      "test export::writer::macos_tests::unicode_report_is_complete_private_and_existing_target_is_preserved ... ok"
+    ],
+    "native_python_tests": {
+      "total": 29,
+      "passed": 28,
+      "skipped": 1
+    },
+    "lifecycle": {
+      "schema_version": 1,
+      "status": "pass",
+      "binary_sha256": "e3580a0c2cf7c18b6021556d67b536fa7354fa363ba40dba6d9a4dcced1044f4",
+      "runtime": {
+        "bundle_unchanged": true,
+        "manifest_sha256": "b1a6e7abe508c944870ba8ede399ecf36df906f8a27900629c5f91809b7116cd",
+        "payload_bytes": 597415256,
+        "payload_files": 16640,
+        "payload_inventory_sha256": "bffece9fddf08b023473c6e81512cb3f71599feb3da85d598554f6b83826ee4f",
+        "schema_version": 1,
+        "source_unchanged": true,
+        "status": "verified"
+      },
+      "steps": [
+        {
+          "opening": 1,
+          "action": "started",
+          "app_pid": 9216,
+          "engine_pid": 9716,
+          "port": 49338
+        },
+        {
+          "opening": 1,
+          "action": "restarted",
+          "app_pid": 9216,
+          "engine_pid": 9973,
+          "port": 49338
+        },
+        {
+          "opening": 1,
+          "action": "clean_exit",
+          "port": 49338
+        },
+        {
+          "opening": 2,
+          "action": "started",
+          "app_pid": 10250,
+          "engine_pid": 10371,
+          "port": 49338
+        },
+        {
+          "opening": 2,
+          "action": "clean_exit",
+          "port": 49338
+        }
+      ],
+      "openings": 2,
+      "engine_processes": 3,
+      "clean_shutdown": true,
+      "signing": "ad_hoc",
+      "live_provider_traffic": "not_tested",
+      "build_profile": {
+        "release": true,
+        "lto": false,
+        "codegen_units": 16
+      },
+      "report_export": {
+        "status": "pass",
+        "cancelled_without_file": true,
+        "artifacts": [
+          {
+            "kind": "statistics_json",
+            "bytes": 892,
+            "sha256": "2a932a459a2cfe40379623f540f9f3a85f9f487a1a33b6ad256bae9985ea1262",
+            "mode": "0600"
+          },
+          {
+            "kind": "statistics_csv",
+            "bytes": 574,
+            "sha256": "d76aa4633b0cd26bc66afc83c4de2bcd5af2cfe91d74360c378829f115797903",
+            "mode": "0600"
+          },
+          {
+            "kind": "diagnostics_json",
+            "bytes": 1334,
+            "sha256": "e84e265d304eca30a316049e195e2fef8f62a64452071df3870abb93d79ccd80",
+            "mode": "0600"
+          }
+        ],
+        "source": "actual_private_app_metrics",
+        "provider_traffic": "not_tested"
+      }
+    },
+    "ui_steps": [
+      "open_pass",
+      "export_cancel_pass",
+      "export_statistics_json_pass",
+      "export_statistics_csv_pass",
+      "export_diagnostics_json_pass",
+      "read_refreshes count=3",
+      "start_pass",
+      "read_refreshes count=1",
+      "stop_pass",
+      "read_refreshes count=2",
+      "start_pass",
+      "exit_pass",
+      "open_pass",
+      "read_refreshes count=1",
+      "start_pass",
+      "read_refreshes count=1",
+      "exit_pass"
+    ],
+    "toolchain_lines": [
+      "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "Python 3.13.13"
+    ],
+    "allowance": {
+      "checked_at_utc": "2026-11-12T16:39:48.361269+00:00",
+      "account": "Protocol272",
+      "included_compute_used_usd": 8.99,
+      "included_compute_total_usd": 12,
+      "billable_usage_usd": 0,
+      "paid_actions_spent_usd": 0,
+      "paid_actions_budget_usd": 0,
+      "usage_blocked": true,
+      "candidate": "cf4f4bc12122a3626064fd2b883267e00b9f87da",
+      "workflow_sha256": "34fe95ace5506225f95b960fd499d0520ddbe0fc974a5c90bed14e7960dd4063",
+      "runner": "macos-15",
+      "timeout_minutes": 20,
+      "report_export": true,
+      "source": "Authenticated GitHub compute allowance and account Actions hard stop; usage metering can be delayed",
+      "run_id": "43261107448"
+    }
+  },
+  "source_sha256": {
+    ".github/workflows/macos-package.yml": "34fe95ace5506225f95b960fd499d0520ddbe0fc974a5c90bed14e7960dd4063",
+    "scripts/build-macos.sh": "cc3d7d55b356b92f979fa0047cfa1e941b89acfeedc38f7e5f2230bccfbb0caf",
+    "scripts/prepare-macos-ci-runtime.sh": "ff773c8ff25f7c4b5879c8a5234b948aa07cc741c392e45722f417d69d857e8f",
+    "scripts/probe-macos-package.py": "c88192e5ffc05dedc5c2f7f2d60fc6559042587909af4888ea3e011c1bb75ee4",
+    "scripts/macos-package-input.applescript": "89f1f1260fb929eecee16a23c43c0116611cc0e50433632a91103544171b4cd4",
+    "scripts/verify-macos-bundle.py": "586e9e6e6feb4cf78d3ff6ffa652fc11df849de1307008014616a1faeaeb50e5",
+    "scripts/macos-payload.py": "6d17ba90fcfb7f1164c1f6c64e5f3858a9e407691f21bdda2478bf4052b03356",
+    "scripts/stage-macos-runtime.py": "ee37fbbea6b74db5ae591efe505ff5401c2621eecee2a3b1df68a0132e276c47",
+    "src-tauri/src/export/mod.rs": "fc6c344d01ccc59150fe35b3012ca1ba9b4e25ed285ed54a59a5e3fb6504d9bc",
+    "src-tauri/src/export/report.rs": "9f543cefa22b7595384f9c55881ca1efa486f6e30346ec9b330edae59ad2c8c5",
+    "src-tauri/src/export/report_tests.rs": "ce5d8aad87a957834545280d0f2c182b973b31d6b0f98ad1e04f2e3d9605e80c",
+    "src-tauri/src/export/writer.rs": "0766942891f2e074648a4bedc76bb26e4651b2f4abf709ca6711027b22ee4a60",
+    "src-tauri/src/export/writer_macos.rs": "d0418120cbbc546f0d091144b2b4916ec5cb75cb2a8b697e640049b61a5068da",
+    "src-tauri/src/export/writer_macos_tests.rs": "5552e31f5b6d533384f6cc33c8ebcc2da42bab9cdb1a6e25c1ebc81d070fa495",
+    "src-tauri/src/integrations/picker.rs": "dd849db85eb488a049442f4da2a90e5995aa7984957feedbb94d8c857afe5560",
+    "src-tauri/src/integrations/picker_macos.rs": "9ecad9ca6c24fdc68498efdf84c0333a78dc721723dccdf3c5b80b10b045b852",
+    "src-tauri/src/integrations/config_io.rs": "40c519d4257a550cc4a894637eb51d7c077fe241df99799fbecdbcb8854d204a",
+    "src-tauri/src/integrations/config_io/macos.rs": "4be4901b5aae28e52ba1f439fef3f65d7db1386df71a0fb2f102648909d44170",
+    "src-tauri/src/main.rs": "ac69f2eb2f3a86d495752c7a21785e01a5d6843553a854a2b585b2be9a5c92cd",
+    "src-tauri/src/runtime/manager.rs": "afc5f81e57a5bae6a6e3120cd4bc640b3aa07f2d76ef9e6a765b6d6ee4c9759d",
+    "src-tauri/src/runtime/manager_macos.rs": "1ee7cb7649b140103120c58764318de3f72debf17bb11d3d15e015dd82c20380",
+    "src-tauri/src/runtime/macos_session.rs": "724dc3b269adc0b891effdd509f74411399eaf41b45eca549f9b7ec8a9b014f5",
+    "src-tauri/Cargo.toml": "b259f780faf69e41a6a94e50111cd86dd94086fc1252f379773f676d384d086a",
+    "src-tauri/Cargo.lock": "dac06959c740adeb4efd89108885fd1e1ef0197b8aeb6f3b0e65517d072a54da",
+    "src-tauri/build.rs": "487059eaf8a947b80f20a9aacac038a5047b2ad69d2401b827376c67d6fe847f",
+    "src-tauri/tauri.conf.json": "06612d83c9bf440ed22d6c58759f007e986f038b0412c37b1f9e69ebb0c91875",
+    "src/features/overview/ExportButton.tsx": "e93d7bed2e6eb74a1c370ad5e01feba38a5478e18586ee2bbdd986dfbd58cf64",
+    "src/lib/exportReport.ts": "97ea03a9401e7cbdbae038b1093d5ab1348f0f94e382244bd41a406e03fe182d",
+    "package.json": "8522d3fe1ed1901df8a01f15bc70c86332e04bf473acc309c8f1cbc3d3e41868",
+    "pnpm-lock.yaml": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3",
+    "runtime/engine-deps/pyproject.toml": "7d9802162b931a2c2b8ceb08852f44c587668290d1763eaec49786d089aeeaa9",
+    "runtime/engine-deps/uv.lock": "161d3b1543b1f6620c1ce40e38d9a2fba26d5c64e3e103a41dcd81dff18ced3f"
+  },
+  "windows": {
+    "commands": [
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "--",
+          "export::",
+          "--test-threads=1"
+        ],
+        "exit_code": 0,
+        "seconds": 13.159,
+        "test_summary": [
+          "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 426 filtered out; finished in 0.02s"
+        ],
+        "node_summary": [],
+        "failed_tests": []
+      },
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 1.04,
+        "test_summary": [],
+        "node_summary": [],
+        "failed_tests": []
+      },
+      {
+        "command": [
+          "work/proofs/macos/h048-a/actionlint-1.7.12/actionlint.exe",
+          ".github/workflows/macos-package.yml"
+        ],
+        "exit_code": 0,
+        "seconds": 0.125,
+        "test_summary": [],
+        "node_summary": [],
+        "failed_tests": []
+      },
+      {
+        "command": [
+          "git",
+          "-c",
+          "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 0.038,
+        "test_summary": [],
+        "node_summary": [],
+        "failed_tests": []
+      }
+    ],
+    "toolchain": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "environment": {
+      "workspace": "D:\\Projeler\\Headroom",
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "windows_build": [
+        10,
+        0,
+        19045
+      ]
+    },
+    "inputs_unchanged": true,
+    "proof_sha256": "62e96ee4069fddff00b64bbe742ce7710588db8c764108ffdcd547c18f9ea3a6",
+    "matching_current_inputs": 290,
+    "macos_only_and_driver_changes": [
+      "scripts/macos-package-input.applescript",
+      "src-tauri/src/export/writer_macos.rs",
+      "src-tauri/src/integrations/picker.rs",
+      "src-tauri/src/integrations/picker_macos.rs"
+    ],
+    "windows_picker_branch_unchanged": true
+  },
+  "local_verification": {
+    "current_inputs_count": 294,
+    "current_inputs_sha256": "0da05b5bd014bc30386bc1dee563bc6af50d270b1350e57c0b9041a227d20db5",
+    "before_after_match": true,
+    "windows_static_proof_sha256": "62e96ee4069fddff00b64bbe742ce7710588db8c764108ffdcd547c18f9ea3a6",
+    "last_static_proof_sha256": "a290d21ef3aa94c2907dc9cc4b8e4316ec555fe2a7cdf70ed7b52013b08a162b",
+    "reused_fmt_actionlint_ast": "Matching inputs or macOS-only edits checked in the focused correction receipts; native osacompile passed on the final candidate."
+  },
+  "earlier_attempts": [
+    {
+      "run_id": "43256452757",
+      "commit": "ea104c3c5310e23813eef9225f0a0d871acb511b",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43256452757",
+      "status": "expected_failure",
+      "reason": "unavailable",
+      "receipt_sha256": "4946b4d599335d7384efa34fe1568c46d137ddfdab431c28bbb490fa962f566f"
+    },
+    {
+      "run_id": "43258417685",
+      "commit": "69af03ad59628c39d07ebc739dc6cb64ee36cb08",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43258417685",
+      "status": "compile_failure",
+      "reason": "The picker example has no export module; passing primitive picker fields removes that coupling. Bind the returned NSURL before borrowing it.",
+      "receipt_sha256": "8ecd2612e7d41895642d4acdeaaf197937d0d51501bdf97213beb268c862fe87"
+    },
+    {
+      "run_id": "43259406961",
+      "commit": "f4400f0850f7f98ed735d6aee59b173494e920e9",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43259406961",
+      "status": "partial",
+      "reason": "ui_start: stale AX index -1719 during an accessibility read; no click_failed diagnostic",
+      "receipt_sha256": "5ada3a69bf2455596816a7e0d4ceca5b44aad0f56bcb94fad5deed1a24ae9dc9"
+    }
+  ],
+  "verified": [
+    "The real export menu and Tauri IPC opened the native NSSavePanel from the actual packaged app.",
+    "Cancellation produced no report or staging artifact, and all three subsequent exports succeeded.",
+    "Statistics JSON, locale CSV and diagnostics JSON were saved under Unicode filenames with mode 0600; their format, platform fields, size and scope were read back from the actual files.",
+    "Native tests preserved signed negative and unknown measurements and excluded private fixture metadata.",
+    "A six-writer concurrent destination race published exactly one complete report, preserved the winner and left no staging files.",
+    "Pre-existing destinations, destination symlinks, parent symlinks, writable shared directories, invalid paths/extensions and report byte limits were guarded.",
+    "Changed staging identity was rejected and the foreign replacement survived cleanup in the native regression.",
+    "The actual ReportManager saved all formats and returned file_exists while preserving existing bytes on repeated save.",
+    "After report dialogs, two app openings and three owned engine processes completed start/stop/restart and normal exit, with the stable port and released locks.",
+    "Pinned runtime inventory and the package binary remained unchanged before and after the whole lifecycle."
+  ],
+  "remaining": [
+    "real macOS Desktop client connection and live provider traffic",
+    "main H048 final local quality gate and remaining release/compatibility acceptance"
+  ],
+  "limits": [
+    "Validated on macOS 15.8.2 ARM64 and a local APFS workspace on the standard macos-15 GitHub runner.",
+    "Native visible report panels used the default Turkish UI and the observed local metrics; no provider traffic or savings benchmark was performed.",
+    "QA release uses LTO disabled and 16 codegen units; ad-hoc signing is separate from production Developer ID/notarization and the final release profile.",
+    "Foreign replacement cleanup is guarded by held inode identity; this bounded regression does not qualify arbitrary same-UID malicious filesystem races or physical power loss.",
+    "Windows focused report tests cover the existing Windows path; no Windows 11, Linux, Intel or other macOS-version support follows from this result."
+  ],
+  "development_token_savings": "not_measured"
+}
