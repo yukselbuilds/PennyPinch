@@ -10,7 +10,8 @@ mod proof {
     use objc2::{rc::Retained, MainThreadMarker};
     use objc2_app_kit::{
         NSApplication, NSApplicationActivationPolicy, NSEventModifierFlags,
-        NSModalPanelRunLoopMode, NSOpenPanel, NSPasteboard, NSPasteboardTypeString, NSWorkspace,
+        NSModalPanelRunLoopMode, NSOpenPanel, NSPasteboard, NSPasteboardTypeString,
+        NSRunningApplication, NSWorkspace,
     };
     use objc2_foundation::{NSDate, NSDefaultRunLoopMode, NSRunLoop, NSString, NSTimer};
     use sha2::{Digest, Sha256};
@@ -49,6 +50,7 @@ mod proof {
             let previous_focus = Cell::new(None);
             let timeout_result = timed_out.clone();
             let panel_result = saw_panel.clone();
+            let proof_app = NSRunningApplication::currentApplication();
             let block = RcBlock::new(move |_: std::ptr::NonNull<NSTimer>| {
                 let app = NSApplication::sharedApplication(mtm);
                 let Some(window) = app.modalWindow() else {
@@ -72,9 +74,7 @@ mod proof {
                     app.isActive(),
                     NSWorkspace::sharedWorkspace()
                         .frontmostApplication()
-                        .is_some_and(|front| {
-                            front.processIdentifier() == std::process::id() as i32
-                        }),
+                        .is_some_and(|front| front == proof_app),
                     window.isVisible(),
                     app.keyWindow().is_some(),
                 );
