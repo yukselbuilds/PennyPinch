@@ -9,7 +9,7 @@ mod proof {
     use objc2::{rc::Retained, MainThreadMarker};
     use objc2_app_kit::{
         NSApplication, NSApplicationActivationPolicy, NSEvent, NSEventModifierFlags, NSEventType,
-        NSModalPanelRunLoopMode, NSOpenPanel,
+        NSModalPanelRunLoopMode, NSOpenPanel, NSPasteboard, NSPasteboardTypeString,
     };
     use objc2_foundation::{NSDate, NSDefaultRunLoopMode, NSPoint, NSRunLoop, NSString, NSTimer};
     use sha2::{Digest, Sha256};
@@ -19,6 +19,11 @@ mod proof {
     use std::rc::Rc;
     use std::sync::mpsc;
     use std::time::{Duration, Instant};
+
+    #[link(name = "CoreGraphics", kind = "framework")]
+    unsafe extern "C" {
+        fn CGPreflightPostEventAccess() -> bool;
+    }
 
     struct Driver {
         timer: Retained<NSTimer>,
@@ -61,18 +66,23 @@ mod proof {
                         5,
                         NSEventModifierFlags::Command | NSEventModifierFlags::Shift,
                     ),
-                    2 => key(
-                        &app,
-                        &path.to_string_lossy(),
-                        0,
-                        NSEventModifierFlags::empty(),
-                    ),
+                    2 => {
+                        let pasteboard = NSPasteboard::generalPasteboard();
+                        pasteboard.clearContents();
+                        pasteboard.setString_forType(
+                            &NSString::from_str(&path.to_string_lossy()),
+                            unsafe { NSPasteboardTypeString },
+                        ) && key(&app, "v", 9, NSEventModifierFlags::Command)
+                    }
                     4 | 6 => key(&app, "\r", 36, NSEventModifierFlags::empty()),
                     _ => true,
                 };
                 if !sent {
                     timeout_result.set(true);
                     unsafe { panel.cancel(None) };
+                }
+                if matches!(phase.get(), 0 | 2 | 4 | 6) {
+                    println!("headroom-picker-event={}", phase.get());
                 }
                 phase.set(phase.get() + 1);
             });
@@ -138,6 +148,9 @@ mod proof {
         assert_eq!(info.uid(), unsafe { libc::geteuid() });
         assert_eq!(info.mode() & 0o7777, 0o700);
         let app = NSApplication::sharedApplication(mtm);
+        println!("headroom-picker-post-event-access={}", unsafe {
+            CGPreflightPostEventAccess()
+        });
         app.setActivationPolicy(NSApplicationActivationPolicy::Regular);
         app.finishLaunching();
         #[allow(deprecated)]
