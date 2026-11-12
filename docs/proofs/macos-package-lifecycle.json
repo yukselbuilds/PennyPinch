@@ -1,0 +1,266 @@
+{
+  "schema_version": 1,
+  "task": "H048-c5",
+  "status": "pass",
+  "main_task_complete": false,
+  "verified_at_utc": "2026-11-12T13:32:35.596286+00:00",
+  "scope": "Real packaged Apple Silicon Tauri window, embedded pinned engine resources, private application state and clean UI-driven process/endpoint/lock lifecycle",
+  "native": {
+    "run_id": "43227012806",
+    "job_id": 131212682021,
+    "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43227012806",
+    "candidate": "c036f720704481d4dffae8d6b853446183edfd81",
+    "platform": {
+      "os": "macOS",
+      "version": "15.8.2",
+      "build": "24H232",
+      "arch": "arm64"
+    },
+    "inputs_before": "614fe2888c4c12ba4ed766c57e01ab2a27d7150b7b18c0be76d8a8d957902d3c",
+    "inputs_after": "614fe2888c4c12ba4ed766c57e01ab2a27d7150b7b18c0be76d8a8d957902d3c",
+    "native_python_tests_total": 29,
+    "native_python_tests_skipped": 1,
+    "lifecycle": {
+      "schema_version": 1,
+      "status": "pass",
+      "binary_sha256": "36b5920fca3f2bc5754505867e2af91adc618d790b5644e89c1a34cc3716e96c",
+      "runtime": {
+        "bundle_unchanged": true,
+        "manifest_sha256": "60ab88b57c37366af27347b494f9acabc38edf7b5959701e04d7e031004b1820",
+        "payload_bytes": 597415256,
+        "payload_files": 16640,
+        "payload_inventory_sha256": "583ead91915a31b955c528ceb3eb1037211215437ec26def7b80e25f06d18144",
+        "schema_version": 1,
+        "source_unchanged": true,
+        "status": "verified"
+      },
+      "steps": [
+        {
+          "opening": 1,
+          "action": "started",
+          "app_pid": 10210,
+          "engine_pid": 10288,
+          "port": 49346
+        },
+        {
+          "opening": 1,
+          "action": "restarted",
+          "app_pid": 10210,
+          "engine_pid": 10772,
+          "port": 49346
+        },
+        {
+          "opening": 1,
+          "action": "clean_exit",
+          "port": 49346
+        },
+        {
+          "opening": 2,
+          "action": "started",
+          "app_pid": 11128,
+          "engine_pid": 11374,
+          "port": 49346
+        },
+        {
+          "opening": 2,
+          "action": "clean_exit",
+          "port": 49346
+        }
+      ],
+      "openings": 2,
+      "engine_processes": 3,
+      "clean_shutdown": true,
+      "signing": "ad_hoc",
+      "live_provider_traffic": "not_tested",
+      "build_profile": {
+        "release": true,
+        "lto": false,
+        "codegen_units": 16
+      }
+    },
+    "ui_steps": [
+      "open_pass",
+      "start_pass",
+      "stop_pass",
+      "start_pass",
+      "exit_pass",
+      "open_pass",
+      "start_pass",
+      "exit_pass"
+    ],
+    "allowance": {
+      "checked_at": "2026-11-12T13:24:32.887437+00:00",
+      "account": "Protocol272",
+      "period": "2026-11",
+      "included_compute_used_usd": 8.43,
+      "included_compute_total_usd": 12,
+      "billable_usage_usd": 0,
+      "paid_actions_budget_usd": 0,
+      "usage_blocked": true,
+      "candidate_sha": "c036f720704481d4dffae8d6b853446183edfd81",
+      "workflow_sha256": "9cdccdee1b0958c9fb59bd0587b62a6a5bd3de2d229c04b2c0a9415ca0d3f955",
+      "runner": "macos-15",
+      "timeout_minutes": 20,
+      "build_profile": "release",
+      "release_lto": false,
+      "release_codegen_units": 16,
+      "source": "Authenticated GitHub Actions overview and account budget observed immediately before dispatch",
+      "run_id": "43227012806"
+    },
+    "verified_at_utc": "2026-11-12T13:30:18.010069+00:00"
+  },
+  "source_sha256": {
+    ".github/workflows/macos-package.yml": "9cdccdee1b0958c9fb59bd0587b62a6a5bd3de2d229c04b2c0a9415ca0d3f955",
+    "package.json": "8522d3fe1ed1901df8a01f15bc70c86332e04bf473acc309c8f1cbc3d3e41868",
+    "pnpm-lock.yaml": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3",
+    "runtime/engine-deps/pyproject.toml": "7d9802162b931a2c2b8ceb08852f44c587668290d1763eaec49786d089aeeaa9",
+    "runtime/engine-deps/uv.lock": "161d3b1543b1f6620c1ce40e38d9a2fba26d5c64e3e103a41dcd81dff18ced3f",
+    "runtime/macos_engine.py": "7b56c2ec63463938d309b357eb6c96de710a27449313ea6ccf16aaa7d4f71ff6",
+    "scripts/build-macos.sh": "cc3d7d55b356b92f979fa0047cfa1e941b89acfeedc38f7e5f2230bccfbb0caf",
+    "scripts/macos-package-input.applescript": "3323369a9d5984d7fdacb3b211ecf7e76ea65c683189a990638cbf1a9bfab403",
+    "scripts/macos-payload.py": "6d17ba90fcfb7f1164c1f6c64e5f3858a9e407691f21bdda2478bf4052b03356",
+    "scripts/prepare-macos-ci-runtime.sh": "ff773c8ff25f7c4b5879c8a5234b948aa07cc741c392e45722f417d69d857e8f",
+    "scripts/probe-macos-package.py": "87400f51f6c415fcd67978a23ae463e68cd582d2f5c44d101ee96e91e6813cb1",
+    "scripts/stage-macos-runtime.py": "ee37fbbea6b74db5ae591efe505ff5401c2621eecee2a3b1df68a0132e276c47",
+    "scripts/verify-macos-bundle.py": "586e9e6e6feb4cf78d3ff6ffa652fc11df849de1307008014616a1faeaeb50e5",
+    "src-tauri/Cargo.lock": "dac06959c740adeb4efd89108885fd1e1ef0197b8aeb6f3b0e65517d072a54da",
+    "src-tauri/Cargo.toml": "b259f780faf69e41a6a94e50111cd86dd94086fc1252f379773f676d384d086a",
+    "src-tauri/build.rs": "487059eaf8a947b80f20a9aacac038a5047b2ad69d2401b827376c67d6fe847f",
+    "src-tauri/src/main.rs": "ac69f2eb2f3a86d495752c7a21785e01a5d6843553a854a2b585b2be9a5c92cd",
+    "src-tauri/src/runtime/control.rs": "d90215495ab33b6b94645959f01074227c9bbce9ed29874ceb1e23dd75c85812",
+    "src-tauri/src/runtime/ingress.rs": "9f91ea51045745290e25361593afc16353c27019275a714656ec4f3b303c7368",
+    "src-tauri/src/runtime/ingress_macos.rs": "27df134e93d85394330d659e69c8689da6a6710ea5da649649b6a7bf0dc6b297",
+    "src-tauri/src/runtime/ingress_relay.rs": "0da0d89e0fc124b89016b9986eefd3ac72a14dd65f7a0e7b95eca50eb916e8fa",
+    "src-tauri/src/runtime/macos_layout.rs": "644ff01daa03e9c0c1edaa32b08d2192b15c3bd5295185e6b461b52a1f079bd1",
+    "src-tauri/src/runtime/macos_ports.rs": "c80a2804125d73249fd54e53a38c5d15834635377897ba2ea8a96d066d96e925",
+    "src-tauri/src/runtime/macos_session.rs": "724dc3b269adc0b891effdd509f74411399eaf41b45eca549f9b7ec8a9b014f5",
+    "src-tauri/src/runtime/manager.rs": "afc5f81e57a5bae6a6e3120cd4bc640b3aa07f2d76ef9e6a765b6d6ee4c9759d",
+    "src-tauri/src/runtime/manager_macos.rs": "1ee7cb7649b140103120c58764318de3f72debf17bb11d3d15e015dd82c20380",
+    "src-tauri/src/runtime/metrics_read.rs": "58f55494a4f0bd9ac57dd48a4666ba9238283e6e39e2d85500cc52025e15f3d8",
+    "src-tauri/src/runtime/mod.rs": "e924a39a01192a7a046b71e57e0b5f38528253491933c16b951d92b085e9c2cf",
+    "src-tauri/src/runtime/recovery.rs": "bb4358aeb61e5fd157c40585777c257423d132d782b09c762b74c7b0609aef5c",
+    "src-tauri/src/runtime/settings_live.rs": "48faa205613e81574e4a0446558047f93ec2a273289854f15d686443cc185c0b",
+    "src-tauri/src/runtime/unix_backend.rs": "2a80055e347d43677a223508a726f53413248d5a0a8b60522c32d4f591a1d6de",
+    "src-tauri/tauri.conf.json": "06612d83c9bf440ed22d6c58759f007e986f038b0412c37b1f9e69ebb0c91875",
+    "src/components/DesktopLifecycle.tsx": "3483c8a95c1cd21c1d1840aade2b412e5bbae2d7ec377694be0dc5df8363c7a3",
+    "src/features/overview/OptimizationControl.tsx": "2194c7f4ec4f09a18dacee5877f25c3590bf1d550ea661103b17ba4db21355e6",
+    "tests/runtime/test_macos_bundle.py": "f0f9fe70b7b091338cc18eedfb55a42c23994099d1bca3526771d3413fede0cf"
+  },
+  "windows": {
+    "command": [
+      "D:\\Projeler\\Headroom\\work\\proofs\\engine\\toolchain\\cpython-3.13.13-windows-x86_64-none\\python.exe",
+      "-I",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests/runtime",
+      "-p",
+      "test_macos_bundle.py",
+      "-v"
+    ],
+    "tests_total": 11,
+    "tests_passed": 8,
+    "tests_skipped": 3,
+    "inputs_before_after_match": true,
+    "matching_inputs": 292,
+    "proof_sha256": "124effdfb6414da217d28947b4b6bbb24f0b344a4d78f8db96604b67841265f7",
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "skipped_scope": "POSIX permission bits and unavailable Windows symlink privileges",
+    "python_executable": {
+      "path": "work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe",
+      "sha256_before": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+      "sha256_after": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+      "previous_unchanged_identity_proof_sha256": "178dd0d7dad988a251906eab3bb7161d8ea5bc3ee6d090fce9ac5f393c1eaac6"
+    }
+  },
+  "static": {
+    "python_ast": "pass",
+    "crlf_aware_diff_check": "pass",
+    "reused_commands": [
+      {
+        "command": [
+          "C:\\Program Files\\Git\\bin\\bash.exe",
+          "-n",
+          "scripts/build-macos.sh"
+        ],
+        "exit_code": 0,
+        "seconds": 0.041,
+        "test_summary": [],
+        "node_summary": [],
+        "failed_tests": []
+      },
+      {
+        "command": [
+          "work/proofs/macos/h048-a/actionlint-1.7.12/actionlint.exe",
+          "-color",
+          ".github/workflows/macos-package.yml"
+        ],
+        "exit_code": 0,
+        "seconds": 0.112,
+        "test_summary": [],
+        "node_summary": [],
+        "failed_tests": []
+      }
+    ],
+    "reused_input_sha256": {
+      "scripts/build-macos.sh": "cc3d7d55b356b92f979fa0047cfa1e941b89acfeedc38f7e5f2230bccfbb0caf",
+      ".github/workflows/macos-package.yml": "9cdccdee1b0958c9fb59bd0587b62a6a5bd3de2d229c04b2c0a9415ca0d3f955"
+    },
+    "apple_script_compilation": "passed in the native workflow preparation step"
+  },
+  "earlier_attempts": [
+    {
+      "run_id": "43222965416",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43222965416",
+      "candidate": "9673a3d526c20419cb5e7ce7ea1c7ee11d7d88ab",
+      "outcome": "failure",
+      "reason": "Permission fixture assumed fixed modes under the runner umask; the test now toggles bits relative to the observed original mode.",
+      "receipt_sha256": "6e6aaedfd1b8e876affb72935634b5f3db9ee1dbc17db11c66e9a540b469d8e7"
+    },
+    {
+      "run_id": "43223745521",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43223745521",
+      "candidate": "3c31b79693fa45633b0820b7f3b7aaece641ba23",
+      "outcome": "failure",
+      "reason": "The endpoint probe rejected duplicate descriptors for the same owned listener; set equality and an unexpected-address regression fixed the probe.",
+      "receipt_sha256": "7f58976c167796ecfd6e47549be014dd6a69e10e89f3a9f1f5d54b1e2349167e"
+    },
+    {
+      "run_id": "43225682959",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43225682959",
+      "candidate": "895ace2fd6635c7568cafe1f82f7f1306119b491",
+      "outcome": "failure",
+      "reason": "The UI driver observed a missing AX object during a render; only stale reads now obtain a fresh snapshot, while click errors fail.",
+      "receipt_sha256": "99232825be61b14459ec26fecf9259c9963dc95f39eebb01964016869d617178"
+    }
+  ],
+  "verified": [
+    "Real release app bundle opened twice through LaunchServices in a separate QA application directory.",
+    "Real Start, Stop, Start again and confirmed Exit actions used the normal frontend and Tauri runtime commands.",
+    "Three different direct child Python engine processes were bound to the owned app identity and the exact embedded runtime executable.",
+    "The same saved loopback endpoint was owned across both app openings and accepted duplicated descriptors of that one listener.",
+    "The ingress and engine locks were observed held when required and released after normal stop or app exit.",
+    "Each normal app exit left no owned engine process and the loopback port could be rebound.",
+    "The 16640-file runtime, manifest, overlays, permissions and symlinks matched the prepared source before and after the lifecycle; the app binary hash remained unchanged.",
+    "Ad-hoc signature strict verification passed before the app was opened.",
+    "Native and local validation input fingerprints matched before and after their respective commands."
+  ],
+  "remaining": [
+    "live macOS Desktop client connection and provider traffic",
+    "macOS report export native acceptance",
+    "main H048 final local quality gate and remaining release/compatibility acceptance"
+  ],
+  "limits": [
+    "Native platform proof is macOS 15.8.2 ARM64 on the standard macos-15 runner; it does not establish Intel, other macOS versions, Linux or Windows 11 support.",
+    "This QA release profile has LTO disabled and 16 codegen units; it does not qualify the final production release profile or its performance.",
+    "Ad-hoc signing does not qualify Developer ID, notarization, Gatekeeper distribution or production update signing.",
+    "No live authenticated provider or client traffic was tested in this slice; no token or monetary savings were measured.",
+    "The native Python fixture suite reported 29 total tests with one skipped case; symlink skips are rejected by the preparation script.",
+    "The run is a bounded lifecycle check, not long-duration stability evidence."
+  ],
+  "development_token_savings": "not_measured",
+  "current_inputs_unchanged": true,
+  "current_inputs_sha256": "3282200216e3b2ca4d0aedf7216f268cc783a89fb2475a1f68a37a69acbdbd39"
+}
