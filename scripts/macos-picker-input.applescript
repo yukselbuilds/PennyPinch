@@ -37,13 +37,27 @@ on chooseFixture(panelTitle, fixturePath)
                 delay 0.15
             end repeat
             if not (exists sheet 1 of window panelTitle of pickerApp) then error number 1703
-        end tell
-        set the clipboard to fixturePath
-        tell application "System Events"
+            set goSheet to sheet 1 of window panelTitle of pickerApp
+            set pathInput to missing value
+            set sheetControls to entire contents of goSheet
+            if (count of sheetControls) > 80 then error number 1708
+            repeat with controlRef in sheetControls
+                set controlItem to contents of controlRef
+                if (role of controlItem) is in {"AXTextField", "AXComboBox"} then
+                    set pathInput to controlItem
+                    exit repeat
+                end if
+            end repeat
+            if pathInput is missing value then error number 1709
+            set value of pathInput to fixturePath
+            if (value of pathInput) is not fixturePath then error number 1710
+            log "headroom-picker-input-driver=fixture_path_observed"
             if not (frontmost of pickerApp) then error number 1704
-            key code 9 using {command down}
-            delay 0.4
-            key code 36
+            if exists button "Go" of goSheet then
+                click button "Go" of goSheet
+            else
+                key code 36
+            end if
             repeat 20 times
                 if not (exists sheet 1 of window panelTitle of pickerApp) then exit repeat
                 delay 0.15
