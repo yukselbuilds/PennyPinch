@@ -262,7 +262,12 @@ pub(crate) fn save_report(
     }
     #[cfg(target_os = "macos")]
     {
-        macos_picker::save_report(owner, artifact)
+        macos_picker::save_report(
+            owner,
+            &artifact.suggested_name,
+            artifact.extension,
+            artifact.language == crate::export::report::Language::Tr,
+        )
     }
     #[cfg(not(any(windows, target_os = "macos")))]
     {

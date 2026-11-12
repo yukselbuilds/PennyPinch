@@ -31,29 +31,31 @@ pub fn select_project_directory(
 
 pub(super) fn save_report(
     owner: usize,
-    artifact: &crate::export::report::Artifact,
+    name: &str,
+    extension: &str,
+    turkish: bool,
 ) -> Result<Option<PathBuf>, ()> {
-    if owner == 0 || !matches!(artifact.extension, "json" | "csv") {
+    if owner == 0 || !matches!(extension, "json" | "csv") {
         return Err(());
     }
     let mut result = Err(());
     let mut show = || {
         result = MainThreadMarker::new().ok_or(()).and_then(|mtm| {
             let panel = NSSavePanel::savePanel(mtm);
-            let title = if artifact.language == crate::export::report::Language::Tr {
+            let title = if turkish {
                 "Raporu kaydet"
             } else {
                 "Save report"
             };
             panel.setTitle(Some(&NSString::from_str(title)));
-            panel.setNameFieldStringValue(&NSString::from_str(&artifact.suggested_name));
+            panel.setNameFieldStringValue(&NSString::from_str(name));
             panel.setCanCreateDirectories(false);
             panel.setAllowsOtherFileTypes(false);
             panel.setExtensionHidden(false);
             // Use the existing pinned AppKit API; the writer independently enforces the extension.
             #[allow(deprecated)]
             panel.setAllowedFileTypes(Some(&NSArray::from_retained_slice(&[NSString::from_str(
-                artifact.extension,
+                extension,
             )])));
             let response = panel.runModal();
             if response == unsafe { NSModalResponseCancel } {
@@ -62,7 +64,8 @@ pub(super) fn save_report(
             if response != unsafe { NSModalResponseOK } {
                 return Err(());
             }
-            selected_path(&panel.URL().ok_or(())?).map(Some)
+            let url = panel.URL().ok_or(())?;
+            selected_path(&url).map(Some)
         });
     };
     if MainThreadMarker::new().is_some() {
