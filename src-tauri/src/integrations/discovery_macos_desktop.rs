@@ -46,9 +46,16 @@ pub(in crate::integrations::discovery) fn add_desktop_candidates(
                 return observations;
             }
             *candidate_count += 1;
-            let Some(bundle) =
-                checked_existing_path(&applications.join(name), PathKind::Directory, warnings)
-            else {
+            // System Applications permits administrator-group writes. Check the
+            // bundle's local contents, then verify its signed launcher and metadata.
+            let Some(contents) = checked_existing_path(
+                &applications.join(name).join("Contents"),
+                PathKind::Directory,
+                warnings,
+            ) else {
+                continue;
+            };
+            let Some(bundle) = contents.parent().map(Path::to_owned) else {
                 continue;
             };
             if !roots.insert(bundle.clone()) {
