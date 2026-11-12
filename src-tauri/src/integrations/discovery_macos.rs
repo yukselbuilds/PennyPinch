@@ -2,8 +2,13 @@ use super::*;
 use std::fs::Metadata;
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 
+#[path = "discovery_macos_desktop.rs"]
+mod desktop;
+pub(super) use desktop::{add_desktop_candidates, observe_desktop};
+
 const MAX_LINKS: usize = 8;
 const MAX_HASH_BYTES: u64 = 1024 * 1024 * 1024;
+type Observations = HashMap<(&'static str, &'static str, PathBuf), InstallationObservation>;
 
 // Official Apple Silicon release binaries, measured without executing them.
 const PINNED_CLI: &[(&str, &str, u64, &str)] = &[
@@ -32,7 +37,7 @@ pub(super) fn add_cli_candidates(
     candidates: &mut HashMap<String, Candidate>,
     warnings: &mut BTreeSet<&'static str>,
     candidate_count: &mut usize,
-) -> HashMap<(&'static str, PathBuf), InstallationObservation> {
+) -> Observations {
     let home_bins = inputs
         .macos_home
         .iter()
@@ -77,7 +82,7 @@ pub(super) fn add_cli_candidates(
             else {
                 continue;
             };
-            observations.insert((product.kind, path.clone()), observed);
+            observations.insert((product.kind, "cli", path.clone()), observed);
             insert_candidate(
                 candidates,
                 Candidate {
@@ -132,6 +137,34 @@ fn open_command(path: &Path) -> Option<File> {
         .ok()
 }
 
+fn trusted_file_metadata(file: &File) -> Option<Metadata> {
+    let metadata = file.metadata().ok()?;
+    (metadata.is_file()
+        && metadata.nlink() == 1
+        && metadata.len() != 0
+        && metadata.mode() & 0o7022 == 0
+        && (metadata.uid() == 0 || metadata.uid() == unsafe { libc::geteuid() }))
+    .then_some(metadata)
+}
+
+fn file_is_current(file: &File, before: &Metadata, path: &Path) -> Option<()> {
+    let held = file.metadata().ok()?;
+    let named = open_command(path)?.metadata().ok()?;
+    (file_stamp(&held) == file_stamp(before) && file_stamp(&named) == file_stamp(before))
+        .then_some(())
+}
+
+fn observation_from_metadata(info: &Metadata) -> Option<InstallationObservation> {
+    Some(InstallationObservation {
+        identity: FileIdentity {
+            volume_serial: info.dev().try_into().ok()?,
+            file_index: info.ino(),
+        },
+        size_bytes: info.len(),
+        macos_change_time: Some(MacChangeTime::from_metadata(info)),
+    })
+}
+
 fn inspect_command(
     kind: &'static str,
     path: &Path,
@@ -139,14 +172,8 @@ fn inspect_command(
     seen_files: &mut HashSet<(&'static str, u64, u64)>,
 ) -> Option<(Option<String>, InstallationObservation)> {
     let mut file = open_command(path)?;
-    let before = file.metadata().ok()?;
-    if !before.is_file()
-        || before.nlink() != 1
-        || before.len() == 0
-        || before.mode() & 0o111 == 0
-        || before.mode() & 0o7022 != 0
-        || (before.uid() != 0 && before.uid() != unsafe { libc::geteuid() })
-    {
+    let before = trusted_file_metadata(&file)?;
+    if before.mode() & 0o111 == 0 {
         return None;
     }
     let identity = (kind, before.dev(), before.ino());
@@ -175,23 +202,9 @@ fn inspect_command(
     } else {
         None
     };
-    let held = file.metadata().ok()?;
-    let named = open_command(path)?.metadata().ok()?;
-    if file_stamp(&held) != file_stamp(&before) || file_stamp(&named) != file_stamp(&before) {
-        return None;
-    }
+    file_is_current(&file, &before, path)?;
     seen_files.insert(identity);
-    Some((
-        version,
-        InstallationObservation {
-            identity: FileIdentity {
-                volume_serial: before.dev().try_into().ok()?,
-                file_index: before.ino(),
-            },
-            size_bytes: before.len(),
-            macos_change_time: Some(MacChangeTime::from_metadata(&before)),
-        },
-    ))
+    Some((version, observation_from_metadata(&before)?))
 }
 
 fn file_stamp(info: &Metadata) -> (u64, u64, u32, u32, u64, u64, i64, i64, i64, i64) {

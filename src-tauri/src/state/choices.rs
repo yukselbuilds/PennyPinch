@@ -46,6 +46,7 @@ pub(crate) enum ChoiceOrigin {
     UserLocalNative,
     UserLocalNpm,
     WindowsAppPackage,
+    MacosAppBundle,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]

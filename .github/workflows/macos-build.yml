@@ -23,6 +23,11 @@ on:
         required: false
         type: boolean
         default: false
+      verify_desktop_discovery:
+        description: Verify macOS Codex Desktop discovery with the pinned signed OpenAI disk image.
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -45,6 +50,7 @@ jobs:
       npm_config_cache: ${{ github.workspace }}/work/caches/npm
       HEADROOM_VERIFY_CONFIG_RECOVERY: ${{ inputs.verify_config_recovery }}
       HEADROOM_VERIFY_CLI_DISCOVERY: ${{ inputs.verify_cli_discovery }}
+      HEADROOM_VERIFY_DESKTOP_DISCOVERY: ${{ inputs.verify_desktop_discovery }}
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -91,6 +97,12 @@ jobs:
             export HEADROOM_MACOS_CLIENT_PROOF_ROOT="$(mktemp -d "$GITHUB_WORKSPACE/work/proofs/macos/h048-c1/cli.XXXXXX")"
             python3 -I -B scripts/prepare-macos-ci-clients.py "$HEADROOM_MACOS_CLIENT_PROOF_ROOT"
           fi
+          if [[ "$HEADROOM_VERIFY_DESKTOP_DISCOVERY" == true ]]; then
+            export HEADROOM_MACOS_DESKTOP_PROOF_ROOT="$(mktemp -d "$GITHUB_WORKSPACE/work/macos-desktop.XXXXXX")"
+            bash scripts/prepare-macos-ci-desktop.sh "$HEADROOM_MACOS_DESKTOP_PROOF_ROOT"
+            desktop_bundle="$HEADROOM_MACOS_DESKTOP_PROOF_ROOT/home/Applications/ChatGPT.app"
+            export HEADROOM_MACOS_DESKTOP_VERSION="$(/usr/bin/plutil -extract CFBundleShortVersionString raw -o - "$desktop_bundle/Contents/Info.plist")"
+          fi
 
           test_filters=(runtime::unix_backend:: runtime::control::tests:: runtime::macos_session::
                         runtime::ingress:: runtime::ingress_relay:: runtime::manager::macos_tests::
@@ -105,13 +117,20 @@ jobs:
             if [[ "$HEADROOM_VERIFY_CONFIG_RECOVERY" != true && -z "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
               test_filters=()
             fi
-            test_filters+=(integrations::discovery::macos::
+            test_filters+=(integrations::discovery::macos::tests::
                            integrations::discovery_tests::installation_selection_is_bound
                            integrations::discovery_tests::npm_metadata_is_separate
                            integrations::discovery_tests::path_and_metadata_limits
                            integrations::config_io::macos::tests::native_manager
                            state::choices::macos_tests::
                            integrations::transaction_fs::macos_impl::choices::tests::)
+          fi
+          if [[ "$HEADROOM_VERIFY_DESKTOP_DISCOVERY" == true ]]; then
+            if [[ "$HEADROOM_VERIFY_CONFIG_RECOVERY" != true && "$HEADROOM_VERIFY_CLI_DISCOVERY" != true && -z "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
+              test_filters=()
+            fi
+            test_filters+=(integrations::discovery::macos::desktop::tests::
+                           integrations::plan_tests::codex_config_contract_requires_platform_evidence_for_desktop)
           fi
           fingerprint() {
             git rev-parse HEAD 'HEAD^{tree}'
@@ -131,6 +150,13 @@ jobs:
               for command in codex claude opencode; do
                 local executable="$HEADROOM_MACOS_CLIENT_PROOF_ROOT/clients/bin/$command"
                 printf 'CLI input %s %s %s\n' "$command" "$(stat -f '%z' "$executable")" "$(shasum -a 256 "$executable" | cut -d' ' -f1)"
+              done
+            fi
+            if [[ "$HEADROOM_VERIFY_DESKTOP_DISCOVERY" == true ]]; then
+              local path
+              for path in Codex.dmg home/Applications/ChatGPT.app/Contents/{Info.plist,MacOS/ChatGPT,Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex}; do
+                local file="$HEADROOM_MACOS_DESKTOP_PROOF_ROOT/$path"
+                printf 'Desktop input %s %s %s\n' "$path" "$(stat -f '%z' "$file")" "$(shasum -a 256 "$file" | cut -d' ' -f1)"
               done
             fi
             shasum -a 256 /usr/sbin/netstat
@@ -163,7 +189,7 @@ jobs:
                 detail > 0 { print substr($0, 1, 240); detail-- }
                 /^test .* \.\.\. FAILED$/ || /^test result: / { print substr($0, 1, 240) }' "$build_log"
             else
-              awk '/^test state::ownership::/ || /^test state::choices::macos_tests::/ || /^test integrations::config_io::macos::/ || /^test integrations::transaction_fs::macos_impl::/ || /^test integrations::discovery::macos::/ || /^test integrations::discovery_tests::/ || /^test result: / { print }' "$build_log"
+              awk '/^test state::ownership::/ || /^test state::choices::macos_tests::/ || /^test integrations::config_io::macos::/ || /^test integrations::transaction_fs::macos_impl::/ || /^test integrations::discovery::macos::/ || /^test integrations::discovery_tests::/ || /^test integrations::plan_tests::codex_config_contract_requires_platform_evidence_for_desktop / || /^test result: / { print }' "$build_log"
               if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
                 cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
                   --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \

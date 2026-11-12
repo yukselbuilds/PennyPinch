@@ -2,7 +2,7 @@ import { invoke, isTauri } from "@tauri-apps/api/core";
 
 export type ClientKind = "codex" | "claude_code" | "opencode";
 export type ClientSurface = "cli" | "desktop";
-export type InstallationSource = "path" | "user_local_npm" | "user_local_native" | "scoop" | "windows_app_package" | "manual_file";
+export type InstallationSource = "path" | "user_local_npm" | "user_local_native" | "scoop" | "windows_app_package" | "macos_app_bundle" | "manual_file";
 export type DiscoveryWarning =
   | "scan_not_run"
   | "scope_partial"
@@ -71,6 +71,7 @@ const sourceLabels: Record<InstallationSource, string> = {
   user_local_native: "User-local install",
   scoop: "Scoop",
   windows_app_package: "Windows app package",
+  macos_app_bundle: "macOS application",
   manual_file: "Selected file",
 };
 
@@ -131,11 +132,11 @@ function decodeInstallation(value: unknown): InstallationSummary | null {
       !(["codex", "claude_code", "opencode"] as unknown[]).includes(client_kind) ||
       !(["cli", "desktop"] as unknown[]).includes(surface) ||
       !(version === null || validVersion(version)) ||
-      !(["path", "user_local_npm", "user_local_native", "scoop", "windows_app_package", "manual_file"] as unknown[]).includes(source) ||
+      !(["path", "user_local_npm", "user_local_native", "scoop", "windows_app_package", "macos_app_bundle", "manual_file"] as unknown[]).includes(source) ||
       typeof location_label !== "string" || typeof source !== "string" ||
       location_label !== sourceLabels[source as InstallationSource] ||
       status !== "detected" || connection_status !== "not_verified") return null;
-  if (source === "windows_app_package") {
+  if (source === "windows_app_package" || source === "macos_app_bundle") {
     if (client_kind !== "codex" || surface !== "desktop") return null;
   } else if (surface !== "cli") return null;
 

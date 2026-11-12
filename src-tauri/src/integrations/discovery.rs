@@ -282,17 +282,10 @@ impl DiscoveryManager {
             .installations
             .iter()
             .map(|summary| {
-                let current = state.paths.get(&summary.installation_id).and_then(|path| {
-                    observe_candidate(&Candidate {
-                        kind: summary.client_kind,
-                        surface: summary.surface,
-                        version: summary.version.clone(),
-                        source: summary.source,
-                        location_label: summary.location_label,
-                        identity_path: path.clone(),
-                        executable_path: path.clone(),
-                    })
-                });
+                let current = state
+                    .paths
+                    .get(&summary.installation_id)
+                    .and_then(|path| observe_installation(summary, path));
                 let freshness = match (state.observations.get(&summary.installation_id), current) {
                     (Some(before), Some(after)) if *before == after => "current",
                     (Some(_), _) => "stale",
@@ -523,6 +516,12 @@ impl DiscoveryManager {
         };
         if !observation_matches_choice(&observed, &choice)
             || path_key(&choice.executable_path) != path_key(&path)
+        {
+            return saved_choice_error(&request.request_id, ErrorCode::ValidationFailed);
+        }
+        #[cfg(target_os = "macos")]
+        if summary.source == "macos_app_bundle"
+            && observe_installation(&summary, &path) != Some(observed)
         {
             return saved_choice_error(&request.request_id, ErrorCode::ValidationFailed);
         }
@@ -910,6 +909,7 @@ fn choice_origin(value: &str) -> Option<ChoiceOrigin> {
         "user_local_native" => Some(ChoiceOrigin::UserLocalNative),
         "user_local_npm" => Some(ChoiceOrigin::UserLocalNpm),
         "windows_app_package" => Some(ChoiceOrigin::WindowsAppPackage),
+        "macos_app_bundle" => Some(ChoiceOrigin::MacosAppBundle),
         _ => None,
     }
 }
@@ -1050,6 +1050,10 @@ fn observe_installation(
     summary: &InstallationSummary,
     path: &Path,
 ) -> Option<InstallationObservation> {
+    #[cfg(target_os = "macos")]
+    if summary.source == "macos_app_bundle" && summary.surface == "desktop" {
+        return macos::observe_desktop(path, summary.version.as_deref());
+    }
     capture_observation(
         ChoiceStore::capture_installation(
             choice_client_kind(summary.client_kind)?,
@@ -1195,6 +1199,8 @@ pub(super) struct DiscoveryInputs {
     pub(super) registered_codex_packages: Vec<PathBuf>,
     #[cfg(target_os = "macos")]
     pub(super) macos_home: Option<PathBuf>,
+    #[cfg(target_os = "macos")]
+    pub(super) macos_applications: Option<PathBuf>,
 }
 
 impl DiscoveryInputs {
@@ -1217,6 +1223,7 @@ impl DiscoveryInputs {
         #[cfg(target_os = "macos")]
         {
             inputs.macos_home = env::var_os("HOME").map(PathBuf::from);
+            inputs.macos_applications = Some(PathBuf::from("/Applications"));
         }
         #[cfg(not(target_os = "macos"))]
         {
@@ -1350,12 +1357,21 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
     }
 
     #[cfg(target_os = "macos")]
-    let cli_observations = macos::add_cli_candidates(
-        &inputs,
-        &mut candidates,
-        &mut warnings,
-        &mut candidate_count,
-    );
+    let macos_observations = {
+        let mut observations = macos::add_desktop_candidates(
+            &inputs,
+            &mut candidates,
+            &mut warnings,
+            &mut candidate_count,
+        );
+        observations.extend(macos::add_cli_candidates(
+            &inputs,
+            &mut candidates,
+            &mut warnings,
+            &mut candidate_count,
+        ));
+        observations
+    };
 
     #[cfg(not(target_os = "macos"))]
     let mut path_entries = HashSet::new();
@@ -1443,9 +1459,11 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
         .map(|candidate| {
             let id = Uuid::new_v4().to_string();
             #[cfg(target_os = "macos")]
-            if let Some(observed) =
-                cli_observations.get(&(candidate.kind, candidate.executable_path.clone()))
-            {
+            if let Some(observed) = macos_observations.get(&(
+                candidate.kind,
+                candidate.surface,
+                candidate.executable_path.clone(),
+            )) {
                 native_observations.insert(id.clone(), *observed);
             }
             paths.insert(id.clone(), candidate.executable_path);

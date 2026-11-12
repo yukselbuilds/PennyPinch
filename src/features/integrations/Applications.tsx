@@ -94,7 +94,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
     trCli: "Komut satırı", trDesktop: "Masaüstü",
     sources: {
       path: "PATH", user_local_npm: "Kullanıcıya ait npm", user_local_native: "Kullanıcıya ait kurulum",
-      scoop: "Scoop", windows_app_package: "Windows uygulama paketi", manual_file: "Dosyadan eklenen",
+      scoop: "Scoop", windows_app_package: "Windows uygulama paketi", macos_app_bundle: "macOS uygulaması", manual_file: "Dosyadan eklenen",
     },
   },
   en: {
@@ -125,7 +125,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
     trCli: "Command line", trDesktop: "Desktop",
     sources: {
       path: "PATH", user_local_npm: "User-local npm", user_local_native: "User-local install",
-      scoop: "Scoop", windows_app_package: "Windows app package", manual_file: "Added from file",
+      scoop: "Scoop", windows_app_package: "Windows app package", macos_app_bundle: "macOS application", manual_file: "Added from file",
     },
   },
 };

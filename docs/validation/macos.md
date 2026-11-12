@@ -182,6 +182,18 @@ Apple Silicon macOS 15.8.2 üzerinde resmî üç CLI ikilisiyle gerçek tarama v
 
 Yönetici yeniden oluşturularak açılış eşlemesi doğrulandı. Claude proje testi, seçilen yolu testten aldı. Gerçek dosya seçici ve paketlenmiş pencerenin yeniden açılışı kendi kabullerinde sınanacak.
 
+## H048-c3 — Codex Desktop keşfi
+
+macOS'ta sistem ve kullanıcı `Applications` dizinlerindeki `Codex.app` ve `ChatGPT.app` adayları incelenir. Başlatıcı ve `Info.plist` imzası OpenAI kimliğiyle yerel olarak doğrulanır. Sürüm bu metadata'dan okunur. Tarama istemciyi çalıştırmaz. Sürüm görünümü keşif kanıtıdır. macOS Desktop bağlantı planı canlı istemci kabulüne kadar kapalı kalır.
+
+| Başlangıç ve eylem | Beklenen gözlem |
+| --- | --- |
+| İzole uygulama dizininde gerçek imzalı OpenAI paketi → tarama | Codex masaüstü kaydı doğru sürümle görünür. CLI kayıtları ayrı kalır. Yanıtta yerel dosya yolu bulunmaz. |
+| Açık seçim → yeni yöneticiyle tarama → paketin değişimi | Aynı başlatıcı taze kimliğe bağlanır. Değişen veya kaldırılan başlatıcı eski seçimi geçersiz kılar. |
+| İlgisiz, imzasız veya değişmiş metadata, sembolik bağlantı, güvenli olmayan konum | Aday görünmez ve tarama sürer. İstemci dosyası veya ayarı değişmez. |
+
+Ana ajan paket doğrulama, seçim ve bağlantı sınırlarını üstlenir. Tek Luna resmî disk imajının sürüm ve özet kanıtını hazırlar. Native kabul ücretsiz `macos-build.yml` koşusunda gerçek Apple Silicon disk imajından kurulan izole paketle çalışır. Windows keşif/plan ve frontend sözleşme kontrolleri odaklı çalışır.
+
 ## Açık kabuller
 
 - H048-c'de sıradaki adım macOS Codex Desktop keşfidir. Gerçek dosya seçici de açık.

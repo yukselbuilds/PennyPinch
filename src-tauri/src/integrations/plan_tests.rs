@@ -78,7 +78,7 @@ fn codex_user_config_plan_targets_only_stable_ingress_and_preserves_declared_mod
 }
 
 #[test]
-fn codex_current_versions_and_desktop_use_the_same_guarded_config_contract() {
+fn codex_config_contract_requires_platform_evidence_for_desktop() {
     for (surface, version) in [
         ("cli", "0.166.0"),
         ("cli", "0.166.0-alpha.5.1"),
@@ -90,6 +90,12 @@ fn codex_current_versions_and_desktop_use_the_same_guarded_config_contract() {
         context.surface = surface.to_owned();
         context.version = Some(version.to_owned());
         let plan = preview_config(&context, CODEX_CONFIG).unwrap();
+        if cfg!(target_os = "macos") && surface == "desktop" {
+            assert!(plan
+                .blockers
+                .contains(&PlanBlocker::UnsupportedClientVersion));
+            continue;
+        }
         assert_eq!(plan.status, PlanStatus::Preview, "{surface}/{version}");
         assert!(plan.model_unchanged && plan.reasoning_unchanged && plan.auth_unchanged);
         assert!(plan.restart_required);

@@ -81,6 +81,20 @@ test("rejects correlation, schema, warning, generation, count, duplicate and cro
   assert.equal(decodeDiscoveryReply(snapshot({ installations: [installation({ source: "path", location_label: "User-local npm" })] }), requestId), null);
 });
 
+test("accepts a macOS application only as a Codex Desktop discovery", () => {
+  const desktop = installation({
+    surface: "desktop",
+    version: "26.1103.1",
+    source: "macos_app_bundle",
+    location_label: "macOS application",
+  });
+  const decode = (entry) => decodeDiscoveryReply(snapshot({ installations: [entry] }), requestId);
+  assert.deepEqual(decode(desktop)?.snapshot.installations, [desktop]);
+  assert.equal(decode({ ...desktop, client_kind: "claude_code" }), null);
+  assert.equal(decode({ ...desktop, surface: "cli" }), null);
+  assert.equal(decode({ ...desktop, location_label: "/Applications/ChatGPT.app" }), null);
+});
+
 test("decodes only the fixed discovery error DTOs", () => {
   for (const code of ["validation_failed", "busy", "environment_blocked"]) {
     const decoded = decodeDiscoveryReply(errorReply(code), requestId);
