@@ -64,6 +64,7 @@ jobs:
           git diff --quiet HEAD --
           test "$status" = 0
           printf '%s\n' '## macOS Desktop preflight' '' "- Commit: $GITHUB_SHA" \
-            '- Isolated official Desktop open/quit and bundled backend config read only.' \
+            '- Fresh-CI Desktop open/quit, private Codex/Electron core profiles and direct bundled backend config read.' \
+            '- Additional vendor application state is owned and removed; full application state isolation is not established.' \
             '- No account login or model turn. Headroom traffic and provider compatibility remain untested.' \
             >> "$GITHUB_STEP_SUMMARY"

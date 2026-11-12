@@ -201,7 +201,7 @@ def run(root):
                       '[analytics]\nenabled = false\n', encoding="utf-8")
     config.chmod(0o600)
     original_config = digest(config)
-    owned, opening, descendants = None, None, []
+    owned, opening, descendants, vendor_pin = None, None, [], None
     try:
         version = subprocess.run([str(backend), "--version"], env=environment, cwd=state,
                                  capture_output=True, text=True, timeout=10)
@@ -237,15 +237,27 @@ def run(root):
             ("codex_home", "codex_app", "chatgpt_app", "bundle_app"), untouched)}
         profiles["private_electron"] = profile_metadata(state / "electron")
         print("headroom-desktop-profiles=" + json.dumps(profiles, separators=(",", ":")), flush=True)
-        core.require(not any(path.exists() for path in untouched), "desktop_wrote_default_profile")
-        core.require(any((state / "electron").iterdir()), "electron_profile_not_used")
+        core.require(not any(path.exists() or path.is_symlink() for path in untouched[:3]),
+                     "desktop_wrote_default_profile")
+        core.require((state / "electron/Local State").is_file()
+                     and (state / "electron/Default").is_dir(), "electron_profile_not_used")
+        vendor = untouched[3]
+        if vendor.exists() or vendor.is_symlink():
+            info = vendor.lstat()
+            core.require(vendor.resolve(strict=True) == vendor and stat.S_ISDIR(info.st_mode)
+                         and info.st_uid == os.geteuid() and info.st_mode & 0o022 == 0,
+                         "unsafe_vendor_application_state")
+            vendor_pin = (info.st_dev, info.st_ino)
         core.require(all(digest(path) == before[path.relative_to(bundle).as_posix()] for path in files),
                      "desktop_package_changed")
         result = {"schema_version": 1, "status": "pass", "scope": "desktop_no_account_preflight",
                   "desktop_version": "26.1106.51428", "backend_version": version.stdout.strip(),
                   "full_signature_verified": True, "backend_config": contract, "gui": observed,
                   "bundled_backend_children_observed": len(children), "isolated_electron_state_used": True,
-                  "default_profiles_unchanged": True, "normal_exit": True,
+                  "default_core_profiles_unchanged": True, "normal_exit": True,
+                  "vendor_application_state_created": vendor_pin is not None,
+                  "vendor_application_state_purpose": "unknown",
+                  "full_application_state_isolation": "not_established",
                   "observed_owned_children_exited": len(descendants),
                   "endpoint_config_unchanged": True, "observed_loopback_requests": server.observed_requests,
                   "model_turn_requested": False, "live_provider_traffic": "not_tested",
@@ -270,6 +282,15 @@ def run(root):
         server.shutdown()
         server.server_close()
         serving.join(timeout=5)
+        if vendor_pin:
+            vendor = untouched[3]
+            info = vendor.lstat()
+            core.require(vendor.parent == normal_home / "Library/Application Support"
+                         and vendor.name == "com.openai.codex" and vendor.resolve(strict=True) == vendor
+                         and stat.S_ISDIR(info.st_mode) and info.st_uid == os.geteuid()
+                         and info.st_mode & 0o022 == 0
+                         and (info.st_dev, info.st_ino) == vendor_pin, "vendor_state_cleanup_conflict")
+            shutil.rmtree(vendor)
         current = state.lstat()
         core.require(state.parent == Path("/private/tmp") and state.name.startswith("hr-c7-")
                      and state.resolve(strict=True) == state and current.st_uid == os.geteuid()
@@ -278,7 +299,9 @@ def run(root):
         # rmtree does not follow profile symlinks; the newly created root is checked above.
         shutil.rmtree(state)
     result["private_state_removed"] = not state.exists()
+    result["vendor_application_state_removed"] = not untouched[3].exists()
     core.require(result["private_state_removed"], "private_state_left")
+    core.require(result["vendor_application_state_removed"], "vendor_state_left")
     print("headroom-desktop-preflight=" + json.dumps(result, separators=(",", ":")), flush=True)
 
 

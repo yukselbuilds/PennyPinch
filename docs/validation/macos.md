@@ -272,6 +272,8 @@ Ana ajan auth, rota ve süreç sahipliğini üstlenir. İlk adım, sabitlenmiş 
 
 Ön kontrolün uygulama state kökü yalnız CI'da oluşturulan kısa `/private/tmp/hr-c7-<rastgele>` dizinidir; macOS Unix soket uzunluğu sınırı nedeniyle bu açık QA state istisnası kullanılır. Codex/Electron/home/temp alt dizinleri özeldir; ortam gerçek API/GitHub hesap sırlarını devralmaz. Normal config ve uygulama profilleri başlangıçta yok olmalı ve sonda da oluşmamalıdır. Paket/geliştirme dosyaları proje `work` altında kalır. Yalnız gözlenen sahipli süreçler kapandıktan sonra UID/inode/mode doğrulanan QA state temizlenir. Gözlem bir model turu başlatmaz.
 
+İlk native gözlem tam state yalıtımı koşulunu karşılamadı: `.codex` ile normal Codex/ChatGPT profilleri yok kalırken özel Electron profilinde Local State ve Default oluştu; `~/Library/Application Support/com.openai.codex` altında tek, sınıflandırılmamış kayıt belirdi. Bu vendor alanının amacı bilinmiyor. Dar devam kabulü yalnız temiz CI kullanıcısında, başlangıçta bulunmayan bu açık vendor state köküne izin verir; UID/inode/canonical dizin denetimi ve normal çıkış sonrası temizleme ister. Core profiller değişmemeli ve özel Electron profili gerçekten kullanılmalıdır. Bu daha dar ön kontrol tam uygulama state yalıtımı, GUI config benimsenmesi veya trafik başarısı olarak raporlanmaz; ilk katı koşulun başarısız kanıtı korunur.
+
 ## Açık kabuller
 
 - H048-c1–c6 tamamlandı. H048-c7 Desktop istemcisinden gerçek bağlantı/trafik ve c8 son görev kabulü açık.
