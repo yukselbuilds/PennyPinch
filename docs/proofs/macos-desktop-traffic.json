@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "task": "H048-c7b",
+  "status": "pass",
+  "candidate": "522feb32fe80ef2a4df3402dc60384d020045195",
+  "run_url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43284385567",
+  "run_started_at": "2026-11-12T18:52:48Z",
+  "run_finished_at": "2026-11-12T18:58:32Z",
+  "environment": {
+    "ProductName": "macOS",
+    "ProductVersion": "15.8.2",
+    "BuildVersion": "24H232"
+  },
+  "architecture": "arm64",
+  "inputs": {
+    "before": "8319140543a5fb50364bfe60edea27b786b41ab8a7a0f32dcc754e7bc6a23189",
+    "after": "8319140543a5fb50364bfe60edea27b786b41ab8a7a0f32dcc754e7bc6a23189"
+  },
+  "native_python_summary": [
+    "Native Python Ran 45 tests in 3.742s",
+    "Native Python OK (skipped=1)"
+  ],
+  "controlled_result": {
+    "schema_version": 1,
+    "status": "pass",
+    "scope": "desktop_controlled_response",
+    "desktop_version": "26.1106.51428",
+    "backend_version": "codex-cli 0.167.0-alpha.4.1",
+    "full_signature_verified": true,
+    "backend_config": {
+      "endpoint_matches": true,
+      "built_in_provider": true,
+      "account": "none",
+      "normal_exit": true
+    },
+    "gui": {
+      "windows": 1,
+      "controls": 16,
+      "sign_in_button": false,
+      "api_key_button": false
+    },
+    "bundled_backend_children_observed": 1,
+    "isolated_electron_state_used": true,
+    "default_core_profiles_unchanged": true,
+    "normal_exit": true,
+    "vendor_application_state_created": true,
+    "vendor_application_state_purpose": "unknown",
+    "full_application_state_isolation": "not_established",
+    "observed_owned_children_exited": 11,
+    "endpoint_config_unchanged": true,
+    "observed_loopback_requests": 2,
+    "config_bytes_unchanged": false,
+    "non_desktop_config_unchanged": true,
+    "new_desktop_preferences_created": true,
+    "test_config_before_sha256": "804584475c0ff9b8e77ce37a5f705fa9bd1ed816c979512df051fc30aa50bfaf",
+    "test_config_after_sha256": "626743aba74e066b9349f7618e2784536a369f66a29af949ff305d74a27475d0",
+    "model_turn_requested": true,
+    "live_provider_traffic": "not_tested",
+    "desktop_headroom_route": "controlled_fixture",
+    "package_before": {
+      "Contents/Info.plist": "3c3f175bca100cb25507b633742154f965cc2d456ca06282a69de6b1430c9c74",
+      "Contents/MacOS/ChatGPT": "7efa7738eb06887f95f3b915c085a7a228c437119a1fedaaa7d01c92687cff78",
+      "Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex": "7cb8700a47be3c81bb3c5efbf2d2adc716ce3db4806e9dc992f2925f78b2b194",
+      "Contents/Resources/app.asar": "3695c17edcab8d66c1e5f2faa03e07826a59a39bf78b369ec87854547d4843c1"
+    },
+    "package_after": {
+      "Contents/Info.plist": "3c3f175bca100cb25507b633742154f965cc2d456ca06282a69de6b1430c9c74",
+      "Contents/MacOS/ChatGPT": "7efa7738eb06887f95f3b915c085a7a228c437119a1fedaaa7d01c92687cff78",
+      "Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex": "7cb8700a47be3c81bb3c5efbf2d2adc716ce3db4806e9dc992f2925f78b2b194",
+      "Contents/Resources/app.asar": "3695c17edcab8d66c1e5f2faa03e07826a59a39bf78b369ec87854547d4843c1"
+    },
+    "renderer": {
+      "ready": "complete",
+      "root_children": 5,
+      "body_characters": 229,
+      "visible_buttons": 17,
+      "known_buttons": [
+        "Continue",
+        "Skip"
+      ],
+      "unknown_buttons": 15,
+      "editors": 0,
+      "api_key_inputs": 0,
+      "password_inputs": 0
+    },
+    "controlled_traffic": {
+      "partial_visible_before_terminal": true,
+      "final_visible": true,
+      "fixture": {
+        "transport_counts": {
+          "websocket": 5
+        },
+        "auth_match_count": 5,
+        "auth_mismatch_count": 0,
+        "model_match_count": 2,
+        "model_mismatch_count": 3,
+        "reasoning_match_count": 2,
+        "reasoning_mismatch_count": 3,
+        "input_nonce_match_count": 3,
+        "input_nonce_mismatch_count": 2,
+        "request_count": 5,
+        "accepted_response_count": 1,
+        "rejected_request_count": 4,
+        "partial_sent": true,
+        "terminal_sent": true,
+        "error_counts": {
+          "model_mismatch": 3,
+          "nonce_missing": 1
+        },
+        "closed": false
+      },
+      "auth_source": "disposable_synthetic_api_key",
+      "live_provider": "not_tested"
+    },
+    "private_state_removed": true,
+    "vendor_application_state_removed": true,
+    "headroom_metrics": {
+      "model_matches": true,
+      "matched_rows": 2,
+      "stored_events": 5,
+      "source": "actual_headroom_collector"
+    },
+    "packaged_headroom_normal_exit": true,
+    "headroom_engine_exited": true,
+    "headroom_listener_released": true,
+    "headroom_bundle_before": {
+      "bundle_unchanged": true,
+      "manifest_sha256": "3eb5ca381fd8dd84c7b5c329a1f71b23746d15bb1a88a83369d8bcf74b39879f",
+      "payload_bytes": 597415256,
+      "payload_files": 16640,
+      "payload_inventory_sha256": "093c8366cf86f997c456c4643f3baabb85b035b0082d5f9eae04e4a8ac426b92",
+      "schema_version": 1,
+      "source_unchanged": true,
+      "status": "verified"
+    },
+    "headroom_bundle_after": {
+      "bundle_unchanged": true,
+      "manifest_sha256": "3eb5ca381fd8dd84c7b5c329a1f71b23746d15bb1a88a83369d8bcf74b39879f",
+      "payload_bytes": 597415256,
+      "payload_files": 16640,
+      "payload_inventory_sha256": "093c8366cf86f997c456c4643f3baabb85b035b0082d5f9eae04e4a8ac426b92",
+      "schema_version": 1,
+      "source_unchanged": true,
+      "status": "verified"
+    },
+    "model": "gpt-5.2-codex",
+    "reasoning_effort": "medium"
+  },
+  "local_candidate_inputs": {
+    "scripts/probe-macos-desktop.py": "209c7c3a7f741d07cb8caee91f62393dac85483185667158a2c4d63dea6f06ca",
+    "scripts/probe-macos-desktop-traffic.py": "0f46a016f95198ffb3c72e7dbe32098962af962bb2e77c044194313fe42654d8",
+    "tests/runtime/test_macos_desktop_probe.py": "e8f0ec92befadef9165da24cd69f37483b271322c01f16e3da7f84bb316116da",
+    "tests/runtime/test_macos_desktop_traffic.py": "aa5b77bfa7823cf553b9502b4b73c6dc549158c7afbfe9e1f581ed94f2c5e86c",
+    "scripts/macos-desktop-cdp.py": "e14f0ac2f49cdc04f63f98ea6efa57b0bbabec2115a884d3dcdca92fb7fc6566",
+    "scripts/macos-desktop-fixture.py": "8e0048d55db641ee29182968331a8e14353e94d8a314ba7fab0562b6fff6cf26",
+    "tests/runtime/test_macos_desktop_cdp.py": "5996c9b7d717f2329802657d805130fd188114bfa88cd59a69e83f6fa066cfbd",
+    "tests/runtime/test_macos_desktop_fixture.py": "ead6e1478717db5079cb758aa46389a5b4f328161b3285c8c4c51669ac6f454c",
+    ".github/workflows/macos-desktop.yml": "4022da743735e61f7ca86e9d4b24739126dd2b465c7c0b771684c4ae64752351",
+    ".github/workflows/macos-package.yml": "ef6c419f7cb4ab326c448e1dcc11b7a25850b62475d14aa747d8f703df55a491",
+    "work\\proofs\\engine\\toolchain\\cpython-3.13.13-windows-x86_64-none\\python.exe": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07"
+  },
+  "limits": {
+    "live_provider": "not_tested",
+    "real_account": "not_tested",
+    "subagent_identity": "not_tested",
+    "other_models_or_app_versions": "not_established_by_this_case",
+    "full_application_state_isolation": "not_established",
+    "full_config_byte_equality": false,
+    "product_macos_desktop_connection_gate": "still_closed",
+    "H048": "open"
+  }
+}
