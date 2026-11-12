@@ -184,6 +184,8 @@ fn signed_desktop_scan_rebinds_selection_and_rejects_untrusted_bundles() {
 
     let alternate = applications.join("Codex.app");
     fs::rename(&bundle, &alternate).unwrap();
+    // System Applications can be writable by the administrator group.
+    fs::set_permissions(&applications, fs::Permissions::from_mode(0o775)).unwrap();
     let renamed = scan(&reopened);
     fs::rename(&alternate, &bundle).unwrap();
     assert_eq!(
