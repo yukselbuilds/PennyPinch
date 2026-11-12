@@ -1,7 +1,9 @@
 """Exercise the real packaged UI and observe only this QA app's owned processes."""
 
 import ctypes
+import csv
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -81,9 +83,9 @@ def find_engine(app, runtime):
     return matching[0] if matching else None
 
 
-def run_ui(action):
+def run_ui(action, *arguments):
     result = subprocess.run(
-        ["/usr/bin/osascript", str(ROOT / "scripts/macos-package-input.applescript"), action],
+        ["/usr/bin/osascript", str(ROOT / "scripts/macos-package-input.applescript"), action, *arguments],
         capture_output=True, text=True, timeout=75,
     )
     for line in result.stderr.splitlines():
@@ -154,6 +156,44 @@ def bundle_inventory(bundle, runtime):
     return json.loads(result.stdout)
 
 
+def exercise_reports(root):
+    reports = root / "reports"
+    reports.mkdir(mode=0o700)
+    run_ui("export_cancel")
+    require(not list(reports.iterdir()), "cancel_created_report")
+    results = []
+    for kind, extension in (("statistics_json", "json"), ("statistics_csv", "csv"), ("diagnostics_json", "json")):
+        name = f"ölçüm 项目-{kind}.{extension}"
+        run_ui("export_" + kind, str(reports), name)
+        target = reports / name
+        info = target.lstat()
+        require(stat.S_ISREG(info.st_mode) and stat.S_IMODE(info.st_mode) == 0o600
+                and info.st_uid == os.geteuid() and info.st_nlink == 1
+                and 0 < info.st_size <= 262_144, "report_file_invalid")
+        data = target.read_bytes()
+        if extension == "json":
+            value = json.loads(data)
+            require(value["schema_version"] == 1, "report_schema_invalid")
+            if kind == "diagnostics_json":
+                require(value["kind"] == "diagnostics" and value["application"]["os"] == "macos"
+                        and value["application"]["architecture"] == "aarch64", "diagnostic_platform_invalid")
+                value = value["statistics"]
+            require(value["source"] == "headroom_local_metrics" and value["scope"] == "observed_requests"
+                    and value["component"] == "input", "report_scope_invalid")
+        else:
+            require(data.startswith(b"\xef\xbb\xbf"), "csv_encoding_invalid")
+            rows = list(csv.reader(io.StringIO(data.decode("utf-8-sig")), delimiter=";"))
+            require(len(rows) == 2 and all(len(row) == 22 for row in rows), "csv_shape_invalid")
+        text = data.decode("utf-8-sig")
+        require(str(root) not in text and "PRIVATE_" not in text, "report_private_data")
+        results.append({"kind": kind, "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(), "mode": "0600"})
+    require(len(list(reports.iterdir())) == 3, "report_staging_leak")
+    result = {"status": "pass", "cancelled_without_file": True, "artifacts": results,
+              "source": "actual_private_app_metrics", "provider_traffic": "not_tested"}
+    print("headroom-package-reports=" + json.dumps(result, separators=(",", ":")), flush=True)
+    return result
+
+
 def probe(root):
     require(sys.platform == "darwin" and os.environ.get("GITHUB_ACTIONS") == "true", "ci_macos_required")
     require(root.is_absolute() and root.resolve(strict=True) == root
@@ -176,6 +216,7 @@ def probe(root):
     before_inventory = bundle_inventory(bundle, original_runtime)
     owned_apps, owned_engines, launchers = [], [], []
     steps = []
+    reports = None
     try:
         for opening in range(2):
             require(find_app(app_executable) is None, "qa_app_already_open")
@@ -191,6 +232,8 @@ def probe(root):
             if steps:
                 require(port == steps[0]["port"], "saved_endpoint_changed")
             require(find_engine(app, runtime) is None, "engine_started_without_ui_action")
+            if opening == 0 and os.environ.get("HEADROOM_VERIFY_REPORT_EXPORT") == "true":
+                reports = exercise_reports(root)
             run_ui("start")
             engine = wait_for(lambda: find_engine(app, runtime), "packaged_engine_missing")
             owned_engines.append(engine)
@@ -225,6 +268,8 @@ def probe(root):
                   "engine_processes": len(owned_engines), "clean_shutdown": True,
                   "signing": "ad_hoc", "live_provider_traffic": "not_tested",
                   "build_profile": {"release": True, "lto": False, "codegen_units": 16}}
+        if reports is not None:
+            result["report_export"] = reports
         (root / "lifecycle.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
         print(json.dumps(result, separators=(",", ":")), flush=True)
     except ProbeError:

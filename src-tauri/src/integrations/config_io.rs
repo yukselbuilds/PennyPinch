@@ -344,6 +344,15 @@ impl PinnedDirectoryChain {
     pub(crate) fn validate(&self) -> Result<(), ConfigIoError> {
         validate_pinned_directories(&self.pins)
     }
+
+    #[cfg(target_os = "macos")]
+    pub(crate) fn directory_file(&self) -> Result<&File, ConfigIoError> {
+        self.validate()?;
+        self.pins
+            .last()
+            .map(|pin| &pin.file)
+            .ok_or(ConfigIoError::UnsafePath)
+    }
 }
 
 pub(super) fn read_user_config(

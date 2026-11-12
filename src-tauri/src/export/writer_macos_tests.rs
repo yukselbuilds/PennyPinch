@@ -4,10 +4,10 @@ use std::os::unix::fs::{symlink, MetadataExt, PermissionsExt};
 use std::path::PathBuf;
 use std::sync::{Arc, Barrier};
 
-struct Directory(PathBuf);
+pub(super) struct Directory(pub(super) PathBuf);
 
 impl Directory {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         let work = Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
             .unwrap()
@@ -76,6 +76,14 @@ fn invalid_paths_and_size_limits_create_no_files() {
         Err(Error::InvalidInput)
     );
     assert_eq!(fs::read_dir(&directory.0).unwrap().count(), 0);
+    let shared = directory.0.join("shared");
+    fs::create_dir(&shared).unwrap();
+    fs::set_permissions(&shared, fs::Permissions::from_mode(0o777)).unwrap();
+    assert_eq!(
+        save_new(&shared.join("report.json"), "json", b"data"),
+        Err(Error::UnsafePath)
+    );
+    assert_eq!(fs::read_dir(&shared).unwrap().count(), 0);
 }
 
 #[test]

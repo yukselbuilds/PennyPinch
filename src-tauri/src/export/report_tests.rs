@@ -82,6 +82,58 @@ fn request(kind: Kind, language: Language, id: Option<&str>) -> Request {
 fn runtime() -> RuntimeReply {
     crate::runtime::manager::RuntimeManager::failure_reply(Uuid::new_v4().to_string())
 }
+
+#[cfg(target_os = "macos")]
+#[test]
+fn actual_manager_saves_all_formats_and_preserves_an_existing_report() {
+    use std::fs;
+    use std::os::unix::fs::PermissionsExt;
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("work")
+        .canonicalize()
+        .unwrap();
+    let directory = root.join(format!(".report-manager-{}", Uuid::new_v4()));
+    fs::create_dir(&directory).unwrap();
+    fs::set_permissions(&directory, fs::Permissions::from_mode(0o700)).unwrap();
+    let manager = ReportManager::default();
+    let value = snapshot(900);
+    manager.remember(&value);
+    for (kind, extension) in [
+        (Kind::StatisticsJson, "json"),
+        (Kind::StatisticsCsv, "csv"),
+        (Kind::DiagnosticsJson, "json"),
+    ] {
+        let target = directory.join(format!("ölçüm-{kind:?}.{extension}"));
+        let save = || {
+            serde_json::to_value(
+                manager
+                    .begin(request(kind, Language::Tr, Some(SNAPSHOT)))
+                    .unwrap()
+                    .save(&runtime(), |_| Ok(Some(target.clone()))),
+            )
+            .unwrap()
+        };
+        let reply = save();
+        assert_eq!(reply["status"], "saved");
+        let bytes = fs::read(&target).unwrap();
+        assert_eq!(reply["bytes_written"], bytes.len());
+        let text = String::from_utf8(bytes.clone()).unwrap();
+        assert!(!text.contains("PRIVATE_") && !text.contains("sk-test"));
+        if kind == Kind::StatisticsJson {
+            let report: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+            assert_eq!(report["totals"]["saved_tokens"], -100);
+            assert_eq!(report["totals"]["saved_percent"], -12.5);
+        }
+        assert_eq!(save()["error"]["code"], "file_exists");
+        assert_eq!(fs::read(&target).unwrap(), bytes);
+    }
+    assert_eq!(fs::read_dir(&directory).unwrap().count(), 3);
+    assert_eq!(directory.parent(), Some(root.as_path()));
+    assert_eq!(directory.canonicalize().unwrap(), directory);
+    fs::remove_dir_all(directory).unwrap();
+}
 fn job(value: &OverviewSnapshot, kind: Kind, language: Language) -> Job {
     let manager = ReportManager::default();
     manager.remember(value);

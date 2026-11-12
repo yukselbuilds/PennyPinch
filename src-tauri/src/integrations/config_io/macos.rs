@@ -36,7 +36,7 @@ impl From<&Metadata> for FileStamp {
 
 pub(super) struct DirectoryPin {
     path: PathBuf,
-    file: File,
+    pub(super) file: File,
     device: u64,
     inode: u64,
 }

@@ -18,6 +18,24 @@ on run arguments
             else if actionName is "exit" then
                 my waitControl(pickerApp, "Headroom’dan çık", {"AXButton"}, true)
                 my waitControl(pickerApp, "Çıkışı onayla", {"AXButton"}, true)
+            else if actionName starts with "export_" then
+                my waitControl(pickerApp, "Dışa aktar", {"AXButton", "AXDisclosureTriangle"}, true)
+                if actionName is "export_statistics_csv" then
+                    set reportLabel to "İstatistik · CSV"
+                else if actionName is "export_diagnostics_json" then
+                    set reportLabel to "Tanı raporu · JSON"
+                else if actionName is in {"export_cancel", "export_statistics_json"} then
+                    set reportLabel to "İstatistik · JSON"
+                else
+                    error number 1810
+                end if
+                my waitControl(pickerApp, reportLabel, {"AXButton"}, true)
+                my saveReport(pickerApp, actionName, arguments)
+                if actionName is "export_cancel" then
+                    my waitControl(pickerApp, "Kaydetme iptal edildi.", {"AXStaticText"}, false)
+                else
+                    my waitControl(pickerApp, "Rapor yeni dosyaya kaydedildi.", {"AXStaticText"}, false)
+                end if
             else
                 error number 1801
             end if
@@ -53,6 +71,11 @@ on waitControl(pickerApp, labelText, acceptedRoles, activateControl)
                                     set labelMatches to (description of controlItem) is labelText
                                 end try
                             end if
+                            if not labelMatches and (role of controlItem) is "AXStaticText" then
+                                try
+                                    set labelMatches to (value of controlItem) starts with labelText
+                                end try
+                            end if
                             if labelMatches then
                                 set targetSeen to true
                                 if enabled of controlItem then
@@ -85,3 +108,69 @@ on waitControl(pickerApp, labelText, acceptedRoles, activateControl)
         error number 1804
     end tell
 end waitControl
+
+on saveReport(pickerApp, actionName, arguments)
+    tell application "System Events"
+        repeat 100 times
+            if exists window "Raporu kaydet" of pickerApp then exit repeat
+            delay 0.15
+        end repeat
+        if not (exists window "Raporu kaydet" of pickerApp) then error number 1811
+        set saveWindow to window "Raporu kaydet" of pickerApp
+        if not (frontmost of pickerApp) then error number 1812
+        if actionName is "export_cancel" then
+            click button "Cancel" of saveWindow
+            return
+        end if
+        key code 5 using {command down, shift down}
+        repeat 40 times
+            if exists sheet 1 of saveWindow then exit repeat
+            delay 0.15
+        end repeat
+        if not (exists sheet 1 of saveWindow) then error number 1813
+        set goSheet to sheet 1 of saveWindow
+        set pathInput to missing value
+        set controls to entire contents of goSheet
+        if (count of controls) > 80 then error number 1814
+        repeat with controlRef in controls
+            set controlItem to contents of controlRef
+            if (role of controlItem) is in {"AXTextField", "AXComboBox"} then
+                set pathInput to controlItem
+                exit repeat
+            end if
+        end repeat
+        if pathInput is missing value then error number 1815
+        set value of pathInput to item 2 of arguments
+        if (value of pathInput) is not item 2 of arguments then error number 1816
+        if exists button "Go" of goSheet then
+            click button "Go" of goSheet
+        else
+            key code 36
+        end if
+        repeat 40 times
+            if not (exists sheet 1 of saveWindow) then exit repeat
+            delay 0.15
+        end repeat
+        if exists sheet 1 of saveWindow then error number 1817
+        set nameInput to missing value
+        set controls to entire contents of saveWindow
+        if (count of controls) > 400 then error number 1818
+        repeat with controlRef in controls
+            set controlItem to contents of controlRef
+            if (role of controlItem) is "AXTextField" then
+                try
+                    if (value of controlItem) starts with "headroom-" then
+                        set nameInput to controlItem
+                        exit repeat
+                    end if
+                end try
+            end if
+        end repeat
+        if nameInput is missing value then error number 1819
+        set value of nameInput to item 3 of arguments
+        if (value of nameInput) is not item 3 of arguments then error number 1820
+        if not (frontmost of pickerApp) then error number 1812
+        if not (enabled of button "Save" of saveWindow) then error number 1821
+        click button "Save" of saveWindow
+    end tell
+end saveReport

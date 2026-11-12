@@ -143,7 +143,13 @@ impl Drop for Staging {
     }
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+#[path = "writer_macos.rs"]
+mod macos;
+#[cfg(target_os = "macos")]
+pub(super) use macos::save_new;
+
+#[cfg(not(any(windows, target_os = "macos")))]
 pub(super) fn save_new(_path: &Path, _extension: &str, _bytes: &[u8]) -> Result<(), Error> {
     Err(Error::Unavailable)
 }

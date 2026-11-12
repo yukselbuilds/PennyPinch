@@ -1,7 +1,7 @@
 use dispatch2::DispatchQueue;
 use objc2::MainThreadMarker;
-use objc2_app_kit::{NSModalResponseCancel, NSModalResponseOK, NSOpenPanel};
-use objc2_foundation::{NSString, NSURL};
+use objc2_app_kit::{NSModalResponseCancel, NSModalResponseOK, NSOpenPanel, NSSavePanel};
+use objc2_foundation::{NSArray, NSString, NSURL};
 use std::ffi::{CStr, CString, OsStr};
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
@@ -27,6 +27,50 @@ pub fn select_project_directory(
         true,
         initial_directory.as_deref(),
     )
+}
+
+pub(super) fn save_report(
+    owner: usize,
+    artifact: &crate::export::report::Artifact,
+) -> Result<Option<PathBuf>, ()> {
+    if owner == 0 || !matches!(artifact.extension, "json" | "csv") {
+        return Err(());
+    }
+    let mut result = Err(());
+    let mut show = || {
+        result = MainThreadMarker::new().ok_or(()).and_then(|mtm| {
+            let panel = NSSavePanel::savePanel(mtm);
+            let title = if artifact.language == crate::export::report::Language::Tr {
+                "Raporu kaydet"
+            } else {
+                "Save report"
+            };
+            panel.setTitle(Some(&NSString::from_str(title)));
+            panel.setNameFieldStringValue(&NSString::from_str(&artifact.suggested_name));
+            panel.setCanCreateDirectories(false);
+            panel.setAllowsOtherFileTypes(false);
+            panel.setExtensionHidden(false);
+            // Use the existing pinned AppKit API; the writer independently enforces the extension.
+            #[allow(deprecated)]
+            panel.setAllowedFileTypes(Some(&NSArray::from_retained_slice(&[NSString::from_str(
+                artifact.extension,
+            )])));
+            let response = panel.runModal();
+            if response == unsafe { NSModalResponseCancel } {
+                return Ok(None);
+            }
+            if response != unsafe { NSModalResponseOK } {
+                return Err(());
+            }
+            selected_path(&panel.URL().ok_or(())?).map(Some)
+        });
+    };
+    if MainThreadMarker::new().is_some() {
+        show();
+    } else {
+        DispatchQueue::main().exec_sync(show);
+    }
+    result
 }
 
 fn select(
@@ -94,6 +138,10 @@ fn open_panel(
         return Err(());
     }
     let url = urls.objectAtIndex(0);
+    selected_path(&url).map(Some)
+}
+
+fn selected_path(url: &NSURL) -> Result<PathBuf, ()> {
     if !url.isFileURL() {
         return Err(());
     }
@@ -103,5 +151,5 @@ fn open_panel(
         return Err(());
     }
     let path = PathBuf::from(OsStr::from_bytes(bytes));
-    path.is_absolute().then_some(Some(path)).ok_or(())
+    path.is_absolute().then_some(path).ok_or(())
 }

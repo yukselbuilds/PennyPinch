@@ -260,7 +260,11 @@ pub(crate) fn save_report(
             .join()
             .map_err(|_| ())?;
     }
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    {
+        macos_picker::save_report(owner, artifact)
+    }
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         let _ = (owner, artifact);
         Err(())
