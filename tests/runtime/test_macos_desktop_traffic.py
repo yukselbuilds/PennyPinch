@@ -27,7 +27,7 @@ class DesktopTrafficTests(unittest.TestCase):
                 connection.execute("CREATE TABLE events(payload TEXT)")
                 connection.execute("INSERT INTO events VALUES (?)", (json.dumps({"attribution": {"model": "other"}}),))
                 connection.commit()
-                self.assertIsNone(TRAFFIC.metrics_observed(state, "expected"))
+                self.assertFalse(TRAFFIC.metrics_observed(state, "expected")["model_matches"])
                 connection.execute("INSERT INTO events VALUES (?)", (json.dumps({"attribution": {"model": "expected"}, "extra": "private-test-only"}),))
             observed = TRAFFIC.metrics_observed(state, "expected")
             self.assertEqual(observed["matched_rows"], 1)

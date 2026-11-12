@@ -99,8 +99,8 @@ def metrics_observed(state, model):
                 (model,)).fetchone()
     except sqlite3.OperationalError:
         return None
-    return {"model_matches": True, "matched_rows": matched, "stored_events": total,
-            "source": "actual_headroom_collector"} if matched else None
+    return {"model_matches": matched > 0, "matched_rows": matched, "stored_events": total,
+            "source": "actual_headroom_collector"}
 
 
 def fixture():
@@ -159,7 +159,13 @@ def run(package, vendor):
         core.require(not core.lock_available(state / "runtime/.engine.lock"), "headroom_engine_unowned")
         print("headroom-desktop-phase=packaged_headroom_ready", flush=True)
         result = desktop.run(vendor, ControlledTurn(provider, f"http://127.0.0.1:{port}/v1"))
-        metrics = core.wait_for(lambda: metrics_observed(state, provider.model), "headroom_request_metrics_missing")
+        try:
+            metrics = core.wait_for(lambda: value if (value := metrics_observed(state, provider.model))
+                and value["model_matches"] else None, "headroom_request_metrics_missing")
+        except core.ProbeError:
+            print("headroom-desktop-metrics=" + json.dumps(metrics_observed(state, provider.model),
+                  separators=(",", ":")), flush=True)
+            raise
         core.run_ui("exit")
         core.wait_for(lambda: not core.matches_process(app), "headroom_exit_timeout")
         core.wait_for(lambda: not core.matches_process(engine), "headroom_engine_left")

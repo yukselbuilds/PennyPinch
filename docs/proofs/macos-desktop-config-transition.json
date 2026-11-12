@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "scope": "direct_local_fixture_config_transition_diagnostic",
+  "candidate": "ecc5deec371b830412dfb4a5b77531249729e64c",
+  "run_url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43282992433",
+  "status": "strict_byte_gate_failed_change_classified",
+  "inputs": {
+    "before": "2f535afe144a2d82baf1a69a8445dc13f2757129b6c1d8c08772d0c4a0449362",
+    "after": "2f535afe144a2d82baf1a69a8445dc13f2757129b6c1d8c08772d0c4a0449362"
+  },
+  "configuration": {
+    "protected_fields_match": {
+      "openai_base_url": true,
+      "model_provider": true,
+      "model": true,
+      "model_reasoning_effort": true,
+      "cli_auth_credentials_store": true
+    },
+    "changed_known_fields": [
+      "desktop"
+    ],
+    "changed_other_fields": 0
+  },
+  "headroom_route": "not_tested_in_this_diagnostic",
+  "live_provider": "not_tested",
+  "original_failed_gate_retained": true
+}

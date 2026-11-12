@@ -13,6 +13,22 @@ SPEC.loader.exec_module(PROBE)
 
 
 class DesktopPreflightTests(unittest.TestCase):
+    def test_only_a_new_desktop_table_can_change_beside_the_fixed_test_profile(self):
+        before = b'model="same-model"\nopenai_base_url="http://127.0.0.1:41731/v1"\n'
+        after = before + b'[desktop]\nmigratedFollowUpQueueToSteer=true\n'
+        observed = PROBE.config_change_observation(before, after)
+        self.assertTrue(observed["new_desktop_table_only"])
+        self.assertTrue(observed["non_desktop_fields_match"])
+        self.assertFalse(observed["bytes_unchanged"])
+        for invalid_before, invalid_after in (
+            (before, after.replace(b'same-model', b'changed-model')),
+            (before, before + b'desktop="wrong-type"\n'),
+            (before, before + b'unknown_runtime_setting=true\n[desktop]\nnew_key=true\n'),
+            (after, after.replace(b'=true', b'=false')),
+        ):
+            with self.subTest(bytes=len(invalid_after)):
+                self.assertFalse(PROBE.config_change_observation(invalid_before, invalid_after)["new_desktop_table_only"])
+
     def test_config_change_diagnosis_reports_names_and_matches_without_values(self):
         before = b'model="model-before"\nopenai_base_url="http://127.0.0.1:41731/v1"\n'
         after = b'model="PRIVATE_MODEL_VALUE"\nopenai_base_url="http://127.0.0.1:41731/v1"\npersonality="PRIVATE_VALUE"\nPRIVATE_UNKNOWN_KEY="PRIVATE_CONTENT"\n'

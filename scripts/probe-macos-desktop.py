@@ -39,6 +39,7 @@ def config_observation(reply, endpoint):
 
 def config_change_observation(before, after):
     core.require(len(before) <= 262144 and len(after) <= 262144, "test_config_limit")
+    bytes_unchanged = before == after
     before, after = (tomllib.loads(value.decode("utf-8")) for value in (before, after))
     protected = ("openai_base_url", "model_provider", "model", "model_reasoning_effort", "cli_auth_credentials_store")
     known = {*protected, "features", "personality", "sandbox_mode", "approval_policy", "projects", "notice",
@@ -48,7 +49,10 @@ def config_change_observation(before, after):
     changed = {key for key in before.keys() | after.keys()
                if (key in before) != (key in after) or before.get(key) != after.get(key)}
     return {"protected_fields_match": {key: key not in changed for key in protected},
-            "changed_known_fields": sorted(changed & known), "changed_other_fields": len(changed - known)}
+            "changed_known_fields": sorted(changed & known), "changed_other_fields": len(changed - known),
+            "bytes_unchanged": bytes_unchanged, "non_desktop_fields_match": not (changed - {"desktop"}),
+            "new_desktop_table_only": changed == {"desktop"} and "desktop" not in before
+                and isinstance(after.get("desktop"), dict)}
 
 
 def isolated_environment(state):
@@ -218,7 +222,6 @@ def run(root, traffic=None):
     config.write_text(f'openai_base_url = "{endpoint}"\nmodel_provider = "openai"\ncli_auth_credentials_store = "file"\n'
                       '[analytics]\nenabled = false\n', encoding="utf-8")
     config.chmod(0o600)
-    original_config = digest(config)
     original_config_bytes = config.read_bytes()
     owned, opening, descendants, vendor_pin = None, None, [], None
     renderer = None
@@ -233,7 +236,6 @@ def run(root, traffic=None):
         print("headroom-desktop-phase=isolated_backend_config_read", flush=True)
         if traffic:
             traffic.prepare(state, config)
-            original_config = digest(config)
             original_config_bytes = config.read_bytes()
             # Both Chromium and the Rust child use a rejecting proxy for external traffic.
             # This is a test-profile guard, not a claim of system-wide network isolation.
@@ -283,10 +285,11 @@ def run(root, traffic=None):
         for child in descendants:
             core.wait_for(lambda: not core.matches_process(child), "desktop_child_alive", seconds=15)
         core.require(opening.wait(timeout=10) == 0, "desktop_launcher_unclean_exit")
-        if digest(config) != original_config:
-            print("headroom-desktop-config=" + json.dumps(config_change_observation(
-                original_config_bytes, config.read_bytes()), separators=(",", ":")), flush=True)
-        core.require(digest(config) == original_config, "desktop_changed_endpoint_config")
+        after_config_bytes = config.read_bytes()
+        configuration = config_change_observation(original_config_bytes, after_config_bytes)
+        print("headroom-desktop-config=" + json.dumps(configuration, separators=(",", ":")), flush=True)
+        core.require(configuration["bytes_unchanged"] or (traffic and configuration["new_desktop_table_only"]),
+                     "desktop_changed_endpoint_config")
         profiles = {key: profile_metadata(path) for key, path in zip(
             ("codex_home", "codex_app", "chatgpt_app", "bundle_app"), untouched)}
         profiles["private_electron"] = profile_metadata(state / "electron")
@@ -314,6 +317,11 @@ def run(root, traffic=None):
                   "full_application_state_isolation": "not_established",
                   "observed_owned_children_exited": len(descendants),
                   "endpoint_config_unchanged": True, "observed_loopback_requests": server.observed_requests,
+                  "config_bytes_unchanged": configuration["bytes_unchanged"],
+                  "non_desktop_config_unchanged": configuration["non_desktop_fields_match"],
+                  "new_desktop_preferences_created": configuration["new_desktop_table_only"],
+                  "test_config_before_sha256": hashlib.sha256(original_config_bytes).hexdigest(),
+                  "test_config_after_sha256": hashlib.sha256(after_config_bytes).hexdigest(),
                   "model_turn_requested": False, "live_provider_traffic": "not_tested",
                   "desktop_headroom_route": "not_tested", "package_before": before,
                   "package_after": {path.relative_to(bundle).as_posix(): digest(path) for path in files}}
