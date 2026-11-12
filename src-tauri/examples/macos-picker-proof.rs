@@ -6,12 +6,13 @@ mod picker;
 mod proof {
     use super::picker;
     use block2::RcBlock;
+    use core_foundation::base::{CFType, CFTypeRef, TCFType};
     use objc2::{rc::Retained, MainThreadMarker};
     use objc2_app_kit::{
-        NSApplication, NSApplicationActivationPolicy, NSEvent, NSEventModifierFlags, NSEventType,
+        NSApplication, NSApplicationActivationPolicy, NSEventModifierFlags,
         NSModalPanelRunLoopMode, NSOpenPanel, NSPasteboard, NSPasteboardTypeString,
     };
-    use objc2_foundation::{NSDate, NSDefaultRunLoopMode, NSPoint, NSRunLoop, NSString, NSTimer};
+    use objc2_foundation::{NSDate, NSDefaultRunLoopMode, NSRunLoop, NSString, NSTimer};
     use sha2::{Digest, Sha256};
     use std::cell::Cell;
     use std::os::unix::fs::MetadataExt;
@@ -23,7 +24,14 @@ mod proof {
     #[link(name = "CoreGraphics", kind = "framework")]
     unsafe extern "C" {
         fn CGPreflightPostEventAccess() -> bool;
+        fn CGEventCreateKeyboardEvent(source: CFTypeRef, key: u16, key_down: bool) -> CFTypeRef;
+        fn CGEventSetFlags(event: CFTypeRef, flags: u64);
+        fn CGEventPostToPid(pid: i32, event: CFTypeRef);
     }
+
+    const KEY_G: u16 = 5;
+    const KEY_V: u16 = 9;
+    const KEY_RETURN: u16 = 36;
 
     struct Driver {
         timer: Retained<NSTimer>,
@@ -62,8 +70,7 @@ mod proof {
                 let sent = match phase.get() {
                     0 => key(
                         &app,
-                        "g",
-                        5,
+                        KEY_G,
                         NSEventModifierFlags::Command | NSEventModifierFlags::Shift,
                     ),
                     2 => {
@@ -72,16 +79,16 @@ mod proof {
                         pasteboard.setString_forType(
                             &NSString::from_str(&path.to_string_lossy()),
                             unsafe { NSPasteboardTypeString },
-                        ) && key(&app, "v", 9, NSEventModifierFlags::Command)
+                        ) && key(&app, KEY_V, NSEventModifierFlags::Command)
                     }
-                    4 | 6 => key(&app, "\r", 36, NSEventModifierFlags::empty()),
+                    4 | 6 | 8 => key(&app, KEY_RETURN, NSEventModifierFlags::empty()),
                     _ => true,
                 };
                 if !sent {
                     timeout_result.set(true);
                     unsafe { panel.cancel(None) };
                 }
-                if matches!(phase.get(), 0 | 2 | 4 | 6) {
+                if matches!(phase.get(), 0 | 2 | 4 | 6 | 8) {
                     println!("headroom-picker-event={}", phase.get());
                 }
                 phase.set(phase.get() + 1);
@@ -106,25 +113,44 @@ mod proof {
         }
     }
 
-    fn key(app: &NSApplication, text: &str, code: u16, flags: NSEventModifierFlags) -> bool {
-        let Some(window) = app.keyWindow() else {
+    fn key(app: &NSApplication, code: u16, flags: NSEventModifierFlags) -> bool {
+        if app.keyWindow().is_none() || !unsafe { CGPreflightPostEventAccess() } {
             return false;
-        };
-        let text = NSString::from_str(text);
-        for event_type in [NSEventType::KeyDown, NSEventType::KeyUp] {
-            let Some(event) = NSEvent::keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCode(
-                event_type,
-                NSPoint::new(0.0, 0.0),
-                flags,
-                0.0,
-                window.windowNumber(),
-                None,
-                &text,
-                &text,
-                false,
-                code,
-            ) else { return false };
-            app.sendEvent(&event);
+        }
+        let modifiers = [
+            (NSEventModifierFlags::Command, 55),
+            (NSEventModifierFlags::Shift, 56),
+        ];
+        let mut pressed = NSEventModifierFlags::empty();
+        let mut sent = true;
+        for (modifier, key) in modifiers {
+            if flags.contains(modifier) {
+                pressed.insert(modifier);
+                sent &= post_key(key, true, pressed);
+            }
+        }
+        for down in [true, false] {
+            sent &= post_key(code, down, pressed);
+        }
+        for (modifier, key) in modifiers.into_iter().rev() {
+            if flags.contains(modifier) {
+                pressed.remove(modifier);
+                sent &= post_key(key, false, pressed);
+            }
+        }
+        sent
+    }
+
+    fn post_key(code: u16, down: bool, flags: NSEventModifierFlags) -> bool {
+        // CoreGraphics owns the new event. Route it only to this test process.
+        let raw = unsafe { CGEventCreateKeyboardEvent(std::ptr::null(), code, down) };
+        if raw.is_null() {
+            return false;
+        }
+        let event = unsafe { CFType::wrap_under_create_rule(raw) };
+        unsafe {
+            CGEventSetFlags(event.as_CFTypeRef(), flags.bits() as u64);
+            CGEventPostToPid(std::process::id() as i32, event.as_CFTypeRef());
         }
         true
     }
