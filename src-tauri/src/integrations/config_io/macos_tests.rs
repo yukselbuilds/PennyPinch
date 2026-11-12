@@ -1,4 +1,5 @@
 use super::super::*;
+use crate::integrations::plan::EndpointBefore;
 use std::ffi::CString;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
@@ -244,6 +245,77 @@ fn manager_success(reply: ConnectionActionReply) -> ConnectionActionSuccess {
     }
 }
 
+fn desktop_manager_fixture(
+    fixture: &Fixture,
+    codex_home: &Path,
+) -> (PlanManager, String, u64, ConfigRootInputs) {
+    use crate::integrations::discovery::{DiscoveryInputs, DiscoveryManager, DiscoveryReply};
+
+    let proof_root = PathBuf::from(
+        std::env::var_os("HEADROOM_MACOS_DESKTOP_PROOF_ROOT")
+            .expect("CI must provide HEADROOM_MACOS_DESKTOP_PROOF_ROOT"),
+    );
+    assert!(proof_root.is_absolute());
+    assert_eq!(fs::canonicalize(&proof_root).unwrap(), proof_root);
+    let work = fs::canonicalize(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .join("work"),
+    )
+    .unwrap();
+    assert!(proof_root.starts_with(&work) && proof_root != work);
+    let proof_metadata = fs::symlink_metadata(&proof_root).unwrap();
+    assert!(proof_metadata.is_dir() && !proof_metadata.file_type().is_symlink());
+    assert_eq!(proof_metadata.uid(), unsafe { libc::geteuid() });
+    assert_eq!(proof_metadata.mode() & 0o7777, 0o700);
+
+    let vendor_home = proof_root.join("home");
+    let bundle = vendor_home.join("Applications/ChatGPT.app");
+    let bundle_metadata = fs::symlink_metadata(&bundle).expect("pinned Desktop bundle exists");
+    assert!(bundle_metadata.is_dir() && !bundle_metadata.file_type().is_symlink());
+    assert_eq!(fs::canonicalize(&bundle).unwrap(), bundle);
+
+    let discovery = DiscoveryManager::with_choice_store(None);
+    let DiscoveryReply::Snapshot(scan) = discovery.scan_with_inputs(
+        Uuid::new_v4().to_string(),
+        DiscoveryInputs {
+            macos_home: Some(vendor_home),
+            ..DiscoveryInputs::default()
+        },
+    ) else {
+        panic!("pinned Desktop discovery failed");
+    };
+    let mut installations = scan.installations.iter().filter(|row| {
+        row.client_kind == "codex" && row.surface == "desktop" && row.source == "macos_app_bundle"
+    });
+    let installation = installations
+        .next()
+        .expect("pinned signed Desktop candidate was not discovered");
+    assert!(installations.next().is_none());
+    assert_eq!(installation.version.as_deref(), Some("26.1106.51428"));
+    assert_eq!(installation.status, "detected");
+
+    let roots = ConfigRootInputs {
+        codex_home: Some(codex_home.to_path_buf()),
+        ..ConfigRootInputs::default()
+    };
+    let manager = PlanManager::with_test_sources(discovery, roots.clone(), manager_endpoint())
+        .with_ownership_store(
+            crate::state::ownership::OwnershipStore::new(
+                &fixture.path,
+                Path::new("state/ownership"),
+            )
+            .unwrap(),
+        );
+    (
+        manager,
+        installation.installation_id.clone(),
+        scan.scan_generation,
+        roots,
+    )
+}
+
 #[test]
 fn native_manager_apply_and_reopened_undo_for_all_adapters() {
     for (client, relative, original) in [
@@ -436,6 +508,186 @@ fn native_manager_preserves_unrelated_edit_and_precommit_fault() {
         fs::read(&config).unwrap(),
         [original.as_slice(), b"# unrelated user edit\n"].concat()
     );
+}
+
+#[test]
+fn native_desktop_manager_apply_reopen_undo_preserves_codex_preferences() {
+    let fixture = Fixture::new();
+    let codex_home = fixture.child("desktop-codex-home");
+    fixture.mkdir(&codex_home, 0o700);
+    let config = codex_config(&codex_home);
+    let original = b"# synthetic Desktop-managed Codex settings\nmodel = \"fixture-main-model\"\nmodel_reasoning_effort = \"high\"\nmodel_provider = \"openai\"\nmodel_providers = {}\ncli_auth_credentials_store = \"file\"\nforced_login_method = \"chatgpt\"\n\n[agents]\nmax_threads = 4\nmax_depth = 3\n";
+    let auth_fixture = br#"{"auth_mode":"synthetic","sentinel":"KEEP_AUTH_BYTES"}"#;
+    fixture.write(&config, original, 0o600);
+    let auth_path = codex_home.join("auth.json");
+    fixture.write(&auth_path, auth_fixture, 0o600);
+    let original_document: toml::Value =
+        toml::from_str(std::str::from_utf8(original).unwrap()).unwrap();
+
+    let (manager, installation_id, generation, roots) =
+        desktop_manager_fixture(&fixture, &codex_home);
+    let discovery = manager.discovery.clone();
+    let plan = manager_plan(&manager, installation_id, generation);
+    assert_eq!(plan.client_kind, "codex");
+    assert_eq!(plan.config_source, ConfigSource::CodexToml);
+    assert_eq!(plan.config_presence, ConfigPresence::Present);
+    assert_eq!(plan.endpoint_field.before, EndpointBefore::Missing);
+    assert!(plan.model_unchanged && plan.reasoning_unchanged && plan.auth_unchanged);
+    let applied = manager_success(manager.apply_connection(ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        plan_id: plan.plan_id,
+        expected_config_fingerprint: plan.config_fingerprint,
+    }));
+    assert_eq!(applied.status, "applied");
+    let owned = applied.ownership.unwrap();
+    assert_eq!(owned.scope, "user_config");
+    let applied_text = fs::read_to_string(&config).unwrap();
+    let applied_config: toml::Value = toml::from_str(&applied_text).unwrap();
+    assert_eq!(
+        applied_config
+            .get("openai_base_url")
+            .and_then(toml::Value::as_str),
+        Some("http://127.0.0.1:41731/v1")
+    );
+    let mut expected_after_apply = original_document.clone();
+    expected_after_apply.as_table_mut().unwrap().insert(
+        "openai_base_url".into(),
+        toml::Value::String("http://127.0.0.1:41731/v1".into()),
+    );
+    assert_eq!(applied_config, expected_after_apply);
+    assert_eq!(fs::read(&auth_path).unwrap(), auth_fixture);
+
+    let mut user_preference = fs::read(&config).unwrap();
+    user_preference.extend_from_slice(b"\n[desktop]\nlaunch_at_login = false\n");
+    fs::write(&config, &user_preference).unwrap();
+    let before_reopen = fs::read(&config).unwrap();
+    drop(manager);
+
+    let reopened = PlanManager::with_test_sources(discovery, roots, manager_endpoint())
+        .with_ownership_store(
+            crate::state::ownership::OwnershipStore::new(
+                &fixture.path,
+                Path::new("state/ownership"),
+            )
+            .unwrap(),
+        );
+    let snapshot = manager_success(reopened.ownership_snapshot(OwnershipSnapshotRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        client_kind: "codex".into(),
+    }));
+    let reopened_ownership = snapshot.ownership.unwrap();
+    assert_eq!(reopened_ownership.state, "active");
+    assert_eq!(reopened_ownership.scope, "user_config");
+    assert_eq!(
+        reopened_ownership.record_fingerprint,
+        owned.record_fingerprint
+    );
+    let released = manager_success(reopened.undo_connection(UndoConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        client_kind: "codex".into(),
+        owner_id: owned.owner_id,
+        expected_revision: owned.revision,
+        expected_record_fingerprint: owned.record_fingerprint,
+    }));
+    assert_eq!(released.status, "released");
+    assert_eq!(released.ownership.unwrap().scope, "user_config");
+    assert_eq!(fs::read(&auth_path).unwrap(), auth_fixture);
+    let after_text = String::from_utf8(fs::read(&config).unwrap()).unwrap();
+    let after: toml::Value = toml::from_str(&after_text).unwrap();
+    let desktop_preference: toml::Value =
+        toml::from_str("[desktop]\nlaunch_at_login = false\n").unwrap();
+    let mut expected_after_undo = original_document;
+    expected_after_undo.as_table_mut().unwrap().insert(
+        "desktop".into(),
+        desktop_preference.get("desktop").unwrap().clone(),
+    );
+    assert_eq!(after, expected_after_undo);
+    assert_ne!(fs::read(&config).unwrap(), before_reopen);
+}
+
+#[test]
+fn native_desktop_manager_rejects_stale_preview_without_overwriting_config() {
+    let fixture = Fixture::new();
+    let codex_home = fixture.child("desktop-stale-codex-home");
+    fixture.mkdir(&codex_home, 0o700);
+    let config = codex_config(&codex_home);
+    let original = b"model = \"fixture-main-model\"\nmodel_reasoning_effort = \"medium\"\nmodel_provider = \"openai\"\n";
+    fixture.write(&config, original, 0o600);
+    let (manager, installation_id, generation, _) = desktop_manager_fixture(&fixture, &codex_home);
+    let plan = manager_plan(&manager, installation_id, generation);
+
+    let edited = [
+        original.as_slice(),
+        b"\n[desktop]\nlaunch_at_login = false\n",
+    ]
+    .concat();
+    fs::write(&config, &edited).unwrap();
+    assert!(matches!(
+        manager.apply_connection(ApplyConnectionRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            plan_id: plan.plan_id,
+            expected_config_fingerprint: plan.config_fingerprint,
+        }),
+        ConnectionActionReply::Error(error) if error.error.code == "config_conflict"
+    ));
+    assert_eq!(fs::read(&config).unwrap(), edited);
+    assert!(!fixture.child("state/ownership/codex.json").exists());
+}
+
+#[test]
+fn native_desktop_manager_undo_rejects_endpoint_drift_and_keeps_ownership() {
+    let fixture = Fixture::new();
+    let codex_home = fixture.child("desktop-undo-drift-codex-home");
+    fixture.mkdir(&codex_home, 0o700);
+    let config = codex_config(&codex_home);
+    let original = b"model = \"fixture-main-model\"\nmodel_provider = \"openai\"\n";
+    fixture.write(&config, original, 0o600);
+    let (manager, installation_id, generation, _) = desktop_manager_fixture(&fixture, &codex_home);
+    let plan = manager_plan(&manager, installation_id, generation);
+    let owned = manager_success(manager.apply_connection(ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        plan_id: plan.plan_id,
+        expected_config_fingerprint: plan.config_fingerprint,
+    }))
+    .ownership
+    .unwrap();
+
+    let mut edited: toml::Value = toml::from_str(&fs::read_to_string(&config).unwrap()).unwrap();
+    edited.as_table_mut().unwrap().insert(
+        "openai_base_url".into(),
+        toml::Value::String("https://user.example.invalid/v1".into()),
+    );
+    let edited_bytes = toml::to_string(&edited).unwrap().into_bytes();
+    fs::write(&config, &edited_bytes).unwrap();
+    let reply = manager.undo_connection(UndoConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        client_kind: "codex".into(),
+        owner_id: owned.owner_id.clone(),
+        expected_revision: owned.revision,
+        expected_record_fingerprint: owned.record_fingerprint.clone(),
+    });
+    assert!(matches!(
+        reply,
+        ConnectionActionReply::Error(error) if error.error.code == "config_conflict"
+    ));
+    assert_eq!(fs::read(&config).unwrap(), edited_bytes);
+
+    let snapshot = manager_success(manager.ownership_snapshot(OwnershipSnapshotRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        client_kind: "codex".into(),
+    }));
+    let active = snapshot.ownership.unwrap();
+    assert_eq!(active.state, "active");
+    assert_eq!(active.owner_id, owned.owner_id);
+    assert_eq!(active.revision, owned.revision);
+    assert_eq!(active.record_fingerprint, owned.record_fingerprint);
 }
 
 #[test]

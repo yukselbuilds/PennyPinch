@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "last_updated": "2026-11-08",
+  "last_updated": "2026-11-12",
   "release": {
     "channel": "development",
     "app_version": "0.1.0",
@@ -17,6 +17,28 @@
     "unsupported"
   ],
   "records": [
+    {
+      "id": "codex-desktop-26110651428-macos-controlled",
+      "match": {"client_kind": "codex", "surface": "desktop", "versions": ["26.1106.51428"], "auth_method": "synthetic", "platform": "macos", "engine_version": "0.41.0"},
+      "product": "OpenAI Codex Desktop",
+      "version": "Desktop 26.1106.51428; backend 0.167.0-alpha.4.1",
+      "surface": "Actual isolated macOS GUI through packaged Headroom to a local provider fixture",
+      "platform": "macOS 15.8.2 ARM64",
+      "auth": "Synthetic API credential in a disposable file store",
+      "protocol": "Responses WebSocket",
+      "transport": "Owned IPv4 loopback ingress and pinned Unix engine",
+      "status": "local_fixture_partial",
+      "capabilities": {
+        "actual_gui_partial_and_final_response": {"status": "local_fixture_pass", "evidence": "docs/proofs/macos-desktop.md"},
+        "saved_endpoint_model_effort_and_synthetic_auth_preserved": {"status": "local_fixture_pass", "evidence": "docs/proofs/macos-desktop.md"},
+        "actual_collector_and_normal_shutdown": {"status": "local_fixture_pass", "evidence": "docs/proofs/macos-desktop.md"},
+        "live_provider_account": {"status": "not_tested", "evidence": "docs/proofs/macos-desktop.md"},
+        "other_models_and_subagent_identity": {"status": "not_tested", "evidence": "docs/proofs/macos-desktop.md"}
+      },
+      "limits": ["One controlled model/effort case; the test model is not a product allowlist.", "No live account, other macOS versions, Intel, general model or subagent guarantee."],
+      "evidence": ["docs/proofs/macos-desktop.md"],
+      "evidence_date": "2026-11-12"
+    },
     {
       "id": "headroom-packaged-runtime-win10-helper",
       "match": {"client_kind": "engine", "surface": "runtime", "versions": ["0.41.0"], "auth_method": "none", "platform": "windows_10_x64", "engine_version": "0.41.0"},

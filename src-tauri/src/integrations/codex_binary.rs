@@ -134,6 +134,8 @@ pub(super) fn config_supported(surface: &str, version: Option<&str>) -> bool {
     match (surface, version) {
         ("cli", Some(version)) => cli_config_supported(version),
         // Desktop's app version is independent of its backend's CLI version.
+        // macOS config/GUI traffic evidence is scoped to this signed app release.
+        ("desktop", Some("26.1106.51428")) if cfg!(target_os = "macos") => true,
         ("desktop", Some(version)) if !cfg!(target_os = "macos") => {
             desktop_version_supported(version)
         }

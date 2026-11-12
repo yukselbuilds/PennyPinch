@@ -85,12 +85,17 @@ fn codex_config_contract_requires_platform_evidence_for_desktop() {
         ("cli", "0.167.0"),
         ("desktop", "26.1103.1"),
         ("desktop", "26.1027.3384.0"),
+        ("desktop", "26.1106.51428"),
+        ("desktop", "26.1106.51427"),
+        ("desktop", "26.1106.51429"),
+        ("desktop", "26.1106.51428.0"),
+        ("desktop", "0.167.0-alpha.4.1"),
     ] {
         let mut context = context(ClientKind::Codex);
         context.surface = surface.to_owned();
         context.version = Some(version.to_owned());
         let plan = preview_config(&context, CODEX_CONFIG).unwrap();
-        if cfg!(target_os = "macos") && surface == "desktop" {
+        if cfg!(target_os = "macos") && surface == "desktop" && version != "26.1106.51428" {
             assert!(plan
                 .blockers
                 .contains(&PlanBlocker::UnsupportedClientVersion));
@@ -152,7 +157,7 @@ fn codex_config_contract_accepts_known_and_neighbor_versions_without_claiming_tr
 
     let mut desktop = context(ClientKind::Codex);
     desktop.surface = "desktop".to_owned();
-    desktop.version = Some("0.163.0-alpha.11.2".to_owned());
+    desktop.version = Some("26.1106.51428".to_owned());
     let plan = preview_config(&desktop, CODEX_CONFIG).unwrap();
     assert_eq!(plan.status, PlanStatus::Preview);
     assert!(!plan

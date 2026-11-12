@@ -296,6 +296,14 @@ Gerçek Headroom collector'ı içeriksiz SQLite olaylarına aynı modelden 2 eş
 
 Codex normal CmdQ ile, Headroom kendi çıkış onayıyla kapandı. Gözlenen 11 Codex çocuğu ve gerçek Headroom motoru çıktı; Headroom portu ve iki sahiplik kilidi bırakıldı. Vendor paket ve Headroom bundle/runtime önce/sonra envanterleri, CI kaynak/araç/ortam fingerprint'leri eşleşti. 45 native Python testinden 44'ü geçti, 1'i atlandı; Windows'ta 15 ilgili testin PASS'i güncel girdi/araç eşleşmesiyle bağlandı, 1 POSIX test skipped idi. Son inceleme ve collector tanı ekinden sonra yalnız etkilenen kontroller yenilendi. QA ad-hoc/LTO kapalı/16 codegen profili üretim imzası veya performansı kanıtlamaz. [Makine kanıtı](../proofs/macos-desktop-traffic.json) · [Başarılı koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43284385567).
 
+### H048-c7 ürün bağlantısı — etkin kabul
+
+c7b'nin sabit sürüm kanıtı temelinde macOS config kontratı yalnız resmî, imzalı Desktop `26.1106.51428` için açılacak. Discovery'nin salt okunur ve taze seçim denetimi, mevcut endpoint yaması ve sahiplik kaydı kullanılacak. Model adı/efor/ajan sayısı bu sürüm sınırının koşulu değildir. Model, provider, reasoning ve auth deposu ile ilgisiz TOML alanları korunacak. Oturum veya hesap doğrulaması otomatik başlatılmayacak; kayıtlı config desteği gerçek canlı hesap/istek doğrulaması diye sunulmayacak.
+
+Normal kabul gerçek vendor bundle keşfinden özel test config'iyle Preview → Apply → OwnershipStore/PlanManager reopen → Undo'dur. Apply sonrası eklenen Desktop tercihi Undo'dan sonra kalır, endpoint kalkar ve sentetik auth dosyasının baytları değişmez. Hata kabulleri preview sonrası dosya değişiminin Apply'i reddetmesi ve endpoint drift'inin Undo'yu dosya/sahiplik korunarak reddetmesidir. Bilinmeyen Desktop sürümlerinin macOS'ta kapalı kalması ayrıca kontrol edilir. Testler vendor uygulamasını veya gerçek kullanıcı istemcisini başlatmaz/yazmaz; önceki c7b GUI trafiği kendi fingerprint kapsamıyla ayrı kanıttır.
+
+Ana ajan sürüm/rota ve uygulama kararlarını üstlenir; aynı Luna yalnız mevcut `config_io/macos_tests.rs` yardımcı testlerini yazar. Yerelde `plan_tests`, ilgili catalog/recovery kontrolleri ve fmt; native ortamda `macos-build.yml` Desktop seçeneğiyle yeni `native_desktop_manager_` testleri ve platform sürüm kontratı kullanılır. Tam yerel ana görev kapısı c8'de bir kez çalıştırılır. GitHub standart macOS koşusu ancak güncel dahil kota ve hesap Actions `$0` hard stop yeniden doğrulanırsa başlatılır.
+
 ## Açık kabuller
 
 - H048-c1–c6, c7a dar ön kontrol ve c7b kontrollü GUI akışı tamamlandı. H048-c7 ürünün macOS Desktop bağlantı engelinin kanıta göre değerlendirilmesi ve gerçek bağlantı planı; c8 son görev kabulü açık. Canlı sağlayıcı, gerçek hesap/alt ajan ve diğer sürüm/model kapsamı bu fixture'dan çıkarılmaz.

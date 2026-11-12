@@ -46,7 +46,7 @@ jobs:
     if: ${{ inputs.free_only_confirmed == true }}
     name: Apple Silicon app build (macOS standard runner)
     runs-on: macos-15
-    timeout-minutes: 20
+    timeout-minutes: ${{ inputs.verify_desktop_discovery && !inputs.verify_managed_engine && !inputs.verify_cli_discovery && !inputs.verify_config_recovery && !inputs.verify_file_picker && 7 || 20 }}
     env:
       CARGO_HOME: ${{ github.workspace }}/work/caches/cargo-home
       CARGO_TARGET_DIR: ${{ github.workspace }}/work/caches/cargo-target
@@ -142,7 +142,9 @@ jobs:
               test_filters=()
             fi
             test_filters+=(integrations::discovery::macos::desktop::tests::
-                           integrations::plan_tests::codex_config_contract_requires_platform_evidence_for_desktop)
+                           integrations::plan_tests::codex_
+                           integrations::config_io::macos::tests::native_desktop_manager_
+                           compatibility::catalog::tests::)
           fi
           fingerprint() {
             git rev-parse HEAD 'HEAD^{tree}'
@@ -202,7 +204,7 @@ jobs:
                 detail > 0 { print substr($0, 1, 240); detail-- }
                 /^test .* \.\.\. FAILED$/ || /^test result: / { print substr($0, 1, 240) }' "$build_log"
             else
-              awk '/^test state::ownership::/ || /^test state::choices::macos_tests::/ || /^test integrations::config_io::macos::/ || /^test integrations::transaction_fs::macos_impl::/ || /^test integrations::discovery::macos::/ || /^test integrations::discovery_tests::/ || /^test integrations::plan_tests::codex_config_contract_requires_platform_evidence_for_desktop / || /^test result: / { print }' "$build_log"
+              awk '/^test state::ownership::/ || /^test state::choices::macos_tests::/ || /^test integrations::config_io::macos::/ || /^test integrations::transaction_fs::macos_impl::/ || /^test integrations::discovery::macos::/ || /^test integrations::discovery_tests::/ || /^test integrations::plan_tests::codex_/ || /^test compatibility::catalog::tests::/ || /^test result: / { print }' "$build_log"
               if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
                 cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
                   --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
