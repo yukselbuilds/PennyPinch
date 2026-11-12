@@ -153,6 +153,7 @@ def run(root):
     signature = subprocess.run(["/usr/bin/codesign", "--verify", "--deep", "--strict", str(bundle)],
                                capture_output=True, timeout=90)
     core.require(signature.returncode == 0, "desktop_full_signature_invalid")
+    print("headroom-desktop-phase=full_signature_verified", flush=True)
     core.require(core.find_app(launcher) is None, "desktop_already_open")
     normal_home = Path.home()
     untouched = [normal_home / ".codex", *[normal_home / "Library/Application Support" / name
@@ -171,7 +172,7 @@ def run(root):
     serving.start()
     endpoint = f"http://127.0.0.1:{server.server_address[1]}/v1"
     config = state / "codex/config.toml"
-    config.write_text(f'openai_base_url = "{endpoint}"\ncli_auth_credentials_store = "file"\n'
+    config.write_text(f'openai_base_url = "{endpoint}"\nmodel_provider = "openai"\ncli_auth_credentials_store = "file"\n'
                       '[analytics]\nenabled = false\n', encoding="utf-8")
     config.chmod(0o600)
     original_config = digest(config)
@@ -183,6 +184,7 @@ def run(root):
                      and re.fullmatch(r"codex(?:-cli)? 0\.167\.0-alpha\.4\.1\s*", version.stdout),
                      "unexpected_backend_version")
         contract = backend_config(backend, environment, state, endpoint)
+        print("headroom-desktop-phase=isolated_backend_config_read", flush=True)
         args = ["/usr/bin/open", "-n", "-W"]
         for name, value in environment.items():
             args.extend(["--env", f"{name}={value}"])
@@ -191,6 +193,7 @@ def run(root):
         opening = subprocess.Popen(args, cwd=state, env=environment, stdin=subprocess.DEVNULL,
                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         owned = core.wait_for(lambda: core.find_app(launcher), "desktop_open_timeout", seconds=30)
+        print("headroom-desktop-phase=owned_desktop_opened", flush=True)
         observed = core.wait_for(lambda: (value if value["windows"] > 0 else None)
             if (value := gui_state("observe", owned[0])) else None, "desktop_window_timeout", seconds=45)
         time.sleep(3)
