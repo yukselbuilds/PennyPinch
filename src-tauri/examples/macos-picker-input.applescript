@@ -5,8 +5,15 @@ on run arguments
         try
             tell application "System Events"
                 set pickerApp to first application process whose unix id is pickerPid
-                if not (frontmost of pickerApp) then return "not_frontmost"
                 if (count of windows of pickerApp) is not 1 then return "panel_unavailable"
+                if not (frontmost of pickerApp) then
+                    set frontmost of pickerApp to true
+                    repeat 12 times
+                        if frontmost of pickerApp then exit repeat
+                        delay 0.15
+                    end repeat
+                end if
+                if not (frontmost of pickerApp) then return "not_frontmost_after_activation"
                 key code 5 using {command down, shift down}
 
                 set pathInput to missing value
