@@ -82,26 +82,26 @@ fn open_panel(
         };
         panel.setDirectoryURL(Some(&url));
     }
-    match panel.runModal() {
-        NSModalResponseCancel => Ok(None),
-        NSModalResponseOK => {
-            let urls = panel.URLs();
-            if urls.count() != 1 {
-                return Err(());
-            }
-            let url = urls.objectAtIndex(0);
-            if !url.isFileURL() {
-                return Err(());
-            }
-            // NSURL owns a NUL-terminated file-system representation.
-            let bytes =
-                unsafe { CStr::from_ptr(url.fileSystemRepresentation().as_ptr()) }.to_bytes();
-            if bytes.is_empty() || bytes.len() >= libc::PATH_MAX as usize {
-                return Err(());
-            }
-            let path = PathBuf::from(OsStr::from_bytes(bytes));
-            path.is_absolute().then_some(Some(path)).ok_or(())
-        }
-        _ => Err(()),
+    let response = panel.runModal();
+    if response == unsafe { NSModalResponseCancel } {
+        return Ok(None);
     }
+    if response != unsafe { NSModalResponseOK } {
+        return Err(());
+    }
+    let urls = panel.URLs();
+    if urls.count() != 1 {
+        return Err(());
+    }
+    let url = urls.objectAtIndex(0);
+    if !url.isFileURL() {
+        return Err(());
+    }
+    // NSURL owns a NUL-terminated file-system representation.
+    let bytes = unsafe { CStr::from_ptr(url.fileSystemRepresentation().as_ptr()) }.to_bytes();
+    if bytes.is_empty() || bytes.len() >= libc::PATH_MAX as usize {
+        return Err(());
+    }
+    let path = PathBuf::from(OsStr::from_bytes(bytes));
+    path.is_absolute().then_some(Some(path)).ok_or(())
 }
