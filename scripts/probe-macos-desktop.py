@@ -47,6 +47,31 @@ def digest(path):
     return value.hexdigest()
 
 
+def profile_metadata(path):
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        return {"kind": "absent"}
+    if not stat.S_ISDIR(info.st_mode):
+        return {"kind": "not_directory"}
+    known = {"Crashpad", "GPUCache", "DawnGraphiteCache", "DawnWebGPUCache", "Cache",
+             "Local State", "Preferences", "Default", "Local Storage", "Session Storage",
+             "IndexedDB", "Network", "config.toml", "auth.json", "log", "logs",
+             "state_5.sqlite", "state_6.sqlite", "bin", "models_cache.json"}
+    observed, other, count = set(), 0, 0
+    with os.scandir(path) as entries:
+        for item in entries:
+            count += 1
+            if count > 64:
+                break
+            if item.name in known:
+                observed.add(item.name)
+            else:
+                other += 1
+    return {"kind": "directory", "known_entries": sorted(observed), "other_entries": other,
+            "truncated": count > 64}
+
+
 def rpc(process, request, selector):
     process.stdin.write(json.dumps(request, separators=(",", ":")).encode() + b"\n")
     process.stdin.flush()
@@ -198,6 +223,7 @@ def run(root):
             if (value := gui_state("observe", owned[0])) else None, "desktop_window_timeout", seconds=45)
         time.sleep(3)
         observed = gui_state("observe", owned[0])
+        print("headroom-desktop-gui=" + json.dumps(observed, separators=(",", ":")), flush=True)
         core.require(observed["windows"] > 0, "desktop_window_disappeared")
         descendants = owned_descendants(owned, bundle)
         children = [child for child in descendants if child[2] == backend]
@@ -207,6 +233,10 @@ def run(root):
             core.wait_for(lambda: not core.matches_process(child), "desktop_child_alive", seconds=15)
         core.require(opening.wait(timeout=10) == 0, "desktop_launcher_unclean_exit")
         core.require(digest(config) == original_config, "desktop_changed_endpoint_config")
+        profiles = {key: profile_metadata(path) for key, path in zip(
+            ("codex_home", "codex_app", "chatgpt_app", "bundle_app"), untouched)}
+        profiles["private_electron"] = profile_metadata(state / "electron")
+        print("headroom-desktop-profiles=" + json.dumps(profiles, separators=(",", ":")), flush=True)
         core.require(not any(path.exists() for path in untouched), "desktop_wrote_default_profile")
         core.require(any((state / "electron").iterdir()), "electron_profile_not_used")
         core.require(all(digest(path) == before[path.relative_to(bundle).as_posix()] for path in files),

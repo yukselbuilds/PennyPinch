@@ -2,6 +2,7 @@
 
 import importlib.util
 from pathlib import Path
+import tempfile
 import unittest
 
 
@@ -30,6 +31,21 @@ class DesktopPreflightTests(unittest.TestCase):
         self.assertEqual(env["CODEX_HOME"], str(state / "codex"))
         self.assertEqual(env["CODEX_ELECTRON_USER_DATA_PATH"], str(state / "electron"))
         self.assertEqual(set(env), {"PATH", "HOME", "TMPDIR", "CODEX_HOME", "CODEX_ELECTRON_USER_DATA_PATH"})
+
+    def test_profile_diagnosis_never_exports_unknown_filenames_or_file_contents(self):
+        parent = ROOT / "work/proofs/macos/h048-c7/profile-unit"
+        parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=parent) as value:
+            directory = Path(value)
+            self.assertEqual(directory.resolve().parent, parent.resolve())
+            (directory / "Crashpad").mkdir()
+            (directory / "Local State").write_text("PRIVATE_CONTENT", encoding="utf-8")
+            (directory / "PRIVATE_ACCOUNT_CANARY").touch()
+            observed = PROBE.profile_metadata(directory)
+            self.assertEqual(observed["kind"], "directory")
+            self.assertEqual(observed["known_entries"], ["Crashpad", "Local State"])
+            self.assertEqual(observed["other_entries"], 1)
+            self.assertNotIn("PRIVATE", repr(observed))
 
 
 if __name__ == "__main__":
