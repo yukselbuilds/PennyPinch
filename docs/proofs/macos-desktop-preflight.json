@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "task": "H048-c7-preflight",
+  "status": "pass",
+  "main_task_complete": false,
+  "desktop_traffic_acceptance_complete": false,
+  "verified_at_utc": "2026-11-12T17:44:08.189159+00:00",
+  "scope": "Fresh CI user: direct bundled backend config read, official Electron window and normal exit, private core profiles and owned auxiliary vendor state cleanup",
+  "native": {
+    "run_id": "43271658774",
+    "job_id": 131369504630,
+    "candidate": "2a2e0b49e019d67e85c4f3861a188a5933624570",
+    "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43271658774",
+    "status": "pass",
+    "scope": "narrow_no_account_preflight",
+    "platform": {
+      "os": "macOS",
+      "version": "15.8.2",
+      "build": "24H232",
+      "arch": "arm64"
+    },
+    "native_python_tests": {
+      "total": 32,
+      "passed": 31,
+      "skipped": 1
+    },
+    "inputs_before": "564ed7410c02f349fd725323ac3451859a51bcb42772efe17a5183225f872cc7",
+    "inputs_after": "564ed7410c02f349fd725323ac3451859a51bcb42772efe17a5183225f872cc7",
+    "result": {
+      "schema_version": 1,
+      "status": "pass",
+      "scope": "desktop_no_account_preflight",
+      "desktop_version": "26.1106.51428",
+      "backend_version": "codex-cli 0.167.0-alpha.4.1",
+      "full_signature_verified": true,
+      "backend_config": {
+        "endpoint_matches": true,
+        "built_in_provider": true,
+        "account": "none",
+        "normal_exit": true
+      },
+      "gui": {
+        "windows": 1,
+        "controls": 27,
+        "sign_in_button": false,
+        "api_key_button": false
+      },
+      "bundled_backend_children_observed": 1,
+      "isolated_electron_state_used": true,
+      "default_core_profiles_unchanged": true,
+      "normal_exit": true,
+      "vendor_application_state_created": true,
+      "vendor_application_state_purpose": "unknown",
+      "full_application_state_isolation": "not_established",
+      "observed_owned_children_exited": 13,
+      "endpoint_config_unchanged": true,
+      "observed_loopback_requests": 0,
+      "model_turn_requested": false,
+      "live_provider_traffic": "not_tested",
+      "desktop_headroom_route": "not_tested",
+      "package_before": {
+        "Contents/Info.plist": "3c3f175bca100cb25507b633742154f965cc2d456ca06282a69de6b1430c9c74",
+        "Contents/MacOS/ChatGPT": "7efa7738eb06887f95f3b915c085a7a228c437119a1fedaaa7d01c92687cff78",
+        "Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex": "7cb8700a47be3c81bb3c5efbf2d2adc716ce3db4806e9dc992f2925f78b2b194",
+        "Contents/Resources/app.asar": "3695c17edcab8d66c1e5f2faa03e07826a59a39bf78b369ec87854547d4843c1"
+      },
+      "package_after": {
+        "Contents/Info.plist": "3c3f175bca100cb25507b633742154f965cc2d456ca06282a69de6b1430c9c74",
+        "Contents/MacOS/ChatGPT": "7efa7738eb06887f95f3b915c085a7a228c437119a1fedaaa7d01c92687cff78",
+        "Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex": "7cb8700a47be3c81bb3c5efbf2d2adc716ce3db4806e9dc992f2925f78b2b194",
+        "Contents/Resources/app.asar": "3695c17edcab8d66c1e5f2faa03e07826a59a39bf78b369ec87854547d4843c1"
+      },
+      "private_state_removed": true,
+      "vendor_application_state_removed": true
+    },
+    "profile_diagnosis": {
+      "codex_home": {
+        "kind": "absent"
+      },
+      "codex_app": {
+        "kind": "absent"
+      },
+      "chatgpt_app": {
+        "kind": "absent"
+      },
+      "bundle_app": {
+        "kind": "directory",
+        "known_entries": [],
+        "other_entries": 1,
+        "truncated": false
+      },
+      "private_electron": {
+        "kind": "directory",
+        "known_entries": [
+          "Crashpad",
+          "Default",
+          "Local State"
+        ],
+        "other_entries": 38,
+        "truncated": false
+      }
+    },
+    "allowance": {
+      "checked_at_utc": "2026-11-12T17:38:57.730532+00:00",
+      "account": "Protocol272",
+      "included_compute_used_usd": 10.04,
+      "included_compute_total_usd": 12,
+      "paid_actions_spent_usd": 0,
+      "paid_actions_budget_usd": 0,
+      "billable_usage_usd": 0,
+      "usage_blocked": true,
+      "candidate": "2a2e0b49e019d67e85c4f3861a188a5933624570",
+      "workflow_sha256": "745df1cac2dbcc84ebebb3ab08de125251b8f2574cb883931df39843fcd4a66d",
+      "runner": "macos-15",
+      "timeout_minutes": 10,
+      "source": "Authenticated included compute and account zero-dollar Actions hard stop before dispatch; metering can be delayed",
+      "run_id": "43271658774"
+    },
+    "verified_at_utc": "2026-11-12T17:42:19.581440+00:00"
+  },
+  "source_sha256": {
+    ".github/workflows/macos-desktop.yml": "745df1cac2dbcc84ebebb3ab08de125251b8f2574cb883931df39843fcd4a66d",
+    "scripts/probe-macos-desktop.py": "9fb895fe6168ee61b60b3ce9839125928b77c8b9453b56530cfb33015bca0619",
+    "scripts/macos-desktop-input.applescript": "e943355d73b8e08b5d1d35e18cd90671af18712487cfc061dcd11d747eade103",
+    "scripts/probe-macos-package.py": "c88192e5ffc05dedc5c2f7f2d60fc6559042587909af4888ea3e011c1bb75ee4",
+    "scripts/prepare-macos-ci-desktop.sh": "1a25913fb43aa79a0010e11aa60a15f156358696ac2fdb87ae471a899da398b5",
+    "scripts/prepare-macos-ci-runtime.sh": "ff773c8ff25f7c4b5879c8a5234b948aa07cc741c392e45722f417d69d857e8f",
+    "tests/runtime/test_macos_desktop_probe.py": "b17801d83010fbcf545351e24fcf31e95b616ac7afcc7b7465c4c1b3684b4240"
+  },
+  "local": {
+    "tests_passed": 3,
+    "command": [
+      "D:\\Projeler\\Headroom\\work\\proofs\\engine\\toolchain\\cpython-3.13.13-windows-x86_64-none\\python.exe",
+      "-I",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests/runtime",
+      "-p",
+      "test_macos_desktop_probe.py",
+      "-v"
+    ],
+    "before_after_unchanged": true,
+    "proof_sha256": "61b42e3b18357d5845dacbeef2cb5cb971fb334b7448d714ad968519e1ad8e5f",
+    "toolchain_inputs": {
+      "work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07"
+    },
+    "helper_asts_unchanged_in_final_candidate": true,
+    "static_proof_sha256": "e69d41a562bd3db74f2db3fd186afab022d6f4a2c902447f66ded55edf5c33d0"
+  },
+  "worker_static": [
+    {
+      "path": "work/proofs/macos/h048-c7/static-desktop/desktop-static.json",
+      "sha256": "db4fb41335494a366287ad386f5cd48db9f9cbab3091b2cf26a97e0aa7f66a52",
+      "status": "static_inspected",
+      "scope": "read-only vendor package source; not native behavior"
+    },
+    {
+      "path": "work/proofs/macos/h048-c7/static-desktop/desktop-static-followup.json",
+      "sha256": "cf525057166e3ae91b8c3681fe71529dde07fc56dfc2e79d5bab0d696a936b60",
+      "status": "targeted_static_read",
+      "scope": "read-only vendor package source; not native behavior"
+    }
+  ],
+  "earlier_attempts": [
+    {
+      "run_id": "43268015510",
+      "candidate": "f0b1fbc7880eacde1b78c9312c069f5b3f7f71e1",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43268015510",
+      "status": "failed_preflight",
+      "phase": "bundled_backend_config_provider_observation",
+      "reason": "provider_changed guard: raw readback did not equal the assumed explicit provider; the isolated endpoint guard was reached and matched first. GUI was not started.",
+      "proof_sha256": "9be296ffe58316081179bde67cf5c1515f7e2e79df3fc57801137d378bdee71a"
+    },
+    {
+      "run_id": "43269091164",
+      "candidate": "6d933c31b350ffa005ff91d13a687eca13b36386",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43269091164",
+      "status": "partial",
+      "phase": "default_profile_guard",
+      "reason": "A previously absent default profile directory appeared; metadata classification required before treating this as isolated.",
+      "proof_sha256": "66df6b30eac584d510dbcc00e0c8712e25821eb8c84cbf6e8159f2811cf5b788"
+    },
+    {
+      "run_id": "43270228818",
+      "candidate": "5d39b3d90bcfad355b9d44f696d6f0276ef25341",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43270228818",
+      "status": "partial",
+      "phase": "auxiliary_vendor_state",
+      "reason": "Core defaults absent and private Electron state observed; vendor Application Support namespace gained one unclassified entry. Narrow fresh-CI scope must explicitly own and remove that new namespace.",
+      "proof_sha256": "da631f601b47113bc2deeccc67ef8acf19452b27cf87b4e9b21906f99f288408"
+    }
+  ],
+  "verified": [
+    "The exact signed vendor DMG, app version and Apple Silicon launcher/backend were preserved.",
+    "Strict deep package signature verification passed before launch; four selected package asset hashes matched after normal exit.",
+    "A direct no-turn bundled app-server initialized, read the explicit built-in provider and local endpoint from the fresh CODEX_HOME, reported no account and exited normally.",
+    "The actual Electron Desktop opened a visible window and spawned one observed bundled backend; 13 owned children were observed exited after Cmd-Q.",
+    "The private Electron profile contained Local State and Default; the normal .codex and normal Codex/ChatGPT profiles remained absent.",
+    "A previously absent vendor Application Support namespace was explicitly bounded by owner, mode, canonical path and inode, then removed after normal exit. Its purpose remains unknown.",
+    "The short private QA state root and vendor namespace were removed without copying real account or user config data.",
+    "Config/environment and bounded profile diagnosis helpers passed three focused privacy/shape tests; native preparation reported 31 Python tests passed and one skipped.",
+    "Native input fingerprints and selected package hashes matched before/after the accepted narrow run."
+  ],
+  "remaining": [
+    "Desktop to Headroom to controlled local provider request/response and actual GUI config adoption",
+    "authorized live macOS provider/account and saved endpoint adoption acceptance",
+    "main H048 final quality gate and release/compatibility acceptance"
+  ],
+  "limits": [
+    "This preflight requests no model turn. It does not prove Desktop model traffic, savings, provider authentication or model/subagent compatibility.",
+    "Config/read was a separate direct bundled backend session; observing a GUI backend child is not evidence that the GUI adopted the endpoint.",
+    "No recognized sign-in or API-key button was captured in the bounded 27-control snapshot; account UI capability remains unknown.",
+    "The original strict all-state isolation guard failed. The accepted narrower fresh-CI scope permits and removes owned com.openai.codex Application Support state; its purpose and full application state isolation remain unestablished.",
+    "The result is specific to macOS 15.8.2 ARM64, Desktop 26.1106.51428 and bundled CLI 0.167.0-alpha.4.1. It does not establish other versions/architectures.",
+    "This is an official vendor app preflight, not a Headroom production release/signing acceptance. No online revocation or long-duration stability claim."
+  ],
+  "sources": [
+    {
+      "title": "OpenAI Advanced Configuration: CODEX_HOME and built-in provider endpoint",
+      "url": "https://learn.chatgpt.com/docs/config-file/config-advanced"
+    },
+    {
+      "title": "OpenAI configuration reference: built-in provider and file credential store",
+      "url": "https://learn.chatgpt.com/docs/config-file/config-reference"
+    },
+    {
+      "title": "OpenAI app-server protocol: initialization, stdio and config/read",
+      "url": "https://learn.chatgpt.com/docs/app-server"
+    }
+  ],
+  "development_token_savings": "not_measured"
+}
