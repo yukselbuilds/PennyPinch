@@ -36,30 +36,48 @@ on waitControl(pickerApp, labelText, acceptedRoles, activateControl)
         repeat 120 times
             if not (exists pickerApp) then error number 1802
             if exists window "Headroom" of pickerApp then
-                set allControls to entire contents of window "Headroom" of pickerApp
-                set observedControls to count of allControls
-                if (count of allControls) > 1200 then error number 1803
-                repeat with controlRef in allControls
-                    set controlItem to contents of controlRef
-                    if (role of controlItem) is in acceptedRoles then
-                        set labelMatches to false
-                        try
-                            set labelMatches to (name of controlItem) is labelText
-                        end try
-                        if not labelMatches then
+                set targetControl to missing value
+                try
+                    set allControls to entire contents of window "Headroom" of pickerApp
+                    set observedControls to count of allControls
+                    if (count of allControls) > 1200 then error number 1803
+                    repeat with controlRef in allControls
+                        set controlItem to contents of controlRef
+                        if (role of controlItem) is in acceptedRoles then
+                            set labelMatches to false
                             try
-                                set labelMatches to (description of controlItem) is labelText
+                                set labelMatches to (name of controlItem) is labelText
                             end try
-                        end if
-                        if labelMatches then
-                            set targetSeen to true
-                            if enabled of controlItem then
-                                if activateControl then click controlItem
-                                return
+                            if not labelMatches then
+                                try
+                                    set labelMatches to (description of controlItem) is labelText
+                                end try
+                            end if
+                            if labelMatches then
+                                set targetSeen to true
+                                if enabled of controlItem then
+                                    set targetControl to controlItem
+                                    exit repeat
+                                end if
                             end if
                         end if
+                    end repeat
+                on error number failureCode
+                    -- A WebView render can invalidate a read; clicks are never retried here.
+                    if failureCode is not -1728 then error number failureCode
+                    set targetControl to missing value
+                end try
+                if targetControl is not missing value then
+                    if activateControl then
+                        try
+                            click targetControl
+                        on error number failureCode
+                            log "headroom-package-ui=click_failed label=" & labelText & " code=" & failureCode
+                            error number failureCode
+                        end try
                     end if
-                end repeat
+                    return
+                end if
             end if
             delay 0.2
         end repeat

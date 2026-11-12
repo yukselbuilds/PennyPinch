@@ -227,6 +227,16 @@ def probe(root):
                   "build_profile": {"release": True, "lto": False, "codegen_units": 16}}
         (root / "lifecycle.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
         print(json.dumps(result, separators=(",", ":")), flush=True)
+    except ProbeError:
+        live_apps = sum(matches_process(app) for app in owned_apps)
+        for app in owned_apps:
+            if matches_process(app):
+                engine = find_engine(app, runtime)
+                if engine and engine not in owned_engines:
+                    owned_engines.append(engine)
+        live_engines = sum(matches_process(engine) for engine in owned_engines)
+        print(f"headroom-package-processes=on_failure apps={live_apps} engines={live_engines}", flush=True)
+        raise
     finally:
         for owned in reversed(owned_apps + owned_engines):
             if matches_process(owned):
