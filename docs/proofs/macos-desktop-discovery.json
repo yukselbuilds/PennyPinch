@@ -1,0 +1,303 @@
+{
+  "schema_version": 1,
+  "task": "H048-c3",
+  "status": "pass",
+  "main_task_complete": false,
+  "verified_at_utc": "2026-11-12T10:03:40.527313+00:00",
+  "scope": "Signed Codex Desktop launcher discovery and saved choices in private Apple Silicon application layouts",
+  "native": {
+    "run_id": 43196478298,
+    "job_id": 131108651988,
+    "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43196478298",
+    "commit": "b8698d152aa3ad8a5d4c22450eee264303f96878",
+    "os": "15.8.2",
+    "build": "24H232",
+    "arch": "arm64",
+    "rust": "1.92.0",
+    "inputs_before": "a3bf76e94e05f161d5a15b759ecaf6e066e0b12051f97da31fa3cc77888930a3",
+    "inputs_after": "a3bf76e94e05f161d5a15b759ecaf6e066e0b12051f97da31fa3cc77888930a3",
+    "test_summary": "test result: ok. 17 passed; 0 failed; 2 ignored; 0 measured; 312 filtered out; finished in 8.01s",
+    "tests": [
+      "integrations::config_io::macos::tests::native_manager_apply_and_reopened_undo_for_all_adapters",
+      "integrations::config_io::macos::tests::native_manager_missing_claude_project_directory_precommit_fault_is_passive",
+      "integrations::config_io::macos::tests::native_manager_missing_claude_project_directory_reopens_and_preserves_user_additions",
+      "integrations::config_io::macos::tests::native_manager_preserves_unrelated_edit_and_precommit_fault",
+      "integrations::config_io::macos::tests::native_manager_retained_review_archive_and_reopened_undo_for_all_adapters",
+      "integrations::discovery::macos::desktop::tests::signed_desktop_scan_rebinds_selection_and_rejects_untrusted_bundles",
+      "integrations::discovery::macos::tests::installed_cli_discovery_uses_actual_environment_and_does_not_execute_candidates",
+      "integrations::discovery_tests::installation_selection_is_bound_to_scan_generation_and_returns_no_path",
+      "integrations::discovery_tests::npm_metadata_is_separate_from_unverified_path_wrappers_and_scan_is_read_only",
+      "integrations::discovery_tests::path_and_metadata_limits_are_reported_and_network_candidates_are_skipped",
+      "integrations::plan_tests::codex_config_contract_requires_platform_evidence_for_desktop",
+      "integrations::transaction_fs::macos_impl::choices::tests::late_selection_replacement_is_preserved_and_reported_as_conflict",
+      "integrations::transaction_fs::macos_impl::choices::tests::selection_file_serializes_writers_and_reopens_after_process_exit",
+      "state::choices::macos_tests::app_local_selection_store_is_passive_then_roundtrips_explicit_choices",
+      "state::choices::macos_tests::executable_replacement_and_same_size_edit_make_saved_choices_unavailable",
+      "state::choices::macos_tests::malformed_and_oversized_selection_files_are_rejected_without_rewrite",
+      "state::choices::macos_tests::unsafe_selection_roots_and_files_fail_closed_without_touching_targets"
+    ],
+    "directly_ignored_helpers_invoked_by_parent_tests": [
+      "integrations::discovery::macos::tests::isolated_installed_cli_scan_child",
+      "integrations::transaction_fs::macos_impl::choices::tests::owned_selection_file_child"
+    ],
+    "binary_sha256": "6ec35a0b8142c803c6d9e91bd6be81769aaaf2b71d163edd7dad270c3d0e00ff",
+    "allowance": {
+      "checked_at": "2026-11-12T10:00:32.1685696Z",
+      "account": "Protocol272",
+      "period": "2026-11",
+      "included_compute_used_usd": 4.71,
+      "included_compute_total_usd": 12,
+      "paid_actions_budget_usd": 0,
+      "billable_usage_usd": 0,
+      "usage_blocked": true,
+      "candidate_sha": "b8698d152aa3ad8a5d4c22450eee264303f96878",
+      "workflow_sha256": "e1a24bd4613e28d2ff084b4481660f4f56ceb4f7d752a75a1acd0aa38d966fd6",
+      "run_id": "43196478298",
+      "runner": "macos-15",
+      "timeout_minutes": 20,
+      "verify_cli_discovery": true,
+      "verify_desktop_discovery": true,
+      "verify_managed_engine": false,
+      "verify_config_recovery": false,
+      "source": "Authenticated GitHub Actions overview and account Actions budget immediately before final dispatch"
+    }
+  },
+  "desktop_package": {
+    "url": "https://persistent.oaistatic.com/codex-app-prod/Codex.dmg",
+    "version": {
+      "CFBundleExecutable": "ChatGPT",
+      "CFBundleIdentifier": "com.openai.codex",
+      "CFBundleName": "ChatGPT",
+      "CFBundleShortVersionString": "26.1106.51428",
+      "CFBundleVersion": "26605"
+    },
+    "team_id": "2DC432GLL2",
+    "inputs": {
+      "Codex.dmg": {
+        "size": 896471424,
+        "sha256": "488009cfdfd99bd04eeec1fa2c156611fda75f04510b039f61207afa6ad4423a"
+      },
+      "home/Applications/ChatGPT.app/Contents/Info.plist": {
+        "size": 20787,
+        "sha256": "3c3f175bca100cb25507b633742154f965cc2d456ca06282a69de6b1430c9c74"
+      },
+      "home/Applications/ChatGPT.app/Contents/MacOS/ChatGPT": {
+        "size": 71008,
+        "sha256": "7efa7738eb06887f95f3b915c085a7a228c437119a1fedaaa7d01c92687cff78"
+      },
+      "home/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex": {
+        "size": 273669024,
+        "sha256": "7cb8700a47be3c81bb3c5efbf2d2adc716ce3db4806e9dc992f2925f78b2b194"
+      }
+    },
+    "offline_proof": "work/proofs/macos/h048-c3/artifact/artifact-observation.json",
+    "offline_proof_sha256": "ba063b978d7025eea76120103cfe5c33fe597dcef5b6fdc7c1fe8c27f7fdcb34",
+    "signature_scope": "Security framework checks launcher and Info.plist with Apple anchor, OpenAI team and bundle ID, offline"
+  },
+  "source_sha256": {
+    ".github/workflows/macos-build.yml": "e1a24bd4613e28d2ff084b4481660f4f56ceb4f7d752a75a1acd0aa38d966fd6",
+    "pnpm-lock.yaml": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3",
+    "scripts/prepare-macos-ci-desktop.sh": "1a25913fb43aa79a0010e11aa60a15f156358696ac2fdb87ae471a899da398b5",
+    "src-tauri/Cargo.lock": "ab2a21d41ea8ae292988034de4b7d617a623aea2c1fb673bd7c639b1f762eb87",
+    "src-tauri/Cargo.toml": "9a2e2c837f1ec00968ce4daa47af6e26cb2e97529b6eb3084a2d969bc625f28e",
+    "src-tauri/src/integrations/codex_binary.rs": "7019abd01adf17eb232e4367b97ab4b3df734c82491509b1a9742fb430b6a650",
+    "src-tauri/src/integrations/discovery.rs": "6449559587ab222f549f4160cffb14bbdebe5c055731d825109261ed070db4b2",
+    "src-tauri/src/integrations/discovery_macos.rs": "0755001135a99a6e9c0cd1ba3ac6295153670201256a8816cf8f9f05b0f4aa61",
+    "src-tauri/src/integrations/discovery_macos_desktop.rs": "478c8ea4c38e4b49e89a0684409210e4469d27b64322a7b595a022ee5e62740a",
+    "src-tauri/src/integrations/discovery_macos_desktop_tests.rs": "42e82260e9c7af6c588fc879167041e0e2f35d8ca6b31cd071b951d12883da3e",
+    "src-tauri/src/integrations/plan_tests.rs": "7903bd5aaaf98b612e1a14c900f3031ec7b3d81e244b0d02864a12937d15bbcb",
+    "src-tauri/src/state/choices.rs": "8c42a1ca77bb75639473ced1f2d6b94ee19f981749a37eab3f657dcd1104184a",
+    "src/features/integrations/Applications.tsx": "45dca65435b6d5c46cc3b8075821424317a268b84115eaa2b1787b960829ec32",
+    "src/features/integrations/ConnectDialog.tsx": "578e6a00602dff1812d05e3a9576142e7c20a0ea941b13011e4429a085e9c6a0",
+    "src/lib/integrations.ts": "f60fd988f6c97c43a922c92462ea43fa60780d21f264c381291f7bed8e9702c6",
+    "tests/app/integrations.test.mjs": "4daf7c97fa14cac8964d02608783f010e3feedd090e2c103778e41135c4c94a6"
+  },
+  "windows": {
+    "commands": [
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "--",
+          "integrations::discovery_tests::",
+          "integrations::plan_tests::",
+          "state::choices_tests::",
+          "runtime::recovery::",
+          "--test-threads=1"
+        ],
+        "exit_code": 0,
+        "seconds": 56.819,
+        "test_summary": [
+          "test result: ok. 61 passed; 0 failed; 2 ignored; 0 measured; 371 filtered out; finished in 2.15s"
+        ],
+        "node_summary": [],
+        "failed_tests": []
+      },
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 1.574,
+        "test_summary": [],
+        "node_summary": [],
+        "failed_tests": []
+      },
+      {
+        "command": [
+          "D:\\Projeler\\Headroom\\work\\proofs\\macos\\h048-a\\actionlint-1.7.12\\actionlint.exe",
+          "-color",
+          ".github/workflows/macos-build.yml"
+        ],
+        "exit_code": 0,
+        "seconds": 0.537,
+        "test_summary": [],
+        "node_summary": [],
+        "failed_tests": []
+      }
+    ],
+    "toolchain": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "environment": {
+      "workspace": "D:\\Projeler\\Headroom",
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "windows_build": [
+        10,
+        0,
+        19045
+      ]
+    },
+    "proof_sha256": "8a00d8e79b8c07bdd120c1aed9bd27dc640916f688c3d660ce67a68a2339d75c",
+    "matching_inputs": 282,
+    "macos_only_exclusions": {
+      "src-tauri/src/integrations/discovery_macos_desktop.rs": {
+        "tested": "9ac2d04780f5bd7fcf9337668c4e8a61e5735fc9d9d73de63029c06d05e0d211",
+        "candidate": "478c8ea4c38e4b49e89a0684409210e4469d27b64322a7b595a022ee5e62740a",
+        "reason": "macOS-only module verified in the native final run"
+      },
+      "src-tauri/src/integrations/discovery_macos_desktop_tests.rs": {
+        "tested": "948aed21932733aa4b18f9f0f4424652c089e9f9b1548a4753ba75e3ec257e65",
+        "candidate": "42e82260e9c7af6c588fc879167041e0e2f35d8ca6b31cd071b951d12883da3e",
+        "reason": "macOS-only module verified in the native final run"
+      }
+    },
+    "reused_frontend": {
+      "commands": [
+        {
+          "command": [
+            "node",
+            "--experimental-strip-types",
+            "--test",
+            "tests/app/integrations.test.mjs",
+            "tests/app/installation-choices.test.mjs",
+            "tests/app/connection-plan.test.mjs"
+          ],
+          "exit_code": 0,
+          "seconds": 0.547,
+          "test_summary": [],
+          "node_summary": [
+            "\u2139 tests 29",
+            "\u2139 pass 29",
+            "\u2139 fail 0",
+            "\u2139 duration_ms 411.6555"
+          ],
+          "failed_tests": []
+        },
+        {
+          "command": [
+            "pnpm.cmd",
+            "typecheck"
+          ],
+          "exit_code": 0,
+          "seconds": 1.888,
+          "test_summary": [],
+          "node_summary": [],
+          "failed_tests": []
+        }
+      ],
+      "matching_inputs": 89,
+      "proof_sha256": "8327564e4b97b8e33819bc193d67355344d379f7ef561ab77c64d151b3d09491"
+    }
+  },
+  "regression_evidence": {
+    "initial": {
+      "run_id": 43194613987,
+      "candidate": "850d086a2c60fac41abd97d1f58408738d9e9f01",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43194613987",
+      "job_id": 131102244880,
+      "inputs_before": "80e8ffaf00af576aff4530d751581ee77d67a9957c7e0b456477ef6b096c9836",
+      "inputs_after": "80e8ffaf00af576aff4530d751581ee77d67a9957c7e0b456477ef6b096c9836",
+      "test_summary": "test result: ok. 17 passed; 0 failed; 2 ignored; 0 measured; 312 filtered out; finished in 8.73s",
+      "verified_at_utc": "2026-11-12T09:52:36.613026+00:00",
+      "scope": "Original isolated private Applications layouts",
+      "next": "Add administrator-group-writable Applications regression"
+    },
+    "administrator_group_case": {
+      "run_id": "43195490776",
+      "candidate": "073e6b0c15874c64e09ac8e29243bee43a1c4663",
+      "url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43195490776",
+      "job_id": 131105259861,
+      "regression_reproduced": true,
+      "passed": 1,
+      "failed": 1,
+      "failed_tests": [
+        "integrations::discovery::macos::desktop::tests::signed_desktop_scan_rebinds_selection_and_rejects_untrusted_bundles"
+      ],
+      "test_summary": "test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 329 filtered out; finished in 0.19s",
+      "inputs_before": "8d01785b2d37e75c8f013beea891c8e9611beb67af9cf6f68fae4a932941f2b7",
+      "inputs_after": "8d01785b2d37e75c8f013beea891c8e9611beb67af9cf6f68fae4a932941f2b7",
+      "fixture_bytes_restored": true,
+      "fixed_error": "Signed Desktop candidate absent after application root becomes administrator-group-writable",
+      "allowance": {
+        "checked_at": "2026-11-12T09:53:45.1727037Z",
+        "account": "Protocol272",
+        "period": "2026-11",
+        "included_compute_used_usd": 4.34,
+        "included_compute_total_usd": 12,
+        "paid_actions_budget_usd": 0,
+        "billable_usage_usd": 0,
+        "usage_blocked": true,
+        "candidate_sha": "073e6b0c15874c64e09ac8e29243bee43a1c4663",
+        "workflow_sha256": "e1a24bd4613e28d2ff084b4481660f4f56ceb4f7d752a75a1acd0aa38d966fd6",
+        "run_id": "43195490776",
+        "runner": "macos-15",
+        "timeout_minutes": 20,
+        "verify_cli_discovery": false,
+        "verify_desktop_discovery": true,
+        "verify_managed_engine": false,
+        "verify_config_recovery": false,
+        "source": "Authenticated GitHub Actions overview and account Actions budget immediately before regression dispatch"
+      },
+      "verified_at_utc": "2026-11-12T09:57:33.945039+00:00"
+    },
+    "final_format_check_sha256": "799c2478ec6581cefdc565a997dbead67027aaee586ed2d897a035ccf9aa1cdb"
+  },
+  "verified": [
+    "Signed official ChatGPT.app found as Codex Desktop in isolated user Applications",
+    "Renamed Codex.app found under administrator-group-writable system Applications while CLI remains a separate surface",
+    "Explicit selection rebound on a fresh scan after manager restart",
+    "Same-byte launcher replacement invalidates the old selection",
+    "Changed signed version metadata invalidates old select/save operations and discovery",
+    "Unsigned, symlinked and writable-metadata candidates are rejected",
+    "macOS Desktop connection plan remains blocked pending native client verification"
+  ],
+  "remaining": [
+    "native file picker",
+    "packaged window and engine lifecycle",
+    "live macOS Desktop traffic"
+  ],
+  "development_token_savings": "not_measured"
+}

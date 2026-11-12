@@ -194,8 +194,14 @@ macOS'ta sistem ve kullanıcı `Applications` dizinlerindeki `Codex.app` ve `Cha
 
 Ana ajan paket doğrulama, seçim ve bağlantı sınırlarını üstlenir. Tek Luna resmî disk imajının sürüm ve özet kanıtını hazırlar. Native kabul ücretsiz `macos-build.yml` koşusunda gerçek Apple Silicon disk imajından kurulan izole paketle çalışır. Windows keşif/plan ve frontend sözleşme kontrolleri odaklı çalışır.
 
+12 Kasım kabulü tamamlandı. Resmî 26.1106.51428 disk imajı SHA-256 ile sabitlendi ve izole dizine açıldı. Security framework OpenAI takımını, paket kimliğini, başlatıcıyı ve Info.plist imzasını doğruladı. Kullanıcı Applications dizini ve yönetici grubuna yazılabilir sistem Applications dizini test edildi. Aynı baytlı yeni başlatıcı eski seçimi geçersiz kıldı. Değişmiş sürüm metadata'sı eski seçme/kaydetme isteğinde ve taze taramada reddedildi. İmzasız kopya, sembolik bağlantı ve yazılabilir metadata adayları elendi.
+
+İlk özel dizin koşusunda 17 test geçti. Ek sistem dizini testi mevcut izin kontrolünde başarısız oldu. Contents dizini üzerinden yerel dosya sistemi kontrolü sonrası son macOS 15.8.2 ARM64 koşusunda 17 test, frontend ve kilitli derleme başarılı. İki çocuk süreç yardımcısı ilgili testlerde çağrıldı. Windows'ta 61 Rust testi, 29 frontend testi ve typecheck geçti. İki sonraki macOS dosyası farkı dışındaki 282 Windows girdisi ve 89 frontend girdisi eşleşti. [Makine kanıtı](../proofs/macos-desktop-discovery.json) · [Son koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43196478298).
+
+İmza denetimi yereldir. Çevrimiçi sertifika iptali, paket kaynaklarının tamamı, Intel mimarisi ve gerçek Desktop trafiği ayrıca doğrulama gerektirir. Bu aşamada macOS Desktop bağlantı planı kapalıdır.
+
 ## Açık kabuller
 
-- H048-c'de sıradaki adım macOS Codex Desktop keşfidir. Gerçek dosya seçici de açık.
+- H048-c'de sıradaki adım gerçek macOS dosya seçicidir. Desktop istemcisinden gerçek trafik ve bağlantı kabulü de açık.
 - H048-b için platforma ve mimariye özel sabitlenmiş motor ve doğrulanabilir süreç/loopback sahipliği, atomik ayar işlemleri ve çatışmayı koruyan geri alma gerekir.
 - H048-c için paketlenmiş uygulamanın gerçek açılışı, başlat/durdur ve temiz state kabulü ile paket ve motor imzasının ayrı doğrulanması gerekir. Apple Silicon sonucu Intel, Windows 11 veya Linux'a aktarılmaz. Üretim yayını veya ücretli imzalama bu koşuların kapsamı dışındadır.
