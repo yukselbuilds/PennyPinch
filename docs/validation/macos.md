@@ -218,6 +218,18 @@ Ana ajan ana iş parçacığı, yol doğrulama ve gerçek yönetici akışını 
 
 Bu kabul üretim seçicisini kullanan AppKit test paketini ve gerçek yönetici akışını kapsar. Paketlenmiş Tauri ana penceresinin etkileşimleri H048'in sonraki kabulüne aittir.
 
+## H048-c5 — Paketlenmiş pencere ve motor yaşam döngüsü
+
+Amaç, Tauri `.app` paketinin kendi sabitlenmiş kaynaklarıyla gerçek pencere ve motor akışını doğrulamaktır. Ana ajan paketleme, yerel state ve süreç sahipliğini üstlenir. Tek Luna xhigh, paket içindeki runtime envanterinin kaynakla eşitliğini doğrulayan salt okunur yardımcıyı ve odaklı testlerini hazırlar. Mevcut payload hazırlama ve atomik staging kullanılır. Native GUI, önceki panel kabulündeki dış System Events yöntemiyle sürülür.
+
+| Başlangıç ve eylem | Beklenen gözlem |
+| --- | --- |
+| Yeni ve projeye ait QA state ile `.app` paketini aç | Yerleşik arayüz açılır. Motor kaynakları paket altında bulunur. Runtime manifesti, dosya içerikleri, izinler ve sembolik bağlantılar sabitlenmiş kaynakla eşleşir. |
+| Pencereden Başlat → hazır → Durdur → tekrar Başlat | Gerçek motor ve sahipli yerel uç nokta doğrulanır. İlk süreç kapanır, yeni başlangıç yeni sürece bağlanır. UI durumu gözlenen süreçlerle tutarlıdır. |
+| Gerçek çıkışı onayla ve paketi yeniden aç | Uygulama ve kendi motor süreçleri kapanır. State kilidi ve uç nokta sonraki açılışı engellemez. Başka süreç veya istemci ayarı değiştirilmez. |
+
+Derleme mevcut kilitler ve standart ücretsiz Apple Silicon Actions koşusuyla yapılır. QA build, uygulama verisini proje içindeki özel dizine bağlayan Tauri yapılandırmasını kullanır. Motor kaynakları imzalamadan önce eklenir ve doğrulanır. Uygulama için yerel ad-hoc imza kullanılır. Bu dilim üretim yayını, Apple notarizasyonu, Intel veya canlı sağlayıcı trafiğini kapsamaz. Kaynak, paket ve ortam parmak izleri programatik alınır. Süreç kontrolleri çalıştırılan paketin ve doğrulanmış çocuklarının kimliğine bağlıdır.
+
 ## Açık kabuller
 
 - H048-c4 tamamlandı. Sırada paketlenmiş ana pencere ve motor yaşam döngüsü var. Desktop istemcisinden gerçek trafik ve bağlantı kabulü de açık.

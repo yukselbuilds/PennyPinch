@@ -1,0 +1,104 @@
+name: macOS package lifecycle
+
+on:
+  workflow_dispatch:
+    inputs:
+      free_only_confirmed:
+        description: Confirm that this standard runner fits the included compute and zero-dollar hard stop.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-package-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  native-package:
+    if: ${{ inputs.free_only_confirmed == true }}
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      CARGO_HOME: ${{ github.workspace }}/work/caches/cargo-home
+      CARGO_TARGET_DIR: ${{ github.workspace }}/work/caches/cargo-target
+      CARGO_BUILD_JOBS: '2'
+      CARGO_PROFILE_RELEASE_LTO: 'false'
+      CARGO_PROFILE_RELEASE_CODEGEN_UNITS: '16'
+      RUSTUP_TOOLCHAIN: '1.92.0'
+      npm_config_cache: ${{ github.workspace }}/work/caches/npm
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Set up pinned Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - name: Prepare pinned native engine resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p work/proofs/macos/h048-c5
+          /usr/bin/osacompile -o work/proofs/macos/h048-c5/package-input.scpt \
+            scripts/macos-package-input.applescript
+          bash scripts/prepare-macos-ci-runtime.sh
+      - name: Build and exercise the native application bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$(uname -m)" = arm64
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --quiet HEAD --
+          build_root="$(mktemp -d "$GITHUB_WORKSPACE/work/macos-package.XXXXXX")"
+          setup_log="$build_root/setup.log"
+          trap 'rm -f "$setup_log"' EXIT
+          npm install --prefix work/ci-tools --no-save --ignore-scripts --no-audit --no-fund pnpm@11.25.0 \
+            > "$setup_log" 2>&1 || { echo '::error::Pinned pnpm setup failed.'; exit 1; }
+          export PATH="$GITHUB_WORKSPACE/work/ci-tools/node_modules/.bin:$PATH"
+          test "$(pnpm --version)" = 11.25.0
+          pnpm --store-dir work/caches/pnpm install --frozen-lockfile > "$setup_log" 2>&1 \
+            || { echo '::error::Frozen frontend dependency setup failed.'; exit 1; }
+          rustup toolchain install 1.92.0 --profile minimal --no-self-update > "$setup_log" 2>&1 \
+            || { echo '::error::Pinned Rust setup failed.'; exit 1; }
+          build_python="$HEADROOM_MACOS_RUNTIME_ROOT/payload/python/bin/python3.13"
+          fingerprint() {
+            git rev-parse HEAD 'HEAD^{tree}'
+            sw_vers
+            uname -m
+            xcodebuild -version
+            rustc --version --verbose
+            cargo --version
+            node --version
+            pnpm --version
+            "$build_python" -I -B --version
+            printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}" \
+              "$CARGO_PROFILE_RELEASE_LTO" "$CARGO_PROFILE_RELEASE_CODEGEN_UNITS" \
+              "$HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256"
+            "$build_python" -I -B scripts/macos-payload.py "$HEADROOM_MACOS_RUNTIME_ROOT/payload"
+          }
+          before="$(fingerprint)"
+          printf '%s\n' "$before"
+          printf 'Inputs before: %s\n' "$(printf '%s' "$before" | shasum -a 256 | cut -d' ' -f1)"
+          status=0
+          bash scripts/build-macos.sh "$build_root" || status=$?
+          if [[ "$status" == 0 ]]; then
+            "$build_python" -I -B scripts/probe-macos-package.py "$build_root" || status=$?
+          fi
+          after="$(fingerprint)"
+          printf 'Inputs after: %s\n' "$(printf '%s' "$after" | shasum -a 256 | cut -d' ' -f1)"
+          test "$before" = "$after"
+          git diff --quiet HEAD --
+          test "$status" = 0
+          printf '%s\n' '## macOS package lifecycle' '' "- Commit: $GITHUB_SHA" \
+            '- Native Tauri app bundle with the pinned engine, private QA state and an ad-hoc signature.' \
+            '- Release configuration uses LTO disabled and 16 codegen units for this QA run.' \
+            '- Scope: local native package and GUI lifecycle. Production signing, notarization and live client traffic remain separate.' \
+            >> "$GITHUB_STEP_SUMMARY"
