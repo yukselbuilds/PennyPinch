@@ -29,7 +29,7 @@ on:
         type: boolean
         default: false
       verify_file_picker:
-        description: Verify native AppKit file and folder selection with the owned foreground proof app.
+        description: Verify native picker selections and saved choices with the pinned CLI fixture.
         required: false
         type: boolean
         default: false
@@ -83,6 +83,9 @@ jobs:
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           git diff --quiet HEAD --
           umask 077
+          if [[ "$HEADROOM_VERIFY_FILE_PICKER" == true ]]; then
+            export HEADROOM_VERIFY_CLI_DISCOVERY=true
+          fi
           if [[ -z "${HEADROOM_MACOS_PROOF_ROOT:-}" ]]; then
             mkdir -p work
             export HEADROOM_MACOS_PROOF_ROOT="$(mktemp -d "$GITHUB_WORKSPACE/work/m5.XXXXXX")"
@@ -231,6 +234,15 @@ jobs:
                   show && /^ *--> / { print substr($0, 1, 180); show = 0 }
                   /^thread .* panicked at / { detail = 2; print substr($0, 1, 240); next }
                   detail > 0 { print substr($0, 1, 240); detail-- }' "$build_log"
+                if [[ "$status" == 0 ]]; then
+                  cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
+                    --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
+                    -- integrations::config_io::macos::tests::native_picker_selections_reopen_in_actual_managers \
+                    --ignored --test-threads=1 > "$build_log" 2>&1 || status=$?
+                  awk '/^test .* \.\.\. (ok|FAILED)$/ || /^test result: / { print substr($0, 1, 240) }
+                    /^thread .* panicked at / { detail = 3; print substr($0, 1, 240); next }
+                    detail > 0 { print substr($0, 1, 240); detail-- }' "$build_log"
+                fi
               fi
             fi
             if [[ "$status" == 0 ]]; then
@@ -266,7 +278,7 @@ jobs:
             printf '%s\n' '- Native discovery and saved selections verified with pinned Apple Silicon CLI binaries in isolated PATH, HOME and app-data layouts.' >> "$GITHUB_STEP_SUMMARY"
           fi
           if [[ "$HEADROOM_VERIFY_FILE_PICKER" == true ]]; then
-            printf '%s\n' '- AppKit file and folder picker selection and cancellation passed, including folder picker dispatch to the main thread.' >> "$GITHUB_STEP_SUMMARY"
+            printf '%s\n' '- AppKit file and folder selection and cancellation passed. Actual panel results were saved through the application managers and reopened.' >> "$GITHUB_STEP_SUMMARY"
           fi
           if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
             printf '%s\n' '- Additional scope: pinned resources, native process readiness/control/metrics, normal stop/restart and exact parent-loss exit passed.' \

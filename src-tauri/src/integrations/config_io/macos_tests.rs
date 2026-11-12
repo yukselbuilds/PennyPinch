@@ -439,6 +439,97 @@ fn native_manager_preserves_unrelated_edit_and_precommit_fault() {
 }
 
 #[test]
+#[ignore = "requires actual native panel selections from the bounded AppKit proof"]
+fn native_picker_selections_reopen_in_actual_managers() {
+    use crate::integrations::discovery::{
+        DiscoveryInputs, DiscoveryReply, RememberInstallationChoiceRequest,
+        SavedInstallationChoiceReply,
+    };
+    use crate::state::choices::ChoiceStore;
+
+    let picker_root = PathBuf::from(std::env::var_os("HEADROOM_MACOS_PICKER_PROOF_ROOT").unwrap());
+    assert_eq!(picker_root.canonicalize().unwrap(), picker_root);
+    let work = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("work");
+    assert!(picker_root.starts_with(work.canonicalize().unwrap()));
+    let metadata = fs::symlink_metadata(&picker_root).unwrap();
+    assert_eq!(metadata.uid(), unsafe { libc::geteuid() });
+    assert_eq!(metadata.mode() & 0o7777, 0o700);
+    let bytes = fs::read(picker_root.join("selections.json")).unwrap();
+    assert!(bytes.len() < 8192);
+    let selection: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    let executable = PathBuf::from(selection["cli_file"].as_str().unwrap());
+    let project = PathBuf::from(selection["project_directory"].as_str().unwrap());
+    assert_eq!(executable, picker_root.join("CLI 工具/codex"));
+    assert_eq!(project, picker_root.join("Claude 项目"));
+    assert_eq!(executable.canonicalize().unwrap(), executable);
+    assert_eq!(project.canonicalize().unwrap(), project);
+
+    let fixture = Fixture::new();
+    let choices_path = fixture.child("picker-app-data");
+    let open_choices = || ChoiceStore::for_app_local_data(Some(choices_path.clone())).unwrap();
+    let discovery = DiscoveryManager::with_choice_store(Some(open_choices()));
+    let DiscoveryReply::Snapshot(selected) =
+        discovery.select_client_file_with(Uuid::new_v4().to_string(), "codex".into(), |_| {
+            Ok(Some(executable.clone()))
+        })
+    else {
+        panic!("native panel CLI result was rejected");
+    };
+    let row = &selected.installations[0];
+    assert_eq!(row.version.as_deref(), Some("0.163.0-alpha.11.1"));
+    assert!(matches!(
+        discovery.remember_installation_choice(RememberInstallationChoiceRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            scan_generation: selected.scan_generation,
+            installation_id: row.installation_id.clone(),
+        }),
+        SavedInstallationChoiceReply::Snapshot(_)
+    ));
+    drop(discovery);
+    let discovery = DiscoveryManager::with_choice_store(Some(open_choices()));
+    let DiscoveryReply::Snapshot(refreshed) =
+        discovery.scan_with_inputs(Uuid::new_v4().to_string(), DiscoveryInputs::default())
+    else {
+        panic!("selected CLI could not be reopened");
+    };
+    assert_eq!(refreshed.installations.len(), 1);
+    assert_eq!(refreshed.installations[0].source, "manual_file");
+    assert_eq!(
+        refreshed.installations[0].version.as_deref(),
+        row.version.as_deref()
+    );
+
+    let home = fixture.child("claude-config");
+    fixture.mkdir(&home, 0o700);
+    let (manager, _, _, roots) = manager_fixture(&fixture, "claude_code", &home);
+    let picked_project = project.clone();
+    let manager = manager
+        .with_claude_choice_store(Some(open_choices()))
+        .with_claude_project_picker(move || Ok(Some(picked_project.clone())));
+    let reply = manager.select_claude_scope(ClaudeScopeSelectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        scope: "project_local_config".into(),
+    });
+    assert_eq!(serde_json::to_value(reply).unwrap()["status"], "selected");
+    let discovery = manager.discovery.clone();
+    drop(manager);
+    let reopened = PlanManager::with_test_sources(discovery, roots, manager_endpoint())
+        .with_claude_choice_store(Some(open_choices()));
+    let (roots, scope) = reopened
+        .config_roots_for_context(ClientKind::ClaudeCode)
+        .unwrap();
+    assert_eq!(scope, ConfigScope::ProjectLocalConfig);
+    assert!(matches!(roots.target(ClientKind::ClaudeCode).unwrap(),
+        ConfigTarget::Single { path, .. } if path == project.join(".claude/settings.local.json")));
+    assert!(fs::read_dir(&project).unwrap().next().is_none());
+}
+
+#[test]
 fn native_manager_missing_claude_project_directory_reopens_and_preserves_user_additions() {
     let fixture = Fixture::new();
     let home = fixture.child("user-config");

@@ -13,6 +13,7 @@ mod proof {
     use objc2_foundation::{NSDate, NSDefaultRunLoopMode, NSRunLoop, NSTimer};
     use sha2::{Digest, Sha256};
     use std::cell::Cell;
+    use std::io::Write;
     use std::os::unix::fs::MetadataExt;
     use std::path::PathBuf;
     use std::rc::Rc;
@@ -128,7 +129,11 @@ mod proof {
 
         let command = root.join("CLI 工具/codex");
         std::fs::create_dir(command.parent().unwrap()).unwrap();
-        std::fs::write(&command, b"owned nonexecuted picker fixture").unwrap();
+        let source = PathBuf::from(std::env::args_os().nth(2).expect("verified CLI fixture"));
+        assert_eq!(source.canonicalize().unwrap(), source);
+        assert!(source.starts_with(workspace.join("work")));
+        assert_eq!(source.file_name().unwrap(), "codex");
+        std::fs::copy(&source, &command).unwrap();
         let before = Sha256::digest(std::fs::read(&command).unwrap());
         println!("headroom-picker-ready=file");
         assert_eq!(picker::select_file(1, "codex"), Ok(Some(command.clone())));
@@ -158,6 +163,15 @@ mod proof {
         assert_eq!(selected, Ok(Some(project.clone())));
         assert!(std::fs::read_dir(&project).unwrap().next().is_none());
         println!("headroom-picker-case=folder_background_dispatch status=pass");
+        let selection = serde_json::json!({"cli_file": command, "project_directory": project});
+        let mut file = std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(root.join("selections.json"))
+            .unwrap();
+        file.write_all(&serde_json::to_vec(&selection).unwrap())
+            .unwrap();
+        file.sync_all().unwrap();
         println!("headroom-picker-proof=pass");
     }
 }

@@ -14,6 +14,8 @@ case "$picker_root" in
 esac
 test -x "$picker_executable"
 test "$(stat -f '%u %Lp' "$picker_root")" = "$(id -u) 700"
+picker_cli="$HEADROOM_MACOS_CLIENT_PROOF_ROOT/clients/bin/codex"
+test -x "$picker_cli"
 
 picker_app="$picker_root/HeadroomPickerProof.app"
 picker_plist="$picker_app/Contents/Info.plist"
@@ -30,7 +32,7 @@ touch "$picker_stdout" "$picker_stderr" "$picker_driver"
 
 /usr/bin/open -n -W -a "$picker_app" --stdout "$picker_stdout" --stderr "$picker_stderr" \
   --env "GITHUB_ACTIONS=$GITHUB_ACTIONS" --env "RUNNER_OS=$RUNNER_OS" \
-  --args "$picker_root" &
+  --args "$picker_root" "$picker_cli" &
 picker_launcher=$!
 picker_status=0
 for ((attempt = 0; attempt < 100; attempt++)); do
