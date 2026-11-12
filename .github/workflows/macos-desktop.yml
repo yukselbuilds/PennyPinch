@@ -1,0 +1,69 @@
+name: macOS Desktop preflight
+
+on:
+  workflow_dispatch:
+    inputs:
+      free_only_confirmed:
+        description: Confirm included compute and the account zero-dollar Actions hard stop.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-desktop-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  desktop-preflight:
+    if: ${{ inputs.free_only_confirmed == true }}
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Prepare pinned Python and Desktop package
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p work/proofs/macos/h048-c7
+          /usr/bin/osacompile -o work/proofs/macos/h048-c7/desktop-input.scpt scripts/macos-desktop-input.applescript
+          bash scripts/prepare-macos-ci-runtime.sh
+          desktop_root="$(mktemp -d "$GITHUB_WORKSPACE/work/macos-desktop.XXXXXX")"
+          bash scripts/prepare-macos-ci-desktop.sh "$desktop_root"
+          printf 'HEADROOM_DESKTOP_ROOT=%s\n' "$desktop_root" >> "$GITHUB_ENV"
+      - name: Observe the isolated native Desktop
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$(uname -m)" = arm64
+          python="$HEADROOM_MACOS_RUNTIME_ROOT/payload/python/bin/python3.13"
+          fingerprint() {
+            git rev-parse HEAD 'HEAD^{tree}'
+            sw_vers
+            uname -m
+            "$python" -I -B --version
+            printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}" "$HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256"
+            shasum -a 256 "$HEADROOM_DESKTOP_ROOT/Codex.dmg" "$python"
+          }
+          before="$(fingerprint)"
+          printf '%s\n' "$before"
+          printf 'Inputs before: %s\n' "$(printf '%s' "$before" | shasum -a 256 | cut -d' ' -f1)"
+          status=0
+          "$python" -I -B scripts/probe-macos-desktop.py "$HEADROOM_DESKTOP_ROOT" || status=$?
+          after="$(fingerprint)"
+          printf 'Inputs after: %s\n' "$(printf '%s' "$after" | shasum -a 256 | cut -d' ' -f1)"
+          test "$before" = "$after"
+          git diff --quiet HEAD --
+          test "$status" = 0
+          printf '%s\n' '## macOS Desktop preflight' '' "- Commit: $GITHUB_SHA" \
+            '- Isolated official Desktop open/quit and bundled backend config read only.' \
+            '- No account login or model turn. Headroom traffic and provider compatibility remain untested.' \
+            >> "$GITHUB_STEP_SUMMARY"

@@ -257,6 +257,21 @@ Rapor panellerinden sonra gerçek paket iki kez açıldı, üç farklı motor s�
 
 Önce dört test RED verdi. İlk uygulama derlemesinde bağımsız picker örneğinin rapor DTO'suna bağımlılığı ve URL dönüşüm tipi düzeltildi. Sonraki koşu raporları geçti; motor Başlat sonrası AX okuma dizini değişti. Dış sürücü yalnız -1728/-1719 eski nesne/dizin okumalarında yeni snapshot alır, tıklama hatasını tekrar etmez. [Makine kanıtı](../proofs/macos-report-export.json) · [Başarılı koşu](https://github.com/Protocol272/headroom-desktop/actions/runs/43261107448) · [İnceleme](../reviews/H048.md#macos-rapor-dışa-aktarma).
 
+## H048-c7 — Gerçek macOS Desktop bağlantısı
+
+Ana ajan auth, rota ve süreç sahipliğini üstlenir. İlk adım, sabitlenmiş resmî Desktop paketinin ayrı Electron/Codex test state'iyle gerçek macOS açılışını ve paket içindeki app-server config sözleşmesini gözlemektir. Tek Luna xhigh mevcut DMG'nin salt okunur paket/başlatma envanterini inceler. Windows'taki aynı backend veya CLI sonucu macOS Desktop kanıtı sayılmaz. Keşif ve mevcut bağlantı engeli canlı istemci kanıtı gelene kadar korunur.
+
+| Aşama | Kabul ve sınır |
+| --- | --- |
+| Resmî paket, tam imza ve izole app-server config okuma | Sabit paket/ikili doğrulanır. Yeni özel CODEX_HOME içindeki tek endpoint ayarı gerçek bundled backend tarafından okunur. Model çağrısı, gerçek kimlik bilgisi ve kullanıcı config değişimi yoktur. |
+| Gerçek GUI'yi ayrı uygulama state'iyle aç | Çalışan executable ve çocukları bu pakete bağlanır. Görünür başlangıç/giriş durumu ve normal kapanış gözlenir. Profil yalıtımı yalnız geçerli flag/sabit kaynak ve native gözlemle kabul edilir. |
+| Gerçek Desktop → Headroom → kontrollü yerel sağlayıcı | Native istemci tarafından oluşturulan istek/yanıt, model/efor/auth türü ve rota korunması gözlenir. Bu, canlı sağlayıcı veya mevcut hesap kabulü değildir. |
+| Yetkili gerçek hesap/sağlayıcı ve yeniden açılış | Canlı yanıt ve kayıtlı endpoint'in benimsenmesi ayrı kanıtlanır. Hesap/sır CI'a taşınmaz. Ortam yoksa bu kabul açık kalır; fixture veya app-server sonucu Desktop canlı trafik PASS'ine yükseltilmez. |
+
+İlk native koşu yalnız başlangıç ve config kabiliyetini araştırır; Rust ve ürünün tam kalite kapısını yeniden çalıştırmaz. Standart ücretsiz Actions, gözlenen kota ve sıfır dolar harcama engeli gerekir. Kaynak/komut/ortam/paket girdilerinin önce/sonra fingerprint'leri kaydedilir. Hata tanısı yalnız sabit kodlar ve sayılar içerir. Başka kullanıcı profili, model/efor veya auth ayarı değiştirilmez. Yeni auth akışı, güvenlik engelini aşma veya giriş ekranını sahte hesapla atlama bu kapsamda değildir.
+
+Ön kontrolün uygulama state kökü yalnız CI'da oluşturulan kısa `/private/tmp/hr-c7-<rastgele>` dizinidir; macOS Unix soket uzunluğu sınırı nedeniyle bu açık QA state istisnası kullanılır. Codex/Electron/home/temp alt dizinleri özeldir; ortam gerçek API/GitHub hesap sırlarını devralmaz. Normal config ve uygulama profilleri başlangıçta yok olmalı ve sonda da oluşmamalıdır. Paket/geliştirme dosyaları proje `work` altında kalır. Yalnız gözlenen sahipli süreçler kapandıktan sonra UID/inode/mode doğrulanan QA state temizlenir. Gözlem bir model turu başlatmaz.
+
 ## Açık kabuller
 
 - H048-c1–c6 tamamlandı. H048-c7 Desktop istemcisinden gerçek bağlantı/trafik ve c8 son görev kabulü açık.
