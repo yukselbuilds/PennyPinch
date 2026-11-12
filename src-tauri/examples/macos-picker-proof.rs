@@ -10,7 +10,7 @@ mod proof {
     use objc2::{rc::Retained, MainThreadMarker};
     use objc2_app_kit::{
         NSApplication, NSApplicationActivationPolicy, NSEventModifierFlags,
-        NSModalPanelRunLoopMode, NSOpenPanel, NSPasteboard, NSPasteboardTypeString,
+        NSModalPanelRunLoopMode, NSOpenPanel, NSPasteboard, NSPasteboardTypeString, NSWorkspace,
     };
     use objc2_foundation::{NSDate, NSDefaultRunLoopMode, NSRunLoop, NSString, NSTimer};
     use sha2::{Digest, Sha256};
@@ -26,12 +26,13 @@ mod proof {
         fn CGPreflightPostEventAccess() -> bool;
         fn CGEventCreateKeyboardEvent(source: CFTypeRef, key: u16, key_down: bool) -> CFTypeRef;
         fn CGEventSetFlags(event: CFTypeRef, flags: u64);
-        fn CGEventPostToPid(pid: i32, event: CFTypeRef);
+        fn CGEventPost(tap: u32, event: CFTypeRef);
     }
 
     const KEY_G: u16 = 5;
     const KEY_V: u16 = 9;
     const KEY_RETURN: u16 = 36;
+    const CG_SESSION_EVENT_TAP: u32 = 1;
 
     struct Driver {
         timer: Retained<NSTimer>,
@@ -45,6 +46,7 @@ mod proof {
             let timed_out = Rc::new(Cell::new(false));
             let saw_panel = Rc::new(Cell::new(false));
             let phase = Cell::new(0);
+            let previous_focus = Cell::new(None);
             let timeout_result = timed_out.clone();
             let panel_result = saw_panel.clone();
             let block = RcBlock::new(move |_: std::ptr::NonNull<NSTimer>| {
@@ -58,6 +60,7 @@ mod proof {
                 panel_result.set(true);
                 if start.elapsed() > Duration::from_secs(20) {
                     timeout_result.set(true);
+                    println!("headroom-picker-input-timeout phase={}", phase.get());
                     unsafe { panel.cancel(None) };
                     return;
                 }
@@ -65,11 +68,27 @@ mod proof {
                     unsafe { panel.cancel(None) };
                     return;
                 };
-                // Send user-equivalent keys to this process's own panel.
-                // The selected URL is read only by the production picker.
+                let focus = (
+                    app.isActive(),
+                    NSWorkspace::sharedWorkspace()
+                        .frontmostApplication()
+                        .is_some_and(|front| {
+                            front.processIdentifier() == std::process::id() as i32
+                        }),
+                    window.isVisible(),
+                    app.keyWindow().is_some(),
+                );
+                if previous_focus.replace(Some(focus)) != Some(focus) {
+                    let (active, foreground, visible, key_window) = focus;
+                    println!("headroom-picker-focus active={active} owned_foreground={foreground} visible={visible} key_window={key_window}");
+                }
+                if focus != (true, true, true, true) {
+                    return;
+                }
+                // The native panel runs outside our process. The foreground guard
+                // confines session input to this test app's active modal picker.
                 let sent = match phase.get() {
                     0 => key(
-                        &app,
                         KEY_G,
                         NSEventModifierFlags::Command | NSEventModifierFlags::Shift,
                     ),
@@ -79,9 +98,9 @@ mod proof {
                         pasteboard.setString_forType(
                             &NSString::from_str(&path.to_string_lossy()),
                             unsafe { NSPasteboardTypeString },
-                        ) && key(&app, KEY_V, NSEventModifierFlags::Command)
+                        ) && key(KEY_V, NSEventModifierFlags::Command)
                     }
-                    4 | 6 | 8 => key(&app, KEY_RETURN, NSEventModifierFlags::empty()),
+                    4 | 6 | 8 => key(KEY_RETURN, NSEventModifierFlags::empty()),
                     _ => true,
                 };
                 if !sent {
@@ -113,8 +132,8 @@ mod proof {
         }
     }
 
-    fn key(app: &NSApplication, code: u16, flags: NSEventModifierFlags) -> bool {
-        if app.keyWindow().is_none() || !unsafe { CGPreflightPostEventAccess() } {
+    fn key(code: u16, flags: NSEventModifierFlags) -> bool {
+        if !unsafe { CGPreflightPostEventAccess() } {
             return false;
         }
         let modifiers = [
@@ -142,7 +161,6 @@ mod proof {
     }
 
     fn post_key(code: u16, down: bool, flags: NSEventModifierFlags) -> bool {
-        // CoreGraphics owns the new event. Route it only to this test process.
         let raw = unsafe { CGEventCreateKeyboardEvent(std::ptr::null(), code, down) };
         if raw.is_null() {
             return false;
@@ -150,19 +168,21 @@ mod proof {
         let event = unsafe { CFType::wrap_under_create_rule(raw) };
         unsafe {
             CGEventSetFlags(event.as_CFTypeRef(), flags.bits() as u64);
-            CGEventPostToPid(std::process::id() as i32, event.as_CFTypeRef());
+            CGEventPost(CG_SESSION_EVENT_TAP, event.as_CFTypeRef());
         }
         true
     }
 
     pub fn run() {
+        assert_eq!(std::env::var("GITHUB_ACTIONS").as_deref(), Ok("true"));
+        assert_eq!(std::env::var("RUNNER_OS").as_deref(), Ok("macOS"));
         std::thread::spawn(|| {
             std::thread::sleep(Duration::from_secs(60));
             eprintln!("headroom-picker-timeout");
             std::process::exit(70);
         });
         let mtm = MainThreadMarker::new().expect("picker proof must start on main thread");
-        let root = PathBuf::from(std::env::var_os("HEADROOM_MACOS_PICKER_PROOF_ROOT").unwrap());
+        let root = PathBuf::from(std::env::args_os().nth(1).expect("picker proof directory"));
         let workspace = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .parent()
             .unwrap()
@@ -224,6 +244,7 @@ mod proof {
         select.verify();
         assert!(!project.join(".claude").exists());
         println!("headroom-picker-case=folder_background_dispatch status=pass");
+        println!("headroom-picker-proof=pass");
     }
 }
 
