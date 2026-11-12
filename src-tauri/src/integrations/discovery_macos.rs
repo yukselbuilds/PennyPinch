@@ -129,6 +129,32 @@ fn resolve_command(mut path: PathBuf) -> Option<PathBuf> {
     None
 }
 
+pub(super) fn manual_cli_candidate(
+    kind: &'static str,
+    path: &Path,
+) -> Result<ManualCandidate, ManualRejectReason> {
+    if is_network_or_device_path(path) {
+        return Err(ManualRejectReason::Unsafe);
+    }
+    let executable_path = resolve_command(path.to_owned()).ok_or(ManualRejectReason::Unsafe)?;
+    let mut budget = MAX_HASH_BYTES;
+    let (version, observation) =
+        inspect_command(kind, &executable_path, &mut budget, &mut HashSet::new())
+            .ok_or(ManualRejectReason::Unsafe)?;
+    Ok(ManualCandidate {
+        candidate: Candidate {
+            kind,
+            surface: "cli",
+            version,
+            source: "manual_file",
+            location_label: "Selected file",
+            identity_path: executable_path.clone(),
+            executable_path,
+        },
+        observation: Some(observation),
+    })
+}
+
 fn open_command(path: &Path) -> Option<File> {
     OpenOptions::new()
         .read(true)

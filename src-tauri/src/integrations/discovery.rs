@@ -581,7 +581,10 @@ impl DiscoveryManager {
         let mut manual_rejected = 0usize;
         for previous in previous_manual {
             let candidate = previous.candidate;
-            let revalidated = match manual_candidate(candidate.kind, &candidate.executable_path) {
+            let ManualCandidate {
+                candidate: revalidated,
+                observation: current_observation,
+            } = match manual_candidate(candidate.kind, &candidate.executable_path) {
                 Ok(candidate) => candidate,
                 Err(reason) => {
                     report.warnings.insert("candidate_location_unavailable");
@@ -590,7 +593,6 @@ impl DiscoveryManager {
                     continue;
                 }
             };
-            let current_observation = observe_candidate(&revalidated);
             if previous.observation.is_some() && previous.observation != current_observation {
                 report.warnings.insert("candidate_location_unavailable");
                 manual_rejected += 1;
@@ -616,6 +618,10 @@ impl DiscoveryManager {
                 report.warnings.insert("candidate_limit_reached");
             } else {
                 let id = Uuid::new_v4().to_string();
+                #[cfg(target_os = "macos")]
+                if let Some(observed) = current_observation {
+                    report.native_observations.insert(id.clone(), observed);
+                }
                 report
                     .paths
                     .insert(id.clone(), revalidated.executable_path.clone());
@@ -699,15 +705,20 @@ impl DiscoveryManager {
             Ok(None) => return cancelled_reply(request_id),
             Err(()) => return error_reply(&request_id, ErrorCode::EnvironmentBlocked),
         };
-        let candidate = match manual_candidate(client_kind, &selected) {
+        #[cfg(target_os = "macos")]
+        if !manual_filename_matches(client_kind, &selected) {
+            return error_reply(&request_id, ErrorCode::ValidationFailed);
+        }
+        let ManualCandidate {
+            candidate,
+            observation,
+        } = match manual_candidate(client_kind, &selected) {
             Ok(candidate) => candidate,
             Err(reason) => {
                 discovery_trace!("event=select_rejected reason={}", reason.label());
                 return error_reply(&request_id, ErrorCode::ValidationFailed);
             }
         };
-        let observation = observe_candidate(&candidate);
-
         let mut state = match self.inner.state.write() {
             Ok(state) => state,
             Err(poisoned) => poisoned.into_inner(),
@@ -931,10 +942,19 @@ fn client_kind(value: &str) -> Option<&'static str> {
     }
 }
 
+#[cfg(target_os = "macos")]
 fn manual_candidate(
     client_kind: &'static str,
     path: &Path,
-) -> Result<Candidate, ManualRejectReason> {
+) -> Result<ManualCandidate, ManualRejectReason> {
+    macos::manual_cli_candidate(client_kind, path)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn manual_candidate(
+    client_kind: &'static str,
+    path: &Path,
+) -> Result<ManualCandidate, ManualRejectReason> {
     // Reject network/device prefixes before any filesystem metadata call.
     if is_network_or_device_path(path) {
         return Err(ManualRejectReason::Unsafe);
@@ -977,7 +997,7 @@ fn manual_candidate(
     } else {
         None
     };
-    Ok(Candidate {
+    let candidate = Candidate {
         kind: client_kind,
         surface: "cli",
         version,
@@ -985,6 +1005,11 @@ fn manual_candidate(
         location_label: "Selected file",
         identity_path: executable.clone(),
         executable_path: executable,
+    };
+    let observation = observe_candidate(&candidate);
+    Ok(ManualCandidate {
+        candidate,
+        observation,
     })
 }
 
@@ -1007,6 +1032,14 @@ impl ManualRejectReason {
     }
 }
 
+#[cfg(target_os = "macos")]
+fn manual_filename_matches(kind: &str, path: &Path) -> bool {
+    PRODUCTS.iter().any(|product| {
+        product.kind == kind && path.file_name().is_some_and(|name| name == product.command)
+    })
+}
+
+#[cfg(not(target_os = "macos"))]
 fn manual_filename_matches(client_kind: &str, path: &Path) -> bool {
     let Some(filename) = path.file_name().and_then(|name| name.to_str()) else {
         return false;
@@ -1131,10 +1164,14 @@ fn append_saved_manual_candidates(
             continue;
         }
         let kind = client_kind_name(choice.client);
-        let Ok(candidate) = manual_candidate(kind, &choice.executable_path) else {
+        let Ok(ManualCandidate {
+            candidate,
+            observation,
+        }) = manual_candidate(kind, &choice.executable_path)
+        else {
             continue;
         };
-        let Some(observation) = observe_candidate(&candidate) else {
+        let Some(observation) = observation else {
             continue;
         };
         if !observation_matches_choice(&observation, &choice)
@@ -1148,6 +1185,8 @@ fn append_saved_manual_candidates(
             continue;
         }
         let id = Uuid::new_v4().to_string();
+        #[cfg(target_os = "macos")]
+        report.native_observations.insert(id.clone(), observation);
         report
             .paths
             .insert(id.clone(), candidate.executable_path.clone());

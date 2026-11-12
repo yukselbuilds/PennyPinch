@@ -32,7 +32,9 @@ fn manual_cli_selection_keeps_a_saved_choice_across_fresh_scans() {
     let root = proof_root().join("manual-selection");
     private_dir(&root);
     let executable = root.join("codex");
-    fs::copy(proof_root().join("clients/bin/codex"), &executable).unwrap();
+    let versioned = root.join("0.163.0-alpha.11.1");
+    fs::copy(proof_root().join("clients/bin/codex"), &versioned).unwrap();
+    symlink(&versioned, &executable).unwrap();
     let app_data = root.join("app-data");
     let store = ChoiceStore::for_app_local_data(Some(app_data.clone())).unwrap();
     let manager = DiscoveryManager::with_choice_store(Some(store.clone()));

@@ -1229,11 +1229,16 @@ name = "headroom-desktop"
 version = "0.1.0"
 dependencies = [
  "base64 0.23.1",
+ "block2",
  "chrono",
  "core-foundation",
+ "dispatch2",
  "jsonc-parser",
  "libc",
  "minisign-verify",
+ "objc2",
+ "objc2-app-kit",
+ "objc2-foundation",
  "reqwest",
  "rusqlite",
  "semver",

@@ -1,5 +1,9 @@
 use std::path::PathBuf;
 
+#[cfg(target_os = "macos")]
+#[path = "picker_macos.rs"]
+mod macos_picker;
+
 #[cfg(windows)]
 mod windows_picker {
     use super::PathBuf;
@@ -276,12 +280,25 @@ pub fn select_project_directory(
     windows_picker::select_project_directory(owner_hwnd, initial_directory)
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+pub fn select_file(owner: usize, client_kind: &str) -> Result<Option<PathBuf>, ()> {
+    macos_picker::select_file(owner, client_kind)
+}
+
+#[cfg(target_os = "macos")]
+pub fn select_project_directory(
+    owner: usize,
+    initial_directory: Option<PathBuf>,
+) -> Result<Option<PathBuf>, ()> {
+    macos_picker::select_project_directory(owner, initial_directory)
+}
+
+#[cfg(not(any(windows, target_os = "macos")))]
 pub fn select_file(_owner_hwnd: usize, _client_kind: &str) -> Result<Option<PathBuf>, ()> {
     Err(())
 }
 
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "macos")))]
 pub fn select_project_directory(
     _owner_hwnd: usize,
     _initial_directory: Option<PathBuf>,

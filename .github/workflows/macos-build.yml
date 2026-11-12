@@ -28,6 +28,11 @@ on:
         required: false
         type: boolean
         default: false
+      verify_file_picker:
+        description: Verify native AppKit file and directory panels in a bounded owned process.
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -51,6 +56,7 @@ jobs:
       HEADROOM_VERIFY_CONFIG_RECOVERY: ${{ inputs.verify_config_recovery }}
       HEADROOM_VERIFY_CLI_DISCOVERY: ${{ inputs.verify_cli_discovery }}
       HEADROOM_VERIFY_DESKTOP_DISCOVERY: ${{ inputs.verify_desktop_discovery }}
+      HEADROOM_VERIFY_FILE_PICKER: ${{ inputs.verify_file_picker }}
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -103,6 +109,9 @@ jobs:
             desktop_bundle="$HEADROOM_MACOS_DESKTOP_PROOF_ROOT/home/Applications/ChatGPT.app"
             export HEADROOM_MACOS_DESKTOP_VERSION="$(/usr/bin/plutil -extract CFBundleShortVersionString raw -o - "$desktop_bundle/Contents/Info.plist")"
           fi
+          if [[ "$HEADROOM_VERIFY_FILE_PICKER" == true ]]; then
+            export HEADROOM_MACOS_PICKER_PROOF_ROOT="$(mktemp -d "$GITHUB_WORKSPACE/work/macos-picker.XXXXXX")"
+          fi
 
           test_filters=(runtime::unix_backend:: runtime::control::tests:: runtime::macos_session::
                         runtime::ingress:: runtime::ingress_relay:: runtime::manager::macos_tests::
@@ -143,6 +152,7 @@ jobs:
             cargo +1.92.0 --version
             printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}" "$CARGO_PROFILE_DEV_DEBUG" "$CARGO_PROFILE_TEST_DEBUG"
             printf '%s\n' "${test_filters[@]}"
+            printf 'Native file picker requested: %s\n' "$HEADROOM_VERIFY_FILE_PICKER"
             stat -f '%u %p' "$HEADROOM_MACOS_PROOF_ROOT"
             if [[ "$HEADROOM_VERIFY_CLI_DISCOVERY" == true ]]; then
               python3 --version
@@ -203,6 +213,19 @@ jobs:
                 if [[ "$status" != 0 ]]; then
                   echo '::error::Owned native engine or application manager lifecycle tests failed.'
                 fi
+              fi
+            fi
+            if [[ "$status" == 0 ]]; then
+              if [[ "$HEADROOM_VERIFY_FILE_PICKER" == true ]]; then
+                cargo +1.92.0 run --locked --manifest-path src-tauri/Cargo.toml \
+                  --example macos-picker-proof --features custom-protocol \
+                  --target aarch64-apple-darwin --jobs 2 --color never \
+                  > "$build_log" 2>&1 || status=$?
+                awk '/^headroom-picker-/ { print substr($0, 1, 240) }
+                  /^error(\[[A-Z][0-9]+\])?: / { show = ++count <= 10; if (show) print substr($0, 1, 300) }
+                  show && /^ *--> / { print substr($0, 1, 180); show = 0 }
+                  /^thread .* panicked at / { detail = 2; print substr($0, 1, 240); next }
+                  detail > 0 { print substr($0, 1, 240); detail-- }' "$build_log"
               fi
             fi
             if [[ "$status" == 0 ]]; then

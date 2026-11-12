@@ -245,6 +245,9 @@ impl ClaudeContextManager {
         }
 
         let candidates = [
+            #[cfg(target_os = "macos")]
+            std::env::var_os("HOME").map(PathBuf::from),
+            #[cfg(not(target_os = "macos"))]
             std::env::var_os("USERPROFILE").map(PathBuf::from),
             std::env::current_dir().ok(),
         ];

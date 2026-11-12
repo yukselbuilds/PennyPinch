@@ -41,7 +41,11 @@ fn picker_owner_handle(window: &tauri::WebviewWindow) -> Option<usize> {
     {
         window.hwnd().ok().map(|handle| handle.0 as usize)
     }
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    {
+        window.ns_window().ok().map(|handle| handle as usize)
+    }
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         let _ = window;
         None
