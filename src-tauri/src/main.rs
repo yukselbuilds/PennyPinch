@@ -24,6 +24,7 @@ use integrations::discovery::{
     SavedInstallationChoiceReply, SavedInstallationChoiceRequest,
 };
 use integrations::picker;
+use integrations::sessions::{Reply as SessionReply, Request as SessionRequest, SessionManager};
 use metrics::activity::{
     ActivityDetailReply, ActivityDetailRequest, ActivityListReply, ActivityQueryRequest,
     ActivityReply,
@@ -492,6 +493,27 @@ fn confirm_desktop_exit(
 }
 
 #[tauri::command]
+async fn manage_sessions(
+    window: tauri::WebviewWindow,
+    state: tauri::State<'_, SessionManager>,
+    request: SessionRequest,
+) -> Result<SessionReply, SessionReply> {
+    if window.label() != "main" {
+        return Ok(integrations::sessions::failure(
+            &request.request_id,
+            "unavailable",
+        ));
+    }
+    let manager = state.inner().clone();
+    let failure_id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || manager.execute(request))
+            .await
+            .unwrap_or_else(|_| integrations::sessions::failure(&failure_id, "unavailable")),
+    )
+}
+
+#[tauri::command]
 async fn manage_account(
     window: tauri::WebviewWindow,
     state: tauri::State<'_, AccountManager>,
@@ -802,6 +824,7 @@ fn main() {
             );
             let codex_verifier = CodexVerifyManager::new(app_local_data_dir.clone());
             app.manage(AccountManager::new(app_local_data_dir.clone()));
+            app.manage(SessionManager::default());
             app.manage(desktop::update_flow::UpdateFlow::new(
                 app.config().identifier.clone(),
                 app.package_info().version.clone(),
@@ -865,6 +888,7 @@ fn main() {
             set_autostart,
             get_discovery_snapshot,
             manage_account,
+            manage_sessions,
             scan_discovery,
             get_saved_installation_choice,
             remember_installation_choice,

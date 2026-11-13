@@ -22,6 +22,7 @@ import {
   type OperatingPreferences,
 } from "./lib/preferences";
 import { Applications } from "./features/integrations/Applications";
+import { Sessions } from "./features/integrations/Sessions";
 import type { ClientKind } from "./lib/integrations";
 import { Overview } from "./features/overview/Overview";
 import { Activity } from "./features/activity/Activity";
@@ -36,17 +37,17 @@ import { DesktopLifecycle } from "./components/DesktopLifecycle";
 import { Settings } from "./features/settings/Settings";
 import { Updates } from "./features/settings/Updates";
 
-type Screen = "overview" | "applications" | "activity" | "settings";
+type Screen = "overview" | "sessions" | "applications" | "activity" | "settings";
 type LifecycleAction = RuntimeAction;
 type WindowZoomView = { scale: WindowScale; pending: boolean; failed: boolean; change: (scale: WindowScale) => void };
 type PreferenceUiStatus = "loading" | "loaded" | "saving" | "saved" | "error" | "session_only";
 
 const copy = {
   tr: {
-    nav: ["Genel bakış", "Uygulamalar", "Etkinlik", "Ayarlar"],
+    nav: ["Genel bakış", "Oturumlar", "Uygulamalar", "Etkinlik", "Ayarlar"],
     eyebrow: "YEREL KONTROL ALANI",
-    headline: ["Genel bakış", "Uygulamalar", "Etkinlik", "Ayarlar"],
-    subtitle: ["Daha az bağlam. Daha fazla alan.", "Kodlama araçlarını Headroom’a bağla.", "İsteklerini ve ölçümlerini takip et.", "Headroom’u kendine göre ayarla."],
+    headline: ["Genel bakış", "Oturumlar", "Uygulamalar", "Etkinlik", "Ayarlar"],
+    subtitle: ["Daha az bağlam. Daha fazla alan.", "Hesapların ve yerel sohbetlerin tek yerde.", "Kodlama araçlarını Headroom’a bağla.", "İsteklerini ve ölçümlerini takip et.", "Headroom’u kendine göre ayarla."],
     engine: "Motor", connection: "Bağlantı", compression: "Sıkıştırma kontrolü",
     noConnection: "Doğrulanmadı", compressionOff: "Uygulanmadı",
     engineUnavailable: "Kullanılamıyor", engineUnknown: "Durum bilinmiyor", engineStopped: "Durduruldu",
@@ -81,10 +82,10 @@ const copy = {
     },
   },
   en: {
-    nav: ["Overview", "Applications", "Activity", "Settings"],
+    nav: ["Overview", "Sessions", "Applications", "Activity", "Settings"],
     eyebrow: "LOCAL CONTROL SURFACE",
-    headline: ["Overview", "Applications", "Activity", "Preferences"],
-    subtitle: ["Less context. More headroom.", "Connect your coding tools to Headroom.", "Keep track of requests and measurements.", "Make Headroom feel like home."],
+    headline: ["Overview", "Sessions", "Applications", "Activity", "Preferences"],
+    subtitle: ["Less context. More headroom.", "Your accounts and local chats, together.", "Connect your coding tools to Headroom.", "Keep track of requests and measurements.", "Make Headroom feel like home."],
     engine: "Engine", connection: "Connection", compression: "Compression control",
     noConnection: "Not verified", compressionOff: "Not implemented",
     engineUnavailable: "Unavailable", engineUnknown: "Status unknown", engineStopped: "Stopped",
@@ -398,7 +399,7 @@ export default function App() {
     document.documentElement.lang = language;
   }, [language]);
 
-  const screenKey: Screen[] = ["overview", "applications", "activity", "settings"];
+  const screenKey: Screen[] = ["overview", "sessions", "applications", "activity", "settings"];
   function navigate(next: Screen) {
     if (applicationsLock.current || lifecycleLocked.current) return;
     setRequestedClient(null);
@@ -419,6 +420,7 @@ export default function App() {
     onOpenActivity={() => { activity.onPeriodChange(period); navigate("activity"); }}
     onOpenApplications={() => navigate("applications")} onStart={() => void runLifecycle("start")} onStop={() => void runLifecycle("stop")}
     onPause={()=>void runLifecycle("pause")} onResume={()=>void runLifecycle("resume")} onRuntimeRefresh={retrySnapshot} />
+    : screen === "sessions" ? <Sessions language={language} onBusyChange={onApplicationsBusy} onDiscoveryChange={setRecoveryScanGeneration} />
     : screen === "applications" ? <Applications language={language} requestedClient={requestedClient} onBusyChange={onApplicationsBusy} onDiscoveryChange={setRecoveryScanGeneration}
       runtimeContext={`${snapshot?.runtime_generation ?? "none"}:${snapshot?.engine.status ?? "unknown"}:${snapshot?.engine_version ?? "none"}`} />
     : screen === "activity" ? <Activity language={language} {...activity} /> : renderSettings(
@@ -444,7 +446,7 @@ export default function App() {
         <span>headroom<span className="brand-period">.</span></span>
       </a>
       <nav className="primary-nav" aria-label={language === "tr" ? "Ana gezinme" : "Primary navigation"}>
-        {screenKey.map((key, index) => <button key={key} disabled={applicationsBusy || pending !== null} className={`nav-item ${screen === key ? "is-active" : ""}`} onClick={() => navigate(key)} aria-current={screen === key ? "page" : undefined}>
+        {screenKey.map((key, index) => <button key={key} data-screen={key} disabled={applicationsBusy || pending !== null} className={`nav-item ${screen === key ? "is-active" : ""}`} onClick={() => navigate(key)} aria-current={screen === key ? "page" : undefined}>
           <Icon name={key} className="nav-glyph" /><span>{nav[index]}</span>
         </button>)}
       </nav>

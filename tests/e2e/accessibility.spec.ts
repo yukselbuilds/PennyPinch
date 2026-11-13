@@ -25,19 +25,23 @@ async function setup(page:Page,language='tr',theme='dark',scenario='data'){
  await page.evaluate(v=>(window as any).DesktopFixture.mount(v.language,v.theme,v.scenario),{language,theme,scenario});
  await expect(page.locator('html')).toHaveAttribute('lang',language);await expect(page.locator('html')).toHaveAttribute('data-theme',theme);
  await expect(page.locator('.overview__metric')).toBeVisible();
+ await page.evaluate(async()=>{await document.fonts.ready;await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));});
 }
 async function audit(page:Page,label:string){
+ // Theme and top-layer styles may still be committing after an immediate AX assertion.
+ await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
  const result=await page.evaluate(async()=>(window as any).axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa']}}));
  const failures=result.violations.map((v:any)=>({id:v.id,impact:v.impact,nodes:v.nodes.map((n:any)=>({target:n.target,checks:n.any.map((a:any)=>({id:a.id,data:a.data}))}))}));
  violations.push(...failures.map((v:any)=>({label,...v})));checks.push({label,violations:failures.length,passes:result.passes.length});
 }
-test('four screens: names, contrast, empty/error/data and responsive actions',async({page})=>{
+test('five screens: names, contrast, empty/error/data and responsive actions',async({page})=>{
  for(const language of ['tr','en'])for(const theme of ['dark','light'])for(const scenario of ['data','empty','error']){
   await setup(page,language,theme,scenario);
-  for(let screen=0;screen<4;screen++){
+  for(const screen of ['overview','sessions','applications','activity','settings']){
    await page.evaluate(()=>{(window as any).__navPaint=null;document.querySelector('.primary-nav')!.addEventListener('click',()=>{const start=performance.now();requestAnimationFrame(()=>requestAnimationFrame(()=>{(window as any).__navPaint=performance.now()-start;}));},{once:true,capture:true});});
-   await page.locator('.primary-nav button').nth(screen).click();
-   await expect(page.locator('.primary-nav button').nth(screen)).toHaveAttribute('aria-current','page');
+   const navItem=page.locator(`.primary-nav [data-screen="${screen}"]`);
+   await navItem.click();
+   await expect(navItem).toHaveAttribute('aria-current','page');
    await expect.poll(()=>page.evaluate(()=>(window as any).__navPaint)).not.toBeNull();timings.push(await page.evaluate(()=>(window as any).__navPaint));
    // Give fixture effects one frame; every IPC stays inside the explicit transport.
    await page.waitForTimeout(40);await audit(page,`${language}-${theme}-${scenario}-${screen}`);
@@ -60,12 +64,12 @@ test('keyboard navigation and modal focus stay usable',async({page})=>{
   await page.keyboard.press('Tab');await expect(page.locator('.skip-navigation')).toBeFocused();await page.keyboard.press('Enter');await expect(page.locator('main')).toBeFocused();
   await page.locator('.export-button__trigger').focus();await page.keyboard.press('Enter');await expect(page.locator('.export-button__panel')).toBeVisible();await audit(page,`${language}-${theme}-export`);
   await page.keyboard.press('Escape');await expect(page.locator('.export-button__trigger')).toBeFocused();
-  await page.locator('.primary-nav button').nth(2).click();
+  await page.locator('.primary-nav [data-screen="activity"]').click();
   await page.locator('.activity__filters summary').click();await page.locator('[name="model-kind"]').selectOption('exact');await page.locator('.activity__filter-actions button[type="submit"]').click();
   await expect(page.locator('[name="model-value"]')).toBeFocused();await expect(page.locator('#activity-model-error')).toHaveAttribute('role','alert');
   await page.locator('.activity__filters summary').click();await page.locator('.activity__rows button').first().click();
   const detail=page.locator('dialog[open]');await expect(detail).toBeVisible();await audit(page,`${language}-${theme}-detail`);await page.keyboard.press('Escape');await expect(page.locator('.activity__rows button').first()).toBeFocused();
-  await page.locator('.primary-nav button').nth(1).click();await page.locator('.applications-grid button').filter({hasText:/Bağlantıyı yönet|Manage connection/}).first().click();
+  await page.locator('.primary-nav [data-screen="applications"]').click();await page.locator('.applications-grid button').filter({hasText:/Bağlantıyı yönet|Manage connection/}).first().click();
   const connection=page.locator('.connection-dialog[open]');await expect(connection).toBeVisible();
   await expect(connection.locator('.connection-dialog__actions .button-primary')).toBeEnabled();
   await audit(page,`${language}-${theme}-connect`);
@@ -82,7 +86,7 @@ test('compatibility: scoped records, responsive details, stale replies and conte
  for(const language of ['tr','en'])for(const theme of ['dark','light']){
   for(const scenario of ['data','empty','error']){
    await setup(page,language,theme,scenario);await page.setViewportSize({width:1024,height:720});
-   await page.locator('.primary-nav button').nth(1).click();await expect(page.locator('.applications-footer')).not.toContainText(/Checking local|kontrol ediliyor/);
+   await page.locator('.primary-nav [data-screen="applications"]').click();await expect(page.locator('.applications-footer')).not.toContainText(/Checking local|kontrol ediliyor/);
    await page.locator('.compatibility > summary').click();
    const panel=page.locator('.compatibility');await expect(panel.locator('button')).toBeEnabled();
    if(scenario==='error')await expect(panel.locator('.compatibility__notice')).toContainText(/could not|okunamadı/);
@@ -107,7 +111,7 @@ test('compatibility: scoped records, responsive details, stale replies and conte
    }
   }
  }
- await setup(page,'en','dark');await page.setViewportSize({width:1024,height:720});await page.locator('.primary-nav button').nth(1).click();
+ await setup(page,'en','dark');await page.setViewportSize({width:1024,height:720});await page.locator('.primary-nav [data-screen="applications"]').click();
  await page.evaluate(()=>(window as any).DesktopFixture.blockCompatibility());await page.locator('.compatibility > summary').click();
  const panel=page.locator('.compatibility');await expect(panel.locator('button')).toBeDisabled();
  await page.getByRole('button',{name:'Scan again',exact:true}).click();await expect(panel.locator('button')).toBeDisabled();
@@ -125,17 +129,17 @@ test('compatibility: scoped records, responsive details, stale replies and conte
 test('local recommendations respect the preference and fresh observations', async ({page})=>{
  for(const language of ['tr','en'])for(const theme of ['dark','light']){
   const title=language==='tr'?'Yerel öneriler':'Local recommendations';
-  const nav=page.locator('.primary-nav button');
+  const nav=(screen:string)=>page.locator(`.primary-nav [data-screen="${screen}"]`);
   await page.setViewportSize({width:683,height:720});
   await setup(page,language,theme,'recommendations');
   const panel=page.getByRole('region',{name:title,exact:true});
   await expect(page.locator('.overview__percent')).toHaveClass(/is-increase/);
   await expect(panel).toHaveCount(0);
-  await nav.nth(3).click();
+  await nav('settings').click();
   const toggle=page.getByRole('checkbox',{name:title,exact:true});
   await expect(toggle).not.toBeChecked();await toggle.focus();await page.keyboard.press('Space');
   await expect(toggle).toBeChecked();
-  await nav.nth(0).click();
+  await nav('overview').click();
   await expect(panel.getByRole('article')).toHaveCount(4);
   await expect(panel.getByRole('button')).toHaveCount(2);
   await expect(panel.getByRole('alert')).toHaveCount(0);
@@ -149,21 +153,21 @@ test('local recommendations respect the preference and fresh observations', asyn
   }
   const activity=panel.getByRole('button',{name:language==='tr'?'Etkinlikleri aç':'Open activity'});
   await activity.focus();await page.keyboard.press('Enter');
-  await expect(nav.nth(2)).toHaveAttribute('aria-current','page');
-  await nav.nth(0).click();
+  await expect(nav('activity')).toHaveAttribute('aria-current','page');
+  await nav('overview').click();
   await panel.getByRole('button',{name:language==='tr'?'Uygulamaları denetle':'Review applications'}).click();
-  await expect(nav.nth(1)).toHaveAttribute('aria-current','page');
-  await nav.nth(0).click();
+  await expect(nav('applications')).toHaveAttribute('aria-current','page');
+  await nav('overview').click();
   await page.evaluate(()=>(window as any).DesktopFixture.resolveRecommendations());
   await page.getByRole('button',{name:language==='tr'?'Yenile':'Refresh',exact:true}).click();
   await expect(panel).toHaveCount(0);
-  await nav.nth(3).click();await expect(toggle).toBeChecked();await toggle.uncheck();await expect(toggle).not.toBeChecked();
+  await nav('settings').click();await expect(toggle).toBeChecked();await toggle.uncheck();await expect(toggle).not.toBeChecked();
  }
  expect(violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>({label:v.label,id:v.id}))).toEqual([]);
 });
 
 test.afterAll(async()=>{
  const after=fingerprint();const sorted=[...timings].sort((a,b)=>a-b),p95=sorted[Math.max(0,Math.ceil(sorted.length*.95)-1)]??null;
- fs.writeFileSync(path.join(run,'result.json'),JSON.stringify({passed:outcomes.length===4&&checks.length===88&&outcomes.every(v=>v.status===v.expected)&&violations.every(v=>!['critical','serious'].includes(v.impact))&&JSON.stringify(before)===JSON.stringify(after),outcomes,checks,violations,timing:{samples:timings.length,p95_ms:p95,threshold_ms:250,scope:'browser click event to second animation frame; excludes test-driver waiting'},before,after,environment:{node:process.version,platform:process.platform,scope:'real App, isolated transport; viewport equivalents are not real OS DPI'}},null,2)+'\n');
+ fs.writeFileSync(path.join(run,'result.json'),JSON.stringify({passed:outcomes.length===4&&checks.length===100&&outcomes.every(v=>v.status===v.expected)&&violations.every(v=>!['critical','serious'].includes(v.impact))&&JSON.stringify(before)===JSON.stringify(after),outcomes,checks,violations,timing:{samples:timings.length,p95_ms:p95,threshold_ms:250,scope:'browser click event to second animation frame; excludes test-driver waiting'},before,after,environment:{node:process.version,platform:process.platform,scope:'real App, isolated transport; viewport equivalents are not real OS DPI'}},null,2)+'\n');
  console.log(JSON.stringify({run:path.relative(root,run),audits:checks.length,violations:violations.length,navigation_p95_ms:p95}));
 });

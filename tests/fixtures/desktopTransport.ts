@@ -10,6 +10,35 @@ const callbacks=new Set<()=>void>();
 let compatibilityRevision=0;
 let compatibilityGate:Promise<void>|null=null,releaseGate:(()=>void)|null=null;
 let scanGate:Promise<void>|null=null,releaseScanGate:(()=>void)|null=null;
+type SessionMode='data'|'empty'|'error';
+type SessionCall={schema_version:number;request_id:string;operation:'read'|'open_codex_center';snapshot_id:string|null;confirm_open:boolean};
+const sessionSnapshotId='ae0df834-8df0-48c2-a174-c0f652bc2ad1';
+let sessionMode:SessionMode='data',sessionCalls:SessionCall[]=[],sessionOpenCount=0,activeSessionReads=0,maxSessionReads=0;
+let failSessionLaunch=false;
+let sessionGate:Promise<void>|null=null,releaseSessionGate:(()=>void)|null=null;
+const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+function sessionSnapshot(){
+ const scopes=sessionMode==='empty'
+  ?[{client_kind:'codex',state:'observed',reason:null,server_version:'0.167.0-alpha.4.1',loaded_count:0,partial:false},
+    {client_kind:'claude_code',state:'unknown',reason:'unsupported_version',server_version:null,loaded_count:null,partial:false},
+    {client_kind:'opencode',state:'unknown',reason:'endpoint_unavailable',server_version:null,loaded_count:null,partial:false}]
+  :[{client_kind:'codex',state:'observed',reason:null,server_version:'0.167.0-alpha.4.1',loaded_count:2,partial:false},
+    {client_kind:'claude_code',state:'unknown',reason:'unsupported_version',server_version:null,loaded_count:null,partial:false},
+    {client_kind:'opencode',state:'unknown',reason:'endpoint_unavailable',server_version:null,loaded_count:null,partial:false}];
+ const rows=sessionMode==='empty'?[]:[
+  {key:'a'.repeat(64),id_hint:'aaaaaaaa',client_kind:'codex',project:'fixture-project',model:'fixture-model',provider:'openai',reasoning:'medium',created_at:'2026-11-13T09:00:00Z',updated_at:'2026-11-13T09:30:00Z',state:'open',role:'main',parent_key:null,traffic_assignment:'unverified'},
+  {key:'b'.repeat(64),id_hint:'bbbbbbbb',client_kind:'codex',project:'fixture-project',model:'fixture-model',provider:'openai',reasoning:'medium',created_at:'2026-11-13T09:05:00Z',updated_at:'2026-11-13T09:25:00Z',state:'open',role:'subagent',parent_key:'a'.repeat(64),traffic_assignment:'unverified'},
+  {key:'c'.repeat(64),id_hint:'cccccccc',client_kind:'codex',project:'fixture-project',model:'fixture-model',provider:'openai',reasoning:'medium',created_at:'2026-11-12T10:00:00Z',updated_at:'2026-11-12T10:30:00Z',state:'stored',role:'main',parent_key:null,traffic_assignment:'unverified'},
+ ];
+ return {snapshot_id:sessionSnapshotId,observed_at_utc:'2026-11-13T09:31:00Z',scope:'current_cli_environment',clients:scopes,rows,can_open_codex:true,traffic_assignment:'unverified'};
+}
+export function setSessionMode(mode:SessionMode){sessionMode=mode;sessionOpenCount=0;}
+export function failNextSessionLaunch(){failSessionLaunch=true;}
+export function blockSessionReads(){if(sessionGate)throw Error('fixture_session_read_already_blocked');sessionGate=new Promise(resolve=>{releaseSessionGate=resolve;});}
+export function releaseSessionReads(){releaseSessionGate?.();releaseSessionGate=null;sessionGate=null;}
+export function sessionHistory(){return sessionCalls.map(call=>({...call}));}
+export function sessionReadStats(){return {reads:sessionCalls.filter(call=>call.operation==='read').length,max_active: maxSessionReads};}
+if(typeof window!=='undefined')(window as any).__HeadroomSessionFixture={setMode:setSessionMode,failLaunch:failNextSessionLaunch,blockReads:blockSessionReads,releaseReads:releaseSessionReads,history:sessionHistory,readStats:sessionReadStats};
 export function bumpCompatibilityContext(){compatibilityRevision++;}
 export function blockCompatibility(){if(compatibilityGate)throw Error('fixture_already_blocked');compatibilityGate=new Promise(resolve=>{releaseGate=resolve;});}
 export function releaseCompatibility(){releaseGate?.();releaseGate=null;compatibilityGate=null;}
@@ -46,12 +75,33 @@ function overview(period:string,id:string,includeRecommendations:boolean){
  from_utc:period==='session'?null:'2026-11-08T00:00:00Z',to_utc:at,retention_days:30,last_event_utc:events?at:null,totals,coverage,attribution,
  series:events?[{at_utc:at,totals}]:[]},collection:{status:'recording',interval_seconds:5,last_capture_utc:at,runtime_generation:'7132bced3ce04c1b8f48d93d7b96f7ce',last_error:null,sampling_interrupted_since_start:false},recommendations};
 }
-export function reset(nextLanguage:string,nextTheme:string,nextScenario:Scenario){releaseCompatibility();releaseDiscoveryScan();language=nextLanguage;theme=nextTheme;scenario=nextScenario;revision=1;exit='idle';generation=1;compatibilityRevision=0;showRecommendations=false;recommendationsResolved=false;}
+export function reset(nextLanguage:string,nextTheme:string,nextScenario:Scenario){releaseCompatibility();releaseDiscoveryScan();releaseSessionReads();language=nextLanguage;theme=nextTheme;scenario=nextScenario;revision=1;exit='idle';generation=1;compatibilityRevision=0;showRecommendations=false;recommendationsResolved=false;sessionMode=nextScenario==='empty'?'empty':nextScenario==='error'?'error':'data';sessionCalls=[];sessionOpenCount=0;failSessionLaunch=false;activeSessionReads=0;maxSessionReads=0;}
 export function isTauri(){return true;}
 export function getCurrentWebview(){return {setZoom:async()=>{}};}
 export async function listen(_event:string,callback:()=>void){callbacks.add(callback);return()=>callbacks.delete(callback);}
 export async function invoke(command:string,args:any){
  const id=args.requestId??args.request?.request_id;
+ if(command==='manage_sessions'){
+  const request=args?.request;
+  const requestKeys=request&&typeof request==='object'&&!Array.isArray(request)?Object.keys(request).sort().join(','):'';
+  if(!args||Object.keys(args).length!==1||requestKeys!=='confirm_open,operation,request_id,schema_version,snapshot_id'
+   ||request.schema_version!==1||typeof request.request_id!=='string'||!uuidPattern.test(request.request_id))throw Error('fixture_invalid_session_request');
+  const {schema_version,request_id,operation,snapshot_id,confirm_open}=request;
+  if(operation==='read'&&snapshot_id===null&&confirm_open===false){
+   const call={schema_version,request_id,operation,snapshot_id,confirm_open};sessionCalls.push(call);
+   activeSessionReads++;maxSessionReads=Math.max(maxSessionReads,activeSessionReads);
+   try{if(sessionGate)await sessionGate;}finally{activeSessionReads--;}
+   if(sessionMode==='error')return {schema_version:1,request_id,status:'error',snapshot:null,error:'unavailable'};
+   return {schema_version:1,request_id,status:'snapshot',snapshot:sessionSnapshot(),error:null};
+  }
+  if(operation==='open_codex_center'&&snapshot_id===sessionSnapshotId&&confirm_open===true){
+   sessionCalls.push({schema_version,request_id,operation,snapshot_id,confirm_open});
+   if(sessionOpenCount++>0)return {schema_version:1,request_id,status:'error',snapshot:null,error:'busy'};
+   if(failSessionLaunch)return {schema_version:1,request_id,status:'error',snapshot:null,error:'launch_failed'};
+   return {schema_version:1,request_id,status:'launched',snapshot:null,error:null};
+  }
+  throw Error('fixture_invalid_session_operation');
+ }
  if(command==='scan_discovery'&&scanGate)await scanGate;
  if(command==='get_compatibility_snapshot'){
   if(compatibilityGate)await compatibilityGate;

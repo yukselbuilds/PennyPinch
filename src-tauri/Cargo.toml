@@ -31,6 +31,8 @@ windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_Netw
 
 [target.'cfg(windows)'.dependencies]
 reqwest = { version = "=0.13.5", default-features = false, features = ["blocking", "native-tls"] }
+tungstenite = { version = "=0.30.0", default-features = false, features = ["handshake"] }
+socket2 = "=0.6.5"
 windows = { version = "=0.62.2", default-features = false, features = ["Win32_Foundation", "Win32_System_Com", "Win32_UI_Shell", "Win32_UI_Shell_Common"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]

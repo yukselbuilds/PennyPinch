@@ -8,6 +8,7 @@ pub mod picker;
 pub(crate) mod plan;
 #[cfg(windows)]
 mod process;
+pub(crate) mod sessions;
 pub(crate) mod transaction;
 pub(crate) mod transaction_fs;
 
