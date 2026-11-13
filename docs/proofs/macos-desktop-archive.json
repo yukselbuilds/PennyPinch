@@ -36,10 +36,11 @@
     ".github/workflows/macos-desktop.yml": "59c9b4a6f3336c1253d1e4820ee78e32d19e06edeeb95ac3aaa55656e76515fb",
     ".github/workflows/macos-package.yml": "946e55cbf74d883ebe9bd5d945fa39d8cbc99860af7562c30f557e0f5820d770"
   },
-  "native_extraction_and_discovery": "pending",
+  "native_extraction_and_discovery": "pass",
   "limits": [
     "This provenance check does not execute the application or validate live accounts.",
     "Earlier GUI/Headroom traffic evidence remains separately scoped to its source and package inputs."
   ],
-  "supersedes_download_source": "The general Codex.dmg URL changed on 2026-11-13; exact archive and bundle security checks are retained."
+  "supersedes_download_source": "The general Codex.dmg URL changed on 2026-11-13; exact archive and bundle security checks are retained.",
+  "native_proof": "docs/proofs/macos-desktop-connection.json"
 }

@@ -6,4 +6,4 @@ H048-c7b, macOS 15.8.2 ARM64 üzerinde resmî Desktop 26.1106.51428 ve bundled C
 
 Bu tarihsel kayıt `local_fixture_partial` düzeyindedir. Testte `gpt-5.2-codex`/`medium` kullanıldı; bu bir ürün model listesi değildir. Canlı hesap/sağlayıcı, diğer modeller/gerçek alt ajan kimliği, diğer macOS sürümleri ve Intel doğrulanmadı. Tam uygulama state yalıtımı da kurulmuş sayılmaz. Tasarruf veya performans benchmark'ı değildir.
 
-H048-c7'de ürün bağlantı planı ve yeni yöneticide geri alma kabulü sürüyor. Config desteği yalnız kanıtlanan uygulama sürümü için değerlendiriliyor; bu kayıt kendi başına güncel hesap veya aktif sohbet doğrulaması değildir.
+H048-c7'de ürün bağlantı planı ve yeni yöneticide geri alma kabulü tamamlandı. Config desteği yalnız kanıtlanan uygulama sürümü için açıldı. Native 15 Rust testi, frontend ve ARM64 derlemesi geçti; Apply/Undo ilgisiz ayarları ve sonradan eklenen Desktop tercihini korudu, çatışmada dosya/sahiplik değişmedi. [Ürün bağlantı kanıtı](macos-desktop-connection.json) · [Sabit resmî arşiv doğrulaması](macos-desktop-archive.json). Bu kayıt kendi başına güncel hesap veya aktif sohbet doğrulaması değildir.

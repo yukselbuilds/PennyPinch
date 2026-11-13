@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "task": "H048-c7",
+  "status": "pass",
+  "main_task_complete": false,
+  "verified_at_utc": "2026-11-13T08:18:00.891327+00:00",
+  "candidate": "20729e7e3e987742ab9d2125069707f94415cad0",
+  "run_url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43391633178",
+  "native": {
+    "job_id": 131772717278,
+    "started_at": "2026-11-13T08:14:12Z",
+    "completed_at": "2026-11-13T08:17:05Z",
+    "environment": [
+      "Desktop package: com.openai.codex ChatGPT 26.1106.51428 2DC432GLL2",
+      "Desktop architectures: launcher=arm64, backend=arm64",
+      "arm64",
+      "Xcode 16.4",
+      "Build version 16F6",
+      "v25.2.1",
+      "11.25.0",
+      "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo 1.92.0 (344c4567c 2025-10-21)"
+    ],
+    "inputs_before": "20478b50f5e3e3bc2bb1db3c5451d318de33415f350cce0a53fbd812e9f83bcb",
+    "inputs_after": "20478b50f5e3e3bc2bb1db3c5451d318de33415f350cce0a53fbd812e9f83bcb",
+    "rust_tests_passed": 15,
+    "rust_tests": [
+      "compatibility::catalog::tests::compatibility_catalog_embedded_records_have_scoped_existing_evidence",
+      "compatibility::catalog::tests::compatibility_catalog_rejects_unscoped_live_status_duplicates_and_bad_paths",
+      "compatibility::catalog::tests::compatibility_macos_requires_a_real_compiled_pin_for_historical_catalog_data",
+      "compatibility::catalog::tests::compatibility_release_versions_match_the_application_and_runtime_sources",
+      "compatibility::catalog::tests::compatibility_snapshot_is_read_only_and_never_claims_an_installed_auth_session",
+      "integrations::config_io::macos::tests::native_desktop_manager_apply_reopen_undo_preserves_codex_preferences",
+      "integrations::config_io::macos::tests::native_desktop_manager_rejects_stale_preview_without_overwriting_config",
+      "integrations::config_io::macos::tests::native_desktop_manager_undo_rejects_endpoint_drift_and_keeps_ownership",
+      "integrations::discovery::macos::desktop::tests::signed_desktop_scan_rebinds_selection_and_rejects_untrusted_bundles",
+      "integrations::plan_tests::codex_auth_declaration_is_only_reported_for_known_method_values",
+      "integrations::plan_tests::codex_config_contract_accepts_known_and_neighbor_versions_without_claiming_traffic",
+      "integrations::plan_tests::codex_config_contract_requires_platform_evidence_for_desktop",
+      "integrations::plan_tests::codex_profile_and_claude_cloud_routes_are_blocked_as_unverified",
+      "integrations::plan_tests::codex_toml_duplicate_keys_and_json_over_limit_are_rejected",
+      "integrations::plan_tests::codex_user_config_plan_targets_only_stable_ingress_and_preserves_declared_model_settings"
+    ],
+    "test_summary": [
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 328 filtered out; finished in 0.51s"
+    ],
+    "python_summary": [
+      "Native Python Ran 45 tests in 3.705s",
+      "Native Python OK (skipped=1)"
+    ],
+    "frontend_typecheck_build": "pass",
+    "locked_tauri_build": "pass",
+    "executable_architecture": "arm64",
+    "executable_sha256": "f9ac534e2dea1cbef65f51c5a046eb8228b0ab487e48d2184d4c3a27ee13f0a4",
+    "desktop_inputs": {
+      "Codex.zip": {
+        "size": 820584997,
+        "sha256": "959adaad0a8b8cd0265ca1a53835af61827e2eaf659fd2bdad7ce39b712f257c"
+      },
+      "home/Applications/ChatGPT.app/Contents/Info.plist": {
+        "size": 20787,
+        "sha256": "3c3f175bca100cb25507b633742154f965cc2d456ca06282a69de6b1430c9c74"
+      },
+      "home/Applications/ChatGPT.app/Contents/MacOS/ChatGPT": {
+        "size": 71008,
+        "sha256": "7efa7738eb06887f95f3b915c085a7a228c437119a1fedaaa7d01c92687cff78"
+      },
+      "home/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex": {
+        "size": 273669024,
+        "sha256": "7cb8700a47be3c81bb3c5efbf2d2adc716ce3db4806e9dc992f2925f78b2b194"
+      }
+    },
+    "managed_engine_lifecycle_requested": false,
+    "model_turn_requested": false,
+    "operating_system": {
+      "ProductName": "macOS",
+      "ProductVersion": "15.8.2",
+      "BuildVersion": "24H232"
+    }
+  },
+  "scenarios": {
+    "native_signed_discovery": "pass",
+    "known_version_configuration_gate_and_unknown_version_rejection": "pass",
+    "apply_reopen_undo_preserves_toml_and_new_desktop_preference": "pass",
+    "synthetic_auth_bytes_preserved": "pass",
+    "stale_preview_apply_keeps_user_file": "pass",
+    "endpoint_drift_undo_keeps_file_and_active_ownership": "pass",
+    "catalog_uses_real_native_compiled_payload_pin": "pass"
+  },
+  "source_sha256": {
+    "src-tauri/src/integrations/codex_binary.rs": "3f2fefa34a4c6cea5da55079dba6ed5eb991bba68e0de97ca9bbbd276381f949",
+    "src-tauri/src/integrations/plan_tests.rs": "e3467c64410057641dacc1b4eb5a05de167c7b6948485c438d521313bca518d7",
+    "src-tauri/src/integrations/config_io/macos_tests.rs": "da0787b302cd6442fdabc527cd56477d184b5244d1dacad3c6ef71d278651312",
+    "src-tauri/src/compatibility/catalog.rs": "c1782063f8beed5e52cead3c5518b32d01bdb1c6e509c47ca497705c58c6915f",
+    "src-tauri/src/compatibility/catalog_tests.rs": "4fcb2e1cc4ea36fba0a490d02254748b4e8654f4449258b194c35c86ddcafc2f",
+    "compatibility/clients.json": "6e51565d556c93f46f7f209c2394ecd99e2c7e46946c8cbd59ce842b688330fb",
+    "scripts/prepare-macos-ci-desktop.sh": "041b1cf08c7cc4c9374cda7c9ea8ede19c705a831bb96ad095a1d2d5455b4295",
+    ".github/workflows/macos-build.yml": "e0574c6cc21a387495086c2786dbcda98f0ce721f332d6f770cba3581e465ee4"
+  },
+  "local": {
+    "plan_tests_reused": 22,
+    "recovery_tests_reused": 4,
+    "current_catalog_tests": 5,
+    "product_inputs_matched": 197,
+    "proof": "work/proofs/macos/h048-c7-product/fixed-archive-local-acceptance.json"
+  },
+  "archive_provenance": "docs/proofs/macos-desktop-archive.json",
+  "prior_real_gui_route_proof": "docs/proofs/macos-desktop-traffic.json",
+  "free_only_dispatch": {
+    "candidate": "20729e7e3e987742ab9d2125069707f94415cad0",
+    "recorded_at_utc": "2026-11-13T08:14:08.345335+00:00",
+    "workflow_sha256": "e0574c6cc21a387495086c2786dbcda98f0ce721f332d6f770cba3581e465ee4",
+    "quota_observation": {
+      "source": "Authenticated billing overview and Actions budget after the rejected DMG attempt",
+      "included_usd": 12.0,
+      "used_usd": 11.72,
+      "billable_usd": 0,
+      "budget_usd": 0,
+      "overage_blocked": true
+    },
+    "timeout_minutes": 3,
+    "max_rounded_minutes_with_cleanup": 4,
+    "rate_usd_per_minute": 0.062,
+    "conservative_compute_usd": 0.248,
+    "provider_model_calls_requested": false,
+    "status": "dispatched",
+    "run_id": 43391633178,
+    "run_url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43391633178"
+  },
+  "limits": [
+    "Only macOS Apple Silicon and the recorded signed Desktop version are covered.",
+    "This run does not execute Codex or prove live account/provider, other models, subagent identity, end-to-end savings or performance.",
+    "Earlier GUI/Headroom traffic and package lifecycle evidence retain their own recorded scope.",
+    "Production signing/notarization, Intel and other macOS releases remain untested."
+  ]
+}
