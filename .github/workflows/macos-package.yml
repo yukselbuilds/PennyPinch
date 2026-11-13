@@ -103,7 +103,7 @@ jobs:
               "$HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256"
             "$build_python" -I -B scripts/macos-payload.py "$HEADROOM_MACOS_RUNTIME_ROOT/payload"
             if [[ "$HEADROOM_VERIFY_DESKTOP_TRAFFIC" == true ]]; then
-              shasum -a 256 "$HEADROOM_DESKTOP_ROOT/Codex.dmg"
+              shasum -a 256 "$HEADROOM_DESKTOP_ROOT/Codex.zip"
             fi
           }
           before="$(fingerprint)"

@@ -64,7 +64,7 @@ jobs:
             uname -m
             "$python" -I -B --version
             printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}" "$HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256"
-            shasum -a 256 "$HEADROOM_DESKTOP_ROOT/Codex.dmg" "$python"
+            shasum -a 256 "$HEADROOM_DESKTOP_ROOT/Codex.zip" "$python"
             "$python" -I -B scripts/macos-payload.py "$HEADROOM_MACOS_RUNTIME_ROOT/payload"
           }
           before="$(fingerprint)"

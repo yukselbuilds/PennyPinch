@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "task": "H048-c7",
+  "status": "local_provenance_pass",
+  "verified_at_utc": "2026-11-13T08:10:11.165916+00:00",
+  "source": "https://persistent.oaistatic.com/codex-app-prod/ChatGPT-darwin-arm64-26.1106.51428.zip",
+  "size": 820584997,
+  "sha256": "959adaad0a8b8cd0265ca1a53835af61827e2eaf659fd2bdad7ce39b712f257c",
+  "official_feed": {
+    "url": "https://persistent.oaistatic.com/codex-app-prod/appcast.xml",
+    "observed_sha256": "d9869f972022c16eb7c86c6d1090a416b2e07aecfa7f071d11f0bf4c479a77de",
+    "sparkle_ed25519_signature": "XcKI2Il1/CArBq3uLhNrLDTUw3/9KRooL2OdJNYVzyz8YbJ8DnXh2J91fOFySLGPhvsTl/XDkzgdgaY2kEWSBw==",
+    "signature_verified": true,
+    "public_key_source": "Previously signed 26.1106.51428 Info.plist; prior DMG and native discovery evidence retained in macos-desktop-discovery.json"
+  },
+  "bundle_inputs": {
+    "ChatGPT.app/Contents/Info.plist": {
+      "size": 20787,
+      "sha256": "3c3f175bca100cb25507b633742154f965cc2d456ca06282a69de6b1430c9c74",
+      "matches_prior_dmg": true
+    },
+    "ChatGPT.app/Contents/MacOS/ChatGPT": {
+      "size": 71008,
+      "sha256": "7efa7738eb06887f95f3b915c085a7a228c437119a1fedaaa7d01c92687cff78",
+      "matches_prior_dmg": true
+    },
+    "ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex": {
+      "size": 273669024,
+      "sha256": "7cb8700a47be3c81bb3c5efbf2d2adc716ce3db4806e9dc992f2925f78b2b194",
+      "matches_prior_dmg": true
+    }
+  },
+  "source_sha256": {
+    "scripts/prepare-macos-ci-desktop.sh": "041b1cf08c7cc4c9374cda7c9ea8ede19c705a831bb96ad095a1d2d5455b4295",
+    ".github/workflows/macos-build.yml": "e0574c6cc21a387495086c2786dbcda98f0ce721f332d6f770cba3581e465ee4",
+    ".github/workflows/macos-desktop.yml": "59c9b4a6f3336c1253d1e4820ee78e32d19e06edeeb95ac3aaa55656e76515fb",
+    ".github/workflows/macos-package.yml": "946e55cbf74d883ebe9bd5d945fa39d8cbc99860af7562c30f557e0f5820d770"
+  },
+  "native_extraction_and_discovery": "pending",
+  "limits": [
+    "This provenance check does not execute the application or validate live accounts.",
+    "Earlier GUI/Headroom traffic evidence remains separately scoped to its source and package inputs."
+  ],
+  "supersedes_download_source": "The general Codex.dmg URL changed on 2026-11-13; exact archive and bundle security checks are retained."
+}

@@ -8,24 +8,19 @@ workspace="$(pwd -P)"
 [[ "$root" == "$workspace"/work/macos-desktop.* && "$root" == "$(cd "$root" && pwd -P)" ]]
 [[ "$(stat -f '%u %Lp' "$root")" == "$(id -u) 700" ]]
 
-# The vendor's stable download URL can move. Update this proof pin only after rechecking the package.
-image="$root/Codex.dmg"
-url='https://persistent.oaistatic.com/codex-app-prod/Codex.dmg'
-expected_size=896471424
-expected_hash=488009cfdfd99bd04eeec1fa2c156611fda75f04510b039f61207afa6ad4423a
+# Versioned archive from the official appcast; its signature and bundle inputs match the prior DMG proof.
+image="$root/Codex.zip"
+url='https://persistent.oaistatic.com/codex-app-prod/ChatGPT-darwin-arm64-26.1106.51428.zip'
+expected_size=820584997
+expected_hash=959adaad0a8b8cd0265ca1a53835af61827e2eaf659fd2bdad7ce39b712f257c
 curl --proto '=https' --fail --silent --show-error --connect-timeout 15 --max-time 180 \
   --max-filesize "$expected_size" --output "$image" "$url"
 [[ "$(stat -f '%z' "$image")" == "$expected_size" ]]
 [[ "$(shasum -a 256 "$image" | cut -d' ' -f1)" == "$expected_hash" ]]
 
-mount="$root/image"
-mkdir "$mount" "$root/home"
+mkdir "$root/home"
 mkdir "$root/home/Applications"
-trap '/usr/bin/hdiutil detach "$mount" >/dev/null 2>&1 || true' EXIT
-/usr/bin/hdiutil attach -readonly -nobrowse -noautoopen -mountpoint "$mount" "$image" >/dev/null
-/usr/bin/ditto "$mount/ChatGPT.app" "$root/home/Applications/ChatGPT.app"
-/usr/bin/hdiutil detach "$mount" >/dev/null
-trap - EXIT
+/usr/bin/ditto -x -k "$image" "$root/home/Applications"
 
 bundle="$root/home/Applications/ChatGPT.app"
 plist="$bundle/Contents/Info.plist"

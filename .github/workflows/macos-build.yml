@@ -46,7 +46,7 @@ jobs:
     if: ${{ inputs.free_only_confirmed == true }}
     name: Apple Silicon app build (macOS standard runner)
     runs-on: macos-15
-    timeout-minutes: ${{ inputs.verify_desktop_discovery && !inputs.verify_managed_engine && !inputs.verify_cli_discovery && !inputs.verify_config_recovery && !inputs.verify_file_picker && 4 || 20 }}
+    timeout-minutes: ${{ inputs.verify_desktop_discovery && !inputs.verify_managed_engine && !inputs.verify_cli_discovery && !inputs.verify_config_recovery && !inputs.verify_file_picker && 3 || 20 }}
     env:
       CARGO_HOME: ${{ github.workspace }}/work/caches/cargo-home
       CARGO_TARGET_DIR: ${{ github.workspace }}/work/caches/cargo-target
@@ -170,7 +170,7 @@ jobs:
             fi
             if [[ "$HEADROOM_VERIFY_DESKTOP_DISCOVERY" == true ]]; then
               local path
-              for path in Codex.dmg home/Applications/ChatGPT.app/Contents/{Info.plist,MacOS/ChatGPT,Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex}; do
+              for path in Codex.zip home/Applications/ChatGPT.app/Contents/{Info.plist,MacOS/ChatGPT,Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex}; do
                 local file="$HEADROOM_MACOS_DESKTOP_PROOF_ROOT/$path"
                 printf 'Desktop input %s %s %s\n' "$path" "$(stat -f '%z' "$file")" "$(shasum -a 256 "$file" | cut -d' ' -f1)"
               done
@@ -283,7 +283,7 @@ jobs:
           if [[ "$HEADROOM_VERIFY_FILE_PICKER" == true ]]; then
             printf '%s\n' '- AppKit file and folder selection and cancellation passed. Actual panel results were saved through the application managers and reopened.' >> "$GITHUB_STEP_SUMMARY"
           fi
-          if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
+          if [[ "$HEADROOM_VERIFY_MANAGED_ENGINE" == true ]]; then
             printf '%s\n' '- Additional scope: pinned resources, native process readiness/control/metrics, normal stop/restart and exact parent-loss exit passed.' \
               '- Application RuntimeManager verified through the stable relay with the real engine. Webview interaction, client config writes, signing and bundled lifecycle remain untested.' >> "$GITHUB_STEP_SUMMARY"
           fi

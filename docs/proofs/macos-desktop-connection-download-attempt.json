@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "task": "H048-c7",
+  "status": "failed",
+  "candidate": "a53c08db5d97efe39a8bec6ad6930fe1473f619e",
+  "run_url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43390223539",
+  "stage": "vendor_archive_pin_rejection_before_native_tests",
+  "failure_code": "curl_maximum_file_size_exceeded",
+  "expected_archive_size": 896471424,
+  "observed_stable_download_size": 912705885,
+  "stable_url": "https://persistent.oaistatic.com/codex-app-prod/Codex.dmg",
+  "source_test_result": "not_reached",
+  "correction": "Use the same version from the official appcast via a fixed archive URL; retain exact size/hash and signed-bundle checks.",
+  "recorded_at_utc": "2026-11-13T08:10:35.786556+00:00"
+}
