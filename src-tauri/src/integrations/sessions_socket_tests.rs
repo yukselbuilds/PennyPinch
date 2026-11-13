@@ -208,6 +208,37 @@ fn pinned_codex_observer_preserves_existing_identity_and_loses_status_on_exit() 
         agent,
         "observer must not replace the existing user-agent identity"
     );
+    if std::env::var_os("HEADROOM_H051_UI_HOLD").is_some() {
+        // Empty threads belong to this connection until the real UI test ends.
+        fs::write(home.join("ui-fixture-ready"), b"ready").unwrap();
+        let deadline = Instant::now() + Duration::from_secs(900);
+        while !home.join("ui-fixture-done").exists() && Instant::now() < deadline {
+            thread::sleep(Duration::from_millis(50));
+        }
+        assert!(
+            home.join("ui-fixture-done").exists(),
+            "owned UI fixture timed out"
+        );
+        assert_ne!(
+            probe_agent(),
+            agent,
+            "UI-opened client did not initialize against the owned server"
+        );
+        let after = reader.read_home(&home).unwrap();
+        for before in &snapshot.rows {
+            let row = after
+                .rows
+                .iter()
+                .find(|r| r.key == before.key)
+                .expect("existing thread lost");
+            assert_eq!(
+                (&row.model, &row.provider, &row.reasoning),
+                (&before.model, &before.provider, &before.reasoning)
+            );
+        }
+        println!("HEADROOM_H051_NATIVE_OK chats=3 same_model=2 identity_preserved=1 ui_owner_held=1 owned_server_connected=1 configs_preserved=1");
+        return;
+    }
     if std::env::var_os("HEADROOM_H051_OPEN_CENTER").is_some() {
         assert!(reader.can_open_center());
         let models: std::collections::BTreeMap<_, _> = snapshot

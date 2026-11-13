@@ -1,6 +1,6 @@
 # H051 — Sohbet metadata ve yaşam döngüsü
 
-13 Kasım 2026. Araştırma ve uygulama planı; henüz ürün kabulü değildir. H050/H026 bağımlılıkları kabul edildi, H049 kullanıcı kararıyla ertelendi. Bu görevde Actions, yeni giriş veya model isteği başlatılmaz.
+13 Kasım 2026. H051, Windows 10 22H2 x64 yerel geliştirme kapsamında kabul edildi. H050/H026 bağımlılıkları kabul edildi, H049 kullanıcı kararıyla ertelendi. Bu görevde Actions, yeni gerçek giriş veya model isteği başlatılmadı.
 
 ## Amaç ve sınır
 
@@ -24,8 +24,9 @@ Dosya veya süreç varlığı açık/çalışıyor/sona erdi kanıtı değildir.
 - `manage_sessions` yalnız main penceresinde çalışır. Şeması URL/exe/model/auth/sohbet metni kabul etmez. Kayıtlar RAM'de tutulur, kalıcı sohbet envanteri yoktur. Arayüz görünür Sohbetler ekranında 10 saniyede yenilenir; hata veya görünmezlik eski canlı iddiaları temizler. Son trafik ve tasarruf ataması bilinmiyor kalır.
 - `work/proofs/s51/c473ca9a/result.json`: gerçek Codex metadata/kimlik ve kapanan sunucu testi geçti; 3 boş sohbet, aynı modelde 2 kayıt, 0 inference POST ve 0 dış ağ denemesi. Model/parent ve bozuk/stale sınırlar ayrıca protocol fixture'larıdır; gerçek alt ajan turn'ü gönderilmedi.
 - `work/proofs/s51/79cc15b5/result.json`: resmî sohbet merkezi doğru izole profile açıldı, üç mevcut sohbetin model/provider/reasoning değerleri korundu, başlatan test sürecinden sonra istemci yaşadı ve yalnız sahipli test süreçleri temizlendi. 0 inference POST. Resmî TUI'nin koşulsuz public duyuru isteği kaynakla doğrulandı ve TLS başlamadan yerel guard tarafından engellendi (1 deneme); gözlemcinin ağ trafiğiyle karıştırılmaz. Test profilinde update-check kapalı ve ilk ekran okuyucu tercihi önceden ayarlıydı. İlk açılış denemesinde resmî TUI yalnız `tui.screen_reader_detection_done` tercihini ekledi ve update-check denedi; bu yüzden o koşu toplam PASS değildir. Headroom kullanıcı config'ine bu test bayraklarını yazmaz.
-- Son incelenmiş adayda 221 Node, 441 Rust / 17 opt-in ignored, fmt ve frontend/embedded build geçti; 13 UI senaryosu, 122 erişilebilirlik denetimi ihlalsizdir. Native `e782f555` ön kontrolü gerçek resmî TUI'nin hedef izole sunucuya initialize olduğunu da doğruladı. Son Headroom UI onay/iptal/açma/normal çıkış kabulü WTS ile doğrulanan kilitli Windows masaüstü nedeniyle bekliyor; sahipli test süreçleri temizlendi ve toplam native UI koşusu PASS sayılmadı. [Güncel kanıt](../proofs/sessions.md).
-- Kanıtlar Windows 10 22H2 x64 yerel geliştirme kapsamındadır. Windows 11/macOS/Linux, başka sürüm/profil, gerçek hesap erişimi ve üretim yayını kanıtlanmadı. Actions koşusu yoktur. H051 tamamlandı olarak işaretlenmez.
+- Son incelenmiş adayda 221 Node, 441 Rust / 17 opt-in ignored, fmt ve frontend/embedded build geçti; 13 UI senaryosu, 122 erişilebilirlik denetimi ihlalsizdir. Native `12e3ea28` ile gerçek Headroom UI → IPC → manager → Codex yolu, üç kayıt/iki aynı model, ayrı Hesaplar görünümü, onay/iptal ve normal Headroom çıkışından sonra resmî istemcinin yaşaması kabul edildi. Doğru izole sunucuya `codex-tui` initialize tanığı, sabit argüman/sahip parent receipt'i ve model/provider/reasoning/config eşitliği vardır. Inference POST 0; public TUI duyuru isteği TLS öncesinde engellendi. [Güncel kanıt](../proofs/sessions.md).
+- İlk native UI denemesi Windows kilidi nedeniyle, sonraki deneme boş sohbetleri yaratan test bağlantısının erken kapanması nedeniyle toplam PASS olmadı. Boş sohbetler sahibi bağlantı kapanınca yükten çıkabilir; son fixture bu bağlantıyı UI tamamlanana kadar tutar. Bu yalnız ignore edilen test kurulumu değişikliğidir; ürün kodu veya kabul gevşetilmedi. Başarısız kayıtlar korunur.
+- H051 Windows 10 22H2 x64 yerel geliştirme kapsamında tamamlandı. Windows 11/macOS/Linux, başka sürüm/profil, gerçek hesap erişimi ve üretim yayını kanıtlanmadı. Actions koşusu yoktur.
 
 ## Uygulama ve kabul yolu
 

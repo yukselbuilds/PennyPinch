@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "task": "H051",
-  "recorded_at_utc": "2026-11-13T18:41:42.416934+00:00",
-  "status": "partial_native_ui_pending",
-  "task_accepted": false,
+  "recorded_at_utc": "2026-11-13T20:11:27.232002+00:00",
+  "status": "completed_local_development",
+  "task_accepted": true,
   "scope": "Windows 10 22H2 x64 local development; no real login, turn or CI",
   "checks": {
     "node_contract_tests": 221,
@@ -30,11 +30,50 @@
     "model_provider_reasoning_preserved": true,
     "official_center_survived_owner_exit": true,
     "inference_posts": 0,
-    "native_headroom_confirmation_and_exit": "not_tested_windows_locked"
+    "native_headroom_confirmation_and_exit": "passed",
+    "native_ui": {
+      "observed_at_utc": "2026-11-13T20:08:27.117235+00:00",
+      "source": "main agent real native UI inspection and open-computer-use accessibility actions",
+      "app_pid": 42800,
+      "metadata": {
+        "loaded_count": 3,
+        "visible_rows": 3,
+        "same_model_rows": 2,
+        "different_model_row": true,
+        "idle_chats_shown_open": true,
+        "claude_opencode_unknown": true,
+        "traffic_and_chat_savings_unknown": true
+      },
+      "tabs": {
+        "accounts_separate": true,
+        "return_to_chats_preserved_rows": true
+      },
+      "consent": {
+        "dialog_shown": true,
+        "cancel_focused": true,
+        "cancel_closed_dialog": true,
+        "cancel_launched_no_client": true,
+        "confirm_shown_again": true,
+        "confirm_opened_official_client": true,
+        "success_notice_shown": true
+      },
+      "owned_client": {
+        "fixture_only": true,
+        "pid": 45512,
+        "fixed_arguments_verified": true,
+        "owned_parent_verified": true
+      },
+      "desktop_unlocked_before_input": true,
+      "real_login_started": false,
+      "model_turn_sent": false
+    },
+    "native_ui_normal_exit": true,
+    "native_ui_center_survived_headroom_exit": true,
+    "native_ui_center_survived_fixture_owner_exit": true
   },
   "native_artifact": {
-    "exe_sha256": "f3e64af71ab48277ed2105e47567e03300743c3d6c795921b53107771283e006",
-    "overlay_sha256": "f2e4f09abe2d428a82af9e7acee31bbdbc87fb910bfe2d95c4be9b1c87e86387",
+    "exe_sha256": "54d13e85ac8d014a96b1c797e29f265977ec13db2589c433c9ce85496e59d68d",
+    "overlay_sha256": "16402c06bd4c350ebe8d13bbc50d937a957633a09939c489fa76bef8a3299873",
     "build_exit_code": 0,
     "isolated_profile_and_identifier": true
   },
@@ -48,7 +87,13 @@
     "work/proofs/s51/e782f555/result.json": "ef8ad57953997dc7f3ba8b7a8aacedc00988ad3da7ecef0d1f9e15ca73dcf64e",
     "work/proofs/s51/7aa331aa/result.json": "74af2443ef522a47aba90e1e3e32a1468b797e84d9e89c64e6fb1c0ec63d7c9b",
     "work/proofs/s51/e782f555/desktop-status.json": "4f0847f1ebcd5c425fc94543d54e874a7344b181a40bb29c8bdda4094c1cf9c7",
-    "work/proofs/s51/e782f555/abort-reason.json": "0bbbf2e64935920ce58ca22fd6eb420c6b6699c1d85d0181a0044c8bef4c9160"
+    "work/proofs/s51/e782f555/abort-reason.json": "0bbbf2e64935920ce58ca22fd6eb420c6b6699c1d85d0181a0044c8bef4c9160",
+    "work/proofs/s51/12e3ea28/result.json": "1538f77df78b54b436a3a1b9521c3d961d0bf358ed584a1d726fd9aa5374f6cb",
+    "work/proofs/s51/12e3ea28/observations.json": "46fa6ac775fda088d98718afd1952db31ebb56539de4a25b31ee1bf1d541ecb6",
+    "work/proofs/s51/12e3ea28/cancel-observed.json": "ac76fbe8256735c7723c79f3db640cfdc0e18515590b118d3aacec435377d000",
+    "work/proofs/s51/12e3ea28/ui-center.json": "5e77b7e93333d8c12c5f567113b77e21750a882e1407ba341bb2f1ad02a4dbf6",
+    "work/proofs/s51/4ba2fa29/result.json": "c4e7097d699714b4bfaa5caa2024fb176622cb7e10b3ba76ddfeb2f12dcb4481",
+    "work/proofs/sessions/fmt-final.json": "4129ccacd3da0046f57ef7fac7d7523f4d14017e08b0708a1798c8a2f1e74bc1"
   },
   "source_pins": {
     "commit": "d2c035639366e0bf2c316aa2065c24aabc12bcdc",
@@ -258,10 +303,13 @@
       "tests/e2e/playwright.config.ts"
     ],
     "default_rust_gate": "Only an ignored native assertion changed; the actual opt-in test recompiled and passed with owned-server witness",
-    "component_ui": "Actual component/IPC client/fixture unchanged. Only the unimported general audit and artifact-retention policy changed; policy-only bytes verified"
+    "component_ui": "Actual component/IPC client/fixture unchanged. Only the unimported general audit and artifact-retention policy changed; policy-only bytes verified",
+    "post_progress_change": [
+      "src-tauri/src/integrations/sessions_socket_tests.rs"
+    ],
+    "native_fixture": "Only ignored test setup changed: keep the empty-chat owner connected until native UI finishes. No production source changed; actual opt-in test compiled and passed."
   },
   "limits": [
-    "Native Headroom UI confirmation/cancel and normal exit pending desktop unlock; task remains unchecked",
     "Claude Code/OpenCode live metadata, other Codex versions/profiles unknown; separate from engine model support",
     "Native real subagent turn and providers not tested; model/parent states covered by protocol fixtures",
     "Windows 11, macOS/Linux for this new feature and release packaging not tested; no CI dispatched",
@@ -466,7 +514,7 @@
     "src-tauri/src/integrations/process.rs": "9cae247f99505781ef2f17aa7e4e135c16b684b9fa54ebd32735181abc22207f",
     "src-tauri/src/integrations/sessions.rs": "ee27426840ec28c92ba8daf69e4d5a5189aafee5526d8ee68a9cc22875d5c45f",
     "src-tauri/src/integrations/sessions_protocol.rs": "eddf42dc314668fdd9924c1606eefe33b9637bf9b4c418e4db2d6d61825c6e63",
-    "src-tauri/src/integrations/sessions_socket_tests.rs": "c45f760a71f6c95e8352111cf1279c419b068a510955e3a21cbdb81341fd84c4",
+    "src-tauri/src/integrations/sessions_socket_tests.rs": "c1c5129d69a726c8e86827e74088e22868edd6f6f8541c8510c48e616c99dded",
     "src-tauri/src/integrations/sessions_tests.rs": "7c2a74fef59b128790e461c11dc61ffe2b1874f6d1e75e02e2275738ad4a6be4",
     "src-tauri/src/integrations/sessions_windows.rs": "f549f905b56d300cabb30e29a1868327185d24dfe2959176758d38e471e6ddd1",
     "src-tauri/src/integrations/transaction.rs": "5fd7112d7c44fe2f37c8cf97b0bd4ecca5c648a1ce54b7b4484d6660aa5d6541",
@@ -792,7 +840,7 @@
     "src-tauri/src/integrations/process.rs": "9cae247f99505781ef2f17aa7e4e135c16b684b9fa54ebd32735181abc22207f",
     "src-tauri/src/integrations/sessions.rs": "ee27426840ec28c92ba8daf69e4d5a5189aafee5526d8ee68a9cc22875d5c45f",
     "src-tauri/src/integrations/sessions_protocol.rs": "eddf42dc314668fdd9924c1606eefe33b9637bf9b4c418e4db2d6d61825c6e63",
-    "src-tauri/src/integrations/sessions_socket_tests.rs": "c45f760a71f6c95e8352111cf1279c419b068a510955e3a21cbdb81341fd84c4",
+    "src-tauri/src/integrations/sessions_socket_tests.rs": "c1c5129d69a726c8e86827e74088e22868edd6f6f8541c8510c48e616c99dded",
     "src-tauri/src/integrations/sessions_tests.rs": "7c2a74fef59b128790e461c11dc61ffe2b1874f6d1e75e02e2275738ad4a6be4",
     "src-tauri/src/integrations/sessions_windows.rs": "f549f905b56d300cabb30e29a1868327185d24dfe2959176758d38e471e6ddd1",
     "src-tauri/src/integrations/transaction.rs": "5fd7112d7c44fe2f37c8cf97b0bd4ecca5c648a1ce54b7b4484d6660aa5d6541",
@@ -938,5 +986,15 @@
     "tsconfig.json": "d21dd9148330758646c6a1c605f83a88ecd9224126ff49c205e8d105525cc03b",
     "vite.config.ts": "dcb19fe986150626ba66f618f7a579bc1d1232ac2e27105bcab078e78e24b36a"
   },
-  "verifier_sha256": "d7fe1bd9f82fb52e9acffdf6839424a227a16cd3ecff0ab6b0f35a0ec1369b0a"
+  "verifier_sha256": "588eef58f9a6212e3452dc9292608802f7f5b06b3022730b633ec0ee264d01a0",
+  "previous_progress_record": {
+    "git_commit": "beee959",
+    "path": "docs/proofs/sessions.json",
+    "sha256": "664b18a7246e9727d06d4298ee5f196e195f58f5ba770cb0114afa85a8a08ec0"
+  },
+  "history": {
+    "windows_locked_attempt": "work/proofs/s51/e782f555/result.json",
+    "empty_fixture_attempt": "work/proofs/s51/4ba2fa29/result.json",
+    "correction": "Empty threads unloaded after their owning test socket closed; holding that socket preserved all three during real UI verification. Failed attempts remain failed."
+  }
 }
