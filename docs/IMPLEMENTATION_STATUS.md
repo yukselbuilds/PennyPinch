@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 13 Kasım 2026.
 
+## H052–H054 — Cloudflare hesabı hazır olana kadar ertelendi
+
+- Kullanıcıda Cloudflare hesabı yok. Yerel hazırlığı da erteleyebileceğimizi belirtmesi üzerine H052 ve ona bağlı H053/H054 ertelenmiş olarak kaydedildi. Ürün kodu, alternatif/simüle servis, kurulum, kaynak oluşturma, deploy veya CI yapılmadı. Toplam **42/54**; bu işler tamamlandı sayılmaz.
+- Ana ajan mevcut H024/H025 ölçüm sözleşmesini okudu; aynı tek Luna yalnız resmî Cloudflare kaynaklarını araştırdı ve yazmayı bitirdiği doğrulandı. Bulgular ve URL/hash manifesti `work/research/h052/cloudflare/` altında. Bunlar hesap düzeyinde ücretsiz kota/erişim veya runtime kabulü değildir; devam ederken değişebilir koşullar yeniden doğrulanır. Ürün kaynakları değişmediğinden geçen ürün testleri tekrarlanmadı.
+- **Sonraki somut adım:** Hesap hazır olduğunda H052'nin gerçek Cloudflare pilotu için ücretsiz plan, erişim, veri bölgesi ve desteklenen test ortamını doğrula; somut kurulum/yayın kapsamını kullanıcının yetkisiyle netleştir. Yeni ana görev başlatılmadı; kullanıcı yönlendirmesi beklenir. H049 Linux ertelemesi de korunur.
+
 ## H051 — Oturumlar tamamlandı
 
 - **42/54 — H051 kapandı, çalışma durduruldu.** H049 Linux yaklaşık $0.10 Actions kotası nedeniyle ertelenmiş kalır; CI çalıştırılmadı. Sonraki ana görev için kullanıcı devam mesajı beklenir.
@@ -9,7 +15,7 @@
 - 221 Node, 441 Rust / 17 opt-in ignored, frontend/embedded debug build ve fmt geçti. 13 browser senaryosu / 122 erişilebilirlik denetiminde ihlal yok; gezinme p95 16.9 ms / eşik 250 ms. Üretim kaynakları son adaydan beri aynı; yalnız ignore edilen native fixture boş sohbet sahibini UI sonuna kadar tutacak şekilde düzeltildi. Güncel opt-in test ve fmt geçti; eski geçerli kontroller ilgili source/toolchain fingerprint'leriyle yeniden kullanılabilir. Genel kapıları sebepsiz tekrarlama.
 - **Son native kanıt:** `work/proofs/s51/12e3ea28/result.json` passed:true; gerçek Headroom UI → IPC → manager → Codex. Üç kayıt/iki aynı model, ayrı Hesaplar görünümü, Vazgeç ile istemci başlatmama, onayla doğru sunucuda resmî merkezi açma ve Headroom normal çıkışından sonra istemcinin yaşaması kabul edildi. Fixed-command/sahip parent receipt'i, hedef sunucuda `codex-tui` initialize tanığı, model/provider/reasoning/config korunumu ve önce/sonra kaynak eşitliği vardır. Inference 0; resmî TUI public duyuru isteği TLS öncesi guard ile engellendi. Yalnız sahipli test süreçleri temizlendi.
 - İlk kilitli koşu `e782f555` ve test sahibi kapanınca boş sohbetleri yükten çıkan `4ba2fa29` koşusu PASS sayılmadı. Kullanıcı kilidi açınca WTS unlock doğrulandı; Sky capture zaman aşımı yerine mevcut open-computer-use erişilebilirlik eylemleriyle ana ajan kontrol etti. UI fixture render'ları native kanıt sayılmadı. [Kanıt](proofs/sessions.md) · [JSON](proofs/sessions.json) · [İnceleme](reviews/H051.md) · [Karar](decisions/031-session-metadata.md).
-- **Sonraki somut adım:** Kullanıcı devam dediğinde H052'nin yerel rapor API/depolama sözleşmesinden, mevcut H024/H025 kabulünü ve ücretsiz kaynak sınırını okuyarak başla. Yeni hesap, yayın veya uzak kaynak yetkisi görev satırından türetilmez. H051 tamamlandı diye diğer OS, gerçek sağlayıcı/alt ajan turn'ü veya yayın paketi kabulü verilmez.
+- H051 kapanışından sonraki H052 araştırması ve erteleme kararı üstteki güncel kayıttadır. Yeni hesap, yayın veya uzak kaynak yetkisi görev satırından türetilmez. H051 tamamlandı diye diğer OS, gerçek sağlayıcı/alt ajan turn'ü veya yayın paketi kabulü verilmez.
 
 ## H050 — Windows 10 hesap bağlantıları tamamlandı
 
