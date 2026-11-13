@@ -14,6 +14,23 @@ fn request() -> Request {
 }
 
 #[test]
+fn compatibility_macos_requires_a_real_compiled_pin_for_historical_catalog_data() {
+    let pin = "9d17c4ce8c0e2301c5dd6f097b9cdb00f1f243b01b2fcb45eaf056a04386ee11";
+    assert!(macos_manifest_pin_available(pin));
+    for invalid in [
+        "",
+        "unknown",
+        &"0".repeat(64),
+        &"g".repeat(64),
+        &"a".repeat(63),
+        &"a".repeat(65),
+        &pin.to_uppercase(),
+    ] {
+        assert!(!macos_manifest_pin_available(invalid));
+    }
+}
+
+#[test]
 fn compatibility_catalog_embedded_records_have_scoped_existing_evidence() {
     let project = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -110,15 +127,22 @@ fn compatibility_snapshot_is_read_only_and_never_claims_an_installed_auth_sessio
             .unwrap();
     let value = serde_json::to_value(manager.read(req, &runtime, &discovery, &plans)).unwrap();
     assert_eq!(value["request_id"], id);
-    assert_eq!(value["status"], "snapshot");
-    assert_eq!(value["automatic_updates"], false);
-    assert_eq!(value["updater_available"], false);
-    assert_eq!(value["channel"], "development");
-    assert_eq!(value["engine"]["pinned_version"], "0.41.0");
-    assert!(value["scan_generation"].is_null());
-    assert!(value["context_fingerprint"].is_null());
-    assert!(value["installations"].as_array().unwrap().is_empty());
-    assert_eq!(value["adapters"].as_array().unwrap().len(), 3);
+    if cfg!(target_os = "macos")
+        && !macos_manifest_pin_available(runtime.catalog_runtime().manifest_sha256)
+    {
+        assert_eq!(value["status"], "error");
+        assert_eq!(value["error"]["code"], "unavailable");
+    } else {
+        assert_eq!(value["status"], "snapshot");
+        assert_eq!(value["automatic_updates"], false);
+        assert_eq!(value["updater_available"], false);
+        assert_eq!(value["channel"], "development");
+        assert_eq!(value["engine"]["pinned_version"], "0.41.0");
+        assert!(value["scan_generation"].is_null());
+        assert!(value["context_fingerprint"].is_null());
+        assert!(value["installations"].as_array().unwrap().is_empty());
+        assert_eq!(value["adapters"].as_array().unwrap().len(), 3);
+    }
     let after =
         serde_json::to_value(runtime.get_runtime_snapshot(uuid::Uuid::new_v4().to_string()))
             .unwrap();

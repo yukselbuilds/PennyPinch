@@ -304,6 +304,8 @@ Normal kabul gerçek vendor bundle keşfinden özel test config'iyle Preview →
 
 Ana ajan sürüm/rota ve uygulama kararlarını üstlenir; aynı Luna yalnız mevcut `config_io/macos_tests.rs` yardımcı testlerini yazar. Yerelde `plan_tests`, ilgili catalog/recovery kontrolleri ve fmt; native ortamda `macos-build.yml` Desktop seçeneğiyle yeni `native_desktop_manager_` testleri ve platform sürüm kontratı kullanılır. Tam yerel ana görev kapısı c8'de bir kez çalıştırılır. GitHub standart macOS koşusu ancak güncel dahil kota ve hesap Actions `$0` hard stop yeniden doğrulanırsa başlatılır.
 
+İlk native adayda 13 test geçti; tek hata katalog snapshot kontrolüydü. Katalog, macOS'un derlemeye bağlı payload pin'ini Windows manifestiyle karşılaştırıyordu; ayrıca ilk kısa derlemede macOS pin'i hazırlanmamıştı. Bu başarısız koşu [korundu](../proofs/macos-desktop-connection-attempt.json). Düzeltme Mac katalog kullanılabilirliğini runtime'ın verdiği derleme pin'ine bağlar; eksik/bozuk pin hâlâ `unavailable` verir. Gerçek dosya/manifest/version bütünlüğünü motor başlatılmadan önce doğrulayan `MacRuntime` denetimleri korunur. Windows'un mevcut manifest/hash karşılaştırması aynı kalır. Pozitif native katalog kabulünde gerçek kilitli macOS payload'ı hazırlanır; engine lifecycle tekrar istenmedikçe yeni motor/model çağrısı başlatılmaz.
+
 ## Açık kabuller
 
 - H048-c1–c6, c7a dar ön kontrol ve c7b kontrollü GUI akışı tamamlandı. H048-c7 ürünün macOS Desktop bağlantı engelinin kanıta göre değerlendirilmesi ve gerçek bağlantı planı; c8 son görev kabulü açık. Canlı sağlayıcı, gerçek hesap/alt ajan ve diğer sürüm/model kapsamı bu fixture'dan çıkarılmaz.

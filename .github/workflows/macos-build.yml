@@ -46,7 +46,7 @@ jobs:
     if: ${{ inputs.free_only_confirmed == true }}
     name: Apple Silicon app build (macOS standard runner)
     runs-on: macos-15
-    timeout-minutes: ${{ inputs.verify_desktop_discovery && !inputs.verify_managed_engine && !inputs.verify_cli_discovery && !inputs.verify_config_recovery && !inputs.verify_file_picker && 7 || 20 }}
+    timeout-minutes: ${{ inputs.verify_desktop_discovery && !inputs.verify_managed_engine && !inputs.verify_cli_discovery && !inputs.verify_config_recovery && !inputs.verify_file_picker && 4 || 20 }}
     env:
       CARGO_HOME: ${{ github.workspace }}/work/caches/cargo-home
       CARGO_TARGET_DIR: ${{ github.workspace }}/work/caches/cargo-target
@@ -57,6 +57,7 @@ jobs:
       HEADROOM_VERIFY_CLI_DISCOVERY: ${{ inputs.verify_cli_discovery }}
       HEADROOM_VERIFY_DESKTOP_DISCOVERY: ${{ inputs.verify_desktop_discovery }}
       HEADROOM_VERIFY_FILE_PICKER: ${{ inputs.verify_file_picker }}
+      HEADROOM_VERIFY_MANAGED_ENGINE: ${{ inputs.verify_managed_engine }}
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -71,7 +72,7 @@ jobs:
           package-manager-cache: false
 
       - name: Prepare pinned native engine resources
-        if: ${{ inputs.verify_managed_engine == true }}
+        if: ${{ inputs.verify_managed_engine == true || inputs.verify_desktop_discovery == true }}
         shell: bash
         run: bash scripts/prepare-macos-ci-runtime.sh
 
@@ -138,7 +139,7 @@ jobs:
                            integrations::transaction_fs::macos_impl::choices::tests::)
           fi
           if [[ "$HEADROOM_VERIFY_DESKTOP_DISCOVERY" == true ]]; then
-            if [[ "$HEADROOM_VERIFY_CONFIG_RECOVERY" != true && "$HEADROOM_VERIFY_CLI_DISCOVERY" != true && -z "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
+            if [[ "$HEADROOM_VERIFY_CONFIG_RECOVERY" != true && "$HEADROOM_VERIFY_CLI_DISCOVERY" != true && "$HEADROOM_VERIFY_MANAGED_ENGINE" != true ]]; then
               test_filters=()
             fi
             test_filters+=(integrations::discovery::macos::desktop::tests::
@@ -205,7 +206,7 @@ jobs:
                 /^test .* \.\.\. FAILED$/ || /^test result: / { print substr($0, 1, 240) }' "$build_log"
             else
               awk '/^test state::ownership::/ || /^test state::choices::macos_tests::/ || /^test integrations::config_io::macos::/ || /^test integrations::transaction_fs::macos_impl::/ || /^test integrations::discovery::macos::/ || /^test integrations::discovery_tests::/ || /^test integrations::plan_tests::codex_/ || /^test compatibility::catalog::tests::/ || /^test result: / { print }' "$build_log"
-              if [[ -n "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
+              if [[ "$HEADROOM_VERIFY_MANAGED_ENGINE" == true ]]; then
                 cargo +1.92.0 test --locked --manifest-path src-tauri/Cargo.toml \
                   --features custom-protocol --target aarch64-apple-darwin --jobs 2 --color never \
                   -- runtime::macos_session::tests::managed_engine_ runtime::manager::macos_tests::managed_app_engine_lifecycle \

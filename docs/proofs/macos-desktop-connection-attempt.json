@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "task": "H048-c7",
+  "status": "failed",
+  "candidate": "fbc09d10eadb54dbc5b3474ef5e17cfc0a7c8da2",
+  "run_url": "https://github.com/Protocol272/headroom-desktop/actions/runs/43291605710",
+  "inputs": {
+    "before": "24fb8c7769475171e7dfc0ebb872753c2ebe8006ffdb4abc749990a61d7d74a2",
+    "after": "24fb8c7769475171e7dfc0ebb872753c2ebe8006ffdb4abc749990a61d7d74a2"
+  },
+  "frontend_build": "pass",
+  "native_tests": {
+    "passed": 13,
+    "failed": 1,
+    "sole_failure": "compatibility::catalog::tests::compatibility_snapshot_is_read_only_and_never_claims_an_installed_auth_session"
+  },
+  "application_build_acceptance": "not_reached",
+  "diagnosis": {
+    "source_guard": "catalog compared macOS compiled pin with Windows ACTIVE_MANIFEST",
+    "standalone_build": "no compiled macOS payload pin was prepared",
+    "observed_reply_status": "error",
+    "expected_reply_status": "snapshot"
+  },
+  "correction_scope": "Use the native macOS compiled pin for catalog availability; preserve actual resource integrity in MacRuntime; prepare real pinned payload for the positive native catalog case."
+}

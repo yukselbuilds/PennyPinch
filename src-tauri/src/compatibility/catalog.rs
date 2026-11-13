@@ -13,6 +13,7 @@ use std::sync::{
 use uuid::Uuid;
 
 const SOURCE: &str = include_str!("../../../compatibility/clients.json");
+#[cfg(not(target_os = "macos"))]
 const MANIFEST: &str = crate::runtime::manager::ACTIVE_MANIFEST;
 const STATUSES: [&str; 7] = [
     "not_tested",
@@ -181,6 +182,15 @@ fn evidence_path(value: &str) -> bool {
             .all(|c| c.is_ascii_alphanumeric() || b"/-_.".contains(&c))
         && !value.contains("..")
 }
+
+#[cfg(any(target_os = "macos", test))]
+fn macos_manifest_pin_available(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+        && value.bytes().any(|c| c != b'0')
+}
 fn parse(source: &str) -> Result<Catalog, ()> {
     if source.len() > 192 * 1024 {
         return Err(());
@@ -338,13 +348,23 @@ impl CatalogManager {
             return failure(request.request_id, "unavailable");
         };
         let engine = runtime.catalog_runtime();
-        let Ok(manifest) = serde_json::from_str::<serde_json::Value>(MANIFEST) else {
-            return failure(request.request_id, "unavailable");
-        };
-        if engine.manifest_sha256 != digest(MANIFEST.as_bytes())
-            || manifest["engine"]["version"] != engine.pinned_version
-            || catalog.release.engine_version != engine.pinned_version
+        #[cfg(not(target_os = "macos"))]
         {
+            let Ok(manifest) = serde_json::from_str::<serde_json::Value>(MANIFEST) else {
+                return failure(request.request_id, "unavailable");
+            };
+            if engine.manifest_sha256 != digest(MANIFEST.as_bytes())
+                || manifest["engine"]["version"] != engine.pinned_version
+            {
+                return failure(request.request_id, "unavailable");
+            }
+        }
+        // macOS supplies its compiled payload pin here; MacRuntime validates the actual resources before start.
+        #[cfg(target_os = "macos")]
+        if !macos_manifest_pin_available(engine.manifest_sha256) {
+            return failure(request.request_id, "unavailable");
+        }
+        if catalog.release.engine_version != engine.pinned_version {
             return failure(request.request_id, "unavailable");
         }
         let revision = digest(SOURCE.as_bytes());
