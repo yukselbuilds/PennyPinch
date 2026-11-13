@@ -51,6 +51,8 @@ pub(crate) use codex::{
     connection_status as codex_connection_status, failure_reply as codex_status_failure_reply,
     CodexStatusReply, CodexStatusRequest,
 };
+#[cfg(windows)]
+pub(crate) use codex_verify::create_client_workspace;
 pub(crate) use codex_verify::{
     failure_reply as codex_verify_failure_reply, CodexVerifyManager, CodexVerifyReply,
     CodexVerifyRequest,

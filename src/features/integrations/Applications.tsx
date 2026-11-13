@@ -13,6 +13,7 @@ import type { PreferenceLanguage } from "../../lib/preferences";
 import { ConnectDialog } from "./ConnectDialog";
 import { ConnectionStatus } from "./ConnectionStatus";
 import { Compatibility } from "./Compatibility";
+import { Accounts } from "./Accounts";
 import { Icon } from "../../components/Icon";
 import { connectionActionClient } from "../../lib/connectionActions";
 import type { ConnectionActionResult, ConnectionOwnership, ConnectionPlan } from "../../lib/contracts";
@@ -174,6 +175,7 @@ export function Applications({ language, requestedClient, onBusyChange, onDiscov
   const text = copy[language];
   const [state, setState] = useState<ViewState>(() => isDiscoveryAvailable() ? { kind: "loading" } : { kind: "unavailable" });
   const [refreshing, setRefreshing] = useState(false);
+  const [accountsBusy, setAccountsBusy] = useState(false);
   const [selectingClient, setSelectingClient] = useState<ClientKind | null>(null);
   const [connectionClient, setConnectionClient] = useState<ClientKind | null>(null);
   const [ownershipStates, setOwnershipStates] = useState<Record<ClientKind, OwnershipCardState>>(initialOwnershipStates);
@@ -312,7 +314,7 @@ export function Applications({ language, requestedClient, onBusyChange, onDiscov
 
   const scanning = state.kind === "loading" || refreshing;
   const mutationPending = scanning || selectingClient !== null || connectionClient !== null;
-  const surfaceBusy = mutationPending || ownershipRefreshing || verificationBusy;
+  const surfaceBusy = mutationPending || ownershipRefreshing || verificationBusy || accountsBusy;
   const snapshot = state.kind === "ready" ? state.snapshot : null;
   const readyState = state.kind === "ready";
   const issue = state.kind === "error" ? state.issue : state.kind === "ready" ? state.issue : undefined;
@@ -398,6 +400,10 @@ export function Applications({ language, requestedClient, onBusyChange, onDiscov
       })}
     </div>
 
+    {snapshot?.status === "partial" && <Accounts language={language} installations={snapshot.installations}
+      scanGeneration={snapshot.scan_generation} disabled={mutationPending || ownershipRefreshing || verificationBusy}
+      onBusyChange={setAccountsBusy} />}
+
     {snapshot?.status === "partial" && snapshot.installations.some((item) => item.client_kind === "codex") && <details
       className="applications-advanced" onToggle={(event) => {
         const open = event.currentTarget.open;
@@ -410,7 +416,7 @@ export function Applications({ language, requestedClient, onBusyChange, onDiscov
         language={language}
         installations={snapshot.installations.filter((item) => item.client_kind === "codex")}
         scanGeneration={snapshot.scan_generation}
-        verificationDisabled={mutationPending || ownershipRefreshing}
+        verificationDisabled={mutationPending || ownershipRefreshing || accountsBusy}
         onVerificationChange={verificationActivity}
       />}
     </details>}

@@ -1,3 +1,4 @@
+pub(crate) mod accounts;
 pub(crate) mod codex_binary;
 pub(crate) mod config_document;
 pub(crate) mod config_io;

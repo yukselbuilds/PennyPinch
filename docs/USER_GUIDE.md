@@ -10,6 +10,14 @@ Bağlan’ı seçip doğru istemci yüzeyini/kurulumunu doğrula. Bu açık işl
 
 Bağlantı ayarının kaydedilmesi açık oturumun bunu kullandığını kanıtlamaz. Yeni bir CLI süreci başlat; masaüstü istemcisinde uygulamayı tamamen kapatıp yeniden aç. Açık sohbet, eski doğrudan rotayı kullanmaya devam edebilir. Trafik doğrulanmadıysa bağlantı kaydını gerçek istek kanıtı sayma.
 
+## Hesaplar
+
+Uygulamalar → Hesaplar, desteklenen istemcinin seçilen CLI profilindeki yerel giriş kaydını gösterir. Bulunan kurulum otomatik seçilir; birden çok kurulum varsa değiştirebilirsin. “Yerel giriş kaydı var”, hesabın sağlayıcıya erişiminin veya Headroom üzerinden trafik geçtiğinin doğrulandığı anlamına gelmez. Desktop uygulaması ve diğer sohbetlerin hesabı farklı olabilir.
+
+“Resmî girişi aç” önce hangi CLI profilinin etkileneceğini gösterir. Codex ChatGPT, Claude Code Claude hesabını açar; OpenCode sağlayıcı/yöntemi kendi ekranında seçtirir. Mevcut istemci oturumu veya API-key kaydı değişebilir; iptal önceki kaydı geri getirmeyebilir. Parola veya kodu yalnız resmî istemci ekranında gir. Headroom'daki “Durdur” kendi açtığı giriş sürecini durdurur. Başka ekrana geçmek veya tepsiye almak girişi iptal etmez; tam çıkış durdurur.
+
+Güvenilir okuma sağlanamayan sürüm/yüzey “bilinmiyor” gösterilir. Claude Code'un desteklenen sürümünde otomatik durum komutu ayar yazabildiği için çalıştırılmaz. Hesap durumu bilinmiyor olması, istemcinin veya modelinin tasarruf için desteklenmediği anlamına gelmez.
+
 ## Kapsam ve ölçümler
 
 Yalnız Headroom yerel endpoint’ine giden istekler motordan geçer. Aynı endpoint’i kullanan ana ve alt ajan istekleri bu rotayı izleyebilir; ayrı endpoint veya sağlayıcı kullanan trafik bu bağlantının kapsamında değildir. Kayıtlı ayar tüm modelleri, araçları veya oturumları doğrulamaz.

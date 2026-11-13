@@ -983,6 +983,16 @@ fn codex_route_eligible(
 }
 
 #[cfg(windows)]
+pub(crate) fn create_client_workspace(root: &Path) -> Result<(PathBuf, PinnedDirectoryChain), ()> {
+    let (path, pins) = create_run_workspace(root)?;
+    if !no_ancestor_codex_config(&path, &ConfigRootInputs::from_environment()) {
+        let _ = fs::remove_dir(&path);
+        return Err(());
+    }
+    Ok((path, pins))
+}
+
+#[cfg(windows)]
 fn create_run_workspace(root: &Path) -> Result<(PathBuf, PinnedDirectoryChain), ()> {
     super::validate_lexical_path(root).map_err(|_| ())?;
     super::ensure_fixed_volume(root).map_err(|_| ())?;

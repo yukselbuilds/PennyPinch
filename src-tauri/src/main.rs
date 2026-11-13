@@ -9,6 +9,7 @@ pub mod metrics;
 mod runtime;
 mod state;
 
+use integrations::accounts::{AccountManager, Reply as AccountReply, Request as AccountRequest};
 use integrations::config_io::{
     claude_context_failure_reply, claude_settings_snapshot_failure_reply, codex_connection_status,
     codex_status_failure_reply, codex_verify_failure_reply, ApplyConnectionRequest,
@@ -491,6 +492,29 @@ fn confirm_desktop_exit(
 }
 
 #[tauri::command]
+async fn manage_account(
+    window: tauri::WebviewWindow,
+    state: tauri::State<'_, AccountManager>,
+    discovery: tauri::State<'_, DiscoveryManager>,
+    request: AccountRequest,
+) -> Result<AccountReply, AccountReply> {
+    if window.label() != "main" {
+        return Ok(integrations::accounts::failure(
+            &request.request_id,
+            "unavailable",
+        ));
+    }
+    let manager = state.inner().clone();
+    let discovery = discovery.inner().clone();
+    let failure_id = request.request_id.clone();
+    Ok(
+        tauri::async_runtime::spawn_blocking(move || manager.execute(request, &discovery))
+            .await
+            .unwrap_or_else(|_| integrations::accounts::failure(&failure_id, "unavailable")),
+    )
+}
+
+#[tauri::command]
 fn get_discovery_snapshot(
     state: tauri::State<'_, DiscoveryManager>,
     request_id: String,
@@ -777,6 +801,7 @@ fn main() {
                     }),
             );
             let codex_verifier = CodexVerifyManager::new(app_local_data_dir.clone());
+            app.manage(AccountManager::new(app_local_data_dir.clone()));
             app.manage(desktop::update_flow::UpdateFlow::new(
                 app.config().identifier.clone(),
                 app.package_info().version.clone(),
@@ -839,6 +864,7 @@ fn main() {
             get_operating_snapshot,
             set_autostart,
             get_discovery_snapshot,
+            manage_account,
             scan_discovery,
             get_saved_installation_choice,
             remember_installation_choice,
@@ -915,6 +941,7 @@ fn main() {
                     eprintln!("headroom_exit event=verifier_begin");
                     let verifier_clean =
                         app_handle.state::<CodexVerifyManager>().inner().shutdown();
+                    let accounts_clean = app_handle.state::<AccountManager>().shutdown();
                     #[cfg(debug_assertions)]
                     eprintln!(
                         "headroom_exit event=verifier_done clean={} elapsed_ms={}",
@@ -932,7 +959,11 @@ fn main() {
                         runtime_clean as u8,
                         exit_start.elapsed().as_millis()
                     );
-                    let clean = verifier_clean && collector_clean && runtime_clean && tray_clean;
+                    let clean = verifier_clean
+                        && accounts_clean
+                        && collector_clean
+                        && runtime_clean
+                        && tray_clean;
                     #[cfg(all(windows, not(debug_assertions)))]
                     let clean = app_handle
                         .state::<desktop::update_flow::UpdateFlow>()

@@ -2299,12 +2299,30 @@ pub(super) fn verified_codex_cli_version(path: &Path) -> Option<String> {
 /// verification process. The shared read-only handle prevents ordinary
 /// replacement or writes between hashing and CreateProcess.
 pub(crate) fn pin_verified_codex_cli(path: &Path, expected_version: &str) -> Option<File> {
-    let (version, file) = verified_codex_cli_file(path)?;
+    pin_verified_client_cli("codex", path, expected_version)
+}
+
+pub(crate) fn pin_verified_client_cli(
+    client: &str,
+    path: &Path,
+    expected_version: &str,
+) -> Option<File> {
+    let (version, file) = verified_client_cli_file(client, path)?;
     (version == expected_version).then_some(file)
 }
 
 fn verified_codex_cli_file(path: &Path) -> Option<(String, File)> {
-    let canonical_path = resolve_codex_executable(path).ok()?;
+    verified_client_cli_file("codex", path)
+}
+
+fn verified_client_cli_file(client: &str, path: &Path) -> Option<(String, File)> {
+    let canonical_path = match client {
+        "codex" => resolve_codex_executable(path).ok()?,
+        "claude_code" | "opencode" if path.extension()?.eq_ignore_ascii_case("exe") => {
+            check_existing_path(path, PathKind::File).ok()?
+        }
+        _ => return None,
+    };
     let mut options = OpenOptions::new();
     options.read(true);
     #[cfg(windows)]
@@ -2355,8 +2373,13 @@ fn verified_codex_cli_file(path: &Path) -> Option<(String, File)> {
     }
 
     let digest = format!("{:x}", hasher.finalize());
-    let version = codex_cli_version_from_digest(bytes_read, &digest)
-        .or_else(|| super::codex_binary::signed_version(&canonical_path, &file, &digest))?;
+    let version = match client {
+        "codex" => codex_cli_version_from_digest(bytes_read, &digest)
+            .or_else(|| super::codex_binary::signed_version(&canonical_path, &file, &digest)),
+        "claude_code" => claude_code_cli_version_from_digest(bytes_read, &digest),
+        "opencode" => opencode_v1_cli_version_from_digest(bytes_read, &digest),
+        _ => None,
+    }?;
     if file_identity(&file)? != initial_identity || file.metadata().ok()?.len() != expected_size {
         return None;
     }

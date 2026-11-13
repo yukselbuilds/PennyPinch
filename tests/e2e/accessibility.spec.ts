@@ -2,6 +2,7 @@ import {test,expect,Page} from '@playwright/test';
 import {build} from 'vite';import react from '@vitejs/plugin-react';
 import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';
 const root=process.cwd(),base=path.join(root,'work/proofs/accessibility');
+const catalogSize=JSON.parse(fs.readFileSync(path.join(root,'compatibility/clients.json'),'utf8')).records.length;
 const run=path.join(base,'ui-'+crypto.randomUUID());fs.mkdirSync(run,{recursive:true});
 const bundle=path.join(run,'bundle');
 const sourceFiles=[...['src','tests'].flatMap(d=>fs.readdirSync(d,{recursive:true}).map(p=>path.join(d,String(p))).filter(p=>fs.statSync(p).isFile())),
@@ -86,7 +87,7 @@ test('compatibility: scoped records, responsive details, stale replies and conte
    const panel=page.locator('.compatibility');await expect(panel.locator('button')).toBeEnabled();
    if(scenario==='error')await expect(panel.locator('.compatibility__notice')).toContainText(/could not|okunamadı/);
    else{
-    await expect(panel.locator('.compatibility__records > li')).toHaveCount(12);
+    await expect(panel.locator('.compatibility__records > li')).toHaveCount(catalogSize);
     await expect(panel).toContainText(/does not verify|doğrulandığı anlamına gelmez/);
     if(scenario==='empty')await expect(panel).toContainText(/No installations|kurulum yok/);
     if(scenario==='data'){
@@ -112,11 +113,11 @@ test('compatibility: scoped records, responsive details, stale replies and conte
  await page.getByRole('button',{name:'Scan again',exact:true}).click();await expect(panel.locator('button')).toBeDisabled();
  await page.evaluate(()=>(window as any).DesktopFixture.releaseCompatibility());await expect(panel.locator('button')).toBeEnabled();
  await expect(panel.locator('.compatibility__notice')).toContainText('context changed');await expect(panel.locator('.compatibility__records')).toHaveCount(0);
- await panel.locator('button').click();await expect(panel.locator('.compatibility__records > li')).toHaveCount(12);
+ await panel.locator('button').click();await expect(panel.locator('.compatibility__records > li')).toHaveCount(catalogSize);
  await page.evaluate(()=>(window as any).DesktopFixture.blockDiscoveryScan());await page.getByRole('button',{name:'Scan again',exact:true}).click();
  await expect(panel.locator('.compatibility__records')).toHaveCount(0);await expect(panel.locator('.compatibility__notice')).toContainText('operation is in progress');
  await page.evaluate(()=>(window as any).DesktopFixture.releaseDiscoveryScan());await expect(page.getByRole('button',{name:'Scan again',exact:true})).toBeEnabled();
- await panel.locator('button').click();await expect(panel.locator('.compatibility__records > li')).toHaveCount(12);
+ await panel.locator('button').click();await expect(panel.locator('.compatibility__records > li')).toHaveCount(catalogSize);
  await page.evaluate(()=>(window as any).DesktopFixture.bumpCompatibilityContext());await panel.locator('button').click();await expect(panel.locator('.compatibility__notice')).toContainText('settings context changed');
  expect(violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>({label:v.label,id:v.id}))).toEqual([]);
 });
