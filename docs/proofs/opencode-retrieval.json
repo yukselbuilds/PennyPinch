@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "task": "H010-b3",
+  "accepted": true,
+  "parent_task_accepted": false,
+  "scope": {
+    "platform": "Windows 10 22H2 x64",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "cli": "OpenCode 1.19.3",
+    "engine": "0.41.0",
+    "auth": "synthetic",
+    "upstream": "local_fixture",
+    "reasoning_selection": "not_exercised",
+    "subagents": "not_tested",
+    "live_provider": "not_tested",
+    "token_and_cost_savings": "not_measured"
+  },
+  "protocols": {
+    "chat": {
+      "original_bytes": 14999,
+      "compressed_bytes": 103,
+      "content_sha256": "034cea80b24246b843a35f00d8969473d095efe69a417944aaa118c91341468e",
+      "upstream_messages": 4,
+      "upstream_streams": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "native_completed_tools": [
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "id": "call_headroom_logs_01",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_retrieve",
+          "id": "call_headroom_retrieve_01",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "id": "call_headroom_witness_02",
+          "status": "completed"
+        }
+      ],
+      "byte_exact_retrieval": true,
+      "observed_retrieval": "client_mcp",
+      "config_unchanged_during_cli": true,
+      "cli_exit_code": 0,
+      "stderr_bytes": 0,
+      "final_exact": true
+    },
+    "responses": {
+      "original_bytes": 14999,
+      "compressed_bytes": 103,
+      "content_sha256": "034cea80b24246b843a35f00d8969473d095efe69a417944aaa118c91341468e",
+      "upstream_messages": 4,
+      "upstream_streams": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "native_completed_tools": [
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "id": "call_headroom_logs_01",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "id": "call_headroom_witness_02",
+          "status": "completed"
+        }
+      ],
+      "byte_exact_retrieval": true,
+      "observed_retrieval": "server_side",
+      "config_unchanged_during_cli": true,
+      "cli_exit_code": 0,
+      "stderr_bytes": 0,
+      "final_exact": true
+    }
+  },
+  "checks": {
+    "native_preview_cancel_unchanged": true,
+    "cross_volume_no_write": true,
+    "native_apply_and_reopen": true,
+    "pause_byte_exact": true,
+    "stopped_bridge_error": true,
+    "restart_byte_exact": true,
+    "same_endpoint_after_restart": true,
+    "native_undo_cancel_unchanged": true,
+    "native_undo_conflict_unchanged": true,
+    "native_undo_byte_exact": true,
+    "release_uninstall_entry": {
+      "bridge_gate_sharing_violation": true,
+      "bridge_exit_code": 0,
+      "conflict_exit_code": 10,
+      "conflict_unchanged": true,
+      "release_exit_code": 0,
+      "byte_exact_restore": true,
+      "owner_released": true,
+      "keep_state": true,
+      "passed": true
+    },
+    "normal_gui_exit_code": 0
+  },
+  "fingerprints": {
+    "unchanged_product_input_count": 332,
+    "toolchain": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "cli_sha256": "cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375",
+    "bridge_source": {
+      "path": "runtime/retrieval_bridge.py",
+      "sha256": "163a28b73967782668f557ae509c45b55c63087eb4523ba7a294aaf9839a3b5a"
+    },
+    "release_binary": {
+      "path": "work/proofs/opencode-retrieval/native/ce8ea443ed/app/headroom-desktop.exe",
+      "sha256": "1cb5989fe4476ccd2d99c3ce228a60084cef4f92d56c71327f3841a49bd9bde1"
+    },
+    "staged_package": {
+      "path": "work/build/windows/h010-retrieval-resources/package-inputs.json",
+      "sha256": "758def5744c18e04bfe5d4183c0ac220e456736f683370a004c5c16f6570561c"
+    }
+  },
+  "evidence": {
+    "native": {
+      "path": "work/proofs/opencode-retrieval/native/ce8ea443ed/same-volume/result.json",
+      "sha256": "4100d73363aad329c6524562899028856e1fedc4fae0f611d18580ba0dd9d587"
+    },
+    "native_removal": {
+      "path": "work/proofs/opencode-retrieval/native/ce8ea443ed/removal/result.json",
+      "sha256": "23cf13cfd3970a0bff8e933fb1e4b88ebeaf40d5d9d26b7dd1563772ca07ade6"
+    },
+    "preview_cancel_and_cross_volume": {
+      "path": "work/proofs/opencode-retrieval/native/ce8ea443ed/rerun/result.json",
+      "sha256": "2a10daf494191c20aa0709e51d9cf113418fa8652c236faac93d7138d015aad2"
+    },
+    "focused_checks": {
+      "path": "work/proofs/opencode-retrieval/focused-7d784ff844.json",
+      "sha256": "6a7e33e36c2cd07531409ce020a9b180edd7d03a6e211b2adfdf0f892eebe869"
+    },
+    "local_quality_gate": {
+      "path": "work/proofs/opencode-retrieval/final-74f47538b0.json",
+      "sha256": "942df48f418400fd3d8b12f2162e5dfcbe2018ec9b5c3a83059fcdd29e721fce"
+    }
+  },
+  "known_limits": [
+    "OpenCode client fixture explicitly allowed the two relevant MCP tools.",
+    "Legacy user file and selected user file overlap are checked; another process's project, remote, managed and plugin config may override effective settings.",
+    "Release uninstall entry was exercised with the existing exclusive file gate; full installer and update distribution acceptance are separate."
+  ]
+}

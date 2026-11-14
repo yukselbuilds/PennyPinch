@@ -82,7 +82,7 @@ fn prepare(root: &Path, delete: bool) -> i32 {
     0
 }
 
-fn gate_path(root: &Path) -> io::Result<PathBuf> {
+pub(crate) fn gate_path(root: &Path) -> io::Result<PathBuf> {
     let mut name = root
         .file_name()
         .ok_or_else(|| io::Error::other("uninstall_gate_path"))?

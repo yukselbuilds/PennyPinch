@@ -41,6 +41,8 @@ struct StoredReceipt {
     config_was_missing: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     opencode_routes: Option<Vec<OpenCodeRouteReceipt>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    opencode_retrieval: Option<crate::integrations::opencode_retrieval::RetrievalReceipt>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -299,6 +301,7 @@ impl StoredReceipt {
             created_ancestor_mask: metadata.created_ancestor_mask,
             config_was_missing: metadata.config_was_missing,
             opencode_routes: metadata.opencode_routes,
+            opencode_retrieval: metadata.opencode_retrieval,
         }
     }
 
@@ -313,6 +316,7 @@ impl StoredReceipt {
             created_ancestor_mask: self.created_ancestor_mask,
             config_was_missing: self.config_was_missing,
             opencode_routes: self.opencode_routes.clone(),
+            opencode_retrieval: self.opencode_retrieval.clone(),
         })
         .map_err(|_| OwnershipError::Invalid)
     }
@@ -1310,6 +1314,7 @@ mod codec_tests {
             created_ancestor_mask: 7,
             config_was_missing: false,
             opencode_routes: None,
+            opencode_retrieval: None,
         })
         .is_err());
     }

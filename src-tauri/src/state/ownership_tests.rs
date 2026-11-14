@@ -960,6 +960,7 @@ fn opencode_receipts_preserve_supported_presence_and_source_masks() {
         created_ancestor_mask: 7,
         config_was_missing: true,
         opencode_routes: None,
+        opencode_retrieval: None,
     })
     .expect("valid codec-only missing-source receipt");
     assert!(!missing_path.exists());

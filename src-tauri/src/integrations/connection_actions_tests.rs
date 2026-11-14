@@ -1699,6 +1699,131 @@ fn opencode_three_route_fixture() -> &'static [u8] {
 "#
 }
 
+fn with_retrieval(manager: PlanManager, fixture: &Fixture) -> PlanManager {
+    let root = fixture.root.clone();
+    manager.with_test_opencode_retrieval_provider(move |endpoint| {
+        super::opencode_retrieval::RetrievalCommand::new(
+            &root.join("runtime/python.exe"),
+            &root.join("runtime/retrieval_bridge.py"),
+            &root.join("runtime/connection-endpoint.json"),
+            &endpoint.endpoint_id,
+            &root.join("headroom.exe"),
+            None,
+        )
+        .map_err(|_| StableEndpointAccessError::Unavailable)
+    })
+}
+
+#[test]
+fn opencode_retrieval_manager_commits_and_recovers_only_owned_fields() {
+    let fixture = Fixture::new();
+    let config = fixture.path("xdg-home/opencode/opencode.jsonc");
+    let original = opencode_three_route_fixture();
+    write_file(&config, original);
+    let (base, installation_id, generation) = manager(&fixture, "opencode_v1", config.clone());
+    let connected = with_retrieval(base, &fixture);
+    let plan = preview(&connected, installation_id, generation);
+    assert_eq!(
+        plan.opencode_retrieval,
+        Some(super::opencode_retrieval::RetrievalChange::InstallLocalBridge)
+    );
+    assert_eq!(fs::read(&config).unwrap(), original, "preview is read-only");
+    let owned = apply(&connected, &plan).ownership.unwrap();
+    let installed = fs::read(&config).unwrap();
+    let ownership_path = fixture.path("state/ownership/opencode_v1.json");
+    let owner_bytes = fs::read(&ownership_path).unwrap();
+    assert!(!String::from_utf8_lossy(&owner_bytes).contains("python.exe"));
+    let changed = String::from_utf8(installed.clone())
+        .unwrap()
+        .replace("python.exe", "user.exe");
+    fs::write(&config, &changed).unwrap();
+    let (reopened, _, _) = manager(&fixture, "opencode_v1", config.clone());
+    assert_eq!(
+        error_code(undo(&reopened, "opencode_v1", &owned)),
+        "config_conflict"
+    );
+    assert_eq!(fs::read(&config).unwrap(), changed.as_bytes());
+    assert_eq!(fs::read(&ownership_path).unwrap(), owner_bytes);
+    fs::write(&config, &installed).unwrap();
+    assert_eq!(
+        success(undo(&reopened, "opencode_v1", &owned)).status,
+        "released"
+    );
+    assert_eq!(fs::read(&config).unwrap(), original);
+}
+
+#[test]
+fn opencode_retrieval_manager_blocks_existing_mcp_without_writes() {
+    let fixture = Fixture::new();
+    let config = fixture.path("xdg-home/opencode/opencode.jsonc");
+    let original = String::from_utf8(opencode_three_route_fixture().to_vec())
+        .unwrap()
+        .replacen(
+            '{',
+            "{\"mcp\":{\"headroom\":{\"type\":\"local\",\"command\":[\"user-command\"]}},",
+            1,
+        );
+    write_file(&config, original.as_bytes());
+    let (base, installation_id, generation) = manager(&fixture, "opencode_v1", config.clone());
+    let connected = with_retrieval(base, &fixture);
+    let plan = preview(&connected, installation_id, generation);
+    assert_eq!(plan.status, super::plan::PlanStatus::Blocked);
+    assert!(plan
+        .blockers
+        .contains(&super::plan::PlanBlocker::RetrievalMcpConflict));
+    assert!(plan.opencode_retrieval_command.is_none());
+    assert_eq!(fs::read(&config).unwrap(), original.as_bytes());
+    assert!(!fixture.path("state/ownership/opencode_v1.json").exists());
+}
+
+#[test]
+fn opencode_retrieval_failed_commit_rolls_back_routes_bridge_and_owner() {
+    let fixture = Fixture::new();
+    let config = fixture.path("xdg-home/opencode/opencode.jsonc");
+    let original = opencode_three_route_fixture();
+    write_file(&config, original);
+    let (base, installation_id, generation) = manager(&fixture, "opencode_v1", config.clone());
+    let connected = with_retrieval(base, &fixture).with_action_commit_fault();
+    let plan = preview(&connected, installation_id, generation);
+    let result = connected.apply_connection(ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        plan_id: plan.plan_id,
+        expected_config_fingerprint: plan.config_fingerprint,
+    });
+    assert_eq!(error_code(result), "config_unavailable");
+    assert_eq!(fs::read(&config).unwrap(), original);
+    assert!(!fixture.path("state/ownership/opencode_v1.json").exists());
+}
+
+#[test]
+fn opencode_retrieval_blocks_legacy_user_mcp_added_after_preview() {
+    let fixture = Fixture::new();
+    let config = fixture.path("xdg-home/opencode/opencode.jsonc");
+    let legacy = config.with_file_name("config.json");
+    let original = opencode_three_route_fixture();
+    write_file(&config, original);
+    let (base, installation_id, generation) = manager(&fixture, "opencode_v1", config.clone());
+    let connected = with_retrieval(base, &fixture);
+    let plan = preview(&connected, installation_id.clone(), generation);
+    let existing_mcp = br#"{"mcp":{"headroom":{"type":"local","command":["user-command"]}}}"#;
+    write_file(&legacy, existing_mcp);
+    let result = connected.apply_connection(ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: Uuid::new_v4().to_string(),
+        plan_id: plan.plan_id,
+        expected_config_fingerprint: plan.config_fingerprint,
+    });
+    assert_eq!(error_code(result), "config_conflict");
+    assert_eq!(fs::read(&config).unwrap(), original);
+    assert_eq!(fs::read(&legacy).unwrap(), existing_mcp);
+    assert!(!fixture.path("state/ownership/opencode_v1.json").exists());
+    let blocked = preview(&connected, installation_id, generation);
+    assert!(blocked
+        .blockers
+        .contains(&super::plan::PlanBlocker::RetrievalMcpConflict));
+}
+
 fn set_opencode_environment(
     manager: PlanManager,
     state: Arc<Mutex<super::config_io::opencode_environment::Snapshot>>,

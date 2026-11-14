@@ -11,7 +11,7 @@ import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERLAYS = ('desktop_controller.py', 'desktop_helper.py', 'cache_control_shim.py',
-            'optimization_control.py', 'optimization-sources.json')
+            'optimization_control.py', 'optimization-sources.json', 'retrieval_bridge.py')
 
 
 def sha(path):

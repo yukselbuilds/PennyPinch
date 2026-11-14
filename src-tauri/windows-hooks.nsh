@@ -16,8 +16,8 @@ LangString HeadroomPathTooLong 1055 "Kurulum klasörü çok uzun. Daha kısa bir
 
 LangString HeadroomDeleteData 1033 "Delete Headroom history and preferences"
 LangString HeadroomDeleteData 1055 "Headroom geçmişini ve tercihlerini sil"
-LangString HeadroomRemovalBusy 1033 "Quit Headroom from the system tray, then try uninstalling again."
-LangString HeadroomRemovalBusy 1055 "Headroom'u sistem tepsisinden kapatıp kaldırmayı yeniden deneyin."
+LangString HeadroomRemovalBusy 1033 "Quit Headroom from the system tray and close connected OpenCode sessions, then try uninstalling again."
+LangString HeadroomRemovalBusy 1055 "Headroom'u sistem tepsisinden kapatın ve bağlı OpenCode oturumlarını kapatıp kaldırmayı yeniden deneyin."
 LangString HeadroomRemovalConnections 1033 "A Headroom connection could not be removed. Close programs using its settings file, then use Disconnect in Headroom and retry. The installation was kept."
 LangString HeadroomRemovalConnections 1055 "Bir Headroom bağlantısı kaldırılamadı. Ayar dosyasını kullanan programları kapatın, Headroom'da bağlantıyı kaldırıp yeniden deneyin. Kurulum korundu."
 LangString HeadroomRemovalState 1033 "Headroom could not finish removing its local data or startup entry. Close programs using those files and try again. The installation was kept."

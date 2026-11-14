@@ -303,6 +303,27 @@ test("missing config plans carry only the default-preserving declarations", () =
   assert.equal(decode(makePreview({ ...missingOpenCode, reasoning: "absent" }), requestId, "opencode"), null);
 });
 
+test("OpenCode retrieval preview is explicit and rejects inconsistent or executable payloads", () => {
+  const valid = makePlan({
+    client_kind: "opencode_v1", config_source: "opencode_jsonc",
+    endpoint_field: { field: "opencode_v1_openai_base_url", before: "provider_routes",
+      proposed_value: "http://127.0.0.1:41731/v1", after_headroom: true },
+    opencode_coverage: makeOpenCodeCoverage(), opencode_retrieval: "install_local_bridge",
+  });
+  assert.equal(decode(makePreview(valid), requestId, "opencode").plan.opencode_retrieval, "install_local_bridge");
+  const conflict = { ...valid, status: "blocked", blockers: ["retrieval_mcp_conflict"],
+    endpoint_field: { ...valid.endpoint_field, after_headroom: false }, opencode_retrieval: "conflict" };
+  assert.equal(decode(makePreview(conflict), requestId, "opencode").plan.opencode_retrieval, "conflict");
+  for (const invalid of [
+    { ...valid, opencode_retrieval: "conflict" },
+    { ...conflict, blockers: [] },
+    { ...conflict, opencode_retrieval: "install_local_bridge" },
+    { ...valid, opencode_retrieval: { command: ["user.exe"] } },
+    { ...valid, opencode_retrieval_command: ["user.exe"] },
+  ]) assert.equal(decode(makePreview(invalid), requestId, "opencode"), null);
+  assert.equal(decode(makePreview(makePlan({ opencode_retrieval: "install_local_bridge" }))), null);
+});
+
 test("native client sends only the typed preview request and returns fixed failure results", async () => {
   let invoked = null;
   const native = createConnectionPlanClient({

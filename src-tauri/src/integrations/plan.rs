@@ -136,6 +136,7 @@ pub(crate) enum PlanBlocker {
     ClientVersionUnknown,
     UnsupportedClientVersion,
     UnsupportedClientSurface,
+    RetrievalMcpConflict,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
@@ -204,6 +205,10 @@ pub(crate) struct ConnectionPlan {
     pub opencode_coverage: Option<super::opencode_routes::OpenCodeRouteCoverage>,
     #[serde(skip)]
     pub(crate) opencode_routes: Option<super::opencode_routes::OpenCodeRouteAnalysis>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) opencode_retrieval: Option<super::opencode_retrieval::RetrievalChange>,
+    #[serde(skip)]
+    pub(crate) opencode_retrieval_command: Option<super::opencode_retrieval::RetrievalCommand>,
     pub status: PlanStatus,
     pub model: DeclarationState,
     pub reasoning: DeclarationState,
@@ -396,6 +401,8 @@ pub(crate) fn preview_config_with_presence(
         },
         opencode_coverage: opencode_routes.as_ref().map(|routes| routes.coverage),
         opencode_routes,
+        opencode_retrieval: None,
+        opencode_retrieval_command: None,
         status,
         model,
         reasoning,

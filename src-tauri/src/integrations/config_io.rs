@@ -448,6 +448,31 @@ pub(super) fn read_user_config(
     })
 }
 
+/// OpenCode merges these older global files before the selected user file.
+/// Refuse overlapping MCP definitions so no keys from their command are adopted.
+fn check_opencode_global_mcp(roots: &ConfigRootInputs) -> Result<bool, ConfigIoError> {
+    let ConfigTarget::OpenCode { json, .. } = roots.target(ClientKind::OpenCodeV1)? else {
+        return Err(ConfigIoError::InvalidRoot);
+    };
+    let parent = json.parent().ok_or(ConfigIoError::InvalidRoot)?;
+    for name in ["config.json", "config"] {
+        if let CandidateRead::Present { bytes, pin, .. } = read_candidate(&parent.join(name))? {
+            let can_install = if name == "config.json" {
+                super::config_document::parse_document(ClientKind::OpenCodeV1, &bytes)
+                    .is_ok_and(|config| super::opencode_retrieval::can_install(&config))
+            } else {
+                // OpenCode may migrate this legacy file into config.json on its next start.
+                false
+            };
+            pin.validate()?;
+            if !can_install {
+                return Ok(false);
+            }
+        }
+    }
+    Ok(true)
+}
+
 pub(super) fn read_codex_config_pinned(
     inputs: &ConfigRootInputs,
 ) -> Result<PinnedCodexConfigRead, ConfigIoError> {
@@ -1118,6 +1143,16 @@ pub(crate) struct PlanManager {
     endpoint_provider:
         Arc<dyn Fn() -> Result<ReadyStableEndpoint, StableEndpointAccessError> + Send + Sync>,
     opencode_environment_provider: Arc<dyn Fn() -> opencode_environment::Snapshot + Send + Sync>,
+    opencode_retrieval_provider: Option<
+        Arc<
+            dyn Fn(
+                    &ReadyStableEndpoint,
+                )
+                    -> Result<super::opencode_retrieval::RetrievalCommand, StableEndpointAccessError>
+                + Send
+                + Sync,
+        >,
+    >,
     leases: Mutex<HashMap<String, PlanLease>>,
     preview_in_flight: AtomicBool,
     ownership_store: Option<crate::state::ownership::OwnershipStore>,
@@ -1141,7 +1176,17 @@ impl PlanManager {
     }
 
     pub(crate) fn new(discovery: DiscoveryManager, runtime: RuntimeManager) -> Self {
-        Self::with_endpoint(discovery, move || runtime.ready_stable_endpoint())
+        let endpoint_runtime = runtime.clone();
+        let manager =
+            Self::with_endpoint(discovery, move || endpoint_runtime.ready_stable_endpoint());
+        #[cfg(windows)]
+        let manager = Self {
+            opencode_retrieval_provider: Some(Arc::new(move |endpoint| {
+                runtime.opencode_retrieval_command(endpoint)
+            })),
+            ..manager
+        };
+        manager
     }
 
     #[cfg(all(windows, not(debug_assertions)))]
@@ -1164,6 +1209,7 @@ impl PlanManager {
             roots_provider: Arc::new(ConfigRootInputs::from_environment),
             endpoint_provider: Arc::new(endpoint_provider),
             opencode_environment_provider: Arc::new(opencode_environment::Snapshot::from_process),
+            opencode_retrieval_provider: None,
             leases: Mutex::new(HashMap::new()),
             preview_in_flight: AtomicBool::new(false),
             ownership_store: None,
@@ -1204,6 +1250,7 @@ impl PlanManager {
             opencode_environment_provider: Arc::new(|| {
                 opencode_environment::Snapshot::from_values([None, None, None])
             }),
+            opencode_retrieval_provider: None,
             leases: Mutex::new(HashMap::new()),
             preview_in_flight: AtomicBool::new(false),
             ownership_store: None,
@@ -1229,6 +1276,7 @@ impl PlanManager {
             claude_context: claude_context::ClaudeContextManager::new(),
             roots_provider: Arc::new(roots_provider),
             endpoint_provider: Arc::new(endpoint_provider),
+            opencode_retrieval_provider: None,
             opencode_environment_provider: Arc::new(|| {
                 opencode_environment::Snapshot::from_values([None, None, None])
             }),
@@ -1265,6 +1313,7 @@ impl PlanManager {
             preview_in_flight: AtomicBool::new(false),
             ownership_store: None,
             after_first_read: Some(Arc::new(after_first_read)),
+            opencode_retrieval_provider: None,
             after_codex_config_rollback: None,
             fail_action_before_commit: false,
             fail_undo_before_commit: false,
@@ -1277,6 +1326,21 @@ impl PlanManager {
         F: Fn() -> opencode_environment::Snapshot + Send + Sync + 'static,
     {
         self.opencode_environment_provider = Arc::new(provider);
+        self
+    }
+
+    #[cfg(test)]
+    pub(super) fn with_test_opencode_retrieval_provider<F>(mut self, provider: F) -> Self
+    where
+        F: Fn(
+                &ReadyStableEndpoint,
+            )
+                -> Result<super::opencode_retrieval::RetrievalCommand, StableEndpointAccessError>
+            + Send
+            + Sync
+            + 'static,
+    {
+        self.opencode_retrieval_provider = Some(Arc::new(provider));
         self
     }
 
@@ -1366,6 +1430,40 @@ impl PlanManager {
                 Err(error) => return error_reply(request_id, map_plan_error(error)),
             };
         plan.config_fingerprint = first_read.fingerprint.clone();
+        if kind == ClientKind::OpenCodeV1
+            && !first_opencode_environment
+                .as_ref()
+                .is_some_and(|snapshot| snapshot.has_override)
+        {
+            if let Some(provider) = &self.opencode_retrieval_provider {
+                use super::opencode_retrieval::{can_install, RetrievalChange};
+                let parsed = match super::config_document::parse_document(kind, &first_read.bytes) {
+                    Ok(value) => value,
+                    Err(_) => return error_reply(request_id, ReplyError::ConfigInvalid),
+                };
+                let legacy_clear = match check_opencode_global_mcp(&roots) {
+                    Ok(value) => value,
+                    Err(error) => return error_reply(request_id, map_config_error(error)),
+                };
+                if can_install(&parsed) && legacy_clear {
+                    if plan.status == PlanStatus::Preview {
+                        plan.opencode_retrieval = Some(RetrievalChange::InstallLocalBridge);
+                        plan.opencode_retrieval_command = match provider(&endpoint) {
+                            Ok(value) => Some(value),
+                            Err(_) => {
+                                return error_reply(request_id, ReplyError::EndpointUnavailable)
+                            }
+                        };
+                    }
+                } else {
+                    plan.opencode_retrieval = Some(RetrievalChange::Conflict);
+                    plan.blockers
+                        .push(super::plan::PlanBlocker::RetrievalMcpConflict);
+                    plan.status = PlanStatus::Blocked;
+                    plan.endpoint_field.after_headroom = false;
+                }
+            }
+        }
         if let Some(layers) = &first_claude_layers {
             for blocker in &layers.route_blockers {
                 if !plan.blockers.contains(blocker) {

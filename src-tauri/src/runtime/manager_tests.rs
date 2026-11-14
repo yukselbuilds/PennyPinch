@@ -739,6 +739,8 @@ fn expired_ready_snapshot_becomes_unknown_and_recovers_after_fresh_health() {
         shutting_down: Arc::new(AtomicBool::new(false)),
         update_start_gate: Arc::new(std::sync::Mutex::new(false)),
         actor_available: true,
+        #[cfg(windows)]
+        retrieval_layout: Err(PublicError::EnvironmentBlocked),
     };
     let RuntimeReply::Snapshot(stale) = manager.get_runtime_snapshot(REQUEST_ID.to_owned()) else {
         panic!("expected stale snapshot");
@@ -854,6 +856,8 @@ fn manager_for_endpoint_test(runtime: RuntimeView, ingress: IngressView) -> Runt
         shutting_down: Arc::new(AtomicBool::new(false)),
         update_start_gate: Arc::new(std::sync::Mutex::new(false)),
         actor_available: false,
+        #[cfg(windows)]
+        retrieval_layout: Err(PublicError::EnvironmentBlocked),
     }
 }
 
@@ -1006,6 +1010,8 @@ fn ingress_snapshot_downgrades_expired_ready_health_and_hides_stale_count() {
         shutting_down: Arc::new(AtomicBool::new(false)),
         update_start_gate: Arc::new(std::sync::Mutex::new(false)),
         actor_available: false,
+        #[cfg(windows)]
+        retrieval_layout: Err(PublicError::EnvironmentBlocked),
     };
 
     let IngressReply::Snapshot(snapshot) = manager.get_ingress_snapshot(REQUEST_ID.to_owned())
@@ -1044,6 +1050,8 @@ fn expired_endpoint_observation_becomes_unknown_when_engine_is_stopped() {
         shutting_down: Arc::new(AtomicBool::new(false)),
         update_start_gate: Arc::new(std::sync::Mutex::new(false)),
         actor_available: false,
+        #[cfg(windows)]
+        retrieval_layout: Err(PublicError::EnvironmentBlocked),
     };
 
     let IngressReply::Snapshot(snapshot) = manager.get_ingress_snapshot(REQUEST_ID.to_owned())

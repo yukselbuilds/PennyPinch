@@ -3,6 +3,7 @@ pub(crate) mod codex_binary;
 pub(crate) mod config_document;
 pub(crate) mod config_io;
 pub mod discovery;
+pub(crate) mod opencode_retrieval;
 pub(crate) mod opencode_routes;
 pub mod picker;
 pub(crate) mod plan;

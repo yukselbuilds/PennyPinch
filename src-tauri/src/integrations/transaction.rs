@@ -5,6 +5,7 @@ use std::fmt;
 use std::ops::Range;
 
 use super::config_document;
+use super::opencode_retrieval::{self, RetrievalChange, RetrievalReceipt};
 use super::plan::{
     ClientKind, ConfigPresence, ConfigSource, ConnectionPlan, EndpointBefore, EndpointField,
     PlanStatus,
@@ -33,6 +34,7 @@ pub(crate) struct PatchReceipt {
     created_ancestor_mask: u8,
     config_was_missing: bool,
     opencode_routes: Option<Vec<OpenCodeRouteReceipt>>,
+    opencode_retrieval: Option<RetrievalReceipt>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -43,6 +45,7 @@ pub(crate) struct PatchReceiptMetadata {
     pub(crate) created_ancestor_mask: u8,
     pub(crate) config_was_missing: bool,
     pub(crate) opencode_routes: Option<Vec<OpenCodeRouteReceipt>>,
+    pub(crate) opencode_retrieval: Option<RetrievalReceipt>,
 }
 
 impl PatchReceipt {
@@ -54,6 +57,7 @@ impl PatchReceipt {
             created_ancestor_mask: self.created_ancestor_mask,
             config_was_missing: self.config_was_missing,
             opencode_routes: self.opencode_routes.clone(),
+            opencode_retrieval: self.opencode_retrieval.clone(),
         }
     }
 
@@ -68,6 +72,7 @@ impl PatchReceipt {
             created_ancestor_mask: metadata.created_ancestor_mask,
             config_was_missing: metadata.config_was_missing,
             opencode_routes: metadata.opencode_routes,
+            opencode_retrieval: metadata.opencode_retrieval,
         })
     }
 }
@@ -90,6 +95,64 @@ pub(crate) enum TransactionError {
 }
 
 pub(crate) fn apply_missing_endpoint(
+    plan: &ConnectionPlan,
+    current: &[u8],
+) -> Result<ApplyResult, TransactionError> {
+    let Some(command) = &plan.opencode_retrieval_command else {
+        if plan.opencode_retrieval.is_some() {
+            return Err(TransactionError::InvalidPlan);
+        }
+        return apply_endpoint_only(plan, current);
+    };
+    if plan.client_kind != "opencode_v1"
+        || plan.opencode_retrieval != Some(RetrievalChange::InstallLocalBridge)
+    {
+        return Err(TransactionError::InvalidPlan);
+    }
+    let parsed = config_document::parse_document(ClientKind::OpenCodeV1, current)
+        .map_err(|_| TransactionError::InvalidConfig)?;
+    if !opencode_retrieval::can_install(&parsed) {
+        return Err(TransactionError::Conflict);
+    }
+    let (bytes, mut receipt) = match apply_endpoint_only(plan, current)? {
+        ApplyResult::Patched { bytes, receipt } => (bytes, receipt),
+        ApplyResult::Unchanged => (
+            current.to_vec(),
+            PatchReceipt {
+                client_kind: ClientKind::OpenCodeV1,
+                config_source: plan.config_source,
+                endpoint_port: plan.endpoint_port,
+                created_ancestor_mask: 0,
+                config_was_missing: false,
+                opencode_routes: Some(Vec::new()),
+                opencode_retrieval: None,
+            },
+        ),
+    };
+    let definition = command.definition();
+    let literal = serde_json::to_string(&definition).map_err(|_| TransactionError::InvalidPlan)?;
+    let (bytes, mask) = patch_json_path_literal(
+        ClientKind::OpenCodeV1,
+        &bytes,
+        &["mcp"],
+        "headroom",
+        &literal,
+    )?;
+    receipt.opencode_retrieval = Some(RetrievalReceipt {
+        definition_sha256: opencode_retrieval::definition_fingerprint(
+            &definition,
+            literal.as_bytes(),
+        )
+        .ok_or(TransactionError::InvalidPlan)?,
+        created_mcp_object: mask == 1,
+    });
+    let receipt = PatchReceipt::from_metadata(receipt.metadata())?;
+    config_document::parse_document(ClientKind::OpenCodeV1, &bytes)
+        .map_err(|_| TransactionError::InvalidConfig)?;
+    Ok(ApplyResult::Patched { bytes, receipt })
+}
+
+fn apply_endpoint_only(
     plan: &ConnectionPlan,
     current: &[u8],
 ) -> Result<ApplyResult, TransactionError> {
@@ -140,6 +203,7 @@ pub(crate) fn apply_missing_endpoint(
             created_ancestor_mask: mask,
             config_was_missing: plan.config_presence == ConfigPresence::Missing,
             opencode_routes: None,
+            opencode_retrieval: None,
         })?,
     })
 }
@@ -148,6 +212,43 @@ pub(crate) fn undo_owned_endpoint(
     receipt: &PatchReceipt,
     current: &[u8],
 ) -> Result<Vec<u8>, TransactionError> {
+    let Some(bridge) = &receipt.opencode_retrieval else {
+        return undo_endpoint_only(receipt, current);
+    };
+    if !valid_receipt_metadata(&receipt.metadata()) {
+        return Err(TransactionError::InvalidReceipt);
+    }
+    let parsed = config_document::parse_document(ClientKind::OpenCodeV1, current)
+        .map_err(|_| TransactionError::InvalidConfig)?;
+    let object = json_object_at(ClientKind::OpenCodeV1, current, &["mcp", "headroom"])?
+        .ok_or(TransactionError::Conflict)?;
+    if parsed
+        .get("mcp")
+        .and_then(|mcp| mcp.get("headroom"))
+        .and_then(|value| {
+            opencode_retrieval::definition_fingerprint(
+                value,
+                &current[object.range.start..object.range.end],
+            )
+        })
+        .as_ref()
+        != Some(&bridge.definition_sha256)
+    {
+        return Err(TransactionError::Conflict);
+    }
+    let mut bytes = remove_json_property(ClientKind::OpenCodeV1, current, &["mcp"], "headroom")?;
+    if bridge.created_mcp_object {
+        let object = json_object_at(ClientKind::OpenCodeV1, &bytes, &["mcp"])?
+            .ok_or(TransactionError::Conflict)?;
+        if object_is_empty_and_comment_free(&bytes, &object) {
+            bytes = remove_json_property(ClientKind::OpenCodeV1, &bytes, &[], "mcp")?;
+        }
+    }
+    // Both transformations stay in memory until the existing file transaction commits.
+    undo_endpoint_only(receipt, &bytes)
+}
+
+fn undo_endpoint_only(receipt: &PatchReceipt, current: &[u8]) -> Result<Vec<u8>, TransactionError> {
     if let Some(routes) = &receipt.opencode_routes {
         if receipt.client_kind != ClientKind::OpenCodeV1 {
             return Err(TransactionError::InvalidReceipt);
@@ -308,6 +409,7 @@ fn apply_opencode_routes(
             created_ancestor_mask: 0,
             config_was_missing: false,
             opencode_routes: Some(receipts),
+            opencode_retrieval: None,
         })?,
     })
 }
@@ -319,7 +421,8 @@ fn undo_opencode_routes(
 ) -> Result<Vec<u8>, TransactionError> {
     if receipt.client_kind != ClientKind::OpenCodeV1
         || receipt.created_ancestor_mask != 0
-        || !valid_opencode_route_receipts(routes)
+        || !(valid_opencode_route_receipts(routes)
+            || routes.is_empty() && receipt.opencode_retrieval.is_some())
     {
         return Err(TransactionError::InvalidReceipt);
     }
@@ -566,6 +669,14 @@ fn valid_receipt_metadata(metadata: &PatchReceiptMetadata) -> bool {
     if metadata.endpoint_port == 0 {
         return false;
     }
+    if let Some(bridge) = &metadata.opencode_retrieval {
+        if metadata.client_kind != ClientKind::OpenCodeV1
+            || metadata.opencode_routes.is_none()
+            || !valid_sha256(&bridge.definition_sha256)
+        {
+            return false;
+        }
+    }
     match metadata.client_kind {
         ClientKind::Codex => {
             metadata.config_source == ConfigSource::CodexToml
@@ -584,7 +695,8 @@ fn valid_receipt_metadata(metadata: &PatchReceiptMetadata) -> bool {
                     ConfigSource::OpenCodeJson | ConfigSource::OpenCodeJsonc
                 ) && !metadata.config_was_missing
                     && metadata.created_ancestor_mask == 0
-                    && valid_opencode_route_receipts(routes);
+                    && (valid_opencode_route_receipts(routes)
+                        || routes.is_empty() && metadata.opencode_retrieval.is_some());
             }
             let allowed_mask = matches!(metadata.created_ancestor_mask, 0 | 4 | 6 | 7);
             let source_presence = match metadata.config_source {
@@ -656,6 +768,7 @@ mod receipt_tests {
             created_ancestor_mask: 7,
             config_was_missing: true,
             opencode_routes: None,
+            opencode_retrieval: None,
         };
         assert!(PatchReceipt::from_metadata(base.clone()).is_ok());
         assert!(PatchReceipt::from_metadata(PatchReceiptMetadata {
@@ -691,6 +804,7 @@ mod receipt_tests {
             created_ancestor_mask: 0,
             config_was_missing: false,
             opencode_routes: Some(vec![row.clone()]),
+            opencode_retrieval: None,
         };
         assert!(PatchReceipt::from_metadata(base.clone()).is_ok());
 
@@ -748,6 +862,7 @@ mod receipt_tests {
             created_ancestor_mask: 0,
             config_was_missing: false,
             opencode_routes: None,
+            opencode_retrieval: None,
         })
         .expect("legacy schema-1 receipt without route metadata remains readable");
         let current = br#"{"provider":{"openai":{"npm":"@ai-sdk/openai","options":{"baseURL":"http://127.0.0.1:45123/v1"}}}}"#;
@@ -963,6 +1078,17 @@ fn patch_json_path(
     leaf: &str,
     endpoint: &str,
 ) -> Result<(Vec<u8>, u8), TransactionError> {
+    let literal = serde_json::to_string(endpoint).map_err(|_| TransactionError::InvalidConfig)?;
+    patch_json_path_literal(kind, current, ancestors, leaf, &literal)
+}
+
+fn patch_json_path_literal(
+    kind: ClientKind,
+    current: &[u8],
+    ancestors: &[&str],
+    leaf: &str,
+    literal: &str,
+) -> Result<(Vec<u8>, u8), TransactionError> {
     let text = std::str::from_utf8(current).map_err(|_| TransactionError::InvalidConfig)?;
     let root = parse_json_ast(kind, text)?;
     let mut object = &root;
@@ -982,11 +1108,7 @@ fn patch_json_path(
 
     let mut mask = 0u8;
     let (parent, key, value) = if let Some(index) = missing {
-        let mut nested = format!(
-            "{}: {}",
-            json_string(leaf)?,
-            serde_json::to_string(endpoint).map_err(|_| TransactionError::InvalidConfig)?
-        );
+        let mut nested = format!("{}: {}", json_string(leaf)?, literal);
         for segment in ancestors[index + 1..].iter().rev() {
             nested = format!("{}: {{{nested}}}", json_string(segment)?);
         }
@@ -995,11 +1117,7 @@ fn patch_json_path(
         }
         (object, ancestors[index], format!("{{{nested}}}"))
     } else {
-        (
-            object,
-            leaf,
-            serde_json::to_string(endpoint).map_err(|_| TransactionError::InvalidConfig)?,
-        )
+        (object, leaf, literal.to_owned())
     };
     let key = json_string(key)?;
     let bytes = insert_json_property(text, parent, &key, &value)?;

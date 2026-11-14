@@ -23,7 +23,6 @@ const planKeys = [
   "reasoning_unchanged", "auth_unchanged", "agent_count_unchanged", "runtime_effective",
   "auth", "hook_shell", "restart_required", "blockers",
 ] as const;
-const openCodePlanKeys = [...planKeys, "opencode_coverage"] as const;
 const endpointFieldKeys = ["field", "before", "proposed_value", "after_headroom"] as const;
 const openCodeCoverageKeys = [
   "eligible_count", "excluded_count", "already_same_count", "responses_count",
@@ -56,6 +55,7 @@ const hookStates = ["absent", "present_unchanged", "unknown"] as const;
 const blockers = [
   "unsupported_schema", "custom_gateway", "unsupported_route", "client_version_unknown",
   "unsupported_client_version", "unsupported_client_surface",
+  "retrieval_mcp_conflict",
 ] as const;
 const errorCodes = Object.keys(errorRetryable) as ConnectionPlanErrorCode[];
 
@@ -183,10 +183,16 @@ function decodePlan(
     || !enumValue(value.client_kind, clientKinds)
     || value.client_kind !== expected.clientKind) return null;
   const openCode = value.client_kind === "opencode_v1";
-  if (openCode
-    ? (!exactKeys(value, planKeys) && !exactKeys(value, openCodePlanKeys))
-    : !exactKeys(value, planKeys)) return null;
   const hasOpenCodeCoverage = Object.hasOwn(value, "opencode_coverage");
+  const hasRetrieval = Object.hasOwn(value, "opencode_retrieval");
+  const expectedKeys = [...planKeys,
+    ...(openCode && hasOpenCodeCoverage ? ["opencode_coverage"] : []),
+    ...(openCode && hasRetrieval ? ["opencode_retrieval"] : []),
+  ];
+  if (!exactKeys(value, expectedKeys)) return null;
+  const retrieval = enumValue(value.opencode_retrieval, ["install_local_bridge", "conflict"] as const)
+    ? value.opencode_retrieval : null;
+  if (hasRetrieval && (!openCode || retrieval === null)) return null;
   const openCodeCoverage = hasOpenCodeCoverage ? decodeOpenCodeRouteCoverage(value.opencode_coverage) : null;
   if (hasOpenCodeCoverage && (!openCode || openCodeCoverage === null)) return null;
   if (value.schema_version !== 1
@@ -226,6 +232,10 @@ function decodePlan(
     || value.blockers.length > blockers.length
     || !value.blockers.every((item) => enumValue(item, blockers))
     || new Set(value.blockers).size !== value.blockers.length) return null;
+  if (retrieval === "conflict"
+    && (value.status !== "blocked" || !value.blockers.includes("retrieval_mcp_conflict"))) return null;
+  if (retrieval === "install_local_bridge" && value.status !== "preview") return null;
+  if (value.blockers.includes("retrieval_mcp_conflict") && retrieval !== "conflict") return null;
 
   const endpointField = value.endpoint_field;
   if (!record(endpointField)
@@ -287,6 +297,7 @@ function decodePlan(
       after_headroom: shouldApply,
     },
     ...(openCodeCoverage ? { opencode_coverage: openCodeCoverage } : {}),
+    ...(retrieval ? { opencode_retrieval: retrieval } : {}),
     status: value.status,
     model: value.model,
     reasoning: value.reasoning,

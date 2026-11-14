@@ -129,6 +129,7 @@ type Copy = {
   installationSources: Record<InstallationSource, string>;
   endpointBefores: Record<ConnectionPlan["endpoint_field"]["before"], string>;
   opencodeEndpointLabel: string;
+  retrievalNote: string;
   advancedDetails: string;
   routeCoverageTitle: string;
   routeEligible: string;
@@ -156,7 +157,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
     title: "Bağlantı", close: "Kapat", scope: "Kapsam: kullanıcı yapılandırması",
     scopeNote: "Yalnız kullanıcı yapılandırması incelenir; diğer kapsamlar ve açık oturumlar bilinmiyor.",
     codexTarget: "Hedef: Codex kullanıcı ayar dosyası. Açık oturumların etkin ayarı bilinmiyor.",
-    opencodeTarget: "Hedef: OpenCode kullanıcı ayar dosyası; yalnız uygun sağlayıcı endpoint alanları değiştirilir.",
+    opencodeTarget: "Uygun OpenCode sağlayıcıları Headroom’a yönlendirilir.",
     effectNote: "Bağlan, bu kapsamdaki desteklenen model isteklerini Headroom'a yönlendirir. Ana ve alt ajan istekleri aynı rotayı kullanıyorsa onlar da bu değişikliği izleyebilir; bu ekranda çalışma zamanı benimsenmesi doğrulanmaz. Model ve giriş yöntemi korunur.",
     installation: "Kurulum", chooseInstallation: "Bir kurulum seç", noInstallations: "Bu istemci için seçilebilir kurulum kalmadı.",
     choiceLoading: "Kaydedilmiş kurulum doğrulanıyor…", choiceUnavailable: "Kaydedilmiş kurulum doğrulanamadı; listeden açıkça seç.",
@@ -213,11 +214,13 @@ const copy: Record<PreferenceLanguage, Copy> = {
       unsupported_schema: "Yapılandırma şeması desteklenmiyor.", custom_gateway: "Özel gateway rotası bu önizlemede desteklenmiyor.",
       unsupported_route: "Bu istemci rotası henüz doğrulanmadı.", client_version_unknown: "İstemci sürümü bilinmiyor; plan uygulanamaz.",
       unsupported_client_version: "Bu istemci sürümü henüz doğrulanmadı.", unsupported_client_surface: "Bu istemci yüzeyi henüz doğrulanmadı.",
+      retrieval_mcp_conflict: "Mevcut Headroom MCP kaydı korunuyor. Kaydı kendin değiştirmeden bu bağlantı kurulamaz.",
     },
     sources: { codex_toml: "Codex TOML", claude_json: "Claude JSON", opencode_json: "OpenCode JSON", opencode_jsonc: "OpenCode JSONC", opencode_missing: "OpenCode yapılandırması eksik" },
     installationSources: { path: "PATH", user_local_npm: "Kullanıcıya ait npm", user_local_native: "Kullanıcıya ait kurulum", scoop: "Scoop", windows_app_package: "Windows uygulama paketi", macos_app_bundle: "macOS uygulaması", manual_file: "Seçilen dosya" },
     endpointBefores: { missing: "Eksik", same_stable_endpoint: "Aynı yerel endpoint", other_configured_redacted: "Başka bir değer yapılandırılmış (gizli)", unknown: "Bilinmiyor", provider_routes: "Uygun yapılandırılmış sağlayıcı rotaları" },
     opencodeEndpointLabel: "Uygun sağlayıcıların options.baseURL alanları",
+    retrievalNote: "Özgün araç sonuçlarını geri almak için yerel bir Headroom aracı eklenir.",
     advancedDetails: "Gelişmiş ayrıntılar",
     routeCoverageTitle: "Bu önizlemenin kapsadığı rotalar",
     routeEligible: "Uygun rota sayısı",
@@ -239,7 +242,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
     title: "Connection", close: "Close", scope: "Scope: user configuration",
     scopeNote: "Only user configuration is inspected. Other scopes and effective settings in open sessions are unknown.",
     codexTarget: "Target: Codex user settings file. Settings already loaded by open sessions are unknown.",
-    opencodeTarget: "Target: OpenCode user settings file; only eligible provider endpoint fields are changed.",
+    opencodeTarget: "Eligible OpenCode providers will be routed through Headroom.",
     effectNote: "Connect routes supported model requests in this scope through Headroom. Main and subagent requests may follow when they use the same route; runtime adoption is not verified here. The model and sign-in method stay unchanged.",
     installation: "Installation", chooseInstallation: "Choose an installation", noInstallations: "No selectable installation remains for this client.",
     choiceLoading: "Checking the saved installation…", choiceUnavailable: "The saved installation could not be verified; choose one explicitly.",
@@ -296,11 +299,13 @@ const copy: Record<PreferenceLanguage, Copy> = {
       unsupported_schema: "The configuration schema is unsupported.", custom_gateway: "A custom gateway route is unsupported in this preview.",
       unsupported_route: "This client route has not been verified.", client_version_unknown: "Client version is unknown; the plan cannot be applied.",
       unsupported_client_version: "This client version has not been verified.", unsupported_client_surface: "This client surface has not been verified.",
+      retrieval_mcp_conflict: "Your existing Headroom MCP entry is preserved. Resolve that entry before connecting.",
     },
     sources: { codex_toml: "Codex TOML", claude_json: "Claude JSON", opencode_json: "OpenCode JSON", opencode_jsonc: "OpenCode JSONC", opencode_missing: "OpenCode configuration missing" },
     installationSources: { path: "PATH", user_local_npm: "User-local npm", user_local_native: "User-local install", scoop: "Scoop", windows_app_package: "Windows app package", macos_app_bundle: "macOS application", manual_file: "Selected file" },
     endpointBefores: { missing: "Missing", same_stable_endpoint: "Same local endpoint", other_configured_redacted: "Another value is configured (redacted)", unknown: "Unknown", provider_routes: "Eligible configured provider routes" },
     opencodeEndpointLabel: "Eligible provider options.baseURL fields",
+    retrievalNote: "A local Headroom tool will be added to retrieve original tool results.",
     advancedDetails: "Advanced details",
     routeCoverageTitle: "Routes covered by this preview",
     routeEligible: "Eligible routes",
@@ -475,7 +480,10 @@ export function ConnectDialog({
   const nativeAvailable = isDiscoveryAvailable();
   const canConnect = Boolean(selected && selected.client_kind === clientKind && currentScope !== null
     && (!isClaude || (claudeContext !== null && claudeError === null && claudeSettings !== null))
-    && ownershipView.kind === "ready" && !ownershipLoading && nativeAvailable && !mutationPending && !bridgePending);
+    && ownershipView.kind === "ready" && !ownershipLoading && nativeAvailable && !mutationPending && !bridgePending
+    && (!isOpenCode || !activeOwnership));
+  const reviewedOpenCodePlan = isOpenCode && plan?.status === "preview" && !expired
+    && plan.installation_id === selectedId ? plan : null;
 
   const planTechnicalDetails = plan && <>
     <section className="connection-dialog__section" aria-label={text.endpoint}>
@@ -954,11 +962,12 @@ export function ConnectDialog({
     }
   }
 
-  async function connectSelected() {
+  async function connectSelected(reviewedPlan: ConnectionPlan | null = null) {
     const installationId = selectedIdRef.current;
     const selectedAtStart = installations.find((item) => item.installation_id === installationId && item.client_kind === clientKind);
     const contextAtStart = isClaude ? claudeContextRef.current : null;
-    if (bridgeLock.current || mutationLock.current || !canConnect || !selectedAtStart || !currentScope || (isClaude && !contextAtStart)) return;
+    if (bridgeLock.current || mutationLock.current || !canConnect || !selectedAtStart || !currentScope || (isClaude && !contextAtStart)
+      || (isOpenCode && (!reviewedPlan || reviewedPlan !== reviewedOpenCodePlan))) return;
 
     const expected = { ...currentCandidateContext.current, installationId };
     const operationSequence = ++requestSequence.current;
@@ -978,7 +987,7 @@ export function ConnectDialog({
     pendingAction.current = "connect";
     setMutationPending(true);
     setActionFeedback(null);
-    setPreviewState(null);
+    if (!reviewedPlan) setPreviewState(null);
     setBusyContext(null);
     setChoiceView({ kind: "loading", message: null });
 
@@ -1004,25 +1013,28 @@ export function ConnectDialog({
         return;
       }
 
-      const context: PreviewContext = { scanGeneration, installationIdsKey: idsKey, scope: expectedScope };
-      setBusyContext(context);
-      const preview = await connectionPlanClient.preview({
-        installationId,
-        scanGeneration,
-        clientKind,
-        scope: expectedScope,
-      });
-      if (!isCurrent()) return;
-      setBusyContext(null);
-      setPreviewState({ context, result: preview });
-      if (preview.kind !== "preview" || preview.plan.status !== "preview") {
-        const firstBlocker = preview.kind === "preview" && preview.plan.status === "blocked"
-          ? preview.plan.blockers[0]
-          : undefined;
-        setActionFeedback({ kind: "error", message: firstBlocker ? text.blockers[firstBlocker] : planResultMessage(preview, text) });
-        return;
+      let freshPlan = reviewedPlan;
+      if (!freshPlan) {
+        const context: PreviewContext = { scanGeneration, installationIdsKey: idsKey, scope: expectedScope };
+        setBusyContext(context);
+        const preview = await connectionPlanClient.preview({
+          installationId,
+          scanGeneration,
+          clientKind,
+          scope: expectedScope,
+        });
+        if (!isCurrent()) return;
+        setBusyContext(null);
+        setPreviewState({ context, result: preview });
+        if (preview.kind !== "preview" || preview.plan.status !== "preview") {
+          const firstBlocker = preview.kind === "preview" && preview.plan.status === "blocked"
+            ? preview.plan.blockers[0]
+            : undefined;
+          setActionFeedback({ kind: "error", message: firstBlocker ? text.blockers[firstBlocker] : planResultMessage(preview, text) });
+          return;
+        }
+        freshPlan = preview.plan;
       }
-      const freshPlan = preview.plan;
       if (freshPlan.installation_id !== installationId || freshPlan.scan_generation !== scanGeneration
         || freshPlan.client_kind !== actionClientKind(clientKind) || freshPlan.scope !== expectedScope
         || isConnectionPlanExpired(freshPlan, Date.now())) {
@@ -1046,7 +1058,7 @@ export function ConnectDialog({
           message: applied.reply.status === "applied" ? text.applySuccess
             : applied.reply.ownership?.state === "active" ? text.ownershipActive : text.unchangedSuccess,
         });
-        if (!isOpenCode) setPreviewState(null);
+        setPreviewState(null);
         if (isClaude) await loadClaudeStateUnlocked(++claudeSequence.current, true);
       } else {
         const outcome = actionResultMessage(applied, text);
@@ -1234,10 +1246,15 @@ export function ConnectDialog({
         {!busy && !result && previewAvailable && <p className="connection-dialog__notice" role="status">{text.idle}</p>}
         {busy && <p className="connection-dialog__notice" role="status"><span className="applications-spinner" aria-hidden="true" />{text.loading}</p>}
         {isOpenCode && openCodeCoverage && <div className="connection-dialog__coverage-summary" role="status">
+          {plan?.status === "preview" && plan.opencode_retrieval === "install_local_bridge" && <p className="connection-dialog__coverage-note">{text.retrievalNote}</p>}
           {openCodeCoverage.configured_default_route === "excluded" && <p className="connection-dialog__coverage-note connection-dialog__coverage-note--warning">{text.routeDefaultExcludedNote}</p>}
           {(openCodeCoverage.partial || openCodeCoverage.excluded_count > 0) && <p className="connection-dialog__coverage-note">{text.routePartialNote}</p>}
           <p className="connection-dialog__coverage-note">{text.routeRuntimeUnknown}</p>
         </div>}
+        {isOpenCode && result && !reviewedOpenCodePlan && !actionFeedback && <p className="connection-dialog__notice" role="alert">
+          {expired ? text.expired : plan?.status === "blocked" && plan.blockers.length
+            ? text.blockers[plan.blockers[0]] : planResultMessage(result, text)}
+        </p>}
         <details className="connection-dialog__advanced">
           <summary>{text.advancedDetails}</summary>
           <div className="connection-dialog__advanced-body">
@@ -1286,10 +1303,15 @@ export function ConnectDialog({
         </details>
       </div>
       <footer className="connection-dialog__footer">
-        <div className="connection-dialog__apply-note"><span>{canConnect ? text.sessionRestart : text.connectUnavailable}</span></div>
+        <div className="connection-dialog__apply-note"><span>{canConnect ? text.sessionRestart : isOpenCode && activeOwnership ? "" : text.connectUnavailable}</span></div>
         <div className="connection-dialog__actions">
           <button className="button" type="button" disabled={mutationPending || claudePickerPending} onClick={close}>{text.close}</button>
-          <button className="button button-primary" type="button" disabled={!canConnect} onClick={() => void connectSelected()}>{mutationPending && pendingAction.current === "connect" ? text.connecting : text.connect}</button>
+          {(!isOpenCode || !activeOwnership) && <button className="button button-primary" type="button" disabled={!canConnect} onClick={() => {
+            if (isOpenCode && !reviewedOpenCodePlan) void createPreview();
+            else void connectSelected(reviewedOpenCodePlan);
+          }}>{mutationPending && pendingAction.current === "connect" ? text.connecting
+            : isOpenCode ? busy ? text.refreshing : reviewedOpenCodePlan ? text.apply : result ? text.refresh : text.preview
+            : text.connect}</button>}
         </div>
       </footer>
     </div>

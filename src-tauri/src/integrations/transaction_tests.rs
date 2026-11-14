@@ -69,6 +69,119 @@ fn patched(result: ApplyResult) -> (Vec<u8>, super::transaction::PatchReceipt) {
     }
 }
 
+fn retrieval_plan(config: &[u8]) -> ConnectionPlan {
+    use super::opencode_retrieval::{RetrievalChange, RetrievalCommand};
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap();
+    let mut plan = plan(ClientKind::OpenCodeV1, config);
+    plan.opencode_retrieval = Some(RetrievalChange::InstallLocalBridge);
+    plan.opencode_retrieval_command = Some(
+        RetrievalCommand::new(
+            &root.join("work/test-python.exe"),
+            &root.join("runtime/retrieval_bridge.py"),
+            &root.join("work/test-endpoint.json"),
+            &plan.endpoint_id,
+            &root.join("work/test-headroom.exe"),
+            None,
+        )
+        .unwrap(),
+    );
+    plan
+}
+
+#[test]
+fn opencode_retrieval_apply_undo_preserves_user_mcp_model_auth_and_comments() {
+    let original = br#"{
+      // user-owned settings
+      "model":"lab/slot", "permission":{"*":"ask"},
+      "provider":{"lab":{"npm":"@ai-sdk/openai-compatible","options":{"apiKey":"SECRET_CANARY","baseURL":"https://api.openai.com/v1"},"models":{"slot":{"id":"wire-any"}}}},
+      "mcp":{"user_tool":{"type":"local","command":["user-command"]}}
+    }"#;
+    let plan = retrieval_plan(original);
+    let (bytes, receipt) = patched(apply_missing_endpoint(&plan, original).unwrap());
+    let value: serde_json::Value =
+        super::config_document::parse_document(ClientKind::OpenCodeV1, &bytes).unwrap();
+    assert_eq!(value["mcp"]["headroom"]["type"], "local");
+    assert_eq!(
+        value["mcp"]["headroom"]["command"]
+            .as_array()
+            .unwrap()
+            .len(),
+        8
+    );
+    assert_eq!(
+        value["provider"]["lab"]["options"]["apiKey"],
+        "SECRET_CANARY"
+    );
+    assert_eq!(value["model"], "lab/slot");
+    assert_eq!(value["permission"]["*"], "ask");
+    assert_eq!(undo_owned_endpoint(&receipt, &bytes).unwrap(), original);
+    let persisted = format!("{:?}", receipt.metadata());
+    assert!(!persisted.contains("test-python.exe"));
+    assert!(!persisted.contains("SECRET_CANARY"));
+    let public_plan = serde_json::to_string(&plan).unwrap();
+    assert!(public_plan.contains("install_local_bridge"));
+    assert!(!public_plan.contains("test-python.exe"));
+}
+
+#[test]
+fn opencode_retrieval_conflicts_never_replace_user_commands_or_partly_undo() {
+    let original = br#"{"provider":{"openai":{"npm":"@ai-sdk/openai","models":{"slot":{}}}}}"#;
+    let plan = retrieval_plan(original);
+    let (bytes, receipt) = patched(apply_missing_endpoint(&plan, original).unwrap());
+    let text = String::from_utf8(bytes.clone()).unwrap();
+    let changed_bridge = text.replace("test-python.exe", "user-python.exe");
+    assert_eq!(
+        undo_owned_endpoint(&receipt, changed_bridge.as_bytes()),
+        Err(TransactionError::Conflict)
+    );
+    let changed_route = text.replace(":41731/v1", ":41732/v1");
+    assert_eq!(
+        undo_owned_endpoint(&receipt, changed_route.as_bytes()),
+        Err(TransactionError::Conflict)
+    );
+    let bridge_start = text.find("\"headroom\"").unwrap();
+    let object_start = bridge_start + text[bridge_start..].find('{').unwrap() + 1;
+    let with_user_comment = format!(
+        "{}/* user note */{}",
+        &text[..object_start],
+        &text[object_start..]
+    );
+    assert_eq!(
+        undo_owned_endpoint(&receipt, with_user_comment.as_bytes()),
+        Err(TransactionError::Conflict),
+        "undo must preserve a user's comment inside the owned object"
+    );
+    let user_mcp = br#"{"provider":{"openai":{"npm":"@ai-sdk/openai","models":{"slot":{}}}},"mcp":{"headroom":{"type":"local","command":["user-command"]}}}"#;
+    assert_eq!(
+        apply_missing_endpoint(&retrieval_plan(user_mcp), user_mcp),
+        Err(TransactionError::Conflict)
+    );
+    assert_eq!(undo_owned_endpoint(&receipt, &bytes).unwrap(), original);
+}
+
+#[test]
+fn opencode_retrieval_only_receipt_leaves_preexisting_endpoint_and_new_user_mcp() {
+    let original = br#"{"provider":{"openai":{"npm":"@ai-sdk/openai","options":{"baseURL":"http://127.0.0.1:41731/v1"},"models":{"slot":{}}}}}"#;
+    let (bytes, receipt) =
+        patched(apply_missing_endpoint(&retrieval_plan(original), original).unwrap());
+    assert!(receipt.metadata().opencode_routes.unwrap().is_empty());
+    let with_user_mcp = String::from_utf8(bytes.clone()).unwrap().replace(
+        "\"headroom\":",
+        "\"user\":{\"type\":\"remote\",\"url\":\"https://user.example/mcp\"},\"headroom\":",
+    );
+    let restored = undo_owned_endpoint(&receipt, with_user_mcp.as_bytes()).unwrap();
+    let parsed = super::config_document::parse_document(ClientKind::OpenCodeV1, &restored).unwrap();
+    assert_eq!(
+        parsed["provider"]["openai"]["options"]["baseURL"],
+        "http://127.0.0.1:41731/v1"
+    );
+    assert_eq!(parsed["mcp"]["user"]["url"], "https://user.example/mcp");
+    assert!(parsed["mcp"].get("headroom").is_none());
+    assert_eq!(undo_owned_endpoint(&receipt, &bytes).unwrap(), original);
+}
+
 #[test]
 fn codex_patch_and_undo_preserve_crlf_unicode_and_nested_tables() {
     let original = "# café configuration\r\nmodel = \"gpt-5-codex\"\r\nmodel_reasoning_effort = \"high\"\r\n\r\n[ui.preferences]\r\nmode = \"compact\"\r\n";

@@ -26,6 +26,7 @@ pins={'EXPECTED_MANIFEST_SHA256':hashlib.sha256(updates[manifest_path]).hexdiges
  'EXPECTED_WINDOWS_MANIFEST_SHA256':hashlib.sha256(updates[ROOT/'runtime/manifest.windows.json']).hexdigest(),
  'EXPECTED_CONTROLLER_SHA256':hashlib.sha256(updates[controller_path]).hexdigest(),
  'EXPECTED_HELPER_SHA256':sha(ROOT/'runtime/desktop_helper.py'),
+ 'EXPECTED_RETRIEVAL_BRIDGE_SHA256':sha(ROOT/'runtime/retrieval_bridge.py'),
  'EXPECTED_OPTIMIZATION_SHA256':control_hash,'EXPECTED_OPTIMIZATION_SOURCES_SHA256':source_hash}
 manager=manager_path.read_text(encoding='utf-8')
 for name,value in pins.items():manager=replace(manager,rf'(const {name}:\s*&str\s*=\s*")[^"]+(";)',lambda m:m[1]+value+m[2])

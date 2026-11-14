@@ -146,6 +146,9 @@ const EXPECTED_CONTROLLER_SHA256: &str =
     "42c0cee4b0a52b0959449510003f01198cb1a006fb052cc9e12e394b873c3b5e";
 const EXPECTED_HELPER_SHA256: &str =
     "56cfb1523bfa54b848b50aa4bd649cc4674e7005ea57e0fc8f970850123a0cc2";
+#[cfg(windows)]
+const EXPECTED_RETRIEVAL_BRIDGE_SHA256: &str =
+    "163a28b73967782668f557ae509c45b55c63087eb4523ba7a294aaf9839a3b5a";
 const EXPECTED_SHIM_SHA256: &str =
     "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1";
 const EXPECTED_OPTIMIZATION_SHA256: &str =
@@ -998,6 +1001,21 @@ impl RuntimeLayout {
     }
 
     fn verify(&self) -> Result<VerifiedRuntime, PublicError> {
+        let (payload_root, overlay_controller, python) = self.verify_payload()?;
+        let (state_root, workspace, config) = self.state_paths()?;
+        Ok(VerifiedRuntime {
+            payload_root,
+            manifest_path: self.manifest_path.clone(),
+            controller_path: overlay_controller,
+            state_root,
+            workspace,
+            config,
+            python_path: python,
+            protected_tools: self.protected_tools()?,
+        })
+    }
+
+    fn verify_payload(&self) -> Result<(PathBuf, PathBuf, PathBuf), PublicError> {
         if sha256_file(&self.manifest_path)? != self.manifest_sha256 {
             return Err(PublicError::ConfigConflict);
         }
@@ -1043,17 +1061,7 @@ impl RuntimeLayout {
                 return Err(PublicError::ConfigConflict);
             }
         }
-        let (state_root, workspace, config) = self.state_paths()?;
-        Ok(VerifiedRuntime {
-            payload_root,
-            manifest_path: self.manifest_path.clone(),
-            controller_path: overlay_controller,
-            state_root,
-            workspace,
-            config,
-            python_path: python,
-            protected_tools: self.protected_tools()?,
-        })
+        Ok((payload_root, overlay_controller, python))
     }
 
     fn protected_tools(&self) -> Result<Vec<String>, PublicError> {
@@ -3672,6 +3680,8 @@ mod metrics_actor_tests {
                 shutting_down: Arc::new(AtomicBool::new(false)),
                 update_start_gate: Arc::new(std::sync::Mutex::new(false)),
                 actor_available: true,
+                #[cfg(windows)]
+                retrieval_layout: Err(PublicError::EnvironmentBlocked),
             },
             receiver,
         )
@@ -3748,6 +3758,8 @@ pub struct RuntimeManager {
     shutting_down: Arc<AtomicBool>,
     update_start_gate: Arc<std::sync::Mutex<bool>>,
     actor_available: bool,
+    #[cfg(windows)]
+    retrieval_layout: Result<RuntimeLayout, PublicError>,
 }
 
 impl RuntimeManager {
@@ -3837,6 +3849,8 @@ impl RuntimeManager {
     }
 
     fn from_layout(layout: Result<RuntimeLayout, PublicError>) -> Self {
+        #[cfg(windows)]
+        let retrieval_layout = layout.clone();
         let initial_status = if layout.is_ok() {
             EngineStatus::Stopped
         } else {
@@ -3894,6 +3908,8 @@ impl RuntimeManager {
             shutting_down,
             update_start_gate,
             actor_available,
+            #[cfg(windows)]
+            retrieval_layout,
         }
     }
 
@@ -3996,6 +4012,48 @@ impl RuntimeManager {
             .unwrap_or_else(|poisoned| poisoned.into_inner());
         expire_stale_ready_view(&mut runtime, now);
         ingress.ready_stable_endpoint(&runtime, now)
+    }
+
+    #[cfg(windows)]
+    pub(crate) fn opencode_retrieval_command(
+        &self,
+        endpoint: &ReadyStableEndpoint,
+    ) -> Result<crate::integrations::opencode_retrieval::RetrievalCommand, StableEndpointAccessError>
+    {
+        let blocked = || StableEndpointAccessError::Unavailable;
+        let current = self.ready_stable_endpoint()?;
+        if current.endpoint_id != endpoint.endpoint_id
+            || current.host != endpoint.host
+            || current.port != endpoint.port
+        {
+            return Err(blocked());
+        }
+        let layout = self.retrieval_layout.as_ref().map_err(|_| blocked())?;
+        let (_, _, python) = layout.verify_payload().map_err(|_| blocked())?;
+        let script =
+            resolve_relative(&layout.runtime_root, "retrieval_bridge.py").map_err(|_| blocked())?;
+        if sha256_file(&script).map_err(|_| blocked())? != EXPECTED_RETRIEVAL_BRIDGE_SHA256 {
+            return Err(blocked());
+        }
+        let record = resolve_relative(&layout.state_root, "connection-endpoint.json")
+            .map_err(|_| blocked())?;
+        let executable = std::env::current_exe().map_err(|_| blocked())?;
+        #[cfg(not(debug_assertions))]
+        let desktop_use_gate = Some(
+            crate::desktop::uninstall::gate_path(&layout.state_boundary_root)
+                .map_err(|_| blocked())?,
+        );
+        #[cfg(debug_assertions)]
+        let desktop_use_gate: Option<PathBuf> = None;
+        crate::integrations::opencode_retrieval::RetrievalCommand::new(
+            &python,
+            &script,
+            &record,
+            &endpoint.endpoint_id,
+            &executable,
+            desktop_use_gate.as_deref(),
+        )
+        .map_err(|_| blocked())
     }
 
     pub(crate) fn codex_connection_observation(&self) -> CodexRuntimeObservation {

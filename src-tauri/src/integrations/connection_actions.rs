@@ -1150,6 +1150,15 @@ fn validate_live_plan(manager: &PlanManager, lease: &PlanLease) -> Result<(), Ac
         return Err(ActionFault::Conflict);
     }
     if kind == ClientKind::OpenCodeV1 {
+        if let Some(provider) = &manager.opencode_retrieval_provider {
+            if !check_opencode_global_mcp(&current_roots).map_err(map_config_io_error)? {
+                return Err(ActionFault::Conflict);
+            }
+            let command = provider(&endpoint).map_err(|_| ActionFault::Conflict)?;
+            if lease.plan.opencode_retrieval_command.as_ref() != Some(&command) {
+                return Err(ActionFault::Conflict);
+            }
+        }
         let expected = lease
             .opencode_environment_fingerprint
             .as_deref()
