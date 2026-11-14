@@ -166,6 +166,25 @@ fn codex_config_contract_accepts_known_and_neighbor_versions_without_claiming_tr
 }
 
 #[test]
+fn recognized_opencode_v2_does_not_enable_the_v1_writer_for_either_schema() {
+    let mut context = context(ClientKind::OpenCodeV1);
+    context.version = Some("2.3.0".into());
+    for bytes in [
+        br#"{"model":"openai/slot","provider":{"openai":{}}}"#.as_slice(),
+        br#"{"model":"openai/slot","providers":{"openai":{"models":{"slot":{"modelID":"fixture-model"}}}}}"#.as_slice(),
+    ] {
+        let original = bytes.to_vec();
+        let plan = preview_config(&context, bytes).unwrap();
+        assert_eq!(plan.status, PlanStatus::Blocked);
+        assert!(plan.blockers.contains(&PlanBlocker::UnsupportedClientVersion));
+        assert!(!plan.blockers.contains(&PlanBlocker::ClientVersionUnknown));
+        assert!(!plan.endpoint_field.after_headroom);
+        assert!(plan.model_unchanged && plan.auth_unchanged && plan.reasoning_unchanged && plan.agent_count_unchanged);
+        assert_eq!(bytes, original);
+    }
+}
+
+#[test]
 fn claude_json_plan_summarizes_auth_and_hooks_without_returning_config_literals() {
     let fixture = br#"{
       "model": "claude-opus-4-6",

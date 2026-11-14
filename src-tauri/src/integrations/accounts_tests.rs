@@ -118,6 +118,10 @@ fn account_capabilities_are_separate_from_model_route_and_desktop_presence() {
         "2.0.0"
     ));
     assert!(!supported(
+        &installation("opencode", "cli", "2.3.0"),
+        "2.3.0"
+    ));
+    assert!(!supported(
         &installation("claude_code", "cli", "9.0.0"),
         "9.0.0"
     ));

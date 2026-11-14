@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "last_updated": "2026-11-12",
+  "last_updated": "2026-11-14",
   "release": {
     "channel": "development",
     "app_version": "0.1.0",
@@ -229,14 +229,18 @@
       "id": "opencode-v2-tui-desktop",
       "match": {"client_kind": "opencode", "surface": "other", "versions": [], "auth_method": "unknown", "platform": "unknown", "engine_version": "0.41.0"},
       "product": "OpenCode",
-      "version": "unknown (V2 not installed or exercised)",
+      "version": "2.3.0 Windows CLI preflight; product integration pending",
       "surface": "V2 CLI, TUI and desktop surfaces",
-      "platform": "Windows 10/11 status not tested",
-      "auth": "unknown",
-      "protocol": "unknown",
-      "transport": "unknown",
-      "status": "not_tested",
+      "platform": "Windows 10 x64 CLI preflight only; other surfaces and OS not tested",
+      "auth": "Synthetic API key; real account not tested",
+      "protocol": "Local Chat/Responses fixture; product routes not enabled",
+      "transport": "CLI --standalone to owned Headroom to synthetic SSE",
+      "status": "local_fixture_partial",
       "capabilities": {
+        "v2_cli_protocol_preflight": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/opencode-v2.md"
+        },
         "v2_config_and_transport": {
           "status": "not_tested",
           "evidence": "docs/proofs/opencode.md"
@@ -246,8 +250,8 @@
           "evidence": "docs/proofs/opencode.md"
         }
       },
-      "evidence": ["docs/proofs/opencode.md"],
-      "evidence_date": "2026-10-19"
+      "evidence": ["docs/proofs/opencode-v2.md", "docs/proofs/opencode.md"],
+      "evidence_date": "2026-11-14"
     },
     {
       "id": "claude-code-native-product-scoped-fixture",

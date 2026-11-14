@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "task": "H010-f",
+  "accepted": true,
+  "parent_task_accepted": false,
+  "scope": {
+    "platform": "Windows 10 22H2 x64",
+    "client": "OpenCode Windows x64 baseline 2.3.0",
+    "kind": "read_only_native_backend_discovery_and_gates",
+    "client_started": false,
+    "live_provider": "not_tested",
+    "native_window_and_file_picker": "not_retested",
+    "v2_plan_apply_undo": "not_implemented",
+    "v2_account_login": "unsupported",
+    "v2_desktop_mcp_subagents": "not_tested",
+    "token_savings": "not_measured"
+  },
+  "checks": {
+    "path": true,
+    "manual": true,
+    "user_local": true,
+    "manual_retained_after_rescan": true,
+    "same_version_read_pin": true,
+    "write_open_denied_while_pinned": true,
+    "wrong_version_pin_rejected": true,
+    "v1_real_binary_preserved": true,
+    "v2_source_bytes_unchanged": true,
+    "blocked_preview_with_known_version": true,
+    "blocked_apply": true,
+    "fixture_config_unchanged": true,
+    "ownership_directory_absent": true,
+    "v2_account_capability_disabled": true
+  },
+  "validation": {
+    "full_node_passed": 222,
+    "full_rust_passed": 450,
+    "full_rust_ignored": 19,
+    "fmt": "pass",
+    "frontend_build": "pass",
+    "embedded_custom_protocol_build": "pass",
+    "real_file_tests": 1,
+    "final_input_count": 341,
+    "real_input_count": 341,
+    "inputs_unchanged": true,
+    "toolchain": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "environment": {
+      "workspace": "D:\\Projeler\\Headroom",
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "windows_build": [
+        10,
+        0,
+        19045
+      ]
+    },
+    "reused_protocol_input_count": 645,
+    "reused_protocol_inputs_match": true,
+    "protocol_repeated": false,
+    "catalog_matching_scope_unchanged": true
+  },
+  "codegraph": {
+    "query_command": [
+      "powershell.exe",
+      "-NoLogo",
+      "-NoProfile",
+      "-File",
+      "D:\\Projeler\\Headroom\\scripts\\codegraph.ps1",
+      "query",
+      "--json",
+      "--limit",
+      "1",
+      "opencode_cli_version_from_digest"
+    ],
+    "exit_code": 0,
+    "symbol": "opencode_cli_version_from_digest",
+    "file": "src-tauri/src/integrations/discovery.rs",
+    "source_sha256": "1fce532e4bd155d1bb0a43467297db8300295ddb87771c5356364f7333997e3d",
+    "runtime_evidence": false
+  },
+  "artifacts_before": {
+    "work/caches/cargo-target/debug/headroom-desktop.exe": "be4017cc8eaef85c3eb68e4c09c34528471ea11f1156ccc6b4ecdfe2074bd532",
+    "dist/index.html": "300a1e90a0e709d5a29d095aef8181bee7dd5624a2383bf673546f044a9c7cc2",
+    "dist/assets/index-DhApJR5u.css": "aca4670a2b9fd995ce513d7a17fe90cfb0a09716c9486416ccc0619b9cd9bb01",
+    "dist/assets/index-yEFJDx32.js": "8e6b221936166bc1b306851656799b269b01dc3efb8ec7a52c0de15469086cbf"
+  },
+  "artifacts_after": {
+    "work/caches/cargo-target/debug/headroom-desktop.exe": "be4017cc8eaef85c3eb68e4c09c34528471ea11f1156ccc6b4ecdfe2074bd532",
+    "dist/index.html": "300a1e90a0e709d5a29d095aef8181bee7dd5624a2383bf673546f044a9c7cc2",
+    "dist/assets/index-DhApJR5u.css": "aca4670a2b9fd995ce513d7a17fe90cfb0a09716c9486416ccc0619b9cd9bb01",
+    "dist/assets/index-yEFJDx32.js": "8e6b221936166bc1b306851656799b269b01dc3efb8ec7a52c0de15469086cbf"
+  },
+  "evidence": {
+    "work/proofs/opencode-discovery/checks-b3151e09f2/final.json": "aba86673bb76b3bad328224a9139f8cccd2758f311e5212b91d32d570b7d53e2",
+    "work/proofs/opencode-discovery/checks-296b2e1367/real.json": "a724e645e3af12502ecda95f6d88235733e2c9cf21f0eb06869c801dac0c5432",
+    "work/proofs/opencode-v2/runs/1dbf43fb31b2/result.json": "548f0604a4d7fadf41511c7c07976d85f2f0cd2e5446487e5f74342c13e128f6",
+    "docs/proofs/opencode-v2.json": "445d270449a104e994594d60e4c42e72a7105125ae9cf05e4cc3a581279ed5b3",
+    "work/proofs/opencode-discovery/checks-068fa0566f/focused.json": "d472a75febf66b3dc85e36fd19829764388d1b70144189905135537b72137cf3",
+    "work/proofs/opencode-discovery/checks-2346d4a554/focused.json": "b7ac20ad55fd8f591c84f31697d87a83702b98bcdf065f1f817e120e05ff15f5",
+    "work/proofs/opencode-discovery/checks-ca10ddd9b7/real.json": "90c5557ec3bb622afc36e0bbe0080c73dfdb44fb46e634f2db132e3e18728a1d",
+    "work/proofs/opencode-discovery/verify.py": "dccdb794a6320463c3786c71f9970529a907010a52945f9ca1021c980d2be94c",
+    "work/proofs/opencode-discovery/accept.py": "4a5e99e7585c35962253fcfd82f48dd1e80e402d99a7ed23aac509dccf848778",
+    "work/proofs/codex-current/quality.py": "0018d1dc20af62c7e641ba124123a7739cbd49e95021dfe0e209aa976841838b"
+  },
+  "earlier_attempts": [
+    {
+      "path": "work/proofs/opencode-discovery/checks-068fa0566f/focused.json",
+      "status": "compile_failure",
+      "reason": "New test called a private sibling helper; changed to the actual public discovery/pin path."
+    },
+    {
+      "path": "work/proofs/opencode-discovery/checks-2346d4a554/focused.json",
+      "status": "focused_pass_then_ignored_test_fixture_changed",
+      "coverage": "59 Rust and 5 frontend tests; final full gate covers current non-ignored source."
+    },
+    {
+      "path": "work/proofs/opencode-discovery/checks-ca10ddd9b7/real.json",
+      "status": "failed_real_fixture",
+      "reason": "V1 fixture supplied canonical Windows device-namespace PATH entry; corrected only the fixture to normal DOS project path."
+    }
+  ],
+  "limits": [
+    "Discovery trust does not enable the V1 config writer or account parser for V2.",
+    "Read-only backend tests do not retest the native window or file picker; unchanged UI/IPC path was reviewed.",
+    "No user config/auth/session, client process, provider account, paid API, Actions or release changed.",
+    "Protocol fixture is reused for its original standalone CLI scope; no real token, cost or development-chat savings measured.",
+    "Windows 11, macOS and Linux acceptance remain separate."
+  ],
+  "verifier_sha256": "4a5e99e7585c35962253fcfd82f48dd1e80e402d99a7ed23aac509dccf848778"
+}

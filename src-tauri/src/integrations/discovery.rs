@@ -59,6 +59,9 @@ const CLAUDE_CODE_CLI_2158_SHA256: &str =
 const OPENCODE_V1_CLI_1193_SIZE: u64 = 180_982_664;
 const OPENCODE_V1_CLI_1193_SHA256: &str =
     "cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375";
+const OPENCODE_V2_CLI_230_SIZE: u64 = 257_553_288;
+const OPENCODE_V2_CLI_230_SHA256: &str =
+    "2359208e2f81539fd16eb755a4d8a747e87c6fd5cd59a49bb552f8a610d33eb9";
 const MAX_PATH_CHARS: usize = 32_767;
 const MAX_MANUAL_FILES: usize = 32;
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
@@ -993,7 +996,7 @@ fn manual_candidate(
             .extension()
             .is_some_and(|extension| extension.eq_ignore_ascii_case("exe"))
     {
-        verified_opencode_v1_cli_version(&executable)
+        verified_opencode_cli_version(&executable)
     } else {
         None
     };
@@ -1467,7 +1470,7 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
                             version: if product.kind == "claude_code" && extension == "exe" {
                                 verified_claude_code_cli_version(&canonical_exe)
                             } else if product.kind == "opencode" && extension == "exe" {
-                                verified_opencode_v1_cli_version(&canonical_exe)
+                                verified_opencode_cli_version(&canonical_exe)
                             } else {
                                 None
                             },
@@ -1714,7 +1717,7 @@ fn add_user_native_candidates(
                     version: if kind == "claude_code" {
                         verified_claude_code_cli_version(&executable)
                     } else if kind == "opencode" {
-                        verified_opencode_v1_cli_version(&executable)
+                        verified_opencode_cli_version(&executable)
                     } else {
                         None
                     },
@@ -2211,33 +2214,33 @@ pub(super) fn claude_code_cli_version_from_digest(
         .then(|| "2.1.158".to_owned())
 }
 
-pub(super) fn opencode_v1_cli_version_from_digest(
-    file_size: u64,
-    digest_hex: &str,
-) -> Option<String> {
-    (file_size == OPENCODE_V1_CLI_1193_SIZE && digest_hex == OPENCODE_V1_CLI_1193_SHA256)
-        .then(|| "1.19.3".to_owned())
+pub(super) fn opencode_cli_version_from_digest(file_size: u64, digest_hex: &str) -> Option<String> {
+    match (file_size, digest_hex) {
+        (OPENCODE_V1_CLI_1193_SIZE, OPENCODE_V1_CLI_1193_SHA256) => Some("1.19.3".to_owned()),
+        (OPENCODE_V2_CLI_230_SIZE, OPENCODE_V2_CLI_230_SHA256) => Some("2.3.0".to_owned()),
+        _ => None,
+    }
 }
 
 fn verified_claude_code_cli_version(path: &Path) -> Option<String> {
     verified_bounded_cli_version(
         path,
-        CLAUDE_CODE_CLI_2158_SIZE,
+        &[CLAUDE_CODE_CLI_2158_SIZE],
         claude_code_cli_version_from_digest,
     )
 }
 
-fn verified_opencode_v1_cli_version(path: &Path) -> Option<String> {
+fn verified_opencode_cli_version(path: &Path) -> Option<String> {
     verified_bounded_cli_version(
         path,
-        OPENCODE_V1_CLI_1193_SIZE,
-        opencode_v1_cli_version_from_digest,
+        &[OPENCODE_V1_CLI_1193_SIZE, OPENCODE_V2_CLI_230_SIZE],
+        opencode_cli_version_from_digest,
     )
 }
 
 fn verified_bounded_cli_version(
     path: &Path,
-    expected_size: u64,
+    accepted_sizes: &[u64],
     version_from_digest: fn(u64, &str) -> Option<String>,
 ) -> Option<String> {
     let canonical_path = check_existing_path(path, PathKind::File).ok()?;
@@ -2247,7 +2250,8 @@ fn verified_bounded_cli_version(
     options.share_mode(FILE_SHARE_READ);
     let mut file = options.open(&canonical_path).ok()?;
     let initial_metadata = file.metadata().ok()?;
-    if !initial_metadata.is_file() || initial_metadata.len() != expected_size {
+    let expected_size = initial_metadata.len();
+    if !initial_metadata.is_file() || !accepted_sizes.contains(&expected_size) {
         return None;
     }
     let initial_identity = file_identity(&file)?;
@@ -2377,7 +2381,7 @@ fn verified_client_cli_file(client: &str, path: &Path) -> Option<(String, File)>
         "codex" => codex_cli_version_from_digest(bytes_read, &digest)
             .or_else(|| super::codex_binary::signed_version(&canonical_path, &file, &digest)),
         "claude_code" => claude_code_cli_version_from_digest(bytes_read, &digest),
-        "opencode" => opencode_v1_cli_version_from_digest(bytes_read, &digest),
+        "opencode" => opencode_cli_version_from_digest(bytes_read, &digest),
         _ => None,
     }?;
     if file_identity(&file)? != initial_identity || file.metadata().ok()?.len() != expected_size {

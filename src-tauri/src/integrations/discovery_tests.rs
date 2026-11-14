@@ -1,6 +1,6 @@
 use super::discovery::{
     claude_code_cli_version_from_digest, codex_cli_version_from_digest,
-    opencode_v1_cli_version_from_digest, DiscoveryInputs, DiscoveryManager, DiscoveryReply,
+    opencode_cli_version_from_digest, DiscoveryInputs, DiscoveryManager, DiscoveryReply,
     InstallationSelectionError, RememberInstallationChoiceRequest, SavedInstallationChoiceReply,
     SavedInstallationChoiceRequest,
 };
@@ -1039,16 +1039,16 @@ fn bundled_codex_version_requires_both_exact_size_and_sha256() {
 fn bundled_opencode_v1_version_requires_both_exact_size_and_sha256() {
     const HASH: &str = "cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375";
     assert_eq!(
-        opencode_v1_cli_version_from_digest(180_982_664, HASH).as_deref(),
+        opencode_cli_version_from_digest(180_982_664, HASH).as_deref(),
         Some("1.19.3")
     );
     assert_eq!(
-        opencode_v1_cli_version_from_digest(180_982_663, HASH),
+        opencode_cli_version_from_digest(180_982_663, HASH),
         None,
         "the exact digest at a different size must remain unknown"
     );
     assert_eq!(
-        opencode_v1_cli_version_from_digest(
+        opencode_cli_version_from_digest(
             180_982_664,
             "dbb0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375"
         ),
@@ -1109,6 +1109,196 @@ fn unknown_opencode_exes_remain_unversioned_on_path_native_and_manual_sources() 
     assert_eq!(manual_snapshot.installations[0].source, "manual_file");
     assert_eq!(manual_snapshot.installations[0].version, None);
     fixture.cleanup();
+}
+
+#[test]
+fn opencode_v2_digest_requires_its_own_exact_size_and_preserves_v1() {
+    const HASH: &str = "2359208e2f81539fd16eb755a4d8a747e87c6fd5cd59a49bb552f8a610d33eb9";
+    assert_eq!(
+        opencode_cli_version_from_digest(257_553_288, HASH).as_deref(),
+        Some("2.3.0")
+    );
+    for (size, hash) in [
+        (257_553_287, HASH),
+        (180_982_664, HASH),
+        (
+            257_553_288,
+            "cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375",
+        ),
+        (
+            257_553_288,
+            "0359208e2f81539fd16eb755a4d8a747e87c6fd5cd59a49bb552f8a610d33eb9",
+        ),
+    ] {
+        assert!(opencode_cli_version_from_digest(size, hash).is_none());
+    }
+    assert_eq!(
+        opencode_cli_version_from_digest(
+            180_982_664,
+            "cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375"
+        )
+        .as_deref(),
+        Some("1.19.3")
+    );
+}
+
+#[cfg(windows)]
+#[test]
+#[ignore = "Opt-in: reads only the explicitly pinned project V2 CLI; never starts it."]
+fn opencode_v2_project_binary_is_discovered_retained_and_pinned_without_execution() {
+    let mut fixture = Fixture::new();
+    let executable = PathBuf::from(
+        std::env::var_os("HEADROOM_TEST_OPENCODE_V2_CLI").expect("explicit project binary"),
+    );
+    let expected = fixture
+        .project_root
+        .join("work/toolchains/opencode/v2.3.0/runtime/opencode.exe");
+    assert_eq!(
+        test_path_key(&executable.canonicalize().unwrap()),
+        test_path_key(&expected.canonicalize().unwrap())
+    );
+
+    let path_snapshot = snapshot(DiscoveryManager::new().scan_with_inputs(
+        REQUEST_ID.to_owned(),
+        DiscoveryInputs {
+            path_entries: vec![executable.parent().unwrap().to_owned()],
+            ..DiscoveryInputs::default()
+        },
+    ));
+    let path_installation = path_snapshot
+        .installations
+        .iter()
+        .find(|row| row.client_kind == "opencode")
+        .unwrap();
+    assert_eq!(path_installation.version.as_deref(), Some("2.3.0"));
+    assert_eq!(path_installation.source, "path");
+    assert_eq!(path_installation.connection_status, "not_verified");
+    let encoded = serde_json::to_value(&path_snapshot).unwrap();
+    assert!(!encoded
+        .to_string()
+        .contains(&executable.to_string_lossy().to_string()));
+
+    let manager = DiscoveryManager::new();
+    let selected = snapshot(select_fixture(&manager, "opencode", executable.clone()));
+    assert_eq!(selected.installations[0].version.as_deref(), Some("2.3.0"));
+    assert_eq!(selected.installations[0].source, "manual_file");
+    let original = manager
+        .installation_path(&selected.installations[0].installation_id)
+        .unwrap();
+    let rescanned =
+        snapshot(manager.scan_with_inputs(REQUEST_ID.to_owned(), DiscoveryInputs::default()));
+    assert_eq!(rescanned.installations.len(), 1);
+    assert_eq!(rescanned.installations[0].version.as_deref(), Some("2.3.0"));
+    assert_eq!(rescanned.installations[0].source, "manual_file");
+    let retained = manager
+        .installation_path(&rescanned.installations[0].installation_id)
+        .unwrap();
+    assert_eq!(test_path_key(&retained), test_path_key(&original));
+
+    use super::config_io::{
+        ApplyConnectionRequest, ConfigRootInputs, ConnectionActionReply, PlanManager, PlanReply,
+        PreviewRequest,
+    };
+    use super::plan::{PlanBlocker, PlanStatus};
+    let config_root = fixture.at("xdg-config");
+    let config = config_root.join("opencode/opencode.jsonc");
+    let config_bytes = br#"{ /* V2 fixture */ "model":"openai/slot", "providers":{"openai":{}} }"#;
+    write_file(&config, config_bytes);
+    let plans = PlanManager::with_test_sources(
+        manager.clone(),
+        ConfigRootInputs {
+            xdg_config_home: Some(config_root),
+            ..ConfigRootInputs::default()
+        },
+        Ok(crate::runtime::manager::ReadyStableEndpoint {
+            endpoint_id: "019a0000-0000-7000-8000-000000000003".into(),
+            host: "127.0.0.1",
+            port: 41731,
+        }),
+    )
+    .with_ownership_store(
+        crate::state::ownership::OwnershipStore::new(&fixture.path, Path::new("ownership"))
+            .unwrap(),
+    );
+    let reply = plans.preview(PreviewRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.into(),
+        installation_id: rescanned.installations[0].installation_id.clone(),
+        scan_generation: rescanned.scan_generation,
+        scope: "user_config".into(),
+    });
+    let PlanReply::Preview(preview) = reply else {
+        panic!("bounded blocked preview");
+    };
+    assert_eq!(preview.plan.status, PlanStatus::Blocked);
+    assert!(preview
+        .plan
+        .blockers
+        .contains(&PlanBlocker::UnsupportedClientVersion));
+    assert!(!preview.plan.endpoint_field.after_headroom);
+    let reply = plans.apply_connection(ApplyConnectionRequest {
+        schema_version: 1,
+        request_id: REQUEST_ID.into(),
+        plan_id: preview.plan.plan_id,
+        expected_config_fingerprint: preview.plan.config_fingerprint,
+    });
+    let ConnectionActionReply::Error(error) = reply else {
+        panic!("V2 cannot use V1 writer");
+    };
+    assert_eq!(error.error.code, "config_conflict");
+    assert_eq!(fs::read(&config).unwrap(), config_bytes);
+    assert!(!fixture.at("ownership").exists());
+
+    let local = fixture.at("profile/.local/bin/opencode.exe");
+    fs::create_dir_all(local.parent().unwrap()).unwrap();
+    fs::hard_link(&executable, &local).unwrap();
+    let native = snapshot(DiscoveryManager::new().scan_with_inputs(
+        REQUEST_ID.to_owned(),
+        DiscoveryInputs {
+            user_profile: Some(fixture.at("profile")),
+            ..DiscoveryInputs::default()
+        },
+    ));
+    let native = native
+        .installations
+        .iter()
+        .find(|row| row.client_kind == "opencode")
+        .unwrap();
+    assert_eq!(native.version.as_deref(), Some("2.3.0"));
+    assert_eq!(native.source, "user_local_native");
+
+    let pin = super::discovery::pin_verified_client_cli("opencode", &executable, "2.3.0")
+        .expect("same-version retained pin");
+    assert!(
+        fs::OpenOptions::new()
+            .write(true)
+            .open(&executable)
+            .is_err(),
+        "read pin prevents ordinary writes without writing anything"
+    );
+    assert!(super::discovery::pin_verified_client_cli("opencode", &executable, "1.19.3").is_none());
+    drop(pin);
+    let v1 = snapshot(DiscoveryManager::new().scan_with_inputs(
+        REQUEST_ID.to_owned(),
+        DiscoveryInputs {
+            path_entries: vec![Path::new(env!("CARGO_MANIFEST_DIR"))
+                .parent().unwrap()
+                .join("work/toolchains/opencode/v1.19.3/runtime")],
+            ..DiscoveryInputs::default()
+        },
+    ));
+    assert_eq!(
+        v1.installations
+            .iter()
+            .find(|row| row.client_kind == "opencode")
+            .unwrap()
+            .version
+            .as_deref(),
+        Some("1.19.3")
+    );
+    fixture.cleanup();
+    assert!(super::discovery::pin_verified_client_cli("opencode", &executable, "2.3.0").is_some());
+    println!("headroom_opencode_v2 path=true manual=true user_local=true rescan=true pin=true write_denied=true wrong_version_rejected=true source_preserved=true v1_preserved=true plan_blocked=true apply_blocked=true config_unchanged=true ownership_absent=true executed=false");
 }
 
 #[test]
