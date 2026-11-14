@@ -4784,6 +4784,10 @@ fn run_actor(
 #[path = "manager_tests.rs"]
 mod tests;
 
+#[cfg(all(test, windows))]
+#[path = "windows_crash_tests.rs"]
+mod windows_crash_tests;
+
 #[cfg(all(test, target_os = "macos"))]
 #[path = "manager_macos_tests.rs"]
 mod macos_tests;

@@ -1,5 +1,13 @@
 # Headroom Desktop — güncel devir
-13 Kasım 2026.
+14 Kasım 2026.
+
+## H006-b — Yerel çökme kabulü tamamlandı; ana H006 açık
+
+- **Yerel dilim kabul edildi; toplam 42/54.** Windows 10 build 19045 x64'te gerçek paket ve üretimdeki Rust controller başlatma yolu kullanıldı. Konsolsuz test sahibi zorla sonlandırıldığında kontrol borusu açıkken üç çekirdek süreç 53ms'de sonlandı; motor portunun kapalı olduğu 357ms'de gözlendi. Ek Job handle'ı en az 1000ms açıkken motor yaşadı; son handle kapanışında 54ms / port 370ms gözlendi. İki kolda yabancı listener korundu. Bunlar iki tekil gözlemdir; genel performans garantisi değildir.
+- **Kanıt:** `work/proofs/windows-engine-crash/verification-6fdcd6e65d/runtime-proof.json` passed:true; kaynak/araç/ortam önce-sonra eşit ve 22.333 paket dosyası / 536.626.939 bayt aynı. Başlangıç envanteri, girdileri ve araçları eşleşen `staging-320e03855b/stage.json` tam paket doğrulamasından yeniden kullanıldı; koşu sonrası bütün dosyalar bağımsız hash'lendi. Güncel `quality-28623d163c`: 441 Rust / 18 ignored, fmt ve embedded build PASS; 221 Node ve frontend build ilgili girdiler ve Node/pnpm sürümleri eşleşerek yeniden kullanıldı. Kaynak değişmezse bu kontrolleri tekrarlama.
+- Ana ajan süreç/handle sahipliği, test, inceleme ve kabulü üstlendi; yeni çalışan/model/dependency açılmadı. Ponytail full/review ve code-review-and-quality tek incelemede uygulandı. Yeni modül yalnız Windows test derlemesindedir; üretim davranışı, auth/model/istemci ayarları değişmedi. Canlı sağlayıcı, GUI, yeni hesap, yayın veya CI çalıştırılmadı; geliştirme token tasarrufu ölçülmedi.
+- İlk `verification-c3ac53b902` eski stage'in helper pin uyuşmazlığıyla reddi; ikinci `verification-59b7947343` fixture'ın aynı Job mutex'ini yeniden alması nedeniyle 105s zaman aşımıdır. İkisi de başarısız olarak korundu. Güncel paket ayrı hedefte üretildi; testte liveness kontrolü kilitten önceye taşındı. Guard/kabul sınırı gevşetilmedi; önceki stage korundu.
+- **Sınır / sonraki adım:** H006'nın temiz Windows 10 ve ayrı Windows 11 kanıtı açık. Job ataması öncesindeki başlangıç yarışı, gerçek Tauri GUI çökmesi, bütün OS süreç sayımı veya canlı sağlayıcı test edilmedi. Bu yerel dilim bittiği için çalışma durduruldu; yeni yönlendirme beklenir. Cloudflare H052–H054 ve Linux H049 ertelemeleri korunur; mevcut kalan işlerde hesap/OS/yayın/kota koşulları sağlanmadan kabul verilmez. [JSON](proofs/windows-engine-crash.json) · [Açıklama](proofs/windows-engine.md#h006-b--ani-sahip-süreç-kaybı-14-kasım-2026) · [İnceleme](reviews/H006-b.md).
 
 ## H052–H054 — Cloudflare hesabı hazır olana kadar ertelendi
 

@@ -1,0 +1,372 @@
+{
+  "schema_version": 1,
+  "task": "H006-b",
+  "recorded_at_utc": "2026-11-14T09:41:32.077640+00:00",
+  "status": "accepted_local_windows_10",
+  "task_slice_accepted": true,
+  "parent_task_accepted": false,
+  "completed_main_tasks": 42,
+  "main_tasks_total": 54,
+  "scope": "Ready packaged controller via production Rust launch; forced console-less fixture-owner exit; no Tauri UI launch",
+  "environment": {
+    "workspace": "D:\\Projeler\\Headroom",
+    "windows": [
+      10,
+      0,
+      19045
+    ],
+    "machine": "AMD64",
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "python_executable_sha256": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+    "cargo_home": "D:\\Projeler\\Headroom\\work\\caches\\cargo-home",
+    "cargo_target_dir": "D:\\Projeler\\Headroom\\work\\caches\\cargo-target",
+    "tools": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    }
+  },
+  "cases": [
+    {
+      "control_pipe_held_through_observation": true,
+      "core_exit_observation_ms_from_trigger": 53,
+      "core_processes_exited": true,
+      "engine_port_closed": true,
+      "explicit_stop_or_terminate_job_call": false,
+      "foreign_listener_preserved": true,
+      "owner_exit_code": 1,
+      "port_closed_observation_ms_from_trigger": 357,
+      "retained_job_control": false,
+      "retained_job_minimum_survival_ms": null,
+      "trigger": "owner_terminate_request"
+    },
+    {
+      "control_pipe_held_through_observation": true,
+      "core_exit_observation_ms_from_trigger": 54,
+      "core_processes_exited": true,
+      "engine_port_closed": true,
+      "explicit_stop_or_terminate_job_call": false,
+      "foreign_listener_preserved": true,
+      "owner_exit_code": 1,
+      "port_closed_observation_ms_from_trigger": 370,
+      "retained_job_control": true,
+      "retained_job_minimum_survival_ms": 1000,
+      "trigger": "observer_closes_last_job_handle"
+    }
+  ],
+  "runtime": {
+    "file_count": 22333,
+    "bytes": 536626939,
+    "inventory_sha256": "1e91f6a328c2acd7021f4c30a229761191e023b13b182d0cb0e12172f3343a52"
+  },
+  "runtime_unchanged": true,
+  "runtime_before_basis": {
+    "kind": "reused_complete_verified_staging_inventory",
+    "proof": "work\\proofs\\windows-engine-crash\\staging-320e03855b\\stage.json",
+    "proof_sha256": "cf61ece6a8f674bcf16f8c8a10192661e3ca0d60e8dae36e6a06199eba265584",
+    "staging_inputs_and_toolchain_match": true
+  },
+  "quality_commands": [
+    {
+      "command": [
+        "cargo",
+        "+stable-x86_64-pc-windows-msvc",
+        "fmt",
+        "--manifest-path",
+        "src-tauri/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 1.299,
+      "test_summary": [],
+      "node_summary": [],
+      "failed_tests": []
+    },
+    {
+      "command": [
+        "cargo",
+        "+stable-x86_64-pc-windows-msvc",
+        "test",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "src-tauri/Cargo.toml",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "seconds": 15.438,
+      "test_summary": [
+        "test result: ok. 441 passed; 0 failed; 18 ignored; 0 measured; 0 filtered out; finished in 14.40s"
+      ],
+      "node_summary": [],
+      "failed_tests": []
+    },
+    {
+      "command": [
+        "cargo",
+        "+stable-x86_64-pc-windows-msvc",
+        "build",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "src-tauri/Cargo.toml",
+        "--features",
+        "custom-protocol"
+      ],
+      "exit_code": 0,
+      "seconds": 2.251,
+      "test_summary": [],
+      "node_summary": [],
+      "failed_tests": []
+    }
+  ],
+  "reused_commands": [
+    {
+      "name": "node_contract_tests",
+      "proof": "work/proofs/sessions/final-reviewed.json",
+      "proof_sha256": "7661bacd081e258a874a67a0d6137ce0e4ff63ff332a0ea6f4fdf26c928bdcaf",
+      "scoped_inputs": {
+        "index.html": "9f988dead16da5d8f692b7d017b2511b2786613409dc6c79d47eddd3d0846efc",
+        "package.json": "7410af54ecc78827fbc155711de1bfa6225d64da41636dd0a92ba23be1379c75",
+        "pnpm-lock.yaml": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3",
+        "src/lib/accounts.ts": "cf55bf72163f7627feb3eba53b5382339083c350926a32321dcb96711d637271",
+        "src/lib/activity.ts": "bf71bf8d7b5b8146dde3ac9ffbe138ca74d95c217fb17740f8d03d40aa477661",
+        "src/lib/activityClient.ts": "d7366db496bdb3208c02c539766052a8f590ab7d27267e526ad85656c07ca107",
+        "src/lib/activitySession.ts": "677c29b7679bcb3f4c8cb834be42ca57cbf96cc504e4100a3547f2ef28ca09ce",
+        "src/lib/claudeContext.ts": "b2e88e76934bd6637c352b6fa2e94e672b83dfa829b71ec4102f3edec0cd12de",
+        "src/lib/codexStatus.ts": "eb31134c9602d2ed6862f5f8b773d49bb66b34fd65fedaa7eb79e96c0eec37e6",
+        "src/lib/compatibility.ts": "86d38fd8e218746fa048c3b4ca60a539753a2a09890bcbb31ee0dc9c921eb38f",
+        "src/lib/connectionActions.ts": "8c598ec1f1a8e3326a30790e07b2afc0d804cf7852fb97f5c4df25f72a0bf9cd",
+        "src/lib/connectionPlan.ts": "29fd6130a6a46ee627bbcf68dd9a663a573a339ae20577f6169f91f2cfa9a8d3",
+        "src/lib/connectionPlanView.ts": "341d151e7efad475bab1e577adcb9f98d3d202630444ad78f51ae39928c6bab7",
+        "src/lib/contracts.ts": "038120e53ff8427f689b8f5de7f4579d6918b5bf5d6bc939c50b44b5e486b146",
+        "src/lib/desktop-events.ts": "e37064c501010707c6df53f0558cb4417f8844c5c42ad9eb997f9669512db389",
+        "src/lib/equivalentInstallations.ts": "51af216f51c00184b6ff3ad46f59d8c1add02411da3fa6b97ee81cdb2b97518a",
+        "src/lib/exportReport.ts": "97ea03a9401e7cbdbae038b1093d5ab1348f0f94e382244bd41a406e03fe182d",
+        "src/lib/insights.ts": "e9361ccffdd374c32a73c2aed3aba2f725da885e85c39ec85880bff232feda2a",
+        "src/lib/installationChoices.ts": "efd1c0c8cc9f3af080ca06748176fcd98bb50da33c374482439dfdbeb6056186",
+        "src/lib/integrations.ts": "f60fd988f6c97c43a922c92462ea43fa60780d21f264c381291f7bed8e9702c6",
+        "src/lib/metrics.ts": "2eb7d40273bf5daf2cdb79f9af2fab19a4e88670e5c7e7d160b02493e3334174",
+        "src/lib/metricsSession.ts": "7441d7ab6e36826716bb322e60112485290ddc79ef9e90bf5922a7da4e04c23f",
+        "src/lib/operatingSettings.ts": "c1b2bc50275ec3fc88dabd618afa5503abc7d69bdf1ea95d6783e7223a9772b7",
+        "src/lib/optimization.ts": "45728df9c7d2021b555002640b95e9cd2351cab55b4953f5f204dec452a03f5e",
+        "src/lib/preferences.ts": "6b9f8d075fa8bf636887555eccfe2f569b49b108d2b434bb24ae7b02159c406a",
+        "src/lib/recovery.ts": "4c88a09c24b7e9ec99a55f9d0ed401cb2ed6af59a7e171d134e191d09dde9069",
+        "src/lib/retainedVersions.ts": "7cd5c5d633542307b6ab58fdf997eeb1e4c526da116731fb19e3583d43382e37",
+        "src/lib/sessions.ts": "59cdfb8d45b28dffba1e6d412df913382efe4f1f6af4baef1ab339c620129c1a",
+        "src/lib/updates.ts": "96280c930b55ca1b27ab2a997103c9d009b82fbb5e32c1e711c8241d962874fb",
+        "src/lib/windowZoom.ts": "7210d622830b94edeb8efb1a30b11560d75deb4ce5c09be8c28fa746e87996e7",
+        "tests/app/accounts.test.mjs": "aec1eecc4e254d3738f1b5edd9a39acf99a4000f355623da1fd5595d7888dbeb",
+        "tests/app/activity-session.test.mjs": "0bb9b0ba5972be9a4f680df0216dfaeae43eb3a3ba32f47b34c611ef0977b215",
+        "tests/app/activity.test.mjs": "bc3e7e27ba15246567b4d68323db8197c61e30d2148237ac9852e26462036a74",
+        "tests/app/attribution.test.mjs": "edece1d7e2c88f47935fab748a0b73579c74c699bd37d66900878b88ae54193c",
+        "tests/app/claude-context.test.mjs": "f8ea0e31bf1de03b476ce787ccbc61eaabd29605565cf8e34924ff4cc2230f58",
+        "tests/app/codex-status.test.mjs": "c02f92a4464cbc8620f5077a286ae2003ff6bd74aac30aaa57ec8683613db475",
+        "tests/app/codex-verification.test.mjs": "220fdb04b25745e494b216afa17f6f759c918e39feee92b7b28bb9971695e5b2",
+        "tests/app/compatibility.test.mjs": "09bb2c6a1ffdde7dc791c3feedf062fb312c1b164179a06760e3a1cd8487d681",
+        "tests/app/connection-actions.test.mjs": "11084409b1731951c31859e7b6b4d44db89d98e26d9685604136aa5861d27b0f",
+        "tests/app/connection-plan-view.test.mjs": "57b63595f102d57fca4c1366ffdf0ca043ddf55d066bfe11001258c48280b79c",
+        "tests/app/connection-plan.test.mjs": "d533b82b3355fc628b8630417f481a6851aed517abe60f5e07805aead45fc796",
+        "tests/app/desktop-events.test.mjs": "664eadf68a4a3ba6d3d4d64abb0e399a4ea5a056d4d36b76abc4bf60821fabaf",
+        "tests/app/equivalent-installations.test.mjs": "f90c4e34bd3145977631ee86bad293ec38f1e727410f9fca90df7871902b0704",
+        "tests/app/export-report.test.mjs": "280cf5741e82201444ceadb235f59abb2ece1f76afb0fa3676395faf944a0371",
+        "tests/app/installation-choices.test.mjs": "3051a9d07b072762f35d523f2ef5894d20a20294bc1fe90179d5487bf4c96525",
+        "tests/app/integrations.test.mjs": "4daf7c97fa14cac8964d02608783f010e3feedd090e2c103778e41135c4c94a6",
+        "tests/app/metrics-session.test.mjs": "97a00bec864445b0e668e2846ba797cf1c2fdcbc90e64b477d65116f9df5171f",
+        "tests/app/metrics.test.mjs": "d518974fa44596e1bcbaecb2994a1e7c2ed4db509a83142fa7eb7fa3eee6d7b7",
+        "tests/app/operating-settings.test.mjs": "a65fbb824776599cc74b6ad66d2f3c4ddeaf11537fccd925f3d2d5258b325a2f",
+        "tests/app/optimization.test.mjs": "7caf2567d3d432dcbb38780373ca76da29e3ff7fc40951e7c909987c9d72f563",
+        "tests/app/preferences.test.mjs": "3847c5023279cdc01bbab1c99b21d83bd07c6013e82f2d8e3f4a342256ee6c80",
+        "tests/app/recovery.test.mjs": "6176b12407355b3222453e91aaa863afc259974ceded122a47731cf6e55c3a89",
+        "tests/app/retained-versions.test.mjs": "18daca50e3cc7bc9b979581021fcd858feaeb58916fabc6237e602139336dd8c",
+        "tests/app/sessions.test.mjs": "b5735e0b140329705c19f8982f66346e1d3712eaa810305be34dd211c754223a",
+        "tests/app/snapshot.test.mjs": "a1d07ecc2d78d17893f4a605438c3a5ce035ad6ab866f17a5ea6c5e12b0e98a2",
+        "tests/app/updates.test.mjs": "e467d6f77dcc65981f810824027c4b39cefdfafab46a30472d9e696174649dbd",
+        "tests/app/window-zoom.test.mjs": "19b74c7a2bee59401922d80f55fca16c643291e58e48e48cadfc6d09ac745040",
+        "tsconfig.json": "d21dd9148330758646c6a1c605f83a88ecd9224126ff49c205e8d105525cc03b",
+        "vite.config.ts": "dcb19fe986150626ba66f618f7a579bc1d1232ac2e27105bcab078e78e24b36a"
+      },
+      "command": {
+        "command": [
+          "pnpm.cmd",
+          "test:app"
+        ],
+        "exit_code": 0,
+        "seconds": 1.262,
+        "test_summary": [],
+        "node_summary": [
+          "ℹ tests 221",
+          "ℹ pass 221",
+          "ℹ fail 0",
+          "ℹ duration_ms 630.795"
+        ],
+        "failed_tests": []
+      },
+      "required_tools": {
+        "node": "v25.2.1",
+        "pnpm.cmd": "11.25.0"
+      }
+    },
+    {
+      "name": "frontend_build",
+      "proof": "work/proofs/sessions/final-candidate.json",
+      "proof_sha256": "842011ee3dbd38f4c936ad80e61d2bf6a0b0ec8b6a387b8cf5366a0ffcb36833",
+      "scoped_inputs": {
+        "index.html": "9f988dead16da5d8f692b7d017b2511b2786613409dc6c79d47eddd3d0846efc",
+        "package.json": "7410af54ecc78827fbc155711de1bfa6225d64da41636dd0a92ba23be1379c75",
+        "pnpm-lock.yaml": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3",
+        "src/App.tsx": "f3d45b1d07423d0ca92f01d670e0dc885db6f588c950c3534597ead6dda48306",
+        "src/components/DesktopLifecycle.tsx": "3483c8a95c1cd21c1d1840aade2b412e5bbae2d7ec377694be0dc5df8363c7a3",
+        "src/components/Icon.tsx": "d1fd9c246eda6a7cb4102a23350de3641a5f226774745f2aef53b36cb7a7f32a",
+        "src/components/problem-notice.css": "786690ec87ca8122d06d2f7092534f34f17ba7eb95602bac21161b287d0ba186",
+        "src/components/ProblemNotice.tsx": "2ffe24726b53a8f48ab3bc8cdd3149b129d502cd9c958e7e20254c91e53b11dd",
+        "src/env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+        "src/features/activity/activity.css": "50fd134fe39de8b22ed566a1f3b113687cde0ebd54ece15266db5ca35213f4e7",
+        "src/features/activity/Activity.tsx": "19fcc5bd15d36a6fc36451d6121973e1a4e538a56458a297f25bfb5e32184d60",
+        "src/features/activity/RequestDetails.tsx": "9dde450d3c5f4df8fffd3f16f74f69703a16a4d5be14622e7b71bcbd1e383639",
+        "src/features/activity/useActivity.ts": "bb91f9b7f2ea5956ca76b83327d5197bcf91eb92d2e9932e9da01c6f3cfc51b6",
+        "src/features/integrations/accounts.css": "1fa61e896ac1a2f65b73cb5fffab9a7a1508fefc2e93d1bdfc63bda14a3cda6b",
+        "src/features/integrations/Accounts.tsx": "5db944c2c2c0b7e1aab33fe0f597fdce1cd6fdb5ae4721e350396465b39c0340",
+        "src/features/integrations/Applications.tsx": "45dca65435b6d5c46cc3b8075821424317a268b84115eaa2b1787b960829ec32",
+        "src/features/integrations/ClaudeScopeSection.tsx": "fb99a3992084ebdee8f8c76c27edd8c6b3ce74ca766cfa54ab9b0f53374bee89",
+        "src/features/integrations/compatibility.css": "7af8b2048b5515280aa95099e2da077447ceb0af75b78b4ba7df01315001f15b",
+        "src/features/integrations/Compatibility.tsx": "ac2c454f05da85808a58a0faba3c5938934a45eaea28ad4c79b6bc3050e5f472",
+        "src/features/integrations/ConnectDialog.tsx": "578e6a00602dff1812d05e3a9576142e7c20a0ea941b13011e4429a085e9c6a0",
+        "src/features/integrations/ConnectionStatus.tsx": "7e964b19bd908274d85d6c13105b7bd706d4ab43f7419df364bff973532818d5",
+        "src/features/integrations/DisconnectDialog.tsx": "414452002607e4791bf24771984a7ee09395401e42fe53ec29e207e52f96c513",
+        "src/features/integrations/retained-versions.css": "bcedd8bf327677e956dccd8a5b5768b01fe5d655d7c2f6560b1033e833b2ca53",
+        "src/features/integrations/RetainedVersions.tsx": "face6b9cda1d35bd0909f86c8bcc148cdf711256e3da8d21a7098ba3f88563a6",
+        "src/features/integrations/SessionList.tsx": "34a9c5a43255b56bb2f2cb9e98055abb49dfcdbfbb674b632f9081c1900a8322",
+        "src/features/integrations/sessions.css": "a8dc9ff980364fe3fbc294805931a490bec8e535629900d3ed5cbdbec2415199",
+        "src/features/integrations/Sessions.tsx": "e8b2b5f29bcfe79e3d1c372054b397855f7c4d56f49cf0311d7e87c832d4ebea",
+        "src/features/overview/coverage.css": "53cb19ca5d914f10e114f53267e9c194e93adbbcaa58d0845be3bcdc1f9aa366",
+        "src/features/overview/Coverage.tsx": "0b2ca965100e2c871fecce153c6c1bfaad2bed2e1563200b85ac321ac3a03310",
+        "src/features/overview/export-button.css": "995920b6111b46ba796221ab556e811b02df7cc2eefa1c3e59c7f6b450de6501",
+        "src/features/overview/ExportButton.tsx": "e93d7bed2e6eb74a1c370ad5e01feba38a5478e18586ee2bbdd986dfbd58cf64",
+        "src/features/overview/optimization-control.css": "0ee514331b6ac2a8836f8a77608c8128467eb0c4aff2d3607af54c8f869222b6",
+        "src/features/overview/OptimizationControl.tsx": "2194c7f4ec4f09a18dacee5877f25c3590bf1d550ea661103b17ba4db21355e6",
+        "src/features/overview/overview.css": "3d82585645477efa699559aaeb2635e526bc699a9b12373e7b148fb9933e3378",
+        "src/features/overview/Overview.tsx": "167f2b78cc00e116775239784cea4088be161008b2e151e4c2f7bd91ff502014",
+        "src/features/overview/Recommendations.tsx": "b72f685e401a0de2997fa3d8f365f5a32e7e4104380cea56310f6cda8ce4f717",
+        "src/features/overview/SavingsChart.tsx": "5e873d268e08888ac67f0666216615e81ee6e1d8154148b8cc2b238da38c3264",
+        "src/features/overview/useOverview.ts": "98f072ac3e7417143155db491313ed1afdbe68e31c84aa5ae9587c97fdd68cdf",
+        "src/features/settings/Settings.tsx": "266d4eb5d150db309961c1b06e2efd7b6c4e449f1bf33b70fe5450c27251ba1f",
+        "src/features/settings/Updates.tsx": "a0a6497819a354bbf090901a01d81406cc72f6dbbbacdef0f9aef952e35df5fe",
+        "src/lib/accounts.ts": "cf55bf72163f7627feb3eba53b5382339083c350926a32321dcb96711d637271",
+        "src/lib/activity.ts": "bf71bf8d7b5b8146dde3ac9ffbe138ca74d95c217fb17740f8d03d40aa477661",
+        "src/lib/activityClient.ts": "d7366db496bdb3208c02c539766052a8f590ab7d27267e526ad85656c07ca107",
+        "src/lib/activitySession.ts": "677c29b7679bcb3f4c8cb834be42ca57cbf96cc504e4100a3547f2ef28ca09ce",
+        "src/lib/claudeContext.ts": "b2e88e76934bd6637c352b6fa2e94e672b83dfa829b71ec4102f3edec0cd12de",
+        "src/lib/codexStatus.ts": "eb31134c9602d2ed6862f5f8b773d49bb66b34fd65fedaa7eb79e96c0eec37e6",
+        "src/lib/compatibility.ts": "86d38fd8e218746fa048c3b4ca60a539753a2a09890bcbb31ee0dc9c921eb38f",
+        "src/lib/connectionActions.ts": "8c598ec1f1a8e3326a30790e07b2afc0d804cf7852fb97f5c4df25f72a0bf9cd",
+        "src/lib/connectionPlan.ts": "29fd6130a6a46ee627bbcf68dd9a663a573a339ae20577f6169f91f2cfa9a8d3",
+        "src/lib/connectionPlanView.ts": "341d151e7efad475bab1e577adcb9f98d3d202630444ad78f51ae39928c6bab7",
+        "src/lib/contracts.ts": "038120e53ff8427f689b8f5de7f4579d6918b5bf5d6bc939c50b44b5e486b146",
+        "src/lib/desktop-events.ts": "e37064c501010707c6df53f0558cb4417f8844c5c42ad9eb997f9669512db389",
+        "src/lib/equivalentInstallations.ts": "51af216f51c00184b6ff3ad46f59d8c1add02411da3fa6b97ee81cdb2b97518a",
+        "src/lib/exportReport.ts": "97ea03a9401e7cbdbae038b1093d5ab1348f0f94e382244bd41a406e03fe182d",
+        "src/lib/insights.ts": "e9361ccffdd374c32a73c2aed3aba2f725da885e85c39ec85880bff232feda2a",
+        "src/lib/installationChoices.ts": "efd1c0c8cc9f3af080ca06748176fcd98bb50da33c374482439dfdbeb6056186",
+        "src/lib/integrations.ts": "f60fd988f6c97c43a922c92462ea43fa60780d21f264c381291f7bed8e9702c6",
+        "src/lib/metrics.ts": "2eb7d40273bf5daf2cdb79f9af2fab19a4e88670e5c7e7d160b02493e3334174",
+        "src/lib/metricsSession.ts": "7441d7ab6e36826716bb322e60112485290ddc79ef9e90bf5922a7da4e04c23f",
+        "src/lib/operatingSettings.ts": "c1b2bc50275ec3fc88dabd618afa5503abc7d69bdf1ea95d6783e7223a9772b7",
+        "src/lib/optimization.ts": "45728df9c7d2021b555002640b95e9cd2351cab55b4953f5f204dec452a03f5e",
+        "src/lib/preferences.ts": "6b9f8d075fa8bf636887555eccfe2f569b49b108d2b434bb24ae7b02159c406a",
+        "src/lib/recovery.ts": "4c88a09c24b7e9ec99a55f9d0ed401cb2ed6af59a7e171d134e191d09dde9069",
+        "src/lib/retainedVersions.ts": "7cd5c5d633542307b6ab58fdf997eeb1e4c526da116731fb19e3583d43382e37",
+        "src/lib/sessions.ts": "59cdfb8d45b28dffba1e6d412df913382efe4f1f6af4baef1ab339c620129c1a",
+        "src/lib/updates.ts": "96280c930b55ca1b27ab2a997103c9d009b82fbb5e32c1e711c8241d962874fb",
+        "src/lib/windowZoom.ts": "7210d622830b94edeb8efb1a30b11560d75deb4ce5c09be8c28fa746e87996e7",
+        "src/main.tsx": "41431cb94a112ca05f90ca6037229d09d4bb8ecc1c27ae3bb3740ace8f01d2a6",
+        "src/runtime/snapshot.ts": "260b57acdca8cf27ce12b101ffeccc3e415f3635d83638a0523cd6b869b8b1c0",
+        "src/styles.css": "91c68ee568b103f2847df4da5762181f205f24df1fd195277801739a8e03100f",
+        "tsconfig.json": "d21dd9148330758646c6a1c605f83a88ecd9224126ff49c205e8d105525cc03b",
+        "vite.config.ts": "dcb19fe986150626ba66f618f7a579bc1d1232ac2e27105bcab078e78e24b36a"
+      },
+      "command": {
+        "command": [
+          "pnpm.cmd",
+          "build"
+        ],
+        "exit_code": 0,
+        "seconds": 1.387,
+        "test_summary": [],
+        "node_summary": [],
+        "failed_tests": []
+      },
+      "required_tools": {
+        "node": "v25.2.1",
+        "pnpm.cmd": "11.25.0"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "path": "work/proofs/windows-engine-crash/verification-6fdcd6e65d/runtime-proof.json",
+      "sha256": "abac3964eada5d1a4052a1d98ea520c9203f07087d2e4eb183b27af7fd2e993e"
+    },
+    {
+      "path": "work/proofs/windows-engine-crash/verification-6fdcd6e65d/focused.json",
+      "sha256": "2b0fc1cb15043fc146d43e38221106dcd6c98a77f175ccd2e9e4a04eb95a8270"
+    },
+    {
+      "path": "work/proofs/windows-engine-crash/quality-28623d163c/final.json",
+      "sha256": "0b60834207f7748aaa504ae0e63b4e576a230d5d87aa646471f95d2a5bac375a"
+    },
+    {
+      "path": "work/proofs/windows-engine-crash/quality-28623d163c/reuse.json",
+      "sha256": "270c6c34cfecbac963e0c2051c258c5035438c3d01ecff40a6bc8d89c8ed22cc"
+    },
+    {
+      "path": "work/proofs/windows-engine-crash/staging-320e03855b/stage.json",
+      "sha256": "cf61ece6a8f674bcf16f8c8a10192661e3ca0d60e8dae36e6a06199eba265584"
+    }
+  ],
+  "sources_before": {
+    "src-tauri/src/runtime/manager.rs": "01c0f7a200afd5f32e7d876362f1f029b713216386fbbb680d9b19f2dd0d0004",
+    "src-tauri/src/runtime/windows_crash_tests.rs": "2cd2bb3d8e523288e85fdb79b413496ecb1dc097fd82e75524b78ef6f23ad136",
+    "src-tauri/Cargo.toml": "71aefdeeef873ba92b6cb3d9abad2b2a14fc142fb5926e9a4ecadb1cb29ce884",
+    "src-tauri/Cargo.lock": "4d38badcab3da0d8a9aac3a0fe13c1a175a3d6862ebf5432bb9b65f080486bda",
+    "runtime/manifest.windows.json": "ff2916975537b188d10ff93c630576f8b8a64d8321df44a08f2b405de3a6f49d",
+    "runtime/desktop_controller.py": "42c0cee4b0a52b0959449510003f01198cb1a006fb052cc9e12e394b873c3b5e",
+    "runtime/desktop_helper.py": "56cfb1523bfa54b848b50aa4bd649cc4674e7005ea57e0fc8f970850123a0cc2",
+    "runtime/windows-payload.json": "28ba23aa75e3a0291aedcc827f47e2d699a6d2dc09e103304d3d620f0e622964",
+    "scripts/package-windows.py": "fca368c2c25728575eca8a226bb4720aca9fdfd7a72c0561761d705f1df9d668"
+  },
+  "sources_after": {
+    "src-tauri/src/runtime/manager.rs": "01c0f7a200afd5f32e7d876362f1f029b713216386fbbb680d9b19f2dd0d0004",
+    "src-tauri/src/runtime/windows_crash_tests.rs": "2cd2bb3d8e523288e85fdb79b413496ecb1dc097fd82e75524b78ef6f23ad136",
+    "src-tauri/Cargo.toml": "71aefdeeef873ba92b6cb3d9abad2b2a14fc142fb5926e9a4ecadb1cb29ce884",
+    "src-tauri/Cargo.lock": "4d38badcab3da0d8a9aac3a0fe13c1a175a3d6862ebf5432bb9b65f080486bda",
+    "runtime/manifest.windows.json": "ff2916975537b188d10ff93c630576f8b8a64d8321df44a08f2b405de3a6f49d",
+    "runtime/desktop_controller.py": "42c0cee4b0a52b0959449510003f01198cb1a006fb052cc9e12e394b873c3b5e",
+    "runtime/desktop_helper.py": "56cfb1523bfa54b848b50aa4bd649cc4674e7005ea57e0fc8f970850123a0cc2",
+    "runtime/windows-payload.json": "28ba23aa75e3a0291aedcc827f47e2d699a6d2dc09e103304d3d620f0e622964",
+    "scripts/package-windows.py": "fca368c2c25728575eca8a226bb4720aca9fdfd7a72c0561761d705f1df9d668"
+  },
+  "failed_attempts": [
+    {
+      "proof": "work/proofs/windows-engine-crash/verification-c3ac53b902",
+      "reason": "Old staged desktop_helper pin mismatch; runtime_validation/config_conflict"
+    },
+    {
+      "proof": "work/proofs/windows-engine-crash/verification-59b7947343",
+      "reason": "Fixture re-entered its own Job mutex; timeout 105s; liveness check moved before lock"
+    }
+  ],
+  "limits": [
+    "One sample per control arm; not a stability or response-quality benchmark",
+    "Only three core process handles and engine listener observed; no all-OS-process census",
+    "Ready state only; startup-before-Job-assignment race not tested",
+    "No clean-machine, Windows 11, Tauri GUI crash, live provider, subagent, release or CI acceptance"
+  ],
+  "sources": [
+    "https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects",
+    "https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-duplicatehandle"
+  ]
+}

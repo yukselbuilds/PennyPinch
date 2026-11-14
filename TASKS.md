@@ -1,6 +1,6 @@
 # Headroom Desktop — Görev Listesi
 
-**Tarih:** 13 Kasım 2026
+**Tarih:** 14 Kasım 2026
 
 **Kaynak:** [Ürün spesifikasyonu 0.6](HEADROOM_DESKTOP_SPEC.md)\
 **Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
@@ -137,8 +137,9 @@ flowchart TD
 
 ### H006 — Windows paketleme kanıtı
 - [ ] Python/native bağımlılıklarıyla motorun taşınabilir çalışma biçimi iki hedef Windows'ta sınanır.
+- [x] **H006-b yerel çökme kabulü — 14 Kasım:** Güncel paket ve üretimdeki Rust controller başlatma yolunda zorla sahip süreç kaybı doğrulandı. Kontrol borusu açıkken üç çekirdek süreç 53ms'de sonlandı, portun kapanışı 357ms'de gözlendi. Ek Job handle'ı en az 1000ms açık tutulunca motor yaşadı; son handle kapanışında 54ms / port 370ms gözlendi. İki kolda yabancı listener korundu. 22.333 paket dosyası aynı; 441 Rust/18 ignored, fmt/build ve parmak izi eşleşen 221 Node/frontend kanıtı kabul edildi. Ana ajan süreç/test/inceleme sahibi; temiz OS, Windows 11, gerçek GUI çökmesi ve yayın kapsamı değildir. [Kanıt](docs/proofs/windows-engine-crash.json), [açıklama](docs/proofs/windows-engine.md#h006-b--ani-sahip-süreç-kaybı-14-kasım-2026), [inceleme](docs/reviews/H006-b.md).
 - [x] **Yerel alt dilim H006-a kabul:** Windows 10 hostunda konsolsuz üst süreç → gizli helper → motor zinciri, stdio stop ve graceful kapanış kanıtlandı. İki odaklı kontrol PASS; kaynak/paket fingerprint'leri incelendi. [Kanıt](docs/proofs/windows-engine.md), [inceleme](docs/reviews/H006-a.md).
-- **Yerel çıktı / açık kapsam:** Taşınmış dizin paketi `22.225` payload dosyası / `523.394.231` bayt; geliştirici araçları PATH'te yokken readiness ve PID sahipliği doğru. Gerçek Tauri motor bağı mevcut hostta H014 ile doğrulandı. İki temiz OS sonucu ve Job Object ani çökme senaryosu henüz kanıtlanmadı; H006'nın tamamı işaretlenmez.
+- **Yerel çıktı / açık kapsam:** Tarihsel taşınmış dizin paketi `22.225` payload dosyası / `523.394.231` bayt; geliştirici araçları PATH'te yokken readiness ve PID sahipliği doğru. Gerçek Tauri motor bağı mevcut hostta H014 ile doğrulandı. H006-b güncel pakette hazır çalışma durumundaki Job Object temizliğini kanıtlar. İki temiz OS ve Windows 11 sonucu açık; başlangıçta Job ataması öncesi çökme yarışı ve gerçek GUI çökmesi bu dilimde test edilmedi. H006'nın tamamı işaretlenmez; toplam 42/54 değişmez.
 - **Kabul:** Geliştirme araçları bulunmayan Windows 10 22H2 ve 11 x64 ortamında motor başlar; indirme, runtime boyutu ve olası eksikler kayıtlıdır.
 - **Doğrulama:** İki ayrı temiz ortamın readiness/kapanış kanıtı; başarısız ortam başarılı sayılmaz.
 - **Bağımlılık / boyut:** H005 / M.

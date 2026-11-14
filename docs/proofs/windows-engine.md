@@ -2,6 +2,8 @@
 
 Status: local proof PASS on the attached Windows 10 host, 2026-10-19. This covers a relocated portable runtime and hidden-helper lifecycle only. It is not a Windows 11, clean-machine, Tauri integration, or full H006 result.
 
+Güncel takip: 14 Kasım H006-b, hazır durumdaki motor için gerçek Rust başlatma yolunda Job Object kaynaklı ani kapanış temizliğini ayrıca doğruladı. Tarihsel H006-a sonucu ve aşağıdaki hash'leri değişmez; yeni kapsam ve kaynaklar bu belgenin sonundadır. Ana H006 temiz Windows/Windows 11 nedeniyle açık kalır.
+
 The package is a copyable directory, not a zip. The pinned standalone CPython 3.13.13 base is 61.1 MiB and the locked environment's `site-packages` is 438.0 MiB; the resulting payload is 22,225 files / 523,394,231 bytes (499.1 MiB), excluding the small manifest. Keeping native-extension files extracted avoids adding an archive extraction layer to this first proof. The manifest records the engine/Python pins, source hashes, dependency-record and installed-distribution counts, and payload size. The packager's reuse path rejects reparse points and stale paths; its post-copy inventory must exactly match the pinned Python tree, locked `site-packages`, runner, and manifest.
 
 The integration proof copies the package to a separate path containing spaces and starts it with a controlled environment whose `PATH` contains only Windows `System32`. The runtime invokes its adjacent Python by absolute path and does not need a developer Python, uv, or Node entry on `PATH`. Temporary state, workspace, config, HOME, and TEMP paths are also under a separate path containing spaces. The engine environment binds only `127.0.0.1` on a dynamically selected port, enables local telemetry, disables anonymous beacon shipping, disables update checks, and does not log message contents.
@@ -40,3 +42,35 @@ SHA-256 of the final proof inputs:
 | `work/proofs/packaging/headroom_runtime.py` | `bf887b6f783f4385debc84836353340f39e3773433782305376a3247be0f4ac1` |
 | `work/proofs/packaging/test_portable_runtime.py` | `68156d35bc3b5d3460dd56c4b1a7c4ef448e24bba5815febc4696b8400c9e623` |
 | packaged `runtime-manifest.json` | `8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908` |
+
+## H006-b — Ani sahip süreç kaybı (14 Kasım 2026)
+
+Yerel Windows 10 build 19045 x64 kabulü geçti. Test, `ControllerSession::launch` üretim kodunu, güncel staged Windows paketini ve UUID ile ayrılmış state'i kullanır. Konsolsuz fixture sahibi `TerminateProcess` yoluyla zorla kapatılır; Rust `Drop`, stop isteği veya `TerminateJobObject` çağrısı kullanılmaz. Bu deney Tauri penceresinden başlatılmış bir GUI çökmesi değildir.
+
+Windows'ta `KILL_ON_JOB_CLOSE`, son Job handle'ı kapanınca gruptaki süreçleri sonlandırır. [Microsoft Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects). Test gözlemcisi kontrol borusunun yazıcı handle'ını kendi sürecinde açık tutar; boru EOF'u ile normal kapanış, Job korumasının yerine geçemez. [DuplicateHandle sözleşmesi](https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-duplicatehandle). Üç çekirdek süreç için canlı, aynı Job'a ait process handle'ları; Job'ın inherit edilmediği ve fixture sahibini içermediği doğrulanır. Kimlikler yalnız test metadata'sındadır.
+
+| Senaryo | Önceden belirlenen kabul | Gözlenen |
+| --- | --- | --- |
+| Tek Job sahibi zorla kapanır; kontrol borusu açık | Üç çekirdek süreç ve motor listener'ı en çok 5000ms'de kapanır | Süreçler 53ms; portun kapalı olduğu gözlem 357ms |
+| Gözlemci ek Job handle'ını tutar | Sahip kapansa da üç süreç/port en az 1000ms yaşar | Süreç handle'ları canlı, readiness ve port sahibi aynı |
+| Gözlemci son Job handle'ını kapatır; kontrol borusu hâlâ açık | Üç süreç ve listener en çok 5000ms'de kapanır | Süreçler 54ms; port gözlemi 370ms |
+| Bağımsız test listener'ı | İki kolda da korunur | TCP bağlantısı ve 13 baytlık içerik eşitliği geçti |
+
+Süreler ilgili tetik çağrısının hemen öncesinden, gözlem sonuna kadar ölçülür; kernelin gerçek sonlanma anı veya ilk boş port anı değildir. Her kol bir kez çalıştı; uzun süreli kararlılık, hız/kalite veya token tasarrufu benchmark'ı değildir. Yalnız üç çekirdek süreç handle'ı gözlendi; bütün işletim sistemi süreçlerinin sayımı yapılmadı.
+
+Paket **22.333 dosya / 536.626.939 bayt**. Paketleyicinin tam içerik doğrulaması, aynı paket girdileri/komut/araçlarla başlangıç kanıtı olarak yeniden kullanıldı. Test sonrası bütün paket dosyaları bağımsız hash'lendi; envanter ve kaynak/araç/ortam önce-sonra eşit. Son adayda opt-in test, 441 Rust testi / 18 ignored, fmt ve embedded build geçti. Önceki 221 Node ve frontend build kanıtı, ilgili girdiler ve Node/pnpm sürümleri eşleşerek yeniden kullanıldı. [Makine tarafından üretilen kabul](windows-engine-crash.json), [inceleme](../reviews/H006-b.md).
+
+İlk deneme eski `work/build/windows/resources` helper pin'i uyuşmadığı için reddedildi. Eski paket korunarak ayrı güncel stage üretildi. İkinci deneme testin kendi Job mutex'ini yeniden alması nedeniyle zaman aşımına uğradı; testte liveness kontrolü kilitten önceye taşındı. Bu iki koşu başarısızdır; nihai geçer kanıt `verification-6fdcd6e65d`, güncel yerel kapı `quality-28623d163c` altındadır. Kayıtlar `work/proofs/windows-engine-crash/` içindedir; ham hata dökümü saklanmadı.
+
+### Tekrarlama
+
+Pinned payload ön koşulları için [Windows paketleme kaydı](../validation/windows-install.md) geçerlidir. Başarılı kanıtı yalnız ilgili girdiler değiştiğinde yenile. Paketleyici eski hedef için `existing_stage_conflict` bildirirse eski artefaktı proje içinde koruyup boş hedefte güncel paketi üret; pin/guard gevşetilmez.
+
+```powershell
+& work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B scripts/package-windows.py --output work/build/windows/h006-crash-resources
+$env:CARGO_HOME = 'D:\Projeler\Headroom\work\caches\cargo-home'
+$env:CARGO_TARGET_DIR = 'D:\Projeler\Headroom\work\caches\cargo-target'
+cargo +stable-x86_64-pc-windows-msvc test --locked --offline --manifest-path src-tauri/Cargo.toml runtime::manager::windows_crash_tests::packaged_controller_job_closes_after_owner_crash -- --exact --ignored --test-threads=1
+```
+
+Ana H006 açık: temiz Windows 10/Windows 11, başlangıçta Job ataması öncesindeki çökme yarışı ve gerçek GUI çökmesi bu dilimle doğrulanmaz. Canlı sağlayıcı veya istemci ayarı değiştirilmedi; yayın ve Actions çalıştırılmadı.
