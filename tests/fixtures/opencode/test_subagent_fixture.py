@@ -3,6 +3,7 @@ import importlib.util
 import json
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -105,6 +106,18 @@ class SubagentFixtureTests(unittest.TestCase):
         for name in ("headroom_inherit", "headroom_other"):
             self.assertEqual(config["agent"][name]["permission"]["task"], "deny")
             self.assertEqual(config["agent"][name]["permission"]["*"], "deny")
+
+    def test_fixture_backup_preserves_only_owned_loopback_settings(self):
+        with tempfile.TemporaryDirectory(dir=ROOT / "work/proofs") as temporary:
+            directory = Path(temporary)
+            with self.assertRaisesRegex(AssertionError, "fixture_settings_only"):
+                runner.backup_fixture_settings(directory, b'{"api_key":"fake-test-value"}')
+            self.assertEqual(list(directory.iterdir()), [])
+            with self.assertRaisesRegex(AssertionError, "fixture_loopback_settings_only"):
+                runner.backup_fixture_settings(directory, b'{"openai_base_url":"https://api.openai.com/v1"}')
+            raw = b'{"openai_base_url":"http://127.0.0.1:9/v1"}\r\n'
+            saved = runner.backup_fixture_settings(directory, raw)
+            self.assertEqual(saved.read_bytes(), raw)
 
 
 if __name__ == "__main__":

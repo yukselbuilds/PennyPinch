@@ -6,6 +6,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import socket
 import subprocess
 import sys
@@ -173,8 +174,22 @@ def remove_connection(exe, state, workspace, env):
         kernel.CloseHandle(handle)
 
 
-def run_native():
+def backup_fixture_settings(directory, raw):
+    assert directory.resolve().is_relative_to(ROOT / "work/proofs"), "owned_fixture_backup_directory_required"
+    value = json.loads(raw)
+    assert isinstance(value, dict) and set(value) == {"openai_base_url"}, "fixture_settings_only"
+    url = value["openai_base_url"]
+    match = re.fullmatch(r"http://127\.0\.0\.1:([0-9]{1,5})/v1", url) if isinstance(url, str) else None
+    assert match and 0 < int(match[1]) <= 65535 and len(raw) <= 4096, "fixture_loopback_settings_only"
+    target = directory / "fixture-settings.before.json"
+    with target.open("xb") as stream:
+        stream.write(raw)
+    return target
+
+
+def run_native(*, task="H010-c", configuration_factory=configuration, case_runner=run_cases, extra_sources=()):
     assert os.name == "nt" and Path.cwd().resolve() == ROOT, "windows_project_root_required"
+    assert task in ("H010-c", "H010-d"), "unknown_native_fixture_task"
     accepted = json.loads((ROOT / "docs/proofs/opencode-retrieval.json").read_text())
     assert accepted["accepted"] and bench.common.sha(bench.CLI) == bench.CLI_SHA256
     exe_ref = accepted["fingerprints"]["release_binary"]
@@ -195,7 +210,8 @@ def run_native():
     state = Path(os.environ["LOCALAPPDATA"]) / identifier
     owner_path = state / "ownership/opencode_v1.json"
     assert json.loads(owner_path.read_text())["state"] == "released", "previous_fixture_connection_still_active"
-    run = ROOT / "work/proofs/opencode-subagents/runs" / uuid.uuid4().hex[:12]
+    category = "opencode-tui" if task == "H010-d" else "opencode-subagents"
+    run = ROOT / "work/proofs" / category / "runs" / uuid.uuid4().hex[:12]
     run.mkdir(parents=True)
     workspace = run / "project"
     workspace.mkdir()
@@ -203,10 +219,11 @@ def run_native():
     client = state / ("test-subagents-" + run.name)
     config_path = client / "xdg-config/opencode/opencode.jsonc"
     config_path.parent.mkdir(parents=True)
-    original = ("// Disposable OpenCode native subagent acceptance\n" + json.dumps(configuration(), indent=2) + "\n").encode()
+    original = ("// Disposable OpenCode native subagent acceptance\n" + json.dumps(configuration_factory(), indent=2) + "\n").encode()
     config_path.write_bytes(original)
     settings = state / "runtime/workspace/settings.json"
     original_settings = settings.read_bytes()
+    settings_backup = backup_fixture_settings(run, original_settings)
     endpoint = state / "runtime/connection-endpoint.json"
     server = fixture.Upstream()
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -226,12 +243,14 @@ def run_native():
              ROOT / "work/research/h010-subagents/manifest.json", ROOT / package_ref["path"], Path(sys.executable),
              exe.parent / "runtime/payload/Lib/site-packages/headroom/ccr/response_handler.py"]
     paths.extend((ROOT / "work/research/h010-subagents").glob("*.ts"))
+    paths.append(settings_backup)
+    paths.extend(extra_sources)
     def fingerprint():
         state_files = {"fixture-state/" + path.relative_to(state).as_posix(): bench.common.sha(path)
                        for path in (settings, config_path)}
         return {**qa.fingerprint(), **replay.fingerprints(paths), **state_files}
     before = fingerprint()
-    proof = {"task": "H010-c", "passed": False, "provider": "local_fixture", "auth": "synthetic",
+    proof = {"task": task, "passed": False, "provider": "local_fixture", "auth": "synthetic",
              "before": before, "parent_task_accepted": False, "token_and_billing_savings": "not_measured",
              "windows_build": list(sys.getwindowsversion()[:3]), "python": sys.version,
              "product_quality_gate_reused": len(quality["after"]), "raw_transcript_retained": False}
@@ -241,7 +260,8 @@ def run_native():
         gui = subprocess.Popen([str(exe)], cwd=workspace, env=gui_env, stdout=subprocess.DEVNULL,
                                stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW)
         job.assign(gui.pid)
-        active = {"pid": gui.pid, "run": str(run), "title": "Headroom H010-b3 ce8ea443ed", "config_path": str(config_path)}
+        active = {"pid": gui.pid, "run": str(run), "title": "Headroom H010-b3 ce8ea443ed", "config_path": str(config_path),
+                  "upstream_port": server.server_port}
         (run.parent.parent / "active-native.json").write_text(json.dumps(active) + "\n")
         print(json.dumps(active), flush=True)
         deadline = time.monotonic() + 900
@@ -251,7 +271,7 @@ def run_native():
                 attempted = True
                 try:
                     assert b"retrieval_bridge.py" in config_path.read_bytes(), "native_bridge_apply_required"
-                    proof["cases"] = run_cases(server, workspace, env, job, config_path, owner_path, run)
+                    proof["cases"] = case_runner(server, workspace, env, job, config_path, owner_path, run)
                 except Exception as error:
                     proof["failure"] = str(error) if isinstance(error, AssertionError) else type(error).__name__
                     proof["cases"] = {case: json.loads((run / (case + ".json")).read_text())

@@ -1,0 +1,589 @@
+{
+  "schema_version": 1,
+  "task": "H010-d",
+  "accepted": true,
+  "parent_task_accepted": false,
+  "scope": {
+    "platform": "Windows 10 22H2 x64",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "client": "OpenCode 1.19.3 full TUI in real PTY",
+    "engine": "Headroom 0.41.0",
+    "upstream": "local_fixture",
+    "auth": "synthetic",
+    "foreground_children": 3,
+    "maximum_concurrent_children": 1,
+    "model_selection": "explicit_tui_model_dialog",
+    "live_provider": "not_tested",
+    "reasoning_selection": "not_exercised",
+    "token_and_billing_savings": "not_measured"
+  },
+  "cases": {
+    "same": {
+      "parent_session_id": "ses_e24c5e3fdffeAo1JualvDn7cuv",
+      "child_session_id": "ses_e24c5ced7ffe56EChSINo1y1uC",
+      "child_parent_id": "ses_e24c5e3fdffeAo1JualvDn7cuv",
+      "parent_selector": "lab/slot",
+      "child_selector": "lab/slot",
+      "child_agent": "headroom_inherit",
+      "child_assistant_messages": 4,
+      "native_child_tools": [
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "call_id": "call_same_child_logs",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_retrieve",
+          "call_id": "call_same_child_retrieve",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "call_id": "call_same_child_witness",
+          "status": "completed"
+        }
+      ],
+      "child_final_exact": true,
+      "parent_final_exact": true,
+      "terminal_prompt_exported": true,
+      "parent_tools": [
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "call_id": "call_same_parent_logs",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_retrieve",
+          "call_id": "call_same_parent_retrieve",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "call_id": "call_same_parent_witness",
+          "status": "completed"
+        },
+        {
+          "name": "task",
+          "call_id": "call_same_parent_task",
+          "status": "completed"
+        }
+      ],
+      "passed": true,
+      "terminal": {
+        "case": "same",
+        "full_tui": true,
+        "selector": "lab/slot",
+        "model_selection": "tui_model_dialog",
+        "resume_session_id": null,
+        "exit_code": 0,
+        "forced": false,
+        "job_bound": true,
+        "duration_seconds": 60.726,
+        "before": {
+          "tty": [
+            true,
+            true,
+            true
+          ],
+          "cli_sha256": "cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375",
+          "launcher_sha256": "eea5a0fa2ed00a0175f74ab576339145b3c258244ba40809572b133d8ccc7ca1",
+          "config_sha256": "95a1ca8eb0bbf7f99c01ddfa48814ae2f6c1d9913ae0dce17dcba262cc43a19d",
+          "owner_sha256": "e8ff6a6346fc8d8cd0215e7718adc9338ef6369a0448b06d782166d9e978b49e"
+        },
+        "after": {
+          "tty": [
+            true,
+            true,
+            true
+          ],
+          "cli_sha256": "cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375",
+          "launcher_sha256": "eea5a0fa2ed00a0175f74ab576339145b3c258244ba40809572b133d8ccc7ca1",
+          "config_sha256": "95a1ca8eb0bbf7f99c01ddfa48814ae2f6c1d9913ae0dce17dcba262cc43a19d",
+          "owner_sha256": "e8ff6a6346fc8d8cd0215e7718adc9338ef6369a0448b06d782166d9e978b49e"
+        }
+      },
+      "saved_config_and_owner_unchanged": true,
+      "upstream": {
+        "parent": [
+          {
+            "step": 0,
+            "role": "parent",
+            "wire_model": "headroom-opencode-tool-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true
+          },
+          {
+            "step": 1,
+            "role": "parent",
+            "wire_model": "headroom-opencode-tool-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true,
+            "original_bytes": 14999,
+            "compressed_bytes": 103,
+            "content_sha256": "034cea80b24246b843a35f00d8969473d095efe69a417944aaa118c91341468e"
+          },
+          {
+            "step": 2,
+            "role": "parent",
+            "wire_model": "headroom-opencode-tool-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true,
+            "byte_exact_retrieval": true
+          },
+          {
+            "step": 3,
+            "role": "parent",
+            "wire_model": "headroom-opencode-tool-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true
+          },
+          {
+            "step": 4,
+            "role": "parent",
+            "wire_model": "headroom-opencode-tool-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true,
+            "child_task_completed": true
+          }
+        ],
+        "child": [
+          {
+            "step": 0,
+            "role": "child",
+            "wire_model": "headroom-opencode-tool-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true
+          },
+          {
+            "step": 1,
+            "role": "child",
+            "wire_model": "headroom-opencode-tool-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true,
+            "original_bytes": 14999,
+            "compressed_bytes": 103,
+            "content_sha256": "034cea80b24246b843a35f00d8969473d095efe69a417944aaa118c91341468e"
+          },
+          {
+            "step": 2,
+            "role": "child",
+            "wire_model": "headroom-opencode-tool-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true,
+            "byte_exact_retrieval": true
+          },
+          {
+            "step": 3,
+            "role": "child",
+            "wire_model": "headroom-opencode-tool-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true
+          }
+        ]
+      }
+    },
+    "switch": {
+      "parent_session_id": "ses_e24c5e3fdffeAo1JualvDn7cuv",
+      "child_session_id": "ses_e24c49bbdffehHK6umaxTXZYcK",
+      "child_parent_id": "ses_e24c5e3fdffeAo1JualvDn7cuv",
+      "parent_selector": "lab/other",
+      "child_selector": "lab/other",
+      "child_agent": "headroom_inherit",
+      "child_assistant_messages": 4,
+      "native_child_tools": [
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "call_id": "call_switch_child_logs",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_retrieve",
+          "call_id": "call_switch_child_retrieve",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "call_id": "call_switch_child_witness",
+          "status": "completed"
+        }
+      ],
+      "child_final_exact": true,
+      "parent_final_exact": true,
+      "terminal_prompt_exported": true,
+      "parent_tools": [
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "call_id": "call_switch_parent_logs",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_retrieve",
+          "call_id": "call_switch_parent_retrieve",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "call_id": "call_switch_parent_witness",
+          "status": "completed"
+        },
+        {
+          "name": "task",
+          "call_id": "call_switch_parent_task",
+          "status": "completed"
+        }
+      ],
+      "passed": true,
+      "terminal": {
+        "case": "switch",
+        "full_tui": true,
+        "selector": "lab/other",
+        "model_selection": "tui_model_dialog",
+        "resume_session_id": "ses_e24c5e3fdffeAo1JualvDn7cuv",
+        "exit_code": 0,
+        "forced": false,
+        "job_bound": true,
+        "duration_seconds": 83.695,
+        "before": {
+          "tty": [
+            true,
+            true,
+            true
+          ],
+          "cli_sha256": "cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375",
+          "launcher_sha256": "eea5a0fa2ed00a0175f74ab576339145b3c258244ba40809572b133d8ccc7ca1",
+          "config_sha256": "95a1ca8eb0bbf7f99c01ddfa48814ae2f6c1d9913ae0dce17dcba262cc43a19d",
+          "owner_sha256": "e8ff6a6346fc8d8cd0215e7718adc9338ef6369a0448b06d782166d9e978b49e"
+        },
+        "after": {
+          "tty": [
+            true,
+            true,
+            true
+          ],
+          "cli_sha256": "cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375",
+          "launcher_sha256": "eea5a0fa2ed00a0175f74ab576339145b3c258244ba40809572b133d8ccc7ca1",
+          "config_sha256": "95a1ca8eb0bbf7f99c01ddfa48814ae2f6c1d9913ae0dce17dcba262cc43a19d",
+          "owner_sha256": "e8ff6a6346fc8d8cd0215e7718adc9338ef6369a0448b06d782166d9e978b49e"
+        }
+      },
+      "saved_config_and_owner_unchanged": true,
+      "upstream": {
+        "parent": [
+          {
+            "step": 0,
+            "role": "parent",
+            "wire_model": "headroom-opencode-switched-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true
+          },
+          {
+            "step": 1,
+            "role": "parent",
+            "wire_model": "headroom-opencode-switched-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true,
+            "original_bytes": 14999,
+            "compressed_bytes": 103,
+            "content_sha256": "034cea80b24246b843a35f00d8969473d095efe69a417944aaa118c91341468e"
+          },
+          {
+            "step": 2,
+            "role": "parent",
+            "wire_model": "headroom-opencode-switched-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true,
+            "byte_exact_retrieval": true
+          },
+          {
+            "step": 3,
+            "role": "parent",
+            "wire_model": "headroom-opencode-switched-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true
+          },
+          {
+            "step": 4,
+            "role": "parent",
+            "wire_model": "headroom-opencode-switched-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true,
+            "child_task_completed": true
+          }
+        ],
+        "child": [
+          {
+            "step": 0,
+            "role": "child",
+            "wire_model": "headroom-opencode-switched-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true
+          },
+          {
+            "step": 1,
+            "role": "child",
+            "wire_model": "headroom-opencode-switched-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true,
+            "original_bytes": 14999,
+            "compressed_bytes": 103,
+            "content_sha256": "034cea80b24246b843a35f00d8969473d095efe69a417944aaa118c91341468e"
+          },
+          {
+            "step": 2,
+            "role": "child",
+            "wire_model": "headroom-opencode-switched-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true,
+            "byte_exact_retrieval": true
+          },
+          {
+            "step": 3,
+            "role": "child",
+            "wire_model": "headroom-opencode-switched-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true
+          }
+        ]
+      }
+    },
+    "mixed": {
+      "parent_session_id": "ses_e24c33938ffeh5oWrwn9iy4UKB",
+      "child_session_id": "ses_e24c32b80ffe2Jp0H4RjA8TN1Z",
+      "child_parent_id": "ses_e24c33938ffeh5oWrwn9iy4UKB",
+      "parent_selector": "openai/slot",
+      "child_selector": "lab/child",
+      "child_agent": "headroom_other",
+      "child_assistant_messages": 4,
+      "native_child_tools": [
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "call_id": "call_mixed_child_logs",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_retrieve",
+          "call_id": "call_mixed_child_retrieve",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "call_id": "call_mixed_child_witness",
+          "status": "completed"
+        }
+      ],
+      "child_final_exact": true,
+      "parent_final_exact": true,
+      "terminal_prompt_exported": true,
+      "parent_tools": [
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "call_id": "call_mixed_parent_logs",
+          "status": "completed"
+        },
+        {
+          "name": "headroom_fixture_inspect_logs",
+          "call_id": "call_mixed_parent_witness",
+          "status": "completed"
+        },
+        {
+          "name": "task",
+          "call_id": "call_mixed_parent_task",
+          "status": "completed"
+        }
+      ],
+      "passed": true,
+      "terminal": {
+        "case": "mixed",
+        "full_tui": true,
+        "selector": "openai/slot",
+        "model_selection": "tui_model_dialog",
+        "resume_session_id": null,
+        "exit_code": 0,
+        "forced": false,
+        "job_bound": true,
+        "duration_seconds": 79.766,
+        "before": {
+          "tty": [
+            true,
+            true,
+            true
+          ],
+          "cli_sha256": "cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375",
+          "launcher_sha256": "eea5a0fa2ed00a0175f74ab576339145b3c258244ba40809572b133d8ccc7ca1",
+          "config_sha256": "95a1ca8eb0bbf7f99c01ddfa48814ae2f6c1d9913ae0dce17dcba262cc43a19d",
+          "owner_sha256": "e8ff6a6346fc8d8cd0215e7718adc9338ef6369a0448b06d782166d9e978b49e"
+        },
+        "after": {
+          "tty": [
+            true,
+            true,
+            true
+          ],
+          "cli_sha256": "cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375",
+          "launcher_sha256": "eea5a0fa2ed00a0175f74ab576339145b3c258244ba40809572b133d8ccc7ca1",
+          "config_sha256": "95a1ca8eb0bbf7f99c01ddfa48814ae2f6c1d9913ae0dce17dcba262cc43a19d",
+          "owner_sha256": "e8ff6a6346fc8d8cd0215e7718adc9338ef6369a0448b06d782166d9e978b49e"
+        }
+      },
+      "saved_config_and_owner_unchanged": true,
+      "upstream": {
+        "parent": [
+          {
+            "step": 0,
+            "role": "parent",
+            "wire_model": "gpt-4.1",
+            "stream": false,
+            "synthetic_auth_preserved": true
+          },
+          {
+            "step": 1,
+            "role": "parent",
+            "wire_model": "gpt-4.1",
+            "stream": false,
+            "synthetic_auth_preserved": true,
+            "original_bytes": 14999,
+            "compressed_bytes": 103,
+            "content_sha256": "034cea80b24246b843a35f00d8969473d095efe69a417944aaa118c91341468e"
+          },
+          {
+            "step": 2,
+            "role": "parent",
+            "wire_model": "gpt-4.1",
+            "stream": false,
+            "synthetic_auth_preserved": true,
+            "byte_exact_retrieval": true
+          },
+          {
+            "step": 3,
+            "role": "parent",
+            "wire_model": "gpt-4.1",
+            "stream": false,
+            "synthetic_auth_preserved": true
+          },
+          {
+            "step": 4,
+            "role": "parent",
+            "wire_model": "gpt-4.1",
+            "stream": false,
+            "synthetic_auth_preserved": true,
+            "child_task_completed": true
+          }
+        ],
+        "child": [
+          {
+            "step": 0,
+            "role": "child",
+            "wire_model": "headroom-opencode-child-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true
+          },
+          {
+            "step": 1,
+            "role": "child",
+            "wire_model": "headroom-opencode-child-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true,
+            "original_bytes": 14999,
+            "compressed_bytes": 103,
+            "content_sha256": "034cea80b24246b843a35f00d8969473d095efe69a417944aaa118c91341468e"
+          },
+          {
+            "step": 2,
+            "role": "child",
+            "wire_model": "headroom-opencode-child-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true,
+            "byte_exact_retrieval": true
+          },
+          {
+            "step": 3,
+            "role": "child",
+            "wire_model": "headroom-opencode-child-fixture",
+            "stream": true,
+            "synthetic_auth_preserved": true
+          }
+        ]
+      }
+    }
+  },
+  "cleanup": {
+    "gui_exit_code": 0,
+    "config_restored": true,
+    "owner_released": true,
+    "owned_listener_closed": true,
+    "native_undo": {
+      "exit_code": 0,
+      "keep_state": true
+    }
+  },
+  "validation": {
+    "focused_tests": 19,
+    "old_product_inputs_matched": 332,
+    "native_input_count": 363,
+    "fingerprints_unchanged": true,
+    "fixture_settings_backup_restored": true,
+    "toolchain": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    }
+  },
+  "evidence": {
+    "native": {
+      "path": "work/proofs/opencode-tui/runs/a13dae9bba7a/result.json",
+      "sha256": "5b5c02cded7678b871d41d689eaf92dca676939ef2763de6832f50e8188f6b52"
+    },
+    "focused": {
+      "path": "work/proofs/opencode-tui/focused-selection.json",
+      "sha256": "6c24058be160236edd5888a1a165ffbb24292ae7e215e330d6f715b835705943"
+    },
+    "focused_extra": {
+      "path": "work/proofs/opencode-tui/focused-selection-extra.json",
+      "sha256": "f3ddfd0f60e88ab0df7db65214066e8f5ac14d4f2999c569dbb81476c87fd9ae"
+    },
+    "previous_quality_gate": {
+      "path": "work/proofs/opencode-retrieval/final-74f47538b0.json",
+      "sha256": "942df48f418400fd3d8b12f2162e5dfcbe2018ec9b5c3a83059fcdd29e721fce"
+    },
+    "source_pin": {
+      "path": "work/research/h010-tui/manifest.json",
+      "sha256": "6035d7d598b5bdc8fdd521485a6be80d05e268bab958a8487e16af02297253e5"
+    },
+    "interaction_source_pin": {
+      "path": "work/research/h010-tui/interaction-manifest.json",
+      "sha256": "8ec51e841d21bd7d95f80a20f13d0658e480e57b108b18afd501302a4b3d5de4"
+    }
+  },
+  "earlier_attempts": [
+    {
+      "accepted": false,
+      "evidence": {
+        "path": "work/proofs/opencode-tui/runs/5acf73fd324c/result.json",
+        "sha256": "5138531e6d862150e70257f854d58c9f2a995dbd9388470690d277a99e1d6b2c"
+      }
+    },
+    {
+      "accepted": false,
+      "evidence": {
+        "path": "work/proofs/opencode-tui/runs/e1617ea4930e/cases-result.json",
+        "sha256": "1e24c95f9be4f9bf1616453d4627d5db62a11986b70826a7a05d3e864cbc245e"
+      },
+      "recovery": {
+        "path": "work/proofs/opencode-tui/runs/e1617ea4930e/recovery.json",
+        "sha256": "6a2bd86341af7048ac0aee3984788d2c6c0e9695ce8e150f5aadd43f5f817858"
+      }
+    }
+  ],
+  "limits": [
+    "Resume with a CLI model hint alone retained the previous TUI model in the earlier attempt; acceptance uses the model dialog.",
+    "Synthetic provider, not real model quality, bill, TTFT or development-chat savings.",
+    "Full TUI evidence does not promote V2/Desktop, another OS/version or another provider config layer.",
+    "No raw terminal/transcript/HTTP body copied into the report; terminal child jobs provide an orphan-prevention fallback."
+  ],
+  "verifier_sha256": "47c26ddd6b74de482839c37d66721dd0ee062e74bc472d5932c6dd469858ac4a"
+}
