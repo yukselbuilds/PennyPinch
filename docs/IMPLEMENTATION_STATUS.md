@@ -1,6 +1,14 @@
 # Headroom Desktop — güncel devir
 14 Kasım 2026.
 
+## H012-b — Yerel sözleşme uzlaştırması tamamlandı; ana H012 açık
+
+- **Yerel dilim kabul edildi; 42/54 değişmedi.** `docs/decisions/002-runtime.md` ve `docs/contracts.md` artık uygulanmış mimari/pause/shim/paketleme durumunu, 39 kayıtlı Tauri komutunu ve H050/H051 hesap/sohbet ayrımını anlatır. Evrensel hata/request zarfı varsayımı düzeltildi: hesap/sohbet strict zarfı ve update/export request'lerinde schema alanı bulunmaması gerçek kaynağa bağlandı. Güvenilir Codex `--version` sorgusunun dar keşif istisnası da açıklandı.
+- **Kanıt:** `work/proofs/architecture-contracts/result.json`; kamuya taşınabilir özet [architecture-contracts.json](proofs/architecture-contracts.json). 39 IPC eksiksiz/tekrarsız; katalogda 13 istemci, 1 kabiliyet, 3 ortam kaydı benzersiz/izinli durum ve mevcut kanıt hedefleriyle tutarlı. Relative belge hedefleri, ürün/katalog/referans kaynakları ve ortam önce-sonra karşılaştırıldı. Ana görev kutusu açık tutuldu; destek statüsü, model/auth, gerçek istemci veya OS kabulü yükseltilmedi.
+- Ana ajan güven sınırları, kaynak/decoder incelemesi ve kabulü üstlendi. Yeni çalışan/model/dependency/kurulum yok. Ponytail full/review ve mevcut kalite incelemesi birleştirildi; geliştirme token tasarrufu ölçülmedi. Yalnız belge/kanıt değiştiğinden ürün testleri yeniden koşulmadı: H006-b'nin `quality-28623d163c` 441 Rust/fmt/build ve ilgili 221 Node/frontend kanıtı, 325 ürün girdisi ile araç/ortam eşleşerek yeniden kullanıldı.
+- İlk belge doğrulayıcısı bütün katalog evidence alanlarını liste varsaydı; mevcut capability evidence alanı string olduğundan kontrol hata verdi. Normalize edilerek düzeltildi; katalog değiştirilmedi. İlk baseline ve doğrulayıcı baytları/hash'i `baseline.json`/`verify-baseline.py` ile korundu; nihai doğrulayıcı kendi önce-sonra hash'ini ayrıca doğrular. Ham hata dökümü saklanmadı.
+- **Sonraki adım / durma:** Bu yerel dilim bitti; yeni kullanıcı yönlendirmesi beklenir. H006/H037 temiz Windows/Windows 11, H009/H010 canlı sağlayıcı/tam araç-alt ajan, H041 canlı API-key ve H042 üretim kaynak/anahtar/yayın kabulleri açık. H012 bunların yerine tamamlandı sayılmaz. H044 yeni doğrulanmış RTK adayı bekler; H049 Linux ve H052–H054 Cloudflare ertelemeleri korunur. Sırf devam etmek için başarılı kontroller tekrarlanmaz veya yeni özellik/görev açılmaz. [İnceleme](reviews/H012-b.md).
+
 ## H006-b — Yerel çökme kabulü tamamlandı; ana H006 açık
 
 - **Yerel dilim kabul edildi; toplam 42/54.** Windows 10 build 19045 x64'te gerçek paket ve üretimdeki Rust controller başlatma yolu kullanıldı. Konsolsuz test sahibi zorla sonlandırıldığında kontrol borusu açıkken üç çekirdek süreç 53ms'de sonlandı; motor portunun kapalı olduğu 357ms'de gözlendi. Ek Job handle'ı en az 1000ms açıkken motor yaşadı; son handle kapanışında 54ms / port 370ms gözlendi. İki kolda yabancı listener korundu. Bunlar iki tekil gözlemdir; genel performans garantisi değildir.

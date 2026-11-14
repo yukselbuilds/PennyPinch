@@ -1,14 +1,14 @@
 # 002 — Yerel masaüstü mimarisi
 
-**Tarih:** 19 Ekim 2026. **Durum:** H012-a mimari temel kararı; yerel motor/protokol kanıtlarına dayanır. Ürün uygulaması ve H012'nin kalan kabulü açık; bu karar yayın kabulü değildir.
+**Tarih:** 19 Ekim 2026; uygulama durumu 14 Kasım H012-b ile uzlaştırıldı. **Durum:** Mimari temel uygulanmış ve aşağıdaki yerel kanıtlarla sınırlı doğrulanmıştır. H012'nin dış kabulü açık; bu karar genel istemci/OS desteği veya yayın kabulü değildir.
 
 ## Seçim
 
-Tauri 2 / Rust yönetici, React / TypeScript arayüz ve uygulamaya ait CPython 3.13.13 + `headroom-ai[proxy]==0.41.0` runtime dizini kullanılacak. Windows 10 22H2 ve Windows 11 x64 hedeflenir. Arayüz yerel paketlenir; sistem WebView2 kullanır. Yeni Node/Rust/JS bağımlılıklarının kesin sürümleri H013'te mevcut araç zinciriyle doğrulanıp lock dosyalarına yazılır; bu belge en güncel sürüm iddiası taşımaz.
+Tauri 2 / Rust yönetici, React / TypeScript arayüz ve uygulamaya ait CPython 3.13.13 + `headroom-ai[proxy]==0.41.0` runtime dizini kullanılır. Windows 10 22H2 ve Windows 11 x64 hedeflenir. Arayüz yerel paketlenir; Windows'ta sistem WebView2 kullanır. Mevcut manifestlerde Tauri 2.12.4, React 19.3.1, TypeScript 7.0.2 ve Vite 8.3.4 sabittir; bağımlılık çözümü Cargo/pnpm lock dosyalarındadır. Bunlar yerel adayın sürümleridir, en güncel sürüm iddiası değildir.
 
-H012-a için bu bileşen seçimi sabittir; başka masaüstü framework'ü veya genel amaçlı yardımcı servis eklenmez. Tauri DTO'ları `schema_version=1`, üretim helper stdio JSONL mesajları `protocol_version=1` kullanır; bu iki sürüm alanı birbirinden bağımsızdır. H006 proof helper'ının yaşam döngüsü yerel kanıttır, son ürün helper/IPC uygulaması değildir. Başlangıç arayüz yönü Graphite'dır; H013 görsel kabukta gerçek durumu ve boş metriği gösterecek.
+Bu bileşen seçimi korunur; başka masaüstü framework'ü veya genel amaçlı yardımcı servis eklenmez. Tauri yanıtları `schema_version=1`, üretim helper stdio JSONL mesajları `protocol_version=1` kullanır; bu iki sürüm alanı birbirinden bağımsızdır. Girdi ve hata zarfları komut ailesine özgüdür; [yerel sözleşmedeki kayıt](../contracts.md#8-uygulanan-ipc-kaydı-14-kasım-2026) mevcut 39 Tauri komutunu kaynakla eşler. H006-a'nın tarihsel helper'ı ile H014/H028'de kullanılan üretim controller/helper aynı kanıt sayılmaz. Graphite arayüzü gerçek backend durumunu, sıfır/bilinmeyen metrikleri ve ayrı hesap/sohbet görünümlerini kullanır.
 
-H006-a taşınabilir runtime dizinini ve konsolsuz üst süreç → gizli konsollu helper → motor yaşam döngüsünü kanıtladı. Dizinin mevcut boyutu 523.394.231 bayttır. İlk çalışan dilim bu doğrulanmış yaklaşımı kullanır; boyut azaltma için bağımlılıkların körlemesine kaldırılması ayrı bir iş ve yeniden paket doğrulaması gerektirir. Son kullanıcıya geliştirme Python/Node kurulumu yüklenmez.
+H006-a taşınabilir runtime dizinini ve konsolsuz üst süreç → gizli konsollu helper → motor yaşam döngüsünü kanıtladı; 523.394.231 bayt tarihsel payload ölçüsüdür. H037 yerel Windows kurulumunu, H006-b ise güncel 22.333 dosya / 536.626.939 bayt tam paketle hazır durumdaki Rust controller sahibinin zorla kaybını doğruladı. Ölçülen ağaçlar aynı boyut kapsamı değildir. Paket [Windows kurulum kaydında](../validation/windows-install.md), çökme sınırı [H006-b kanıtında](../proofs/windows-engine-crash.json) tanımlıdır. Temiz Windows 10/Windows 11 ve gerçek Tauri GUI çökmesi bu sonuçlarla tamamlandı sayılmaz. Son kullanıcıya geliştirme Python/Node kurulumu yüklenmez.
 
 ## Süreç ve güven sınırı
 
@@ -18,7 +18,7 @@ H006-a taşınabilir runtime dizinini ve konsolsuz üst süreç → gizli konsol
 - Rust yönetici tek runtime nesli için tek sahip olur; her istek/yanıt `request_id`, motor yanıtları `runtime_generation` ile bağlanır. Unknown snapshot `ready` sayılmaz. Sabit UI hata zarfı ve başlangıç durumları [yerel sözleşmede](../contracts.md) tanımlıdır; ham child-process çıktısı UI DTO'suna girmez.
 - Uygulama state kökü runtime payload'ından ayrıdır. Sabit bundle dosyaları değiştirilmez. Bağlantı ayarları ve kullanıcı tercihleri dayanıklı/atomik yazılır; mevcut giriş sırları uygulama state'ine kopyalanmaz.
 - Normal kapanış stdio isteği ve bounded drain ile başlar. Yalnız sahip olunan süreçler için timeout/Job Object fallback vardır; force kapanış graceful diye sunulmaz. H009'un test controller'ındaki force sonucu, H006-a helper yaklaşımını geçersiz kılmaz ve gerçek Tauri bağlantısının kanıtı yerine geçmez.
-- H007'deki opaque-block cache marker uyarlaması proof-scope'tur. Üretimde yalnız paket içinde sürüm ve tam `prefix_tracker.py` source-hash guard'ı ile bulunabilir; uyumsuzlukta bootstrap durur ve motor ready olmaz. H006 paketini/manifestini sessizce değiştirmek veya guard olmadan patch uygulamak kabul edilmez. Üretim shim paketi, manifest ve readiness testi H014/H028'in açık işi olarak kalır.
+- H007'nin opaque-block cache marker uyarlaması üretim shim'ine taşınmıştır. Paket sürümü, manifest, controller/helper, shim/control ve tam `prefix_tracker.py` hash guard'ları [Rust başlatma yolunda](../../src-tauri/src/runtime/manager.rs) kontrol edilir; uyuşmazlıkta motor ready olmaz. H014 üretim bağı ve H028 pause/CCR kanıtı yerel Windows 10 kabulüdür. Paket/manifesti sessizce değiştirmek veya guard olmadan patch uygulamak kabul edilmez; başka OS, yeni paket veya canlı sağlayıcı için aynı kabul varsayılmaz.
 
 ## İstemci adaptörleri
 
@@ -32,7 +32,7 @@ Codex'in proje config'inde yok sayılan yönlendirme anahtarlarına güvenilmez;
 
 Motoru durdurmak, istemci bağlantısını kaldırmak ve sıkıştırmayı duraklatmak farklı işlemlerdir. Duraklatma mevcut stream'i bitirmeli, geçmiş CCR deposunu erişilebilir tutmalı ve önceki prefix'i bozmamalıdır. Yalnız `HEADROOM_OPTIMIZE=0`, bypass header veya proxy restart uygulayarak bu sözleşmenin sağlandığı varsayılmaz.
 
-H011-a kaynak incelemesi [`pause.md`](../proofs/pause.md) içinde kaydedilmiştir. Pinned sürümde bypass yalnız bir request'in compression kararını etkiler; runtime-env hot-reload allowlist'inde `HEADROOM_OPTIMIZE` yoktur ve `/settings/apply` proxy'yi yeniden başlatır. Bu kontrollerin hiçbiri aktif stream/prefix/CCR sözleşmesini kanıtlamaz. Durum `not_implemented/not_tested`; H011/H028 kabul edilene kadar üretim UI'sı pause eylemi veya başarılı `paused` durumu sunmaz. H011/H028, geçişin gerçek request snapshot ve prefix davranışını belirleyecek.
+H011-a kaynak incelemesi [`pause.md`](../proofs/pause.md) içinde tarihsel kayıttır. Pinned upstream bypass/runtime-env/restart kontrolleri güvenli pause yerine geçmez. H028'de üretim kontrol modülü, nesil/revision ve özel ack üzerinden gerçek pause/resume'a bağlandı; aktif HTTP/SSE ve WebSocket, eski prefix/CCR ve resume sonrası yeni sıkıştırma [yerel replay ile doğrulandı](../proofs/safe-pause.md). Motor çalışırken kontrol okunamıyorsa durum `unknown`, motor kullanılamıyorsa `unavailable` olur; yalnız onaylanmış durum paused gösterilir. Bu Windows 10 fixture kanıtı canlı sağlayıcı veya tüm OS desteği değildir.
 
 ## Ölçüm
 
@@ -42,6 +42,6 @@ Ana kart `Σ(B-A)` ve `100×Σ(B-A)/ΣB` çiftini aynı kapsamdan gösterir. İ�
 
 ## Uygulama ve yayın sırası
 
-H012 sözleşme/katalog, bilinen sınırları temsil ederek uygulanabilir bir taban oluşturacak. H013'te Graphite kabuğu gerçek backend durumunu ve boş ölçümleri gösterecek; henüz uygulanmayan eylemler demo başarı üretmeyecek. H014 gerçek helper bağlantısı, H015–H018 state/keşif/plan/işlem, H019–H021 doğrulanan istemci dilimleridir.
+H013–H036, H038–H040, H045 ve H050–H051'in yerel ürün dilimleri uygulanmıştır. H014 gerçek helper bağlantısı; H015–H018 state/keşif/plan/işlem; H019–H021 istemci bağlantısı; H023–H027 içeriksiz ölçüm/atama ve H028 güvenli pause ayrı kanıtlarla değerlendirilir. H050 hesap kaydı ile H051 sohbet metadata'sı ayrı kabiliyetlerdir; hesap varlığından canlı rota, sohbet/model bilgisinden trafik veya tasarruf türetilmez. Yerel imzalı update/kurtarma H042'de, üretim anahtarı/kaynağı ve yayın ayrı açık kapsamdır.
 
-H012-a yalnız teknik temeli, sürümlü DTO/IPC sınırını ve ilk içeriksiz uyumluluk kataloğunu karara bağlar. Kalan H012 kabulü, H014 helper/Tauri bağı, H011/H028 pause, canlı OAuth/desktop/subagent/CCR client yolları ve temiz Windows 10/11 kapıları açık kalır. Uygulama iskeletinin geliştirilmesi destek/yayın sözü değildir; [`compatibility/clients.json`](../../compatibility/clients.json) kayıtları yalnız gerçek kanıt gelince güncellenir.
+H012-b mevcut uygulama ile sözleşmeyi uzlaştırır; ürün kodu veya [`compatibility/clients.json`](../../compatibility/clients.json) destek durumlarını değiştirmez. H008'in kayıtlı Windows 10 ChatGPT CLI/Desktop kabulleri vardır; canlı API-key H041'de, Claude/OpenCode canlı sağlayıcı ve tam araç/alt ajan kapsamı H009/H010'da, temiz Windows/Windows 11 H006/H037'de açık kalır. H048'in macOS 15.8.2 Apple Silicon yerel geliştirme kabulü bu yeni hesap/sohbet kabiliyetlerine aktarılmaz; H049 Linux ve H052–H054 Cloudflare işleri kullanıcı kararıyla ertelidir. Eksik dış kanıtlar nedeniyle ana H012 açık kalır; bu yerel belge uzlaştırması ana görev kabulünü değiştirmez.
