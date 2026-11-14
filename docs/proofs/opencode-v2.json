@@ -1,0 +1,565 @@
+{
+  "schema_version": 1,
+  "task": "H010-e",
+  "accepted": true,
+  "parent_task_accepted": false,
+  "scope": {
+    "platform": "Windows 10 22H2 x64",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "client": "OpenCode 2.3.0 CLI --standalone",
+    "engine": "Headroom 0.41.0",
+    "upstream": "owned_loopback_fixture",
+    "auth": "synthetic",
+    "live_provider": "not_tested",
+    "native_product_integration": "not_tested",
+    "v2_mcp_and_subagents": "not_tested",
+    "desktop_runtime": "not_tested",
+    "token_and_billing_savings": "not_measured"
+  },
+  "package": {
+    "tag": "v2.3.0",
+    "published_at": "2026-11-13T08:55:07Z",
+    "archive": {
+      "path": "work/toolchains/opencode/v2.3.0/opencode-windows-x64-baseline.zip",
+      "sha256": "a3abde3f736a1b51acb28466001333189184507096cb2fe0d684fe822cbd37ec",
+      "bytes": 124586663
+    },
+    "checksums": {
+      "path": "work/toolchains/opencode/v2.3.0/SHA256SUMS",
+      "sha256": "8684fbfb1e03debf1471a49c4baf345c8453b97db83b8d1f225816bd69cf9d5a"
+    },
+    "executable": {
+      "path": "work/toolchains/opencode/v2.3.0/runtime/opencode.exe",
+      "sha256": "2359208e2f81539fd16eb755a4d8a747e87c6fd5cd59a49bb552f8a610d33eb9",
+      "bytes": 257553288
+    },
+    "three_way_archive_digest_match": true
+  },
+  "source_commit": "a6b15d33daf6ab7d35569f6d711fdb630b9f04e7",
+  "source_files": [
+    {
+      "file": "config.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/config.ts",
+      "bytes": 23766,
+      "sha256": "617d0012b6a8defc71c29805c53f8b92354100fa6cf83eb26003f1b08bccc70d"
+    },
+    {
+      "file": "flag.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/flag.ts",
+      "bytes": 4351,
+      "sha256": "0656ecfb6ef72ef3947eb64e4d82cc8cb2b891e424181df4f6bdf1bf894e395d"
+    },
+    {
+      "file": "environment.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/environment/index.ts",
+      "bytes": 496,
+      "sha256": "2ec68fdf5bf4b1c47535030751717c2581c53f871b27dd460c1161cc9ae57688"
+    },
+    {
+      "file": "provider.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/provider.ts",
+      "bytes": 27892,
+      "sha256": "fa57b56b4086384fa1379bec1682dc89c0699f0adf2ca78ba73aa9066f0df0bf"
+    },
+    {
+      "file": "cli-index.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/cli/src/index.ts",
+      "bytes": 7471,
+      "sha256": "6235a73b3f927750ef362f1bfc6a1d12418d730a512906644cdb3798b1ede59e"
+    },
+    {
+      "file": "cli-run.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/cli/src/commands/handlers/run.ts",
+      "bytes": 1925,
+      "sha256": "29a32627075fcfecc82c2d9f869745901ac7a3457c528c9277b1c640a1b1143e"
+    },
+    {
+      "file": "cli-debug-config.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/cli/src/commands/handlers/debug/config.ts",
+      "bytes": 841,
+      "sha256": "aa22552a63332f7edc8162235026482bb9d1a366e6a4e000cd55c32729c2e4e6"
+    },
+    {
+      "file": "service-config.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/cli/src/services/service-config.ts",
+      "bytes": 14518,
+      "sha256": "34f57de314b714473e3378c5b431f69783dd14745eaa4af26695cd952a7f0b4e"
+    },
+    {
+      "file": "desktop-package.json",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/desktop/package.json",
+      "bytes": 2041,
+      "sha256": "fd755fb94bdb169b130eb752732cfa865b59976bf1a7e2e9fab835ad318ad786"
+    },
+    {
+      "file": "desktop-builder.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/desktop/electron-builder.config.ts",
+      "bytes": 11858,
+      "sha256": "7290bd25c7df9710dbc69d2d8431d0b9e3c590a64571015f66ae1c6c98d7f47d"
+    },
+    {
+      "file": "desktop-index.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/desktop/src/main/index.ts",
+      "bytes": 1939,
+      "sha256": "b0a106075ddbf44edcadcb01d99327b51ab71b8ec47cd30b300c04603d221904"
+    },
+    {
+      "file": "desktop-constants.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/desktop/src/main/constants.ts",
+      "bytes": 840,
+      "sha256": "b1463a7e1f66291e40fffa7e4b8b7e1de0758e31e9339ead2dac9e361b031073"
+    },
+    {
+      "file": "global.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/util/src/global.ts",
+      "bytes": 2471,
+      "sha256": "56929986af9096e499e028d4f9090341ddbfb3e3b28e4d6039787f5f685fab15"
+    },
+    {
+      "file": "server-connection.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/cli/src/services/server-connection.ts",
+      "bytes": 5278,
+      "sha256": "00ef29453ac8d8b024554c4a5e63e282772e7f1224f7eeba727f579b58f1d6f3"
+    },
+    {
+      "file": "commands.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/cli/src/commands/commands.ts",
+      "bytes": 23463,
+      "sha256": "ade1c01d9b81f50e796d313bfe95344521c101142574bf79b24387a5ab91eeab"
+    },
+    {
+      "file": "schema-config.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/schema/src/config.ts",
+      "bytes": 6200,
+      "sha256": "807a70bae2c0d83812fe9722a6e1312ae2974a036d27e3b973c415291ecab1a5"
+    },
+    {
+      "file": "schema-provider.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/schema/src/config/provider.ts",
+      "bytes": 4650,
+      "sha256": "6932a941a2c0bd1d404d96bc4e5568a47073b9546c10534189a52cd554fe3c44"
+    },
+    {
+      "file": "schema-model.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/schema/src/config/model.ts",
+      "bytes": 1210,
+      "sha256": "ea2ade334413cdcb907a9b78cda00184c0cdac11a5ced57585bec1cc57ea3f4b"
+    },
+    {
+      "file": "config-discovery.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/config/discovery.ts",
+      "bytes": 7438,
+      "sha256": "19c392bfe3ef7e15301071cc5210ee849aabf7bd2cdda29d14e27b7e6bad297b"
+    },
+    {
+      "file": "config-normalize.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/config/normalize.ts",
+      "bytes": 31994,
+      "sha256": "838d61ca7de68a4d2765c0c7e8959d58066a62834cdcbc36a3e9dced9b663d1d"
+    },
+    {
+      "file": "global-roots.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/util/src/global-roots.ts",
+      "bytes": 754,
+      "sha256": "6cdc234ac155e308dadeb62682c687468ba656fd463482d00fce025c9dc819b6"
+    },
+    {
+      "file": "standalone.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/cli/src/services/standalone.ts",
+      "bytes": 2630,
+      "sha256": "dc8197da471d3d213acf51ef809bb1c05a7cf697bce1f0795e49fdd4c0165cf9"
+    },
+    {
+      "file": "run-events.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/cli/src/run/run.ts",
+      "bytes": 9138,
+      "sha256": "c6adfa0880d8d8554904deee391fc972234b1cd56be6d2e044b458064049c34e"
+    },
+    {
+      "file": "schema-agent.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/schema/src/config/agent.ts",
+      "bytes": 1024,
+      "sha256": "8a06cebb98f92c4054aedecbfb9e1ac3098aaa35155f3cbcdcba55d3d2a46fc2"
+    },
+    {
+      "file": "desktop-utils.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/desktop/script/utils.ts",
+      "bytes": 4223,
+      "sha256": "764628712fedaaf8fb183d952d13495d3246b1d9cd1f53452c1ca2175db96396"
+    },
+    {
+      "file": "noninteractive.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/cli/src/run/noninteractive.ts",
+      "bytes": 27061,
+      "sha256": "771876a072ddbbe878c98c8470e25b030c2b5356123f79e668a2e38c3342bdb8"
+    },
+    {
+      "file": "schema-policy.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/schema/src/config/policy.ts",
+      "bytes": 2225,
+      "sha256": "72586095738f791dc7cef2c3e134c19be9b85130d66fdaa0dbebb74e9530df52"
+    },
+    {
+      "file": "openai.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/ai/src/providers/openai.ts",
+      "bytes": 8179,
+      "sha256": "a711b273927b4907edb861ebe756567669f8831f2ded8898553ff8b7c94bcfea"
+    },
+    {
+      "file": "config-provider.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/config/plugin/provider.ts",
+      "bytes": 13260,
+      "sha256": "61f9ab3d689c792d4dbaaf42efe2c6c1c902b24da3a91c5745578ebcd93c77f0"
+    },
+    {
+      "file": "plugin-provider.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/plugin/provider.ts",
+      "bytes": 2461,
+      "sha256": "b4d17619a658c3f464db5112f0e6614ca756e93629de89d110db6ef073751ed0"
+    },
+    {
+      "file": "provider-test.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/test/config/provider.test.ts",
+      "bytes": 52361,
+      "sha256": "f120a1e63a89ecae4d51cb2654342aefc42bd9adc54dfa73e7db4c89eb507062"
+    },
+    {
+      "file": "plugin-openai.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/plugin/provider/openai.ts",
+      "bytes": 17063,
+      "sha256": "a71bc923d8f92fb9fcb40a53f92622ffc6c0d2e10d824f6b00db7f03f7a5d2f6"
+    },
+    {
+      "file": "core-model.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/model.ts",
+      "bytes": 15408,
+      "sha256": "1e10dc15c7ee932d37287dedc7af7e3b91caa00187c94c79c9f1f232753af72b"
+    },
+    {
+      "file": "config-policy.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/config/plugin/policy.ts",
+      "bytes": 4998,
+      "sha256": "125e1002d859d8b38e41655e7e8cc158d8df9149ef957c51d7383d475570533b"
+    }
+  ],
+  "cases": [
+    {
+      "protocol": "chat",
+      "passed": true,
+      "engine": {
+        "startup_ms": 8533.460900001955,
+        "effective_profile": {
+          "mode": "cache",
+          "savings_profile": "coding",
+          "ttl_seconds": 7200,
+          "telemetry_enabled": true,
+          "beacon_enabled": false,
+          "memory_enabled": false,
+          "learning_enabled": false,
+          "output_shaper_enabled": false,
+          "model_router_enabled": false,
+          "protected_tools": []
+        },
+        "stderr_status": "redirected_to_null_contents_unknown"
+      },
+      "config_before": "08c06f7379c79435d5e72e604e4f45e483ab81368708b66793111b3f8f2cdb12",
+      "environment_before": "d3cec8b023a6878ea531f0a5c515d9fbca4cd3124748e56f5591ae41903000b8",
+      "commands": [
+        {
+          "args": [
+            "--version"
+          ],
+          "exit_code": 0,
+          "stdout_bytes": 16,
+          "stderr_bytes": 0,
+          "owned_processes_after_exit": 0,
+          "passed": true,
+          "version_exact": true
+        },
+        {
+          "args": [
+            "--help"
+          ],
+          "exit_code": 0,
+          "stdout_bytes": 2323,
+          "stderr_bytes": 0,
+          "owned_processes_after_exit": 0,
+          "passed": true,
+          "standalone_documented": true
+        },
+        {
+          "args": [
+            "debug",
+            "paths"
+          ],
+          "exit_code": 0,
+          "stdout_bytes": 1001,
+          "stderr_bytes": 0,
+          "owned_processes_after_exit": 0,
+          "passed": true,
+          "all_paths_inside_fixture": true,
+          "path_names": [
+            "home",
+            "data",
+            "cache",
+            "config",
+            "state",
+            "tmp",
+            "bin",
+            "log",
+            "repos",
+            "db"
+          ]
+        },
+        {
+          "args": [
+            "run",
+            "--standalone",
+            "--format",
+            "json",
+            "--model",
+            "lab/slot",
+            "--title",
+            "H010 V2 local fixture",
+            "Return the synthetic fixture final marker. Do not use tools."
+          ],
+          "exit_code": 0,
+          "stdout_bytes": 928,
+          "stderr_bytes": 0,
+          "owned_processes_after_exit": 0,
+          "passed": true,
+          "event_types": [
+            "step_start",
+            "text",
+            "step_finish"
+          ],
+          "final_marker_exact": true,
+          "steps": 1,
+          "usage": "synthetic_not_a_savings_measurement"
+        }
+      ],
+      "upstream": [
+        {
+          "protocol": "chat",
+          "wire_model_preserved": true,
+          "synthetic_auth_preserved": true,
+          "stream_requested": true
+        }
+      ],
+      "blocked_external_connects": 0,
+      "config_after": "08c06f7379c79435d5e72e604e4f45e483ab81368708b66793111b3f8f2cdb12",
+      "environment_after": "d3cec8b023a6878ea531f0a5c515d9fbca4cd3124748e56f5591ae41903000b8",
+      "shutdown": {
+        "shutdown": "graceful",
+        "engine_exit_code": 0,
+        "owned_port_closed": true,
+        "force_fallback": false
+      }
+    },
+    {
+      "protocol": "responses",
+      "passed": true,
+      "engine": {
+        "startup_ms": 8066.308100002061,
+        "effective_profile": {
+          "mode": "cache",
+          "savings_profile": "coding",
+          "ttl_seconds": 7200,
+          "telemetry_enabled": true,
+          "beacon_enabled": false,
+          "memory_enabled": false,
+          "learning_enabled": false,
+          "output_shaper_enabled": false,
+          "model_router_enabled": false,
+          "protected_tools": []
+        },
+        "stderr_status": "redirected_to_null_contents_unknown"
+      },
+      "config_before": "d3792278ff95bcc60e461064a41f005d1b33883274cc14b9652be940d26a28ba",
+      "environment_before": "ba62782d777836cd942b84cffc337d86bd0c51ad53cc7944c7a3671386d5cb0f",
+      "commands": [
+        {
+          "args": [
+            "--version"
+          ],
+          "exit_code": 0,
+          "stdout_bytes": 16,
+          "stderr_bytes": 0,
+          "owned_processes_after_exit": 0,
+          "passed": true,
+          "version_exact": true
+        },
+        {
+          "args": [
+            "--help"
+          ],
+          "exit_code": 0,
+          "stdout_bytes": 2323,
+          "stderr_bytes": 0,
+          "owned_processes_after_exit": 0,
+          "passed": true,
+          "standalone_documented": true
+        },
+        {
+          "args": [
+            "debug",
+            "paths"
+          ],
+          "exit_code": 0,
+          "stdout_bytes": 1051,
+          "stderr_bytes": 0,
+          "owned_processes_after_exit": 0,
+          "passed": true,
+          "all_paths_inside_fixture": true,
+          "path_names": [
+            "home",
+            "data",
+            "cache",
+            "config",
+            "state",
+            "tmp",
+            "bin",
+            "log",
+            "repos",
+            "db"
+          ]
+        },
+        {
+          "args": [
+            "run",
+            "--standalone",
+            "--format",
+            "json",
+            "--model",
+            "openai/slot",
+            "--title",
+            "H010 V2 local fixture",
+            "Return the synthetic fixture final marker. Do not use tools."
+          ],
+          "exit_code": 0,
+          "stdout_bytes": 935,
+          "stderr_bytes": 0,
+          "owned_processes_after_exit": 0,
+          "passed": true,
+          "event_types": [
+            "step_start",
+            "text",
+            "step_finish"
+          ],
+          "final_marker_exact": true,
+          "steps": 1,
+          "usage": "synthetic_not_a_savings_measurement"
+        }
+      ],
+      "upstream": [
+        {
+          "protocol": "responses",
+          "wire_model_preserved": true,
+          "synthetic_auth_preserved": true,
+          "stream_requested": true
+        }
+      ],
+      "blocked_external_connects": 0,
+      "config_after": "d3792278ff95bcc60e461064a41f005d1b33883274cc14b9652be940d26a28ba",
+      "environment_after": "ba62782d777836cd942b84cffc337d86bd0c51ad53cc7944c7a3671386d5cb0f",
+      "shutdown": {
+        "shutdown": "graceful",
+        "engine_exit_code": 0,
+        "owned_port_closed": true,
+        "force_fallback": false
+      }
+    }
+  ],
+  "validation": {
+    "focused_tests": 6,
+    "focused_passed": true,
+    "runtime_input_count": 645,
+    "runtime_inputs_unchanged": true,
+    "reused_product_input_count": 332,
+    "reused_product_inputs_unchanged": true,
+    "reused_product_gate": {
+      "node_passed": 222,
+      "rust_passed": 448,
+      "rust_ignored": 18,
+      "fmt": "pass",
+      "frontend_build": "pass",
+      "embedded_build": "pass"
+    },
+    "toolchain": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "environment": {
+      "os": "Windows-10-10.0.19045-SP0",
+      "windows": [
+        "10",
+        "10.0.19045",
+        "SP0",
+        "Multiprocessor Free"
+      ],
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "cli_sha256": "2359208e2f81539fd16eb755a4d8a747e87c6fd5cd59a49bb552f8a610d33eb9"
+    },
+    "codegraph": {
+      "command": [
+        "powershell.exe",
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "D:\\Projeler\\Headroom\\scripts\\codegraph.ps1",
+        "sync"
+      ],
+      "exit_code": 0,
+      "stdout_bytes": 183,
+      "stderr_bytes": 0
+    }
+  },
+  "evidence": {
+    "work/proofs/opencode-v2/runs/1dbf43fb31b2/result.json": "548f0604a4d7fadf41511c7c07976d85f2f0cd2e5446487e5f74342c13e128f6",
+    "work/proofs/opencode-v2/focused-72dd3c285b.json": "30e39f90208b7cce525a749af02d9dbc16e266e8de6be8425c66c28e04af4615",
+    "work/proofs/opencode-retrieval/final-74f47538b0.json": "942df48f418400fd3d8b12f2162e5dfcbe2018ec9b5c3a83059fcdd29e721fce",
+    "work/proofs/opencode-v2/runs/f89faa722bae/result.json": "a2a12e2074ca3a2982627a04aea11e0f2fe600195da0bae0ec97e8c9cd90d20e",
+    "work/proofs/opencode-v2/verify-focused.py": "44f717b5c3a359989127960ccde323b89fa637d7b0fffd066353b6d8f096681c",
+    "work/proofs/opencode-v2/accept.py": "6079d9683fb537af38f7911de8cab66d86339af5fc7e0637ba7a6db75a4faa75",
+    "work/toolchains/opencode/v2.3.0/receipt.json": "1078e8df1624239579478abaaf25b0c6f5187ae8d7af3f603264fbc7a2a8e186",
+    "work/research/h010-v2/release.raw.json": "3847bf856268f47207e589258fa4f855e1ff3f1070c2a2a18a695eb422008fe7",
+    "work/proofs/opencode-v2/runs/42d4a3f93ce4/result.json": "3e70c35251694195b9f2076c4b875d9f8fce74f7d2e3a097eb463f7435b1a0e9"
+  },
+  "earlier_attempts": [
+    {
+      "path": "work/proofs/opencode-v2/runs/f89faa722bae/result.json",
+      "passed": false,
+      "failure": "provider.no-route",
+      "cause": "integration.use deny removed the expected provider; final config allows only its own provider/integration"
+    },
+    {
+      "path": "work/proofs/opencode-v2/runs/42d4a3f93ce4/result.json",
+      "passed": true,
+      "superseded": true,
+      "reason": "Review added owned-process kill fallback for failed job assignment; new focused and runtime proof required."
+    }
+  ],
+  "desktop_boundary": {
+    "asset": {
+      "name": "opencode-desktop-win-x64.exe",
+      "size": 267406912,
+      "digest": "sha256:21e4d45dd957ebe92d3ea693fc4a7f7bb5b50276046bf7b78767081dd37d685e",
+      "browser_download_url": "https://github.com/anomalyco/opencode/releases/download/v2.3.0/opencode-desktop-win-x64.exe"
+    },
+    "downloaded_or_executed": false,
+    "source_only": "Electron desktop packages its own CLI; shared service discovery differs from standalone; no product adoption proof"
+  },
+  "limits": [
+    "No firewall or packet capture; closed loopback proxy and offline fixture profile are configuration controls.",
+    "Fixed synthetic SSE/usage does not measure real inference, token savings, cost or stream timing.",
+    "V2 product blocker stays; discovery trust, Plan/Apply/Undo, MCP/CCR and subagents require separate acceptance.",
+    "Windows 11, macOS/Linux, paid API, account login, Actions and release were not exercised."
+  ],
+  "verifier_sha256": "6079d9683fb537af38f7911de8cab66d86339af5fc7e0637ba7a6db75a4faa75"
+}
