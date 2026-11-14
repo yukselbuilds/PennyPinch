@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "task": "H009-b",
+  "recorded_at_utc": "2026-11-14T10:43:43.654834+00:00",
+  "slice_accepted": true,
+  "parent_task_accepted": false,
+  "scope": "Windows 10 pinned Claude 2.1.158; local MCP and synthetic API upstream only",
+  "checks": {
+    "focused_tests": 4,
+    "native_cli_exit_code": 0,
+    "native_requests": 3,
+    "upstream_messages": 4,
+    "mcp_calls": [
+      "logs",
+      "witness"
+    ],
+    "native_tool_ids_preserved": true,
+    "model_effort_thinking_auth_preserved": true,
+    "server_side_ccr_not_exposed_as_client_tool": true,
+    "retrieval_byte_exact": true,
+    "original_log_bytes": 14999,
+    "compressed_log_bytes": 103,
+    "final_marker_and_success": true,
+    "graceful_engine_exit": true,
+    "owned_port_closed": true,
+    "stderr_bytes": 0,
+    "token_savings": "not_measured",
+    "provider_cost_savings": "not_measured"
+  },
+  "runtime_profile": {
+    "mode": "cache",
+    "savings_profile": "coding",
+    "ttl_seconds": 7200,
+    "telemetry_enabled": true,
+    "beacon_enabled": false,
+    "memory_enabled": false,
+    "learning_enabled": false,
+    "output_shaper_enabled": false,
+    "model_router_enabled": false,
+    "protected_tools": []
+  },
+  "fixture_network": {
+    "hf_hub_offline": true,
+    "transformers_offline": true,
+    "upstream": "owned_loopback_fixture",
+    "huggingface_hub_payload_bytes": 0,
+    "packet_capture": false
+  },
+  "blocked_external_connects": 0,
+  "environment": {
+    "workspace": "D:\\Projeler\\Headroom",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "cli_timeout_seconds": 180
+  },
+  "tools_before": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0"
+  },
+  "tools_after": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0"
+  },
+  "source_before": {
+    "bench/claude/roundtrip.py": "d22ac395c98c361a0f1560e0fd49f6b67b4a752b7fdc7300d6e81f069d60f251",
+    "tests/fixtures/claude/tool_fixture.py": "56d4376da7051f2314a9189b9dfd8dbf7bac8d7f9d1b26843196365ac5d40695",
+    "tests/fixtures/claude/test_tool_fixture.py": "c0db93fe3f1132378ba1f164ff165505feb0b913931296cc4c3d684c5e0af0d4",
+    "bench/optimization/replay.py": "e24e850f7beb486c636df573ca12f916919bf4b8a1fa74b68606d812a0e09811",
+    "bench/optimization/fixtures.py": "a08490955153c731fd0210748456cede7f9778977fb86963f092597d7f5baa2d",
+    "runtime/desktop_controller.py": "42c0cee4b0a52b0959449510003f01198cb1a006fb052cc9e12e394b873c3b5e",
+    "runtime/desktop_helper.py": "56cfb1523bfa54b848b50aa4bd649cc4674e7005ea57e0fc8f970850123a0cc2",
+    "runtime/manifest.json": "4217e8f67946c96caa028e0a0d4e9a41e2e6894e4cafcd7e23adb00ad7cd1c03",
+    "runtime/cache_control_shim.py": "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1",
+    "runtime/optimization_control.py": "972c0e60fb791fb9ccd27167e561bf31cef735da88e3423b0e607b2205c8a283",
+    "runtime/optimization-sources.json": "f96b93d2c574a2155012c7e587aaed2a2c86f6fe288cd88f847e81e9a27b4bfa"
+  },
+  "source_after": {
+    "bench/claude/roundtrip.py": "d22ac395c98c361a0f1560e0fd49f6b67b4a752b7fdc7300d6e81f069d60f251",
+    "tests/fixtures/claude/tool_fixture.py": "56d4376da7051f2314a9189b9dfd8dbf7bac8d7f9d1b26843196365ac5d40695",
+    "tests/fixtures/claude/test_tool_fixture.py": "c0db93fe3f1132378ba1f164ff165505feb0b913931296cc4c3d684c5e0af0d4",
+    "bench/optimization/replay.py": "e24e850f7beb486c636df573ca12f916919bf4b8a1fa74b68606d812a0e09811",
+    "bench/optimization/fixtures.py": "a08490955153c731fd0210748456cede7f9778977fb86963f092597d7f5baa2d",
+    "runtime/desktop_controller.py": "42c0cee4b0a52b0959449510003f01198cb1a006fb052cc9e12e394b873c3b5e",
+    "runtime/desktop_helper.py": "56cfb1523bfa54b848b50aa4bd649cc4674e7005ea57e0fc8f970850123a0cc2",
+    "runtime/manifest.json": "4217e8f67946c96caa028e0a0d4e9a41e2e6894e4cafcd7e23adb00ad7cd1c03",
+    "runtime/cache_control_shim.py": "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1",
+    "runtime/optimization_control.py": "972c0e60fb791fb9ccd27167e561bf31cef735da88e3423b0e607b2205c8a283",
+    "runtime/optimization-sources.json": "f96b93d2c574a2155012c7e587aaed2a2c86f6fe288cd88f847e81e9a27b4bfa"
+  },
+  "native_proof": {
+    "path": "work/proofs/claude-tools/runs/0c5e4fe1-4cad-4d58-b0b5-24d878e9bed6/result.json",
+    "sha256": "0ffe6634d5a9dc58f646ef7f45d88a55e7edb8d307bd62bdacf9ad10063e2a85"
+  },
+  "focused_proof": {
+    "path": "work/proofs/claude-tools/focused-a80d973e/result.json",
+    "sha256": "bd04ccb2b838062f7a7a48789acb111a1c17b9e9cd410e58dab4c025905d107d"
+  },
+  "reused_rust_gate": {
+    "path": "work/proofs/windows-engine-crash/quality-28623d163c/final.json",
+    "sha256": "0b60834207f7748aaa504ae0e63b4e576a230d5d87aa646471f95d2a5bac375a"
+  },
+  "reused_frontend_gate": {
+    "path": "work/proofs/windows-engine-crash/quality-28623d163c/reuse.json",
+    "sha256": "270c6c34cfecbac963e0c2051c258c5035438c3d01ecff40a6bc8d89c8ed22cc"
+  },
+  "reused_gate_original_inputs_match": true,
+  "verifier_before_sha256": "a6be8c27d15fcee3dc99015199336324f1573677153a280d189c12e0b2d8dc44",
+  "verifier_after_sha256": "a6be8c27d15fcee3dc99015199336324f1573677153a280d189c12e0b2d8dc44",
+  "failed_attempts": [
+    {
+      "path": "work/proofs/claude-tools/runs/5fa88fd2-7a99-4d14-9e02-0a7c7c0fdb55/result.json",
+      "reason": "75KB client tool result was persisted/offloaded by the CLI; no expected CCR marker in provider input"
+    },
+    {
+      "path": "work/proofs/claude-tools/runs/e067bcad-3de5-4e3a-befc-51ececed91b7/result.json",
+      "reason": "Diagnostic confirmed native offload file; 2411-byte provider text was not original log"
+    },
+    {
+      "path": "work/proofs/claude-tools/runs/9e77d9af-5b89-44b8-9ad1-2afc149aa76a/result.json",
+      "reason": "Fixture expected bare retrieval content; pinned CCR handler uses JSON original_content/hash envelope"
+    }
+  ],
+  "limits": [
+    "A single synthetic positive CLI loop; no live provider, login, model quality, subagent, Desktop or other OS",
+    "MCP output intentionally below the native client output-persistence threshold; no CLI cap override",
+    "Large native-offloaded tool outputs are not claimed to have Headroom token savings",
+    "Controller/helper overlay adds HF/transformers offline settings and empty synthetic protected-tool list, as in H041",
+    "HTTP observer is test instrumentation, not native Tauri UI or the product Rust ingress",
+    "Stream tool arguments/final result traversed real CLI; no first-token latency or quality benchmark",
+    "No packet capture; proxy/offline settings are containment evidence, not a total-network proof"
+  ],
+  "source_basis": [
+    "Pinned CLI isolated --help",
+    "Pinned headroom-ai 0.41.0 proxy/handlers/anthropic.py and ccr/response_handler.py"
+  ]
+}
