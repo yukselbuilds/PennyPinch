@@ -2,6 +2,8 @@
 
 Status: **local proof PASS** on the attached Windows 10 host, 2026-10-19. This is one tools-disabled OpenCode CLI request through the pinned Headroom proxy to a local synthetic upstream. It is not a full H010 compatibility result.
 
+14 Kasım takip: Gerçek CLI araç/CCR testleri, ek yerel MCP köprüsü tanımlanmış izole profilde iki protokolde geçti. Endpoint-only varsayılan profillerde otomatik geri alma geçmedi. Aşağıdaki H010-a tarihsel tools-kapalı kapsamı değişmez; yeni koşullu teknik kanıt ve açık ürün işi belgenin sonundadır.
+
 ## Observed behavior
 
 The pinned OpenCode V1 CLI 1.19.3 sent one streamed `POST /v1/chat/completions` through Headroom 0.41.0 to the loopback fixture. The fixture saw model `headroom-opencode-fixture`, `stream=true`, the per-process fake API sentinel, and zero tools. It returned five OpenAI-compatible SSE frames: assistant role, text, finish reason, usage, and `[DONE]`. The CLI emitted `step_start`, a completed `text` part containing the fixture marker, and `step_finish`; the CLI reported 12 input and 4 output tokens and exited 0. The fixture recorded one total request and one chat-completion request.
@@ -52,3 +54,43 @@ Pinned engine: `headroom-ai[proxy]==0.41.0`, CPython 3.13.13 x64. H006 packaged 
 ## Limits
 
 This slice covers the V1 CLI's ordinary tools-off API transport with a synthetic OpenAI-compatible backend. It does not cover real credentials or inference, ChatGPT auth, tool execution, agents/MCP, TUI/desktop, V2 config, first-token streaming, graceful engine shutdown from the GUI, Windows 11, or clean-machine packaging. H010 remains open for those client paths and product integration.
+
+## H010-b — Araç ve CCR yolları
+
+14 Kasım 2026. Windows 10 build 19045 x64, aynı pinned OpenCode 1.19.3 binary ve Headroom 0.41.0 ile iki protokol ayrı sınandı. **Kabul koşulludur:** Pozitif koşularda ayrı test profiline dar yerel retrieval MCP köprüsü açıkça eklendi. Mevcut Headroom Bağlan eylemi yalnız endpoint ayarını yönetiyor; bu köprüyü ürün olarak kurmuş veya varsayılan araç/CCR kabulünü geçmiş sayılmaz. Ana H010/42–54 açık kalır.
+
+İlk endpoint-only Chat `9519a08f...` ve Responses `f46496df...` koşularında gerçek veri aracı tamamlandı, özgün 14.999 bayt motora ulaştı ve sıkıştırma marker'ı oluştu; otomatik retrieval aracı bildirilmediği için iki koşu da başarısız kaldı. Pinned `proxy/handlers/openai.py::_should_inject_openai_chat_ccr_tool`, streaming Chat'te continuation olmadığından otomatik araç eklemeyi bilerek reddeder. Responses ise zaten bildirilmiş headroom_retrieve aracı varsa buffered server-side continuation kullanır. Bu farklı gereklilikler genel OpenCode uyumluluğuna yükseltilmez.
+
+Sonraki test konfigürasyonu, tek sabit log/tanık aracı ile yalnız hash alıp sahip engine'in loopback `/v1/retrieve` adresine erişen ikinci stdio MCP sunucusunu tanımlar. URL/path/shell veya auth kabul etmez. [Sabit OpenCode local MCP şeması](https://github.com/anomalyco/opencode/blob/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/core/src/v1/config/mcp.ts) ve [araç adlandırma kaynağı](https://github.com/anomalyco/opencode/blob/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/opencode/src/mcp/catalog.ts) test yapılandırmasının temelidir; kaynaklar `work/research/h010-mcp/manifest.json` içinde hash'leriyle sabittir. Gerçek çalışma kanıtı bunlardan ayrı aşağıdaki iki koşudur.
+
+| Koşul | Chat Completions | Responses |
+| --- | --- | --- |
+| Yapılandırılan selector / wire model | lab/slot / headroom-opencode-tool-fixture | openai/slot / gpt-4.1 |
+| Provider SDK | @ai-sdk/openai-compatible | @ai-sdk/openai |
+| Retrieval bildirimi | Test profilinde açıkça tanımlı MCP köprüsü | Aynı açık test MCP bildirimi |
+| Geri alma işlemi | OpenCode gerçek MCP tools/call yapar | Motor server-side işler; retrieval MCP tools/call yapılmaz |
+| Native istek / upstream mesajı | 4 / 4 | 3 / 4 |
+| Native araç çağrıları | Veri, retrieval, tanık; hepsi completed | Veri ve tanık; ikisi completed |
+| Sonuç | Final/CLI exit0/stderr0 | Final/CLI exit0/stderr0 |
+
+İki kolda native istemci streaming ister; Responses kolundaki dört upstream mesajı motor tarafından `stream:false` ile buffer edilir. Chat upstream'i streaming kalır. Fragment'lı tool arguments, call_id ve nihai text gerçek SDK/CLI'den geçti. Native girişte 14.999 bayt özgün sonuç korunur; upstream'te 103 bayt olur. CCR JSON hash/original_content, girişte görülen wire string ve sentetik logla SHA/bayt düzeyinde aynıdır. Model selector/wire ayrımı korunur; reasoning alanı seçilmediği için herhangi bir reasoning özelliği desteği iddia edilmez. Model isimleri sentetik sağlayıcı test girdileridir; gerçek çıkarım veya ürün model allowlist'i değildir.
+
+Nihai kayıtlar Responses `work/proofs/opencode-tools/runs/5f4cdcee-f73f-4533-9ddf-9ea19f94960a/result.json` ve Chat `.../732cb0fe-23a1-4d03-909b-da5e9c69cba3/result.json`. Beş odaklı test; yanlış call_id/marker/hash/içerik/model/reasoning ve Responses biçim dönüşümünü denetler. Üç ek sınır kontrolü geçersiz hash/araç/ek URL alanını ağa çıkmadan reddeder ve pinned Chat streaming policy'sinin değişmediğini doğrular. Kaynak/CLI/motor/tokenizer ve araç fingerprint'leri önce/sonra aynı. Her kolda motor graceful exit0, sahip port kapalı ve force fallback yoktur. [Programatik kabul](opencode-tools.json), [inceleme](../reviews/H010-b.md).
+
+H009-b'nin sabit MCP veri sunucusu/BoundedOutput ve H041'in controller/helper altyapısı değiştirilmeden yeniden kullanıldı. HF/transformers offline, cache/coding, CCR TTL7200, yerel ölçüm açık ve beacon/router/output-shaper/memory/learn kapalıdır. Sentetik testte protected-tools boş listesi kullanılır; bu dilim gerçek Read kaynağı/sayısal korumasını yeniden sınamaz. Proxy/offline ayarları kayıttır, packet capture yapılmadı. Kullanıcının auth/config'i, aktif sohbetleri ve model/efor/ajan sayısı değiştirilmedi; Actions/kurulum/yayın veya ücretli çağrı yoktur.
+
+Ürün kaynakları ve eski kapıdaki 325 girdi/araçlar aynı olduğundan 441 Rust, 221 Node, fmt ve frontend/embedded build kanıtları ilgili kapsamda yeniden kullanıldı. Yalnız yeni benchmark/fixture doğrulandı. Tek blok byte azalması toplam token, cache indirimi, maliyet, TTFT veya model kalitesi kazanımı değildir; CCR özgün içeriği tekrar taşır. Her protokolde bir olumlu koşu genel kararlılık veya tüm sürüm/model/alt ajan desteği sayılmaz.
+
+### Tekrarlama ve açık ürün işi
+
+Pinned payload/cache ve proje içi 1.19.3 executable gerekir. Repo kökünde; yalnız ilgili fingerprint değiştiğinde başarılı kontroller yenilenir:
+
+```powershell
+& work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B -m unittest discover -s tests/fixtures/opencode -p test_tool_fixture.py
+& work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B bench/opencode/roundtrip.py --run --surface responses --with-retrieval-bridge
+& work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B bench/opencode/roundtrip.py --run --surface chat --with-retrieval-bridge
+```
+
+Bayrak açıkça test-only köprü bildirimi ekler; kullanıcı ayarına kurulum yapmaz. Bridge'siz koşu bilinçli olarak başarısız başlangıç kanıtıdır; rutin başarılı smoke diye tekrar çalıştırılmaz.
+
+**H010-b3 açık:** Gerçek ürün plan/receipt'i pinned retrieval köprüsünü önizleme, atomik Apply ve kullanıcı değişikliklerini koruyan Undo'ya bağlamalı. Mevcut kullanıcı MCP kaydı/argv'si sahiplenilmemeli; runtime endpoint/nesli, duraklama, yeniden açılış, iptal/çatışma/kaldırma davranışı ve gerçek UI→yönetici→CLI döngüsü iki protokolde doğrulanmalı. Bu test script'i doğrudan ürün bileşeni diye kopyalanamaz. Bu çalışma yapılmadan “Bağlan'a basınca bütün OpenCode araç/CCR yolları hazır” iddiası yoktur. Canlı sağlayıcı, auth, gerçek alt ajan, TUI/V2/Desktop, temiz Windows/Windows 11 ve diğer OS kabulü de ayrı açıktır.

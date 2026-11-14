@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "task": "H010-b",
+  "recorded_at_utc": "2026-11-14T11:10:41.340493+00:00",
+  "conditional_fixture_slice_accepted": true,
+  "default_product_integration_accepted": false,
+  "parent_task_accepted": false,
+  "scope": "Windows 10 OpenCode 1.19.3, synthetic provider, explicit local MCP retrieval bridge only in test config",
+  "arms": [
+    {
+      "protocol": "responses",
+      "configured_selector": "openai/slot",
+      "observed_wire_model": "gpt-4.1",
+      "status": "passed_with_explicit_test_only_mcp_bridge",
+      "native_requests": 3,
+      "upstream_messages": 4,
+      "upstream_streams": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "client_tool_names": [
+        "headroom_fixture_inspect_logs",
+        "headroom_fixture_inspect_logs"
+      ],
+      "client_call_ids": [
+        "call_headroom_logs_01",
+        "call_headroom_witness_02"
+      ],
+      "retrieval_execution": "server_side",
+      "original_log_bytes": 14999,
+      "compressed_log_bytes": 103,
+      "retrieval_byte_exact": true,
+      "no_explicit_reasoning_selection": true,
+      "graceful_stop": true,
+      "before": {
+        "bench/opencode/roundtrip.py": "32f4824e1193173b325ea29a8a7cdbcce89288dea323240e8cef20b114bf36f5",
+        "tests/fixtures/opencode/tool_fixture.py": "2d686c853c3b87c407fef28762d936aea3c30138c57a03218b5de85b33ab9744",
+        "tests/fixtures/opencode/test_tool_fixture.py": "b4a91aba0b5a0a8a436994ff2d0c1faa07ed4b5aba1e98a80569bbfc0a310e19",
+        "bench/claude/roundtrip.py": "d22ac395c98c361a0f1560e0fd49f6b67b4a752b7fdc7300d6e81f069d60f251",
+        "tests/fixtures/claude/tool_fixture.py": "56d4376da7051f2314a9189b9dfd8dbf7bac8d7f9d1b26843196365ac5d40695",
+        "bench/optimization/replay.py": "e24e850f7beb486c636df573ca12f916919bf4b8a1fa74b68606d812a0e09811",
+        "bench/optimization/fixtures.py": "a08490955153c731fd0210748456cede7f9778977fb86963f092597d7f5baa2d",
+        "runtime/manifest.json": "4217e8f67946c96caa028e0a0d4e9a41e2e6894e4cafcd7e23adb00ad7cd1c03",
+        "runtime/desktop_controller.py": "42c0cee4b0a52b0959449510003f01198cb1a006fb052cc9e12e394b873c3b5e",
+        "runtime/desktop_helper.py": "56cfb1523bfa54b848b50aa4bd649cc4674e7005ea57e0fc8f970850123a0cc2",
+        "runtime/optimization_control.py": "972c0e60fb791fb9ccd27167e561bf31cef735da88e3423b0e607b2205c8a283",
+        "runtime/optimization-sources.json": "f96b93d2c574a2155012c7e587aaed2a2c86f6fe288cd88f847e81e9a27b4bfa",
+        "runtime/cache_control_shim.py": "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1"
+      },
+      "after": {
+        "bench/opencode/roundtrip.py": "32f4824e1193173b325ea29a8a7cdbcce89288dea323240e8cef20b114bf36f5",
+        "tests/fixtures/opencode/tool_fixture.py": "2d686c853c3b87c407fef28762d936aea3c30138c57a03218b5de85b33ab9744",
+        "tests/fixtures/opencode/test_tool_fixture.py": "b4a91aba0b5a0a8a436994ff2d0c1faa07ed4b5aba1e98a80569bbfc0a310e19",
+        "bench/claude/roundtrip.py": "d22ac395c98c361a0f1560e0fd49f6b67b4a752b7fdc7300d6e81f069d60f251",
+        "tests/fixtures/claude/tool_fixture.py": "56d4376da7051f2314a9189b9dfd8dbf7bac8d7f9d1b26843196365ac5d40695",
+        "bench/optimization/replay.py": "e24e850f7beb486c636df573ca12f916919bf4b8a1fa74b68606d812a0e09811",
+        "bench/optimization/fixtures.py": "a08490955153c731fd0210748456cede7f9778977fb86963f092597d7f5baa2d",
+        "runtime/manifest.json": "4217e8f67946c96caa028e0a0d4e9a41e2e6894e4cafcd7e23adb00ad7cd1c03",
+        "runtime/desktop_controller.py": "42c0cee4b0a52b0959449510003f01198cb1a006fb052cc9e12e394b873c3b5e",
+        "runtime/desktop_helper.py": "56cfb1523bfa54b848b50aa4bd649cc4674e7005ea57e0fc8f970850123a0cc2",
+        "runtime/optimization_control.py": "972c0e60fb791fb9ccd27167e561bf31cef735da88e3423b0e607b2205c8a283",
+        "runtime/optimization-sources.json": "f96b93d2c574a2155012c7e587aaed2a2c86f6fe288cd88f847e81e9a27b4bfa",
+        "runtime/cache_control_shim.py": "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1"
+      },
+      "evidence": {
+        "path": "work/proofs/opencode-tools/runs/5f4cdcee-f73f-4533-9ddf-9ea19f94960a/result.json",
+        "sha256": "542d22c30ebe435d710223d5b035f66bb55b75147a576194dccb55e67e327ef0"
+      }
+    },
+    {
+      "protocol": "chat",
+      "configured_selector": "lab/slot",
+      "observed_wire_model": "headroom-opencode-tool-fixture",
+      "status": "passed_with_explicit_test_only_mcp_bridge",
+      "native_requests": 4,
+      "upstream_messages": 4,
+      "upstream_streams": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "client_tool_names": [
+        "headroom_fixture_inspect_logs",
+        "headroom_retrieve",
+        "headroom_fixture_inspect_logs"
+      ],
+      "client_call_ids": [
+        "call_headroom_logs_01",
+        "call_headroom_retrieve_01",
+        "call_headroom_witness_02"
+      ],
+      "retrieval_execution": "native_mcp",
+      "original_log_bytes": 14999,
+      "compressed_log_bytes": 103,
+      "retrieval_byte_exact": true,
+      "no_explicit_reasoning_selection": true,
+      "graceful_stop": true,
+      "before": {
+        "bench/opencode/roundtrip.py": "32f4824e1193173b325ea29a8a7cdbcce89288dea323240e8cef20b114bf36f5",
+        "tests/fixtures/opencode/tool_fixture.py": "2d686c853c3b87c407fef28762d936aea3c30138c57a03218b5de85b33ab9744",
+        "tests/fixtures/opencode/test_tool_fixture.py": "b4a91aba0b5a0a8a436994ff2d0c1faa07ed4b5aba1e98a80569bbfc0a310e19",
+        "bench/claude/roundtrip.py": "d22ac395c98c361a0f1560e0fd49f6b67b4a752b7fdc7300d6e81f069d60f251",
+        "tests/fixtures/claude/tool_fixture.py": "56d4376da7051f2314a9189b9dfd8dbf7bac8d7f9d1b26843196365ac5d40695",
+        "bench/optimization/replay.py": "e24e850f7beb486c636df573ca12f916919bf4b8a1fa74b68606d812a0e09811",
+        "bench/optimization/fixtures.py": "a08490955153c731fd0210748456cede7f9778977fb86963f092597d7f5baa2d",
+        "runtime/manifest.json": "4217e8f67946c96caa028e0a0d4e9a41e2e6894e4cafcd7e23adb00ad7cd1c03",
+        "runtime/desktop_controller.py": "42c0cee4b0a52b0959449510003f01198cb1a006fb052cc9e12e394b873c3b5e",
+        "runtime/desktop_helper.py": "56cfb1523bfa54b848b50aa4bd649cc4674e7005ea57e0fc8f970850123a0cc2",
+        "runtime/optimization_control.py": "972c0e60fb791fb9ccd27167e561bf31cef735da88e3423b0e607b2205c8a283",
+        "runtime/optimization-sources.json": "f96b93d2c574a2155012c7e587aaed2a2c86f6fe288cd88f847e81e9a27b4bfa",
+        "runtime/cache_control_shim.py": "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1"
+      },
+      "after": {
+        "bench/opencode/roundtrip.py": "32f4824e1193173b325ea29a8a7cdbcce89288dea323240e8cef20b114bf36f5",
+        "tests/fixtures/opencode/tool_fixture.py": "2d686c853c3b87c407fef28762d936aea3c30138c57a03218b5de85b33ab9744",
+        "tests/fixtures/opencode/test_tool_fixture.py": "b4a91aba0b5a0a8a436994ff2d0c1faa07ed4b5aba1e98a80569bbfc0a310e19",
+        "bench/claude/roundtrip.py": "d22ac395c98c361a0f1560e0fd49f6b67b4a752b7fdc7300d6e81f069d60f251",
+        "tests/fixtures/claude/tool_fixture.py": "56d4376da7051f2314a9189b9dfd8dbf7bac8d7f9d1b26843196365ac5d40695",
+        "bench/optimization/replay.py": "e24e850f7beb486c636df573ca12f916919bf4b8a1fa74b68606d812a0e09811",
+        "bench/optimization/fixtures.py": "a08490955153c731fd0210748456cede7f9778977fb86963f092597d7f5baa2d",
+        "runtime/manifest.json": "4217e8f67946c96caa028e0a0d4e9a41e2e6894e4cafcd7e23adb00ad7cd1c03",
+        "runtime/desktop_controller.py": "42c0cee4b0a52b0959449510003f01198cb1a006fb052cc9e12e394b873c3b5e",
+        "runtime/desktop_helper.py": "56cfb1523bfa54b848b50aa4bd649cc4674e7005ea57e0fc8f970850123a0cc2",
+        "runtime/optimization_control.py": "972c0e60fb791fb9ccd27167e561bf31cef735da88e3423b0e607b2205c8a283",
+        "runtime/optimization-sources.json": "f96b93d2c574a2155012c7e587aaed2a2c86f6fe288cd88f847e81e9a27b4bfa",
+        "runtime/cache_control_shim.py": "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1"
+      },
+      "evidence": {
+        "path": "work/proofs/opencode-tools/runs/732cb0fe-23a1-4d03-909b-da5e9c69cba3/result.json",
+        "sha256": "57e2594750e7f511785d9b6c07a336d796ecd055b98afb76844fa3f4ad7b9fd2"
+      }
+    }
+  ],
+  "focused_tests": 5,
+  "boundary_tests": 3,
+  "focused_proof": {
+    "path": "work/proofs/opencode-tools/focused-0ad1e0b7/result.json",
+    "sha256": "36fdb19cf02bfdc0ccf896a6b1c9327f623b7bd0cf3abd4a16ec4ea0f44eb07a"
+  },
+  "boundary_proof": {
+    "path": "work/proofs/opencode-tools/boundaries-c7d70938.json",
+    "sha256": "ce9c73b6870c9a0a296f0b8aa83e6b177e47eab67d3518e4b5a99223ed0181c3"
+  },
+  "reused_rust_gate": {
+    "path": "work/proofs/windows-engine-crash/quality-28623d163c/final.json",
+    "sha256": "0b60834207f7748aaa504ae0e63b4e576a230d5d87aa646471f95d2a5bac375a"
+  },
+  "reused_frontend_gate": {
+    "path": "work/proofs/windows-engine-crash/quality-28623d163c/reuse.json",
+    "sha256": "270c6c34cfecbac963e0c2051c258c5035438c3d01ecff40a6bc8d89c8ed22cc"
+  },
+  "old_product_gate_inputs_match": true,
+  "tools_before": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0"
+  },
+  "tools_after": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0"
+  },
+  "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "sources": {
+    "commit": "e3c4eb242585dcd77be1a867391b7c25fd47ce52",
+    "files": {
+      "mcp-config.ts": {
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/core/src/v1/config/mcp.ts",
+        "bytes": 3219,
+        "sha256": "7993ec591f75a42fc2763e5d22de20c7b216d73cb944e03c6729ecfa331072a9"
+      },
+      "mcp-index.ts": {
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/opencode/src/mcp/index.ts",
+        "bytes": 37745,
+        "sha256": "82c459309dfd005d25daecfabc1007d807d4bee23f6078434974277938a1c026"
+      },
+      "mcp-catalog.ts": {
+        "url": "https://raw.githubusercontent.com/anomalyco/opencode/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/opencode/src/mcp/catalog.ts",
+        "bytes": 5834,
+        "sha256": "1123ce304cd647e0945aa98743f411a69988f6dde63867aea78b74c72a5abe11"
+      }
+    }
+  },
+  "source_manifest": {
+    "path": "work/research/h010-mcp/manifest.json",
+    "sha256": "84c875e2eda2a5400cc0b7aa8126d9e410452269468ebb8d533b82c2edc7c32b"
+  },
+  "verifier_before_sha256": "fcd9d9ace8b311b56ecd1ab7aee7f6173aa0567c3b008f2f767345dcfca9f75d",
+  "verifier_after_sha256": "fcd9d9ace8b311b56ecd1ab7aee7f6173aa0567c3b008f2f767345dcfca9f75d",
+  "negative_baselines": [
+    {
+      "protocol": "chat",
+      "evidence": {
+        "path": "work/proofs/opencode-tools/runs/9519a08f-1a46-405b-9bbd-55bbcf42bba9/result.json",
+        "sha256": "21675aae41cbfdd7649ce24fe64ca71154e7e151ee7e7259234a5432af44a554"
+      },
+      "status": "failed_without_retrieval_bridge",
+      "reason": "Streaming Chat intentionally does not auto-inject a CCR tool or run server continuation"
+    },
+    {
+      "protocol": "responses",
+      "evidence": {
+        "path": "work/proofs/opencode-tools/runs/f46496df-142a-44ab-b215-24c2b45e1f5a/result.json",
+        "sha256": "4b54c3ee00c1a0751f0c95cc1ab276c5bfca3e4321d54f9d3d4199e4888d985b"
+      },
+      "status": "failed_without_retrieval_declaration",
+      "reason": "Responses buffers/handles a registered CCR tool; these native requests did not contain one"
+    }
+  ],
+  "limits": [
+    "The desktop connection manager does not yet install this MCP bridge; endpoint-only setup is not accepted for tool/CCR coverage",
+    "Test-only local Python MCP bridge, not a shipped addon or a production client configuration change",
+    "Single positive loop per protocol; no live auth/provider/model quality/subagents/TUI/Desktop/other OS acceptance",
+    "Native CLI asks for streaming; buffered Responses continuation is not a first-token latency proof",
+    "14999->103 is one tool block byte reduction; token and provider cost savings were not measured",
+    "HF/transformers offline, loopback test targets, no packet capture; not a total-network claim",
+    "Empty protected-tool test list; source/numeric Read protection was not retested"
+  ],
+  "next_required_product_work": "Extend the owned OpenCode connection plan/receipt to manage a pinned retrieval MCP bridge with preview, atomic conflict-preserving Apply/Undo, then native UI-to-client verification"
+}
