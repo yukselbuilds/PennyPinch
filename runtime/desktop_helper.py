@@ -23,6 +23,7 @@ PROFILE_ENV = {
     "HEADROOM_LOG_MESSAGES": "off",
     "HEADROOM_LOG_LEVEL": "info",
     "HEADROOM_UPDATE_CHECK": "off",
+    "LITELLM_LOCAL_MODEL_COST_MAP": "True",
     "HEADROOM_MODE": "cache",
     "HEADROOM_SAVINGS_PROFILE": "coding",
     "HEADROOM_OUTPUT_SHAPER": "0",
@@ -33,7 +34,7 @@ PROFILE_ENV = {
     "HEADROOM_KOMPRESS_WARMUP": "0",
 }
 SHIM_MARKER = re.compile(
-    rb"headroom-desktop-cache-shim:version=(0\.41\.0);prefix_sha256=([0-9a-f]{64});shim_sha256=([0-9a-f]{64})"
+    rb"headroom-desktop-cache-shim:version=(0\.44\.0);prefix_sha256=([0-9a-f]{64});shim_sha256=([0-9a-f]{64})"
 )
 ROUTER_MARKER = b"headroom-desktop-model-router:disabled"
 CONTROL_MARKER = re.compile(rb"headroom-desktop-optimization-control:module_sha256=([0-9a-f]{64});sources_sha256=([0-9a-f]{64})")

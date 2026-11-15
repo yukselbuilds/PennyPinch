@@ -215,7 +215,7 @@ def stage(payload_root: Path, output_root: Path) -> dict:
     manifest = {
         "schema_version": 1,
         "platform": "darwin-arm64",
-        "engine_version": "0.41.0",
+        "engine_version": "0.44.0",
         "python_version": "3.13.13",
         "dependency_lock_sha256": lock_hash,
         "python": "python/bin/python3.13",

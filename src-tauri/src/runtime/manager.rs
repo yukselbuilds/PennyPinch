@@ -127,11 +127,11 @@ fn startup_diagnostic_for_test() -> StartupDiagnostic {
         .unwrap_or_default()
 }
 
-pub(crate) const EXPECTED_ENGINE_VERSION: &str = "0.41.0";
+pub(crate) const EXPECTED_ENGINE_VERSION: &str = "0.44.0";
 const EXPECTED_MANIFEST_SHA256: &str =
-    "7131cfd462f6a8f981e5a716dbaaeb85f55b99131d4617ea7b4203d0d7d7fb41";
+    "04015ebccbeb0328bbf04a52b50396ead85c2f7567ab7287c2e94257fb742a53";
 const EXPECTED_WINDOWS_MANIFEST_SHA256: &str =
-    "3b24d6a5f78099adfe8c47d2be54e00377d0071241537b18fdd015148933b122";
+    "41a684c1518c0a8bbe248b5a0f8e508b45d343f783ab8f1d3468e77ef840d24f";
 pub(crate) const ACTIVE_MANIFEST: &str = if cfg!(debug_assertions) {
     include_str!("../../../runtime/manifest.json")
 } else {
@@ -143,26 +143,26 @@ const ACTIVE_MANIFEST_SHA256: &str = if cfg!(debug_assertions) {
     EXPECTED_WINDOWS_MANIFEST_SHA256
 };
 const EXPECTED_CONTROLLER_SHA256: &str =
-    "2a64f2d3d84e3e329d53cc952e072733e286fea57daacf998645d02972e37ee2";
+    "78e107bfb59d90562718da4047f9274172bc52f04110f47a0caa60b577c3d094";
 const EXPECTED_HELPER_SHA256: &str =
-    "56cfb1523bfa54b848b50aa4bd649cc4674e7005ea57e0fc8f970850123a0cc2";
+    "0fa23e60d7b4191d44dc672d216da80d80338423a2c1a0360bae2bee0b4b2249";
 #[cfg(windows)]
 const EXPECTED_RETRIEVAL_BRIDGE_SHA256: &str =
     "163a28b73967782668f557ae509c45b55c63087eb4523ba7a294aaf9839a3b5a";
 const EXPECTED_SHIM_SHA256: &str =
-    "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1";
+    "9e47ad68053289d7d02ec942927d5f0c2d14e9d09a867333211f24646f371a8b";
 const EXPECTED_OPTIMIZATION_SHA256: &str =
-    "392317eeb2f35c46c5be1608df2882d2bcc5b34e66a5597823ddc84a8a9d722e";
+    "92d45f649ea3ee7f5721cf449611ea3ca39744e2e2945757e7f11de506ab27c8";
 const EXPECTED_OPTIMIZATION_SOURCES_SHA256: &str =
-    "8eedd3b022dafb27bf472949a66a4d3081509fc57d77b046fb52c56245ecc2f0";
+    "68ace0cc74dca64e98eedc1879ae4675d2a57347037dacab87c7b5aca6c4224f";
 pub(crate) const EXPECTED_RUNTIME_MANIFEST_SHA256: &str =
-    "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908";
+    "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe";
 const EXPECTED_RUNNER_SHA256: &str =
-    "bf887b6f783f4385debc84836353340f39e3773433782305376a3247be0f4ac1";
+    "86de03a4eca728c108a12293b498b0012890812aa490e9f2fd516550455ff5ee";
 const EXPECTED_PYTHON_SHA256: &str =
     "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07";
 const EXPECTED_PREFIX_SHA256: &str =
-    "f1af4ee279f879efc48ddfebbff125a088893bb64ee960ca2dbd4ad1cdb628ee";
+    "29c7d63d8b63ed3dc4906bd3762ff672f5941947f8f8803180c5d1f13a8bbec0";
 const EXPECTED_PYTHON_VERSION: &str = "3.13.13";
 const EXPECTED_SITE_PACKAGES: &str = "Lib/site-packages";
 const EXPECTED_RUNNER: &str = "headroom_runtime.py";
@@ -3709,7 +3709,7 @@ mod metrics_actor_tests {
                 let projection = crate::metrics::normalize::project_headroom_041(
                     br#"{"recent_requests":[]}"#,
                     generation,
-                    "0.41.0",
+                    "0.44.0",
                     crate::metrics::normalize::Source::Proxy,
                 )
                 .unwrap();

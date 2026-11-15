@@ -1,3 +1,7 @@
+use crate::runtime::manager::{
+    EXPECTED_ENGINE_VERSION as ENGINE_VERSION,
+    EXPECTED_RUNTIME_MANIFEST_SHA256 as RUNTIME_MANIFEST_SHA256,
+};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::fs::{self, File, OpenOptions};
@@ -11,9 +15,6 @@ use uuid::Uuid;
 const SCHEMA_VERSION: u8 = 1;
 const MAX_STATE_BYTES: u64 = 4096;
 const MAX_SAFE_REVISION: u64 = 9_007_199_254_740_991;
-const ENGINE_VERSION: &str = "0.41.0";
-const RUNTIME_MANIFEST_SHA256: &str =
-    "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908";
 const MODE: &str = "cache";
 const SAVINGS_PROFILE: &str = "coding";
 const CCR_TTL_SECONDS: u64 = 7200;
@@ -164,7 +165,17 @@ impl RuntimeManifestReference {
     }
 
     fn matches_pin(&self) -> bool {
-        self == &Self::pinned()
+        self == &Self::pinned() || self == &Self::storage_compatible()
+    }
+
+    fn storage_compatible() -> Self {
+        // Keep the preference document readable by the previous app on rollback.
+        Self {
+            engine_version: "0.41.0".to_owned(),
+            manifest_sha256: "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908"
+                .to_owned(),
+            ..Self::pinned()
+        }
     }
 }
 
@@ -183,7 +194,7 @@ impl StoredDocument {
             schema_version: SCHEMA_VERSION,
             revision: 0,
             preferences: UserPreferences::default(),
-            runtime_manifest: RuntimeManifestReference::pinned(),
+            runtime_manifest: RuntimeManifestReference::storage_compatible(),
         }
     }
 
@@ -345,7 +356,7 @@ impl PreferenceStore {
                 show_recommendations: show_recommendations
                     .unwrap_or(current.document.preferences.show_recommendations),
             },
-            runtime_manifest: RuntimeManifestReference::pinned(),
+            runtime_manifest: RuntimeManifestReference::storage_compatible(),
         };
         match save_document(location, &next, current.fingerprint.as_deref(), &self.inner) {
             Ok(fingerprint) => snapshot_reply(request_id, next, Some(fingerprint)),
@@ -917,7 +928,7 @@ fn snapshot_reply(
         revision: document.revision,
         state_fingerprint,
         preferences: document.preferences,
-        runtime_manifest: document.runtime_manifest,
+        runtime_manifest: RuntimeManifestReference::pinned(),
     })
 }
 

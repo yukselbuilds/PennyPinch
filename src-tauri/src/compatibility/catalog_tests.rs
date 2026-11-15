@@ -137,7 +137,7 @@ fn compatibility_snapshot_is_read_only_and_never_claims_an_installed_auth_sessio
         assert_eq!(value["automatic_updates"], false);
         assert_eq!(value["updater_available"], false);
         assert_eq!(value["channel"], "development");
-        assert_eq!(value["engine"]["pinned_version"], "0.41.0");
+        assert_eq!(value["engine"]["pinned_version"], "0.44.0");
         assert!(value["scan_generation"].is_null());
         assert!(value["context_fingerprint"].is_null());
         assert!(value["installations"].as_array().unwrap().is_empty());

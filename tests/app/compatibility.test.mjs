@@ -24,7 +24,7 @@ test('compatibility rejects forged scope, stale matches, unsafe evidence and inv
  const changes=[v=>{v.request_id='wrong';},v=>{v.raw_error='private';},v=>{v.automatic_updates=true;},v=>{v.engine.active_version='0.42.0';},
   v=>{v.records[0].evidence=['../../secret'];},v=>{v.records[0].evidence_date='2026-11-31';},v=>{v.records[1].id=v.records[0].id;},
   v=>{v.records.find(r=>r.evidence_status==='live_verified').auth_method='synthetic';},v=>{v.installations[0].freshness='stale';},
-  v=>{v.installations[0].version='0.167.0';},v=>{v.installations[0].client_kind='claude_code';},v=>{v.scan_generation=null;},
+  v=>{v.installations[0].version='0.167.0';v.installations[0].historical_evidence_ids.push('codex-cli-0166-chatgpt-win10-native-wait');},v=>{v.installations[0].client_kind='claude_code';v.installations[0].historical_evidence_ids.push('codex-cli-0166-chatgpt-win10-native-wait');},v=>{v.scan_generation=null;},
   v=>{v.adapters[1].client_kind='codex';},v=>{v.installations[0].historical_evidence_ids.push('missing');},v=>{v.installations[0].config_supported=false;v.installations[0].config_state='matches_owned_endpoint';},v=>{v.records[0].capability_counts[0].count=0;},v=>{v.records[0].capability_counts[0].status='all_verified';}];
  for(const change of changes){const value=compatibilitySnapshot(id);change(value);assert.equal(decodeCompatibilitySnapshot(value,id),null);}
 });

@@ -110,7 +110,7 @@ class MacOSRuntimeStageTests(unittest.TestCase):
         )
         self.assertEqual(manifest["schema_version"], 1)
         self.assertEqual(manifest["platform"], "darwin-arm64")
-        self.assertEqual(manifest["engine_version"], "0.41.0")
+        self.assertEqual(manifest["engine_version"], "0.44.0")
         self.assertEqual(manifest["python_version"], "3.13.13")
         self.assertEqual(manifest["dependency_lock_sha256"], lock_hash)
         self.assertEqual(manifest["python"], "python/bin/python3.13")

@@ -8,15 +8,24 @@ parser=argparse.ArgumentParser();parser.add_argument('--write',action='store_tru
 manifest_path=ROOT/'runtime/manifest.json';controller_path=ROOT/'runtime/desktop_controller.py';manager_path=ROOT/'src-tauri/src/runtime/manager.rs'
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 source_path=ROOT/'runtime/optimization-sources.json';control_path=ROOT/'runtime/optimization_control.py'
-manifest=json.loads(manifest_path.read_text(encoding='utf-8'));assert manifest['engine']['version']=='0.41.0'
+manifest=json.loads(manifest_path.read_text(encoding='utf-8'));assert manifest['engine']['version']=='0.44.0'
 package=(manifest_path.parent/manifest['engine']['payload_root']/'Lib/site-packages/headroom').resolve();assert package.is_relative_to(ROOT)
 expected=json.loads(source_path.read_text(encoding='utf-8'))
 assert expected and all((package/p).is_file() and sha(package/p)==h for p,h in expected.items())
 control_hash=sha(control_path);source_hash=sha(source_path)
-target_manifest={**manifest,'optimization_control':{'file':'optimization_control.py','sha256':control_hash,'sources':'optimization-sources.json','sources_sha256':source_hash}}
+target_manifest={**manifest,
+ 'shim':{'file':'cache_control_shim.py','sha256':sha(ROOT/'runtime/cache_control_shim.py')},
+ 'optimization_control':{'file':'optimization_control.py','sha256':control_hash,'sources':'optimization-sources.json','sources_sha256':source_hash}}
 def replace(text,pattern,replacement):
  out,count=re.subn(pattern,lambda m:replacement(m),text);assert count==1;return out
 controller=controller_path.read_text(encoding='utf-8')
+engine=manifest['engine']
+controller_pins={'engine_name':engine['name'],'engine_version':engine['version'],
+ 'shim_sha256':target_manifest['shim']['sha256'],
+ **{key:engine[key] for key in ('runtime_manifest_sha256','runner_sha256','python_version',
+                              'python_sha256','site_packages','prefix_tracker_sha256')}}
+for key,value in controller_pins.items():
+ controller=replace(controller,rf'("{key}":\s*")[^"]+("\s*,)',lambda m:m[1]+value+m[2])
 controller=replace(controller,r'("optimization_sha256":\s*")[^"]+("\s*,)',lambda m:m[1]+control_hash+m[2])
 controller=replace(controller,r'("optimization_sources_sha256":\s*")[^"]+("\s*,)',lambda m:m[1]+source_hash+m[2])
 windows_manifest={**target_manifest,'engine':{**target_manifest['engine'],'payload_root':'payload'}}
@@ -26,8 +35,14 @@ pins={'EXPECTED_MANIFEST_SHA256':hashlib.sha256(updates[manifest_path]).hexdiges
  'EXPECTED_WINDOWS_MANIFEST_SHA256':hashlib.sha256(updates[ROOT/'runtime/manifest.windows.json']).hexdigest(),
  'EXPECTED_CONTROLLER_SHA256':hashlib.sha256(updates[controller_path]).hexdigest(),
  'EXPECTED_HELPER_SHA256':sha(ROOT/'runtime/desktop_helper.py'),
+ 'EXPECTED_SHIM_SHA256':target_manifest['shim']['sha256'],
  'EXPECTED_RETRIEVAL_BRIDGE_SHA256':sha(ROOT/'runtime/retrieval_bridge.py'),
- 'EXPECTED_OPTIMIZATION_SHA256':control_hash,'EXPECTED_OPTIMIZATION_SOURCES_SHA256':source_hash}
+ 'EXPECTED_OPTIMIZATION_SHA256':control_hash,'EXPECTED_OPTIMIZATION_SOURCES_SHA256':source_hash,
+ 'EXPECTED_ENGINE_VERSION':engine['version'],
+ 'EXPECTED_RUNTIME_MANIFEST_SHA256':engine['runtime_manifest_sha256'],
+ 'EXPECTED_RUNNER_SHA256':engine['runner_sha256'],
+ 'EXPECTED_PYTHON_SHA256':engine['python_sha256'],
+ 'EXPECTED_PREFIX_SHA256':engine['prefix_tracker_sha256']}
 manager=manager_path.read_text(encoding='utf-8')
 for name,value in pins.items():manager=replace(manager,rf'(const {name}:\s*&str\s*=\s*")[^"]+(";)',lambda m:m[1]+value+m[2])
 original_manager=manager_path.read_bytes();updates[manager_path]=manager.replace('\r\n','\n').replace('\n','\r\n').encode() if b'\r\n' in original_manager else manager.encode()

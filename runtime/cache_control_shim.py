@@ -1,4 +1,4 @@
-"""Narrow, pinned workaround for Headroom 0.41.0's legacy cache marker."""
+"""Narrow, pinned workaround for Headroom 0.44.0's legacy cache marker."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Any, Callable
 
 
-EXPECTED_VERSION = "0.41.0"
-EXPECTED_PREFIX_TRACKER_SHA256 = "f1af4ee279f879efc48ddfebbff125a088893bb64ee960ca2dbd4ad1cdb628ee"
+EXPECTED_VERSION = "0.44.0"
+EXPECTED_PREFIX_TRACKER_SHA256 = "29c7d63d8b63ed3dc4906bd3762ff672f5941947f8f8803180c5d1f13a8bbec0"
 
 # These are documented Anthropic Messages block types. Any other type is
 # treated as opaque so the engine-generated legacy marker cannot mutate it.

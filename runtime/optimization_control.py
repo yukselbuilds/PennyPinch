@@ -420,7 +420,7 @@ def install(generation: str, secret: str) -> dict[str, str]:
 
     root = Path(server.__file__).resolve().parents[1]
     expected = json.loads(Path(__file__).with_name("optimization-sources.json").read_text(encoding="utf-8"))
-    if headroom._version.__version__ != "0.41.0" or any(hashlib.sha256((root / p).read_bytes()).hexdigest() != h for p, h in expected.items()):
+    if headroom._version.__version__ != "0.44.0" or any(hashlib.sha256((root / p).read_bytes()).hexdigest() != h for p, h in expected.items()):
         raise RuntimeError("optimization-source-mismatch")
     if len(generation) != 32 or len(secret) != 32 or any(c not in "0123456789abcdef" for c in generation + secret) or int(generation, 16) == 0 or int(secret, 16) == 0:
         raise RuntimeError("optimization-control-invalid")
@@ -518,6 +518,6 @@ def install(generation: str, secret: str) -> dict[str, str]:
     openai.OpenAIHandlerMixin._compress_openai_responses_payload = payload
     openai.OpenAIHandlerMixin._compress_openai_responses_payload_in_executor = executor
     server.create_app = create
-    return {"active": "true", "version": "0.41.0", "source_sha256": hashlib.sha256(_encoded(expected)).hexdigest(),
+    return {"active": "true", "version": "0.44.0", "source_sha256": hashlib.sha256(_encoded(expected)).hexdigest(),
             "module_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             "sources_sha256": hashlib.sha256(Path(__file__).with_name("optimization-sources.json").read_bytes()).hexdigest()}

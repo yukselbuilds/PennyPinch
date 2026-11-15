@@ -146,7 +146,7 @@ def run(args):
     if len(manifest_bytes) > 16 * 1024 * 1024 or hashlib.sha256(manifest_bytes).hexdigest() != args.manifest_sha256:
         raise StartupError("runtime_manifest_changed")
     manifest = json.loads(manifest_bytes, object_pairs_hook=unique_keys)
-    if manifest["engine_version"] != "0.41.0" or manifest["python_version"] != "3.13.13":
+    if manifest["engine_version"] != "0.44.0" or manifest["python_version"] != "3.13.13":
         raise StartupError("runtime_pin_mismatch")
     request = start_request(sys.stdin.buffer)
     threading.Thread(target=watch_parent, args=(sys.stdin.buffer,), daemon=True).start()
@@ -156,7 +156,7 @@ def run(args):
     site.addsitedir(str(payload / "site-packages"))
     from importlib.metadata import version
 
-    if version("headroom-ai") != "0.41.0":
+    if version("headroom-ai") != "0.44.0":
         raise StartupError("engine_version_mismatch")
     os.environ.update({
         "HOME": str(state / "home"),
@@ -171,6 +171,7 @@ def run(args):
         "HEADROOM_BEACON": "off",
         "HEADROOM_LOG_MESSAGES": "off",
         "HEADROOM_UPDATE_CHECK": "off",
+        "LITELLM_LOCAL_MODEL_COST_MAP": "True",
         "HEADROOM_MODEL_ROUTER_ENABLED": "0",
         "HEADROOM_OUTPUT_SHAPER": "0",
         "HEADROOM_PROTECT_TOOL_RESULTS": ",".join(request["protected_tools"]),
@@ -183,7 +184,7 @@ def run(args):
     if ModelRouterConfig.from_env("0", None).enabled:
         raise StartupError("model_router_enabled")
     shim = cache_control_shim.install()
-    if shim.get("active") != "true" or shim.get("version") != "0.41.0":
+    if shim.get("active") != "true" or shim.get("version") != "0.44.0":
         raise StartupError("cache_shim_inactive")
     optimization_control.install(request["generation"], request["secret"])
     install_private_dashboard(request["secret"])

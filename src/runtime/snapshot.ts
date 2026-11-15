@@ -25,7 +25,7 @@ export interface RuntimeSnapshot {
   snapshot_id: string;
   observed_at_utc: string;
   runtime_generation: string | null;
-  engine_version: "0.41.0" | null;
+  engine_version: "0.44.0" | null;
   engine: { status: EngineStatus; error_code: PublicErrorCode | null };
   compression: { status: CompressionStatus; active_stream_count: null; revision:number|null };
   discovery: { status: DiscoveryStatus; clients: [] };
@@ -112,10 +112,10 @@ export function decodeSnapshot(value: unknown, expectedRequestId: string): Runti
   const engineStatus = value.engine.status;
   const engineError = value.engine.error_code;
   if ((generation !== null && !isGeneration(generation)) ||
-      (engineVersion !== null && engineVersion !== "0.41.0") ||
+      (engineVersion !== null && engineVersion !== "0.44.0") ||
       (engineError !== null && !isPublicErrorCode(engineError)) || !isEngineStatus(engineStatus)) return null;
   const hasGeneration = isGeneration(generation);
-  const hasEngineVersion = engineVersion === "0.41.0";
+  const hasEngineVersion = engineVersion === "0.44.0";
   if (hasGeneration !== hasEngineVersion || value.capabilities.stop !== hasGeneration) return null;
   if ((engineStatus === "stopped" || engineStatus === "unavailable" || engineStatus === "starting") && hasGeneration) return null;
   if ((engineStatus === "ready" || engineStatus === "stopping") && !hasGeneration) return null;

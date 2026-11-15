@@ -4,11 +4,12 @@ from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2];assert Path.cwd().resolve()==ROOT
 BASE=ROOT/'work/proofs/pause';run=BASE/'runs'/str(uuid.uuid4());run.mkdir(parents=True)
-runtime=ROOT/'work/proofs/packaging/artifacts/headroom-engine/runtime';python=runtime/'python.exe'
+manifest_path=ROOT/'runtime/manifest.json'
+runtime=(manifest_path.parent/json.loads(manifest_path.read_bytes())['engine']['payload_root']).resolve();python=runtime/'python.exe'
 generation=uuid.uuid4().hex;secret=uuid.uuid4().hex;SENTINEL='headroom-local-nonfunctional-test'
-module_path=ROOT/'work/proofs/packaging/headroom_runtime.py'
+module_path=runtime/'headroom_runtime.py'
 spec=importlib.util.spec_from_file_location('pause_owned_helper',module_path);helper=importlib.util.module_from_spec(spec);spec.loader.exec_module(helper)
-sources=[ROOT/'runtime/optimization_control.py',ROOT/'runtime/optimization-sources.json',ROOT/'runtime/cache_control_shim.py',Path(__file__),module_path,python]
+sources=[manifest_path,ROOT/'runtime/optimization_control.py',ROOT/'runtime/optimization-sources.json',ROOT/'runtime/cache_control_shim.py',Path(__file__),module_path,python]
 package=runtime/'Lib/site-packages/headroom';sources += [package/p for p in json.loads((ROOT/'runtime/optimization-sources.json').read_text())]
 fingerprint=lambda:{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}
 before=fingerprint();captured={};lock=threading.Lock();entered=threading.Event();release=threading.Event()

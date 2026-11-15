@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041 — 0.44.0 Windows paket geçişi tamamlandı
+
+- Ana ajan paket, süreç ve veri uyumunu üstlendi. Sürümlü yeni motor kökü, bağımlılık kilidi, kaynak haritası ve Windows/macOS pinleri 0.44.0’a taşındı. Başlangıçta paket içindeki fiyat haritası kullanılır. Önceki tercih dosyası okuma sırasında korunur. Yeni kayıt, önceki uygulamanın geri alma sonrasında okuyabileceği biçimdedir. Eski ölçüm satırları kabul edilir.
+- Windows 10’da 465 Rust ve 223 frontend testi, dört Learn durumu, 88 Codex launcher kontrolü ve altı Anthropic kullanım senaryosu geçti. Gerçek pencerenin Başlat/Duraklat/Devam/Durdur, yerel SSE ve Learn dosya seçimi kabul edildi. Yeni paketle yedi geri getirme köprüsü testi geçti; gerçek stdio süreci, özgün içerik ve Windows sahiplik denetimleri korundu. Paketli motor ayrı Unicode state kökünde hazır oldu ve normal kapandı. NSIS kurucusu üretildi. Bildirimdeki eski sürüm ve lisans yolu düzeltildi. [Kanıt](proofs/headroom-044-upgrade.json).
+- macOS kaynakları ve CI pinleri hazırlandı. 45 portable testte 35 başarı ve Windows’ta 10 native/symlink atlaması var. Kilitli bağımlılık dışa aktarımı geçti. **45/54.** Yeni native macOS, Windows 11 ve temiz işletim sistemi kabulleri açık. Paket geçişinin macOS alt maddesi TASKS’ta açık tutuldu. GitHub gönderimi son bağlantı denemelerinde zaman aşımına uğradı. Bu dilimde ücretli model veya CI koşusu başlatılmadı.
+
 ## H041 — Headroom 0.44.0 aday karşılaştırması tamamlandı
 
 - Ana ajan paket ve ölçüm sözleşmesini üstlendi. 0.44.0, ayrı lock ve geçici Windows paketiyle sınandı. Etkin 0.41.0 denetleyicisi yeni paketi pin uyuşmazlığıyla reddetti. Deneme paketi için dokuz bağımlı motor kaynağının sekizinde SHA-256 değişti. Açılışta fiyat tablosunun ağdan alınması gecikmeye yol açtı. Eşlenmiş karşılaştırmada iki sürüm de paket içindeki LiteLLM fiyat haritasını kullandı.

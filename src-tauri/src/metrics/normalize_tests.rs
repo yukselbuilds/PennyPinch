@@ -38,6 +38,18 @@ fn metrics_empty_is_not_zero_savings() {
 }
 
 #[test]
+fn current_and_previous_engine_stats_preserve_the_same_measurement_basis() {
+    let raw = br#"{"recent_requests":[{"request_id":"fixture","timestamp":"2026-11-16T12:00:00Z","input_tokens_original":100,"input_tokens_optimized":80,"cost_usd":12.5}]}"#;
+    let previous = project_headroom_041(raw, GENERATION, "0.41.0", Source::Proxy).unwrap();
+    let current = project_headroom_041(raw, GENERATION, "0.44.0", Source::Proxy).unwrap();
+    assert_eq!(
+        serde_json::to_value(&previous.batch).unwrap(),
+        serde_json::to_value(&current.batch).unwrap()
+    );
+    assert!(current.batch.events[0].saved_tokens.is_none());
+}
+
+#[test]
 fn owned_provider_usage_requires_exact_identity_and_sums_every_successful_attempt() {
     use serde_json::json;
     let stats = json!({"recent_requests":[

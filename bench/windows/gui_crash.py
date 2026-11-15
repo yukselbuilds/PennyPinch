@@ -307,7 +307,7 @@ try:
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         with opener.open(f"http://127.0.0.1:{engine_port}/readyz", timeout=2) as response:
             ready = json.loads(response.read(4096))
-        assert ready.get("version") == "0.41.0", "engine_version_changed"
+        assert ready.get("version") == "0.44.0", "engine_version_changed"
         witness()
         stage = phase + "_observe"
         row = {"phase": phase, "gui_pid": process.pid, "engine_process_ids": [pid for pid, _ in handles],

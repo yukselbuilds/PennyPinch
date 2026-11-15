@@ -7,7 +7,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-PAYLOAD = ROOT / "work/proofs/packaging/artifacts/headroom-engine/runtime"
+MANIFEST = ROOT / "runtime/manifest.json"
+PAYLOAD = (MANIFEST.parent / json.loads(MANIFEST.read_text(encoding="utf-8"))["engine"]["payload_root"]).resolve()
 PYTHON = PAYLOAD / "python.exe"
 SCRIPT = (ROOT / "runtime/learn_preview.py").read_text(encoding="utf-8")
 PRIVATE = "SYNTHETIC_PRIVATE_COMMAND_OR_PATH_67a0"

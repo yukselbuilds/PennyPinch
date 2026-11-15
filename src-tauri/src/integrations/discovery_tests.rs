@@ -271,7 +271,18 @@ fn compatibility_updated_installation_requires_revalidation_without_global_versi
     assert_eq!(first["installations"][0]["config_supported"], true);
     assert_eq!(
         first["installations"][0]["historical_evidence_ids"],
-        serde_json::json!(["codex-cli-responses-api-fixture"])
+        serde_json::json!([])
+    );
+    let historical = first["records"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["id"] == "codex-cli-responses-api-fixture")
+        .unwrap();
+    assert_eq!(historical["engine_version"], "0.41.0");
+    assert_eq!(
+        first["engine"]["pinned_version"],
+        crate::runtime::manager::EXPECTED_ENGINE_VERSION
     );
     write_file(
         &binary,

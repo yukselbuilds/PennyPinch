@@ -6,8 +6,8 @@
   "version": "0.1.1-rc.1",
   "notes": "Yerel imza örneği.",
   "engine": {
-    "version": "0.41.0",
-    "runtime_manifest_sha256": "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908"
+    "version": "0.44.0",
+    "runtime_manifest_sha256": "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe"
   },
   "installer": {
     "size_bytes": 39,

@@ -239,7 +239,7 @@ def _validate_manifest(data, expected_digest, payload_snapshot, overlay_snapshot
     if (
         type(manifest["schema_version"]) is not int or manifest["schema_version"] != 1
         or manifest["platform"] != "darwin-arm64"
-        or manifest["engine_version"] != "0.41.0"
+        or manifest["engine_version"] != "0.44.0"
         or manifest["python_version"] != "3.13.13"
         or manifest["python"] != "python/bin/python3.13"
         or manifest["site_packages"] != "site-packages"

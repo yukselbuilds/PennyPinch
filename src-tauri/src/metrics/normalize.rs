@@ -664,7 +664,12 @@ pub(crate) fn project_owned_headroom_041(
                 && snapshot.records.len() <= 64
         });
     let Some(snapshot) = snapshot else {
-        return project_headroom_041(payload, runtime_generation, "0.41.0", Source::Proxy);
+        return project_headroom_041(
+            payload,
+            runtime_generation,
+            crate::runtime::manager::EXPECTED_ENGINE_VERSION,
+            Source::Proxy,
+        );
     };
     let mut usage = BTreeMap::new();
     for record in snapshot.records {
@@ -676,7 +681,13 @@ pub(crate) fn project_owned_headroom_041(
                 .or_insert(totals);
         }
     }
-    project_headroom(payload, runtime_generation, "0.41.0", Source::Proxy, &usage)
+    project_headroom(
+        payload,
+        runtime_generation,
+        crate::runtime::manager::EXPECTED_ENGINE_VERSION,
+        Source::Proxy,
+        &usage,
+    )
 }
 
 fn project_headroom(
@@ -686,7 +697,7 @@ fn project_headroom(
     source: Source,
     usage: &BTreeMap<String, ProviderUsage>,
 ) -> Result<EngineProjection, NormalizeError> {
-    if engine_version != "0.41.0" {
+    if !matches!(engine_version, "0.41.0" | "0.44.0") {
         return Err(NormalizeError::UnsupportedEngineVersion);
     }
     generation(runtime_generation)?;

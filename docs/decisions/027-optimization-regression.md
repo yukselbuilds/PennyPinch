@@ -61,13 +61,21 @@ Windows 10 yerel kabulünde gerçek sahipli motor, Rust ölçüm okuyucusu, SQLi
 
 0.44.0’ın kayıpsız `/v1/compress` çağrısında dosya listesi ve arama çıktısı sırası ve son satırları dahil birebir geri açıldı. Korumalı sayısal ve HTML örnekleri birebir döndü. Bu ölçüm sentetik mesajların yerel token karşılaştırmasıdır. Kaynakta yeni `recent_requests.cost_usd` liste fiyatı tahmini olarak hesaplanır. [Maliyet hesabı](https://github.com/headroomlabs-ai/headroom/blob/v0.44.0/headroom/proxy/cost.py#L548-L581) · [Ölçüm](../proofs/headroom-044-candidate.json).
 
-0.44.0, Windows/macOS paket ve sürüm pinlerinin geçirilmesi için adaydır. Etkin sürüm 0.41.0. Gerçek görevlerde kalite ve net token faydası, temiz işletim sistemi ile yayın kabulü açık.
+Karşılaştırma sırasında etkin sürüm 0.41.0’dı. 0.44.0 Windows paket geçişi ve kaynak pinleri sonrasında yerelde doğrulandı. macOS kaynak hazırlığı tamam. Native macOS, gerçek görevlerde kalite ve net token faydası, temiz işletim sistemi ile yayın kabulü açık. [Geçiş kanıtı](../proofs/headroom-044-upgrade.json).
+
+#### Paket geçişinin kabulü
+
+Geçiş, proje içindeki sürümlü Windows kaynak ve çıktı köklerini kullanır. Önceki motor paketi ve kanıtı korunur. Yeni lock, motor dosyaları, kaynak haritası, denetleyici ve native pinler birlikte doğrulanır. Paketli fiyat haritası her iki platformun başlangıç ayarına alınır. Model, efor, istemci auth ve çalışma profili sözleşmesi geçerlidir.
+
+0.41.0 tercih belgesi yalnız bilinen sürüm ve hash çiftiyle okunur. Okuma diske yazmaz, yanıtta etkin sürüm gösterilir. Kullanıcı tercihi kaydedince mevcut revision ve fingerprint çatışma denetimi sürer. Diskteki tercih referansı önceki uygulamanın da okuyabildiği 0.41.0 biçiminde tutulur. Böylece uygulamayı geri alma sonrasında tercihler okunabilir. Eski ölçüm satırları ve 0.41.0 ölçüm biçimi desteklenir.
+
+Normal kabul güncel motorun hazır olması, gerçek yerel akış, ölçüm ve Learn ile sahipli kapanışı içerir. Hata kabulü değiştirilmiş dosya, yanlış pin ve tercih çatışmasını reddeder. Yerel ürün kapısı, Windows kaynak staging ve gerçek paketli motor kontrolü son adayda kaydedilir. macOS kaynak/staging kontrolleri yerelde yürür. Yeni native macOS ve Windows 11 kanıtı kendi ortamında kaydedilir. GitHub Actions için önceki kota sınırı geçerlidir.
 
 ### Learn önizlemesi
 
 Kullanıcı 15 Kasım’da Learn’in isteğe bağlı eklenmesini istedi. Ayarlar’da tek bir Codex veya Claude Code JSONL oturumu seçmek bir inceleme başlatır. Seçici iptal edildiğinde önceki sonuç ekranda kalır. Windows uygulaması, mevcut motor paketindeki doğrulanmış Python ile yalnız seçilen dosyayı okur. Motoru başlatmak gerekmez.
 
-Headroom 0.41.0 Learn algılayıcısına aynı oturumda, aynı araç ve girdilerle, aynı hata kategorisinde art arda en az üç açık başarısızlık gider. Farklı bir araç çağrısı, düzenleme, kapsam değişimi veya araya giren eşzamanlı işlem grubu ayırır. Sonraki aynı çağrı başarılıysa gözlem gösterilir. Arayüzde öneri türü, sayı ve ilk örneğin satırı yer alır. Dosya dışındaki kaynak değişiklikleri ve düzeltmenin sebebi gözlemlenemez.
+Sabitlenen motorun Learn algılayıcısına aynı oturumda, aynı araç ve girdilerle, aynı hata kategorisinde art arda en az üç açık başarısızlık gider. Farklı bir araç çağrısı, düzenleme, kapsam değişimi veya araya giren eşzamanlı işlem grubu ayırır. Sonraki aynı çağrı başarılıysa gözlem gösterilir. Arayüzde öneri türü, sayı ve ilk örneğin satırı yer alır. Dosya dışındaki kaynak değişiklikleri ve düzeltmenin sebebi gözlemlenemez.
 
 İnceleme 16 MiB, 64.000 satır ve 15 saniye ile sınırlıdır. İçerik analiz sürecinde kalır. Modele gönderim, geçmiş taraması, kalıcı sonuç, dosya yazımı ve token tasarrufu tahmini bu akışa dahil değildir. Motorun `--no-learn` varsayımı sürer.
 

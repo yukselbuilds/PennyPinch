@@ -70,7 +70,7 @@ class MacOSBundleTests(unittest.TestCase):
         manifest = {
             "schema_version": 1,
             "platform": "darwin-arm64",
-            "engine_version": "0.41.0",
+            "engine_version": "0.44.0",
             "python_version": "3.13.13",
             "dependency_lock_sha256": "a" * 64,
             "python": "python/bin/python3.13",

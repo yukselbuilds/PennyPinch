@@ -15,7 +15,7 @@ import tempfile
 import time
 
 
-ENGINE_VERSION = "0.41.0"
+ENGINE_VERSION = "0.44.0"
 SOL_LOCAL = 0
 LOCAL_PEERPID = 2
 MAX_JSON_BYTES = 256 * 1024
@@ -160,7 +160,7 @@ def probe(site_packages, proof_root):
             if process.poll() is None:
                 process.kill()
                 process.wait(timeout=5)
-    print("macOS engine proof: arm64 CPython 3.13.13, Headroom 0.41.0, owned readiness, foreign peer rejected, beacon off, clean stop.")
+    print("macOS engine proof: arm64 CPython 3.13.13, Headroom 0.44.0, owned readiness, foreign peer rejected, beacon off, clean stop.")
 
 
 if __name__ == "__main__":

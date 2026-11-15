@@ -4,6 +4,8 @@
 
 ## Paket yolu ve yeniden üretim
 
+16 Kasım 2026’da 0.44.0 Windows motoru yeni sürümlü kaynak ve paket köküne taşındı. Güncel payload 19.475 dosya ve 505.117.034 bayt. Önceki paket ve staging arşivlendi. Native pencere, trafik, ölçüm, Learn, ayrı kullanıcı state’inden paketli motor ve yeni NSIS derlemesi Windows 10’da geçti. [Geçiş kaydı](../proofs/headroom-044-upgrade.json).
+
 `pnpm.cmd build:windows` proje-local pinned CPython ile `scripts/package-windows.py` çalıştırır, sonra pinned Tauri CLI ile NSIS üretir. Cargo cache ve bundler araçları proje `work/caches/cargo-*` köklerindedir; global geliştirme aracı kurulumu yok. Python/uv bağımlılık payload'ı ilk H006 hazırlığından gelmelidir; temiz source clone tek başına installer derlemeye hazır değildir. Son kullanıcı uygulamayı çalıştırmak için Python/Node/Rust kurmaz.
 
 `runtime/manifest.json` geliştirme yolunu korur. `runtime/manifest.windows.json` yalnız `engine.payload_root=payload` farkını taşır. `scripts/update-runtime-pins.py` iki manifest ve native/controller pinlerini birlikte kontrol eder. Release kaynakları `resources/runtime`, kullanıcı runtime/preferences/metrics state'i application LocalAppData kökünde ayrıdır. Payload/staging veya manifest bozuksa guard ready üretmez. Uyumluluk paneli derlenen varyantın manifestini gösterir.

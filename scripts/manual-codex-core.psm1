@@ -38,10 +38,10 @@ function Get-ManualCodexPreflightResult {
     $versionField = Get-ManualObjectProperty -InputObject $ready -Name 'version'
     if (-not $readyField.exists -or -not $versionField.exists -or
         ($readyField.value -isnot [bool]) -or -not $readyField.value -or
-        ($versionField.value -isnot [string]) -or $versionField.value -cne '0.41.0') {
+        ($versionField.value -isnot [string]) -or $versionField.value -cne '0.44.0') {
         return [pscustomobject]@{ ok=$false; code='engine_not_ready'; engine_version=$null }
     }
-    return [pscustomobject]@{ ok=$true; code='ready'; engine_version='0.41.0' }
+    return [pscustomobject]@{ ok=$true; code='ready'; engine_version='0.44.0' }
 }
 
 function Test-ManualCodexInstallPath {

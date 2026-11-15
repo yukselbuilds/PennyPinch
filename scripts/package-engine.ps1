@@ -7,15 +7,16 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $artifactRoot = [System.IO.Path]::GetFullPath((Join-Path $repoRoot 'work\proofs\packaging\artifacts'))
-$outputRoot = [System.IO.Path]::GetFullPath((Join-Path $artifactRoot 'headroom-engine'))
+$outputRoot = [System.IO.Path]::GetFullPath((Join-Path $artifactRoot 'headroom-engine-0.44.0'))
 $runtimeOutput = Join-Path $outputRoot 'runtime'
-$proofRoot = Join-Path $repoRoot 'work\proofs\engine'
-$sourceRuntime = Join-Path $proofRoot 'toolchain\cpython-3.13.13-windows-x86_64-none'
+$proofRoot = Join-Path $repoRoot 'work\proofs\engine-0.44.0'
+$sourceRuntime = Join-Path $repoRoot 'work\proofs\engine\toolchain\cpython-3.13.13-windows-x86_64-none'
 $sourceSitePackages = Join-Path $proofRoot '.venv\Lib\site-packages'
 $pythonExe = Join-Path $sourceRuntime 'python.exe'
 $pyproject = Join-Path $proofRoot 'pyproject.toml'
 $lockFile = Join-Path $proofRoot 'uv.lock'
-$runnerSource = Join-Path $repoRoot 'work\proofs\packaging\headroom_runtime.py'
+$runnerSource = Join-Path $proofRoot 'headroom_runtime.py'
+$tokenizerCache = Join-Path $proofRoot 'tiktoken-cache'
 
 $separator = [System.IO.Path]::DirectorySeparatorChar
 $repoPrefix = $repoRoot.TrimEnd($separator) + $separator
@@ -30,11 +31,12 @@ if (-not (Test-Path -LiteralPath $pythonExe -PathType Leaf) -or
     -not (Test-Path -LiteralPath $sourceSitePackages -PathType Container) -or
     -not (Test-Path -LiteralPath $pyproject -PathType Leaf) -or
     -not (Test-Path -LiteralPath $lockFile -PathType Leaf) -or
-    -not (Test-Path -LiteralPath $runnerSource -PathType Leaf)) {
+    -not (Test-Path -LiteralPath $runnerSource -PathType Leaf) -or
+    -not (Test-Path -LiteralPath $tokenizerCache -PathType Container)) {
     throw 'Pinned runtime inputs are incomplete; no package was written.'
 }
 $projectDefinition = Get-Content -LiteralPath $pyproject -Raw
-if ($projectDefinition -notmatch 'headroom-ai\[proxy\]==0\.41\.0') {
+if ($projectDefinition -notmatch 'headroom-ai\[proxy\]==0\.44\.0') {
     throw 'The proof project no longer pins the expected Headroom runtime.'
 }
 $sourceLockHash = (Get-FileHash -LiteralPath $lockFile -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -55,6 +57,8 @@ function Add-ExpectedTree {
 [void]$expectedInventory.Add('runtime\Lib\site-packages')
 Add-ExpectedTree -BasePath $sourceRuntime -Prefix 'runtime'
 Add-ExpectedTree -BasePath $sourceSitePackages -Prefix 'runtime\Lib\site-packages'
+[void]$expectedInventory.Add('runtime\tiktoken-cache')
+Add-ExpectedTree -BasePath $tokenizerCache -Prefix 'runtime\tiktoken-cache'
 [void]$expectedInventory.Add('runtime\headroom_runtime.py')
 [void]$expectedInventory.Add('runtime\runtime-manifest.json')
 
@@ -111,6 +115,7 @@ Get-ChildItem -LiteralPath $sourceSitePackages -Force | ForEach-Object {
     Copy-Item -LiteralPath $_.FullName -Destination $sitePackagesOutput -Recurse -Force
 }
 Copy-Item -LiteralPath $runnerSource -Destination (Join-Path $runtimeOutput 'headroom_runtime.py')
+Copy-Item -LiteralPath $tokenizerCache -Destination (Join-Path $runtimeOutput 'tiktoken-cache') -Recurse -Force
 
 $manifestPath = Join-Path $runtimeOutput 'runtime-manifest.json'
 $runtimeFiles = @(
@@ -127,7 +132,7 @@ $manifest = [ordered]@{
     engine = [ordered]@{
         name = 'headroom-ai'
         distribution = 'headroom-ai[proxy]'
-        version = '0.41.0'
+        version = '0.44.0'
         lock_sha256 = $sourceLockHash
     }
     python = [ordered]@{

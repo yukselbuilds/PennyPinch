@@ -30,7 +30,7 @@ const snapshot = (status = "stopped") => ({
 test("accepts and reconstructs the correlated runtime snapshot allowlist", () => {
   const value = snapshot("ready");
   value.runtime_generation = generation;
-  value.engine_version = "0.41.0";
+  value.engine_version = "0.44.0";
   value.engine.error_code = null;
   value.capabilities = { start: false, stop: true, pause: false, connect: false };
   const decoded = decodeSnapshot(value, requestId);
@@ -60,14 +60,14 @@ test("rejects a ready response without a pinned owned generation", () => {
 test("rejects contradictory status, generation, version, stop, and ready error fields", () => {
   const readyWithError = snapshot("ready");
   readyWithError.runtime_generation = generation;
-  readyWithError.engine_version = "0.41.0";
+  readyWithError.engine_version = "0.44.0";
   readyWithError.engine.error_code = "timeout";
   readyWithError.capabilities = { start: false, stop: true, pause: false, connect: false };
   assert.equal(decodeSnapshot(readyWithError, requestId), null);
 
   const stoppedWithGeneration = snapshot("stopped");
   stoppedWithGeneration.runtime_generation = generation;
-  stoppedWithGeneration.engine_version = "0.41.0";
+  stoppedWithGeneration.engine_version = "0.44.0";
   stoppedWithGeneration.capabilities = { start: true, stop: true, pause: false, connect: false };
   assert.equal(decodeSnapshot(stoppedWithGeneration, requestId), null);
 
@@ -77,7 +77,7 @@ test("rejects contradictory status, generation, version, stop, and ready error f
 
   const startingWithGeneration = snapshot("starting");
   startingWithGeneration.runtime_generation = generation;
-  startingWithGeneration.engine_version = "0.41.0";
+  startingWithGeneration.engine_version = "0.44.0";
   startingWithGeneration.capabilities = { start: false, stop: true, pause: false, connect: false };
   assert.equal(decodeSnapshot(startingWithGeneration, requestId), null);
 
@@ -88,7 +88,7 @@ test("rejects contradictory status, generation, version, stop, and ready error f
 
   const readyWithoutStopCapability = snapshot("ready");
   readyWithoutStopCapability.runtime_generation = generation;
-  readyWithoutStopCapability.engine_version = "0.41.0";
+  readyWithoutStopCapability.engine_version = "0.44.0";
   readyWithoutStopCapability.capabilities = { start: false, stop: false, pause: false, connect: false };
   assert.equal(decodeSnapshot(readyWithoutStopCapability, requestId), null);
 });
@@ -96,7 +96,7 @@ test("rejects contradictory status, generation, version, stop, and ready error f
 test("preserves valid stopping and failed cleanup states without inferring start from error code", () => {
   const stopping = snapshot("stopping");
   stopping.runtime_generation = generation;
-  stopping.engine_version = "0.41.0";
+  stopping.engine_version = "0.44.0";
   stopping.capabilities = { start: false, stop: true, pause: false, connect: false };
   assert.equal(decodeSnapshot(stopping, requestId)?.engine.status, "stopping");
 
@@ -108,7 +108,7 @@ test("preserves valid stopping and failed cleanup states without inferring start
   const failedCleanupUncertain = snapshot("failed");
   failedCleanupUncertain.engine.error_code = "cleanup_failed";
   failedCleanupUncertain.runtime_generation = generation;
-  failedCleanupUncertain.engine_version = "0.41.0";
+  failedCleanupUncertain.engine_version = "0.44.0";
   failedCleanupUncertain.capabilities.start = false;
   failedCleanupUncertain.capabilities.stop = true;
   assert.equal(decodeSnapshot(failedCleanupUncertain, requestId)?.runtime_generation, generation);
@@ -119,7 +119,7 @@ test("preserves valid stopping and failed cleanup states without inferring start
 
   const unknownWithOwnedGeneration = snapshot("unknown");
   unknownWithOwnedGeneration.runtime_generation = generation;
-  unknownWithOwnedGeneration.engine_version = "0.41.0";
+  unknownWithOwnedGeneration.engine_version = "0.44.0";
   unknownWithOwnedGeneration.engine.error_code = "timeout";
   unknownWithOwnedGeneration.capabilities.stop = true;
   assert.equal(decodeSnapshot(unknownWithOwnedGeneration, requestId)?.runtime_generation, generation);
@@ -133,7 +133,7 @@ test("rejects unknown status, code, malformed generation, and engine version", (
   assert.equal(decodeSnapshot(unknownCode, requestId), null);
   const badGeneration = snapshot("ready");
   badGeneration.runtime_generation = "not-a-generation";
-  badGeneration.engine_version = "0.41.0";
+  badGeneration.engine_version = "0.44.0";
   badGeneration.capabilities = { start: false, stop: true, pause: false, connect: false };
   assert.equal(decodeSnapshot(badGeneration, requestId), null);
   const wrongVersion = snapshot("ready");

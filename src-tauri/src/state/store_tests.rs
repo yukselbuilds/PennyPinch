@@ -77,7 +77,7 @@ fn redirected_preference_lock_preserves_both_files() {
 }
 
 #[test]
-fn operating_preferences_migrate_without_rewrite_and_legacy_save_preserves_them() {
+fn previous_engine_preferences_migrate_without_rewrite_and_legacy_save_preserves_them() {
     use super::store::OperatingPreferences;
     let fixture = Fixture::new();
     snapshot(fixture.store.save_preferences(
@@ -89,6 +89,9 @@ fn operating_preferences_migrate_without_rewrite_and_legacy_save_preserves_them(
     ));
     let path = fixture.store.file_path_for_test();
     let mut legacy: serde_json::Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+    legacy["runtime_manifest"]["engine_version"] = "0.41.0".into();
+    legacy["runtime_manifest"]["manifest_sha256"] =
+        "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908".into();
     legacy["preferences"]
         .as_object_mut()
         .unwrap()
@@ -96,9 +99,24 @@ fn operating_preferences_migrate_without_rewrite_and_legacy_save_preserves_them(
     let original = serde_json::to_vec(&legacy).unwrap();
     fs::write(&path, &original).unwrap();
     let read = snapshot(fixture.store.get_preferences(REQUEST_ID.into()));
+    assert_eq!(read.runtime_manifest.engine_version, "0.44.0");
+    assert_eq!(
+        read.runtime_manifest.manifest_sha256,
+        crate::runtime::manager::EXPECTED_RUNTIME_MANIFEST_SHA256
+    );
     assert_eq!(read.preferences.operating, OperatingPreferences::default());
     assert!(!read.preferences.show_recommendations);
     assert_eq!(fs::read(&path).unwrap(), original);
+    let mut forged = legacy.clone();
+    forged["runtime_manifest"]["manifest_sha256"] = "a".repeat(64).into();
+    let forged = serde_json::to_vec(&forged).unwrap();
+    fs::write(&path, &forged).unwrap();
+    assert_eq!(
+        error_code(fixture.store.get_preferences(REQUEST_ID.into())),
+        "unsupported_schema"
+    );
+    assert_eq!(fs::read(&path).unwrap(), forged);
+    fs::write(&path, &original).unwrap();
     let wanted = OperatingPreferences {
         close_to_tray: false,
         retention_days: 90,
@@ -114,6 +132,8 @@ fn operating_preferences_migrate_without_rewrite_and_legacy_save_preserves_them(
         read.state_fingerprint.clone(),
     ));
     let bytes = fs::read(&path).unwrap();
+    let rollback: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(rollback["runtime_manifest"], legacy["runtime_manifest"]);
     assert_eq!(
         error_code(fixture.store.save_with_operating(
             REQUEST_ID.into(),
@@ -306,7 +326,7 @@ fn missing_state_returns_defaults_without_creating_a_file() {
     assert_eq!(value.revision, 0);
     assert_eq!(value.preferences.language, "tr");
     assert_eq!(value.preferences.theme, "system");
-    assert_eq!(value.runtime_manifest.engine_version, "0.41.0");
+    assert_eq!(value.runtime_manifest.engine_version, "0.44.0");
     assert_eq!(value.runtime_manifest.ccr_ttl_seconds, 7200);
     assert!(value.state_fingerprint.is_none());
     assert!(!fixture.root().exists());
@@ -329,7 +349,7 @@ fn save_and_reopen_preserves_only_allowlisted_preferences_and_manifest_reference
     assert!(saved.state_fingerprint.is_some());
     assert_eq!(
         saved.runtime_manifest.manifest_sha256,
-        "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908"
+        crate::runtime::manager::EXPECTED_RUNTIME_MANIFEST_SHA256
     );
     assert_eq!(saved.runtime_manifest.mode, "cache");
     assert_eq!(saved.runtime_manifest.savings_profile, "coding");

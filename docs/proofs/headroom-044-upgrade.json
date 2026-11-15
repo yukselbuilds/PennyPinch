@@ -1,0 +1,107 @@
+{
+  "task": "H041",
+  "slice": "headroom_0.44.0_windows_upgrade",
+  "date": "2026-11-16",
+  "passed": true,
+  "os": "Windows-10-10.0.19045-SP0",
+  "engine": "0.44.0",
+  "python": "3.13.13",
+  "windows_status": "local_development_and_installer_build_passed",
+  "macos_status": "source_and_portable_checks_prepared_native_not_tested",
+  "windows_11": "not_tested",
+  "runtime_manifest_sha256": "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe",
+  "lock_sha256": "d932901067c729f4a9ee64c60589107d2f22dc351704b2d58eec7e3e7411a700",
+  "payload": {
+    "tree_sha256": "0b5e137fc3acfad412faee31f3d08d24d585c2689751f347240bd3ab05573081",
+    "files": 19475,
+    "bytes": 505117034
+  },
+  "installer": {
+    "path": "work/caches/cargo-target/release/bundle/nsis/Headroom_0.1.0_x64-setup.exe",
+    "sha256": "bffe890b5a82d1975e5e8fae4e5016fcd1bc2b6e5c988f833e5aef2c0449e792",
+    "bytes": 123613551
+  },
+  "checks": {
+    "rust_tests": 465,
+    "frontend_tests": 223,
+    "learn_cases": 4,
+    "portable_macos_tests": 45,
+    "portable_macos_skipped_native_or_symlink": 10,
+    "windows_python_tests": 18,
+    "windows_python_release_case_separately_passed": true,
+    "manual_codex_assertions": 88,
+    "old_preferences_read_and_save_without_losing_rollback_compatibility": "pass",
+    "old_usage_rows_and_measurement_basis": "pass",
+    "private_usage_native_projection": "pass",
+    "ui_start_pause_resume_stop_and_synthetic_sse": "pass",
+    "learn_file_picker_and_cancel": "pass",
+    "native_app_exit_and_owned_ports_closed": "pass",
+    "original_native_state_restored": "pass",
+    "staged_runtime_ready_and_normal_shutdown": "pass",
+    "source_pins_current": "pass",
+    "windows_release_gui_subsystem": "pass",
+    "installer_compile": "pass",
+    "retrieval_bridge_tests": 7
+  },
+  "notice_adjustment": "runtime result reused after NOTICE-only resource refresh; the final resource inventory was independently revalidated",
+  "pending": [
+    "new native macOS ARM64 acceptance",
+    "Windows 11 x64 and clean OS acceptance",
+    "live providers and publication"
+  ],
+  "paid_model_calls": 0,
+  "proofs": {
+    "local_quality": {
+      "path": "work/proofs/optimization/engine-upgrade/044-c5751403c7d6/quality-v2.json",
+      "sha256": "bf29f9313fe74a72583131c0e2ea96eb42dfe1f9aa78496ef946bbe999523ee9"
+    },
+    "quality_reuse": {
+      "path": "work/proofs/optimization/engine-upgrade/044-c5751403c7d6/quality-reuse.json",
+      "sha256": "a95c632698488c47248997a4c37f55d5d8fb07354b760e0efa72c2dc21c49c6e"
+    },
+    "frontend_learn_portable_macos": {
+      "path": "work/proofs/optimization/engine-upgrade/044-c5751403c7d6/quality.json",
+      "sha256": "21bad6c88010366ea2499f215c3ef5ff9f98189ea5cbb30b253f0081ff67cecf"
+    },
+    "supplemental": {
+      "path": "work/proofs/optimization/engine-upgrade/044-c5751403c7d6/supplemental.json",
+      "sha256": "6e0c5b4dfd29053d2774df44cdc6dd7e9cd743e3fc5b9ddf7377e1b4e7a5ecb9"
+    },
+    "frozen_dependency_export": {
+      "path": "work/proofs/optimization/engine-upgrade/044-c5751403c7d6/locked-export.json",
+      "sha256": "6a557730559546f4a0b0072dd4ea59d5e096b9f0c31da69a8a598fbfd6531da2"
+    },
+    "windows_native_ui": {
+      "path": "work/proofs/optimization/engine-upgrade/044-c5751403c7d6/native-aabaf84a388d/result.json",
+      "sha256": "a99c1ca88acc87a421025d307515d8b0b3ffcd2a02d4c474532faecbfeb59205"
+    },
+    "native_state_restored": {
+      "path": "work/proofs/optimization/engine-upgrade/044-c5751403c7d6/native-state-b9818f5be2ec/restored.json",
+      "sha256": "7bad75c62f57620cac96868b52194ff3ff80ddea73d493ea1f4b17df49390088"
+    },
+    "native_anthropic_usage": {
+      "path": "work/proofs/optimization/desktop-anthropic-usage/321a6899-f178-464a-9f13-0cd7cec35e37/result.json",
+      "sha256": "86edd28607031daeae1ea3964934e1fd8dcba1f96691a8ef566e4dd5f0e8008c"
+    },
+    "staged_engine": {
+      "path": "work/proofs/optimization/engine-upgrade/044-c5751403c7d6/staged-engine.json",
+      "sha256": "0133521bb87010e7249ead1b0d88531fbc48916e3d102cf424d2ff5f9a0b62b3"
+    },
+    "final_staging_and_release_pe": {
+      "path": "work/proofs/optimization/engine-upgrade/044-c5751403c7d6/final-staging.json",
+      "sha256": "d0bc1a17d26999f9b078f0f4e172e8364ffb0c6d2a75372d0abd5137ab93b5b2"
+    },
+    "notice_refresh": {
+      "path": "work/proofs/optimization/engine-upgrade/044-c5751403c7d6/notice-refresh.json",
+      "sha256": "66b51e1963402511a6f6ce9149ec8ce8cb8d4f7cf7a0290ede81015657b6a700"
+    },
+    "installer_packaging": {
+      "path": "work/proofs/optimization/engine-upgrade/044-c5751403c7d6/installer-refresh.json",
+      "sha256": "7f7d86c3550102dd00c9b097bc081214f4e2dd788f90c3b14534e7ca06ffa712"
+    },
+    "retrieval_bridge": {
+      "path": "work/proofs/optimization/engine-upgrade/044-c5751403c7d6/retrieval-bridge.json",
+      "sha256": "b2be72a78ca2b0d2d51b825e65f085c7e60ea93f973f7f027c8f1b33d3d14bba"
+    }
+  }
+}

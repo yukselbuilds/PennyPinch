@@ -36,16 +36,16 @@ TOKENIZER_SOURCES = (
 )
 PINNED_EXPECTED = {
     "engine_name": "headroom-ai",
-    "engine_version": "0.41.0",
-    "runtime_manifest_sha256": "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908",
-    "runner_sha256": "bf887b6f783f4385debc84836353340f39e3773433782305376a3247be0f4ac1",
+    "engine_version": "0.44.0",
+    "runtime_manifest_sha256": "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe",
+    "runner_sha256": "86de03a4eca728c108a12293b498b0012890812aa490e9f2fd516550455ff5ee",
     "python_version": "3.13.13",
     "python_sha256": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
     "site_packages": "Lib/site-packages",
-    "prefix_tracker_sha256": "f1af4ee279f879efc48ddfebbff125a088893bb64ee960ca2dbd4ad1cdb628ee",
-    "shim_sha256": "ebc80ca2958b178ed488fb953f1a09cf2dd803b23352dcc3f8f0a644414e30c1",
-    "optimization_sha256": "392317eeb2f35c46c5be1608df2882d2bcc5b34e66a5597823ddc84a8a9d722e",
-    "optimization_sources_sha256": "8eedd3b022dafb27bf472949a66a4d3081509fc57d77b046fb52c56245ecc2f0",
+    "prefix_tracker_sha256": "29c7d63d8b63ed3dc4906bd3762ff672f5941947f8f8803180c5d1f13a8bbec0",
+    "shim_sha256": "9e47ad68053289d7d02ec942927d5f0c2d14e9d09a867333211f24646f371a8b",
+    "optimization_sha256": "92d45f649ea3ee7f5721cf449611ea3ca39744e2e2945757e7f11de506ab27c8",
+    "optimization_sources_sha256": "68ace0cc74dca64e98eedc1879ae4675d2a57347037dacab87c7b5aca6c4224f",
 }
 ERROR_CODES = frozenset(
     {

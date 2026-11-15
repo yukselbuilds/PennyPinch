@@ -24,8 +24,8 @@ export function decodeOperatingPreferences(value: unknown): OperatingPreferences
 }
 
 export interface RuntimeManifestReference {
-  engine_version: "0.41.0";
-  manifest_sha256: "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908";
+  engine_version: "0.44.0";
+  manifest_sha256: "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe";
   mode: "cache";
   savings_profile: "coding";
   ccr_ttl_seconds: 7200;
@@ -136,12 +136,12 @@ function decodeManifest(value: unknown): RuntimeManifestReference | null {
   if (!isRecord(value) || !hasExactKeys(value, [
     "engine_version", "manifest_sha256", "mode", "savings_profile", "ccr_ttl_seconds",
   ])) return null;
-  if (value.engine_version !== "0.41.0" ||
-      value.manifest_sha256 !== "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908" ||
+  if (value.engine_version !== "0.44.0" ||
+      value.manifest_sha256 !== "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe" ||
       value.mode !== "cache" || value.savings_profile !== "coding" || value.ccr_ttl_seconds !== 7200) return null;
   return {
-    engine_version: "0.41.0",
-    manifest_sha256: "8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908",
+    engine_version: "0.44.0",
+    manifest_sha256: "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe",
     mode: "cache",
     savings_profile: "coding",
     ccr_ttl_seconds: 7200,

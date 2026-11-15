@@ -6,7 +6,7 @@
   "version": "0.1.1",
   "notes": "Yerel imza örneği.",
   "engine": {
-    "version": "0.41.0",
+    "version": "0.44.0",
     "runtime_manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
   },
   "installer": {

@@ -28,7 +28,7 @@ python="$stage/payload/python/bin/python3.13"
 test "$(lipo -archs "$python")" = arm64
 test "$("$python" -I -B --version)" = 'Python 3.13.13'
 test "$(shasum -a 256 runtime/engine-deps/uv.lock | cut -d' ' -f1)" = \
-  '161d3b1543b1f6620c1ce40e38d9a2fba26d5c64e3e103a41dcd81dff18ced3f'
+  'd932901067c729f4a9ee64c60589107d2f22dc351704b2d58eec7e3e7411a700'
 export UV_CACHE_DIR="$stage/uv-cache" UV_NO_MANAGED_PYTHON=1 UV_PYTHON_DOWNLOADS=never
 "$uv" export --project runtime/engine-deps --python "$python" --locked --no-dev --no-emit-project \
   --format requirements-txt --output-file "$stage/requirements.txt" \

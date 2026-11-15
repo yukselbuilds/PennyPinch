@@ -28,7 +28,7 @@ try {
       return { status: runtime.engine.status, generation: runtime.runtime_generation,
         version: runtime.engine_version, endpoint: ingress.endpoint, backend: ingress.backend.status };
     });
-    if (value.status !== "ready" || value.version !== "0.41.0" || value.backend !== "ready") {
+    if (value.status !== "ready" || value.version !== "0.44.0" || value.backend !== "ready") {
       throw Error("runtime_not_ready");
     }
     console.log(JSON.stringify({ phase, stage, passed: true, initial_status: "stopped", ...value }));
