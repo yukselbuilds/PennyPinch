@@ -1,5 +1,7 @@
 # Claude Code local transport proof (H009-a)
 
+15 Kasım 2026 güncel ana kabulü: [H009 tamamlandı, yerel Windows 10 teknik kapsamı](claude-acceptance.md). Aşağıdaki H009-a ve H009-b sonuçları kendi tarihsel profilleriyle korunur. Canlı hesap/sağlayıcı, alt ajan ve eklenti desteği eklenmedi.
+
 **Result:** PASS for the local, tools-disabled API-fixture stream path on the Windows 10 22H2 x64 host (10.0.19045). This is a synthetic transport proof; it does not establish live Anthropic/model behavior or complete H009.
 
 14 Kasım takip: Gerçek CLI ile açık tek MCP aracı ve CCR devam döngüsü ayrıca kabul edildi; aşağıdaki H009-a tarihsel tools-kapalı kapsamı değişmez. Yeni H009-b kapsamı belgenin sonundadır; canlı Anthropic/OAuth ve ana H009 açık kalır.

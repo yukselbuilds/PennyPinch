@@ -138,7 +138,7 @@
       "match": {"client_kind": "claude_code", "surface": "cli", "versions": ["2.1.158"], "auth_method": "synthetic", "platform": "windows_10_x64", "engine_version": "0.41.0"},
       "product": "Claude Code CLI",
       "version": "2.1.158",
-      "surface": "CLI --bare/--print; tools disabled",
+      "surface": "CLI --bare/--print; tools-off and isolated MCP tools profiles",
       "platform": "Windows 10 Pro 22H2 x64 (10.0.19045)",
       "auth": "Synthetic API-key sentinel; real credentials not used",
       "protocol": "Anthropic Messages API",
@@ -156,16 +156,21 @@
         },
         "thinking_value_preservation": {
           "status": "not_tested",
-          "detail": "Presence was observed; value preservation was not claimed.",
+          "detail": "Original tools-off profile observed presence only; the isolated MCP profile is recorded separately.",
           "evidence": "docs/proofs/claude.md"
+        },
+        "isolated_mcp_tools_and_server_side_ccr": {
+          "status": "local_fixture_pass",
+          "detail": "Two real CLI MCP calls and byte-exact server-side CCR; model, effort, thinking value, synthetic auth and tool IDs preserved. Observer ingress and fixture protected-tools override; native UI tools profile and client-side retrieval are not implied.",
+          "evidence": "docs/proofs/claude-acceptance.md"
         },
         "oauth_desktop_subagent_and_client_side_ccr": {
           "status": "not_tested",
           "evidence": "docs/proofs/claude.md"
         }
       },
-      "evidence": ["docs/proofs/claude.md"],
-      "evidence_date": "2026-10-19"
+      "evidence": ["docs/proofs/claude.md", "docs/proofs/claude-acceptance.md"],
+      "evidence_date": "2026-11-15"
     },
     {
       "id": "claude-code-cli-oauth-and-agent-surfaces",
@@ -309,6 +314,11 @@
           "status": "local_fixture_pass",
           "evidence": "docs/proofs/claude-product.md"
         },
+        "remembered_project_and_transactional_first_use": {
+          "status": "local_fixture_pass",
+          "detail": "H022 native UI preserved the selected project across normal reopen, created its missing settings parent only on Connect, and preserved user additions on Undo. No model request was made in this onboarding proof.",
+          "evidence": "docs/proofs/onboarding.md"
+        },
         "project_config_model_effort_auth_route_loading_and_sse": {
           "status": "local_fixture_pass",
           "evidence": "docs/proofs/claude-product.md"
@@ -339,15 +349,16 @@
         }
       },
       "limits": [
-        "One active Claude target; existing safe parent required; project selection is memory-only and must be reselected after restart for Undo.",
+        "One active Claude target. H020's historical existing-parent and memory-only limits were superseded by H022 transactional first use and remembered project context; runtime adoption by another session remains unverified.",
         "Metadata declarations are not effective-setting or traffic verification. CLI acceptance used only one controlled project with synthetic auth/tools off.",
         "Fixture token counts do not establish real token or billing savings."
       ],
       "evidence": [
         "docs/proofs/claude-product.md",
+        "docs/proofs/onboarding.md",
         "docs/reviews/H020.md"
       ],
-      "evidence_date": "2026-10-24"
+      "evidence_date": "2026-11-15"
     },
     {
       "id": "opencode-v1-native-product-provider-routes-win10",

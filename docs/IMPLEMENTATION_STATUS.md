@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H009 — ana görev tamamlandı
+
+- Claude Code 2.1.158 / Headroom 0.41.0 Windows 10 yerel teknik kabulü H009-a/b, native H020 ve H022 ile uzlaştırıldı. Scoped Apply/Undo, model/efor/sentetik auth koruması, streaming, iki gerçek CLI aracı ve byte-exact server-side CCR kayıtlı. Native UI tools-off ile ayrı gözlemcili araç profili birbirinden ayrıldı. [Ana kabul](proofs/claude-acceptance.md), [inceleme](reviews/H009.md).
+- Ana ajan auth/rota/ayar ve süreç kabulünü üstlendi. Katalog, mevcut araç/CCR sonucunu ve H022'nin ilk kullanım/hatırlanan proje davranışını aldı. Eski UI exe'leri kendi fingerprint'leriyle tutuldu. Katalog gömülü olduğundan son adayda beş komutlu yerel kapı bir kez yenilendi. 222 Node/462 Rust PASS, 19 ignored, fmt/frontend/embedded build PASS. 344 girdi, araç/OS ve kanıt referansları önce/sonra bağlandı. [Programatik kayıt](proofs/claude-acceptance.json).
+- **Durum 45/54.** H009 kapandı ve burada duruldu. Canlı Anthropic/OAuth, Claude alt ajanı/eklenti, farklı endpoint/provider rolleri ve diğer OS doğrulanmadı. Tam ajan kapsamı, gerçek token/fatura veya geliştirme sohbeti tasarrufu iddia edilmez. Hesap girişi, Actions, ücretli kaynak ve yayın yapılmadı.
+- **Kalan dokuz ana görev:** H006/H037/H041/H042 dış ortam/üretim yayın kabulleri, uygun RTK adayı bekleyen H044, kullanıcı kararıyla ertelenmiş H049 ve Cloudflare hesabını bekleyen H052–H054. Sonraki devamda önce bu ön koşullar ve ücretsiz sınırla yapılabilir iş belirlenir. Yeni ana görev başlatılmadı.
+
 ## H012 — ana görev tamamlandı
 
 - Mimari seçimler ve yerel sözleşme, güncel kaynakla uzlaştırıldı. 39 IPC komutu eksiksiz/bir kez eşleşti. V2 `opencode_schema`, MCP yolu ve ortak ownership; dönem/istek metrik alanları ve placeholder/collection durumları düzeltildi. Katalogda 14 istemci, 1 kabiliyet, 3 ortam kapısı ve bilinmeyen birleşimler temsil ediliyor. [Ana kabul](proofs/architecture-acceptance.md), [inceleme](reviews/H012.md).
