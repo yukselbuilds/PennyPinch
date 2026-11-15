@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "task": "H006",
+  "recorded_at_utc": "2026-11-15T13:36:44.302475+00:00",
+  "artifact_verified": true,
+  "main_task_accepted": false,
+  "scope": {
+    "kind": "portable unsigned motor QA package requiring WebView2 Runtime",
+    "clean_windows_10_tested": false,
+    "windows_11_x64_tested": false,
+    "installer_included": false,
+    "native_runs_reused_for_exact_exe": true
+  },
+  "archive": {
+    "path": "work/proofs/windows-engine-crash/clean-test-a8e23e494d/Headroom_0.1.0_Windows_x64_H006_test.zip",
+    "sha256": "912a6eda0e47b7a9f4dda46dc9923397f0880f03456dc94db15f09877fa7a66a",
+    "bytes": 197348721,
+    "verified_members": 22335,
+    "uncompressed_bytes": 543351462
+  },
+  "checksum": {
+    "path": "work/proofs/windows-engine-crash/clean-test-a8e23e494d/SHA256SUMS.txt",
+    "sha256": "70103d571b44143ebf0888c806a237cd94d019ef1f50b385ccd6ea0c881deb1e"
+  },
+  "tester_guide": {
+    "path": "work/proofs/windows-engine-crash/clean-test-a8e23e494d/README.txt",
+    "sha256": "3cc2bd4b74e256d0a4551d1078954b69abc48df59e943ad255b8e3b70dd7f403"
+  },
+  "exe_sha256": "b39b0e1f3dcf156bde79e3795f2b42a856cd1236085c8cba911db3b75414ed9c",
+  "runtime_files": 22332,
+  "windows_archive_read": {
+    "archive_bytes": 197348721,
+    "passed": true,
+    "tool": "bsdtar 3.5.2 - libarchive 3.5.2 zlib/1.2.5.f-ipp ",
+    "archive_sha256": "912a6eda0e47b7a9f4dda46dc9923397f0880f03456dc94db15f09877fa7a66a",
+    "windows_build": 19045,
+    "entries": 22335,
+    "workspace": "D:\\Projeler\\Headroom"
+  },
+  "source_inputs_match_count": 344,
+  "inputs_before": {
+    "documents": [
+      {
+        "path": "TASKS.md",
+        "sha256": "1eaef0917b6871a10cacb66d7843a31c106bf9f202ba424f0b54231c177aac00"
+      },
+      {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "sha256": "da6bc25fd9608a9c41c36afe2f2f2284e9b9888554c4daa3aed01dbc2c16ff47"
+      },
+      {
+        "path": "docs/proofs/windows-engine.md",
+        "sha256": "0534ac74012dc573dc45a8f270d8b807d056b538e09246bd8a9df4dba132833b"
+      }
+    ],
+    "result": {
+      "path": "work/proofs/windows-engine-crash/clean-test-a8e23e494d/result.json",
+      "sha256": "b70d7b231b165b23586b152fa99f6fa74eb29d905bbe79f4e4bf2c11494cb336"
+    },
+    "windows_archive_check": {
+      "path": "work/proofs/windows-engine-crash/clean-test-a8e23e494d/windows-archive-check.json",
+      "sha256": "d8f00930a77d3ae12383879eb7d279b6c559b4b06ddf939255dae223e13e79ac"
+    },
+    "verification_driver": {
+      "path": "work/proofs/windows-engine-crash/record-clean-test-package.py",
+      "sha256": "4b3913958ebe0fe72ccbf6f137c624fcdc2119848bb76b99008519048ae3dcfc"
+    }
+  },
+  "inputs_after": {
+    "documents": [
+      {
+        "path": "TASKS.md",
+        "sha256": "1eaef0917b6871a10cacb66d7843a31c106bf9f202ba424f0b54231c177aac00"
+      },
+      {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "sha256": "da6bc25fd9608a9c41c36afe2f2f2284e9b9888554c4daa3aed01dbc2c16ff47"
+      },
+      {
+        "path": "docs/proofs/windows-engine.md",
+        "sha256": "0534ac74012dc573dc45a8f270d8b807d056b538e09246bd8a9df4dba132833b"
+      }
+    ],
+    "result": {
+      "path": "work/proofs/windows-engine-crash/clean-test-a8e23e494d/result.json",
+      "sha256": "b70d7b231b165b23586b152fa99f6fa74eb29d905bbe79f4e4bf2c11494cb336"
+    },
+    "windows_archive_check": {
+      "path": "work/proofs/windows-engine-crash/clean-test-a8e23e494d/windows-archive-check.json",
+      "sha256": "d8f00930a77d3ae12383879eb7d279b6c559b4b06ddf939255dae223e13e79ac"
+    },
+    "verification_driver": {
+      "path": "work/proofs/windows-engine-crash/record-clean-test-package.py",
+      "sha256": "4b3913958ebe0fe72ccbf6f137c624fcdc2119848bb76b99008519048ae3dcfc"
+    }
+  }
+}

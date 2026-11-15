@@ -96,3 +96,15 @@ Windows 10 22H2 x64 build 19045 üzerinde gerçek paketli controller'ın başlan
 Paket kaydı dahil 22.334 dosya, kaynaklar, doğrulama komutları ve araç/OS fingerprint'leri önce/sonra eşleşti. Son adayda 462 Rust testi, biçim ve embedded build geçti. 20 opt-in test normal koşuda atlandı. H006-d ayrı opt-in koşuda geçti. Aynı Node/pnpm ile değişmeyen frontend girdilerinin 222 uygulama testi ve frontend derlemesi yeniden kullanıldı. [Programatik kanıt](windows-engine-startup-crash.json) · [İnceleme](../reviews/H006-d.md).
 
 Doğrulama için mevcut `work/build/windows/h010-retrieval-resources` stage'i ve proje içi Cargo cache kullanılır. Komut [kanıt kaydında](windows-engine-startup-crash.json) yer alır. Bu yerel test duraklatılmış bir spawn sonrası kontrol noktasını kapsar. Ayrı temiz Windows 10/11 x64 ortamları ana H006 için bekliyor.
+
+## Temiz Windows ortamı için taşınabilir test paketi
+
+`work/proofs/windows-engine-crash/clean-test-a8e23e494d/Headroom_0.1.0_Windows_x64_H006_test.zip` daha önce gerçek pencere ve motorla sınanan H006-c adayını, aynı motor dosyalarını, lisans bildirimini ve kısa test yönergesini içerir. 197.348.721 baytlık arşivin 22.335 dosyası tam SHA-256 karşılaştırmasından geçti. Windows'un `tar.exe` aracı girişleri okudu ve PowerShell arşiv hash'ini doğruladı. [Paket ve hash kaydı](windows-engine-clean-test-package.json).
+
+Test eden kişi ayrı temiz Windows 10 22H2 x64 veya Windows 11 x64 bilgisayarda ZIP'i kısa bir klasöre çıkarır ve `headroom-desktop.exe` dosyasını açar. Arşivdeki `README.txt` açılış, motor hazır, durdurma ve normal çıkış adımlarını listeler. Ön koşul Microsoft Edge WebView2 Runtime'dır. Sonuçla birlikte Windows yapı numarası ve mimarisi kaydedilir. Arşiv SHA-256 değeri, aynı dizindeki `SHA256SUMS.txt` ile karşılaştırılır.
+
+```powershell
+Get-FileHash -Algorithm SHA256 -LiteralPath .\Headroom_0.1.0_Windows_x64_H006_test.zip
+```
+
+Paket, H006-c'deki byte-eşleşen imzasız ve ayrı kimlikli executable'ı kullanır. Bağımsız temiz sistem kabulü, arşivdeki motor testinin iki hedef işletim sisteminde yapılmasını bekliyor. NSIS ve eksik WebView2 giderme deneyi H037 kapsamındadır.

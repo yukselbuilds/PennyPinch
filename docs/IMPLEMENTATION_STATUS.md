@@ -1,6 +1,11 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H006 — temiz ortam test paketi hazır
+
+- Ana ajan mevcut H006-c release adayını, motoru ve test yönergesini yerel ZIP'e aldı. 22.335 girişin tüm hash'leri ve Windows `tar.exe` okuması geçti. Kanıt 344 kaynak girdisinin son yerel kapıyla eşleştiğini kaydeder. Arşiv 197.348.721 bayt ve kendi SHA-256 dosyasıyla `work/proofs/windows-engine-crash/clean-test-a8e23e494d/` altında. [Paket ve doğrulama](proofs/windows-engine-clean-test-package.json).
+- Paket, ayrı kimlikli ve imzasız taşınabilir test adayıdır. Açılış için Microsoft Edge WebView2 Runtime gerekir. Sonraki adım iki temiz x64 masaüstünde arşivdeki Başlat → Hazır → Durdur → Çıkış adımlarını çalıştırıp ayrı sonuç kaydetmektir. Ana H006 açık, toplam **45/54**. [Test adımları](proofs/windows-engine.md#temiz-windows-ortamı-için-taşınabilir-test-paketi).
+
 ## H006-d — başlangıçta sahip kaybı kontrolü tamamlandı
 
 - Ana ajan süreç sahipliği nedeniyle gerçek `ControllerSession::launch` yolunu sınadı. Test kontrol noktası spawn sonrası, Job ataması ve `start` öncesindeydi. Sahip kaybında çıkış 147 ms. Yazma ucu açık tutulan kolda controller bir saniye bekledi ve boru kapanınca 8 ms içinde çıktı. İki kolda exit 2, protokol çıktısı 0, ek helper/motor ve kalan süreç 0. Dış gözlemci Job'ı ölçüm tamamlanana kadar açıktı. [Kanıt](proofs/windows-engine-startup-crash.json) · [İnceleme](reviews/H006-d.md).
