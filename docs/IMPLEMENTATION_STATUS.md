@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H006-d — başlangıçta sahip kaybı kontrolü tamamlandı
+
+- Ana ajan süreç sahipliği nedeniyle gerçek `ControllerSession::launch` yolunu sınadı. Test kontrol noktası spawn sonrası, Job ataması ve `start` öncesindeydi. Sahip kaybında çıkış 147 ms. Yazma ucu açık tutulan kolda controller bir saniye bekledi ve boru kapanınca 8 ms içinde çıktı. İki kolda exit 2, protokol çıktısı 0, ek helper/motor ve kalan süreç 0. Dış gözlemci Job'ı ölçüm tamamlanana kadar açıktı. [Kanıt](proofs/windows-engine-startup-crash.json) · [İnceleme](reviews/H006-d.md).
+- İlk ön kontrol eski kurulum betiği pinini reddetti. Güncel, H006-c ile aynı stage kullanıldı. İlk native sayım iki Windows konsol barındırıcısını ayırt etmedi. Süreç isimleri doğrulanıp kümülatif sayaç kontrolü düzeltildi. İki başarısız kayıt korundu. 22.334 paket dosyası, kaynak ve ortam önce/sonra eşleşti. Odaklı test ve son 462 Rust testi, fmt ve embedded build geçti. Normal Rust koşusunda 20 opt-in test atlandı. 222 uygulama testi ve frontend derlemesi önceki eşleşen adaydan yeniden kullanıldı.
+- **45/54.** H006'nın yerel başlangıç dilimi bitti. Ana H006, temiz Windows 10 ve Windows 11 x64 ortamı bekliyor. Standart Actions x64 seçeneği Server, standart Windows 11 seçeneği ARM64. Kullanıcının bildirdiği yaklaşık 0,10 USD kota korunuyor. Sonraki somut adım ücretsiz ayrı x64 masaüstü ortamı erişilebilir olduğunda paketli motor hazır/kapanış kontrolü. Bu dilimde duruldu. [Ortam ve kota kararı](validation/windows-install.md#açık-kabul).
+
 ## H006-c — gerçek GUI çökmesi yerel dilimi tamamlandı
 
 - Ana ajan süreç/ayar sahipliği ve kabulü üstlendi. Gerçek paketli release pencere → UI Başlat → manager → controller/helper/engine Ready yolu kullanıldı. Yalnız eldeki GUI Child handle'ı sonlandırılınca üç süreç 57,429ms, motor/sabit ingress portları 58,299ms içinde kapandı. Önceden belirlenmiş 5000ms sınırı geçti. Dış gözlemci Job'ı açık kaldı, yabancı listener korundu. [Kabul](proofs/windows-gui-crash.md), [inceleme](reviews/H006-c.md).

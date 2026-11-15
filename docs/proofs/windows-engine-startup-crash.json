@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "task": "H006-d",
+  "recorded_at_utc": "2026-11-15T13:24:58.613582+00:00",
+  "slice_accepted": true,
+  "parent_task_accepted": false,
+  "scope": {
+    "platform": "Windows 10 22H2 x64 build 19045",
+    "observation": "owner loss after spawn and before Job assignment or start frame",
+    "pre_assignment_controller": "packaged pinned runtime",
+    "observer_job_open_during_measurement": true,
+    "exit_bound_ms": 5000,
+    "clean_windows_10_and_windows_11_x64": "not_tested"
+  },
+  "cases": [
+    {
+      "additional_processes_after_checkpoint": 0,
+      "controller_exit_code": 2,
+      "controller_exit_observed_ms": 147,
+      "controller_stdout_bytes": 0,
+      "minimum_survival_with_writer_ms": null,
+      "outer_job_baseline_members": [
+        "test_owner",
+        "conhost.exe",
+        "controller",
+        "conhost.exe"
+      ],
+      "outer_job_remaining_processes": 0,
+      "outer_job_total_processes": 4,
+      "retained_writer": false
+    },
+    {
+      "additional_processes_after_checkpoint": 0,
+      "controller_exit_code": 2,
+      "controller_exit_observed_ms": 8,
+      "controller_stdout_bytes": 0,
+      "minimum_survival_with_writer_ms": 1000,
+      "outer_job_baseline_members": [
+        "test_owner",
+        "conhost.exe",
+        "controller",
+        "conhost.exe"
+      ],
+      "outer_job_remaining_processes": 0,
+      "outer_job_total_processes": 4,
+      "retained_writer": true
+    }
+  ],
+  "focused_command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--manifest-path",
+    "src-tauri/Cargo.toml",
+    "runtime::manager::windows_crash_tests::packaged_controller_exits_after_owner_crash_before_job_assignment",
+    "--",
+    "--exact",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "package_before": {
+    "files_including_receipt": 22334,
+    "bytes_including_receipt": 536642840,
+    "receipt_sha256": "758def5744c18e04bfe5d4183c0ac220e456736f683370a004c5c16f6570561c",
+    "inventory_sha256": "014fb42cca9cd8305700d4926c35c55d523d5897db68d8e26135e8e5443d6df7"
+  },
+  "package_after": {
+    "files_including_receipt": 22334,
+    "bytes_including_receipt": 536642840,
+    "receipt_sha256": "758def5744c18e04bfe5d4183c0ac220e456736f683370a004c5c16f6570561c",
+    "inventory_sha256": "014fb42cca9cd8305700d4926c35c55d523d5897db68d8e26135e8e5443d6df7"
+  },
+  "environment_before": {
+    "workspace": "D:\\Projeler\\Headroom",
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "tools": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "python_sha256": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07"
+  },
+  "environment_after": {
+    "workspace": "D:\\Projeler\\Headroom",
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "tools": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "python_sha256": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07"
+  },
+  "quality": {
+    "node_passed_reused": 222,
+    "rust_passed": 462,
+    "rust_ignored": 20,
+    "fmt_and_embedded_build": "pass",
+    "frontend_build_reused": true,
+    "matching_final_inputs": 344
+  },
+  "evidence": [
+    {
+      "path": "work/proofs/windows-engine-crash/startup-verification-4369847bc3/focused.json",
+      "sha256": "6d1e52e6cb019f00cb955e8c92c81f5204aea2c1d1856bc9f745af5bf3275a55"
+    },
+    {
+      "path": "work/proofs/windows-engine-crash/startup-quality-84993ecb4e/final.json",
+      "sha256": "5344fa7eeeab919dd291978321d131856e276035f53fe595a670834626665c7c"
+    },
+    {
+      "path": "work/proofs/windows-engine-crash/startup-quality-84993ecb4e/reuse.json",
+      "sha256": "6a84a668bff3b2899978a82b1a9550024d57f98f349031282371a74b4e9400a6"
+    },
+    {
+      "path": "work/proofs/windows-engine-crash/startup-runs/532ac1f7-4d7f-4a53-b66e-e10e864213d9/result.json",
+      "sha256": "eacbb2a3e563b1cf21305468a5e64ad39aef82d7e6e637989ad0dfc241cd9223"
+    },
+    {
+      "path": "work/proofs/opencode-v2-binding/checks-9afd1583f8/final.json",
+      "sha256": "72fc6e488c26ce0c43378a5ef43bde7b566038d4c6d70d20f24a7d867c3e0ec4"
+    },
+    {
+      "path": "work/proofs/windows-engine-crash/startup-verification-d2cf01ce60/preflight.json",
+      "sha256": "5e5c34c57784f9fd4437161a0cfee6a1946d2b855075cd6c9adb312e92df132c"
+    },
+    {
+      "path": "work/proofs/windows-engine-crash/startup-verification-02949fd3f1/focused.json",
+      "sha256": "abf45cf985a1883030012a1f01a6453fbab8d39e52902da60f55c229f74cad02"
+    },
+    {
+      "path": "work/proofs/windows-engine-crash/startup-runs/3781044e-398d-47f1-8206-f0069769ff7b/diagnostic/diagnostic.json",
+      "sha256": "61db4c4b6283aed34582ac02670358c289d772705d3e2483865c2bed97a37983"
+    },
+    {
+      "path": "work/proofs/windows-engine-crash/verify-startup.py",
+      "sha256": "d36a006e5db48bcbd61f56808b271d1f2c91295659ec24c2cbe53a2749449053"
+    },
+    {
+      "path": "work/proofs/windows-engine-crash/startup-quality.py",
+      "sha256": "54a51fce78b69e9491e6ca18f82a54a2fd599a601230b7d931e26c8907efe51f"
+    }
+  ],
+  "closure_fingerprints": {
+    "path": "work/proofs/windows-engine-crash/startup-quality-84993ecb4e/closure-inputs.json",
+    "sha256": "64303c1ad96a293acf65f0bb8d67f0efa06387d934920b0075b455751956cc42"
+  },
+  "closure_verifier": {
+    "path": "work/proofs/windows-engine-crash/finalize-startup.py",
+    "sha256": "b1c3ca462810433cc38fff68bcbf099a9dc5c548ae47b72a532437f05420c803"
+  }
+}

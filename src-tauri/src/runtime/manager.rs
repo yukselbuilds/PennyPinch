@@ -1984,6 +1984,8 @@ impl ControllerSession {
         let mut child = command
             .spawn()
             .map_err(|_| PublicError::EnvironmentBlocked)?;
+        #[cfg(all(test, windows))]
+        windows_crash_tests::observe_before_job_assignment(&child, &job);
         #[cfg(windows)]
         #[cfg(test)]
         set_startup_diagnostic_stage("job_assignment");
@@ -2832,10 +2834,10 @@ impl BackendLivenessLease {
                     && listener_owner_match;
             let job_member_kinds = (!lease_alive)
                 .then(|| {
-                    job.member_basename_kinds([
-                        self.controller_pid,
-                        self.helper_pid,
-                        self.engine_pid,
+                    job.member_basename_kinds(&[
+                        (self.controller_pid, "controller"),
+                        (self.helper_pid, "helper"),
+                        (self.engine_pid, "engine"),
                     ])
                 })
                 .flatten();
@@ -2994,7 +2996,7 @@ impl OwnedJob {
     }
 
     #[cfg(test)]
-    fn member_basename_kinds(&self, expected: [u32; 3]) -> Option<Vec<&'static str>> {
+    fn member_basename_kinds(&self, expected: &[(u32, &'static str)]) -> Option<Vec<&'static str>> {
         use std::mem::size_of;
         use std::ptr::null_mut;
         use windows_sys::Win32::System::JobObjects::{
@@ -3024,15 +3026,10 @@ impl OwnedJob {
         let mut kinds = Vec::with_capacity(list.listed as usize);
         for raw_pid in list.process_ids.iter().take(list.listed as usize) {
             let pid = u32::try_from(*raw_pid).ok()?;
-            let kind = if pid == expected[0] {
-                "controller"
-            } else if pid == expected[1] {
-                "helper"
-            } else if pid == expected[2] {
-                "engine"
-            } else {
-                process_basename_kind(pid)
-            };
+            let kind = expected
+                .iter()
+                .find_map(|&(expected_pid, kind)| (pid == expected_pid).then_some(kind))
+                .unwrap_or_else(|| process_basename_kind(pid));
             kinds.push(kind);
         }
         Some(kinds)

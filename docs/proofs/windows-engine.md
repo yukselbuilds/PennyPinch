@@ -80,3 +80,19 @@ Ana H006 açık: temiz Windows 10/Windows 11, başlangıçta Job ataması önces
 Yerel alt dilim kabul edildi. Hazır Tauri release GUI'sinin zorla kaybında üç motor process handle'ı 57,429ms, motor/sabit ingress portları 58,299ms içinde kapandı. Dış gözlemci Job'ı bu ölçüm boyunca açıktı. Aynı test kimliği/profili Stopped açıldı, endpoint korundu ve Başlat/Ready/Durdur/normal Çıkış geçti. Yabancı listener korundu, model isteği 0. Bu, H006-b'nin controller fixture'ından ayrı gerçek GUI kanıtıdır. [Kapsam ve tekrar üretim](windows-gui-crash.md), [programatik sonuç](windows-gui-crash.json), [inceleme](../reviews/H006-c.md).
 
 H006 ana kutusu açık kalır. Temiz Windows 10, ayrı Windows 11, Job ataması öncesi başlangıç yarışı ve aktif stream/CCR verisi bu yeni deneyle doğrulanmadı. Toplam 45/54 değişmez.
+
+## H006-d — Job atamasından önce sahip kaybı (15 Kasım 2026)
+
+Windows 10 22H2 x64 build 19045 üzerinde gerçek paketli controller'ın başlangıç davranışı doğrulandı. Test, üretim başlatma işlevini `spawn` döndükten sonra ve henüz oluşturulan üretim Job'ına atama yapılmadan önce bekletti. Bu noktada `start` iletisi henüz gönderilmemişti. [Kabul koşulları](../decisions/002-runtime.md#h006-d--job-atamasından-önce-sahip-kaybı).
+
+| Senaryo | Gözlem |
+| --- | --- |
+| Sahip zorla kapatıldı, borunun yazma ucu kapandı | Controller 147 ms içinde exit 2 ile sonlandı. |
+| Gözlemci yazma ucunu tuttu | Sahip kaybından sonra controller bir saniyelik gözlemde canlıydı. Yazma ucu kapatıldıktan sonra 8 ms içinde exit 2 ile sonlandı. |
+| Süreç sahipliği ve protokol | Dış gözlemci Job'ı açık kaldı. Başlangıçtaki test sahibi, controller ve iki `conhost.exe` dışında süreç oluşmadı. İki kolda son canlı süreç ve controller stdout bayt sayısı 0. |
+
+İlk ön kontrol geçmiş stage'deki `windows-hooks.nsh` pinini reddetti. H006-c'nin güncel stage'iyle devam edildi. İlk native test, Windows'un iki `conhost.exe` sürecini sayımda ayırt edemedi. Süreç türleri ayrı gözlendi. Nihai test başlangıç üyelerini tanıyor ve kümülatif Job sayacındaki her artışı hata kabul ediyor. Beş saniyelik kapanış sınırı korundu. Başarısız kayıtların referansları kanonik JSON'dadır.
+
+Paket kaydı dahil 22.334 dosya, kaynaklar, doğrulama komutları ve araç/OS fingerprint'leri önce/sonra eşleşti. Son adayda 462 Rust testi, biçim ve embedded build geçti. 20 opt-in test normal koşuda atlandı. H006-d ayrı opt-in koşuda geçti. Aynı Node/pnpm ile değişmeyen frontend girdilerinin 222 uygulama testi ve frontend derlemesi yeniden kullanıldı. [Programatik kanıt](windows-engine-startup-crash.json) · [İnceleme](../reviews/H006-d.md).
+
+Doğrulama için mevcut `work/build/windows/h010-retrieval-resources` stage'i ve proje içi Cargo cache kullanılır. Komut [kanıt kaydında](windows-engine-startup-crash.json) yer alır. Bu yerel test duraklatılmış bir spawn sonrası kontrol noktasını kapsar. Ayrı temiz Windows 10/11 x64 ortamları ana H006 için bekliyor.

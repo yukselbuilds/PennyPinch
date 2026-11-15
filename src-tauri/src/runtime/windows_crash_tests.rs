@@ -5,12 +5,21 @@ use std::os::windows::process::CommandExt;
 use windows_sys::Win32::Foundation::{
     DuplicateHandle, GetHandleInformation, DUPLICATE_SAME_ACCESS, HANDLE, HANDLE_FLAG_INHERIT,
 };
-use windows_sys::Win32::System::Threading::GetCurrentProcess;
+use windows_sys::Win32::System::Threading::{
+    GetCurrentProcess, GetExitCodeProcess, GetProcessId, WaitForSingleObject,
+};
 
 const FIXTURE_ENV: &str = "HEADROOM_H006_CRASH_RUN";
 const TEST_NAME: &str =
     "runtime::manager::windows_crash_tests::packaged_controller_job_closes_after_owner_crash";
 const CRASH_TIMEOUT: Duration = Duration::from_secs(5);
+const STARTUP_FIXTURE_ENV: &str = "HEADROOM_H006_STARTUP_CRASH_RUN";
+const STARTUP_TEST: &str =
+    "runtime::manager::windows_crash_tests::packaged_controller_exits_after_owner_crash_before_job_assignment";
+
+thread_local! {
+    static STARTUP_CRASH_RUN: std::cell::RefCell<Option<PathBuf>> = const { std::cell::RefCell::new(None) };
+}
 
 struct OwnerChild(Child);
 
@@ -38,6 +47,204 @@ fn duplicate_from_owner(owner: &Child, raw: u64) -> OwnedHandle {
     };
     assert_ne!(ok, 0, "owned fixture handle duplication failed");
     unsafe { OwnedHandle::from_raw_handle(duplicate) }
+}
+
+pub(super) fn observe_before_job_assignment(child: &Child, job: &Mutex<OwnedJob>) {
+    let Some(run) = STARTUP_CRASH_RUN.with(|slot| slot.borrow_mut().take()) else {
+        return;
+    };
+    let child_handle = child.as_raw_handle() as HANDLE;
+    assert!(!job.lock().unwrap().contains_process(child_handle));
+    let receipt = serde_json::json!({
+        "owner_pid": std::process::id(),
+        "controller_handle": child_handle as usize as u64,
+        "stdin_handle": child.stdin.as_ref().unwrap().as_raw_handle() as usize as u64,
+        "stdout_handle": child.stdout.as_ref().unwrap().as_raw_handle() as usize as u64,
+    });
+    fs::write(run.join("spawn.tmp"), serde_json::to_vec(&receipt).unwrap()).unwrap();
+    fs::rename(run.join("spawn.tmp"), run.join("spawn.json")).unwrap();
+    thread::sleep(Duration::from_secs(30));
+    panic!("observer did not terminate the test owner before Job assignment");
+}
+
+fn startup_fixture_processes(job: &OwnedJob) -> (u32, u32) {
+    use windows_sys::Win32::System::JobObjects::{
+        JobObjectBasicAccountingInformation, QueryInformationJobObject,
+        JOBOBJECT_BASIC_ACCOUNTING_INFORMATION,
+    };
+    let mut counts = JOBOBJECT_BASIC_ACCOUNTING_INFORMATION::default();
+    let ok = unsafe {
+        QueryInformationJobObject(
+            job.0,
+            JobObjectBasicAccountingInformation,
+            std::ptr::from_mut(&mut counts).cast(),
+            std::mem::size_of_val(&counts) as u32,
+            std::ptr::null_mut(),
+        )
+    };
+    assert_ne!(ok, 0, "outer test Job accounting unavailable");
+    (counts.TotalProcesses, counts.ActiveProcesses)
+}
+
+#[test]
+#[ignore = "opt-in real Windows controller owner loss before production Job assignment"]
+fn packaged_controller_exits_after_owner_crash_before_job_assignment() {
+    use windows_sys::Win32::Foundation::{WAIT_OBJECT_0, WAIT_TIMEOUT};
+
+    let project =
+        fs::canonicalize(PathBuf::from(env!("CARGO_MANIFEST_DIR")).parent().unwrap()).unwrap();
+    let resources = project.join("work/build/windows/h010-retrieval-resources");
+    let runs = project.join("work/proofs/windows-engine-crash/startup-runs");
+    fs::create_dir_all(&runs).unwrap();
+    let runs = fs::canonicalize(runs).unwrap();
+    if let Some(run) = std::env::var_os(STARTUP_FIXTURE_ENV) {
+        let run = fs::canonicalize(run).unwrap();
+        assert_eq!(run.parent().and_then(Path::parent), Some(runs.as_path()));
+        // The observer assigns the owner to its cleanup Job before letting it spawn.
+        let mut go = [0];
+        io::stdin().read_exact(&mut go).unwrap();
+        assert_eq!(go, [1]);
+        let layout = RuntimeLayout::from_bundle(resources, run.join("startup-state")).unwrap();
+        STARTUP_CRASH_RUN.with(|slot| *slot.borrow_mut() = Some(run));
+        let _ = ControllerSession::launch(
+            &layout,
+            &Uuid::new_v4().to_string(),
+            &AtomicBool::new(false),
+        );
+        panic!("fixture did not reach the spawn checkpoint");
+    }
+
+    let run_root = runs.join(Uuid::new_v4().to_string());
+    fs::create_dir(&run_root).unwrap();
+    let mut cases = Vec::new();
+    for retain_writer in [false, true] {
+        let run = run_root.join(if retain_writer {
+            "retained-writer"
+        } else {
+            "owner-only"
+        });
+        fs::create_dir(&run).unwrap();
+        let cleanup_job = OwnedJob::create().unwrap();
+        let mut owner = OwnerChild(
+            Command::new(std::env::current_exe().unwrap())
+                .args([STARTUP_TEST, "--exact", "--ignored", "--test-threads=1"])
+                .env(STARTUP_FIXTURE_ENV, &run)
+                .stdin(Stdio::piped())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .creation_flags(0x0800_0000)
+                .spawn()
+                .unwrap(),
+        );
+        cleanup_job.assign(&owner.0).unwrap();
+        owner.0.stdin.take().unwrap().write_all(&[1]).unwrap();
+        let receipt = run.join("spawn.json");
+        let deadline = Instant::now() + Duration::from_secs(105);
+        while !receipt.exists() {
+            assert!(
+                owner.0.try_wait().unwrap().is_none(),
+                "fixture exited before spawn"
+            );
+            assert!(Instant::now() < deadline, "controller spawn timed out");
+            thread::sleep(Duration::from_millis(20));
+        }
+        let ready: serde_json::Value = serde_json::from_slice(&fs::read(receipt).unwrap()).unwrap();
+        assert_eq!(ready["owner_pid"].as_u64(), Some(u64::from(owner.0.id())));
+        let controller =
+            duplicate_from_owner(&owner.0, ready["controller_handle"].as_u64().unwrap());
+        let stdout = duplicate_from_owner(&owner.0, ready["stdout_handle"].as_u64().unwrap());
+        let writer = retain_writer
+            .then(|| duplicate_from_owner(&owner.0, ready["stdin_handle"].as_u64().unwrap()));
+        let controller_handle = controller.as_raw_handle() as HANDLE;
+        assert!(cleanup_job.contains_process(controller_handle));
+        let controller_pid = unsafe { GetProcessId(controller_handle) };
+        assert_ne!(controller_pid, 0);
+        let kinds = cleanup_job
+            .member_basename_kinds(&[(owner.0.id(), "test_owner"), (controller_pid, "controller")])
+            .unwrap();
+        assert!(kinds.contains(&"test_owner") && kinds.contains(&"controller"));
+        // Windows may create console hosts even when these processes have no visible console.
+        assert!(kinds
+            .iter()
+            .all(|kind| matches!(*kind, "test_owner" | "controller" | "conhost.exe")));
+        let total_before = u32::try_from(kinds.len()).unwrap();
+        assert_eq!(
+            startup_fixture_processes(&cleanup_job),
+            (total_before, total_before)
+        );
+
+        let owner_kill = Instant::now();
+        owner.0.kill().unwrap();
+        assert_eq!(
+            unsafe { WaitForSingleObject(owner.0.as_raw_handle() as HANDLE, 5000) },
+            WAIT_OBJECT_0
+        );
+        assert!(!owner.0.wait().unwrap().success());
+        if retain_writer {
+            assert_eq!(
+                unsafe { WaitForSingleObject(controller_handle, 1000) },
+                WAIT_TIMEOUT
+            );
+        }
+        let eof = if retain_writer {
+            Instant::now()
+        } else {
+            owner_kill
+        };
+        drop(writer);
+        let remaining = CRASH_TIMEOUT.saturating_sub(eof.elapsed()).as_millis() as u32;
+        assert_eq!(
+            unsafe { WaitForSingleObject(controller_handle, remaining) },
+            WAIT_OBJECT_0
+        );
+        let exit_after_eof = eof.elapsed();
+        assert!(exit_after_eof <= CRASH_TIMEOUT);
+        let mut exit_code = 0;
+        assert_ne!(
+            unsafe { GetExitCodeProcess(controller_handle, &mut exit_code) },
+            0
+        );
+        assert_eq!(exit_code, 2);
+        // Cumulative accounting also detects a helper that started and already exited.
+        loop {
+            let (total, active) = startup_fixture_processes(&cleanup_job);
+            assert_eq!(
+                total, total_before,
+                "unexpected process started in the fixture Job"
+            );
+            if active == 0 {
+                break;
+            }
+            assert!(eof.elapsed() < CRASH_TIMEOUT, "fixture Job did not empty");
+            thread::sleep(Duration::from_millis(10));
+        }
+        assert_eq!(
+            File::from(stdout).read(&mut [0]).unwrap(),
+            0,
+            "unexpected controller frame"
+        );
+        cases.push(serde_json::json!({
+            "retained_writer": retain_writer,
+            "minimum_survival_with_writer_ms": retain_writer.then_some(1000),
+            "controller_exit_observed_ms": exit_after_eof.as_millis(),
+            "controller_exit_code": exit_code,
+            "controller_stdout_bytes": 0,
+            "outer_job_baseline_members": kinds,
+            "outer_job_total_processes": total_before,
+            "additional_processes_after_checkpoint": 0,
+            "outer_job_remaining_processes": 0,
+        }));
+    }
+    let result = serde_json::json!({"schema_version": 1, "passed": true, "cases": cases});
+    fs::write(
+        run_root.join("result.json"),
+        serde_json::to_vec_pretty(&result).unwrap(),
+    )
+    .unwrap();
+    println!(
+        "headroom_h006_startup_run={}",
+        run_root.file_name().unwrap().to_string_lossy()
+    );
 }
 
 fn hold_packaged_controller(run: &Path, resources: &Path) {
