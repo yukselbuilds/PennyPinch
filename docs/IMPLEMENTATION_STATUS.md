@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H006-c — gerçek GUI çökmesi yerel dilimi tamamlandı
+
+- Ana ajan süreç/ayar sahipliği ve kabulü üstlendi. Gerçek paketli release pencere → UI Başlat → manager → controller/helper/engine Ready yolu kullanıldı. Yalnız eldeki GUI Child handle'ı sonlandırılınca üç süreç 57,429ms, motor/sabit ingress portları 58,299ms içinde kapandı. Önceden belirlenmiş 5000ms sınırı geçti. Dış gözlemci Job'ı açık kaldı, yabancı listener korundu. [Kabul](proofs/windows-gui-crash.md), [inceleme](reviews/H006-c.md).
+- Aynı uygulama kimliğiyle yeniden açılış Stopped geldi. Sabit endpoint kimliği/portu korundu, yeni runtime generation ile Başlat/Ready/Durdur/normal Çıkış exit 0 geçti. İki kolda sahipli süreç/port 0, sağlayıcı model isteği 0, başarı için dış Job cleanup kullanılmadı. Nihai `work/proofs/windows-gui-crash/native-bb9c843392/result.json` 22.689 girdi ve araç/OS önce/sonra eşitliğiyle bağlı. [Programatik sonuç](proofs/windows-gui-crash.json).
+- Test sürücüsündeki fazla hash okumaları azaltıldı ve yanlış TCP tablo sınıfı pinned runtime sabitiyle düzeltildi. İlk olumsuz koşu `native-7928c92f86` ve byte-exact arşivlenen yalnız test state'i korundu. Derleyici sürücüsünün özgün baytları/hash'i saklandı, ürün/payload/UI değişmedi. Değişmeyen 344 girdi ve ortamla H009'un 222 Node/462 Rust, 19 ignored, fmt/frontend/embedded build kanıtı yeniden kullanıldı. [Benchmark](../bench/windows/gui_crash.py).
+- **Ana H006 açık, toplam 45/54.** Bu tek hazır durum çökmesi temiz OS/Windows 11, aktif stream/CCR verisi veya Job atamasından önceki başlangıç yarışını kanıtlamaz. Canlı hesap, istemci bağlantısı, Actions ve yayın yok. Sonraki somut yerel aday başlangıçtaki spawn→Job ataması aralığının kaynak/kanıt sınırını incelemektir. Bu dilimin sonunda durulur, başka ana görev başlatılmaz. Geliştirme token tasarrufu ölçülmedi.
+
 ## H009 — ana görev tamamlandı
 
 - Claude Code 2.1.158 / Headroom 0.41.0 Windows 10 yerel teknik kabulü H009-a/b, native H020 ve H022 ile uzlaştırıldı. Scoped Apply/Undo, model/efor/sentetik auth koruması, streaming, iki gerçek CLI aracı ve byte-exact server-side CCR kayıtlı. Native UI tools-off ile ayrı gözlemcili araç profili birbirinden ayrıldı. [Ana kabul](proofs/claude-acceptance.md), [inceleme](reviews/H009.md).

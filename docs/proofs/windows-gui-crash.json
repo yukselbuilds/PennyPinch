@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "task": "H006-c",
+  "recorded_at_utc": "2026-11-15T11:39:05.215324+00:00",
+  "slice_accepted": true,
+  "parent_task_accepted": false,
+  "scope": {
+    "platform": "Windows 10 22H2 x64 build 19045",
+    "engine": "0.41.0",
+    "model_requests": 0,
+    "real_packaged_gui": true,
+    "native_webview_instrumented": true,
+    "clean_os": false,
+    "windows_11": "not_tested",
+    "before_job_assignment": "not_tested",
+    "active_stream_or_ccr_data": "not_tested",
+    "token_savings": "not_measured"
+  },
+  "cases": [
+    {
+      "phase": "crash",
+      "gui_pid": 18648,
+      "engine_process_ids": [
+        20824,
+        21152,
+        8280
+      ],
+      "engine_port": 52227,
+      "stable_port": 52224,
+      "initial_status": "stopped",
+      "runtime_generation": "a20140ef830d4f70987d22194bfaba04",
+      "engine_readiness": true,
+      "engine_processes_closed_ms": 57.429,
+      "ports_closed_ms": 58.299,
+      "gui_exit_code": 1,
+      "foreign_listener_preserved": true,
+      "observer_job_open_during_measurement": true,
+      "owned_processes_after_exit": 0,
+      "owned_ports_closed": true,
+      "forced_cleanup_for_success": false
+    },
+    {
+      "phase": "reopen",
+      "gui_pid": 14444,
+      "engine_process_ids": [
+        25472,
+        25852,
+        22644
+      ],
+      "engine_port": 52276,
+      "stable_port": 52224,
+      "initial_status": "stopped",
+      "runtime_generation": "20839cdce2f14b05a86091aa5a637c23",
+      "engine_readiness": true,
+      "gui_exit_code": 0,
+      "foreign_listener_preserved": true,
+      "observer_job_open_during_measurement": true,
+      "owned_processes_after_exit": 0,
+      "owned_ports_closed": true,
+      "forced_cleanup_for_success": false
+    }
+  ],
+  "native_command_line": "\"D:\\Projeler\\Headroom\\work\\proofs\\packaging\\artifacts\\headroom-engine\\runtime\\python.exe\" -I -B bench/windows/gui_crash.py --candidate work/proofs/windows-gui-crash/candidate-a8e23e494d",
+  "build_command": [
+    "cargo",
+    "build",
+    "--release",
+    "--locked",
+    "--offline",
+    "--manifest-path",
+    "src-tauri/Cargo.toml",
+    "--features",
+    "custom-protocol"
+  ],
+  "checks": {
+    "crash_bound_ms": 5000,
+    "native_inputs_unchanged": 22689,
+    "observer_job_open_during_measurement": true,
+    "forced_cleanup_used_for_success": false,
+    "foreign_listener_preserved": true,
+    "stable_endpoint_preserved": true,
+    "reopen_start_stop_normal_exit": true,
+    "packaged_runtime_files": 22332,
+    "prepared_runtime_hardlinks_still_match_stage": true,
+    "failed_observer_run_and_state_preserved": true
+  },
+  "quality": {
+    "path": "work/proofs/opencode-v2-binding/checks-9afd1583f8/final.json",
+    "sha256": "72fc6e488c26ce0c43378a5ef43bde7b566038d4c6d70d20f24a7d867c3e0ec4",
+    "reused_without_rerun": true,
+    "matching_product_inputs": 344,
+    "node_passed": 222,
+    "rust_passed": 462,
+    "rust_ignored": 19,
+    "fmt_frontend_embedded_build": "pass"
+  },
+  "environment_before": {
+    "workspace": "D:\\Projeler\\Headroom",
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "tools": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "python_sha256": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+    "node_sha256": "91ec09dda8f20556f366110859f106ab189d45f8f6a2bd092e6785174ad4a0fa"
+  },
+  "environment_after": {
+    "workspace": "D:\\Projeler\\Headroom",
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "tools": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "python_sha256": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+    "node_sha256": "91ec09dda8f20556f366110859f106ab189d45f8f6a2bd092e6785174ad4a0fa"
+  },
+  "references": [
+    {
+      "path": "work/proofs/windows-gui-crash/native-bb9c843392/result.json",
+      "sha256": "f2951c0c2e8d4331bee2cc6784d62c6f03353a65a2970af981218ddc78120209"
+    },
+    {
+      "path": "work/proofs/windows-gui-crash/candidate-a8e23e494d/build.json",
+      "sha256": "e93e57cabfb2c1dadebb31823b205a1d9c0b9f08e911e38361e5131ff05279f6"
+    },
+    {
+      "path": "work/proofs/windows-gui-crash/native-bb9c843392/launcher.json",
+      "sha256": "62aa2865ec20014e56a44aad77d1485e6cae114f01cd78b72591673b4d574c47"
+    },
+    {
+      "path": "work/proofs/windows-gui-crash/native-7928c92f86/result.json",
+      "sha256": "14d1c06b09eb6cc9ed69510aad1d46f5b8f13357311e4262353a513c408ec002"
+    },
+    {
+      "path": "work/proofs/windows-gui-crash/native-7928c92f86/failed-state-preserved.json",
+      "sha256": "e4f7504c2d42bc5b0519ec0fa354b25156cb1d439068a14e7b4a340e27166c4c"
+    },
+    {
+      "path": "work/proofs/opencode-v2-binding/checks-9afd1583f8/final.json",
+      "sha256": "72fc6e488c26ce0c43378a5ef43bde7b566038d4c6d70d20f24a7d867c3e0ec4"
+    },
+    {
+      "path": "work/proofs/windows-gui-crash/candidate-a8e23e494d/prepare-driver.py",
+      "sha256": "5146e1aec9c6f35d31d0e69a2fa9b7217ed0af2a89777f0af6cb089a12e76715"
+    },
+    {
+      "path": "work/proofs/windows-gui-crash/candidate-a8e23e494d/app/headroom-desktop.exe",
+      "sha256": "b39b0e1f3dcf156bde79e3795f2b42a856cd1236085c8cba911db3b75414ed9c"
+    }
+  ],
+  "benchmark_before": {
+    "bench/windows/gui_crash.py": "df00ce6a6baea41996251eff6e43a4c78fb26725d9ab06a2ed9e9817a2717487",
+    "bench/windows/gui_crash_ui.mjs": "9299238a739ee3db5bf15560a2546378bb71f366dfd1472cc6927aa0f8b0aa37"
+  },
+  "benchmark_after": {
+    "bench/windows/gui_crash.py": "df00ce6a6baea41996251eff6e43a4c78fb26725d9ab06a2ed9e9817a2717487",
+    "bench/windows/gui_crash_ui.mjs": "9299238a739ee3db5bf15560a2546378bb71f366dfd1472cc6927aa0f8b0aa37"
+  },
+  "verification": {
+    "path": "work/proofs/windows-gui-crash/acceptance-dacbdc78ce/verification.json",
+    "sha256": "a853147bb5adaada68d766bcb32d5289485ce83c2f4e5d4cec46304b52224d96",
+    "before_fingerprint_sha256": "cb85821e6a40f87798f044c3f068f457d49246e38299a77a8ef20f4e0b484923",
+    "after_fingerprint_sha256": "cb85821e6a40f87798f044c3f068f457d49246e38299a77a8ef20f4e0b484923",
+    "verifier_sha256": "0dbd2bd0c1d6e387b93e7161abf14417578d7d1c4999c83e681c793cf9557442"
+  }
+}

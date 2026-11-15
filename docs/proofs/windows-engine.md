@@ -74,3 +74,9 @@ cargo +stable-x86_64-pc-windows-msvc test --locked --offline --manifest-path src
 ```
 
 Ana H006 açık: temiz Windows 10/Windows 11, başlangıçta Job ataması öncesindeki çökme yarışı ve gerçek GUI çökmesi bu dilimle doğrulanmaz. Canlı sağlayıcı veya istemci ayarı değiştirilmedi; yayın ve Actions çalıştırılmadı.
+
+## H006-c — Gerçek paketli GUI kaybı (15 Kasım 2026)
+
+Yerel alt dilim kabul edildi. Hazır Tauri release GUI'sinin zorla kaybında üç motor process handle'ı 57,429ms, motor/sabit ingress portları 58,299ms içinde kapandı. Dış gözlemci Job'ı bu ölçüm boyunca açıktı. Aynı test kimliği/profili Stopped açıldı, endpoint korundu ve Başlat/Ready/Durdur/normal Çıkış geçti. Yabancı listener korundu, model isteği 0. Bu, H006-b'nin controller fixture'ından ayrı gerçek GUI kanıtıdır. [Kapsam ve tekrar üretim](windows-gui-crash.md), [programatik sonuç](windows-gui-crash.json), [inceleme](../reviews/H006-c.md).
+
+H006 ana kutusu açık kalır. Temiz Windows 10, ayrı Windows 11, Job ataması öncesi başlangıç yarışı ve aktif stream/CCR verisi bu yeni deneyle doğrulanmadı. Toplam 45/54 değişmez.
