@@ -53,6 +53,16 @@ Windows 10 yerel kabulünde gerçek sahipli motor, Rust ölçüm okuyucusu, SQLi
 3. **Learn önizlemesi.** Sabit 0.41.0 örüntü algılayıcısı, kullanıcı seçimiyle çalışan [yerel önizlemede](#learn-önizlemesi) kullanılır. Önerilerin gerçek proje kurallarıyla karşılaştırılması, ayrıca sağlayıcılı analiz düşünülürse veri kapsamı, görev kalitesi ve token maliyeti pilotta ölçülür. [Learn incelemesi](../research/headroom-serena-2026-11-15.md#learn-ne-yapar).
 4. **Serena proje deneyi.** Ücretsiz dil sunucusu arka ucuyla salt okunur sembol bulma, dosya özeti ve referans sorgularını Rust ve TypeScript’te mevcut CodeGraph ve dar dosya okumalarıyla aynı görevde karşılaştır. Doğru kaynak, toplam bağlam, açılış ve bellek maliyeti kaydedilir. İlk pilot proje kapsamında ve klasik üç sembol aracıyla çalışır. [Serena incelemesi](../research/headroom-serena-2026-11-15.md#serena).
 
+### Headroom 0.44.0 Windows karşılaştırması
+
+16 Kasım 2026. PyPI’nin Windows x64 wheel’i kendi hash’i ve lock dosyasıyla yalıtılmış bir pakete alındı. Aday kopyasında denetleyici, gözetmen ve optimizasyon katmanının sürüm ve kaynak pinleri güncellendi. İlk açılış koşusundaki gecikme izinde LiteLLM fiyat haritası için ağ bağlantısı görüldü. Eşlenmiş koşuda iki sürüm paket içindeki fiyat haritasını kullandı. [Aday wheel](https://pypi.org/project/headroom-ai/0.44.0/#files) · [Paket ve başlangıç kanıtı](../proofs/headroom-044-candidate.json).
+
+48 istemci isteği Responses HTTP/SSE ve WebSocket, Chat Completions SSE ve Anthropic Messages SSE yüzeylerinde sınandı. Model ve efor, araç kimliği, korunan içerik, sıcak prefix, duraklatma, normal istemci kopuşundan sonra yeni istek ve sahipli kapanış doğrulandı. Birincil gönderimde aynı yerel token miktarı her eşleşen örnekte gözlendi. Altı Anthropic kullanım senaryosu ve dört Learn testi adayda geçti.
+
+0.44.0’ın kayıpsız `/v1/compress` çağrısında dosya listesi ve arama çıktısı sırası ve son satırları dahil birebir geri açıldı. Korumalı sayısal ve HTML örnekleri birebir döndü. Bu ölçüm sentetik mesajların yerel token karşılaştırmasıdır. Kaynakta yeni `recent_requests.cost_usd` liste fiyatı tahmini olarak hesaplanır. [Maliyet hesabı](https://github.com/headroomlabs-ai/headroom/blob/v0.44.0/headroom/proxy/cost.py#L548-L581) · [Ölçüm](../proofs/headroom-044-candidate.json).
+
+0.44.0, Windows/macOS paket ve sürüm pinlerinin geçirilmesi için adaydır. Etkin sürüm 0.41.0. Gerçek görevlerde kalite ve net token faydası, temiz işletim sistemi ile yayın kabulü açık.
+
 ### Learn önizlemesi
 
 Kullanıcı 15 Kasım’da Learn’in isteğe bağlı eklenmesini istedi. Ayarlar’da tek bir Codex veya Claude Code JSONL oturumu seçmek bir inceleme başlatır. Seçici iptal edildiğinde önceki sonuç ekranda kalır. Windows uygulaması, mevcut motor paketindeki doğrulanmış Python ile yalnız seçilen dosyayı okur. Motoru başlatmak gerekmez.

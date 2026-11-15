@@ -1,0 +1,198 @@
+{
+  "task": "H041",
+  "slice": "headroom_0.44.0_candidate_comparison",
+  "date": "2026-11-16",
+  "passed": true,
+  "os": "Windows-10-10.0.19045-SP0",
+  "installed_engine": "0.41.0",
+  "decision": "candidate_for_separate_pin_migration",
+  "candidate_stage": {
+    "files": 18837,
+    "bytes": 494263913,
+    "lock_sha256": "d932901067c729f4a9ee64c60589107d2f22dc351704b2d58eec7e3e7411a700",
+    "wheel_sha256": "a7853a0d81f1e3f6d4b00de6114791732ff458c09b8af05a06c4ae2d8c492d68",
+    "installed_distributions": 98
+  },
+  "changed_overlay_source_files": [
+    "proxy/server.py",
+    "proxy/handlers/openai.py",
+    "proxy/handlers/anthropic.py",
+    "cache/prefix_tracker.py",
+    "proxy/models.py",
+    "proxy/sse_byte_buffer_policy.py",
+    "proxy/handlers/streaming.py",
+    "ccr/response_handler.py"
+  ],
+  "production_pin_rejects_alternate_package": true,
+  "startup_observation": {
+    "initial_candidate_timed_out_at_seconds": 65,
+    "candidate_diagnostic_ready_ms": 45009.5,
+    "observed_blocking_path": "litellm_price_map_network_fetch",
+    "paired_setting": {
+      "LITELLM_LOCAL_MODEL_COST_MAP": "True"
+    }
+  },
+  "paired": {
+    "client_requests": 48,
+    "surfaces": [
+      "responses_http_sse",
+      "responses_websocket",
+      "chat_http_sse",
+      "anthropic_http_sse"
+    ],
+    "token_basis": "canonical full forwarded JSON o200k_base on the primary transmission",
+    "counts_equal_per_request": true,
+    "checks": [
+      "owned startup and shutdown",
+      "HTTP and WebSocket streams",
+      "normal cancel then next request",
+      "warm prefix and protected content",
+      "pause and resume",
+      "byte-for-byte CCR"
+    ],
+    "versions": {
+      "0.41.0": {
+        "startup_ms": 9165.3,
+        "warm_sample_count": 12,
+        "warm_p95_ms": 73.24,
+        "traffic": {
+          "original_tokens": 475217,
+          "forwarded_tokens": 288142,
+          "saved_tokens": 187075,
+          "ccr_verified": 23,
+          "upstream_attempts": 26,
+          "saved_percent": 39.3662
+        },
+        "lossless": {
+          "path": {
+            "status": 400
+          },
+          "search": {
+            "status": 400
+          },
+          "protected_numeric": {
+            "status": 400
+          },
+          "protected_markup": {
+            "status": 400
+          }
+        },
+        "stats": {
+          "usage_records": 6,
+          "stats_request_rows": 10,
+          "recent_rows": 25,
+          "cost_field_present": false
+        }
+      },
+      "0.44.0": {
+        "startup_ms": 15869.08,
+        "warm_sample_count": 12,
+        "warm_p95_ms": 89.51,
+        "traffic": {
+          "original_tokens": 475217,
+          "forwarded_tokens": 288142,
+          "saved_tokens": 187075,
+          "ccr_verified": 23,
+          "upstream_attempts": 25,
+          "saved_percent": 39.3662
+        },
+        "lossless": {
+          "path": {
+            "status": 200,
+            "roundtrip": true,
+            "original_tokens": 714,
+            "forwarded_tokens": 320,
+            "saved_tokens": 394
+          },
+          "search": {
+            "status": 200,
+            "roundtrip": true,
+            "original_tokens": 939,
+            "forwarded_tokens": 411,
+            "saved_tokens": 528
+          },
+          "protected_numeric": {
+            "status": 200,
+            "roundtrip": true,
+            "original_tokens": 109,
+            "forwarded_tokens": 109,
+            "saved_tokens": 0
+          },
+          "protected_markup": {
+            "status": 200,
+            "roundtrip": true,
+            "original_tokens": 104,
+            "forwarded_tokens": 104,
+            "saved_tokens": 0
+          }
+        },
+        "stats": {
+          "usage_records": 6,
+          "stats_request_rows": 10,
+          "recent_rows": 25,
+          "cost_field_present": true
+        }
+      }
+    }
+  },
+  "provider_usage_fixture": {
+    "cases": 6,
+    "complete_record": {
+      "cache_creation_input_tokens": 100,
+      "cache_read_input_tokens": 2000,
+      "input_tokens": 300,
+      "output_tokens": 29,
+      "total_input_tokens": 2400,
+      "total_tokens": 2429
+    },
+    "native_activity_detail": "pass",
+    "failed_and_missing_usage_stayed_unknown": true,
+    "generation_isolation": "pass"
+  },
+  "learn_cases": 4,
+  "usage_field_added": "recent_requests.cost_usd",
+  "usage_field_basis": "list_price_estimate",
+  "scope": "isolated Windows 10 engines and synthetic loopback providers; no live provider usage or billed savings",
+  "pending": [
+    "Windows and macOS package pin migration",
+    "published installer and platform acceptance",
+    "representative tasks for quality and net token usage"
+  ],
+  "proofs": {
+    "resolved_install": {
+      "path": "work/proofs/optimization/headroom-044/441d950c4d87/sync.json",
+      "sha256": "fc6abba978e6ebb69d0036d6f478a895e3536bd578e04ede1b284ef3b0d97b63",
+      "inputs": 7
+    },
+    "candidate_staging": {
+      "path": "work/proofs/optimization/headroom-044/441d950c4d87/staging.json",
+      "sha256": "57d8d3e14a636f84e13c859ec2fb5e3f594df9ecc4da0ced09eb63803fedb3a5",
+      "inputs": 14
+    },
+    "initial_startup": {
+      "path": "work/proofs/optimization/headroom-044/441d950c4d87/smoke-245f593f41f5/result.json",
+      "sha256": "6d8ca8c64b781d0ef0fba322027fc192990f35aa100b6f7c08192d3f9a72a509",
+      "inputs": 63
+    },
+    "pricing_startup_diagnosis": {
+      "path": "work/proofs/optimization/headroom-044/441d950c4d87/startup-default-3c2f297c2606/result.json",
+      "sha256": "6ebc8577bbfd2d4fde812934911a0d1eb40773710e5e9bbfc30e3c2ce3e801da",
+      "inputs": 31
+    },
+    "protocol_comparison": {
+      "path": "work/proofs/optimization/headroom-044/441d950c4d87/pair-945cbe250d64/result.json",
+      "sha256": "bdc35cff9c8d22ab9de34c749c286d11ad0175992e2578ad71bb5ec002f395d3",
+      "inputs": 59
+    },
+    "anthropic_native_usage": {
+      "path": "work/proofs/optimization/desktop-anthropic-usage/candidate-044-3ce8d65719d2/result.json",
+      "sha256": "5abc5840f97985e750707a67a72d2887575f01d12418262640a3fcb652ff68be",
+      "inputs": 42
+    },
+    "learn_regression": {
+      "path": "work/proofs/optimization/headroom-044/441d950c4d87/learn-02f2aed8a592.json",
+      "sha256": "3cc5f0f337e1e0ea27abd4601261bd8bb2eddf9dc325c1685c68f339a0acdab0",
+      "inputs": 12
+    }
+  }
+}

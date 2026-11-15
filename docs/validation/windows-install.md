@@ -71,6 +71,8 @@ Windows PowerShell 7.6.9 ile arşiv `Teslim çalışma` klasörüne çıkarıld�
 
 Kullanıcının bildirdiği 0,10 USD kalan dahil kullanım, yayımlanan 0,010 USD/dakika standart Windows fiyatıyla yaklaşık on faturalandırılan dakikaya karşılık gelir. Bu kabul için Actions işi başlatılmadı. [Fiyat ve yuvarlama](https://docs.github.com/en/billing/reference/actions-runner-pricing).
 
+16 Kasım 2026’da CircleCI de incelendi. Özel depo, Free planındaki aylık 30.000 krediyi kullanabilir. `windows.medium` dakika başına 40 kredi, dolayısıyla tüm kota yalnız buna ayrıldığında yaklaşık 750 dakika eder. Resmî barındırılan Windows imajları Server 2019 ve Server 2022’dir. Bu ortam derleme ve Server doğrulaması için kullanılabilir. Windows 11 x64 masaüstü kabulü ayrı bir ortam bekler. Self-hosted runner için çalıştırılacak makineyi kullanıcının sağlaması gerekir. [Windows imajları](https://circleci.com/docs/guides/execute/using-windows/) · [Ücretsiz plan](https://circleci.com/pricing/) · [Dakika fiyatı](https://circleci.com/pricing/price-list/) · [Runner kapsamı](https://circleci.com/docs/runner/runner-overview/).
+
 Ücretsiz bir Windows 11 x64 masaüstü ortamı erişilebilir olunca SHA-256 değeri kaydedilmiş yerel adayla doğrudan kurulum testi yapılabilir. İşletim sistemi sürümü ve işlemci mimarisi kaydedilir. Geliştirme araçları bulunmayan ortamda kur → başlat → hazır → durdur akışı H006'ya, istemci bağlantısı, yerel trafik, tepsi ve kurulum ayrıntıları H037'ye yazılır. Kota yenilendiğinde standart Windows runner, ihtiyaç varsa Server CI kontrolü için kullanılabilir.
 
 macOS/Linux port/native Actions görevleri H048/H049'dadır. Bu Windows görevi onların başarı veya hazır workflow kanıtı değildir.

@@ -1,5 +1,11 @@
 # Headroom Desktop — güncel devir
-15 Kasım 2026.
+16 Kasım 2026.
+
+## H041 — Headroom 0.44.0 aday karşılaştırması tamamlandı
+
+- Ana ajan paket ve ölçüm sözleşmesini üstlendi. 0.44.0, ayrı lock ve geçici Windows paketiyle sınandı. Etkin 0.41.0 denetleyicisi yeni paketi pin uyuşmazlığıyla reddetti. Deneme paketi için dokuz bağımlı motor kaynağının sekizinde SHA-256 değişti. Açılışta fiyat tablosunun ağdan alınması gecikmeye yol açtı. Eşlenmiş karşılaştırmada iki sürüm de paket içindeki LiteLLM fiyat haritasını kullandı.
+- Windows 10’da 48 sentetik istemci isteği dört yüzeyde geçti. Her kolda ilk upstream gönderiminde 475.217 yerel token 288.142’ye indi. İstek başına sayılar sürümler arasında eşleşti. Her kolda 23 CCR geri çağırması birebir doğrulandı. Yeni kayıpsız uçta dosya listesi 714’ten 320’ye, arama örneği 939’dan 411’e indi. Sayısal ve HTML örnekleri korundu. Altı Anthropic kullanım senaryosu, native istek ayrıntısı ve dört Learn testi geçti. [Kanıt](proofs/headroom-044-candidate.json).
+- **45/54.** 0.44.0 paket geçişi için aday. Sıradaki somut dilim fiyat haritası ayarını ve lock/pinleri Windows ve macOS paketlerine taşıyıp kendi kabul kapılarından geçirmek. CircleCI Free, Windows Server işlerine ayrı kota sağlar. Windows 11 x64 masaüstü kabulü açık. [Ortam ve kota](validation/windows-install.md#açık-kabul).
 
 ## Learn — isteğe bağlı Windows önizlemesi tamamlandı
 
