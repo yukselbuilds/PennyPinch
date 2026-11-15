@@ -95,6 +95,8 @@ function measurement(v:unknown,end:number):ActivityMeasurementDetail|null {
     ||!Array.isArray(v.observed_via)||v.observed_via.length<1||v.observed_via.length>2||v.observed_via.some(x=>!member(x,["proxy","mcp"] as const))||new Set(v.observed_via).size!==v.observed_via.length
     ||!member(v.optimizer,layers)||!member(v.status,["measured","missing_counter","unknown_basis","incomparable","uncorrelated","missing_timestamp","conflict"] as const)
     ||typeof v.main_metric_eligible!=="boolean"||!record(v.provider_usage)||[v.provider_usage.input,v.provider_usage.output,v.provider_usage.cached_input].some(x=>x!==null&&!token(x)))return null;
+  const cacheWrite=v.provider_usage.cache_write_input??null,attempts=v.provider_usage.upstream_attempts??null;
+  if((cacheWrite!==null&&!token(cacheWrite))||(attempts!==null&&(!token(attempts)||attempts<1)))return null;
   const before=reading(v.before),after=reading(v.after),m=metadata(v.metadata);
   if(!before||!after||!m)return null;
   if(v.status==="measured"){
@@ -107,7 +109,8 @@ function measurement(v:unknown,end:number):ActivityMeasurementDetail|null {
   }else if(v.saved_tokens!==null||v.saved_percent!==null||v.main_metric_eligible)return null;
   return {event_id:v.event_id,timestamp_utc:v.timestamp_utc,observed_via:[...v.observed_via] as ("proxy"|"mcp")[],optimizer:v.optimizer,status:v.status,
     before,after,saved_tokens:v.saved_tokens as number|null,saved_percent:v.saved_percent as number|null,main_metric_eligible:v.main_metric_eligible,
-    provider_usage:{input:v.provider_usage.input as number|null,output:v.provider_usage.output as number|null,cached_input:v.provider_usage.cached_input as number|null},metadata:m};
+    provider_usage:{input:v.provider_usage.input as number|null,output:v.provider_usage.output as number|null,
+      cached_input:v.provider_usage.cached_input as number|null,cache_write_input:cacheWrite,upstream_attempts:attempts},metadata:m};
 }
 function detail(v:Record<string,unknown>,period:MetricPeriod,origin:string):ActivityDetailSnapshot|null {
   const d=v.data;if(!utc(v.observed_at_utc)||!record(d)||d.period!==period||!Array.isArray(d.measurements)||!count(d.omitted_measurements))return null;

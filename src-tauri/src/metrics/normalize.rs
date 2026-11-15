@@ -64,6 +64,54 @@ pub struct ProviderUsage {
     pub input: Option<u64>,
     pub output: Option<u64>,
     pub cached_input: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cache_write_input: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub upstream_attempts: Option<u64>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub conflicted: bool,
+}
+
+impl ProviderUsage {
+    fn conflict() -> Self {
+        Self {
+            conflicted: true,
+            ..Self::default()
+        }
+    }
+
+    fn merge(&mut self, incoming: &Self) {
+        let mut conflict = self.conflicted || incoming.conflicted;
+        for (current, next) in [
+            (&mut self.input, incoming.input),
+            (&mut self.output, incoming.output),
+            (&mut self.cached_input, incoming.cached_input),
+            (&mut self.cache_write_input, incoming.cache_write_input),
+            (&mut self.upstream_attempts, incoming.upstream_attempts),
+        ] {
+            conflict |= current.zip(next).is_some_and(|(a, b)| a != b);
+            *current = current.or(next);
+        }
+        if conflict {
+            *self = Self::conflict();
+        }
+    }
+
+    fn validate(&self) -> Result<(), NormalizeError> {
+        for counter in [
+            self.input,
+            self.output,
+            self.cached_input,
+            self.cache_write_input,
+            self.upstream_attempts,
+        ] {
+            if self.conflicted && counter.is_some() {
+                return Err(NormalizeError::InvalidCounter);
+            }
+            validate_count(counter)?;
+        }
+        Ok(())
+    }
 }
 
 // Origins and bases come from a trusted collector, never from arbitrary engine tags.
@@ -231,13 +279,7 @@ fn normalize_one(value: &Observation) -> Result<NormalizedEvent, NormalizeError>
     }
     validate_reading(&value.before)?;
     validate_reading(&value.after)?;
-    for count in [
-        value.provider_usage.input,
-        value.provider_usage.output,
-        value.provider_usage.cached_input,
-    ] {
-        validate_count(count)?;
-    }
+    value.provider_usage.validate()?;
     let timestamp_utc = value
         .timestamp_utc
         .as_deref()
@@ -348,6 +390,7 @@ pub(crate) fn merge_event(current: &mut NormalizedEvent, incoming: &NormalizedEv
     comparison.observed_via = current.observed_via.clone();
     comparison.attribution = current.attribution.clone();
     comparison.metadata = current.metadata.clone();
+    comparison.provider_usage = current.provider_usage.clone();
     let new_conflict = current.status != MeasurementStatus::Conflict && *current != comparison;
     attribution::merge(&mut current.attribution, &incoming.attribution);
     current.metadata.merge(&incoming.metadata);
@@ -359,6 +402,9 @@ pub(crate) fn merge_event(current: &mut NormalizedEvent, incoming: &NormalizedEv
         current.saved_tokens = None;
         current.saved_percent = None;
         current.main_metric_eligible = false;
+    }
+    if current.status != MeasurementStatus::Conflict {
+        current.provider_usage.merge(&incoming.provider_usage);
     }
     if current.status == MeasurementStatus::Conflict
         && current.timestamp_utc != incoming.timestamp_utc
@@ -407,13 +453,7 @@ pub(crate) fn validate_event(value: &NormalizedEvent) -> Result<(), NormalizeErr
     }
     validate_reading(&value.before)?;
     validate_reading(&value.after)?;
-    for count in [
-        value.provider_usage.input,
-        value.provider_usage.output,
-        value.provider_usage.cached_input,
-    ] {
-        validate_count(count)?;
-    }
+    value.provider_usage.validate()?;
     if let Some(stamp) = &value.timestamp_utc {
         let parsed =
             OffsetDateTime::parse(stamp, &Rfc3339).map_err(|_| NormalizeError::InvalidTimestamp)?;
@@ -460,6 +500,70 @@ struct EngineSnapshot {
     recent_requests: Option<Rows>,
     request_logs: Option<Rows>,
     requests: Option<RequestCounts>,
+}
+
+#[derive(Deserialize)]
+struct OwnedUsageSnapshot {
+    schema_version: u8,
+    runtime_generation: String,
+    surface: String,
+    records: Vec<UsageRecord>,
+}
+
+#[derive(Deserialize)]
+struct UsageRecord {
+    request_id: String,
+    truncated: bool,
+    attempts: Vec<UsageAttempt>,
+}
+
+#[derive(Deserialize)]
+struct UsageAttempt {
+    status: Option<u16>,
+    usage: Option<AttemptCounters>,
+}
+
+#[derive(Deserialize)]
+struct AttemptCounters {
+    input_tokens: Option<u64>,
+    cache_read_input_tokens: Option<u64>,
+    cache_creation_input_tokens: Option<u64>,
+    output_tokens: Option<u64>,
+}
+
+impl UsageRecord {
+    fn totals(&self) -> ProviderUsage {
+        if self.truncated || !(1..=16).contains(&self.attempts.len()) {
+            return ProviderUsage::default();
+        }
+        let sum = |count: fn(&AttemptCounters) -> Option<u64>| {
+            self.attempts
+                .iter()
+                .try_fold(0u64, |total, attempt| {
+                    let status = attempt.status?;
+                    if !(200..300).contains(&status) {
+                        return None;
+                    }
+                    total.checked_add(count(attempt.usage.as_ref()?)?)
+                })
+                .filter(|&value| value <= MAX_TOKEN_COUNT)
+        };
+        let uncached = sum(|usage| usage.input_tokens);
+        let cached_input = sum(|usage| usage.cache_read_input_tokens);
+        let cache_write_input = sum(|usage| usage.cache_creation_input_tokens);
+        let input = (|| {
+            let input = uncached? + cached_input? + cache_write_input?;
+            (input <= MAX_TOKEN_COUNT).then_some(input)
+        })();
+        ProviderUsage {
+            input,
+            output: sum(|usage| usage.output_tokens),
+            cached_input,
+            cache_write_input,
+            upstream_attempts: Some(self.attempts.len() as u64),
+            ..ProviderUsage::default()
+        }
+    }
 }
 
 #[derive(Deserialize)]
@@ -535,6 +639,53 @@ pub fn project_headroom_041(
     engine_version: &str,
     source: Source,
 ) -> Result<EngineProjection, NormalizeError> {
+    project_headroom(
+        payload,
+        runtime_generation,
+        engine_version,
+        source,
+        &BTreeMap::new(),
+    )
+}
+
+/// Usage bytes come only from the authenticated, currently owned engine.
+pub(crate) fn project_owned_headroom_041(
+    payload: &[u8],
+    usage_payload: Option<&[u8]>,
+    runtime_generation: &str,
+) -> Result<EngineProjection, NormalizeError> {
+    let snapshot = usage_payload
+        .filter(|body| body.len() <= MAX_SNAPSHOT_BYTES)
+        .and_then(|body| serde_json::from_slice::<OwnedUsageSnapshot>(body).ok())
+        .filter(|snapshot| {
+            snapshot.schema_version == 1
+                && snapshot.runtime_generation == runtime_generation
+                && snapshot.surface == "anthropic_messages"
+                && snapshot.records.len() <= 64
+        });
+    let Some(snapshot) = snapshot else {
+        return project_headroom_041(payload, runtime_generation, "0.41.0", Source::Proxy);
+    };
+    let mut usage = BTreeMap::new();
+    for record in snapshot.records {
+        if valid_label(&record.request_id) {
+            let totals = record.totals();
+            usage
+                .entry(record.request_id)
+                .and_modify(|entry| *entry = ProviderUsage::conflict())
+                .or_insert(totals);
+        }
+    }
+    project_headroom(payload, runtime_generation, "0.41.0", Source::Proxy, &usage)
+}
+
+fn project_headroom(
+    payload: &[u8],
+    runtime_generation: &str,
+    engine_version: &str,
+    source: Source,
+    usage: &BTreeMap<String, ProviderUsage>,
+) -> Result<EngineProjection, NormalizeError> {
     if engine_version != "0.41.0" {
         return Err(NormalizeError::UnsupportedEngineVersion);
     }
@@ -602,8 +753,7 @@ pub fn project_headroom_041(
             optimizer: Optimizer::Headroom,
             before: unverified_reading(row.input_tokens_original),
             after: unverified_reading(row.input_tokens_optimized),
-            // Legacy logger defaults cannot prove provider-usage provenance either.
-            provider_usage: ProviderUsage::default(),
+            provider_usage: usage.get(request_id).cloned().unwrap_or_default(),
         });
     }
     Ok(EngineProjection {

@@ -14,6 +14,17 @@ test('activity list and detail preserve zero, unknown, negative and layer scope'
  const detail=await h.client.detail('today',hash('a'));assert.equal(detail.kind,'snapshot');assert.equal(detail.snapshot.data.row.totals.saved_tokens,50);assert.equal(detail.snapshot.data.measurements[1].saved_tokens,90);
  assert.deepEqual(h.calls[1],{command:'get_activity_detail',args:{request:{schema_version:1,request_id:activityRequestId,period:'today',origin_id:hash('a')}}});
 });
+test('provider usage details accept older rows and show independent cache writes and attempts',async()=>{
+ const raw=activityDetail();
+ raw.data.measurements[0].provider_usage={input:null,output:29,cached_input:2000,cache_write_input:0,upstream_attempts:2};
+ const detail=await harness(raw).client.detail('today',hash('a'));
+ assert.equal(detail.kind,'snapshot');
+ assert.deepEqual(detail.snapshot.data.measurements[0].provider_usage,raw.data.measurements[0].provider_usage);
+ assert.equal(detail.snapshot.data.measurements[1].provider_usage.cache_write_input,null);
+ assert.equal(detail.snapshot.data.measurements[1].provider_usage.upstream_attempts,null);
+ raw.data.measurements[0].provider_usage.upstream_attempts=0;
+ assert.deepEqual(await harness(raw).client.detail('today',hash('a')),{kind:'error',error:'invalid_response'});
+});
 test('allowlist drops secret content at every exported level',async()=>{
  const canary='PRIVATE_CONTENT_CANARY';
  for(const mode of ['list','detail']){

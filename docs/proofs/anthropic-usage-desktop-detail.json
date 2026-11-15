@@ -1,0 +1,89 @@
+{
+  "task": "H041-d",
+  "slice": "anthropic_usage_to_desktop_activity_details",
+  "date": "2026-11-15",
+  "passed": true,
+  "engine": "0.41.0",
+  "os": "Windows-10-10.0.19045-SP0",
+  "end_to_end": "owned_local_engine_to_native_http_to_windowed_stats_exact_id_to_sqlite_to_activity_detail",
+  "measurement_basis": "upstream synthetic usage counters across observed attempts",
+  "observations": {
+    "input_total": 2400,
+    "output_total": 29,
+    "cache_read": 2000,
+    "cache_write": 100,
+    "upstream_attempts": 2,
+    "savings_basis_upgrade": false
+  },
+  "checks": {
+    "nonce_and_peer_verified": "pass",
+    "exact_id_and_generation": "pass",
+    "known_zero_missing_failure_and_conflict": "pass",
+    "old_usage_rows_compatible": "pass",
+    "native_tests": 464,
+    "native_default_ignored": 21,
+    "native_real_engine_detail_opt_in": "pass",
+    "frontend_tests": 223,
+    "vite_build": "pass",
+    "embedded_build": "pass"
+  },
+  "proofs": {
+    "native_with_engine": {
+      "path": "work/proofs/optimization/desktop-anthropic-usage/2143eec6-5a7b-4a6a-b5a4-d94df8c7e39c/result.json",
+      "sha256": "01262d1a5aa6f050d59f359f0dd4f3c36b3bfa3bada400956afddded1e9b353c",
+      "inputs": 41
+    },
+    "local_quality": {
+      "path": "work/proofs/optimization/desktop-usage-detail/a91acd7ef1c7/result.json",
+      "sha256": "04b3fc4d6782f9fb1528be7e46cc339adbfa670d1257ef96aaf5cb593fd257b3",
+      "inputs": 339
+    }
+  },
+  "related_local_learn_probe": {
+    "proof": {
+      "path": "work/proofs/optimization/learn-probe/a281db6a3806/result.json",
+      "sha256": "e8700f2cad03c6f0e2d746b60aedfc7676ca2df57b105d50224ee38a2f5c173b",
+      "inputs": 5
+    },
+    "cases": {
+      "repeated_failed_command": {
+        "patterns": 1,
+        "error_loop": [
+          true
+        ],
+        "occurrences": [
+          4
+        ]
+      },
+      "repeated_refetch": {
+        "patterns": 1,
+        "error_loop": [
+          false
+        ],
+        "occurrences": [
+          5
+        ]
+      },
+      "isolated_failure": {
+        "patterns": 0,
+        "error_loop": [],
+        "occurrences": []
+      },
+      "intentional_tests_after_distinct_edits": {
+        "patterns": 1,
+        "error_loop": [
+          false
+        ],
+        "occurrences": [
+          5
+        ]
+      }
+    }
+  },
+  "open": [
+    "native_visual_walkthrough",
+    "live_provider_usage",
+    "other_provider_protocols",
+    "macos_native_and_windows_11"
+  ]
+}

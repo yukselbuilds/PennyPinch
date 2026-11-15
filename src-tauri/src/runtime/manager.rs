@@ -1917,6 +1917,7 @@ impl ControllerSession {
                 self.listener_port,
                 self.engine_pid,
                 &self.generation,
+                Some(&self.control_secret.0),
                 || {
                     self.backend_lease.is_alive_for(&self.generation)
                         && owned_process_chain(

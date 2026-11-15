@@ -38,8 +38,9 @@ const copy = {
     reduction: "azalma", increase: "artış", unchanged: "değişim yok",
     measurements: "Ölçüm ayrıntıları", via: "Gözlem kaynağı", status: "Durum", before: "Önce", after: "Sonra",
     basis: "Temel", local: "Yerel tahmin", tokenizer: "Sağlayıcı tokenizer’ı", component: "Bileşen",
-    eligible: "Ana metriğe uygun", yes: "Evet", no: "Hayır", providerUsage: "Sağlayıcı bildirimi", input: "Girdi",
-    output: "Çıktı", cachedInput: "Cache girdisi", omitted: "ölçüm gösterilmedi", measured: "Ölçüldü",
+    eligible: "Ana metriğe uygun", yes: "Evet", no: "Hayır", providerUsage: "Sağlayıcı bildirimi", input: "Toplam girdi",
+    output: "Çıktı", cachedInput: "Önbellek okuma", cacheWrite: "Önbellek yazma", attempts: "Gönderim denemesi",
+    omitted: "ölçüm gösterilmedi", measured: "Ölçüldü",
     missingCounter: "Sayaç yok", unknownBasis: "Temel bilinmiyor", incomparable: "Karşılaştırılamaz",
     uncorrelated: "İlişkilendirilemedi", missingTimestamp: "Zaman yok", conflictStatus: "Çakışma",
     components: { message_input: "Mesaj girdisi", whole_input: "Tüm girdi", tool_schema: "Araç şeması", novel_input: "Yeni girdi", cache_input: "Cache girdisi", output: "Çıktı", unknown: "Bilinmiyor" },
@@ -67,8 +68,9 @@ const copy = {
     reduction: "reduction", increase: "increase", unchanged: "no change",
     measurements: "Measurement details", via: "Observed via", status: "Status", before: "Before", after: "After",
     basis: "Basis", local: "Local estimate", tokenizer: "Provider tokenizer", component: "Component",
-    eligible: "Eligible for main metric", yes: "Yes", no: "No", providerUsage: "Provider report", input: "Input",
-    output: "Output", cachedInput: "Cached input", omitted: "measurements omitted", measured: "Measured",
+    eligible: "Eligible for main metric", yes: "Yes", no: "No", providerUsage: "Provider report", input: "Total input",
+    output: "Output", cachedInput: "Cache reads", cacheWrite: "Cache writes", attempts: "Upstream attempts",
+    omitted: "measurements omitted", measured: "Measured",
     missingCounter: "Missing counter", unknownBasis: "Unknown basis", incomparable: "Incomparable",
     uncorrelated: "Uncorrelated", missingTimestamp: "Missing timestamp", conflictStatus: "Conflict",
     components: { message_input: "Message input", whole_input: "Whole input", tool_schema: "Tool schema", novel_input: "Novel input", cache_input: "Cache input", output: "Output", unknown: "Unknown" },
@@ -125,7 +127,16 @@ function DetailMeasurement({ row, language, text }: { row: ActivityMeasurementDe
         <div><dt>{text.after}</dt><dd>{reading(row.after)}</dd></div>
         <div><dt>{text.eligible}</dt><dd>{row.main_metric_eligible ? text.yes : text.no}</dd></div>
         <div><dt>{text.input}</dt><dd>{saved} · {percent}</dd></div>
-        <div><dt>{text.providerUsage}</dt><dd>{text.input}: {formatMetricNumber(row.provider_usage.input, language)} · {text.output}: {formatMetricNumber(row.provider_usage.output, language)} · {text.cachedInput}: {formatMetricNumber(row.provider_usage.cached_input, language)}</dd></div>
+        <div>
+          <dt>{text.providerUsage}</dt>
+          <dd>
+            {text.input} {formatMetricNumber(row.provider_usage.input, language)} · {text.output} {formatMetricNumber(row.provider_usage.output, language)} · {text.cachedInput} {formatMetricNumber(row.provider_usage.cached_input, language)}
+            {row.provider_usage.upstream_attempts !== null && <>
+              {" · "}{text.cacheWrite} {formatMetricNumber(row.provider_usage.cache_write_input, language)}
+              {" · "}{text.attempts} {formatMetricNumber(row.provider_usage.upstream_attempts, language)}
+            </>}
+          </dd>
+        </div>
         <div><dt>{text.total}</dt><dd>{duration(row.metadata.total_ms, language)}</dd></div>
         <div><dt>{text.optimization}</dt><dd>{duration(row.metadata.optimization_ms, language)}</dd></div>
         <div><dt>{text.firstToken}</dt><dd>{duration(row.metadata.first_token_ms, language)}</dd></div>

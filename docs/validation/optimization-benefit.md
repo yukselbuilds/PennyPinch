@@ -89,6 +89,12 @@ Bölünmüş SSE çerçeveleri ilk ve son kullanım bilgilerini birleştirdi. Ek
 
 Mevcut istemci yanıtı ve `/stats` karşılaştırması ile üç yerel Anthropic duraklatma senaryosu geçti. Native Windows runtime odaklı test 35 başarılı, 6 opt-in test atlandı. Controller 10 test ve Rust format kontrolü geçti. Bu kabul özel motor kaydını kapsar. Masaüstüne yansıtma, canlı sağlayıcı, diğer protokoller ve Windows 11 doğrulaması açık.
 
+## Anthropic kullanımı masaüstü istek ayrıntısında
+
+Windows 10 x64 yerel deneyinde `tests/runtime/anthropic_usage_capture.py --native-reader` gerçek motoru açtı. İki upstream yanıtı, aynı nesil ve tam istek kimliğiyle, sahipliği doğrulanmış native ölçüm okuyucusundan SQLite ve istek ayrıntısına ulaştı. Kullanım alanları 2.400 toplam girdi, 29 çıktı, 2.000 önbellek okuma, 100 önbellek yazma ve iki gönderim denemesi olarak doğrulandı. Giriş sayım temeli ve tasarruf ölçümü bağımsız kaldı. [Doğrulama kaydı](../proofs/anthropic-usage-desktop-detail.json).
+
+Yerel Rust ve istemci testlerinde yanlış nesil ve başka istek kimliği eşleşmedi. Başarısız yanıtta ve eksik sayaçta toplam bilinmiyor kaldı. Geçici eksiklik, önceki doğrulanmış alanı silmedi. Çelişkili sonraki veri, kullanım alanlarını bilinmiyor yaptı ve yerel sıkıştırma farkını korudu. Eski ayrıntı kayıtları yeni alanlar olmadan açıldı. 464 Rust, 223 frontend ve gerçek motor opt-in testi geçti. Windows 11 ve macOS çalıştırması, görsel native yürüyüş, diğer sağlayıcılar ve canlı maliyet kapsamı açık.
+
 ## Süreli yük ve başlangıçta Kompress yüklemesi
 
 `bench/optimization/stability.py --run`, önce dört yüzey × dört içerik × üç tur × iki kol ile 96 isteği ısıttı. Ardından 300 saniye boyunca saniyede bir eşlenmiş iş yükü gönderdi. 300 çift/600 istek, kaynak/sayısal/araç/prefix/CCR kontrollerini tamamladı. CPU birleşik benchmark/fixture/controller/helper/engine kapsamıyla tek çekirdeğin %6,24’ü, ek p95 48,67 ms ve istek CPU p95 31,25 ms idi.

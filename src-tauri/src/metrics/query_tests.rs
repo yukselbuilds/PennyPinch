@@ -240,6 +240,7 @@ fn optimizer_layers_and_provider_usage_do_not_inflate_headroom_input() {
         input: Some(MAX_TOKEN_COUNT),
         output: Some(MAX_TOKEN_COUNT),
         cached_input: Some(MAX_TOKEN_COUNT),
+        ..ProviderUsage::default()
     };
     let mut tool_schema = observation(
         "tool-schema",

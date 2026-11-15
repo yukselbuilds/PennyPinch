@@ -41,7 +41,9 @@ export interface ActivityReading {
 export interface ActivityMeasurementDetail {
   event_id:string; timestamp_utc:string|null; observed_via:("proxy"|"mcp")[]; optimizer:ActivityLayer; status:MeasurementStatus;
   before:ActivityReading; after:ActivityReading; saved_tokens:number|null; saved_percent:number|null;
-  main_metric_eligible:boolean; provider_usage:{input:number|null;output:number|null;cached_input:number|null}; metadata:RequestMetadata;
+  main_metric_eligible:boolean;
+  provider_usage:{input:number|null;output:number|null;cached_input:number|null;cache_write_input:number|null;upstream_attempts:number|null};
+  metadata:RequestMetadata;
 }
 export interface ActivityDetailSnapshot {
   schema_version:1; request_id:string; status:"ok"; observed_at_utc:string;

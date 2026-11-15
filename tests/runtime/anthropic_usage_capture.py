@@ -1,5 +1,6 @@
 """Exercise the desktop usage boundary with the pinned, owned Windows engine."""
 
+import argparse
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from http.server import ThreadingHTTPServer
@@ -7,6 +8,7 @@ import json
 from pathlib import Path
 import platform
 import runpy
+import subprocess
 import sys
 import threading
 import time
@@ -106,7 +108,17 @@ def check_record(row, upstream, client_status):
     return {key: value for key, value in row.items() if key != "request_id"}
 
 
-def exercise(engine, server, plan, requests, result):
+def check_native_reader(binary, engine):
+    frame = {"port": engine.port, "pid": engine.pids[-1], "generation": engine.generation,
+             "secret": engine.control_token, "directory": str(engine.directory.parent)}
+    test = "runtime::metrics_read::tests::owned_anthropic_usage_reaches_activity_detail"
+    outcome = subprocess.run([str(binary), "--exact", test, "--ignored", "--test-threads=1"],
+                             input=replay.encoded(frame), capture_output=True, cwd=ROOT,
+                             timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
+    require(outcome.returncode == 0 and b"1 passed" in outcome.stdout, "native_usage_projection_failed")
+
+
+def exercise(engine, server, plan, requests, result, native_reader):
     require(usage_response(engine, None) == (404, {"error": "not_found"})
             and usage_response(engine, "0" * 32) == (404, {"error": "not_found"})
             and not records(engine), "usage_private_access")
@@ -128,6 +140,9 @@ def exercise(engine, server, plan, requests, result):
         require(len(identities) == 1, "usage_stats_join_not_unique")
         data = await_records(engine, identities)[next(iter(identities))]
         result[case] = check_record(data, server.attempts[case], client["status"])
+        if case == "complete" and native_reader is not None:
+            check_native_reader(native_reader, engine)
+            result[case]["native_detail_projection"] = "pass"
 
     first = requests[0]
     seen = set(probe["request_logs"](engine))
@@ -188,6 +203,13 @@ async def parser_boundaries(control, parse_events):
 
 def main():
     require(Path.cwd().resolve() == ROOT == Path(r"D:\Projeler\Headroom"), "fixture_workspace")
+    args = argparse.ArgumentParser(description=__doc__)
+    args.add_argument("--native-reader", type=Path)
+    native_reader = args.parse_args().native_reader
+    if native_reader is not None:
+        native_reader = native_reader.resolve(strict=True)
+        require(native_reader.is_relative_to(ROOT / "work/caches/cargo-target")
+                and native_reader.suffix == ".exe", "native_reader_path")
     plan = json.loads(ccr["PLAN"].read_bytes())
     requests = ccr["workloads"](plan)["long"][:plan["short_turns"] + 1]
     manifest_path = ROOT / "runtime/manifest.json"
@@ -208,6 +230,10 @@ def main():
               *[probe_path.with_name(name) for name in ("ccr_policy.py", "fixtures.py", "replay.py", "surfaces.py")],
               *[ROOT / "runtime" / path.name for path in overlay], *overlay,
               *[vendor / path for path in source_map], *[path for path in cache.iterdir() if path.is_file()]]
+    if native_reader is not None:
+        inputs += [native_reader, ROOT / "src-tauri/src/runtime/metrics_read.rs",
+                   ROOT / "src-tauri/src/metrics/normalize.rs", ROOT / "src-tauri/src/metrics/activity.rs",
+                   ROOT / "src-tauri/src/metrics/store.rs"]
     before = replay.fingerprints(inputs)
     asyncio.run(parser_boundaries(control, parser.parse_sse_events_from_byte_buffer))
     server = ThreadingHTTPServer(("127.0.0.1", 0), CaptureFixture)
@@ -222,7 +248,7 @@ def main():
         engine = probe["UsageEngine"](controller, supervisor, payload, run / "engine", server.server_port, plan)
         try:
             engine.start()
-            exercise(engine, server, plan, requests, result)
+            exercise(engine, server, plan, requests, result, native_reader)
         finally:
             engine.close()
             stops.append(engine.stopped)

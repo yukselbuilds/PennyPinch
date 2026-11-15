@@ -1,6 +1,11 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H041-d — Anthropic kullanım kaydı masaüstü ayrıntısına bağlandı
+
+- Ana ajan ölçüm ve sahiplik sözleşmesini uyguladı. Mevcut motor neslinde tam istek kimliğiyle bağlanan private sayaçlar gerçek Windows 10 motorundan Rust okuyucusuna, SQLite’a ve istek ayrıntısına ulaştı. 2.400 girdi, 29 çıktı, 2.000 önbellek okuma, 100 yazma ve iki deneme doğrulandı. Önceki kayıt, eksik değer, sıfır, yanlış nesil ve çelişki kontrolleri geçti. Ana tasarruf ölçüm temeli eski kayıtlardaki gibi korunur. 464 Rust ve 223 frontend testi geçti. Native gerçek motor opt-in kontrolü, format, Vite ve embedded build geçti. [Kanıt](proofs/anthropic-usage-desktop-detail.json).
+- Headroom 0.44.0 ve Serena 2.1.0 kaynakları incelendi. Headroom paket adayı, Learn önizlemesi ve salt okunur Serena karşılaştırması TASKS'a eklendi. Yerel yapay Learn deneyinde üç beklenen durum geçti ve gerekli test tekrarları da aday oldu. Çıktı doğruluğu ile analiz maliyeti sonraki pilotun kabulü. **45/54.** H041-d diğer sağlayıcılar ve canlı sayaçlarla açık. Sırada 0.44.0 adayının mevcut ölçüm ve paket sözleşmesine etkisini belirlemek var. [Kaynak incelemesi](research/headroom-serena-2026-11-15.md).
+
 ## H041-d — Anthropic motor kaydı tamamlandı
 
 - Ana ajan kullanım semantiği ve çalışma zamanı sahipliğini üstlendi. Motor artık bir Messages isteğinin birincil, CCR devamı ve tekrar gönderimlerini aynı istek kimliğine bağlıyor. 15 istemci isteği, 19 yerel upstream gönderim ve 6 ölçüm senaryosu geçti. Tam CCR örneği 2.429 sentetik tokenı gösterdi. Eksik alan ile 429 durumlarında toplam bilinmiyor kaldı. Paralel SSE akışları, yetkisiz okuma ve yeniden başlatmada ayrım geçti. İki motor normal kapandı. [Kanıt](proofs/desktop-anthropic-usage.json) · [Doğrulama](validation/optimization-benefit.md#anthropic-kullanımının-motorda-kaydı).

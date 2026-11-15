@@ -512,6 +512,7 @@ mod tests {
                         port,
                         std::process::id(),
                         FIRST,
+                        None,
                         || true,
                     )
                 } else {

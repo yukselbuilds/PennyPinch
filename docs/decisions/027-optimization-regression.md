@@ -36,6 +36,23 @@ Son kayıtlar mevcut motor kontrol anahtarıyla korunan yerel uçtan okunur. Ba�
 
 Bu motor dilimi geçti. Kayıt yalnız aynı ASGI kapsamından çıkan HTTP Anthropic Messages gönderimlerini ve motorun doğrulanmış istek kimliğini kapsar. Son 64 kayıt bellektedir. İstek başına en fazla 16 gönderim kaydedilir. Taşma, eksik SSE bitişi veya kullanımı olmayan upstream yanıt bilinen toplam üretmez. Yeni motor nesli boş başlar ve önceki kontrol anahtarını reddeder. Masaüstüne aktarım, aynı nesil ve tam istek kimliği eşleşmesiyle yapılacak. [Yerel kanıt](../proofs/desktop-anthropic-usage.json).
 
+### H041-d masaüstünde kullanım eşlemesi
+
+Ana ajan ölçüm semantiği, bağlantı sahipliği ve eski kayıtlarla uyumluluk nedeniyle bu dilimi üstlenir. Mevcut `/stats` okuması trafik kaynağıdır. Aynı sahipli motora mevcut kontrol anahtarıyla sorulan kullanım kaydı, yalnız motor nesli ve tam istek kimliği eşleşirse uygulanır. Girdi, cache okuma, cache yazma ve çıktı ham çağrı sayaçlarından hesaplanır. Başarısız ya da eksik çağrı bilinen toplam üretmez. Sıfır değer gösterilir. Birincil ölçümün tokenizer temeli ve tasarruf yüzdesi yalnız bu kaydın gelmesiyle değişmez.
+
+Mevcut trafik kaydı, isteğe bağlı kullanım ucu geçici olarak yanıt vermezse korunur. Tekrarlanan örnekler kullanım alanlarını tamamlayabilir. Aynı kimlik için çelişki kullanım bilgisini bilinmiyor yapar. Önceki kayıtlar yeni alanlar olmadan okunur. İstek ayrıntıları giriş, çıkış, önbellek okuma/yazma ve gözlenen upstream çağrı adedini gösterir. Kabul, bilinen 2.429 örneği, eksik alan, yanlış nesil, yetkisiz eşleşme, yeniden okuma ve çelişkiyi içerir. Canlı sağlayıcı ve diğer protokoller kendi kabulünü bekler.
+
+Windows 10 yerel kabulünde gerçek sahipli motor, Rust ölçüm okuyucusu, SQLite ve istek ayrıntısı zinciri geçti. Önbellek alanları ve deneme sayısı yerel tasarruf yüzdesinin temelini değiştirmiyor. Kapsamı API hesabı ve diğer protokoller için ayrı sınayacağız. [Kullanım kaydı kanıtı](../proofs/anthropic-usage-desktop-detail.json).
+
+### Güncel Headroom ve Serena adayları
+
+15 Kasım 2026’da Headroom kararlı `0.44.0` ve Serena `2.1.0` yayınları incelendi. Etkin motor `0.41.0` ile sürer. Aday karşılaştırmaları bağımlılık kilidi ve yalıtılmış paketle yürütülür. [Headroom yayın notları](https://github.com/headroomlabs-ai/headroom/releases/tag/v0.44.0) · [Serena yayını](https://github.com/oraios/serena/releases/tag/v2.1.0).
+
+1. **Headroom motor adayı.** Önce `0.44.0` içindeki bağlantı kesilmesi, bekleyen akış ve önbellek düzeltmelerinin bizim rota ve pinlerimize etkisini belirle. Paket açılışı, sahipli kapanış, SSE/WS, duraklatma ve özgün CCR geri çağırmasını önceki adayla tekrar sınayarak yükseltme kararı ver. Yeni `/stats` maliyet alanını sağlayıcının bildirdiği kullanım veya fatura yerine koymadan kaynağını doğrula. [Sürüm değişiklikleri](https://github.com/headroomlabs-ai/headroom/releases/tag/v0.44.0).
+2. **Kayıpsız sıkıştırma ve tekrarlar.** `0.44.0` kayıpsız `/v1/compress` yüzeyi ile tablo/arama ve sayısal JSON korumalarını kontrollü karşılaştırmaya ekle. Sabit motordaki mevcut tam tekrar birleştirmesiyle kıyasla. Özgün başarısızlık metni, satır sırası, alıntı, kaynak ve sayılar kabulün parçasıdır. Canlı görev deneyinde eşdeğer test sonucu, cache, ek model/CCR çağrısı ve tamamlanma süresi ölçülür. Yanıt tamponlamasını kapatma seçeneği ancak istemci tarafında çalışan geri çağırma kanıtıyla kıyas adayıdır. [Sıkıştırma ve CCR değişiklikleri](https://github.com/headroomlabs-ai/headroom/releases/tag/v0.44.0).
+3. **Learn önizlemesi.** Yerel örüntü algılayıcısını önce yapay hatalarla sınadık. Aynı komut, kaynak değiştikten sonra gerekli kontrol olarak yeniden çalıştırıldığında da aday oldu. Sonraki pilot hata ile gerçek düzeltmeyi eşleyecek ve kaynak değişikliğini hesaba katacak. CLI/API analizinin veri kapsamı ve token maliyeti ayrı ölçüm gerektirir. Ürün önerileri önce kısa, gözden geçirilebilir proje notları olarak değerlendirilir. [Learn incelemesi](../research/headroom-serena-2026-11-15.md#learn-ne-yapar).
+4. **Serena proje deneyi.** Ücretsiz dil sunucusu arka ucuyla salt okunur sembol bulma, dosya özeti ve referans sorgularını Rust ve TypeScript’te mevcut CodeGraph ve dar dosya okumalarıyla aynı görevde karşılaştır. Doğru kaynak, toplam bağlam, açılış ve bellek maliyeti kaydedilir. İlk pilot proje kapsamında ve klasik üç sembol aracıyla çalışır. [Serena incelemesi](../research/headroom-serena-2026-11-15.md#serena).
+
 ## İlk ölçümlerin planı
 
 9 Kasım 2026. H038 sonrasında bağımlılıkları hazır olan H041 başladı. Ana ajan ölçüm semantiği, gerçek motor ve performans kabulünü üstlenir. Ponytail full uygulanır. Ücretsiz yerel deneyler ilerler. Canlı API-key ve diğer işletim sistemi kabulü açık kalır.

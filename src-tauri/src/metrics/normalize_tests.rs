@@ -38,6 +38,100 @@ fn metrics_empty_is_not_zero_savings() {
 }
 
 #[test]
+fn owned_provider_usage_requires_exact_identity_and_sums_every_successful_attempt() {
+    use serde_json::json;
+    let stats = json!({"recent_requests":[
+        {"request_id":"hr_1_000001","timestamp":"2026-11-15T12:00:00Z","model":"shared",
+         "input_tokens_original":100,"input_tokens_optimized":80},
+        {"request_id":"hr_1_000002","timestamp":"2026-11-15T12:00:00Z","model":"shared",
+         "input_tokens_original":300,"input_tokens_optimized":200}
+    ]});
+    let first = json!({"status":200,"usage":{
+        "input_tokens":80,"cache_read_input_tokens":900,"cache_creation_input_tokens":100,"output_tokens":6
+    }});
+    let follow = json!({"status":200,"usage":{
+        "input_tokens":220,"cache_read_input_tokens":1100,"cache_creation_input_tokens":0,"output_tokens":23
+    }});
+    let mut sidecar = json!({
+        "schema_version":1,"runtime_generation":GENERATION,"surface":"anthropic_messages",
+        "records":[{"request_id":"hr_1_000001","truncated":false,"attempts":[first,follow],
+                    "usage":{"total_input_tokens":900},"private_body":"PRIVATE_CANARY"}]
+    });
+    let project = |payload: &serde_json::Value| {
+        project_owned_headroom_041(
+            &serde_json::to_vec(&stats).unwrap(),
+            Some(&serde_json::to_vec(payload).unwrap()),
+            GENERATION,
+        )
+        .unwrap()
+        .batch
+    };
+    let batch = project(&sidecar);
+    assert_eq!(batch.events.len(), 2);
+    let for_after = |batch: &NormalizedBatch, n| {
+        batch
+            .events
+            .iter()
+            .find(|e| e.after.tokens == Some(n))
+            .unwrap()
+            .provider_usage
+            .clone()
+    };
+    let captured = for_after(&batch, 80);
+    assert_eq!(captured.input, Some(2400));
+    assert_eq!(captured.output, Some(29));
+    assert_eq!(captured.cached_input, Some(2000));
+    assert_eq!(captured.cache_write_input, Some(100));
+    assert_eq!(captured.upstream_attempts, Some(2));
+    assert_eq!(for_after(&batch, 200), ProviderUsage::default());
+    assert!(batch.events.iter().all(|e| e.saved_tokens.is_none()));
+    assert!(!serde_json::to_string(&batch)
+        .unwrap()
+        .contains("PRIVATE_CANARY"));
+
+    sidecar["runtime_generation"] = json!(NEXT_GENERATION);
+    assert_eq!(for_after(&project(&sidecar), 80), ProviderUsage::default());
+    sidecar["runtime_generation"] = json!(GENERATION);
+    sidecar["records"][0]["attempts"][0]["usage"]["cache_creation_input_tokens"] = json!(null);
+    let partial = for_after(&project(&sidecar), 80);
+    assert_eq!(partial.input, None);
+    assert_eq!(partial.output, Some(29));
+    assert_eq!(partial.cache_write_input, None);
+    sidecar["records"][0]["attempts"][0]["status"] = json!(429);
+    let failed = for_after(&project(&sidecar), 80);
+    assert_eq!(failed.input, None);
+    assert_eq!(failed.output, None);
+    assert_eq!(failed.upstream_attempts, Some(2));
+    sidecar["records"][0]["attempts"][0]["status"] = json!(200);
+    sidecar["records"][0]["attempts"][0]["usage"]["cache_creation_input_tokens"] = json!(0);
+    assert_eq!(for_after(&project(&sidecar), 80).cache_write_input, Some(0));
+    let duplicate = sidecar["records"][0].clone();
+    sidecar["records"].as_array_mut().unwrap().push(duplicate);
+    let ambiguous = for_after(&project(&sidecar), 80);
+    assert!(ambiguous.conflicted);
+    assert_eq!(ambiguous.upstream_attempts, None);
+}
+
+#[test]
+fn provider_conflict_and_missing_snapshots_preserve_the_compression_measurement() {
+    let unknown = event("request", Some(100), Some(70));
+    let mut known = unknown.clone();
+    known.provider_usage.input = Some(50);
+    known.provider_usage.upstream_attempts = Some(1);
+    let batch = normalize(&[unknown.clone(), known.clone(), unknown.clone()]).unwrap();
+    assert_eq!(batch.events[0].provider_usage.input, Some(50));
+    let mut other = known.clone();
+    other.provider_usage.input = Some(51);
+    let batch = normalize(&[unknown, known.clone(), other, known]).unwrap();
+    let value = &batch.events[0];
+    assert!(value.provider_usage.conflicted);
+    assert_eq!(value.provider_usage.input, None);
+    assert_eq!(value.status, MeasurementStatus::Measured);
+    assert_eq!(value.saved_tokens, Some(30));
+    assert_eq!(batch.conflicting_events, 0);
+}
+
+#[test]
 fn metrics_comparable_reduction_zero_baseline_and_increase() {
     let inputs = [
         (Some(120_000), Some(75_000), Some(45_000), Some(37.5)),
