@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H010 — ana görev tamamlandı
+
+- Ana kabul, Karar 009 ve K2 ile karşılaştırıldı. V1/V2 model/provider koruması, kayıtlı JSON/JSONC/auth kapsamı, streaming, araç/CCR, ana/alt ajan ve V1 aynı oturumda model değişimi tamam. V2 servis, tam TUI ve CLI ayarıyla paketli Desktop ayrıca kayıtlı. [Kapanış](proofs/opencode-acceptance.md), [inceleme](reviews/H010.md).
+- Önceki “kalan kabul” satırının bütün yeni yüzey/model/hesap birleşimlerini zorunlu adımlara çevirmesi düzeltildi. K2, erişilemeyen birleşimleri deneysel tutar. Ürün/katalog desteği yükseltilmedi. Canlı hesap, Desktop-only keşif/installer, bazı V2 alt ajan birleşimleri ve başka OS kapsamı açık/not_tested.
+- Ana ajan, yedi kanonik kabulün kritik alanlarını ve 58 tutulan artefakt referansını doğruladı. Güncel 344 ürün girdisi ve araç/OS fingerprint'i son 222 Node/462 Rust, 19 ignored, fmt/frontend/embedded build kaydıyla eşleşti. Aynı başarılı ürün testleri tekrar edilmedi. Kapanış belgeleri ve kanıtları ayrı önce/sonra hash'le bağlandı. [Programatik kabul](proofs/opencode-acceptance.json)
+- **Durum 43/54.** H010 kapandı ve burada duruldu. Sıradaki somut aday H012'nin mimari/uyumluluk kabulünü güncel K2 kanıtıyla uzlaştırmak. H006/H009/H037/H041/H042 dış kanıt sınırları ve kullanıcının H049/H052–H054 ertelemeleri sürer. Bir Desktop Uygula hatasının kök nedeni bilinmiyor; son aynı akış başarılı ve başarısız koşunun geri alması kayıtlı. Gerçek geliştirme token tasarrufu ölçülmedi.
+
 ## H010-j — OpenCode Desktop paketli servis doğrulandı
 
 - Resmî 2.3.0 Windows x64 paketi, checksum/SHA-256 eşleşmesiyle proje içinde açıldı. Native Headroom Önizle/Uygula ile bağlanan CLI kullanıcı JSONC'sini gerçek Desktop ve kendi paketli servisi kullandı. GUI gönderme, dört Responses isteği, üç MCP çağrısı ve görünür final, ayrı SQLite oturum kontrolüyle eşleşti. Staged CLI hash'i paketli dosyayla aynı. [Kanıt](proofs/opencode-v2-desktop.md)

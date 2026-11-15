@@ -1,5 +1,7 @@
 # H010-a — OpenCode V1 local fixture transport
 
+15 Kasım 2026. Ana H010'un güncel kabulü ve destek sınırları [kapanış kaydında](opencode-acceptance.md). Aşağıdaki H010-a/b notları kendi tarihsel kapsamını korur.
+
 Status: **local proof PASS** on the attached Windows 10 host, 2026-10-19. This is one tools-disabled OpenCode CLI request through the pinned Headroom proxy to a local synthetic upstream. It is not a full H010 compatibility result.
 
 14 Kasım takip: Gerçek CLI araç/CCR testleri, ek yerel MCP köprüsü tanımlanmış izole profilde iki protokolde geçti. Endpoint-only varsayılan profillerde otomatik geri alma geçmedi. Aşağıdaki H010-a tarihsel tools-kapalı kapsamı değişmez; yeni koşullu teknik kanıt ve açık ürün işi belgenin sonundadır.
