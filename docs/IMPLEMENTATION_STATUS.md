@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H010-i — OpenCode V2 CLI alt ajan ve model rotası tamamlandı
+
+- Headroom Önizle/Uygula sonrasında açılan aynı OpenCode 2.3.0 servisi, modelini miras alan Chat alt ajanını ve Responses ana ajanına bağlı açıkça seçilmiş farklı Chat alt ajanını tamamladı. Dört yerel oturumun araç/veritabanı kimliği, model ve tamamlanma bildirimi eşleşti. Servise özgü sentetik anahtar iki rotada doğrulandı. Dört örnek log 14.999 → 103 bayt ve birebir CCR. [Kanıt](proofs/opencode-v2-subagents.md)
+- Normal servis duruşu, port/süreç temizliği, GUI Kaldır ve özgün test ayarları döndü. Nihai koşu `work/proofs/opencode-v2-service/native-agent-0cc2093b4d/result.json`, 22.714 girdi önce/sonra aynı. İlk koşu `experimental` anahtarında durdu; son kabul varsayılan tek seviye ile geçti. İkinci koşuda doğrulayıcı araç listelemesini fazla kısıtladı. İki denemenin temizliği ayrıca kaydedildi. [Programatik kayıt](proofs/opencode-v2-subagents.json)
+- Ana ajan rota ve oturum kabulünü üstlendi. Ürün farkı uyumluluk kataloğu. Son yerel kapı `work/proofs/opencode-v2-binding/checks-9abfdc914c/final.json`. 344 girdi, 222 Node ve 462 Rust PASS, 19 ignored, fmt/frontend/embedded build PASS. [İnceleme](reviews/H010-i.md)
+- **Durum 42/54.** Ana H010 açık. Sıradaki somut adım, OpenCode Desktop'ın paketli istemci ve normal servis sınırını izole Windows profilinde doğrulamak. V2 TUI içinden alt ajan, aynı alt oturumda model değişimi, nested kullanım, açık servisin ayarı yeniden yüklemesi, canlı hesap ve diğer işletim sistemleri açık. Gerçek token/fatura tasarrufu ölçülmedi.
+
 ## H010-h — OpenCode V2 normal servis ve tam TUI tamamlandı
 
 - Windows 10'da gerçek Headroom Önizle/Uygula ile kaydedilen V2 bağlantısını, yeni başlayan 2.3.0 servisi okudu. Normal CLI Chat, varsayılan tam TUI Responses rotasını tamamladı. Terminalin servis soketi ve aynı servis veritabanındaki iki kök oturum doğrulandı. Her turda üç yerel araç, dört istek ve 14.999 → 103 baytlık örnek logun özgün baytlarıyla geri çağırılması geçti. [Kanıt](proofs/opencode-v2-service.md)

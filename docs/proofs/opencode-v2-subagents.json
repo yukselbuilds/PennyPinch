@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "task": "H010-i",
+  "accepted": true,
+  "parent_task_accepted": false,
+  "scope": {
+    "platform": "Windows 10 22H2 x64 (19045)",
+    "opencode": "2.3.0 Windows x64 baseline",
+    "engine": "0.41.0",
+    "surface": "native CLI and owned managed service",
+    "provider": "synthetic_loopback",
+    "live_auth_tui_desktop_nested_agents_other_os": "not_tested",
+    "token_cost_savings": "not_measured"
+  },
+  "cases": {
+    "inherited": {
+      "completion_notification": true,
+      "cli_exit": 0,
+      "cli_background_wait_events": 1,
+      "parent": {
+        "agent": "headroom_fixture_parent",
+        "protocol": "chat",
+        "selector": "lab/slot",
+        "model": "headroom-opencode-tool-fixture",
+        "tools": [
+          "headroom_fixture_inspect_logs",
+          "headroom_retrieve",
+          "headroom_fixture_inspect_logs",
+          "subagent"
+        ],
+        "exact_final": true,
+        "provider_requests": 6
+      },
+      "child": {
+        "agent": "headroom_fixture_child",
+        "protocol": "chat",
+        "selector": "lab/slot",
+        "model": "headroom-opencode-tool-fixture",
+        "tools": [
+          "headroom_fixture_inspect_logs",
+          "headroom_retrieve",
+          "headroom_fixture_inspect_logs"
+        ],
+        "exact_final": true,
+        "provider_requests": 4
+      }
+    },
+    "explicit": {
+      "completion_notification": true,
+      "cli_exit": 0,
+      "cli_background_wait_events": 0,
+      "parent": {
+        "agent": "headroom_fixture_parent",
+        "protocol": "responses",
+        "selector": "openai/slot",
+        "model": "gpt-4.1",
+        "tools": [
+          "headroom_fixture_inspect_logs",
+          "headroom_retrieve",
+          "headroom_fixture_inspect_logs",
+          "subagent"
+        ],
+        "exact_final": true,
+        "provider_requests": 6
+      },
+      "child": {
+        "agent": "headroom_fixture_child",
+        "protocol": "chat",
+        "selector": "lab/child",
+        "model": "headroom-opencode-v2-child-fixture",
+        "tools": [
+          "headroom_fixture_inspect_logs",
+          "headroom_retrieve",
+          "headroom_fixture_inspect_logs"
+        ],
+        "exact_final": true,
+        "provider_requests": 4
+      }
+    }
+  },
+  "native_sessions": 4,
+  "same_registered_service": true,
+  "managed_service_only_synthetic_key": true,
+  "normal_service_stop": true,
+  "headroom_config_and_ownership_restored": true,
+  "fixture_settings_restored": true,
+  "forced_cleanup": false,
+  "retrieval": {
+    "original_bytes": 14999,
+    "compressed_bytes": 103,
+    "sample_blocks": 4,
+    "byte_reduction_percent": 99.31,
+    "byte_exact": true
+  },
+  "native": {
+    "input_count": 22714,
+    "artifact": {
+      "path": "work/proofs/opencode-v2-service/native-agent-0cc2093b4d/result.json",
+      "sha256": "5eb3d21e05b8a09e7d2425c257ae29c6b3f0115ed90e492627e0c52b8b8eed9e"
+    }
+  },
+  "quality": {
+    "input_count": 344,
+    "node_passed": 222,
+    "rust_passed": 462,
+    "rust_ignored": 19,
+    "rustfmt_and_builds": "pass",
+    "artifact": {
+      "path": "work/proofs/opencode-v2-binding/checks-9abfdc914c/final.json",
+      "sha256": "7f08e0e94cdd0ccf00c98ff22cec89b130d2d90a73bd6973c8202c04de996fae"
+    }
+  },
+  "earlier_unaccepted_runs": [
+    {
+      "stage": "headroom_apply",
+      "provider_errors": [],
+      "artifact": {
+        "path": "work/proofs/opencode-v2-service/native-agent-9dc73f3bd0/result.json",
+        "sha256": "30a516870c6bfe196e68f32d6f03b193d82792fb1554a3bef74af6f757dbe66e"
+      }
+    },
+    {
+      "stage": "native_subagent",
+      "provider_errors": [
+        "unexpected_tool_in_catalog"
+      ],
+      "artifact": {
+        "path": "work/proofs/opencode-v2-service/native-agent-dcb7ed41df/result.json",
+        "sha256": "3fa86c89e4f0cb18eec4efd54e553f182bba4eb45f3473b28527c5706c02b6ea"
+      }
+    }
+  ],
+  "source_commit": "a6b15d33daf6ab7d35569f6d711fdb630b9f04e7",
+  "source_blobs": {
+    "packages/core/src/tool/plugin/subagent.ts": "3bcec88f8ac93832f2c0878075eaead101f70f4f",
+    "packages/core/src/session/subagent-job.ts": "3e0d40a982e231d87ab996c0e9f1bb40f09dd342",
+    "packages/core/src/session/subagent-completion.ts": "2b81afd652b13652407c1d3e32de149b51612b2a",
+    "packages/cli/src/run/noninteractive.ts": "ee8db3ee71cbe01b950f5ce70c682e4339cf16b5"
+  }
+}

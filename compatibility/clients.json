@@ -249,12 +249,16 @@
           "status": "local_fixture_pass",
           "evidence": "docs/proofs/opencode-v2-service.md"
         },
-        "live_auth_desktop_and_subagents": {
+        "managed_cli_subagent_model_selection": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/opencode-v2-subagents.md"
+        },
+        "live_auth_desktop_and_tui_subagents": {
           "status": "not_tested",
           "evidence": "docs/proofs/opencode-v2-binding.md"
         }
       },
-      "evidence": ["docs/proofs/opencode-v2-binding.md", "docs/proofs/opencode-v2.md", "docs/proofs/opencode-v2-service.md"],
+      "evidence": ["docs/proofs/opencode-v2-binding.md", "docs/proofs/opencode-v2.md", "docs/proofs/opencode-v2-service.md", "docs/proofs/opencode-v2-subagents.md"],
       "evidence_date": "2026-11-15"
     },
     {
