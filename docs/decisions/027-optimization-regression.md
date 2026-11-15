@@ -28,6 +28,14 @@ Eksik çağrı kapsamı veya oturum sahipliği varsa ürünün net tasarruf gös
 
 H041-d için yakalama sınırı, her upstream yanıtın kullanım alanları henüz mevcutken aynı iç isteğe bağlandığı nokta olmalı. Yalnız sayısal alanlar ve çağrı durumu tutulur. Tekil kayıt kapsamı kanıtlanana kadar model veya saat benzerliği üzerinden eşleme yapılmaz. Eksik veri, çakışma ve tamamlanmamış çağrı açık durum olarak korunur. OpenAI ve diğer protokollerin kullanım alanları kendi yüzeylerinde doğrulanır.
 
+### H041-d motorun Anthropic kullanım kaydı
+
+Ana ajan istek sahipliğini, sürüm pinlerini ve kullanım hesabını üstlenir. Windows 10’daki ilk ürün diliminde motorun sahip olduğu HTTP istemcisi, aynı Anthropic Messages isteği içindeki birincil gönderimi, CCR devamını ve yeniden denemeyi gözler. Motorun verdiği istek kimliği tamamlanan ASGI kapsamına bağlanır. JSON ve SSE’de açıkça bildirilen dört sayaç tutulur. SSE ölçümü aktarımı önden tüketmez. Son durak işareti veya doğrulanmış alan eksikse toplam bilinmiyor kalır. İşlem sırasında yalnız sınırlı bellek kullanılır. İstek içeriği, yanıt veya yetkilendirme bilgisi ölçüm kaydına eklenmez.
+
+Son kayıtlar mevcut motor kontrol anahtarıyla korunan yerel uçtan okunur. Başarı örneği 2.429’a ulaşmalı, eksik yazma ve 429/yeniden deneme kalıcı sıfır üretmemeli. Normal SSE ve iki eşzamanlı oturumda çağrı sayısı ile motorun istek kimliği doğrulanır. Yetkisiz okuma, kapanış ve yeniden başlatmada kapsam ayrımı gerekir. Mevcut istemci yanıtı ve `/stats` sözleşmesi üzerinden geriye dönük kontrol yapılır. Yerel motor çıktısının masaüstü ölçümlerine alınması ve diğer sağlayıcı yolları sonraki kabul dilimleridir.
+
+Bu motor dilimi geçti. Kayıt yalnız aynı ASGI kapsamından çıkan HTTP Anthropic Messages gönderimlerini ve motorun doğrulanmış istek kimliğini kapsar. Son 64 kayıt bellektedir. İstek başına en fazla 16 gönderim kaydedilir. Taşma, eksik SSE bitişi veya kullanımı olmayan upstream yanıt bilinen toplam üretmez. Yeni motor nesli boş başlar ve önceki kontrol anahtarını reddeder. Masaüstüne aktarım, aynı nesil ve tam istek kimliği eşleşmesiyle yapılacak. [Yerel kanıt](../proofs/desktop-anthropic-usage.json).
+
 ## İlk ölçümlerin planı
 
 9 Kasım 2026. H038 sonrasında bağımlılıkları hazır olan H041 başladı. Ana ajan ölçüm semantiği, gerçek motor ve performans kabulünü üstlenir. Ponytail full uygulanır. Ücretsiz yerel deneyler ilerler. Canlı API-key ve diğer işletim sistemi kabulü açık kalır.

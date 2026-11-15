@@ -1,6 +1,11 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H041-d — Anthropic motor kaydı tamamlandı
+
+- Ana ajan kullanım semantiği ve çalışma zamanı sahipliğini üstlendi. Motor artık bir Messages isteğinin birincil, CCR devamı ve tekrar gönderimlerini aynı istek kimliğine bağlıyor. 15 istemci isteği, 19 yerel upstream gönderim ve 6 ölçüm senaryosu geçti. Tam CCR örneği 2.429 sentetik tokenı gösterdi. Eksik alan ile 429 durumlarında toplam bilinmiyor kaldı. Paralel SSE akışları, yetkisiz okuma ve yeniden başlatmada ayrım geçti. İki motor normal kapandı. [Kanıt](proofs/desktop-anthropic-usage.json) · [Doğrulama](validation/optimization-benefit.md#anthropic-kullanımının-motorda-kaydı).
+- Mevcut istemci yöntemi ve `/stats` regresyonu, üç Anthropic duraklatma senaryosu, 10 controller testi, 35 odaklı Rust testi ve format kontrolü geçti. Windows 10 x64 yerel motor kanıtı. **45/54.** H041-d açık. Sırada korunan kaydı motor nesli ve tam istek kimliği üzerinden masaüstü ölçümüne almak var. Diğer sağlayıcılar ve canlı kullanım kabulü açık.
+
 ## H041-c — Anthropic kullanım kapsamı doğrulandı
 
 - Ana ajan kullanım kaynağı ve istek sahipliği nedeniyle deneyi üstlendi. Sabit 0.41.0 motorunda 3 ayrı oturum, 12 istemci isteği ve 15 loopback upstream isteği geçti. Üç devam isteğinde özgün log birebir ulaştı. Tam örnekte iki upstream yanıtı toplam 2.429 sentetik token bildirdi. İstemci SSE ve motor kaydı sonunda 1.343 bildirdi. Eksik alan bilinmiyor kaldı. 429 dönen devam isteğinde istemci 502 aldı ve toplam bilinmiyor kaldı. Motor kod 0 ile kapandı. [Kanıt](proofs/anthropic-usage-coverage.json) · [Kapsam](validation/optimization-benefit.md#anthropic-ccr-ve-kullanım-kapsamı).

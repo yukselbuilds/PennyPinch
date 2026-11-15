@@ -81,6 +81,14 @@ Sabit motor varsayılan ayarla, araç listesi bulunan ve optimizasyona açık is
 
 Tam örnekte özel `/stats` satırı yalnız son çağrının dört sayacını gösterdi. Başarısız devamda satırda ilk çağrının sayaçları vardı. Doğrudan upstream fixture cevabı dışındaki bu iki görünüm bütün çağrıları kapsamaz. Fixture geçmişi ayrı oturum anahtarları ve tekil yeni satırla doğrulandı. Bu eşleme izole seri deneyin kapsamındadır. Ürün trafiğinde oturum sahipliği, gerçek kullanım ve fatura ayrı kabulde doğrulanacak. [Anthropic kullanım alanları](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#tracking-cache-performance).
 
+## Anthropic kullanımının motorda kaydı
+
+`tests/runtime/anthropic_usage_capture.py` Windows 10 x64 üzerinde sabit 0.41.0 motorunun sahip olduğu istemciyi kullandı. 15 istemci isteği 19 upstream gönderime dönüştü. Her gözlem motorun verdiği istek kimliğiyle eşleşti. İlk yanıt ve CCR devamı birlikte 2.429 sentetik token olarak kaydedildi. Açıkça bildirilen 0 korundu. Bildirilmeyen cache yazma değeri, başarısız devam ve 429 sonrası başarılı tekrarda toplam bilinmiyor kaldı. İki eşzamanlı SSE isteği kendi sayaçlarıyla tamamlandı. [Doğrulama ve kaynak parmak izleri](../proofs/desktop-anthropic-usage.json).
+
+Bölünmüş SSE çerçeveleri ilk ve son kullanım bilgilerini birleştirdi. Eksik terminal, bozuk çerçeve, boyut ve çağrı sınırı toplamı geçersiz bıraktı. İzlenen akış baytları aynı teslim edildi. Kontrol anahtarı eksik veya yanlış istekler 404 aldı. Yeniden başlatılan motorun kaydı boştu ve önceki anahtar geçersizdi. Kayıtlar yalnız motor neslinin belleğinde tutulur.
+
+Mevcut istemci yanıtı ve `/stats` karşılaştırması ile üç yerel Anthropic duraklatma senaryosu geçti. Native Windows runtime odaklı test 35 başarılı, 6 opt-in test atlandı. Controller 10 test ve Rust format kontrolü geçti. Bu kabul özel motor kaydını kapsar. Masaüstüne yansıtma, canlı sağlayıcı, diğer protokoller ve Windows 11 doğrulaması açık.
+
 ## Süreli yük ve başlangıçta Kompress yüklemesi
 
 `bench/optimization/stability.py --run`, önce dört yüzey × dört içerik × üç tur × iki kol ile 96 isteği ısıttı. Ardından 300 saniye boyunca saniyede bir eşlenmiş iş yükü gönderdi. 300 çift/600 istek, kaynak/sayısal/araç/prefix/CCR kontrollerini tamamladı. CPU birleşik benchmark/fixture/controller/helper/engine kapsamıyla tek çekirdeğin %6,24’ü, ek p95 48,67 ms ve istek CPU p95 31,25 ms idi.

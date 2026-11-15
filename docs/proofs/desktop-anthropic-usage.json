@@ -1,0 +1,147 @@
+{
+  "task": "H041-d",
+  "slice": "anthropic_messages_engine",
+  "date": "2026-11-15",
+  "passed": true,
+  "engine": "0.41.0",
+  "os": "Windows-10-10.0.19045-SP0",
+  "surface": "anthropic_messages",
+  "command": "work/proofs/packaging/artifacts/headroom-engine/runtime/python.exe -I -B tests/runtime/anthropic_usage_capture.py",
+  "capture_boundary": "owned_proxy_httpx_send_inside_scope_and_pinned_outcome_request_id",
+  "endpoint": "/__headroom_desktop/provider-usage",
+  "coverage_basis": "exact_extended_loopback_usage_fixtures",
+  "client_requests": 15,
+  "upstream_requests": 19,
+  "records": {
+    "complete": {
+      "client_status": 200,
+      "upstream_statuses": [
+        200,
+        200
+      ],
+      "usage": {
+        "cache_creation_input_tokens": 100,
+        "cache_read_input_tokens": 2000,
+        "input_tokens": 300,
+        "output_tokens": 29,
+        "total_input_tokens": 2400,
+        "total_tokens": 2429
+      }
+    },
+    "missing_cache_write": {
+      "client_status": 200,
+      "upstream_statuses": [
+        200,
+        200
+      ],
+      "usage": {
+        "cache_creation_input_tokens": null,
+        "cache_read_input_tokens": 2000,
+        "input_tokens": 300,
+        "output_tokens": 29,
+        "total_input_tokens": null,
+        "total_tokens": null
+      }
+    },
+    "failed_continuation": {
+      "client_status": 502,
+      "upstream_statuses": [
+        200,
+        429
+      ],
+      "usage": {
+        "cache_creation_input_tokens": null,
+        "cache_read_input_tokens": null,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_input_tokens": null,
+        "total_tokens": null
+      }
+    },
+    "retry": {
+      "client_status": 200,
+      "upstream_statuses": [
+        429,
+        200
+      ],
+      "usage": {
+        "cache_creation_input_tokens": null,
+        "cache_read_input_tokens": null,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_input_tokens": null,
+        "total_tokens": null
+      }
+    },
+    "sse-a": {
+      "client_status": 200,
+      "upstream_statuses": [
+        200
+      ],
+      "usage": {
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 700,
+        "input_tokens": 31,
+        "output_tokens": 7,
+        "total_input_tokens": 731,
+        "total_tokens": 738
+      }
+    },
+    "sse-b": {
+      "client_status": 200,
+      "upstream_statuses": [
+        200
+      ],
+      "usage": {
+        "cache_creation_input_tokens": 200,
+        "cache_read_input_tokens": 0,
+        "input_tokens": 42,
+        "output_tokens": 9,
+        "total_input_tokens": 242,
+        "total_tokens": 251
+      }
+    }
+  },
+  "checks": {
+    "existing_request_id_join": "pass",
+    "parallel_request_separation": "pass",
+    "secret_and_generation_isolation": "pass",
+    "split_missing_invalid_and_bounded_sse_preserves_bytes": "pass",
+    "bounded_attempts_do_not_fabricate_total": "pass",
+    "clean_shutdowns": 2,
+    "controller_unit_tests_passed": 10,
+    "cargo_fmt": "pass",
+    "native_test_summary": [
+      "test result: ok. 35 passed; 0 failed; 6 ignored; 0 measured; 441 filtered out; finished in 0.87s"
+    ],
+    "pause_offline_assets": true
+  },
+  "proofs": {
+    "capture": {
+      "path": "work/proofs/optimization/desktop-anthropic-usage/7e094f4b-3bbb-475c-971a-23dc63eea183/result.json",
+      "sha256": "c4b2dd3027f54952d54761ee7cf83ca79b4114ee8bd40c663a925e482c61dc4a",
+      "matching_inputs": 36
+    },
+    "legacy_usage": {
+      "path": "work/proofs/optimization/anthropic-usage/415bad78-f955-4124-8161-f4f2bf66a6b4/result.json",
+      "sha256": "f9521556906a4c5901980f1921c0364c4677016b21d6f7c6f33abd7cbb5e51de",
+      "matching_inputs": 35
+    },
+    "pause": {
+      "path": "work/proofs/pause/runs/6d4ac006-3777-44b8-b449-ea9964b34018/result.json",
+      "sha256": "e00a4481420a315f3ce0b06e45e49bb4b60028689293e18c63d7d425aa519cf2",
+      "matching_inputs": 15
+    },
+    "native": {
+      "path": "work/proofs/optimization/desktop-anthropic-usage/native-a9d8b76713/focused-native.json",
+      "sha256": "b9c7e9d724fd749ad9552c5fceb99abb9ac6c52b258362ec29ab144ee247b805",
+      "matching_inputs": 339
+    }
+  },
+  "remaining_acceptance": [
+    "native_metrics_projection",
+    "live_provider_usage",
+    "other_protocols",
+    "windows_11"
+  ]
+}

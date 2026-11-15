@@ -1,21 +1,29 @@
 """Application-owned, in-memory pause at request boundaries for the pinned engine."""
 from __future__ import annotations
 
+from collections import deque
 import contextvars
 import copy
 import hashlib
 import hmac
 import json
+import re
 import threading
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 CONTROL_PATH = "/__headroom_desktop/control"
+USAGE_PATH = "/__headroom_desktop/provider-usage"
+ANTHROPIC_MESSAGES_PATH = "/v1/messages"
 MAX_PAYLOAD = 2 * 1024 * 1024
 MAX_TRACKERS = 64
 MAX_REPLAY_BYTES = 64 * 1024 * 1024
+MAX_USAGE_ATTEMPTS = 16
+MAX_USAGE_EVENT_BYTES = 128 * 1024
+MAX_TOKEN_COUNT = (1 << 53) - 1
+USAGE_FIELDS = ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens", "output_tokens")
 _request = contextvars.ContextVar("headroom_desktop_request", default=None)
 
 
@@ -32,6 +40,155 @@ class RequestState:
     scope_key: str
     previous: tuple | None = None
     replay_failed: bool = False
+    usage: UsageTrace | None = None
+
+
+def _token_count(value):
+    return value if type(value) is int and 0 <= value <= MAX_TOKEN_COUNT else None
+
+
+def _sum_known(values):
+    return _token_count(sum(values)) if values and all(value is not None for value in values) else None
+
+
+@dataclass
+class UsageTrace:
+    request_id: str | None = None
+    conflicting_ids: bool = False
+    attempts: list[dict] = field(default_factory=list)
+    truncated: bool = False
+
+    def begin_attempt(self) -> dict | None:
+        if len(self.attempts) >= MAX_USAGE_ATTEMPTS:
+            self.truncated = True
+            return None
+        attempt = {"status": None, "usage": None}
+        self.attempts.append(attempt)
+        return attempt
+
+    def snapshot(self, status: int) -> dict:
+        usage = {}
+        for name in USAGE_FIELDS:
+            values = [(attempt["usage"] or {}).get(name) for attempt in self.attempts]
+            usage[name] = None if self.truncated else _sum_known(values)
+        usage["total_input_tokens"] = _sum_known([usage[name] for name in USAGE_FIELDS[:3]])
+        usage["total_tokens"] = _sum_known([usage["total_input_tokens"], usage["output_tokens"]])
+        return {"request_id": self.request_id, "client_status": status, "truncated": self.truncated,
+                "attempts": copy.deepcopy(self.attempts), "usage": usage}
+
+
+def _anthropic_json_usage(raw: bytes) -> dict | None:
+    if len(raw) > MAX_PAYLOAD:
+        return None
+    value = json.loads(raw)
+    if not isinstance(value, dict) or value.get("type") != "message":
+        return None
+    usage = value.get("usage")
+    if not isinstance(usage, dict):
+        return None
+    return {name: _token_count(usage.get(name)) for name in USAGE_FIELDS}
+
+
+async def _observe_anthropic_sse(chunks, attempt, parse_events):
+    buffer = bytearray()
+    usage = dict.fromkeys(USAGE_FIELDS)
+    started = stopped = invalid = False
+    usage_events = {"message_start", "message_delta", "message_stop", "error"}
+    async for chunk in chunks:
+        if not invalid:
+            try:
+                if len(buffer) + len(chunk) > MAX_USAGE_EVENT_BYTES:
+                    raise ValueError()
+                buffer.extend(chunk)
+                for event_name, data in parse_events(buffer):
+                    if event_name is not None and event_name not in usage_events:
+                        continue
+                    event = json.loads(data)
+                    if not isinstance(event, dict):
+                        raise ValueError()
+                    kind = event.get("type")
+                    if (not isinstance(kind, str) or (event_name is not None and event_name != kind)
+                            or kind == "error" or (kind in usage_events and stopped)):
+                        raise ValueError()
+                    if kind == "message_start":
+                        if started or not isinstance(event.get("message"), dict):
+                            raise ValueError()
+                        started = True
+                        supplied = event["message"].get("usage")
+                        if isinstance(supplied, dict):
+                            for name in USAGE_FIELDS[:3]:
+                                usage[name] = _token_count(supplied.get(name))
+                    elif kind == "message_delta" and started:
+                        supplied = event.get("usage")
+                        if isinstance(supplied, dict):
+                            for name in USAGE_FIELDS:
+                                if name in supplied:
+                                    usage[name] = _token_count(supplied[name])
+                    elif kind == "message_stop":
+                        if not started:
+                            raise ValueError()
+                        stopped = True
+                        attempt["usage"] = usage.copy()
+            except (ValueError, RecursionError):
+                invalid = True
+                buffer.clear()
+                attempt["usage"] = None
+        yield chunk
+
+
+def _install_anthropic_usage(proxy, gate, parse_events, response_not_read):
+    startup = proxy.startup
+    record_outcome = proxy._record_request_outcome
+
+    async def start():
+        await startup()
+        client = proxy.http_client
+        send = client.send
+
+        async def observe(request, **options):
+            state = _request.get()
+            if (state is None or state.gate is not gate or state.usage is None
+                    or request.method != "POST" or not request.url.path.endswith(ANTHROPIC_MESSAGES_PATH)):
+                return await send(request, **options)
+            attempt = state.usage.begin_attempt()
+            response = await send(request, **options)
+            if attempt is None:
+                return response
+            attempt["status"] = response.status_code
+            if not response.is_success or response.history:
+                return response
+            media_type = response.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+            if media_type == "application/json" and response.is_stream_consumed:
+                try:
+                    attempt["usage"] = _anthropic_json_usage(response.content)
+                except (ValueError, RecursionError, response_not_read):
+                    pass
+            elif media_type == "text/event-stream":
+                read = response.aiter_bytes
+
+                def observed_read(*args, **kwargs):
+                    return _observe_anthropic_sse(read(*args, **kwargs), attempt, parse_events)
+
+                response.aiter_bytes = observed_read
+            return response
+
+        client.send = observe
+
+    async def record(outcome):
+        await record_outcome(outcome)
+        state = _request.get()
+        if state is None or state.gate is not gate or state.usage is None:
+            return
+        request_id = outcome.request_id
+        if not isinstance(request_id, str) or not re.fullmatch(r"hr_[0-9]{1,20}_[0-9]{6,20}", request_id):
+            state.usage.conflicting_ids = True
+        elif state.usage.request_id is None:
+            state.usage.request_id = request_id
+        elif state.usage.request_id != request_id:
+            state.usage.conflicting_ids = True
+
+    proxy.startup = start
+    proxy._record_request_outcome = record
 
 
 def _encoded(value: Any) -> bytes:
@@ -62,6 +219,7 @@ class Gate:
         self.generation, self._secret, self.prefix = generation, secret, prefix
         self.enabled, self.revision, self.history_safe = True, 0, True
         self.active_http = 0
+        self.usage_records = deque(maxlen=64)
         self.proxy_store = None
         self.lock = threading.RLock()
         self.replay = prefix.SessionTrackerStore(prefix.PrefixFreezeConfig(
@@ -147,8 +305,12 @@ class ControlMiddleware:
                     "headers": [(b"content-type", b"application/json"), (b"cache-control", b"no-store"), (b"content-length", str(len(data)).encode())]})
         await send({"type": "http.response.body", "body": data})
 
+    def _authorized(self, headers: dict) -> bool:
+        return hmac.compare_digest(headers.get("x-headroom-desktop-control", "").encode("latin1"),
+                                   self.gate._secret.encode("ascii"))
+
     async def control(self, scope: dict, receive: Any, send: Any, headers: dict):
-        if scope.get("method") != "POST" or not hmac.compare_digest(headers.get("x-headroom-desktop-control", "").encode("latin1"), self.gate._secret.encode("ascii")):
+        if scope.get("method") != "POST" or not self._authorized(headers):
             await self._reply(send, 404, {"error": "not_found"}); return
         raw = bytearray()
         while True:
@@ -203,6 +365,12 @@ class ControlMiddleware:
         if path.startswith("/__headroom_desktop"):
             if scope["type"] == "http" and path == CONTROL_PATH:
                 await self.control(scope, receive, send, headers)
+            elif (scope["type"] == "http" and path == USAGE_PATH and scope.get("method") == "GET"
+                  and self._authorized(headers)):
+                with self.gate.lock:
+                    records = list(self.gate.usage_records)
+                await self._reply(send, 200, {"schema_version": 1, "runtime_generation": self.gate.generation,
+                                              "surface": "anthropic_messages", "records": records})
             elif scope["type"] == "http": await self._reply(send, 404, {"error": "not_found"})
             else: await send({"type": "websocket.close", "code": 1008})
             return
@@ -211,31 +379,44 @@ class ControlMiddleware:
         state = RequestState(self.gate, self.gate.enabled, kind,
                              headers.get("x-headroom-bypass", "").lower() == "true" or headers.get("x-headroom-mode", "").lower() == "passthrough",
                              _digest([path, "responses" if kind == "responses_ws" else kind, [(k, headers.get(k)) for k in route_headers]]))
+        if scope["type"] == "http" and scope.get("method") == "POST" and path == ANTHROPIC_MESSAGES_PATH:
+            state.usage = UsageTrace()
         token = _request.set(state)
         counted = scope["type"] == "http" and scope.get("method") == "POST" and kind in {"responses", "anthropic"} or scope.get("method") == "POST" and path.endswith("/chat/completions")
         started = False
+        completed = False
+        status = None
         async def observed_send(message):
-            nonlocal started
-            if message["type"] == "http.response.start": started = True
+            nonlocal started, status
+            if message["type"] == "http.response.start":
+                started = True
+                status = message["status"]
             await send(message)
         with self.gate.lock:
             if counted: self.gate.active_http += 1
         try:
             await self.app(scope, receive, observed_send)
+            completed = True
         except BaseException:
             if not state.replay_failed or started or scope["type"] != "http": raise
             await self._reply(send, 503, {"error": {"type": "desktop_pause_unavailable", "message": "Safe prefix replay is unavailable."}})
         finally:
             with self.gate.lock:
                 if counted: self.gate.active_http -= 1
+                usage = state.usage
+                if (completed and status is not None and usage is not None
+                        and usage.request_id and not usage.conflicting_ids and usage.attempts):
+                    self.gate.usage_records.append(usage.snapshot(status))
             _request.reset(token)
 
 
 def install(generation: str, secret: str) -> dict[str, str]:
+    import httpx
     import headroom._version
     import headroom.cache.prefix_tracker as prefix
     import headroom.proxy.handlers.openai as openai
     import headroom.proxy.server as server
+    from headroom.proxy.sse_byte_buffer_policy import parse_sse_events_from_byte_buffer
 
     root = Path(server.__file__).resolve().parents[1]
     expected = json.loads(Path(__file__).with_name("optimization-sources.json").read_text(encoding="utf-8"))
@@ -326,6 +507,7 @@ def install(generation: str, secret: str) -> dict[str, str]:
         gate = Gate(generation, secret, prefix)
         gate.proxy_store = proxy.session_tracker_store
         proxy.config = ScopedConfig(proxy.config, gate)
+        _install_anthropic_usage(proxy, gate, parse_sse_events_from_byte_buffer, httpx.ResponseNotRead)
         app.add_middleware(ControlMiddleware, gate=gate)
         app.state.desktop_control = gate
         return app
