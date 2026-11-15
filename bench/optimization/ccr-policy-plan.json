@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "pairs": [["eager", "lazy"], ["lazy", "eager"]],
+  "surface": "anthropic_http_sse",
+  "fixture_model": "claude-sonnet-4-20250514",
+  "short_turns": 3,
+  "protected_tools": ["Read"],
+  "token_encoding": "o200k_base",
+  "thresholds": {"startup_timeout_seconds": 100, "request_timeout_seconds": 30}
+}

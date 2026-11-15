@@ -1,0 +1,174 @@
+{
+  "task": "H041-b",
+  "date": "2026-11-15",
+  "passed": true,
+  "engine": "0.41.0",
+  "os": "Windows-10-10.0.19045-SP0",
+  "python": "3.13.13",
+  "command": "work/proofs/packaging/artifacts/headroom-engine/runtime/python.exe -I -B bench/optimization/ccr_policy.py --run",
+  "plan": {
+    "schema_version": 1,
+    "pairs": [
+      [
+        "eager",
+        "lazy"
+      ],
+      [
+        "lazy",
+        "eager"
+      ]
+    ],
+    "surface": "anthropic_http_sse",
+    "fixture_model": "claude-sonnet-4-20250514",
+    "short_turns": 3,
+    "protected_tools": [
+      "Read"
+    ],
+    "token_encoding": "o200k_base",
+    "thresholds": {
+      "startup_timeout_seconds": 100,
+      "request_timeout_seconds": 30
+    }
+  },
+  "token_basis": "o200k_base_local_canonical_full_request_json_including_tool_definitions",
+  "paired_runs": 2,
+  "upstream_requests": 36,
+  "exact_local_ccr_retrievals": 8,
+  "clean_engine_stops": 4,
+  "fixture_hub_payload_bytes": 0,
+  "checks": {
+    "auth_model_reasoning_tools_protected_read_and_message_prefix": "pass",
+    "fresh_explicit_session_isolation": "pass",
+    "buffered_upstream_with_client_sse_completion": "pass",
+    "matrix_equal_across_repeats": true
+  },
+  "per_repeat": {
+    "eager": {
+      "short": {
+        "original": [
+          358,
+          462,
+          566
+        ],
+        "forwarded": [
+          458,
+          562,
+          666
+        ],
+        "schema_transition_turns": []
+      },
+      "long": {
+        "original": [
+          1815,
+          1919,
+          2023,
+          10321,
+          13298
+        ],
+        "forwarded": [
+          1915,
+          2019,
+          2123,
+          2263,
+          5240
+        ],
+        "schema_transition_turns": []
+      },
+      "fresh": {
+        "original": [
+          358
+        ],
+        "forwarded": [
+          458
+        ],
+        "schema_transition_turns": []
+      }
+    },
+    "lazy": {
+      "short": {
+        "original": [
+          358,
+          462,
+          566
+        ],
+        "forwarded": [
+          358,
+          462,
+          566
+        ],
+        "schema_transition_turns": []
+      },
+      "long": {
+        "original": [
+          1815,
+          1919,
+          2023,
+          10321,
+          13298
+        ],
+        "forwarded": [
+          1815,
+          1919,
+          2023,
+          2263,
+          5240
+        ],
+        "schema_transition_turns": [
+          4
+        ]
+      },
+      "fresh": {
+        "original": [
+          358
+        ],
+        "forwarded": [
+          358
+        ],
+        "schema_transition_turns": []
+      }
+    }
+  },
+  "summary": {
+    "short_forwarded_eager": 1686,
+    "short_forwarded_lazy": 1386,
+    "short_lazy_reduction_percent_vs_eager": 17.7936,
+    "long_forwarded_eager": 13560,
+    "long_forwarded_lazy": 13260,
+    "log_turn_original": 10321,
+    "log_turn_forwarded_both": 2263,
+    "log_turn_reduction_percent_vs_original": 78.0738
+  },
+  "input_fingerprints_unchanged": 58,
+  "proof": {
+    "path": "work/proofs/optimization/ccr-policy/20216a41-8572-442b-b451-5cbb2c201933/result.json",
+    "sha256": "6407feb3b8229b03d32e381fbcb01a2eaee3e4be2eda8428b7bdda616ce2c257"
+  },
+  "prior_product_gate": {
+    "matching_current_inputs": 344,
+    "rerun": false,
+    "artifact": {
+      "path": "work/proofs/windows-engine-crash/startup-quality-84993ecb4e/final.json",
+      "sha256": "5344fa7eeeab919dd291978321d131856e276035f53fe595a670834626665c7c"
+    }
+  },
+  "fixture_corrections": [
+    {
+      "artifact": {
+        "path": "work/proofs/optimization/ccr-policy/6e7fc437-f165-4bbc-839c-14dc0328db9b/result.json",
+        "sha256": "6b787171df90ca505e849c40251feaf91e75da258d3a425a627fdccc7633f2bd"
+      },
+      "failure": "fixture_log_not_compressed",
+      "correction": "append_previous_fixture_reply_to_next_request"
+    },
+    {
+      "artifact": {
+        "path": "work/proofs/optimization/ccr-policy/3e4f1228-16d9-4f77-bc9b-0a081199de14/result.json",
+        "sha256": "a844ddc92e6acb5f20d50a00fb371c0327ca3ca77e9fa63be2edc2c58e17ce69"
+      },
+      "failure": "fixture_body_changed_outside_expected_fields",
+      "correction": "verify_buffered_upstream_and_return_protocol_correct_json"
+    }
+  ],
+  "provider_cache_billing_and_model_task_quality": "not_tested",
+  "decision": "retain_eager_until_live_cache_and_task_success_evidence"
+}

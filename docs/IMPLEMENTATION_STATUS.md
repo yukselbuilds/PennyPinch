@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H041-b — Anthropic geri çağırma aracı karşılaştırması tamamlandı
+
+- Ana ajan ölçüm ve önbellek sözleşmesini üstlendi. Sabit motorla iki eşlenmiş tekrar, dört yeni süreç, 36 loopback isteği ve 8 birebir CCR geri alımı geçti. Kısa üç turda `eager` 1.686, `lazy` 1.386 yerel token gönderdi. Uzun oturumda geç gelen log isteği iki ayarda 10.321’den 2.263’e indi. `lazy` ilk sıkıştırmada araç dizisini değiştirdi ve sonraki turda korudu. Dört motor normal kapandı, 58 ölçüm girdisi eşleşti. [Kanıt](proofs/anthropic-ccr-policy.json) · [Doğrulama](validation/optimization-benefit.md#anthropic-ccr-aracının-eklenme-zamanı).
+- İlk fixture önceki yapay sağlayıcı cevabını sohbete eklemiyordu; cache eşleşmesi bu nedenle sıkıştırmayı atladı. Son koşu cevabı geçmişe ekler ve CCR gerektiğinde gerçek sağlayıcının kullanacağı buffered JSON yanıt şeklini döndürür. Ürün kalite kapısının 344 kaynak girdisi eşleşti. Bu dilim izole yerel benchmark kapsamındaydı.
+- **45/54.** H041’in canlı sağlayıcı ve dış ortam kabulleri açık. `eager` sürüm varsayılanı olarak korunuyor. Sıradaki yerel optimizasyon adımı sağlayıcı kullanım alanlarını ve CCR sonrası ek model turlarını doğru oturuma bağlayan ölçüm sözleşmesi. [Öncelik sırası](decisions/027-optimization-regression.md#başarılı-görev-başına-net-tasarruf).
+
 ## H006 ortamı ve H044 ön koşulu kontrol edildi
 
 - Hazır Windows 10 Pro 22H2 x64 bilgisayarda Windows Sandbox bileşeni kullanılabilir değildi. H006'nın bir sonraki adımı hazır ZIP ile iki temiz Windows sonucunu kaydetmek. [Paket kaydı](proofs/windows-engine-clean-test-package.json).

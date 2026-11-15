@@ -1,5 +1,25 @@
 # H041 — Optimizasyon ve gecikme karşılaştırması
 
+## Başarılı görev başına net tasarruf
+
+Kullanıcının ilettiği öneriler 15 Kasım 2026'da mevcut H041/H043 kanıtı ve sabit motorla karşılaştırıldı. Hedef aynı model, reasoning ve araç izinleriyle doğru tamamlanan görev başına toplam kullanımı azaltmaktır. Geri çağırma, ek model turu ve tekrarlar ölçüme dahildir. Yerel tokenizer sayımı, sağlayıcı kullanım sayaçları ve API fatura karşılığı kendi veri temeliyle saklanır. Sağlayıcıda gözlenmeyen kullanım `not_tested` kalır.
+
+1. **İlk dilim H041-b.** Sabit 0.41.0 motorun `eager` ve `lazy` seçeneklerini ölç. Kısa oturumda `lazy` gereksiz CCR tanımını atlayabilir. Uzun oturumda ilk sıkıştırma geldiğinde eklenen tanım Anthropic'in ortak önbellek başlangıcını değiştirebilir. Önceki bir CCR işaretini taşıyan oturumda geri çağırma aracı korunur. Her istekte şema ekleyip çıkaran eşik uygun değildir. [Araç ve önbellek sözleşmesi](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-use-with-prompt-caching).
+2. **Ölçüm sözleşmesi.** Mevcut `cache_hit` gözlemi yanında sağlayıcının doğrulanmış `cached_tokens` veya `cache_read_input_tokens`, varsa cache yazma ve çıktı sayaçlarının kapsamı tespit edilir. CCR çağrıları ve bunlardan doğan ek turlar aynı oturuma bağlanabiliyorsa net fayda hesabına girer. Bilinmeyen değerler ve negatif sonuçlar korunur. Önce güvenilir ölçüm, sonra ayar veya profil seçimi gelir.
+3. **Birebir tekrar eden yeni sonuçlar.** Önce sabit motordaki dedup yolu sınanır. Yalnız aynı oturumda kimliği ve içeriği doğrulanmış yeni sonuç adaydır. Önceden iletilen mesaj başlangıcı, işlem kodları ve mevcut CCR erişimi korunur. Özgün baytlar geri alınabilse bile modelin gereken bilgiyi zamanında bulması görev doğruluğuyla sınanır.
+4. **Log ve test çıktısı.** H044 RTK kurulum ön koşulunu korur. Ayrı bir H041 deneyi, başarısızlığın tam hata metnini ve gerekli bağlamını hemen gösterirken tekrarlı başarı satırlarını kısaltabilir. İlk çalıştırmanın özgün akışları, çıkış kodu ve araç kimliği korunur. Kazanç Headroom tabanına karşı ölçülür. Özgününü yeniden çalıştırma ihtiyaç duyulan geri alma işlevini karşılamaz.
+5. **Kod ve istemci dosya aktarımı.** Korumalı Read, kesin sayısal JSON ve diff kaynakları başlangıçta olduğu gibi iletilir. AST ve dosyaya aktarılmış loglar yalnız açık içerik ve rota kanıtı, özgün geri alma, görev doğruluğu ve bellek eşiğiyle sonraki adaydır. Kompress arka plan ısıtması kapalıdır ve ihtiyaç halinde yükleme yolu korunur. Caveman benzeri kısa yanıt tercihi kullanıcıya açık ve ayrı bir deneydir. Model, reasoning, geçmiş ve varsayılan yanıt kapsamı korunur.
+
+### H041-b yerel deney koşulları
+
+Ana ajan ölçüm, runtime ve cache sözleşmesi nedeniyle deney ve kabulü üstlenir. `bench/optimization/ccr-policy-plan.json` iki eşlenmiş tekrarı önceden belirler. Her tekrarda iki ayrı motor kullanılır. Bir oturum üç kısa istekten oluşur. İkincisi üç kısa istekten sonra sıkıştırılabilir uzun log ve korumalı kesin sayısal bir Read sonucu alır. Ayrı temiz oturumdaki kısa istek, yapışkan aracın başka oturuma taşınmadığını denetler. Tüm istekler izole Anthropic SSE fixture'ına gider.
+
+Kısa `lazy` kolu özgün gövdeyle eşleşmeli ve her tekrarda mevcut araç maliyetini azaltmalı. Uzun kolda değişmeyen mesaj başlangıcı, model/efor/auth/araç kimliği, logun birebir geri alınması ve korumalı Read baytları gerekir. Araç tanımının ilk sıkıştırmada eklenmesi bir kez gözlenir ve sonraki turlarda sabit kalır. Motorlar sahipli portu kapatarak normal çıkar. Başlatma ve istek bekleme sınırları önceki fixture ile aynı. Ölçüm yerel tam istek JSON'u sayımıdır. Canlı sağlayıcı cache davranışı ve model yanıt kalitesi ayrı kabulde ölçülür. Ürün varsayılanını değiştirmek için çok turlu kullanım ve görev başarısı kanıtı gerekir.
+
+15 Kasım yerel koşusu geçti. Kısa oturumda `lazy` üç turda toplam 300 token daha az gönderdi. Uzun oturumda ilk log sıkıştırması `lazy` ile araç dizisini değiştirdi, `eager` ile dizi sabit kaldı. Anthropic araç değişikliğini önbelleği geçersiz kılan bir değişiklik olarak tanımlar. Bu yüzden `eager` varsayılanı korunur. Karar, canlı kullanımdaki cache okuma/yazma ve tamamlanan görev başına net token ölçümünden sonra yeniden değerlendirilir. [Yerel kanıt](../proofs/anthropic-ccr-policy.json) · [Claude önbellek kuralları](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#what-invalidates-the-cache).
+
+## İlk ölçümlerin planı
+
 9 Kasım 2026. H038 sonrasında bağımlılıkları hazır olan H041 başladı. Ana ajan ölçüm semantiği, gerçek motor ve performans kabulünü üstlenir. Ponytail full uygulanır. Ücretsiz yerel deneyler ilerler. Canlı API-key ve diğer işletim sistemi kabulü açık kalır.
 
 İlk dilim Responses HTTP/SSE yüzeyinde aynı sentetik isteğin doğrudan yerel fixture’a ve üretim controller/helper yoluyla açılmış Headroom motoruna gönderilmesidir. Rust ingress maliyeti bu motor ölçümüne dahil edilmez. Ayrı backpressure dilimi gerçek relay yolunu inceler. İstemci ayarı ve hesap verisi kullanılmaz.

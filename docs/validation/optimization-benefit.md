@@ -55,6 +55,20 @@ Sabit motor varsayılan ayarla, araç listesi bulunan ve optimizasyona açık is
 
 Üç motor normal kod 0 ile kapandı, portlar kapandı. Güncel koşuda 648 kaynak ve araç girdisi önce ve sonra eşleşti. İlk koşunun doğrudan WebSocket bağlantısı uyarısı, sabit kütüphanenin açık `legacy=True` seçimiyle giderildi. Bağlantı yaşam döngüsü kontrollü biçimde sonlandırıldı. [İlk protokol ölçümü](../proofs/optimization-surfaces.json).
 
+## Anthropic CCR aracının eklenme zamanı
+
+15 Kasım 2026’da `bench/optimization/ccr_policy.py --run` sabit 0.41.0 motorla dört yeni süreç başlattı. İki eşlenmiş tekrarda sıra ters çevrildi. Her süreç üç kısa tur, geç log ve korumalı sayısal Read içeren beş turlu oturum ve ayrı bir kısa istek gönderdi. Aşağıdaki sayılar iki tekrarda da aynıdır. `o200k_base` ile tam kanonik JSON sayımı, CCR tanımını da içerir. [Çalıştırma kaydı](../proofs/anthropic-ccr-policy.json).
+
+| Oturum veya istek | Özgün | `eager` | `lazy` |
+| --- | ---: | ---: | ---: |
+| Üç kısa turun toplamı | 1.386 | 1.686 | 1.386 |
+| Beş uzun turun toplamı | 29.376 | 13.560 | 13.260 |
+| Uzun oturumda logun ilk geldiği tur | 10.321 | 2.263 | 2.263 |
+
+Üç kısa turda `lazy` toplam 300 token, `eager` koluna göre %17,79 azalttı. İki ayar da logun ilk geldiği isteği özgüne göre %78,07 küçülttü. Geç log geldikten sonra `lazy` araç dizisi bir kez değişti ve bir sonraki turda sabit kaldı. `eager` dizisi baştan sabitti. Mesaj başlangıcı, sentetik auth, model/efor, araç çağrıları ve korumalı Read içeriği korundu. Ayrı oturum `lazy` aracını devralmadı. Model çağrısı gerektirmeyen sekiz yerel CCR isteği özgün logu birebir döndürdü. Dört motor kod 0 ile kapandı ve sahipli portlar serbest kaldı.
+
+İlk koşuda fixture önceki sentetik cevabı yeni isteğe eklemediği için cache modu logu sıkıştırmadan iletti. İkinci koşu doğru geçmişle logu sıkıştırdı ve CCR için sağlayıcı tarafının `stream: false` olduğunu gösterdi. Son koşu o kola JSON, diğer kola SSE verdi. İstemci iki durumda da tamamlanmış SSE aldı. Ölçüm bu yerel protokol kontrolleriyle sınırlıdır. Sağlayıcı cache sayaçları, fatura etkisi ve gerçek görev başarısı açık. Ürün varsayılanı `eager` kaldı.
+
 ## Süreli yük ve başlangıçta Kompress yüklemesi
 
 `bench/optimization/stability.py --run`, önce dört yüzey × dört içerik × üç tur × iki kol ile 96 isteği ısıttı. Ardından 300 saniye boyunca saniyede bir eşlenmiş iş yükü gönderdi. 300 çift/600 istek, kaynak/sayısal/araç/prefix/CCR kontrollerini tamamladı. CPU birleşik benchmark/fixture/controller/helper/engine kapsamıyla tek çekirdeğin %6,24’ü, ek p95 48,67 ms ve istek CPU p95 31,25 ms idi.

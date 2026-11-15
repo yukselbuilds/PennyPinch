@@ -188,6 +188,9 @@ class SurfaceHandler(replay.FixtureHandler):
         surface = "anthropic_http_sse" if self.path == "/v1/messages" else "chat_http_sse"
         replay.require(self.path in ("/v1/messages", "/v1/chat/completions"), "surface_http_route")
         self.capture(self.headers["X-Proof-Case"], body, surface)
+        self.respond(body, surface)
+
+    def respond(self, body, surface):
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Connection", "close")

@@ -58,8 +58,9 @@ def write_new(path, value):
         stream.write("\n")
 
 
-def prepare_fixture_runtime(run, payload):
+def prepare_fixture_runtime(run, payload, *, ccr_injection=None):
     """Use local-only ML assets for this run while preserving the app's statistics profile."""
+    require(ccr_injection in (None, "eager", "lazy"), "fixture_ccr_policy")
     runtime = ROOT / "runtime"
     overlay = run / "fixture-runtime"
     overlay.mkdir()
@@ -71,6 +72,8 @@ def prepare_fixture_runtime(run, payload):
             if anchor not in data:
                 anchor = b'PROFILE_ENV = {\r\n'
             overrides = (b'    "HF_HUB_OFFLINE": "1",', b'    "TRANSFORMERS_OFFLINE": "1",')
+            if ccr_injection is not None:
+                overrides += (f'    "HEADROOM_CCR_TOOL_INJECTION": "{ccr_injection}",'.encode("ascii"),)
             require(data.count(anchor) == 1 and all(line.split(b':')[0] not in data for line in overrides),
                     "fixture_profile_anchor")
             newline = anchor[len(b'PROFILE_ENV = {'):]
