@@ -663,7 +663,7 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 
 ### H044 — İsteğe bağlı RTK kurulum ve yönetimi
 - [ ] Yalnız H043'te doğrulanan kapsam için Ayarlar'dan kur/etkinleştir/devre dışı bırak/kaldır akışı sunulur.
-- **Durum:** Beklemede. RTK-OSS 1.1.0 ile H043 kabulünden geçen filtre yolu çıkmadı. Yeni aday, aynı çıktı koruması ve fayda ölçütleriyle doğrulanmadan kurulum kapsamı açılmaz.
+- **Durum:** Beklemede. RTK-OSS 1.1.0 H043 kabulünde elendi. 15 Kasım'da kararlı 1.2.0 da özgün çıktı koruması, geri alma ve asgari bayt faydası ön elemesinde sekiz örneğin tamamında elendi. Sekiz bypass birebir sonuç verdi. Uygun aday aynı ölçütlerle doğrulandığında kurulum kapsamı açılır. [1.2.0 ön eleme kanıtı](docs/proofs/rtk-1.2.0-preflight.json).
 - **Kabul:** Ek araç sürümü/lisansı/boyutu/etkilediği client kapsamı önizlenir; varsayılan kapalıdır. İndirme hash/imzası ve sadece uygulamaya ait süreç/dosyalar yönetilir. Hook/wrapper gerekiyorsa H018 sahipliği ve conflict/rollback kuralları uygulanır; sessiz global PATH/hook değişikliği yok. Katman sayaçları ayrı; ölçülmemiş kazanç gösterilmez.
 - **Dağıtım sınırı:** H043'te kanıtlanan Apache-2.0 filtre bileşeni dışında RTK engine veya ayrı BUSL-1.1 proxy otomatik indirilmez, paketlenmez veya dağıtılmış sayılmaz; bunlar için ayrı açık karar gerekir.
 - **Doğrulama:** Kurulum hatası/iptal, yeniden açılış, mevcut hook çatışması ve sonraki kullanıcı düzenlemesini koruyan kaldırma; desteklenen istemcide UI→adapter→gerçek araç yolu. Genel eklenti marketi veya diğer araçların otomatik kurulumu kapsam dışı.

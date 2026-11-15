@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H006 ortamı ve H044 ön koşulu kontrol edildi
+
+- Hazır Windows 10 Pro 22H2 x64 bilgisayarda Windows Sandbox bileşeni kullanılabilir değildi. H006'nın bir sonraki adımı hazır ZIP ile iki temiz Windows sonucunu kaydetmek. [Paket kaydı](proofs/windows-engine-clean-test-package.json).
+- Ana ajan resmî kararlı RTK-OSS 1.2.0 paketinin SHA-256 değerini doğrulayıp proje içindeki mevcut sekiz H043 fixture'ıyla ön eleme yaptı. Sekiz bypass birebir, kabul edilebilir filtre 0. Başarısız testte stderr 80 bayttan 0'a indi. Üç geri alma örneği stdout ve stderr'i birleşik verdi. Önce/sonra 127 girdi ve ortam eşleşti. Ölçüm kapsamı komut çıktısı baytlarıdır. H044 kurulum ön koşulu hâlâ açık. [Ön eleme](proofs/rtk.md#rtk-oss-120--h044-ön-elemesi) · [Programatik kanıt](proofs/rtk-1.2.0-preflight.json).
+- **45/54.** H006 ve H044 bekliyor. Geçerli paket/uygulama testleri yeniden çalıştırılmadı. GitHub Actions kotası kullanılmadı.
+
 ## H006 — temiz ortam test paketi hazır
 
 - Ana ajan mevcut H006-c release adayını, motoru ve test yönergesini yerel ZIP'e aldı. 22.335 girişin tüm hash'leri ve Windows `tar.exe` okuması geçti. Kanıt 344 kaynak girdisinin son yerel kapıyla eşleştiğini kaydeder. Arşiv 197.348.721 bayt ve kendi SHA-256 dosyasıyla `work/proofs/windows-engine-crash/clean-test-a8e23e494d/` altında. [Paket ve doğrulama](proofs/windows-engine-clean-test-package.json).

@@ -43,3 +43,11 @@ $rtkProofRun = & $rtkProofPython -I -B bench/rtk/replay.py --run | ConvertFrom-J
 if (-not $rtkProofRun.passed) { throw 'RTK kıyası başarısız.' }
 & $rtkProofPython -I -B bench/rtk/surfaces.py --benchmark-result (Join-Path $rtkProofRun.run 'result.json')
 ```
+
+## RTK-OSS 1.2.0 — H044 ön elemesi
+
+15 Kasım 2026. Resmî kararlı `v1.2.0` Windows x64 OSS ZIP'i, etiket commit'i ve iki yayımlanan SHA-256 kaydıyla doğrulandı. Proje içindeki izole çalışmada mevcut H043 komutları ve aynı bütünlük/asgari %10 bayt faydası ölçütleri kullanıldı. `retriever.rs` ve `runner.rs` dosyaları 1.1.0 ile bayt düzeyinde aynıydı. [Sürüm varlıkları](https://github.com/rtk-ai/rtk/releases/tag/v1.2.0) · [Sabit geri alma kaynağı](https://github.com/rtk-ai/rtk/blob/e288a18c04452fd26192f59132e5324a8bb6924d/src/core/retriever.rs).
+
+Sekiz komutun tamamı elendi. Git status %5,62, git diff %1,20 bayt azalmasıyla eşiğin altında kaldı. Kaynak okuma baytları korudu ve %0 fayda verdi. Sayısal JSON filtrelenince geçerli JSON yapısı bozuldu. Başarılı testin özgün çıktısı geri alınamadı. Başarısız testte stderr 80 bayttan 0'a indi. Başarısız test, derleme ve özel stderr örneklerinde `recall --full` özgün akışları birleşik verdi. Sekiz bypass, özgün komutu yeniden çalıştırarak aynı çıkış kodunu ve ayrı akışları üretti. [Komut sonuçları ve fingerprint'ler](rtk-1.2.0-preflight.json).
+
+Bu tek turluk komut ön elemesi uygun aday çıkmadığında durur. H043'ün dört kollu motor ve istemci kanıtı kendi sürümüyle kalır. Sonuç bayt ölçümüdür. Başlangıç ve bitişte 127 kaynak, fixture, araç ve ortam girdisi eşleşti. RTK veri dosyaları çalışma dizinindeydi. H044 kurulum ve ürün kabulü açık.
