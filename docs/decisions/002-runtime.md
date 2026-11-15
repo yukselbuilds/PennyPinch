@@ -1,6 +1,6 @@
 # 002 — Yerel masaüstü mimarisi
 
-**Tarih:** 19 Ekim 2026; uygulama durumu 14 Kasım H012-b ile uzlaştırıldı. **Durum:** Mimari temel uygulanmış ve aşağıdaki yerel kanıtlarla sınırlı doğrulanmıştır. H012'nin dış kabulü açık; bu karar genel istemci/OS desteği veya yayın kabulü değildir.
+**Tarih:** 19 Ekim 2026; 15 Kasım H012 ana kabulüyle güncellendi. **Durum:** Mimari ve uyumluluk sözleşmesi kesinleştirildi. Uygulama ve destek kapsamı aşağıdaki kanıtlara bağlıdır. [H012 kabulü](../proofs/architecture-acceptance.md)
 
 ## Seçim
 
@@ -28,6 +28,8 @@ Keşif, değişiklik planı, uygulama, doğrulama ve geri alma ayrı işlemlerdi
 
 Codex'in proje config'inde yok sayılan yönlendirme anahtarlarına güvenilmez; süreç/kullanıcı kapsamı ve mevcut ChatGPT gateway yolu ayrı doğrulanır. Claude bare/API-fixture ve OpenCode V1/V2 aynı destek kaydı değildir. Kullanıcının açık oturumlarını otomatik yeniden başlatmak veya auth dosyalarını yeni fixture'a kopyalamak entegrasyon yöntemi sayılmaz.
 
+OpenCode 1.19.3 ve 2.3.0 CLI, Windows'ta sabitlenen dosya digest'iyle tanınır. V1 ve V2 aynı bağlantı/sahiplik yöneticisini kullanır. V2 plan ve receipt'i opsiyonel `opencode_schema:"v2"` taşır; alanın yokluğu eski V1 kaydını korur. Uygun V2 `providers` endpoint'leri ve `mcp.servers.headroom` tek atomik işlemde bağlanır. Sürüm, şema, kullanıcı izinleri ve retrieval köprüsü uygunluğu ayrı kapılardır. [H010 kabulü](../proofs/opencode-acceptance.md), [rota ve kayıt sözleşmesi](009-opencode-provider-routes.md).
+
 ## Duraklatma
 
 Motoru durdurmak, istemci bağlantısını kaldırmak ve sıkıştırmayı duraklatmak farklı işlemlerdir. Duraklatma mevcut stream'i bitirmeli, geçmiş CCR deposunu erişilebilir tutmalı ve önceki prefix'i bozmamalıdır. Yalnız `HEADROOM_OPTIMIZE=0`, bypass header veya proxy restart uygulayarak bu sözleşmenin sağlandığı varsayılmaz.
@@ -44,4 +46,6 @@ Ana kart `Σ(B-A)` ve `100×Σ(B-A)/ΣB` çiftini aynı kapsamdan gösterir. İ�
 
 H013–H036, H038–H040, H045 ve H050–H051'in yerel ürün dilimleri uygulanmıştır. H014 gerçek helper bağlantısı; H015–H018 state/keşif/plan/işlem; H019–H021 istemci bağlantısı; H023–H027 içeriksiz ölçüm/atama ve H028 güvenli pause ayrı kanıtlarla değerlendirilir. H050 hesap kaydı ile H051 sohbet metadata'sı ayrı kabiliyetlerdir; hesap varlığından canlı rota, sohbet/model bilgisinden trafik veya tasarruf türetilmez. Yerel imzalı update/kurtarma H042'de, üretim anahtarı/kaynağı ve yayın ayrı açık kapsamdır.
 
-H012-b mevcut uygulama ile sözleşmeyi uzlaştırır; ürün kodu veya [`compatibility/clients.json`](../../compatibility/clients.json) destek durumlarını değiştirmez. H008'in kayıtlı Windows 10 ChatGPT CLI/Desktop kabulleri vardır; canlı API-key H041'de, Claude/OpenCode canlı sağlayıcı ve tam araç/alt ajan kapsamı H009/H010'da, temiz Windows/Windows 11 H006/H037'de açık kalır. H048'in macOS 15.8.2 Apple Silicon yerel geliştirme kabulü bu yeni hesap/sohbet kabiliyetlerine aktarılmaz; H049 Linux ve H052–H054 Cloudflare işleri kullanıcı kararıyla ertelidir. Eksik dış kanıtlar nedeniyle ana H012 açık kalır; bu yerel belge uzlaştırması ana görev kabulünü değiştirmez.
+H012, bu bileşen, süreç, IPC, kayıt, ölçüm ve uyumluluk sözleşmesinin kabulüdür. H008'in Windows 10 ChatGPT CLI/Desktop kanıtı ve H010'un yerel OpenCode CLI/TUI/CLI-ayarlı Desktop kabulü kendi kapsamlarında kayıtlıdır. Katalogda 14 istemci, 1 kabiliyet ve 3 ortam kapısı bulunur. Canlı Claude/OpenCode auth, API-key, temiz Windows/Windows 11 ve üretim yayın kabulleri kendi ilgili destek ve yayın kapılarında açık kalır.
+
+K3, mimari seçimlerin somut kanıta dayanmasını ister. Bilinmeyen birleşimler katalogda gösterildiği için bu sözleşme kesinleştirilebilir. H048 macOS 15.8.2 Apple Silicon sonucu yeni hesap/sohbet kabiliyetlerini kendiliğinden doğrulamaz. H049 ve H052–H054 kullanıcı kararıyla ertelidir. [H012 kapanış kaydı](../proofs/architecture-acceptance.md) mevcut ürün/katalog ve son kalite kapısı fingerprint'ini bağlar.

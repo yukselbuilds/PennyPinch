@@ -1,6 +1,6 @@
 # Yerel uygulama sözleşmeleri
 
-**Tarih:** 19 Ekim 2026 temel karar; 14 Kasım H012-b uygulama uzlaştırması. **Durum:** Aşağıdaki yerel Rust/TypeScript akışları uygulanmıştır; dış sağlayıcı/OS/yayın kabulleri ilgili görevlerde açık kalır. Teknik temel [002 runtime kararında](decisions/002-runtime.md); uyumluluk kayıtları [`compatibility/clients.json`](../compatibility/clients.json) içindedir. Güncel kayıt 8. bölümdeki 39 komuttur; bu belge ürün desteğini genişletmez.
+**Tarih:** 19 Ekim 2026 temel karar; 15 Kasım H012 ana kabulü. **Durum:** Mimari ve arayüz sözleşmesi mevcut kaynakla eşleşir. Teknik temel [002 runtime kararında](decisions/002-runtime.md), uyumluluk kayıtları [`compatibility/clients.json`](../compatibility/clients.json) içindedir. 8. bölümdeki 39 komutun kaynak eşleşmesi ve destek sınırları [H012 kabulünde](proofs/architecture-acceptance.md) kayıtlıdır.
 
 ## 1. Ortak yanıt ve sınırlar
 
@@ -48,7 +48,9 @@ Başarı zarfı `{schema_version,request_id,status:"preview",plan}` biçimindedi
 
 `config_fingerprint` ham dosya SHA'sı değildir: sürümlü domain, client/scope/source/presence, length-framed içerik SHA-256, backend hedef kimliği ve Windows file identity bağını taşır. Yolun kendisi DTO/log'a çıkmaz. Aynı baytlarla farklı dosya nesnesi veya JSON→JSONC slot değişikliği drift sayılır. H018 bu binding'i ve kaydın süresini yeniden kontrol etmek zorundadır; H017 yazım/rollback komutu açmaz.
 
-Windows OpenCode planı yerel geri alma aracı ekleyecekse `opencode_retrieval:"install_local_bridge"` taşır. Var olan `mcp.headroom` tanımı veya güvenle birleştirilemeyen eski kullanıcı ayarları `opencode_retrieval:"conflict"` ve `retrieval_mcp_conflict` engeliyle gösterilir. Köprünün komutu yalnız native lease içinde hazırlanır. Uygula görülen planı kullanır ve yazmadan önce çalışma zamanı ile kullanıcı dosyasını yeniden doğrular. JSONC işlemi uygun rotaları ve MCP kaydını birlikte yazar. Geri alma kaydı MCP tanımının özgün baytlarının özetini ve `mcp` nesnesinin sahipliğini tutar.
+Windows OpenCode planı yerel geri alma aracı ekleyecekse `opencode_retrieval:"install_local_bridge"` taşır. V1'de `mcp.headroom`, V2'de `mcp.servers.headroom` yolu kullanılır. Mevcut Headroom kaydı veya güvenle birleştirilemeyen kullanıcı ayarları `opencode_retrieval:"conflict"` ve `retrieval_mcp_conflict` engeliyle gösterilir. Köprünün komutu yalnız native lease içinde hazırlanır. Uygula görülen planı kullanır ve yazmadan önce çalışma zamanı ile kullanıcı dosyasını yeniden doğrular. JSONC işlemi uygun rotaları ve MCP kaydını birlikte yazar. Receipt, oluşturulan `mcp` ve V2 `servers` container'larının sahipliğini ayrı tutar.
+
+V2 plan ve native receipt'i `opencode_schema:"v2"` taşır; alan yokluğu eski V1 şemasını belirtir. Wire client ve ortak sahiplik slotu `opencode_v1` olarak kalır. V2 endpoint'leri `providers.<alias>.settings.baseURL` altındadır. TS decoder etiketi yalnız OpenCode'da kabul eder; Uygula için yerel bridge gerekir. V2 bridge tanımı `disabled:false`, `codemode:false`, `protocol:"legacy"` ve sınırlı timeout taşır. Kullanıcı izinleri açılmaz; retrieval reddi `retrieval_unavailable` engeli üretir. Yanlış şema veya çakışan bridge/endpoint byte hash'i atomik yazmayı ve geri almayı durdurur. [V1/V2 karar kaydı](decisions/009-opencode-provider-routes.md)
 
 Hata zarfı ortak biçimdedir; dar kodlar `validation_failed`, `unsupported_scope`, `stale_selection`, `not_found`, `endpoint_unavailable`, `config_unavailable`, `config_unsafe`, `config_too_large`, `config_conflict`, `config_invalid`, `busy`. `diagnostic_id:null`; retryability ve `connection.<code>` mesaj anahtarı sabittir. Strict TS decoder dış/özel alanları, yanlış request/kurulum/client/nesil korelasyonunu, kaynak/presence/alan/URL tutarsızlığını, eksik config'teki sahte bildirimi, gösterilemeyen tarihi ve korunumu ihlal eden flag'leri reddeder. İstemci model/auth dosyası/sohbet DB'si çalıştırılmaz veya değiştirilmez. [Kanıt ve sınırlar](proofs/connection-plan.md).
 
@@ -82,6 +84,8 @@ Geri alma yalnız hâlâ uygulamanın yazdığı endpoint alanını kaldırır. 
 
 Üç komut aynı manager/işlem kilidini kullanır: `apply_connection_plan`, `undo_connection`, `get_connection_ownership`. İstekler schema1/request UUID ile sınırlıdır; Apply plan UUID+expected config fingerprint, Undo client enum+owner UUID+expected revision+record fingerprint, snapshot yalnız client enum taşır. Renderer serbest yol/URL/config/auth göndermediği gibi yanıttan da almaz. Wire client enum `codex|claude_code|opencode_v1`; discovery `opencode` UI'da açık eşlenir. Yanıt `applied|unchanged|released|snapshot` ve nullable ownership metadata içerir; strict TS decoder request/client/işlem/route/revision korelasyonunu doğrular. Sabit hata kodları ve message key dışında raw error gösterilmez.
 
+V1/V2 aynı config resolver, transaction ve ownership kaydını paylaşır. Opsiyonel `opencode_schema` eski receipt'lerin okunmasını korur. Oluşturulan V2 ancestor'lar ancak boş ve kullanıcı içeriği taşımıyorsa geri alınır. Model, auth, izin ve diğer kullanıcı ayarlarının korunması bu şema ayrımına da uygulanır.
+
 Graphite bağlantı yönetimi açılışta pasif sahiplik snapshot'ı okur; Preview ayrı eylemdir. Apply için geçerli plan ve güncel başarılı kayıt okuması gerekir. Pending mutation sırasında tekrar yazım/Close/Escape/selection engellenir. Kurulum bulunmasa da mevcut sahiplik Undo yapılabilir. App restart'ında kayıt bulunur; eski süreli plan canlanmaz. Kaydedilmiş yönlendirme canlı bağlantı kanıtı sayılmaz; Headroom/motor açık olmalı ve istemci yeni süreçte ayarı kullanmalıdır. App kapanırken otomatik geri alma yapılmaz.
 
 Mevcut model, reasoning, auth yöntemi, ajan sayısı ve izin ayarları değiştirilmez. Süreçlik fixture profili üretim bağlantı planı sayılmaz. Desteklenmeyen veya yönetilen config kapsamında UI başarı göstermez. Yeniden başlatma gerekiyorsa bunun gerçek etkisi plan ve bağlantı durumunda görünür olur.
@@ -97,9 +101,11 @@ Her çiftin kapsadığı bileşenler de belirtilir; yalnız mesajları ölçen k
 Ana sorgu sonucu:
 
 - Dönem başlangıç/bitişi ve saat dilimi; kaynak zamanı ve son güncelleme.
-- Geçerli aynı temelli çiftlerin `before_total`, `after_total`, `saved_total` değerleri; yüzde `100×saved_total/before_total` yalnız pozitif tabanda.
+- Geçerli aynı temelli çiftlerin `before_tokens`, `after_tokens`, `saved_tokens` ve `saved_percent` değerleri. Yüzde `100×saved_tokens/before_tokens` yalnız pozitif tabanda.
 - Ölçülebilen istek sayısı, bilinen toplam/gözlenen trafik sayısı, kısmi/kayıp aralık durumu. Toplam bilinmiyorsa kapsam yüzdesi uydurulmaz.
-- `status=waiting | complete | partial | unavailable`; gerçek sıfır geçerli sayıdır, veri yokluğu ayrı durumdur. Farklı tokenizer temelleri sessizce tek kesin toplamda birleştirilmez.
+- `totals.status=measured | no_comparable_events | mixed_bases | counter_overflow`; gerçek sıfır geçerli sayıdır. Farklı tokenizer temelleri tek kesin toplamda birleştirilmez.
+
+H014 ortak runtime snapshot'ının `metrics` alanı `waiting` ve null sayaçlar taşır. H024/H025 dönem toplamları `PeriodTotals` ve karşılık gelen strict TS decoder'dan gelir. İstek bazlı projeksiyonlar `MetricSummary` kullanır. Kaynak toplamanın `collection.status` alanı ayrıca gösterilir.
 
 Yinelenen event alınmaz. Snapshot farkı ve event toplamı aynı olaya iki kez katkı vermez. Restart/sayaç sıfırlaması yeni nesille ayrılır. Polling buffer'ı aşıldığında gap kaydı oluşur. Yalnız tasarruflu event'leri içeren ledger bütün trafik paydası sayılmaz.
 
@@ -167,7 +173,9 @@ Katman kapsamı da ayrıdır: Headroom protokol rotası terminal filtresi/hook k
 
 H012-a ilk mimari tabandır; H012-b bu belgeyi mevcut kaynağa uzlaştırır. H013 kabuğu, H014 gerçek start, H018 config işlemi, H019–H021 yerel bağlantılar, H023–H027 ölçüm/atama, H028 pause ve H050/H051 hesap/sohbet dilimleri uygulanmıştır. Graphite artık Genel bakış, Oturumlar, Uygulamalar, Etkinlik ve Ayarlar ekranlarını içerir. Uygulanmayan eylemler, fixture tasarrufu veya demo durumlar üretim başarısı olarak gösterilmez.
 
-H011/H028 pause/CCR/prefix yerel kabulü tamamlanmıştır. H006/H037 temiz Windows ve Windows 11; H009/H010 canlı sağlayıcı/tam araç/alt ajan yolları; H041 canlı API-key ve H042 üretim update kaynağı/anahtarı/yayın kabulleri açık kalır. H048 macOS yerel geliştirme kabulü yeni hesap/sohbet özelliğinin macOS kabulü değildir. H049 ve H052–H054 ertelenmiştir. H012-b dış eksikleri kapatmaz; ana H012 ve 42/54 sayımı değişmez.
+**H012 tamamlandı — 15 Kasım.** 39 IPC komutu, V1/V2 şema ve kayıt ayrımı, gerçek metrik alanları, 14 istemci/1 kabiliyet/3 ortam kapısı ve bilinmeyen durumlar kaynakla eşleşti. H010'un yerel OpenCode kabulü [kapsamıyla kayıtlıdır](proofs/opencode-acceptance.md). H011/H028 pause/CCR/prefix kabulü geçerlidir. [Kapanış kanıtı](proofs/architecture-acceptance.md)
+
+H006/H037 temiz Windows ve Windows 11, H009 canlı sağlayıcı/auth, H041 canlı API-key ve H042 üretim yayın kabulleri ilgili görevlerde açık kalır. OpenCode'un doğrulanmamış birleşimleri katalogda deneysel. H048 macOS kabulü yeni hesap/sohbet kabiliyetlerine otomatik aktarılmaz. H049 ve H052–H054 ertelidir. H012'nin kesinleşmesi bu destek durumlarını yükseltmez.
 
 ## 8. Uygulanan IPC kaydı (14 Kasım 2026)
 

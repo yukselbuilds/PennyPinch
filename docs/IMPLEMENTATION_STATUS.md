@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H012 — ana görev tamamlandı
+
+- Mimari seçimler ve yerel sözleşme, güncel kaynakla uzlaştırıldı. 39 IPC komutu eksiksiz/bir kez eşleşti. V2 `opencode_schema`, MCP yolu ve ortak ownership; dönem/istek metrik alanları ve placeholder/collection durumları düzeltildi. Katalogda 14 istemci, 1 kabiliyet, 3 ortam kapısı ve bilinmeyen birleşimler temsil ediliyor. [Ana kabul](proofs/architecture-acceptance.md), [inceleme](reviews/H012.md).
+- Ana ajan, H005–H011 kanıtları ve H050/H051 kararlarını kaynak/hash ile bağladı. Ürün ve katalog değişmedi. Son 344 girdi/araç/OS eşleşmesiyle 222 Node/462 Rust, 19 ignored, fmt/frontend/embedded build kanıtı yeniden kullanıldı. Belge öncesi ve son doğrulama fingerprint'leri kaydedildi. [Programatik sonuç](proofs/architecture-acceptance.json)
+- **Durum 44/54.** H012 kapandı ve burada duruldu. Sıradaki somut aday, H009'un mevcut Claude Code kanıtlarını ana kabul ve K2 koşullarıyla karşılaştırmak. H006/H037/H041/H042 dış ortam/yayın sınırları ve H049/H052–H054 ertelemeleri sürüyor. H012 kabulü yeni canlı sağlayıcı veya işletim sistemi desteği eklemez. Geliştirme token tasarrufu ölçülmedi.
+
 ## H010 — ana görev tamamlandı
 
 - Ana kabul, Karar 009 ve K2 ile karşılaştırıldı. V1/V2 model/provider koruması, kayıtlı JSON/JSONC/auth kapsamı, streaming, araç/CCR, ana/alt ajan ve V1 aynı oturumda model değişimi tamam. V2 servis, tam TUI ve CLI ayarıyla paketli Desktop ayrıca kayıtlı. [Kapanış](proofs/opencode-acceptance.md), [inceleme](reviews/H010.md).
