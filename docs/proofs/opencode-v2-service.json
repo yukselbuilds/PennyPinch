@@ -1,0 +1,234 @@
+{
+  "schema_version": 1,
+  "task": "H010-h",
+  "accepted": true,
+  "parent_task_accepted": false,
+  "scope": {
+    "platform": "Windows 10 22H2 x64 (19045)",
+    "opencode": "2.3.0 Windows x64 baseline",
+    "engine": "0.41.0",
+    "started_after_headroom_apply": true,
+    "auth": "synthetic_fixture",
+    "live_auth_desktop_subagents_other_os_hot_reload": "not_tested",
+    "real_token_and_cost_savings": "not_measured"
+  },
+  "gui_phases": [
+    {
+      "phase": "apply",
+      "stage": "apply",
+      "passed": true
+    },
+    {
+      "phase": "undo",
+      "stage": "restore_feedback",
+      "passed": true
+    },
+    {
+      "phase": "exit",
+      "stage": "exit_confirm",
+      "passed": true
+    }
+  ],
+  "service": {
+    "same_instance_through_both_sessions": true,
+    "owned_loopback": true,
+    "start_command": [
+      "service",
+      "start"
+    ],
+    "stop_command": {
+      "args": [
+        "service",
+        "stop"
+      ],
+      "exit_code": 0,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "owned_processes_after_exit": 0,
+      "passed": true,
+      "registration_removed": true,
+      "listener_closed": true,
+      "service_job_processes": 0
+    },
+    "normal_cli_requests": 4,
+    "full_tui_requests": 4
+  },
+  "terminal": {
+    "tty": [
+      true,
+      true,
+      true
+    ],
+    "default_full_tui": true,
+    "exit_code": 0,
+    "forced": false,
+    "config_unchanged": true,
+    "registration_unchanged": true,
+    "rendered_final": true,
+    "registered_service_socket_observed": true
+  },
+  "stored_sessions": {
+    "chat": {
+      "provider": "lab",
+      "model": "slot",
+      "root": true,
+      "stored_final_exact": true,
+      "stored_tools": [
+        [
+          "headroom_fixture_inspect_logs",
+          "completed"
+        ],
+        [
+          "headroom_retrieve",
+          "completed"
+        ],
+        [
+          "headroom_fixture_inspect_logs",
+          "completed"
+        ]
+      ],
+      "outcome": "succeeded"
+    },
+    "responses": {
+      "provider": "openai",
+      "model": "slot",
+      "root": true,
+      "stored_final_exact": true,
+      "stored_tools": [
+        [
+          "headroom_fixture_inspect_logs",
+          "completed"
+        ],
+        [
+          "headroom_retrieve",
+          "completed"
+        ],
+        [
+          "headroom_fixture_inspect_logs",
+          "completed"
+        ]
+      ],
+      "outcome": "succeeded"
+    }
+  },
+  "retrieval": {
+    "original_bytes_per_case": 14999,
+    "compressed_bytes_per_case": 103,
+    "byte_reduction_percent": 99.31,
+    "both_byte_exact": true
+  },
+  "cleanup": {
+    "gui_exit": {
+      "code": 0,
+      "job_processes": 0,
+      "listeners_closed": true
+    },
+    "connection_undo": {
+      "original_bytes_exact": true,
+      "owner_released": true
+    },
+    "engine_settings_restored": true,
+    "external_connects": 0,
+    "forced_cleanup": false
+  },
+  "quality": {
+    "node_passed": 222,
+    "rust_passed": 462,
+    "rust_ignored": 19,
+    "frontend_build": "pass",
+    "rustfmt": "pass",
+    "embedded_build": "pass",
+    "inputs": 344,
+    "candidate_source_difference": [
+      "compatibility/clients.json"
+    ],
+    "artifact": {
+      "path": "work/proofs/opencode-v2-binding/checks-63b39f6673/final.json",
+      "sha256": "6198dfbaffd5d8733571a731cdaca9053796b55f715f7dd386243ec8a6ac587d"
+    }
+  },
+  "native_input_count": 22705,
+  "artifacts": {
+    "native": {
+      "path": "work/proofs/opencode-v2-service/native-fee4adc891/result.json",
+      "sha256": "b67bb131219dd79756749b1dcf3ba4580e5b7aff69d25eccb30d1f392d04f1f2"
+    },
+    "first_runtime": {
+      "path": "work/proofs/opencode-v2-service/native-d8990a2de9/result.json",
+      "sha256": "a88f8827515ec9dbc268135c799ea12aac864ad4a333ae6eea913ee12d9316c5"
+    },
+    "terminal_socket": {
+      "path": "work/proofs/opencode-v2-service/native-fee4adc891/terminal-connection.json",
+      "sha256": "8ae983544e8598f67f735ce4a8c85bb696390bee23c4277c93828e0065e23edc"
+    },
+    "harness": {
+      "path": "work/proofs/opencode-v2-service/native.py",
+      "sha256": "31b2dcce53bac95ecdad0cde2d1095199d20c27351416b0a4c5aac73d5e9403f"
+    }
+  },
+  "sources": {
+    "commit": "a6b15d33daf6ab7d35569f6d711fdb630b9f04e7",
+    "files": [
+      {
+        "path": "packages/cli/src/commands/handlers/run.ts",
+        "git_blob": "a018101648f3104d5084676b7c5e53d2fdbc8f51",
+        "sha256": "29a32627075fcfecc82c2d9f869745901ac7a3457c528c9277b1c640a1b1143e"
+      },
+      {
+        "path": "packages/cli/src/services/server-connection.ts",
+        "git_blob": "48af79aac52e0041f1c51573b8d8d6368b1f193f",
+        "sha256": "00ef29453ac8d8b024554c4a5e63e282772e7f1224f7eeba727f579b58f1d6f3"
+      },
+      {
+        "path": "packages/cli/src/services/service-config.ts",
+        "git_blob": "483db314c4008bed99d0b34167183ee542781573",
+        "sha256": "34f57de314b714473e3378c5b431f69783dd14745eaa4af26695cd952a7f0b4e"
+      },
+      {
+        "path": "packages/cli/src/commands/handlers/service/start.ts",
+        "git_blob": "6adb647a02c6822cbc1aa36d53b1e09ebdb593b1",
+        "sha256": "fde2797cb0c15cb11bd5cb643c011a988d4f67bdd6b6fe9fa5472c16bf20fefc"
+      },
+      {
+        "path": "packages/cli/src/commands/handlers/service/stop.ts",
+        "git_blob": "c0dd64ad4187cd32a4353351b6cee1130d89859e",
+        "sha256": "2c2c9339422e9748f6e42de68032f463057390513ad750aec389a9774d2adc62"
+      },
+      {
+        "path": "packages/cli/src/commands/handlers/default.ts",
+        "git_blob": "c23e2be2739313e3c2518aa19bebbf8435bdafe5",
+        "sha256": "38b8b03a9194719b1be0a971a36c3e0e995108299008244553f7a21857b0738e"
+      },
+      {
+        "path": "packages/cli/src/commands/handlers/serve.ts",
+        "git_blob": "5e1337a16aef4157c0f08e59d5b79609ea6eb40b",
+        "sha256": "b136a083952d0b281f068183e2886652e3fe6271473a1b50b0ddf3fdbd86dc55"
+      },
+      {
+        "path": "packages/cli/src/services/service-registration.ts",
+        "git_blob": "7757d60428d27c5732edb80440ff6fc016f08540",
+        "sha256": "e0ecb1e51322224217985932622bcd427bcbcfe09d9a29c6b21827aa6c022936"
+      },
+      {
+        "path": "packages/client/src/effect/service.ts",
+        "git_blob": "4ec16aa7fcb0328a824411a4ccbfbfcd5c671e96",
+        "sha256": "0f0d244102d26719048dc87a0c219f812dc72613934fbd4dad5966f69e563548"
+      },
+      {
+        "path": "packages/cli/src/server-process.ts",
+        "git_blob": "2f64e3ec7b86586cd8b87b20a2e16a12eb4865d2",
+        "sha256": "37e89b2eed32bc9324f4cdf0a639387dfe6fc0ef8e6f37fc33c43987869b4bc2"
+      },
+      {
+        "path": "packages/core/src/session/sql.ts",
+        "git_blob": "8684925220d9edeecdb066ca1b2d82afe4f46359",
+        "sha256": "6e2ec9532e4b3a30e4334d5fa30a942bcffbd55a7b09af11919bb15e8dbf965c"
+      },
+      {
+        "path": "packages/tui/src/app.tsx",
+        "git_blob": "032655c271be56d9be97396a1356e361000fbe0a",
+        "sha256": "0b36f3f301c06191294500353247d40e9ceb4260be17a6862a97debc47e39c2b"
+      }
+    ]
+  }
+}

@@ -230,7 +230,7 @@
       "match": {"client_kind": "opencode", "surface": "cli", "versions": ["2.3.0"], "auth_method": "synthetic", "platform": "windows_10_x64", "engine_version": "0.41.0"},
       "product": "OpenCode CLI",
       "version": "2.3.0 Windows x64 baseline",
-      "surface": "Headroom desktop Preview, Apply and Remove, then private OpenCode CLI service",
+      "surface": "Headroom Preview, Apply and Remove; OpenCode private CLI, managed CLI and full TUI",
       "platform": "Windows 10 22H2 x64",
       "auth": "Synthetic fixture API key",
       "protocol": "OpenAI Chat Completions and Responses",
@@ -245,36 +245,36 @@
           "status": "local_fixture_pass",
           "evidence": "docs/proofs/opencode-v2-binding.md"
         },
-        "live_auth_tui_desktop_and_subagents": {
+        "managed_service_cli_and_full_tui": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/opencode-v2-service.md"
+        },
+        "live_auth_desktop_and_subagents": {
           "status": "not_tested",
           "evidence": "docs/proofs/opencode-v2-binding.md"
         }
       },
-      "evidence": ["docs/proofs/opencode-v2-binding.md", "docs/proofs/opencode-v2.md"],
+      "evidence": ["docs/proofs/opencode-v2-binding.md", "docs/proofs/opencode-v2.md", "docs/proofs/opencode-v2-service.md"],
       "evidence_date": "2026-11-15"
     },
     {
       "id": "opencode-v2-tui-desktop",
-      "match": {"client_kind": "opencode", "surface": "other", "versions": [], "auth_method": "unknown", "platform": "unknown", "engine_version": "0.41.0"},
-      "product": "OpenCode",
-      "version": "V2 TUI and Desktop",
-      "surface": "TUI, desktop and shared service",
+      "match": {"client_kind": "opencode", "surface": "desktop", "versions": [], "auth_method": "unknown", "platform": "unknown", "engine_version": "0.41.0"},
+      "product": "OpenCode Desktop",
+      "version": "V2 Desktop",
+      "surface": "Desktop app adoption of the saved connection and bundled service",
       "platform": "unknown",
       "auth": "unknown",
       "protocol": "unknown",
       "transport": "unknown",
       "status": "not_tested",
       "capabilities": {
-        "v2_shared_service_config_and_transport": {
+        "v2_desktop_config_and_transport": {
           "status": "not_tested",
-          "evidence": "docs/proofs/opencode-v2-binding.md"
-        },
-        "tui_desktop_subagent_and_client_side_ccr": {
-          "status": "not_tested",
-          "evidence": "docs/proofs/opencode-v2-binding.md"
+          "evidence": "docs/proofs/opencode-v2-service.md"
         }
       },
-      "evidence": ["docs/proofs/opencode-v2-binding.md"],
+      "evidence": ["docs/proofs/opencode-v2-service.md"],
       "evidence_date": "2026-11-15"
     },
     {

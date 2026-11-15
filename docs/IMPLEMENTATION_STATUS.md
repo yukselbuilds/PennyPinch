@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H010-h — OpenCode V2 normal servis ve tam TUI tamamlandı
+
+- Windows 10'da gerçek Headroom Önizle/Uygula ile kaydedilen V2 bağlantısını, yeni başlayan 2.3.0 servisi okudu. Normal CLI Chat, varsayılan tam TUI Responses rotasını tamamladı. Terminalin servis soketi ve aynı servis veritabanındaki iki kök oturum doğrulandı. Her turda üç yerel araç, dört istek ve 14.999 → 103 baytlık örnek logun özgün baytlarıyla geri çağırılması geçti. [Kanıt](proofs/opencode-v2-service.md)
+- TUI `/exit` ve servis `stop` exit 0. Servis kaydı, port ve sahipli süreçler kapandı. UI Kaldır özgün JSONC ve bırakılmış sahipliği döndürdü. Ayrı test motor ayarı geri yüklendi. İlk koşunun veritabanı okuma hatası ve başarılı temizliği kanıtta ayrı. Son koşu `work/proofs/opencode-v2-service/native-fee4adc891/result.json`, 22.705 önce/sonra girdi eşleşti. [Kanonik JSON](proofs/opencode-v2-service.json)
+- Ana ajan servis koşulları ve kabulü üstlendi. Uyumluluk kataloğu tam TUI/normal servis ile Desktop kapsamını güncelliyor. Son kapı `work/proofs/opencode-v2-binding/checks-63b39f6673/final.json`, 344 girdi, 222 Node ve 462 Rust PASS, 19 ignored, fmt/frontend/embedded build PASS. [İnceleme](reviews/H010-h.md)
+- **Durum 42/54.** Ana H010 açık. Sıradaki somut adım, ayrı bir V2 alt ajan oturumunu ve model rotasını aynı sabit servis üzerinden doğrulamak. Desktop, çalışan servisin ayarı yeniden yüklemesi, canlı hesap ve diğer işletim sistemleri açık. Gerçek token/fatura tasarrufu ölçülmedi.
+
 ## H010-g — OpenCode V2 CLI bağlantısı tamamlandı
 
 - OpenCode 2.3.0 Windows x64 baseline, mevcut sağlayıcı uç noktaları ve paketli V2 MCP köprüsüyle bağlanabiliyor. Uygula seçilen CLI'yi yeniden doğruluyor. Plan ve ortak sahiplik kaydı V2 şemasını açıkça taşıyor. Ayarlar ve sahiplik atomik yazılıyor. Kullanıcı izinleri korunuyor. Test edilen paket hassasiyeti ve rota kapsamı [karar belgesinde](decisions/009-opencode-provider-routes.md#h010-g--v2-kullanıcı-bağlantısı-ve-şemalı-geri-alma).
