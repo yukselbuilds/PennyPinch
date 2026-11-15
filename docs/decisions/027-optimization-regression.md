@@ -50,8 +50,16 @@ Windows 10 yerel kabulünde gerçek sahipli motor, Rust ölçüm okuyucusu, SQLi
 
 1. **Headroom motor adayı.** Önce `0.44.0` içindeki bağlantı kesilmesi, bekleyen akış ve önbellek düzeltmelerinin bizim rota ve pinlerimize etkisini belirle. Paket açılışı, sahipli kapanış, SSE/WS, duraklatma ve özgün CCR geri çağırmasını önceki adayla tekrar sınayarak yükseltme kararı ver. Yeni `/stats` maliyet alanını sağlayıcının bildirdiği kullanım veya fatura yerine koymadan kaynağını doğrula. [Sürüm değişiklikleri](https://github.com/headroomlabs-ai/headroom/releases/tag/v0.44.0).
 2. **Kayıpsız sıkıştırma ve tekrarlar.** `0.44.0` kayıpsız `/v1/compress` yüzeyi ile tablo/arama ve sayısal JSON korumalarını kontrollü karşılaştırmaya ekle. Sabit motordaki mevcut tam tekrar birleştirmesiyle kıyasla. Özgün başarısızlık metni, satır sırası, alıntı, kaynak ve sayılar kabulün parçasıdır. Canlı görev deneyinde eşdeğer test sonucu, cache, ek model/CCR çağrısı ve tamamlanma süresi ölçülür. Yanıt tamponlamasını kapatma seçeneği ancak istemci tarafında çalışan geri çağırma kanıtıyla kıyas adayıdır. [Sıkıştırma ve CCR değişiklikleri](https://github.com/headroomlabs-ai/headroom/releases/tag/v0.44.0).
-3. **Learn önizlemesi.** Yerel örüntü algılayıcısını önce yapay hatalarla sınadık. Aynı komut, kaynak değiştikten sonra gerekli kontrol olarak yeniden çalıştırıldığında da aday oldu. Sonraki pilot hata ile gerçek düzeltmeyi eşleyecek ve kaynak değişikliğini hesaba katacak. CLI/API analizinin veri kapsamı ve token maliyeti ayrı ölçüm gerektirir. Ürün önerileri önce kısa, gözden geçirilebilir proje notları olarak değerlendirilir. [Learn incelemesi](../research/headroom-serena-2026-11-15.md#learn-ne-yapar).
+3. **Learn önizlemesi.** Sabit 0.41.0 örüntü algılayıcısı, kullanıcı seçimiyle çalışan [yerel önizlemede](#learn-önizlemesi) kullanılır. Önerilerin gerçek proje kurallarıyla karşılaştırılması, ayrıca sağlayıcılı analiz düşünülürse veri kapsamı, görev kalitesi ve token maliyeti pilotta ölçülür. [Learn incelemesi](../research/headroom-serena-2026-11-15.md#learn-ne-yapar).
 4. **Serena proje deneyi.** Ücretsiz dil sunucusu arka ucuyla salt okunur sembol bulma, dosya özeti ve referans sorgularını Rust ve TypeScript’te mevcut CodeGraph ve dar dosya okumalarıyla aynı görevde karşılaştır. Doğru kaynak, toplam bağlam, açılış ve bellek maliyeti kaydedilir. İlk pilot proje kapsamında ve klasik üç sembol aracıyla çalışır. [Serena incelemesi](../research/headroom-serena-2026-11-15.md#serena).
+
+### Learn önizlemesi
+
+Kullanıcı 15 Kasım’da Learn’in isteğe bağlı eklenmesini istedi. Ayarlar’da tek bir Codex veya Claude Code JSONL oturumu seçmek bir inceleme başlatır. Seçici iptal edildiğinde önceki sonuç ekranda kalır. Windows uygulaması, mevcut motor paketindeki doğrulanmış Python ile yalnız seçilen dosyayı okur. Motoru başlatmak gerekmez.
+
+Headroom 0.41.0 Learn algılayıcısına aynı oturumda, aynı araç ve girdilerle, aynı hata kategorisinde art arda en az üç açık başarısızlık gider. Farklı bir araç çağrısı, düzenleme, kapsam değişimi veya araya giren eşzamanlı işlem grubu ayırır. Sonraki aynı çağrı başarılıysa gözlem gösterilir. Arayüzde öneri türü, sayı ve ilk örneğin satırı yer alır. Dosya dışındaki kaynak değişiklikleri ve düzeltmenin sebebi gözlemlenemez.
+
+İnceleme 16 MiB, 64.000 satır ve 15 saniye ile sınırlıdır. İçerik analiz sürecinde kalır. Modele gönderim, geçmiş taraması, kalıcı sonuç, dosya yazımı ve token tasarrufu tahmini bu akışa dahil değildir. Motorun `--no-learn` varsayımı sürer.
 
 ## İlk ölçümlerin planı
 

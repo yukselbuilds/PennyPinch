@@ -328,7 +328,7 @@ struct Capabilities {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum PublicError {
+pub(super) enum PublicError {
     ValidationFailed,
     UnsupportedProtocol,
     EnvironmentBlocked,
@@ -2897,14 +2897,14 @@ impl BackendLivenessLease {
 }
 
 #[cfg(windows)]
-struct OwnedJob(windows_sys::Win32::Foundation::HANDLE);
+pub(super) struct OwnedJob(windows_sys::Win32::Foundation::HANDLE);
 
 #[cfg(windows)]
 unsafe impl Send for OwnedJob {}
 
 #[cfg(windows)]
 impl OwnedJob {
-    fn create() -> Result<Self, PublicError> {
+    pub(super) fn create() -> Result<Self, PublicError> {
         use std::mem::size_of;
         use std::ptr::null;
         use windows_sys::Win32::System::JobObjects::{
@@ -2932,7 +2932,7 @@ impl OwnedJob {
         Ok(Self(handle))
     }
 
-    fn assign(&self, child: &Child) -> Result<(), PublicError> {
+    pub(super) fn assign(&self, child: &Child) -> Result<(), PublicError> {
         use std::os::windows::io::AsRawHandle;
         let result = unsafe {
             windows_sys::Win32::System::JobObjects::AssignProcessToJobObject(
@@ -4010,6 +4010,15 @@ impl RuntimeManager {
             .unwrap_or_else(|poisoned| poisoned.into_inner());
         expire_stale_ready_view(&mut runtime, now);
         ingress.ready_stable_endpoint(&runtime, now)
+    }
+
+    #[cfg(windows)]
+    pub(super) fn learn_payload(&self) -> Option<(PathBuf, PathBuf)> {
+        if self.shutting_down.load(Ordering::Acquire) {
+            return None;
+        }
+        let (root, _, python) = self.retrieval_layout.as_ref().ok()?.verify_payload().ok()?;
+        Some((root, python))
     }
 
     #[cfg(windows)]

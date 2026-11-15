@@ -780,6 +780,34 @@ async fn select_client_file(
     Ok(reply)
 }
 
+#[tauri::command]
+async fn preview_learn(
+    window: tauri::WebviewWindow,
+    state: tauri::State<'_, RuntimeManager>,
+    turkish: bool,
+) -> Result<runtime::learn::Preview, ()> {
+    #[cfg(windows)]
+    {
+        let runtime = state.inner().clone();
+        let Some(owner) = (window.label() == "main")
+            .then(|| picker_owner_handle(&window))
+            .flatten()
+        else {
+            return Ok(runtime::learn::Preview::Unavailable);
+        };
+        Ok(tauri::async_runtime::spawn_blocking(move || {
+            runtime::learn::select(&runtime, owner, turkish)
+        })
+        .await
+        .unwrap_or(runtime::learn::Preview::Failed))
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = (window, state, turkish);
+        Ok(runtime::learn::Preview::Unavailable)
+    }
+}
+
 fn main() {
     let context = tauri::generate_context!();
     #[cfg(all(windows, not(debug_assertions)))]
@@ -893,6 +921,7 @@ fn main() {
             get_saved_installation_choice,
             remember_installation_choice,
             select_client_file,
+            preview_learn,
             preview_connection_plan,
             apply_connection_plan,
             undo_connection,

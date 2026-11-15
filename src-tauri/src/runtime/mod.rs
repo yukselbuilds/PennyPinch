@@ -1,4 +1,5 @@
 pub(crate) mod control;
+pub(crate) mod learn;
 pub mod manager;
 pub(crate) mod metrics_read;
 pub(crate) mod recovery;

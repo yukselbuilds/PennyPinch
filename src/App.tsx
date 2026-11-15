@@ -35,6 +35,7 @@ import { HeadroomMark, Icon } from "./components/Icon";
 import { ProblemNotice } from "./components/ProblemNotice";
 import { DesktopLifecycle } from "./components/DesktopLifecycle";
 import { Settings } from "./features/settings/Settings";
+import { Learn } from "./features/settings/Learn";
 import { Updates } from "./features/settings/Updates";
 
 type Screen = "overview" | "sessions" | "applications" | "activity" | "settings";
@@ -519,6 +520,7 @@ function renderSettings(
       <button className="text-button" disabled={preferencesBusy} onClick={onPreferencesRetry}>{labels.preferencesRetry}</button>
     </div>}
     <Settings language={language} preferences={preferences.operating} status={preferencesStatus} onSave={onOperatingSave} onBusyChange={onOperatingBusy} />
+    <Learn language={language} />
     <Updates language={language} runtimeKey={runtimeKey} />
   </section>;
 }

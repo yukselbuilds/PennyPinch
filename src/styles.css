@@ -400,6 +400,8 @@ h1 { color: var(--text); margin-bottom: 8px; font-size: clamp(28px, 2.9vw, 38px)
 .operating-settings__pins { color: var(--text); }
 .operating-settings__tools-applied { color: var(--quiet); }
 .operating-settings__section--status > .button { justify-self: start; }
+.learn-suggestions { display: grid; gap: 8px; margin: 0; padding-inline-start: 19px; }
+.learn-suggestions strong { color: var(--text); }
 .update-refresh { justify-self: start; }
 .update-candidate { display: grid; gap: 13px; min-width: 0; padding: 13px; border: 1px solid var(--border); border-radius: 8px; }
 .update-candidate__details { display: flex; flex-wrap: wrap; gap: 12px 25px; margin: 0; }

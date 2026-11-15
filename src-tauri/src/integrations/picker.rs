@@ -136,9 +136,6 @@ mod windows_picker {
     }
 
     pub(super) fn select_file(owner_hwnd: usize, client_kind: &str) -> Result<Option<PathBuf>, ()> {
-        if owner_hwnd == 0 {
-            return Err(());
-        }
         let (title, label, pattern) = match client_kind {
             "codex" => ("Select Codex command", "Codex command", "*.exe;*.cmd;*.bat"),
             "claude_code" => (
@@ -153,7 +150,18 @@ mod windows_picker {
             ),
             _ => return Err(()),
         };
+        select_open_file(owner_hwnd, title, label, pattern)
+    }
 
+    pub(super) fn select_open_file(
+        owner_hwnd: usize,
+        title: &str,
+        label: &str,
+        pattern: &str,
+    ) -> Result<Option<PathBuf>, ()> {
+        if owner_hwnd == 0 {
+            return Err(());
+        }
         let _apartment = ComApartment::initialize()?;
         let dialog: IFileOpenDialog = unsafe {
             CoCreateInstance(&FileOpenDialog, None, CLSCTX_INPROC_SERVER).map_err(|_| ())?
@@ -279,6 +287,16 @@ pub(crate) fn save_report(
 #[cfg(windows)]
 pub fn select_file(owner_hwnd: usize, client_kind: &str) -> Result<Option<PathBuf>, ()> {
     windows_picker::select_file(owner_hwnd, client_kind)
+}
+
+#[cfg(windows)]
+pub(crate) fn select_learn_session(owner: usize, turkish: bool) -> Result<Option<PathBuf>, ()> {
+    let title = if turkish {
+        "Oturum dosyası seç"
+    } else {
+        "Choose a session file"
+    };
+    windows_picker::select_open_file(owner, title, "JSONL", "*.jsonl")
 }
 
 #[cfg(windows)]

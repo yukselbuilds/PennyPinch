@@ -1,0 +1,45 @@
+{
+  "task": "H041",
+  "slice": "learn_manual_local_preview",
+  "date": "2026-11-15",
+  "passed": true,
+  "os": "Windows-10-10.0.19045-SP0",
+  "engine": "0.41.0",
+  "end_to_end": "windows_webview_settings_to_native_file_picker_to_verified_pinned_python_to_visible_suggestions",
+  "fixtures": "synthetic Codex and Claude Code JSONL",
+  "checks": {
+    "codex_repeated_failure_and_exact_recovery": "pass",
+    "claude_explicit_failure_without_cross_session_recovery": "pass",
+    "successful_retests_scope_changes_parallel_calls_and_replays": "pass",
+    "file_picker_cancellation_preserves_result": "pass",
+    "invalid_format_and_input_limits": "pass",
+    "fixture_content_absent_from_reply_and_visible_ui": "pass",
+    "engine_left_off": "pass",
+    "native_accessibility_violations_in_learn_section": 0,
+    "native_exited_cleanly": "pass",
+    "node_tests": 223,
+    "rust_tests": 464,
+    "rust_default_ignored": 21,
+    "pinned_python_cases": 4,
+    "vite_build": "pass",
+    "embedded_build": "pass"
+  },
+  "token_savings": "not_measured",
+  "open_scope": [
+    "representative real project suggestions and effectiveness",
+    "Windows 11 and other OS validation",
+    "release installer validation"
+  ],
+  "proofs": {
+    "local_quality": {
+      "path": "work/proofs/optimization/learn-preview/1b957b8a2979/result.json",
+      "sha256": "043bb4ff9d688b6f8cb1f0edd56a63443c22d644bffc6278a524d1c9860a3c89",
+      "inputs": 354
+    },
+    "windows_native_settings": {
+      "path": "work/proofs/optimization/learn-preview/native-b4c9425c16a8/result.json",
+      "sha256": "d416bb1df5aedca7ca7838a48c21000f4a5be7d76a433846bea3dc53d86a5f78",
+      "inputs": 367
+    }
+  }
+}

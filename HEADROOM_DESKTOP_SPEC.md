@@ -472,7 +472,8 @@ Bu kararlar ilk özellik belgesinin hazırlanmasını engellemez. Sınanan varsa
 
 - **RTK:** H043'te istemciye özel teknik kanıt, H044'te yönetilen kurulum ve açık etkinleştirme. Model/auth/reasoning veya ajan sayısı değişmez. Kaynak, kesin sayısal çıktı ve test/hata bilgisi korunur. RTK ile Headroom tasarrufu eşdeğer kapsam ve bağlantı kanıtı yoksa ayrı gösterilir. Otomatik global hook/shell değişikliği yapılmaz.
   RTK-OSS Apache-2.0 terminal filtreleri isteğe bağlı adaydır; RTK engine ve ayrı proxy BUSL-1.1 bu kapsamla otomatik dahil veya dağıtılmış sayılmaz. Belgelenen rtk claude kullanımı Codex/OpenCode, PowerShell veya yerel araç kapsamını kanıtlamaz. [Kaynak/hedef eşlemesi](docs/research/optimization-targets-2026-11-04.md).
-- **Yerel öneriler:** H045; yalnız içeriksiz metadata ile, ek LLM çağrısı olmadan açıklanabilir sağlık ve optimizasyon önerileri üretir. Öneri kendi başına profil/model/config değiştirmez; bilinmeyen trafik veya tasarruf tahmin edilmez. Memory/learn ve talimat dosyası yazımı bu özellik değildir, kapalı kalır.
+- **Yerel öneriler** (H045), içeriksiz ölçüm verisinden sağlık ve optimizasyon önerileri üretir. Ek model çağrısı yapmaz ve öneri kendi başına profil, model veya config değiştirmez. Bilinmeyen trafik veya tasarruf tahmin edilmez.
+- **Learn önizlemesi** Windows’ta Ayarlar’dan bir Codex veya Claude Code JSONL dosyası seçildiğinde çalışır. Tek bir dosyadan art arda başarısız çağrı örüntüleri, ilk örneğin satırı ve sonraki eşdeğer çağrının başarısı gösterilir. Analiz cihazda yapılır ve sonuç bu ekranın ömrüyle sınırlıdır. Motorun arka plan öğrenmesi ve bellek araçları varsayılan kapalıdır. [Karar](docs/decisions/027-optimization-regression.md#learn-önizlemesi).
 
 Ürün ilkeleri:
 

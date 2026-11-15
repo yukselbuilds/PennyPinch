@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## Learn — isteğe bağlı Windows önizlemesi tamamlandı
+
+- Ana ajan dosya erişimi ve süreç sahipliği nedeniyle uygulamayı üstlendi. Ayarlar → Learn, kullanıcının seçtiği tek Codex veya Claude Code JSONL dosyasını, mevcut paketli Headroom 0.41.0 algılayıcısıyla cihazda inceler. Motor kapalıyken çalışır. Öneri türü, hata sayısı, örnek satır ve sonraki aynı çağrının başarısı gösterilir.
+- Windows 10’da yerleşik WebView, gerçek dosya seçici ve analiz alt süreci birlikte sınandı. İki dosya biçimi, iptal, geçersiz dosya, başarılı tekrarların boş sonucu, içeriksiz yanıt, Learn bölümünde sıfır Axe ihlali ve normal çıkış geçti. 4 Learn, 464 Rust ve 223 frontend testi ile biçim ve iki derleme geçti. [Kanıt](proofs/learn-preview.json).
+- Gerçek projelerde önerilerin faydası ve token etkisi pilotta ölçülecek. Windows 11, diğer işletim sistemleri ve yayın paketi kabulü açık. **45/54.** Sıradaki planlı iş, Headroom 0.44.0 adayının mevcut ölçüm ve paket sözleşmesine etkisini belirlemek.
+
 ## H041-d — Anthropic kullanım kaydı masaüstü ayrıntısına bağlandı
 
 - Ana ajan ölçüm ve sahiplik sözleşmesini uyguladı. Mevcut motor neslinde tam istek kimliğiyle bağlanan private sayaçlar gerçek Windows 10 motorundan Rust okuyucusuna, SQLite’a ve istek ayrıntısına ulaştı. 2.400 girdi, 29 çıktı, 2.000 önbellek okuma, 100 yazma ve iki deneme doğrulandı. Önceki kayıt, eksik değer, sıfır, yanlış nesil ve çelişki kontrolleri geçti. Ana tasarruf ölçüm temeli eski kayıtlardaki gibi korunur. 464 Rust ve 223 frontend testi geçti. Native gerçek motor opt-in kontrolü, format, Vite ve embedded build geçti. [Kanıt](proofs/anthropic-usage-desktop-detail.json).
