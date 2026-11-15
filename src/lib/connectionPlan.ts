@@ -56,6 +56,7 @@ const blockers = [
   "unsupported_schema", "custom_gateway", "unsupported_route", "client_version_unknown",
   "unsupported_client_version", "unsupported_client_surface",
   "retrieval_mcp_conflict",
+  "retrieval_unavailable",
 ] as const;
 const errorCodes = Object.keys(errorRetryable) as ConnectionPlanErrorCode[];
 
@@ -185,11 +186,14 @@ function decodePlan(
   const openCode = value.client_kind === "opencode_v1";
   const hasOpenCodeCoverage = Object.hasOwn(value, "opencode_coverage");
   const hasRetrieval = Object.hasOwn(value, "opencode_retrieval");
+  const hasSchema = Object.hasOwn(value, "opencode_schema");
   const expectedKeys = [...planKeys,
     ...(openCode && hasOpenCodeCoverage ? ["opencode_coverage"] : []),
     ...(openCode && hasRetrieval ? ["opencode_retrieval"] : []),
+    ...(openCode && hasSchema ? ["opencode_schema"] : []),
   ];
   if (!exactKeys(value, expectedKeys)) return null;
+  if (hasSchema && (!openCode || value.opencode_schema !== "v2")) return null;
   const retrieval = enumValue(value.opencode_retrieval, ["install_local_bridge", "conflict"] as const)
     ? value.opencode_retrieval : null;
   if (hasRetrieval && (!openCode || retrieval === null)) return null;
@@ -235,6 +239,7 @@ function decodePlan(
   if (retrieval === "conflict"
     && (value.status !== "blocked" || !value.blockers.includes("retrieval_mcp_conflict"))) return null;
   if (retrieval === "install_local_bridge" && value.status !== "preview") return null;
+  if (hasSchema && value.status === "preview" && retrieval !== "install_local_bridge") return null;
   if (value.blockers.includes("retrieval_mcp_conflict") && retrieval !== "conflict") return null;
 
   const endpointField = value.endpoint_field;
@@ -297,6 +302,7 @@ function decodePlan(
       after_headroom: shouldApply,
     },
     ...(openCodeCoverage ? { opencode_coverage: openCodeCoverage } : {}),
+    ...(hasSchema ? { opencode_schema: "v2" as const } : {}),
     ...(retrieval ? { opencode_retrieval: retrieval } : {}),
     status: value.status,
     model: value.model,

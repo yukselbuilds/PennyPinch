@@ -28,7 +28,12 @@ fn plan_with_scope(
     presence: ConfigPresence,
     scope: ConfigScope,
 ) -> ConnectionPlan {
-    let context = PlanContext {
+    preview_config_with_presence(&context(kind, presence, scope), config, presence)
+        .expect("fixture should have a safe preview")
+}
+
+fn context(kind: ClientKind, presence: ConfigPresence, scope: ConfigScope) -> PlanContext {
+    PlanContext {
         request_id: "019a0000-0000-7000-8000-000000000101".to_owned(),
         installation_id: "019a0000-0000-7000-8000-000000000102".to_owned(),
         client_kind: kind,
@@ -57,9 +62,7 @@ fn plan_with_scope(
             port: 41731,
         },
         now_unix_seconds: 1_800_000_000,
-    };
-    preview_config_with_presence(&context, config, presence)
-        .expect("fixture should have a safe preview")
+    }
 }
 
 fn patched(result: ApplyResult) -> (Vec<u8>, super::transaction::PatchReceipt) {
@@ -70,11 +73,14 @@ fn patched(result: ApplyResult) -> (Vec<u8>, super::transaction::PatchReceipt) {
 }
 
 fn retrieval_plan(config: &[u8]) -> ConnectionPlan {
+    with_bridge(plan(ClientKind::OpenCodeV1, config))
+}
+
+fn with_bridge(mut plan: ConnectionPlan) -> ConnectionPlan {
     use super::opencode_retrieval::{RetrievalChange, RetrievalCommand};
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap();
-    let mut plan = plan(ClientKind::OpenCodeV1, config);
     plan.opencode_retrieval = Some(RetrievalChange::InstallLocalBridge);
     plan.opencode_retrieval_command = Some(
         RetrievalCommand::new(
@@ -88,6 +94,135 @@ fn retrieval_plan(config: &[u8]) -> ConnectionPlan {
         .unwrap(),
     );
     plan
+}
+
+#[cfg(windows)]
+fn v2_plan(config: &[u8]) -> ConnectionPlan {
+    let mut context = context(
+        ClientKind::OpenCodeV1,
+        ConfigPresence::Present,
+        ConfigScope::UserConfig,
+    );
+    context.version = Some("2.3.0".into());
+    with_bridge(super::plan::preview_config(&context, config).unwrap())
+}
+
+#[cfg(windows)]
+#[test]
+fn opencode_v2_binds_both_protocols_and_undoes_exact_jsonc() {
+    let original = r#"{
+      // kullanıcı seçimi
+      "model":{"providerID":"lab","model":"my-model","variant":"quiet"},
+      "agents":{"build":{"model":"openai/other-model"}},
+      "providers":{
+        "openai":{"models":{"other-model":{"modelID":"wire-unlisted"}}},
+        "lab":{"package":"@opencode/ai/providers/openai-compatible","settings":{"baseURL":"https:\/\/api.openai.com\/v1","apiKey":"CANARY"}}
+      },
+      "permissions":[{"action":"*","resource":"*","effect":"ask"}],
+      "mcp":{"timeout":{"catalog":20000}}
+    }"#.as_bytes();
+    let plan = v2_plan(original);
+    let (applied, receipt) = patched(apply_missing_endpoint(&plan, original).unwrap());
+    let parsed =
+        |bytes| super::config_document::parse_document(ClientKind::OpenCodeV1, bytes).unwrap();
+    let mut result = parsed(&applied);
+    let bridge = result.pointer("/mcp/servers/headroom").unwrap();
+    assert_eq!(bridge["protocol"], "legacy");
+    assert_eq!(bridge["codemode"], false);
+    assert_eq!(bridge["timeout"]["execution"], 15000);
+    assert_eq!(result["mcp"]["timeout"]["catalog"], 20000);
+    assert_eq!(
+        result["providers"]["openai"]
+            .as_object_mut()
+            .unwrap()
+            .remove("settings")
+            .unwrap()["baseURL"],
+        "http://127.0.0.1:41731/v1"
+    );
+    assert_eq!(
+        result["providers"]["lab"]["settings"]["baseURL"],
+        "http://127.0.0.1:41731/v1"
+    );
+    result["providers"]["lab"]["settings"]["baseURL"] = "https://api.openai.com/v1".into();
+    result["mcp"].as_object_mut().unwrap().remove("servers");
+    assert_eq!(result, parsed(original));
+    let meta = receipt.metadata();
+    assert_eq!(meta.opencode_schema, Some(super::plan::OpenCodeSchema::V2));
+    assert!(
+        meta.opencode_retrieval
+            .as_ref()
+            .unwrap()
+            .created_servers_object
+    );
+    assert!(!meta.opencode_retrieval.as_ref().unwrap().created_mcp_object);
+    assert_eq!(undo_owned_endpoint(&receipt, &applied).unwrap(), original);
+    let mut missing_bridge = plan.clone();
+    missing_bridge.opencode_retrieval = None;
+    missing_bridge.opencode_retrieval_command = None;
+    assert_eq!(
+        apply_missing_endpoint(&missing_bridge, original),
+        Err(TransactionError::InvalidPlan)
+    );
+}
+
+#[cfg(windows)]
+#[test]
+fn opencode_v2_undo_preserves_new_siblings_and_refuses_route_or_bridge_edits() {
+    let original = br#"{"providers":{"openai":{}}}"#;
+    let (applied, receipt) = patched(apply_missing_endpoint(&v2_plan(original), original).unwrap());
+    let applied = String::from_utf8(applied).unwrap();
+    let edited = applied.replacen(
+        "\"servers\": {",
+        "\"servers\": { /* keep */ \"user_tool\": {\"type\":\"local\",\"command\":[\"custom\"]}, ",
+        1,
+    );
+    let reverted = undo_owned_endpoint(&receipt, edited.as_bytes()).unwrap();
+    let reverted = std::str::from_utf8(&reverted).unwrap();
+    assert!(reverted.contains("/* keep */") && reverted.contains("\"user_tool\""));
+    assert!(!reverted.contains("127.0.0.1") && !reverted.contains("\"headroom\""));
+    for changed in [
+        applied.replace("127.0.0.1:41731", "127.0.0.1:41732"),
+        applied.replace("\"codemode\":false", "\"codemode\": false"),
+    ] {
+        assert_ne!(changed, applied);
+        assert_eq!(
+            undo_owned_endpoint(&receipt, changed.as_bytes()),
+            Err(TransactionError::Conflict)
+        );
+    }
+    let mut malformed = receipt.metadata();
+    malformed.opencode_schema = None;
+    assert!(super::transaction::PatchReceipt::from_metadata(malformed).is_err());
+    let mut malformed = receipt.metadata();
+    malformed.opencode_retrieval = None;
+    assert!(super::transaction::PatchReceipt::from_metadata(malformed).is_err());
+}
+
+#[cfg(windows)]
+#[test]
+fn opencode_v2_retrieval_respects_native_and_migrated_permission_and_mcp_conflicts() {
+    for suffix in [
+        r#""policies":[{"action":"integration.use","resource":"mcp:HEAD*","effect":"deny"}]"#,
+        r#""policies":[{"action":"tool.use","resource":"headroom_retriev?:*","effect":"deny"}]"#,
+        r#""agents":{"build":{"permissions":[{"action":"HEADROOM_RETRIEVE","resource":"*","effect":"deny"}]}}"#,
+        r#""mcp":{"servers":{"type":"local","command":["user-command"]}}"#,
+        r#""mcp":{"servers":{"headroom":{"type":"remote","url":"https://fixture.invalid"}}}"#,
+        r#""mcp":{"headroom":{"enabled":false}}"#,
+    ] {
+        let config = format!(r#"{{"providers":{{"openai":{{}}}},{suffix}}}"#);
+        assert_eq!(
+            apply_missing_endpoint(&v2_plan(config.as_bytes()), config.as_bytes()),
+            Err(TransactionError::Conflict)
+        );
+    }
+    let config = br#"{
+      "providers":{"openai":{"settings":{"baseURL":"http://127.0.0.1:41731/v1"}}},
+      "permissions":[{"action":"*","resource":"*","effect":"deny"},{"action":"headroom_retrieve","resource":"*","effect":"allow"}],
+      "policies":[{"action":"mcp.use","resource":"*","effect":"deny"},{"action":"mcp.use","resource":"headroom","effect":"allow"}]
+    }"#;
+    let (applied, receipt) = patched(apply_missing_endpoint(&v2_plan(config), config).unwrap());
+    assert!(receipt.metadata().opencode_routes.unwrap().is_empty());
+    assert_eq!(undo_owned_endpoint(&receipt, &applied).unwrap(), config);
 }
 
 #[test]

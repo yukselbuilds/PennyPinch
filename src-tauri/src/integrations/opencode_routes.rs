@@ -4,18 +4,18 @@ use std::collections::{BTreeSet, HashSet};
 use std::fmt;
 
 const CANONICAL_OPENAI_BASE: &str = "https://api.openai.com/v1";
-const MAX_PROVIDER_COUNT: usize = 32;
-const MAX_ELIGIBLE_ROUTES: usize = 16;
-const MAX_MODEL_COUNT: usize = 128;
-const MAX_VARIANTS_PER_MODEL: usize = 32;
-const MAX_KEY_BYTES: usize = 128;
-const MAX_MODEL_REFERENCE_BYTES: usize = 512;
-const MAX_TRANSPORT_NESTING_DEPTH: usize = 8;
+pub(super) const MAX_PROVIDER_COUNT: usize = 32;
+pub(super) const MAX_ELIGIBLE_ROUTES: usize = 16;
+pub(super) const MAX_MODEL_COUNT: usize = 128;
+pub(super) const MAX_VARIANTS_PER_MODEL: usize = 32;
+pub(super) const MAX_KEY_BYTES: usize = 128;
+pub(super) const MAX_MODEL_REFERENCE_BYTES: usize = 512;
+pub(super) const MAX_TRANSPORT_NESTING_DEPTH: usize = 8;
 const TRANSPORT_OVERRIDE_KEYS: &[&str] = &["baseURL", "endpoint", "fetch", "headers", "npm", "api"];
 
 // These IDs have V1-specific loaders in the pinned 1.19.3 provider.ts. Treating
 // them as generic OpenAI-compatible aliases would select different SDK behavior.
-const RESERVED_CUSTOM_LOADERS: &[&str] = &[
+pub(super) const RESERVED_CUSTOM_LOADERS: &[&str] = &[
     "anthropic",
     "opencode",
     "openai",
@@ -215,7 +215,7 @@ pub(crate) fn analyze_opencode_v1_routes(
     })
 }
 
-fn validate_stable_endpoint(value: &str) -> Result<(), OpenCodeRouteAnalysisError> {
+pub(super) fn validate_stable_endpoint(value: &str) -> Result<(), OpenCodeRouteAnalysisError> {
     let Some(port) = value
         .strip_prefix("http://127.0.0.1:")
         .and_then(|value| value.strip_suffix("/v1"))
@@ -441,7 +441,7 @@ fn validate_model_shape(value: &Value) -> Result<(), OpenCodeRouteAnalysisError>
     Ok(())
 }
 
-fn validate_key(value: &str) -> Result<(), OpenCodeRouteAnalysisError> {
+pub(super) fn validate_key(value: &str) -> Result<(), OpenCodeRouteAnalysisError> {
     if value.is_empty() || value.len() > MAX_KEY_BYTES || value.chars().any(char::is_control) {
         Err(OpenCodeRouteAnalysisError::LimitExceeded)
     } else {
@@ -633,7 +633,7 @@ fn value_contains_transport_override(
     }
 }
 
-fn optional_object<'a>(
+pub(super) fn optional_object<'a>(
     value: Option<&'a Value>,
 ) -> Result<Option<&'a Map<String, Value>>, OpenCodeRouteAnalysisError> {
     match value {
@@ -643,7 +643,7 @@ fn optional_object<'a>(
     }
 }
 
-fn optional_string<'a>(
+pub(super) fn optional_string<'a>(
     value: Option<&'a Value>,
 ) -> Result<Option<&'a str>, OpenCodeRouteAnalysisError> {
     match value {
@@ -665,7 +665,7 @@ fn safe_headers(value: Option<&Value>) -> Result<bool, OpenCodeRouteAnalysisErro
     }
 }
 
-fn endpoint_before(
+pub(super) fn endpoint_before(
     value: Option<&Value>,
     stable_endpoint: &str,
 ) -> Result<Option<OpenCodeRouteBefore>, OpenCodeRouteAnalysisError> {

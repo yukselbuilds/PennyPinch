@@ -314,7 +314,15 @@ test("OpenCode retrieval preview is explicit and rejects inconsistent or executa
   const conflict = { ...valid, status: "blocked", blockers: ["retrieval_mcp_conflict"],
     endpoint_field: { ...valid.endpoint_field, after_headroom: false }, opencode_retrieval: "conflict" };
   assert.equal(decode(makePreview(conflict), requestId, "opencode").plan.opencode_retrieval, "conflict");
+  const v2 = { ...valid, opencode_schema: "v2" };
+  assert.equal(decode(makePreview(v2), requestId, "opencode").plan.opencode_schema, "v2");
+  const { opencode_retrieval: _bridge, ...withoutBridge } = v2;
+  assert.equal(decode(makePreview(withoutBridge), requestId, "opencode"), null);
+  const blockedV2 = { ...withoutBridge, status: "blocked", blockers: ["retrieval_unavailable"],
+    endpoint_field: { ...v2.endpoint_field, after_headroom: false } };
+  assert.equal(decode(makePreview(blockedV2), requestId, "opencode").plan.status, "blocked");
   for (const invalid of [
+    { ...v2, opencode_schema: "v3" },
     { ...valid, opencode_retrieval: "conflict" },
     { ...conflict, blockers: [] },
     { ...conflict, opencode_retrieval: "install_local_bridge" },
@@ -322,6 +330,7 @@ test("OpenCode retrieval preview is explicit and rejects inconsistent or executa
     { ...valid, opencode_retrieval_command: ["user.exe"] },
   ]) assert.equal(decode(makePreview(invalid), requestId, "opencode"), null);
   assert.equal(decode(makePreview(makePlan({ opencode_retrieval: "install_local_bridge" }))), null);
+  assert.equal(decode(makePreview(makePlan({ opencode_schema: "v2" }))), null);
 });
 
 test("native client sends only the typed preview request and returns fixed failure results", async () => {

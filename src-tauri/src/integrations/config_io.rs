@@ -450,7 +450,10 @@ pub(super) fn read_user_config(
 
 /// OpenCode merges these older global files before the selected user file.
 /// Refuse overlapping MCP definitions so no keys from their command are adopted.
-fn check_opencode_global_mcp(roots: &ConfigRootInputs) -> Result<bool, ConfigIoError> {
+fn check_opencode_global_mcp(
+    roots: &ConfigRootInputs,
+    schema: Option<super::plan::OpenCodeSchema>,
+) -> Result<bool, ConfigIoError> {
     let ConfigTarget::OpenCode { json, .. } = roots.target(ClientKind::OpenCodeV1)? else {
         return Err(ConfigIoError::InvalidRoot);
     };
@@ -458,8 +461,9 @@ fn check_opencode_global_mcp(roots: &ConfigRootInputs) -> Result<bool, ConfigIoE
     for name in ["config.json", "config"] {
         if let CandidateRead::Present { bytes, pin, .. } = read_candidate(&parent.join(name))? {
             let can_install = if name == "config.json" {
-                super::config_document::parse_document(ClientKind::OpenCodeV1, &bytes)
-                    .is_ok_and(|config| super::opencode_retrieval::can_install(&config))
+                super::config_document::parse_document(ClientKind::OpenCodeV1, &bytes).is_ok_and(
+                    |config| super::opencode_retrieval::can_install_for_schema(&config, schema),
+                )
             } else {
                 // OpenCode may migrate this legacy file into config.json on its next start.
                 false
@@ -1431,37 +1435,49 @@ impl PlanManager {
             };
         plan.config_fingerprint = first_read.fingerprint.clone();
         if kind == ClientKind::OpenCodeV1
+            && (self.opencode_retrieval_provider.is_some() || plan.opencode_schema.is_some())
             && !first_opencode_environment
                 .as_ref()
                 .is_some_and(|snapshot| snapshot.has_override)
         {
-            if let Some(provider) = &self.opencode_retrieval_provider {
-                use super::opencode_retrieval::{can_install, RetrievalChange};
-                let parsed = match super::config_document::parse_document(kind, &first_read.bytes) {
-                    Ok(value) => value,
-                    Err(_) => return error_reply(request_id, ReplyError::ConfigInvalid),
-                };
-                let legacy_clear = match check_opencode_global_mcp(&roots) {
-                    Ok(value) => value,
-                    Err(error) => return error_reply(request_id, map_config_error(error)),
-                };
-                if can_install(&parsed) && legacy_clear {
-                    if plan.status == PlanStatus::Preview {
-                        plan.opencode_retrieval = Some(RetrievalChange::InstallLocalBridge);
-                        plan.opencode_retrieval_command = match provider(&endpoint) {
-                            Ok(value) => Some(value),
-                            Err(_) => {
-                                return error_reply(request_id, ReplyError::EndpointUnavailable)
-                            }
-                        };
-                    }
-                } else {
-                    plan.opencode_retrieval = Some(RetrievalChange::Conflict);
+            use super::opencode_retrieval::{
+                can_install_for_schema, retrieval_available, RetrievalChange,
+            };
+            let parsed = match super::config_document::parse_document(kind, &first_read.bytes) {
+                Ok(value) => value,
+                Err(_) => return error_reply(request_id, ReplyError::ConfigInvalid),
+            };
+            let legacy_clear = match check_opencode_global_mcp(&roots, plan.opencode_schema) {
+                Ok(value) => value,
+                Err(error) => return error_reply(request_id, map_config_error(error)),
+            };
+            if can_install_for_schema(&parsed, plan.opencode_schema) && legacy_clear {
+                if plan.status == PlanStatus::Preview
+                    && plan.opencode_schema.is_some()
+                    && (self.opencode_retrieval_provider.is_none() || !retrieval_available(&parsed))
+                {
                     plan.blockers
-                        .push(super::plan::PlanBlocker::RetrievalMcpConflict);
+                        .push(super::plan::PlanBlocker::RetrievalUnavailable);
                     plan.status = PlanStatus::Blocked;
                     plan.endpoint_field.after_headroom = false;
                 }
+                if let Some(provider) = self
+                    .opencode_retrieval_provider
+                    .as_ref()
+                    .filter(|_| plan.status == PlanStatus::Preview)
+                {
+                    plan.opencode_retrieval = Some(RetrievalChange::InstallLocalBridge);
+                    plan.opencode_retrieval_command = match provider(&endpoint) {
+                        Ok(value) => Some(value),
+                        Err(_) => return error_reply(request_id, ReplyError::EndpointUnavailable),
+                    };
+                }
+            } else {
+                plan.opencode_retrieval = Some(RetrievalChange::Conflict);
+                plan.blockers
+                    .push(super::plan::PlanBlocker::RetrievalMcpConflict);
+                plan.status = PlanStatus::Blocked;
+                plan.endpoint_field.after_headroom = false;
             }
         }
         if let Some(layers) = &first_claude_layers {

@@ -1,5 +1,17 @@
 # Headroom Desktop — güncel devir
-14 Kasım 2026.
+15 Kasım 2026.
+
+## H010-g — OpenCode V2 CLI bağlantısı tamamlandı
+
+- OpenCode 2.3.0 Windows x64 baseline, mevcut sağlayıcı uç noktaları ve paketli V2 MCP köprüsüyle bağlanabiliyor. Uygula seçilen CLI'yi yeniden doğruluyor. Plan ve ortak sahiplik kaydı V2 şemasını açıkça taşıyor. Ayarlar ve sahiplik atomik yazılıyor. Kullanıcı izinleri korunuyor. Test edilen paket hassasiyeti ve rota kapsamı [karar belgesinde](decisions/009-opencode-provider-routes.md#h010-g--v2-kullanıcı-bağlantısı-ve-şemalı-geri-alma).
+
+- Gerçek Headroom penceresi Önizle ve Uygula'yı tamamladı. İki bağımsız V2 CLI turu dört istekte araç, sıkıştırma ve geri çağırmayı geçti. Her log bloğu 14.999 → 103 bayt, özgün içerik ve hash eşleşti. Yeniden açılışta düzenlenmiş MCP tanımı çatışma üretti. Normal Kaldır özgün JSONC ve bırakılmış sahiplik kaydını döndürdü. İki GUI ve iki CLI normal kapandı, sahipli süreç ve dinleyici kalmadı. [Yerel kanıt](proofs/opencode-v2-binding.md)
+
+- Son kanıt `work/proofs/opencode-v2-binding/native-d2a0ee959b/result.json` içinde 22.685 girdiyle bağlı. Yerel kapı `checks-7734884e5d/final.json` 222 Node ve 462 Rust PASS, 19 ignored, fmt ve iki derleme PASS. `checks-dc06bdcca5/real.json` gerçek discovery ve köprü yokken Apply reddini doğruladı. Native koşudan sonra yalnız uyumluluk kataloğu doğrulanan CLI bilgisini aldı. Katalog güncellemesi son yerel kapıda derlendi. [Kanonik JSON](proofs/opencode-v2-binding.json)
+
+- Tek Luna xhigh çalışanı saf V2 analizi ve dokuz odaklı testi teslim etti. Ana ajan rota, şema, kalıcı kayıt, izinler, gerçek test ve kabulü üstlendi. Ana incelemede eksik sağlayıcı kaydı oluşturmanın V2 aktivasyonunu değiştirdiği tespit edildi. Bağlantı mevcut sağlayıcı kayıtlarıyla sınırlı. CodeGraph yeni analiz sembolünü indeksledi. [İnceleme](reviews/H010-g.md)
+
+- **Durum 42/54.** Ana H010 açık. Sıradaki somut adım, ayrı bir profilde OpenCode'un normal servisi ve TUI'sinin kaydedilen V2 bağlantısını nasıl kullandığını sınamak. OpenCode Desktop, alt ajan, gerçek hesap ve diğer işletim sistemleri için kabul bekliyor. Token ve maliyet tasarrufu ölçülmedi.
 
 ## H010-f — V2 Windows 10 sürüm tanıma tamamlandı; ana H010 açık
 

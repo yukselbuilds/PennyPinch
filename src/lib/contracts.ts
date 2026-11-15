@@ -33,6 +33,7 @@ export interface ConnectionPlan {
     after_headroom: boolean;
   };
   opencode_coverage?: OpenCodeRouteCoverage;
+  opencode_schema?: "v2";
   opencode_retrieval?: "install_local_bridge" | "conflict";
   status: ConnectionPlanStatus;
   model: "present" | "absent" | "unknown";
@@ -51,6 +52,7 @@ export interface ConnectionPlan {
     | "custom_gateway"
     | "unsupported_route"
     | "retrieval_mcp_conflict"
+    | "retrieval_unavailable"
     | "client_version_unknown"
     | "unsupported_client_version"
     | "unsupported_client_surface"

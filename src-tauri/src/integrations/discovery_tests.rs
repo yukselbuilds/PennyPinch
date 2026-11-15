@@ -1234,7 +1234,7 @@ fn opencode_v2_project_binary_is_discovered_retained_and_pinned_without_executio
     assert!(preview
         .plan
         .blockers
-        .contains(&PlanBlocker::UnsupportedClientVersion));
+        .contains(&PlanBlocker::RetrievalUnavailable));
     assert!(!preview.plan.endpoint_field.after_headroom);
     let reply = plans.apply_connection(ApplyConnectionRequest {
         schema_version: 1,

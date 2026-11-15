@@ -1,0 +1,330 @@
+{
+  "schema_version": 1,
+  "task": "H010-g",
+  "accepted": true,
+  "parent_task_accepted": false,
+  "scope": {
+    "os": "Windows 10 22H2 x64",
+    "open_code": "2.3.0 x64 baseline private CLI",
+    "headroom": "0.41.0",
+    "auth": "synthetic",
+    "upstream": "owned_loopback",
+    "real_user_accounts": "not_tested",
+    "shared_service_tui_desktop_subagents": "not_tested",
+    "real_token_or_cost_savings": "not_measured"
+  },
+  "ui": [
+    {
+      "phase": "apply",
+      "stage": "apply",
+      "passed": true
+    },
+    {
+      "phase": "exit",
+      "stage": "exit_confirm",
+      "passed": true
+    },
+    {
+      "phase": "conflict",
+      "stage": "conflict_feedback",
+      "passed": true
+    },
+    {
+      "phase": "undo",
+      "stage": "restore_feedback",
+      "passed": true
+    },
+    {
+      "phase": "exit",
+      "stage": "exit_confirm",
+      "passed": true
+    }
+  ],
+  "cases": {
+    "chat": {
+      "command": {
+        "args": [
+          "run",
+          "--standalone",
+          "--format",
+          "json",
+          "--model",
+          "lab/slot",
+          "--title",
+          "H010 V2 local fixture",
+          "Use the synthetic fixture tool for logs and then follow the fixture replies."
+        ],
+        "exit_code": 0,
+        "stdout_bytes": 65665,
+        "stderr_bytes": 0,
+        "owned_processes_after_exit": 0,
+        "passed": true
+      },
+      "selector": "lab/slot",
+      "tools": [
+        [
+          "headroom_fixture_inspect_logs",
+          "completed"
+        ],
+        [
+          "headroom_retrieve",
+          "completed"
+        ],
+        [
+          "headroom_fixture_inspect_logs",
+          "completed"
+        ]
+      ],
+      "final_exact": true,
+      "config_owner_unchanged": true,
+      "upstream": [
+        {
+          "step": 0,
+          "upstream_stream": true,
+          "wire_model_preserved": true,
+          "reasoning_fields_preserved": true,
+          "synthetic_auth_preserved": true
+        },
+        {
+          "step": 1,
+          "upstream_stream": true,
+          "wire_model_preserved": true,
+          "reasoning_fields_preserved": true,
+          "original_wire_bytes": 14999,
+          "compressed_wire_bytes": 103,
+          "original_wire_sha256": "034cea80b24246b843a35f00d8969473d095efe69a417944aaa118c91341468e",
+          "compression_marker": true,
+          "client_call_id_preserved": true,
+          "synthetic_auth_preserved": true
+        },
+        {
+          "step": 2,
+          "upstream_stream": true,
+          "wire_model_preserved": true,
+          "reasoning_fields_preserved": true,
+          "retrieved_wire_byte_exact": true,
+          "retrieved_log_byte_exact": true,
+          "retrieved_wire_sha256": "034cea80b24246b843a35f00d8969473d095efe69a417944aaa118c91341468e",
+          "synthetic_auth_preserved": true
+        },
+        {
+          "step": 3,
+          "upstream_stream": true,
+          "wire_model_preserved": true,
+          "reasoning_fields_preserved": true,
+          "second_call_id_preserved": true,
+          "synthetic_auth_preserved": true
+        }
+      ]
+    },
+    "responses": {
+      "command": {
+        "args": [
+          "run",
+          "--standalone",
+          "--format",
+          "json",
+          "--model",
+          "openai/slot",
+          "--title",
+          "H010 V2 local fixture",
+          "Use the synthetic fixture tool for logs and then follow the fixture replies."
+        ],
+        "exit_code": 0,
+        "stdout_bytes": 65798,
+        "stderr_bytes": 0,
+        "owned_processes_after_exit": 0,
+        "passed": true
+      },
+      "selector": "openai/slot",
+      "tools": [
+        [
+          "headroom_fixture_inspect_logs",
+          "completed"
+        ],
+        [
+          "headroom_retrieve",
+          "completed"
+        ],
+        [
+          "headroom_fixture_inspect_logs",
+          "completed"
+        ]
+      ],
+      "final_exact": true,
+      "config_owner_unchanged": true,
+      "upstream": [
+        {
+          "step": 0,
+          "upstream_stream": true,
+          "wire_model_preserved": true,
+          "reasoning_fields_preserved": true,
+          "synthetic_auth_preserved": true
+        },
+        {
+          "step": 1,
+          "upstream_stream": true,
+          "wire_model_preserved": true,
+          "reasoning_fields_preserved": true,
+          "original_wire_bytes": 14999,
+          "compressed_wire_bytes": 103,
+          "original_wire_sha256": "034cea80b24246b843a35f00d8969473d095efe69a417944aaa118c91341468e",
+          "compression_marker": true,
+          "client_call_id_preserved": true,
+          "synthetic_auth_preserved": true
+        },
+        {
+          "step": 2,
+          "upstream_stream": true,
+          "wire_model_preserved": true,
+          "reasoning_fields_preserved": true,
+          "retrieved_wire_byte_exact": true,
+          "retrieved_log_byte_exact": true,
+          "retrieved_wire_sha256": "034cea80b24246b843a35f00d8969473d095efe69a417944aaa118c91341468e",
+          "synthetic_auth_preserved": true
+        },
+        {
+          "step": 3,
+          "upstream_stream": true,
+          "wire_model_preserved": true,
+          "reasoning_fields_preserved": true,
+          "second_call_id_preserved": true,
+          "synthetic_auth_preserved": true
+        }
+      ]
+    }
+  },
+  "conflicting_config_and_owner_preserved": true,
+  "undo": {
+    "original_bytes_exact": true,
+    "owner_released": true,
+    "native_dialog_confirmed": true
+  },
+  "first_exit": {
+    "code": 0,
+    "job_processes": 0,
+    "listeners_closed": true
+  },
+  "second_exit": {
+    "code": 0,
+    "job_processes": 0,
+    "listeners_closed": true
+  },
+  "validation": {
+    "node_passed": 222,
+    "rust_passed": 462,
+    "rust_ignored": 19,
+    "fmt_frontend_embedded_build": "pass",
+    "real_discovery_test": 1,
+    "native_inputs": 22685,
+    "final_inputs": 344,
+    "after_native_product_changes": [
+      "compatibility/clients.json"
+    ],
+    "native_catalog_sha256": "23c68814f12d0cffe94a3223e17b897606e0bfce06d664de5ccf51ea493bfbb4",
+    "final_catalog_sha256": "0f887bb8c325e2e321f0d33e6cb6c0967ab6cabdd65d1b57e93197f368c42a1a",
+    "native_exe_sha256": "e32db133ece39b618ac2a79bf0d0504cd7450faebe39d02092a2d997c1b5bbba",
+    "toolchain": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "environment": {
+      "workspace": "D:\\Projeler\\Headroom",
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "windows_build": [
+        10,
+        0,
+        19045
+      ]
+    }
+  },
+  "source_commit": "a6b15d33daf6ab7d35569f6d711fdb630b9f04e7",
+  "pinned_sources": {
+    "mcp.ts": {
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/schema/src/mcp.ts",
+      "bytes": 7954,
+      "sha256": "02b5b37355ddc16e241d84077c9ba562a496c45f27856a61e9f888742d61bb7a"
+    },
+    "mcp-index.ts": {
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/mcp/index.ts",
+      "bytes": 55491,
+      "sha256": "263a70c9bc1d374a83830fca79601c7016dac2090909ddbca87a84ba17fd4ab2"
+    },
+    "tool-mcp.ts": {
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/tool/mcp.ts",
+      "bytes": 8053,
+      "sha256": "eead09dddf29082187cc293e63510b578b568d0cc489fd5a6f366cac51e3ca34"
+    },
+    "config-mcp.ts": {
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/config/plugin/mcp.ts",
+      "bytes": 2126,
+      "sha256": "b582fbbb99e98d9e5fd4df48598da12ca128f57021e038c32bf3dcc16a561330"
+    },
+    "tool-runtime.ts": {
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/tool/runtime.ts",
+      "bytes": 13339,
+      "sha256": "adbaf4adafb9b5a60fa6c1680f58aacdea9d0db65d6d36b77d808374fb4f166a"
+    },
+    "wildcard.ts": {
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/util/wildcard.ts",
+      "sha256": "8c38258732c7e569febf52a36468181e2c851f2dceea7112b618c0cf43ed3170",
+      "bytes": 470
+    },
+    "schema-model.ts": {
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/schema/src/config/model.ts",
+      "bytes": 1210,
+      "sha256": "ea2ade334413cdcb907a9b78cda00184c0cdac11a5ced57585bec1cc57ea3f4b"
+    },
+    "schema-mcp.ts": {
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/schema/src/config/mcp.ts",
+      "bytes": 727,
+      "sha256": "72c8335c68fa0d72ad41bf784dea478325a769e7a39743dc242d760fdb9d951e"
+    },
+    "schema-permission.ts": {
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/schema/src/permission.ts",
+      "bytes": 2282,
+      "sha256": "45b63a6d9f7619d9285663111f26a9a939d64683cac3272881e6dd196409bc1d"
+    },
+    "aisdk-options.ts": {
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/ai/src/providers/openai-compatible.ts",
+      "bytes": 4062,
+      "sha256": "302591fe7e57747f77d266a1f30132265841fdf25d06a6746ee1a3f417fa7f61"
+    },
+    "plugin-openai.ts": {
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/plugin/provider/openai.ts",
+      "bytes": 17063,
+      "sha256": "a71bc923d8f92fb9fcb40a53f92622ffc6c0d2e10d824f6b00db7f03f7a5d2f6"
+    },
+    "config-agent.ts": {
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/config/plugin/agent.ts",
+      "bytes": 8775,
+      "sha256": "e65a8eeeff3ac7698434e2c6e40137dffe302d81d518f282a91bf76e2fac6f9b"
+    }
+  },
+  "earlier_attempts": {
+    "native-9d39a1114a/result.json": "owned_gui_not_ready",
+    "native-c604abadc6/result.json": "bridge_not_packaged",
+    "native-26f51ba414/result.json": "cli_exit_failed",
+    "native-9a4e7cdc41/result.json": "native_tool_sequence_changed"
+  },
+  "evidence": {
+    "work/proofs/opencode-v2-binding/native-d2a0ee959b/result.json": "160ad2a73256b5015c160339e1bcee45b42ca6db3c721a88aa0c415e7c0ebe8c",
+    "work/proofs/opencode-v2-binding/checks-7734884e5d/final.json": "0ed620912ea298fe6450010426e14411e2e090431d324cc8389bfbe22b09347a",
+    "work/proofs/opencode-v2-binding/checks-dc06bdcca5/real.json": "0568c130eb5920e46711edfd41e2a705a3bfe3e6a0c247a1dd7ac7d05771fd38",
+    "work/proofs/opencode-v2-binding/worker-2adfb412-8895-4d6f-8c8e-5f47109ec05c.json": "58ba0ad309341bff8ef319b7292288ce22c439d94f4d3f45eeeb93ce510f37b7",
+    "work/proofs/opencode-v2-binding/candidate-a9eaba9841/build.json": "66d0e22a22cf871c44e6b3d08238c6f56139b7bad53c10cb84e60726cf25a12c",
+    "work/proofs/opencode-v2-binding/mcp-probe-7509f51e83/result.json": "36c143d2b43791317f7e4a709b93aad697ce941b6b4aff64efd245bab127e5d3",
+    "work/proofs/opencode-v2-binding/native-9a4e7cdc41/readonly-tool-metadata.json": "ef41fffcd7056ff4aa4d1293ea6d39d9820308884ebe3cba0671f58adaf7e2f7",
+    "work/proofs/opencode-v2-binding/verify.py": "f1f7422bab64fde9edbffd48bc48e75b75b594205ff483ce852e040b664fefec",
+    "work/proofs/opencode-v2-binding/prepare-native.py": "c84dced1b00b2b58983152caa653ce940955f3b15284af2dbb95242e03d2407d",
+    "work/proofs/opencode-v2-binding/native.py": "fb4b1b2011bd803333952826c02024cd56e622f1839d95eef127f09e112249dc",
+    "work/proofs/opencode-v2-binding/ui.mjs": "ec0764bec02879e381f849504696d6926b8401957bcd0449151edd916bc43067",
+    "work/proofs/opencode-v2-binding/accept.py": "6bc15fa4ab4651f0201e8397ac001e18da75020f82220bbf16388af764612c66",
+    "work/proofs/opencode-v2-binding/native-9d39a1114a/result.json": "46720cfcab219fd8db76d4285f7c0d69d0755d0ef0ad4ae98148f57407ee9518",
+    "work/proofs/opencode-v2-binding/native-c604abadc6/result.json": "3f850969bde60ce3c8381f66a65504eee4a69ff9ecb9bdbc552f6f9eca4a26fa",
+    "work/proofs/opencode-v2-binding/native-26f51ba414/result.json": "c9b29b7e19e607ccfe66dab55874b84ee998bd2c38bf78c034f9c292cb94586b",
+    "work/proofs/opencode-v2-binding/native-9a4e7cdc41/result.json": "c51ad03da3c613867aedaddf6662e021c059ad2028c7613c589445e1319d3cf4"
+  }
+}

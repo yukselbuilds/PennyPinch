@@ -2,7 +2,8 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
-use serde::Serialize;
+use super::discovery::OPENCODE_V2_CLI_VERSION;
+use serde::{Deserialize, Serialize};
 #[cfg(windows)]
 use std::os::windows::ffi::OsStrExt;
 use std::path::Path;
@@ -18,6 +19,13 @@ pub(crate) enum ClientKind {
     Codex,
     ClaudeCode,
     OpenCodeV1,
+}
+
+// The historical opencode_v1 family/ownership slot is stable; absent schema is V1.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum OpenCodeSchema {
+    V2,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -137,6 +145,7 @@ pub(crate) enum PlanBlocker {
     UnsupportedClientVersion,
     UnsupportedClientSurface,
     RetrievalMcpConflict,
+    RetrievalUnavailable,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
@@ -203,6 +212,8 @@ pub(crate) struct ConnectionPlan {
     pub endpoint_field: PlannedEndpointField,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub opencode_coverage: Option<super::opencode_routes::OpenCodeRouteCoverage>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) opencode_schema: Option<OpenCodeSchema>,
     #[serde(skip)]
     pub(crate) opencode_routes: Option<super::opencode_routes::OpenCodeRouteAnalysis>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -306,6 +317,9 @@ pub(crate) fn preview_config_with_presence(
     let root = config.as_object().ok_or(PlanError::InvalidConfig)?;
     let proposed_value = proposed_endpoint_value(context.client_kind, &context.endpoint);
     let mut blockers = Vec::new();
+    let opencode_schema = (context.client_kind == ClientKind::OpenCodeV1
+        && context.version.as_deref() == Some(OPENCODE_V2_CLI_VERSION))
+    .then_some(OpenCodeSchema::V2);
     let (field, before, opencode_routes) = match context.client_kind {
         ClientKind::Codex => {
             let (field, before) = analyze_codex(root, &proposed_value, &mut blockers);
@@ -315,7 +329,9 @@ pub(crate) fn preview_config_with_presence(
             let (field, before) = analyze_claude(root, &proposed_value, &mut blockers);
             (field, before, None)
         }
-        ClientKind::OpenCodeV1 => analyze_opencode_v1(root, &proposed_value, &mut blockers),
+        ClientKind::OpenCodeV1 => {
+            analyze_opencode(root, &proposed_value, opencode_schema, &mut blockers)
+        }
     };
 
     if context.surface != "cli"
@@ -347,10 +363,24 @@ pub(crate) fn preview_config_with_presence(
             hook_effect(root, &["hooks", "statusLine", "shell"]),
         ),
         ClientKind::OpenCodeV1 => (
-            declaration(root.get("model")),
+            if opencode_schema.is_some()
+                && root.get("model").is_some_and(Value::is_object)
+                && opencode_routes.is_some()
+            {
+                DeclarationState::Present
+            } else {
+                declaration(root.get("model"))
+            },
             DeclarationState::Unknown,
-            opencode_auth(root),
-            hook_effect(root, &["plugin", "command", "shell"]),
+            opencode_auth(root, opencode_schema),
+            hook_effect(
+                root,
+                if opencode_schema.is_some() {
+                    &["plugins", "commands", "shell"]
+                } else {
+                    &["plugin", "command", "shell"]
+                },
+            ),
         ),
     };
 
@@ -400,6 +430,7 @@ pub(crate) fn preview_config_with_presence(
             after_headroom,
         },
         opencode_coverage: opencode_routes.as_ref().map(|routes| routes.coverage),
+        opencode_schema,
         opencode_routes,
         opencode_retrieval: None,
         opencode_retrieval_command: None,
@@ -423,7 +454,9 @@ pub(super) fn supported_version(kind: ClientKind, version: &str) -> bool {
     match kind {
         ClientKind::Codex => super::codex_binary::cli_config_supported(version),
         ClientKind::ClaudeCode => version == "2.1.158",
-        ClientKind::OpenCodeV1 => version == "1.19.3",
+        ClientKind::OpenCodeV1 => {
+            version == "1.19.3" || (cfg!(windows) && version == OPENCODE_V2_CLI_VERSION)
+        }
     }
 }
 
@@ -552,16 +585,33 @@ fn analyze_claude(
     (EndpointField::ClaudeAnthropicBaseUrl, before)
 }
 
-fn analyze_opencode_v1(
+pub(super) fn analyze_opencode_routes(
     root: &serde_json::Map<String, Value>,
     target: &str,
+    schema: Option<OpenCodeSchema>,
+) -> Result<
+    super::opencode_routes::OpenCodeRouteAnalysis,
+    super::opencode_routes::OpenCodeRouteAnalysisError,
+> {
+    match schema {
+        Some(OpenCodeSchema::V2) => {
+            super::opencode_v2_routes::analyze_opencode_v2_routes(root, target)
+        }
+        None => super::opencode_routes::analyze_opencode_v1_routes(root, target),
+    }
+}
+
+fn analyze_opencode(
+    root: &serde_json::Map<String, Value>,
+    target: &str,
+    schema: Option<OpenCodeSchema>,
     blockers: &mut Vec<PlanBlocker>,
 ) -> (
     EndpointField,
     EndpointBefore,
     Option<super::opencode_routes::OpenCodeRouteAnalysis>,
 ) {
-    let analysis = match super::opencode_routes::analyze_opencode_v1_routes(root, target) {
+    let analysis = match analyze_opencode_routes(root, target, schema) {
         Ok(analysis) => analysis,
         Err(error) => {
             match error {
@@ -641,13 +691,26 @@ fn claude_auth(root: &serde_json::Map<String, Value>) -> AuthDeclaration {
     }
 }
 
-fn opencode_auth(root: &serde_json::Map<String, Value>) -> AuthDeclaration {
+fn opencode_auth(
+    root: &serde_json::Map<String, Value>,
+    schema: Option<OpenCodeSchema>,
+) -> AuthDeclaration {
     let options = root
-        .get("provider")
+        .get(if schema.is_some() {
+            "providers"
+        } else {
+            "provider"
+        })
         .and_then(Value::as_object)
         .and_then(|providers| providers.get("openai"))
         .and_then(Value::as_object)
-        .and_then(|provider| provider.get("options"))
+        .and_then(|provider| {
+            provider.get(if schema.is_some() {
+                "settings"
+            } else {
+                "options"
+            })
+        })
         .and_then(Value::as_object);
     if options.is_some_and(|options| options.contains_key("apiKey")) {
         AuthDeclaration::SecretConfigured

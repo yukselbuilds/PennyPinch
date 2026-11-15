@@ -5,6 +5,7 @@ pub(crate) mod config_io;
 pub mod discovery;
 pub(crate) mod opencode_retrieval;
 pub(crate) mod opencode_routes;
+pub(crate) mod opencode_v2_routes;
 pub mod picker;
 pub(crate) mod plan;
 #[cfg(windows)]
@@ -21,6 +22,9 @@ mod plan_tests;
 
 #[cfg(test)]
 mod opencode_routes_tests;
+
+#[cfg(test)]
+mod opencode_v2_routes_tests;
 
 #[cfg(test)]
 mod config_io_tests;

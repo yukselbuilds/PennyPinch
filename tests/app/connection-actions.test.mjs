@@ -184,6 +184,8 @@ test("OpenCode apply requires analyzed routes and sends no route metadata to nat
   });
   const applied = await client.apply(makeOpenCodePlan());
   assert.equal(applied.kind, "success");
+  const v2 = await client.apply(makeOpenCodePlan({ opencode_schema: "v2", opencode_retrieval: "install_local_bridge" }));
+  assert.equal(v2.kind, "success");
 
   for (const invalidPlan of [
     makeOpenCodePlan({ opencode_coverage: undefined }),
@@ -191,11 +193,14 @@ test("OpenCode apply requires analyzed routes and sends no route metadata to nat
     makeOpenCodePlan({ opencode_coverage: { ...makeOpenCodePlan().opencode_coverage, private_route: "hidden" } }),
     makeOpenCodePlan({ endpoint_field: { ...makeOpenCodePlan().endpoint_field, before: "missing" } }),
     makeOpenCodePlan({ config_presence: "missing", config_source: "opencode_missing" }),
+    makeOpenCodePlan({ opencode_schema: "v2" }),
+    makeOpenCodePlan({ opencode_schema: "v2", opencode_retrieval: "conflict" }),
+    makeOpenCodePlan({ opencode_schema: "v3", opencode_retrieval: "install_local_bridge" }),
     makePlan({ client_kind: "codex", opencode_coverage: makeOpenCodePlan().opencode_coverage }),
   ]) {
     assert.equal((await client.apply(invalidPlan)).kind, "invalid_request");
   }
-  assert.equal(calls, 1);
+  assert.equal(calls, 2);
 });
 
 test("apply rejects mismatched identity, client, source, endpoint, status, and secret-shaped extra fields", async () => {

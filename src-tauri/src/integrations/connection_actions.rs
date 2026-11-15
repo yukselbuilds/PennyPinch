@@ -630,6 +630,33 @@ fn apply_connection(
     {
         return error_reply(correlation, ActionFault::Conflict);
     }
+    let _v2_installation_pin = if lease.plan.opencode_schema.is_some() {
+        let Ok((installation, path)) = manager
+            .discovery
+            .select_installation_with_path(&lease.plan.installation_id, lease.plan.scan_generation)
+        else {
+            return error_reply(correlation, ActionFault::Conflict);
+        };
+        let Some(parents) = path
+            .parent()
+            .and_then(|parent| pin_existing_directory_chain(parent).ok())
+        else {
+            return error_reply(correlation, ActionFault::Conflict);
+        };
+        let Some(pin) = super::super::discovery::pin_verified_client_cli(
+            installation.client_kind,
+            &path,
+            super::super::discovery::OPENCODE_V2_CLI_VERSION,
+        ) else {
+            return error_reply(correlation, ActionFault::Conflict);
+        };
+        if parents.validate().is_err() {
+            return error_reply(correlation, ActionFault::Conflict);
+        }
+        Some((parents, pin))
+    } else {
+        None
+    };
     let claude_layers_observation = if kind == ClientKind::ClaudeCode {
         match observe_leased_claude_layers(&lease, &roots, current_scope) {
             Ok(value) => Some(value),
@@ -1076,6 +1103,16 @@ fn applicable_plan(
         installation.surface,
         installation.version.as_deref(),
     );
+    if plan.opencode_schema.is_some()
+        != (kind == ClientKind::OpenCodeV1
+            && installation.version.as_deref()
+                == Some(super::super::discovery::OPENCODE_V2_CLI_VERSION))
+        || (plan.opencode_schema.is_some()
+            && plan.opencode_retrieval
+                != Some(super::super::opencode_retrieval::RetrievalChange::InstallLocalBridge))
+    {
+        return false;
+    }
     plan.schema_version == 1
         && valid_uuid(&plan.plan_id)
         && valid_uuid(&plan.installation_id)
@@ -1151,7 +1188,9 @@ fn validate_live_plan(manager: &PlanManager, lease: &PlanLease) -> Result<(), Ac
     }
     if kind == ClientKind::OpenCodeV1 {
         if let Some(provider) = &manager.opencode_retrieval_provider {
-            if !check_opencode_global_mcp(&current_roots).map_err(map_config_io_error)? {
+            if !check_opencode_global_mcp(&current_roots, plan.opencode_schema)
+                .map_err(map_config_io_error)?
+            {
                 return Err(ActionFault::Conflict);
             }
             let command = provider(&endpoint).map_err(|_| ActionFault::Conflict)?;

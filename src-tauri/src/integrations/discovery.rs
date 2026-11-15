@@ -60,6 +60,7 @@ const OPENCODE_V1_CLI_1193_SIZE: u64 = 180_982_664;
 const OPENCODE_V1_CLI_1193_SHA256: &str =
     "cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375";
 const OPENCODE_V2_CLI_230_SIZE: u64 = 257_553_288;
+pub(super) const OPENCODE_V2_CLI_VERSION: &str = "2.3.0";
 const OPENCODE_V2_CLI_230_SHA256: &str =
     "2359208e2f81539fd16eb755a4d8a747e87c6fd5cd59a49bb552f8a610d33eb9";
 const MAX_PATH_CHARS: usize = 32_767;
@@ -2217,7 +2218,9 @@ pub(super) fn claude_code_cli_version_from_digest(
 pub(super) fn opencode_cli_version_from_digest(file_size: u64, digest_hex: &str) -> Option<String> {
     match (file_size, digest_hex) {
         (OPENCODE_V1_CLI_1193_SIZE, OPENCODE_V1_CLI_1193_SHA256) => Some("1.19.3".to_owned()),
-        (OPENCODE_V2_CLI_230_SIZE, OPENCODE_V2_CLI_230_SHA256) => Some("2.3.0".to_owned()),
+        (OPENCODE_V2_CLI_230_SIZE, OPENCODE_V2_CLI_230_SHA256) => {
+            Some(OPENCODE_V2_CLI_VERSION.to_owned())
+        }
         _ => None,
     }
 }

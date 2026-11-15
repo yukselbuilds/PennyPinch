@@ -165,23 +165,40 @@ fn codex_config_contract_accepts_known_and_neighbor_versions_without_claiming_tr
         .contains(&PlanBlocker::UnsupportedClientSurface));
 }
 
+#[cfg(windows)]
 #[test]
-fn recognized_opencode_v2_does_not_enable_the_v1_writer_for_either_schema() {
+fn recognized_opencode_v2_previews_its_schema_and_blocks_legacy_input() {
     let mut context = context(ClientKind::OpenCodeV1);
     context.version = Some("2.3.0".into());
-    for bytes in [
-        br#"{"model":"openai/slot","provider":{"openai":{}}}"#.as_slice(),
-        br#"{"model":"openai/slot","providers":{"openai":{"models":{"slot":{"modelID":"fixture-model"}}}}}"#.as_slice(),
-    ] {
-        let original = bytes.to_vec();
-        let plan = preview_config(&context, bytes).unwrap();
-        assert_eq!(plan.status, PlanStatus::Blocked);
-        assert!(plan.blockers.contains(&PlanBlocker::UnsupportedClientVersion));
-        assert!(!plan.blockers.contains(&PlanBlocker::ClientVersionUnknown));
-        assert!(!plan.endpoint_field.after_headroom);
-        assert!(plan.model_unchanged && plan.auth_unchanged && plan.reasoning_unchanged && plan.agent_count_unchanged);
-        assert_eq!(bytes, original);
-    }
+    let legacy = br#"{"model":"openai/slot","provider":{"openai":{}}}"#;
+    let plan = preview_config(&context, legacy).unwrap();
+    assert_eq!(plan.status, PlanStatus::Blocked);
+    assert_eq!(plan.blockers, [PlanBlocker::UnsupportedRoute]);
+    assert!(!plan.endpoint_field.after_headroom);
+
+    let native = br#"{"model":{"providerID":"openai","model":"fixture-model"},"providers":{"openai":{"settings":{"apiKey":"private-canary"}}}}"#;
+    let plan = preview_config(&context, native).unwrap();
+    assert_eq!(plan.status, PlanStatus::Preview);
+    assert_eq!(plan.opencode_schema, Some(super::plan::OpenCodeSchema::V2));
+    assert_eq!(plan.model, DeclarationState::Present);
+    assert_eq!(plan.auth, AuthDeclaration::SecretConfigured);
+    assert_eq!(plan.opencode_coverage.unwrap().responses_count, 1);
+    let serialized = serde_json::to_value(&plan).unwrap();
+    assert_eq!(serialized["opencode_schema"], "v2");
+    assert!(!serialized.to_string().contains("private-canary"));
+    assert!(!serialized.to_string().contains("fixture-model"));
+    assert!(
+        plan.model_unchanged
+            && plan.auth_unchanged
+            && plan.reasoning_unchanged
+            && plan.agent_count_unchanged
+    );
+
+    context.surface = "desktop".into();
+    assert!(preview_config(&context, native)
+        .unwrap()
+        .blockers
+        .contains(&PlanBlocker::UnsupportedClientSurface));
 }
 
 #[test]

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "last_updated": "2026-11-14",
+  "last_updated": "2026-11-15",
   "release": {
     "channel": "development",
     "app_version": "0.1.0",
@@ -226,32 +226,56 @@
       "evidence_date": "2026-10-19"
     },
     {
+      "id": "opencode-v2-windows-cli-binding",
+      "match": {"client_kind": "opencode", "surface": "cli", "versions": ["2.3.0"], "auth_method": "synthetic", "platform": "windows_10_x64", "engine_version": "0.41.0"},
+      "product": "OpenCode CLI",
+      "version": "2.3.0 Windows x64 baseline",
+      "surface": "Headroom desktop Preview, Apply and Remove, then private OpenCode CLI service",
+      "platform": "Windows 10 22H2 x64",
+      "auth": "Synthetic fixture API key",
+      "protocol": "OpenAI Chat Completions and Responses",
+      "transport": "Owned loopback ingress, Headroom engine and native local MCP retrieval",
+      "status": "local_fixture_pass",
+      "capabilities": {
+        "v2_user_config_apply_and_conflict_preserving_undo": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/opencode-v2-binding.md"
+        },
+        "chat_and_responses_native_mcp_retrieval": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/opencode-v2-binding.md"
+        },
+        "live_auth_tui_desktop_and_subagents": {
+          "status": "not_tested",
+          "evidence": "docs/proofs/opencode-v2-binding.md"
+        }
+      },
+      "evidence": ["docs/proofs/opencode-v2-binding.md", "docs/proofs/opencode-v2.md"],
+      "evidence_date": "2026-11-15"
+    },
+    {
       "id": "opencode-v2-tui-desktop",
       "match": {"client_kind": "opencode", "surface": "other", "versions": [], "auth_method": "unknown", "platform": "unknown", "engine_version": "0.41.0"},
       "product": "OpenCode",
-      "version": "2.3.0 Windows CLI preflight; product integration pending",
-      "surface": "V2 CLI, TUI and desktop surfaces",
-      "platform": "Windows 10 x64 CLI preflight only; other surfaces and OS not tested",
-      "auth": "Synthetic API key; real account not tested",
-      "protocol": "Local Chat/Responses fixture; product routes not enabled",
-      "transport": "CLI --standalone to owned Headroom to synthetic SSE",
-      "status": "local_fixture_partial",
+      "version": "V2 TUI and Desktop",
+      "surface": "TUI, desktop and shared service",
+      "platform": "unknown",
+      "auth": "unknown",
+      "protocol": "unknown",
+      "transport": "unknown",
+      "status": "not_tested",
       "capabilities": {
-        "v2_cli_protocol_preflight": {
-          "status": "local_fixture_pass",
-          "evidence": "docs/proofs/opencode-v2.md"
-        },
-        "v2_config_and_transport": {
+        "v2_shared_service_config_and_transport": {
           "status": "not_tested",
-          "evidence": "docs/proofs/opencode.md"
+          "evidence": "docs/proofs/opencode-v2-binding.md"
         },
         "tui_desktop_subagent_and_client_side_ccr": {
           "status": "not_tested",
-          "evidence": "docs/proofs/opencode.md"
+          "evidence": "docs/proofs/opencode-v2-binding.md"
         }
       },
-      "evidence": ["docs/proofs/opencode-v2.md", "docs/proofs/opencode.md"],
-      "evidence_date": "2026-11-14"
+      "evidence": ["docs/proofs/opencode-v2-binding.md"],
+      "evidence_date": "2026-11-15"
     },
     {
       "id": "claude-code-native-product-scoped-fixture",

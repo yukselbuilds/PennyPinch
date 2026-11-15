@@ -8,7 +8,7 @@ use super::config_document;
 use super::opencode_retrieval::{self, RetrievalChange, RetrievalReceipt};
 use super::plan::{
     ClientKind, ConfigPresence, ConfigSource, ConnectionPlan, EndpointBefore, EndpointField,
-    PlanStatus,
+    OpenCodeSchema, PlanStatus,
 };
 
 const ENDPOINT_SUFFIX_CODEX: &str = "/v1";
@@ -34,6 +34,7 @@ pub(crate) struct PatchReceipt {
     created_ancestor_mask: u8,
     config_was_missing: bool,
     opencode_routes: Option<Vec<OpenCodeRouteReceipt>>,
+    opencode_schema: Option<OpenCodeSchema>,
     opencode_retrieval: Option<RetrievalReceipt>,
 }
 
@@ -45,6 +46,7 @@ pub(crate) struct PatchReceiptMetadata {
     pub(crate) created_ancestor_mask: u8,
     pub(crate) config_was_missing: bool,
     pub(crate) opencode_routes: Option<Vec<OpenCodeRouteReceipt>>,
+    pub(crate) opencode_schema: Option<OpenCodeSchema>,
     pub(crate) opencode_retrieval: Option<RetrievalReceipt>,
 }
 
@@ -57,6 +59,7 @@ impl PatchReceipt {
             created_ancestor_mask: self.created_ancestor_mask,
             config_was_missing: self.config_was_missing,
             opencode_routes: self.opencode_routes.clone(),
+            opencode_schema: self.opencode_schema,
             opencode_retrieval: self.opencode_retrieval.clone(),
         }
     }
@@ -72,6 +75,7 @@ impl PatchReceipt {
             created_ancestor_mask: metadata.created_ancestor_mask,
             config_was_missing: metadata.config_was_missing,
             opencode_routes: metadata.opencode_routes,
+            opencode_schema: metadata.opencode_schema,
             opencode_retrieval: metadata.opencode_retrieval,
         })
     }
@@ -99,7 +103,7 @@ pub(crate) fn apply_missing_endpoint(
     current: &[u8],
 ) -> Result<ApplyResult, TransactionError> {
     let Some(command) = &plan.opencode_retrieval_command else {
-        if plan.opencode_retrieval.is_some() {
+        if plan.opencode_retrieval.is_some() || plan.opencode_schema.is_some() {
             return Err(TransactionError::InvalidPlan);
         }
         return apply_endpoint_only(plan, current);
@@ -111,7 +115,9 @@ pub(crate) fn apply_missing_endpoint(
     }
     let parsed = config_document::parse_document(ClientKind::OpenCodeV1, current)
         .map_err(|_| TransactionError::InvalidConfig)?;
-    if !opencode_retrieval::can_install(&parsed) {
+    if !opencode_retrieval::can_install_for_schema(&parsed, plan.opencode_schema)
+        || (plan.opencode_schema.is_some() && !opencode_retrieval::retrieval_available(&parsed))
+    {
         return Err(TransactionError::Conflict);
     }
     let (bytes, mut receipt) = match apply_endpoint_only(plan, current)? {
@@ -125,16 +131,21 @@ pub(crate) fn apply_missing_endpoint(
                 created_ancestor_mask: 0,
                 config_was_missing: false,
                 opencode_routes: Some(Vec::new()),
+                opencode_schema: plan.opencode_schema,
                 opencode_retrieval: None,
             },
         ),
     };
-    let definition = command.definition();
+    let definition = command.definition(plan.opencode_schema);
     let literal = serde_json::to_string(&definition).map_err(|_| TransactionError::InvalidPlan)?;
     let (bytes, mask) = patch_json_path_literal(
         ClientKind::OpenCodeV1,
         &bytes,
-        &["mcp"],
+        if plan.opencode_schema.is_some() {
+            &["mcp", "servers"]
+        } else {
+            &["mcp"]
+        },
         "headroom",
         &literal,
     )?;
@@ -142,9 +153,11 @@ pub(crate) fn apply_missing_endpoint(
         definition_sha256: opencode_retrieval::definition_fingerprint(
             &definition,
             literal.as_bytes(),
+            plan.opencode_schema,
         )
         .ok_or(TransactionError::InvalidPlan)?,
-        created_mcp_object: mask == 1,
+        created_mcp_object: mask & 1 != 0,
+        created_servers_object: plan.opencode_schema.is_some() && mask & 2 != 0,
     });
     let receipt = PatchReceipt::from_metadata(receipt.metadata())?;
     config_document::parse_document(ClientKind::OpenCodeV1, &bytes)
@@ -203,6 +216,7 @@ fn apply_endpoint_only(
             created_ancestor_mask: mask,
             config_was_missing: plan.config_presence == ConfigPresence::Missing,
             opencode_routes: None,
+            opencode_schema: None,
             opencode_retrieval: None,
         })?,
     })
@@ -220,15 +234,24 @@ pub(crate) fn undo_owned_endpoint(
     }
     let parsed = config_document::parse_document(ClientKind::OpenCodeV1, current)
         .map_err(|_| TransactionError::InvalidConfig)?;
-    let object = json_object_at(ClientKind::OpenCodeV1, current, &["mcp", "headroom"])?
+    let bridge_path: &[&str] = if receipt.opencode_schema.is_some() {
+        &["mcp", "servers", "headroom"]
+    } else {
+        &["mcp", "headroom"]
+    };
+    let object = json_object_at(ClientKind::OpenCodeV1, current, bridge_path)?
         .ok_or(TransactionError::Conflict)?;
     if parsed
-        .get("mcp")
-        .and_then(|mcp| mcp.get("headroom"))
+        .pointer(if receipt.opencode_schema.is_some() {
+            "/mcp/servers/headroom"
+        } else {
+            "/mcp/headroom"
+        })
         .and_then(|value| {
             opencode_retrieval::definition_fingerprint(
                 value,
                 &current[object.range.start..object.range.end],
+                receipt.opencode_schema,
             )
         })
         .as_ref()
@@ -236,7 +259,19 @@ pub(crate) fn undo_owned_endpoint(
     {
         return Err(TransactionError::Conflict);
     }
-    let mut bytes = remove_json_property(ClientKind::OpenCodeV1, current, &["mcp"], "headroom")?;
+    let mut bytes = remove_json_property(
+        ClientKind::OpenCodeV1,
+        current,
+        &bridge_path[..bridge_path.len() - 1],
+        "headroom",
+    )?;
+    if bridge.created_servers_object {
+        let object = json_object_at(ClientKind::OpenCodeV1, &bytes, &["mcp", "servers"])?
+            .ok_or(TransactionError::Conflict)?;
+        if object_is_empty_and_comment_free(&bytes, &object) {
+            bytes = remove_json_property(ClientKind::OpenCodeV1, &bytes, &["mcp"], "servers")?;
+        }
+    }
     if bridge.created_mcp_object {
         let object = json_object_at(ClientKind::OpenCodeV1, &bytes, &["mcp"])?
             .ok_or(TransactionError::Conflict)?;
@@ -299,7 +334,7 @@ fn apply_opencode_routes(
     expected: &str,
     parsed: &serde_json::Value,
 ) -> Result<ApplyResult, TransactionError> {
-    use super::opencode_routes::{analyze_opencode_v1_routes, OpenCodeRouteBefore};
+    use super::opencode_routes::OpenCodeRouteBefore;
 
     let planned = plan
         .opencode_routes
@@ -315,7 +350,8 @@ fn apply_opencode_routes(
     }
     let root = parsed.as_object().ok_or(TransactionError::InvalidConfig)?;
     let current_analysis =
-        analyze_opencode_v1_routes(root, expected).map_err(|_| TransactionError::Conflict)?;
+        super::plan::analyze_opencode_routes(root, expected, plan.opencode_schema)
+            .map_err(|_| TransactionError::Conflict)?;
     if current_analysis != *planned || plan.opencode_coverage != Some(current_analysis.coverage) {
         return Err(TransactionError::Conflict);
     }
@@ -330,7 +366,8 @@ fn apply_opencode_routes(
     let mut output = current.to_vec();
     let mut receipts = Vec::with_capacity(planned.routes.len());
     for route in &planned.routes {
-        let ancestors = ["provider", route.provider_key.as_str(), "options"];
+        let (providers, settings) = opencode_route_keys(plan.opencode_schema);
+        let ancestors = [providers, route.provider_key.as_str(), settings];
         let value =
             json_string_value_and_token(ClientKind::OpenCodeV1, &output, &ancestors, "baseURL")?;
         let (next, original_literal, mask) = match route.before {
@@ -372,7 +409,7 @@ fn apply_opencode_routes(
         };
         output = next;
         receipts.push(OpenCodeRouteReceipt {
-            provider_key_sha256: provider_key_digest(&route.provider_key),
+            provider_key_sha256: provider_key_digest(&route.provider_key, plan.opencode_schema),
             original_base_url_literal: original_literal,
             created_ancestor_mask: mask,
         });
@@ -384,8 +421,9 @@ fn apply_opencode_routes(
     let updated = config_document::parse_document(ClientKind::OpenCodeV1, &output)
         .map_err(|_| TransactionError::InvalidConfig)?;
     let updated_root = updated.as_object().ok_or(TransactionError::InvalidConfig)?;
-    let updated_analysis = analyze_opencode_v1_routes(updated_root, expected)
-        .map_err(|_| TransactionError::InvalidConfig)?;
+    let updated_analysis =
+        super::plan::analyze_opencode_routes(updated_root, expected, plan.opencode_schema)
+            .map_err(|_| TransactionError::InvalidConfig)?;
     if updated_analysis.routes.len() != planned.routes.len()
         || updated_analysis
             .routes
@@ -402,15 +440,16 @@ fn apply_opencode_routes(
 
     Ok(ApplyResult::Patched {
         bytes: output,
-        receipt: PatchReceipt::from_metadata(PatchReceiptMetadata {
+        receipt: PatchReceipt {
             client_kind: ClientKind::OpenCodeV1,
             config_source: plan.config_source,
             endpoint_port: plan.endpoint_port,
             created_ancestor_mask: 0,
             config_was_missing: false,
             opencode_routes: Some(receipts),
+            opencode_schema: plan.opencode_schema,
             opencode_retrieval: None,
-        })?,
+        },
     })
 }
 
@@ -426,11 +465,15 @@ fn undo_opencode_routes(
     {
         return Err(TransactionError::InvalidReceipt);
     }
+    if routes.is_empty() {
+        return Ok(current.to_vec());
+    }
     let expected = endpoint_value(ClientKind::OpenCodeV1, receipt.endpoint_port);
     let parsed = config_document::parse_document(ClientKind::OpenCodeV1, current)
         .map_err(|_| TransactionError::InvalidConfig)?;
+    let (providers, settings) = opencode_route_keys(receipt.opencode_schema);
     let provider_map = parsed
-        .get("provider")
+        .get(providers)
         .and_then(serde_json::Value::as_object)
         .ok_or(TransactionError::Conflict)?;
     if provider_map.len() > 32 {
@@ -441,14 +484,14 @@ fn undo_opencode_routes(
     // any bytes. A missing, ambiguous, or user-changed route aborts the whole undo.
     let mut resolved = Vec::with_capacity(routes.len());
     for route in routes {
-        let mut matching = provider_map
-            .keys()
-            .filter(|key| provider_key_digest(key) == route.provider_key_sha256);
+        let mut matching = provider_map.keys().filter(|key| {
+            provider_key_digest(key, receipt.opencode_schema) == route.provider_key_sha256
+        });
         let key = matching.next().ok_or(TransactionError::Conflict)?.clone();
         if matching.next().is_some() {
             return Err(TransactionError::Conflict);
         }
-        let ancestors = ["provider", key.as_str(), "options"];
+        let ancestors = [providers, key.as_str(), settings];
         let value =
             json_string_value_and_token(ClientKind::OpenCodeV1, current, &ancestors, "baseURL")?;
         if value.as_ref().map(|(decoded, _)| decoded.as_str()) != Some(expected.as_str()) {
@@ -459,7 +502,7 @@ fn undo_opencode_routes(
 
     let mut output = current.to_vec();
     for (route, key) in resolved.iter().rev() {
-        let ancestors = ["provider", key.as_str(), "options"];
+        let ancestors = [providers, key.as_str(), settings];
         if let Some(original_literal) = &route.original_base_url_literal {
             output = replace_json_string_token(
                 ClientKind::OpenCodeV1,
@@ -495,7 +538,7 @@ fn undo_opencode_routes(
     config_document::parse_document(ClientKind::OpenCodeV1, &output)
         .map_err(|_| TransactionError::InvalidConfig)?;
     for (route, key) in resolved {
-        let ancestors = ["provider", key.as_str(), "options"];
+        let ancestors = [providers, key.as_str(), settings];
         let restored =
             json_string_value_and_token(ClientKind::OpenCodeV1, &output, &ancestors, "baseURL")?;
         match &route.original_base_url_literal {
@@ -515,9 +558,21 @@ fn undo_opencode_routes(
     Ok(output)
 }
 
-fn provider_key_digest(provider_key: &str) -> String {
+fn opencode_route_keys(schema: Option<OpenCodeSchema>) -> (&'static str, &'static str) {
+    if schema.is_some() {
+        ("providers", "settings")
+    } else {
+        ("provider", "options")
+    }
+}
+
+fn provider_key_digest(provider_key: &str, schema: Option<OpenCodeSchema>) -> String {
     let mut digest = Sha256::new();
-    digest.update(b"headroom-opencode-provider-key/v1\0");
+    digest.update(if schema.is_some() {
+        b"headroom-opencode-provider-key/v2\0"
+    } else {
+        b"headroom-opencode-provider-key/v1\0"
+    });
     digest.update((provider_key.len() as u64).to_le_bytes());
     digest.update(provider_key.as_bytes());
     digest
@@ -639,6 +694,9 @@ fn validate_plan(plan: &ConnectionPlan) -> Result<(), TransactionError> {
         return Err(TransactionError::InvalidPlan);
     }
     let kind = client_kind(plan.client_kind).ok_or(TransactionError::InvalidPlan)?;
+    if plan.opencode_schema.is_some() && kind != ClientKind::OpenCodeV1 {
+        return Err(TransactionError::InvalidPlan);
+    }
     let scope_matches_client = matches!(
         (kind, plan.scope),
         (ClientKind::Codex, "user_config")
@@ -669,10 +727,19 @@ fn valid_receipt_metadata(metadata: &PatchReceiptMetadata) -> bool {
     if metadata.endpoint_port == 0 {
         return false;
     }
+    if metadata.opencode_schema.is_some()
+        && (metadata.client_kind != ClientKind::OpenCodeV1 || metadata.opencode_retrieval.is_none())
+    {
+        return false;
+    }
     if let Some(bridge) = &metadata.opencode_retrieval {
         if metadata.client_kind != ClientKind::OpenCodeV1
             || metadata.opencode_routes.is_none()
             || !valid_sha256(&bridge.definition_sha256)
+            || (bridge.created_servers_object && metadata.opencode_schema.is_none())
+            || (metadata.opencode_schema.is_some()
+                && bridge.created_mcp_object
+                && !bridge.created_servers_object)
         {
             return false;
         }
@@ -768,6 +835,7 @@ mod receipt_tests {
             created_ancestor_mask: 7,
             config_was_missing: true,
             opencode_routes: None,
+            opencode_schema: None,
             opencode_retrieval: None,
         };
         assert!(PatchReceipt::from_metadata(base.clone()).is_ok());
@@ -804,6 +872,7 @@ mod receipt_tests {
             created_ancestor_mask: 0,
             config_was_missing: false,
             opencode_routes: Some(vec![row.clone()]),
+            opencode_schema: None,
             opencode_retrieval: None,
         };
         assert!(PatchReceipt::from_metadata(base.clone()).is_ok());
@@ -862,6 +931,7 @@ mod receipt_tests {
             created_ancestor_mask: 0,
             config_was_missing: false,
             opencode_routes: None,
+            opencode_schema: None,
             opencode_retrieval: None,
         })
         .expect("legacy schema-1 receipt without route metadata remains readable");

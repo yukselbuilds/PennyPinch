@@ -154,12 +154,14 @@ function planIsApplicable(plan: ConnectionPlan): boolean {
     || plan.agent_count_unchanged !== true
     || plan.endpoint_field.after_headroom !== true) return false;
   if (plan.client_kind === "opencode_v1") {
+    if (Object.hasOwn(plan, "opencode_schema")
+      && (plan.opencode_schema !== "v2" || plan.opencode_retrieval !== "install_local_bridge")) return false;
     const coverage = decodeOpenCodeRouteCoverage(plan.opencode_coverage);
     if (!Object.hasOwn(plan, "opencode_coverage") || !coverage
       || coverage.eligible_count === 0 || plan.endpoint_field.before !== "provider_routes"
       || plan.config_presence !== "present"
       || (plan.config_source !== "opencode_json" && plan.config_source !== "opencode_jsonc")) return false;
-  } else if (Object.hasOwn(plan, "opencode_coverage")
+  } else if (Object.hasOwn(plan, "opencode_schema") || Object.hasOwn(plan, "opencode_coverage")
     || (plan.endpoint_field.before !== "missing" && plan.endpoint_field.before !== "same_stable_endpoint")) {
     return false;
   }
