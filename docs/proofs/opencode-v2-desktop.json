@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "task": "H010-j",
+  "accepted": true,
+  "parent_task_accepted": false,
+  "scope": {
+    "platform": "Windows 10 22H2 x64 (19045)",
+    "desktop": "OpenCode 2.3.0 Windows x64",
+    "engine": "0.41.0",
+    "setup": "Headroom CLI connection applied to shared user config",
+    "package": "official NSIS payload extracted inside project",
+    "provider": "synthetic_loopback",
+    "desktop_only_discovery_installer_live_accounts_other_os": "not_tested",
+    "token_cost_savings": "not_measured"
+  },
+  "official_installer": {
+    "path": "work/toolchains/opencode/v2.3.0/opencode-desktop-win-x64.exe",
+    "sha256": "21e4d45dd957ebe92d3ea693fc4a7f7bb5b50276046bf7b78767081dd37d685e"
+  },
+  "desktop_executable": {
+    "path": "work/toolchains/opencode/v2.3.0/desktop/app/OpenCode.exe",
+    "sha256": "c2d4db722a99447982a85b250d95fd0b4a9feeeb8303f62681b99ba9690a2e07"
+  },
+  "bundled_cli": {
+    "path": "work/toolchains/opencode/v2.3.0/desktop/app/resources/opencode-cli.exe",
+    "sha256": "f1aacb96863cea80e84020ff3e53c9f6831f444ef68e7e57aef08d27fee09bed"
+  },
+  "service": {
+    "owned_loopback_and_job": true,
+    "staged_cli_matches_bundled": true,
+    "model": "openai/slot",
+    "session_parent": null,
+    "model_requests": 4
+  },
+  "desktop": {
+    "submitted_via_gui": true,
+    "final_visible": true,
+    "stored_final_exact": true,
+    "native_tools": [
+      "headroom_fixture_inspect_logs",
+      "headroom_retrieve",
+      "headroom_fixture_inspect_logs"
+    ],
+    "normal_main_exit": {
+      "code": 0,
+      "normal_quit_requested": true
+    },
+    "separate_service_stop": {
+      "exit_code": 0,
+      "registration_removed": true,
+      "listener_closed": true
+    }
+  },
+  "retrieval": {
+    "original_bytes": 14999,
+    "compressed_bytes": 103,
+    "byte_reduction_percent": 99.31,
+    "byte_exact": true
+  },
+  "cleanup": {
+    "config_byte_exact": true,
+    "fixture_settings_restored": true,
+    "protocol_registration": {
+      "created": true,
+      "removed": true
+    },
+    "forced": false
+  },
+  "native": {
+    "input_count": 22818,
+    "artifact": {
+      "path": "work/proofs/opencode-v2-service/native-desktop-9600eec937/result.json",
+      "sha256": "2f029da469e00c56e7603f08dd2c2135c31207fabdd519bf5f450b1a2bba273d"
+    },
+    "session": {
+      "path": "work/proofs/opencode-v2-service/native-desktop-9600eec937/desktop-session.json",
+      "sha256": "656164d4e35d267f0d0e017862472c4be8eb5452daf0752ef3cd08b0d4882b60"
+    }
+  },
+  "quality": {
+    "input_count": 344,
+    "node_passed": 222,
+    "rust_passed": 462,
+    "rust_ignored": 19,
+    "rustfmt_and_builds": "pass",
+    "artifact": {
+      "path": "work/proofs/opencode-v2-binding/checks-8d2721c05b/final.json",
+      "sha256": "e3282837b8de342bd0d4884d8b24e6c152384e28cf21d8107bb9ec52bb9c061c"
+    }
+  },
+  "source_commit": "a6b15d33daf6ab7d35569f6d711fdb630b9f04e7",
+  "source_blobs": {
+    "packages/desktop/electron-builder.config.ts": "d147662ffd346b3f7cb8ae4643a4e6e6098817a4",
+    "packages/desktop/src/main/lifecycle/configure.ts": "e085780b89c1c609fa122b43d171db7603abeb94",
+    "packages/desktop/src/main/service/desktop-cli.ts": "7d14ee32b4ab0c0025aed1f9223cb0f85bf480b5",
+    "packages/desktop/src/main/service/background-service.ts": "7bf76da471d48d5819f87cc39a1c80eec72891a2",
+    "packages/desktop/src/main/lifecycle/environment.ts": "2f6e54eff207a60349ff5483d88b567c329b3682"
+  },
+  "earlier_unaccepted_runs": [
+    {
+      "failure": {
+        "stage": "headroom_apply",
+        "kind": "AssertionError",
+        "reason": "ui_apply_failed"
+      },
+      "artifact": {
+        "path": "work/proofs/opencode-v2-service/native-desktop-13481bbbbf/result.json",
+        "sha256": "ebc4a95b7819c6cf87339e1d6ddcf64ae7ad3d23c6bd0738ad9c3f9cdb9b254d"
+      }
+    },
+    {
+      "failure": {
+        "stage": "desktop_launch",
+        "kind": "AssertionError",
+        "reason": "desktop_not_ready"
+      },
+      "artifact": {
+        "path": "work/proofs/opencode-v2-service/native-desktop-351f0b8bba/result.json",
+        "sha256": "d858a20df1b9bae7f823351bc3cea57cdaea9a9a5e94d97400ee0b582794bbd2"
+      }
+    },
+    {
+      "failure": {
+        "stage": "desktop_run",
+        "kind": "TimeoutExpired",
+        "reason": null
+      },
+      "artifact": {
+        "path": "work/proofs/opencode-v2-service/native-desktop-57adf96de5/result.json",
+        "sha256": "adcf5d8021c99e949d16cae36da124d367d54e2e2860dcd4c368d9a5726f0f81"
+      }
+    },
+    {
+      "failure": {
+        "stage": "desktop_launch",
+        "kind": "AssertionError",
+        "reason": "desktop_not_ready"
+      },
+      "artifact": {
+        "path": "work/proofs/opencode-v2-service/native-desktop-94c15ef9a0/result.json",
+        "sha256": "f9c4ad26d50e34b3068f9b63fd56d8c1255df9aa36506f8058e0776197a85da2"
+      }
+    }
+  ]
+}

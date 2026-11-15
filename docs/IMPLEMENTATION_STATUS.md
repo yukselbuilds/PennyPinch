@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H010-j — OpenCode Desktop paketli servis doğrulandı
+
+- Resmî 2.3.0 Windows x64 paketi, checksum/SHA-256 eşleşmesiyle proje içinde açıldı. Native Headroom Önizle/Uygula ile bağlanan CLI kullanıcı JSONC'sini gerçek Desktop ve kendi paketli servisi kullandı. GUI gönderme, dört Responses isteği, üç MCP çağrısı ve görünür final, ayrı SQLite oturum kontrolüyle eşleşti. Staged CLI hash'i paketli dosyayla aynı. [Kanıt](proofs/opencode-v2-desktop.md)
+- Log 14.999 → 103 bayt ve birebir CCR. Gerçek ana PID handle'ı normal quit/exit 0 gösterdi. Ayrı servis stop, port/süreç temizliği, GUI Kaldır ve özgün test ayarları geçti. Geçici protokol kaydı test sahibine göre temizlendi. Nihai `work/proofs/opencode-v2-service/native-desktop-9600eec937/result.json`, 22.818 girdi önce/sonra aynı. [Programatik kayıt](proofs/opencode-v2-desktop.json)
+- Ana ajan uygulama ve kabulü üstlendi. İlk profil/yükleme/kapanış denemeleri başarısız olarak korundu ve temizlendi. Bir Uygula hatası yeniden üretilemedi; nedeni bilinmiyor. Son adayda aynı yol geçti. Katalog Windows 10/2.3.0/sentetik Desktop turunu CLI bağlantısıyla sınırlar. Son kalite `work/proofs/opencode-v2-binding/checks-8d2721c05b/final.json`, 344 girdi, 222 Node/462 Rust PASS, 19 ignored, fmt/frontend/embedded build PASS. [İnceleme](reviews/H010-j.md)
+- **Durum 42/54.** Ana H010 açık. Sonraki somut adım, mevcut H010 kanıtlarını ana görev ve K2 kabulüne göre uzlaştırmak, desteklenen kapsamı ve dış ortam/hesap kabullerini kesinleştirmek. Desktop-only keşif/installer, Desktop alt ajanı, açık servisin ayarı anında benimsemesi ve diğer OS/canlı hesap kapsamları ayrı. Gerçek token/fatura tasarrufu ölçülmedi.
+
 ## H010-i — OpenCode V2 CLI alt ajan ve model rotası tamamlandı
 
 - Headroom Önizle/Uygula sonrasında açılan aynı OpenCode 2.3.0 servisi, modelini miras alan Chat alt ajanını ve Responses ana ajanına bağlı açıkça seçilmiş farklı Chat alt ajanını tamamladı. Dört yerel oturumun araç/veritabanı kimliği, model ve tamamlanma bildirimi eşleşti. Servise özgü sentetik anahtar iki rotada doğrulandı. Dört örnek log 14.999 → 103 bayt ve birebir CCR. [Kanıt](proofs/opencode-v2-subagents.md)

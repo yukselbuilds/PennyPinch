@@ -263,22 +263,26 @@
     },
     {
       "id": "opencode-v2-tui-desktop",
-      "match": {"client_kind": "opencode", "surface": "desktop", "versions": [], "auth_method": "unknown", "platform": "unknown", "engine_version": "0.41.0"},
+      "match": {"client_kind": "opencode", "surface": "desktop", "versions": ["2.3.0"], "auth_method": "synthetic", "platform": "windows_10_x64", "engine_version": "0.41.0"},
       "product": "OpenCode Desktop",
-      "version": "V2 Desktop",
-      "surface": "Desktop app adoption of the saved connection and bundled service",
-      "platform": "unknown",
-      "auth": "unknown",
-      "protocol": "unknown",
-      "transport": "unknown",
-      "status": "not_tested",
+      "version": "2.3.0 Windows x64",
+      "surface": "Headroom CLI connection to shared user config; extracted official Desktop GUI and bundled service",
+      "platform": "Windows 10 22H2 x64",
+      "auth": "Synthetic fixture API key",
+      "protocol": "OpenAI Responses",
+      "transport": "Packaged Desktop service, owned loopback ingress, Headroom engine and native MCP retrieval",
+      "status": "local_fixture_pass",
       "capabilities": {
-        "v2_desktop_config_and_transport": {
+        "v2_desktop_gui_and_packaged_service": {
+          "status": "local_fixture_pass",
+          "evidence": "docs/proofs/opencode-v2-desktop.md"
+        },
+        "v2_desktop_only_discovery_live_accounts_and_other_os": {
           "status": "not_tested",
-          "evidence": "docs/proofs/opencode-v2-service.md"
+          "evidence": "docs/proofs/opencode-v2-desktop.md"
         }
       },
-      "evidence": ["docs/proofs/opencode-v2-service.md"],
+      "evidence": ["docs/proofs/opencode-v2-desktop.md"],
       "evidence_date": "2026-11-15"
     },
     {
