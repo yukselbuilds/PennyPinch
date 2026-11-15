@@ -69,6 +69,18 @@ Sabit motor varsayılan ayarla, araç listesi bulunan ve optimizasyona açık is
 
 İlk koşuda fixture önceki sentetik cevabı yeni isteğe eklemediği için cache modu logu sıkıştırmadan iletti. İkinci koşu doğru geçmişle logu sıkıştırdı ve CCR için sağlayıcı tarafının `stream: false` olduğunu gösterdi. Son koşu o kola JSON, diğer kola SSE verdi. İstemci iki durumda da tamamlanmış SSE aldı. Ölçüm bu yerel protokol kontrolleriyle sınırlıdır. Sağlayıcı cache sayaçları, fatura etkisi ve gerçek görev başarısı açık. Ürün varsayılanı `eager` kaldı.
 
+## Anthropic CCR ve kullanım kapsamı
+
+15 Kasım 2026’da `bench/optimization/anthropic_usage.py --run`, sabit 0.41.0 motorunda 3 ayrı Anthropic Messages oturumu çalıştırdı. Dokuz kısa istek geçmişi kurdu. Sonraki üç istekte sağlayıcı fixture’ı `headroom_retrieve` çağırdı. Gerçek motor aynı test isteği için bir ek upstream isteği gönderdi ve özgün logu eksiksiz taşıdı. Toplam 12 istemci ve 15 upstream isteği gözlendi. Model, reasoning ve sentetik auth korundu. [Sayısal kayıt](../proofs/anthropic-usage-coverage.json).
+
+| Ölçülen son istek | İstemci sonucu | Gözlenen upstream kullanım toplamı |
+| --- | --- | --- |
+| İki başarılı çağrı | SSE 200, son çağrı 1.343 token | 2.429 token, 300 önbellek dışı giriş + 2.000 okuma + 100 yazma + 29 çıktı |
+| Birincil yanıtta önbellek yazma alanı eksik | SSE 200, son çağrıda yazma 0 | Yazma ve toplam bilinmiyor, çıktı 29 |
+| Devam isteği 429, kullanım alanı yok | SSE 502, kullanım alanı yok | Toplam bilinmiyor |
+
+Tam örnekte özel `/stats` satırı yalnız son çağrının dört sayacını gösterdi. Başarısız devamda satırda ilk çağrının sayaçları vardı. Doğrudan upstream fixture cevabı dışındaki bu iki görünüm bütün çağrıları kapsamaz. Fixture geçmişi ayrı oturum anahtarları ve tekil yeni satırla doğrulandı. Bu eşleme izole seri deneyin kapsamındadır. Ürün trafiğinde oturum sahipliği, gerçek kullanım ve fatura ayrı kabulde doğrulanacak. [Anthropic kullanım alanları](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#tracking-cache-performance).
+
 ## Süreli yük ve başlangıçta Kompress yüklemesi
 
 `bench/optimization/stability.py --run`, önce dört yüzey × dört içerik × üç tur × iki kol ile 96 isteği ısıttı. Ardından 300 saniye boyunca saniyede bir eşlenmiş iş yükü gönderdi. 300 çift/600 istek, kaynak/sayısal/araç/prefix/CCR kontrollerini tamamladı. CPU birleşik benchmark/fixture/controller/helper/engine kapsamıyla tek çekirdeğin %6,24’ü, ek p95 48,67 ms ve istek CPU p95 31,25 ms idi.

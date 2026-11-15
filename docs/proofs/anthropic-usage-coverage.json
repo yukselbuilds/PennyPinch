@@ -1,0 +1,172 @@
+{
+  "task": "H041-c",
+  "date": "2026-11-15",
+  "passed": true,
+  "engine": "0.41.0",
+  "os": "Windows-10-10.0.19045-SP0",
+  "python": "3.13.13",
+  "scope": "isolated_anthropic_messages_sse_with_buffered_upstream_ccr",
+  "metering_basis": "synthetic_usage_fields_returned_by_loopback_upstream_per_attempt",
+  "command": "work/proofs/packaging/artifacts/headroom-engine/runtime/python.exe -I -B bench/optimization/anthropic_usage.py --run",
+  "scope_join": "fixture_scope_key_and_single_new_private_stats_row",
+  "fixture_sessions": 3,
+  "client_requests": 12,
+  "upstream_requests": 15,
+  "client_response_total_in_complete_case": 1343,
+  "upstream_total_in_complete_case": 2429,
+  "cases": {
+    "complete": {
+      "client": {
+        "status": 200,
+        "usage": {
+          "input_tokens": 220,
+          "cache_read_input_tokens": 1100,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 23
+        }
+      },
+      "engine_request_log": {
+        "cache_read_tokens": 1100,
+        "cache_write_tokens": 0,
+        "uncached_input_tokens": 220,
+        "output_tokens": 23
+      },
+      "upstream_attempts": [
+        {
+          "status": 200,
+          "usage": {
+            "input_tokens": 80,
+            "cache_read_input_tokens": 900,
+            "cache_creation_input_tokens": 100,
+            "output_tokens": 6
+          }
+        },
+        {
+          "status": 200,
+          "usage": {
+            "input_tokens": 220,
+            "cache_read_input_tokens": 1100,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 23
+          }
+        }
+      ],
+      "upstream_usage_sum": {
+        "input_tokens": 300,
+        "cache_read_input_tokens": 2000,
+        "cache_creation_input_tokens": 100,
+        "output_tokens": 29,
+        "total_input_tokens": 2400,
+        "total_tokens": 2429
+      },
+      "original_log_restored": true
+    },
+    "missing_cache_write": {
+      "client": {
+        "status": 200,
+        "usage": {
+          "input_tokens": 220,
+          "cache_read_input_tokens": 1100,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 23
+        }
+      },
+      "engine_request_log": {
+        "cache_read_tokens": 1100,
+        "cache_write_tokens": 0,
+        "uncached_input_tokens": 220,
+        "output_tokens": 23
+      },
+      "upstream_attempts": [
+        {
+          "status": 200,
+          "usage": {
+            "input_tokens": 80,
+            "cache_read_input_tokens": 900,
+            "cache_creation_input_tokens": null,
+            "output_tokens": 6
+          }
+        },
+        {
+          "status": 200,
+          "usage": {
+            "input_tokens": 220,
+            "cache_read_input_tokens": 1100,
+            "cache_creation_input_tokens": 0,
+            "output_tokens": 23
+          }
+        }
+      ],
+      "upstream_usage_sum": {
+        "input_tokens": 300,
+        "cache_read_input_tokens": 2000,
+        "cache_creation_input_tokens": null,
+        "output_tokens": 29,
+        "total_input_tokens": null,
+        "total_tokens": null
+      },
+      "original_log_restored": true
+    },
+    "failed_continuation": {
+      "client": {
+        "status": 502,
+        "usage": null
+      },
+      "engine_request_log": {
+        "cache_read_tokens": 900,
+        "cache_write_tokens": 100,
+        "uncached_input_tokens": 80,
+        "output_tokens": 6
+      },
+      "upstream_attempts": [
+        {
+          "status": 200,
+          "usage": {
+            "input_tokens": 80,
+            "cache_read_input_tokens": 900,
+            "cache_creation_input_tokens": 100,
+            "output_tokens": 6
+          }
+        },
+        {
+          "status": 429,
+          "usage": {
+            "input_tokens": null,
+            "cache_read_input_tokens": null,
+            "cache_creation_input_tokens": null,
+            "output_tokens": null
+          }
+        }
+      ],
+      "upstream_usage_sum": {
+        "input_tokens": null,
+        "cache_read_input_tokens": null,
+        "cache_creation_input_tokens": null,
+        "output_tokens": null,
+        "total_input_tokens": null,
+        "total_tokens": null
+      },
+      "original_log_restored": true
+    }
+  },
+  "checks": {
+    "strict_known_counters_and_accounting": "pass",
+    "distinct_fixture_session_uncorrupted_auth_model_reasoning_and_raw_ccr": "pass",
+    "startup_and_clean_shutdown": "pass",
+    "fixture_hub_payload_bytes": 0
+  },
+  "matching_test_inputs": 35,
+  "matching_prior_ccr_policy_inputs": 58,
+  "matching_prior_product_gate_inputs": 344,
+  "detailed_proof": {
+    "path": "work/proofs/optimization/anthropic-usage/09a48b34-6bb9-4e1e-b84d-a0ffed408623/result.json",
+    "sha256": "f50335a3984195202d5b1de041f76b00b9886e56b34f373a06c6e8c369de22b4"
+  },
+  "limits": {
+    "billing_or_real_model_usage": "not_tested",
+    "production_session_attribution": "not_tested",
+    "openai_and_other_protocols": "not_tested",
+    "benchmark_usage": "only_last_measured_turn_in_each_fixture_session"
+  },
+  "observation": "Pinned buffered Anthropic outcome and client SSE may only expose the final provider response after CCR."
+}

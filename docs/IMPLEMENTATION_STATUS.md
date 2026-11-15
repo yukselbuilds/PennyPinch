@@ -1,6 +1,11 @@
 # Headroom Desktop — güncel devir
 15 Kasım 2026.
 
+## H041-c — Anthropic kullanım kapsamı doğrulandı
+
+- Ana ajan kullanım kaynağı ve istek sahipliği nedeniyle deneyi üstlendi. Sabit 0.41.0 motorunda 3 ayrı oturum, 12 istemci isteği ve 15 loopback upstream isteği geçti. Üç devam isteğinde özgün log birebir ulaştı. Tam örnekte iki upstream yanıtı toplam 2.429 sentetik token bildirdi. İstemci SSE ve motor kaydı sonunda 1.343 bildirdi. Eksik alan bilinmiyor kaldı. 429 dönen devam isteğinde istemci 502 aldı ve toplam bilinmiyor kaldı. Motor kod 0 ile kapandı. [Kanıt](proofs/anthropic-usage-coverage.json) · [Kapsam](validation/optimization-benefit.md#anthropic-ccr-ve-kullanım-kapsamı).
+- Ölçüm deneyinin 35 girdisi önce ve sonra eşleşti. H041-b’nin 58 ve önceki ürün kalite kapısının 344 girdisi güncel dosyalarla eşleşti. Bu dilim ürün kodunu etkilemedi. **45/54.** H041-d’de birincil ve devam çağrılarının doğrulanmış kullanımını tek istek kapsamında alabilen sınır seçilecek. Canlı sağlayıcı ve diğer protokollerin kabulü açık.
+
 ## H041-b — Anthropic geri çağırma aracı karşılaştırması tamamlandı
 
 - Ana ajan ölçüm ve önbellek sözleşmesini üstlendi. Sabit motorla iki eşlenmiş tekrar, dört yeni süreç, 36 loopback isteği ve 8 birebir CCR geri alımı geçti. Kısa üç turda `eager` 1.686, `lazy` 1.386 yerel token gönderdi. Uzun oturumda geç gelen log isteği iki ayarda 10.321’den 2.263’e indi. `lazy` ilk sıkıştırmada araç dizisini değiştirdi ve sonraki turda korudu. Dört motor normal kapandı, 58 ölçüm girdisi eşleşti. [Kanıt](proofs/anthropic-ccr-policy.json) · [Doğrulama](validation/optimization-benefit.md#anthropic-ccr-aracının-eklenme-zamanı).

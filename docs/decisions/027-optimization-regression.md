@@ -18,6 +18,16 @@ Kısa `lazy` kolu özgün gövdeyle eşleşmeli ve her tekrarda mevcut araç mal
 
 15 Kasım yerel koşusu geçti. Kısa oturumda `lazy` üç turda toplam 300 token daha az gönderdi. Uzun oturumda ilk log sıkıştırması `lazy` ile araç dizisini değiştirdi, `eager` ile dizi sabit kaldı. Anthropic araç değişikliğini önbelleği geçersiz kılan bir değişiklik olarak tanımlar. Bu yüzden `eager` varsayılanı korunur. Karar, canlı kullanımdaki cache okuma/yazma ve tamamlanan görev başına net token ölçümünden sonra yeniden değerlendirilir. [Yerel kanıt](../proofs/anthropic-ccr-policy.json) · [Claude önbellek kuralları](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#what-invalidates-the-cache).
 
+### H041-c kullanım ölçümünün kaynağı
+
+Ana ajan, ölçümün kaynağını ve istek sahipliğini doğrular. İlk dilim sabit 0.41.0 motorun Anthropic Messages yoludur. İstemci SSE ister. Uzun log sıkışınca yerel sağlayıcı fixture’ı `headroom_retrieve` çağırır. Motorun birincil isteği ve özgün logu taşıyan devam isteği, yalnız bu deneyde denetlediğimiz sentetik istek kimliğiyle eşlenir. Aynı modelle üç ayrı oturumda olağan sonuç, eksik kullanım alanı ve başarısız devam isteği sınanır. Önceki kısa turlar aynı geçmişi kurar. Bu koşu, model kalitesi veya canlı sağlayıcı faturası ölçümü değildir.
+
+Her upstream cevaptaki `input_tokens`, `cache_read_input_tokens`, `cache_creation_input_tokens` ve `output_tokens` kendi alanında toplanır. Toplam girdi, önbellek dışı girdi ve iki önbellek alanının toplamıdır. Yalnız gözlenen sıfır sıfır sayılır. Eksik, geçersiz veya başarısız upstream yanıtın vermediği değer bilinmiyor kalır. SSE istemci cevabı ve özel `/stats` satırı, fixture’ın her upstream çağrı için gönderdiği kullanım ile karşılaştırılır. Model, reasoning, sentetik auth, devam çağrısının eşleşmesi, özgün log ve sahipli kapanış doğrulanır. Kayıtta yalnız sınanan sayı ve durumlar tutulur. [Claude kullanım alanları](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#tracking-cache-performance).
+
+Eksik çağrı kapsamı veya oturum sahipliği varsa ürünün net tasarruf göstergesinde kullanım kaynağı belirsiz kalır. 15 Kasım koşusunda istemci SSE ve motorun özel `/stats` kaydı, başarılı CCR sonrasında yalnız son upstream yanıtını bildirdi. Devam isteği hata verince `/stats` birincil çağrıyı içerdi ve istemci 502 aldı. Bu yüzeylerden tam kullanım kurulamaz. [Yerel kanıt](../proofs/anthropic-usage-coverage.json).
+
+H041-d için yakalama sınırı, her upstream yanıtın kullanım alanları henüz mevcutken aynı iç isteğe bağlandığı nokta olmalı. Yalnız sayısal alanlar ve çağrı durumu tutulur. Tekil kayıt kapsamı kanıtlanana kadar model veya saat benzerliği üzerinden eşleme yapılmaz. Eksik veri, çakışma ve tamamlanmamış çağrı açık durum olarak korunur. OpenAI ve diğer protokollerin kullanım alanları kendi yüzeylerinde doğrulanır.
+
 ## İlk ölçümlerin planı
 
 9 Kasım 2026. H038 sonrasında bağımlılıkları hazır olan H041 başladı. Ana ajan ölçüm semantiği, gerçek motor ve performans kabulünü üstlenir. Ponytail full uygulanır. Ücretsiz yerel deneyler ilerler. Canlı API-key ve diğer işletim sistemi kabulü açık kalır.
