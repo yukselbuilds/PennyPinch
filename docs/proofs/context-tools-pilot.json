@@ -1,0 +1,632 @@
+{
+  "task": "H041",
+  "slice": "context-tools-local-pilot",
+  "date": "2026-11-16",
+  "evaluation_complete": true,
+  "automatic_integration_accepted": false,
+  "owner": "primary agent: measurement and recovery semantics",
+  "environment": {
+    "os": "Windows-10-10.0.19045-SP0",
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "node": "v25.2.1",
+    "encoding": "o200k_base",
+    "model_calls": 0,
+    "actions_runs": 0
+  },
+  "plan": "bench/context_tools/README.md",
+  "report": "docs/proofs/context-tools-pilot.md",
+  "report_sha256": "e2090cfc4df830e17c9af95fe6faab64f40cdaa59d9787fc75a91bfc99113c1d",
+  "proofs": {
+    "work/proofs/context-tools/short-query-oracle/result.json": "52e83c85d5167c4d95b54f6206c8b8d5da3eb1e45116c2efdc2fc4fd7ccbc221",
+    "work/proofs/context-tools/short-query-oracle/targeted-search.json": "303f60cd893e9cbce9a40d89cae228dd0aea30876fa2b0b602f7f15d2f2d62b2",
+    "work/proofs/context-tools/short-query-oracle/packages.json": "2506c55fe18c12a886643af7d8c3089dfadb8252607369cde2ee0c3688769295"
+  },
+  "packages": {
+    "diet": {
+      "version": "0.5.0",
+      "commit": "3899b48dbf41ecc9c0e29aaec8634900101c52d2"
+    },
+    "mode": {
+      "version": "2.2.0",
+      "integrity": "sha512-IiBaAyw9bfhAH0Sc/hKUBEL/1AJhupOBHO4VlSSsvFagDFPWk9LpivyeKVW10fetMU50s94Fq9zYh4eIAhyRRg==",
+      "sha256": "1230c57281a9d9236f0ea01450839af73263910b1dd097e605fa34cf712506b2"
+    }
+  },
+  "checks": {
+    "cases": 14,
+    "repeats": 3,
+    "paired_rows": 126,
+    "additional_query_requests": 6,
+    "proxy_requests": 132,
+    "headroom_exact_recoveries": 132,
+    "ccr_retrievals": 42,
+    "source_fingerprints": 838,
+    "source_unchanged": true,
+    "stable_token_and_acceptance_fields": true,
+    "graceful_engines": 3,
+    "mode_eof_cleanup": 3,
+    "targeted_search_cleanup": 3,
+    "diet_tests": {
+      "exit": 0,
+      "summary": [
+        "ℹ tests 49",
+        "ℹ pass 49",
+        "ℹ fail 0"
+      ],
+      "reused_from": "work\\proofs\\context-tools\\pilot-20261116\\result.json",
+      "matched_files": 23
+    },
+    "general_search_full_required_lines": {
+      "passed": 12,
+      "total": 21
+    },
+    "targeted_search_full_required_lines": {
+      "test_summaries_passed": 6,
+      "total_test_summary_queries": 6,
+      "missing_stderr_confirmed": 3
+    }
+  },
+  "cases": [
+    {
+      "case": "build_fail",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 173,
+          "tool_text_tokens": 1229,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 173,
+          "tool_text_tokens": 1229,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 1350,
+          "tool_text_tokens": 1225,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": true,
+          "search_required_lines_visible": true
+        }
+      }
+    },
+    {
+      "case": "event_count",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 156,
+          "tool_text_tokens": 1011,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": 0,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 144,
+          "tool_text_tokens": 16,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": 1,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 139,
+          "tool_text_tokens": 1000,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": 200,
+          "mode_is_error": false,
+          "search_required_lines_visible": null
+        }
+      }
+    },
+    {
+      "case": "git_diff",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 287,
+          "tool_text_tokens": 153,
+          "required_lines_visible": true,
+          "full_read_exact": true,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 287,
+          "tool_text_tokens": 153,
+          "required_lines_visible": true,
+          "full_read_exact": true,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 265,
+          "tool_text_tokens": 136,
+          "required_lines_visible": true,
+          "full_read_exact": true,
+          "event_occurrences": null,
+          "mode_is_error": false,
+          "search_required_lines_visible": null
+        }
+      }
+    },
+    {
+      "case": "git_status",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 158,
+          "tool_text_tokens": 825,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 158,
+          "tool_text_tokens": 823,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 939,
+          "tool_text_tokens": 699,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": false,
+          "search_required_lines_visible": null
+        }
+      }
+    },
+    {
+      "case": "json_exact",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 2220,
+          "tool_text_tokens": 1654,
+          "required_lines_visible": true,
+          "full_read_exact": true,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 2065,
+          "tool_text_tokens": 1532,
+          "required_lines_visible": true,
+          "full_read_exact": false,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 1766,
+          "tool_text_tokens": 1522,
+          "required_lines_visible": true,
+          "full_read_exact": true,
+          "event_occurrences": null,
+          "mode_is_error": false,
+          "search_required_lines_visible": null
+        }
+      }
+    },
+    {
+      "case": "long_source",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 13406,
+          "tool_text_tokens": 12471,
+          "required_lines_visible": true,
+          "full_read_exact": true,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 1882,
+          "tool_text_tokens": 1651,
+          "required_lines_visible": true,
+          "full_read_exact": false,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 1460,
+          "tool_text_tokens": 1241,
+          "required_lines_visible": true,
+          "full_read_exact": false,
+          "event_occurrences": null,
+          "mode_is_error": false,
+          "search_required_lines_visible": null
+        }
+      }
+    },
+    {
+      "case": "repeated_log",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 155,
+          "tool_text_tokens": 14019,
+          "required_lines_visible": false,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 155,
+          "tool_text_tokens": 26,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 179,
+          "tool_text_tokens": 595,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": false,
+          "search_required_lines_visible": true
+        }
+      }
+    },
+    {
+      "case": "short_unicode",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 160,
+          "tool_text_tokens": 34,
+          "required_lines_visible": true,
+          "full_read_exact": true,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 160,
+          "tool_text_tokens": 34,
+          "required_lines_visible": true,
+          "full_read_exact": true,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 146,
+          "tool_text_tokens": 23,
+          "required_lines_visible": true,
+          "full_read_exact": true,
+          "event_occurrences": null,
+          "mode_is_error": false,
+          "search_required_lines_visible": null
+        }
+      }
+    },
+    {
+      "case": "source_read",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 2790,
+          "tool_text_tokens": 2503,
+          "required_lines_visible": true,
+          "full_read_exact": true,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 1882,
+          "tool_text_tokens": 1651,
+          "required_lines_visible": true,
+          "full_read_exact": false,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 2615,
+          "tool_text_tokens": 2091,
+          "required_lines_visible": true,
+          "full_read_exact": true,
+          "event_occurrences": null,
+          "mode_is_error": false,
+          "search_required_lines_visible": null
+        }
+      }
+    },
+    {
+      "case": "stderr_exit",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 175,
+          "tool_text_tokens": 3481,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 177,
+          "tool_text_tokens": 1112,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 248,
+          "tool_text_tokens": 3481,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": true,
+          "search_required_lines_visible": true
+        }
+      }
+    },
+    {
+      "case": "stderr_success",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 163,
+          "tool_text_tokens": 35,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 163,
+          "tool_text_tokens": 35,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 136,
+          "tool_text_tokens": 11,
+          "required_lines_visible": false,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": false,
+          "search_required_lines_visible": false
+        }
+      }
+    },
+    {
+      "case": "stdout_fail",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 156,
+          "tool_text_tokens": 3638,
+          "required_lines_visible": false,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 173,
+          "tool_text_tokens": 44,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 219,
+          "tool_text_tokens": 3037,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": true,
+          "search_required_lines_visible": true
+        }
+      }
+    },
+    {
+      "case": "test_fail",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 184,
+          "tool_text_tokens": 964,
+          "required_lines_visible": false,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 184,
+          "tool_text_tokens": 964,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 1086,
+          "tool_text_tokens": 859,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": true,
+          "search_required_lines_visible": false
+        }
+      }
+    },
+    {
+      "case": "test_pass",
+      "arms": {
+        "headroom": {
+          "forwarded_request_tokens": 157,
+          "tool_text_tokens": 928,
+          "required_lines_visible": false,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "diet_headroom": {
+          "forwarded_request_tokens": 157,
+          "tool_text_tokens": 928,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": null,
+          "search_required_lines_visible": null
+        },
+        "mode_headroom": {
+          "forwarded_request_tokens": 1051,
+          "tool_text_tokens": 825,
+          "required_lines_visible": true,
+          "full_read_exact": null,
+          "event_occurrences": null,
+          "mode_is_error": false,
+          "search_required_lines_visible": false
+        }
+      }
+    }
+  ],
+  "structured_query": {
+    "row_count": 1000,
+    "raw_text_tokens": 36000,
+    "execute_text_tokens": 41,
+    "execute_argument_tokens": 104,
+    "index_reply_tokens": 20,
+    "search_reply_tokens": 265,
+    "reply_text_reduction_percent": 99.8861111111111,
+    "scope": "handwritten query for count and exact row; no Number conversion; excludes model turns and billing"
+  },
+  "review": {
+    "production_code_changed": false,
+    "critical_candidates_rejected": [
+      "Diet loses multiplicity and full source/numeric reads",
+      "Mode drops success stderr",
+      "Mode shell exit1 soft status",
+      "Mode normalized index is not a byte archive"
+    ],
+    "oracle": "short query must not contain the complete expected line; broad misses retained; targeted follow-up recorded",
+    "prior_attempts": "owned work/proofs/context-tools; CLI omission, marker/RLE recovery and local 60/min limiter diagnostics retained",
+    "codegraph": {
+      "command": "scripts/codegraph.ps1 sync",
+      "changed_files": 3,
+      "added_nodes": 72,
+      "scope": "discovery index only; not runtime/test evidence"
+    }
+  },
+  "limits": [
+    "no live provider/model quality or billing proof",
+    "no client hooks/global configuration installed",
+    "Windows 10 local pilot only",
+    "not a universal compression result",
+    "Billion Context excluded by user"
+  ],
+  "development_token_savings": null,
+  "product_gate_reuse": {
+    "proof": "work/proofs/optimization/desktop-ws-usage/922268b7-6e2e-4e55-8a2e-6e6a27320446/gate-f92d852a0c.json",
+    "proof_sha256": "b67718458ab18bd4ba718d0d50f8d6ef770f58490f8eda804f7c55731fc22ccd",
+    "review_sha256": "d3ac4559f4c9addc25c32e286f910c730630269473d2e14b17b20c5920dde40d",
+    "matching_inputs": 414,
+    "product_before_digest": "f89e4d54824dea65dc3455cdaeef17f9e3930fdb5b8e47f474b7bed2452e218e",
+    "toolchain_before": {
+      "os": "Windows-10-10.0.19045-SP0",
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "python_sha256": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+      "cargo": {
+        "path": "%USERPROFILE%\\.cargo\\bin\\cargo.EXE",
+        "version": "cargo 1.92.0 (344c4567c 2025-10-21)",
+        "sha256": "88d8258dcf6ae4f7a80c7d1088e1f36fa7025a1cfd1343731b4ee6f385121fc0"
+      },
+      "rustc": {
+        "path": "%USERPROFILE%\\.cargo\\bin\\rustc.EXE",
+        "version": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+        "sha256": "88d8258dcf6ae4f7a80c7d1088e1f36fa7025a1cfd1343731b4ee6f385121fc0"
+      },
+      "node": {
+        "path": "C:\\Program Files\\nodejs\\node.EXE",
+        "version": "v25.2.1",
+        "sha256": "91ec09dda8f20556f366110859f106ab189d45f8f6a2bd092e6785174ad4a0fa"
+      },
+      "pnpm.cmd": {
+        "path": "%USERPROFILE%\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\bin\\fallback\\pnpm.cmd",
+        "version": "11.25.0",
+        "sha256": "1b93f82a7506b0f644f5adc64a77470351d589dcbe4291d621147b72827f1d96"
+      }
+    },
+    "reason": "benchmark/documentation only; all 414 prior product inputs and environment/toolchain match; product tests not repeated",
+    "toolchain_after": {
+      "os": "Windows-10-10.0.19045-SP0",
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "python_sha256": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+      "cargo": {
+        "path": "%USERPROFILE%\\.cargo\\bin\\cargo.EXE",
+        "version": "cargo 1.92.0 (344c4567c 2025-10-21)",
+        "sha256": "88d8258dcf6ae4f7a80c7d1088e1f36fa7025a1cfd1343731b4ee6f385121fc0"
+      },
+      "rustc": {
+        "path": "%USERPROFILE%\\.cargo\\bin\\rustc.EXE",
+        "version": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+        "sha256": "88d8258dcf6ae4f7a80c7d1088e1f36fa7025a1cfd1343731b4ee6f385121fc0"
+      },
+      "node": {
+        "path": "C:\\Program Files\\nodejs\\node.EXE",
+        "version": "v25.2.1",
+        "sha256": "91ec09dda8f20556f366110859f106ab189d45f8f6a2bd092e6785174ad4a0fa"
+      },
+      "pnpm.cmd": {
+        "path": "%USERPROFILE%\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\bin\\fallback\\pnpm.cmd",
+        "version": "11.25.0",
+        "sha256": "1b93f82a7506b0f644f5adc64a77470351d589dcbe4291d621147b72827f1d96"
+      }
+    },
+    "matched": true
+  },
+  "verification": {
+    "main_result_sha256": "52e83c85d5167c4d95b54f6206c8b8d5da3eb1e45116c2efdc2fc4fd7ccbc221",
+    "targeted_result_sha256": "303f60cd893e9cbce9a40d89cae228dd0aea30876fa2b0b602f7f15d2f2d62b2",
+    "relevant_sources_before_after_current_match": true,
+    "product_sources_before_after_match": true,
+    "toolchain_before_after_match": true
+  },
+  "closure": {
+    "tasks_original_user_bytes_preserved": true,
+    "main_task_completed": false,
+    "main_progress": "45/54",
+    "next_step": "H041-d Chat Completions usage",
+    "documents": {
+      "TASKS.md": "bef7ae8570ca4acbef481cb77a024d644d957aabf4d0f330ef0023ab81729e25",
+      "docs/IMPLEMENTATION_STATUS.md": "eb62062e4d1feae40416ae85df312cdb3d4207c21b3155624a60a1dcd9038c55",
+      "docs/decisions/027-optimization-regression.md": "25e8c94342d173faa0c0e041b1d34aaf31f3f6e36e69ff0fd131370821674cc5"
+    },
+    "task_document_scope": "working tree includes preserved pre-existing user edits; only pilot additions are staged"
+  }
+}

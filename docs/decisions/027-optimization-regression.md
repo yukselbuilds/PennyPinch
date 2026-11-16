@@ -10,6 +10,16 @@ Kullanıcının ilettiği öneriler 15 Kasım 2026'da mevcut H041/H043 kanıtı 
 4. **Log ve test çıktısı.** H044 RTK kurulum ön koşulunu korur. Ayrı bir H041 deneyi, başarısızlığın tam hata metnini ve gerekli bağlamını hemen gösterirken tekrarlı başarı satırlarını kısaltabilir. İlk çalıştırmanın özgün akışları, çıkış kodu ve araç kimliği korunur. Kazanç Headroom tabanına karşı ölçülür. Özgününü yeniden çalıştırma ihtiyaç duyulan geri alma işlevini karşılamaz.
 5. **Kod ve istemci dosya aktarımı.** Korumalı Read, kesin sayısal JSON ve diff kaynakları başlangıçta olduğu gibi iletilir. AST ve dosyaya aktarılmış loglar yalnız açık içerik ve rota kanıtı, özgün geri alma, görev doğruluğu ve bellek eşiğiyle sonraki adaydır. Kompress arka plan ısıtması kapalıdır ve ihtiyaç halinde yükleme yolu korunur. Caveman benzeri kısa yanıt tercihi kullanıcıya açık ve ayrı bir deneydir. Model, reasoning, geçmiş ve varsayılan yanıt kapsamı korunur.
 
+### Context Mode / Context Diet pilotu
+
+16 Kasım'da kullanıcı isteğiyle iki aday model çağrısı olmadan, ayrı süreç ve state köklerinde sınandı. Billion Context kapsam dışındadır. Deney; 14 stdout/stderr/exit çıktısını üç kez Headroom, Diet → Headroom ve Mode → Headroom yollarından geçirdi. Üç ek JSON sorgu örneğinde metin ve kesin sayılar karşılaştırıldı. [Plan](../../bench/context_tools/README.md), [kabul ve sınırlar](../proofs/context-tools-pilot.md).
+
+Karar: **büyük veriyi yerelde sorgulayıp gereken kısmı getirme yaklaşımı adaydır; iki paket genel otomatik filtre olarak seçilmedi.** 1.000 satırlık JSONL'den sayı ve tek kayıt üretme, elde yazılmış sorguda 36.000 → 41 yerel metin tokenı verdi. Şema, yönerge, çağrı argümanı ve ek arama ayrıca sayıldı; bu sonuç toplam görev/fatura tasarrufu değildir. Mode FTS de tam hedef satırı getirdi. Geniş test sorgusu ile tekil hata/satır sorgusu farklı sonuç verdi; sorgu yankısı kanıt olarak kabul edilmedi.
+
+Diet exactOnly bile tekrar adedini ve bütçeye sığmayan tam kaynak/JSON'u kaybedebiliyor; özgün arşivi yok. Mode başarılı süreçte stderr'i birleşik metne almıyor; stdout-only shell exit 1, isError=false oluyor. İndeks metni CRLF/son satırları normalleştiriyor. Bu davranışlar kullanıcı çıktısına sessizce uygulanamaz. Mevcut Headroom log küçültmesi güçlü olduğu için Diet'i ayrı runtime bağımlılığına dönüştürecek ek fayda bu pilotta çıkmadı.
+
+Sonraki aday, kullanım ölçümü tamamlandıktan sonra sınırlı yerel sorgudur. Aynı istemcinin izinleri, model/efor, stdout/stderr/exit ve araç kimliği korunur; tam kaynak/sayısal Read geçer, ilk özgün baytlar uygulamaya ait depoda geri alınır. Gerçek ajanla aynı görev başarısı, ek turlar/retrieval ve toplam kullanım kanıtı olmadan varsayılan değişmez. İzinleri aşan genel kod yürütme veya bütün sohbetleri yeniden özetleme bu kabulün parçası değildir. H041 ana görevi açık kalır.
+
 ### H041-b yerel deney koşulları
 
 Ana ajan ölçüm, runtime ve cache sözleşmesi nedeniyle deney ve kabulü üstlenir. `bench/optimization/ccr-policy-plan.json` iki eşlenmiş tekrarı önceden belirler. Her tekrarda iki ayrı motor kullanılır. Bir oturum üç kısa istekten oluşur. İkincisi üç kısa istekten sonra sıkıştırılabilir uzun log ve korumalı kesin sayısal bir Read sonucu alır. Ayrı temiz oturumdaki kısa istek, yapışkan aracın başka oturuma taşınmadığını denetler. Tüm istekler izole Anthropic SSE fixture'ına gider.

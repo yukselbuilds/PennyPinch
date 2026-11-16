@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041 — Context Diet / Context Mode yerel pilotu tamamlandı
+
+- Ana ajan ölçüm, hata ve özgün çıktı sözleşmesini üstlendi. Diet 0.5.0 sabit kaynak/CLI filtreleri ve Mode 2.2.0 gerçek stdio MCP paketi yalnız proje içindeki ayrı profillerde çalıştı. Billion Context kullanıcı kararıyla dışarıda. İstemci ve ürün ayarları değişmedi.
+- Son koşuda 14 çıktı × 3 tekrar ve 132 loopback motor isteği tamamlandı. 838 girdi önce/sonra aynı; token ve kabul sonuçları üç tekrarda eşleşti. Diet'in 49 testi, aynı 23 kaynak/Node girdisiyle yeniden kullanıldı. Üç motor graceful kapandı; Mode ve odaklı arama süreçlerinde sahiplik dosyası kalmadı. Ürünün 414 girdisi ve araç zinciri son tam kalite kabulüyle eşleşti; ürün testleri tekrarlanmadı. [Kabul](proofs/context-tools-pilot.json).
+- 1.000 satırlık JSONL'den istenen kayıt ve toplam sayı 36.000 → 41 yerel metin tokenıyla, kesin tamsayı/ondalık korunarak döndü. Bu elde yazılmış sorgunun yanıtıdır; genel sohbet/fatura tasarrufu değildir. Diet loglarda Headroom'a ek kazanç sağlamadı, tekrar sayısını ve tam okumayı kaybedebiliyor. Mode başarılı komutun stderr'ini atıyor; shell exit 1 yumuşak durum ve normalleştirilmiş arşiv ayrıca koruma gerektiriyor. Geniş arama ve hedefli arama ayrı sınandı; sorgu yankısı kanıt sayılmadı. [Sonuç](proofs/context-tools-pilot.md).
+- **45/54; ana H041 açık.** Pilot dilimi bitti ve burada duruldu. Kullanım ölçümünden sonra izin/byte-exact arşiv/kanal-çıkış korumalı hedefli sorgu adayı değerlendirilecek. Normal sıradaki adım H041-d Chat Completions kullanım ölçümü. Bu pilot canlı model, görev kalitesi, başka OS veya yeni paket kabulü değildir. Actions ve ücretli model çağrısı yok; geliştirme sohbetinin token tasarrufu ölçülmedi.
+
 ## H041-d — Responses WebSocket yerel dilimi tamamlandı
 
 - Ana ajan yanıt sahipliği ve ölçüm sözleşmesini üstlendi. Ham kullanım, açık yanıt kimliğiyle bağlantı içinde ayrılır ve kayıt yazımının await noktasından önce gerçek motor outcome'ına bağlanır. En fazla 16 aktif yanıt ve sınırlı sayısal metadata tutulur. Yarım, çakışan, ertelenmiş başarısız veya taşmış kapsam bilinmiyor kalır. WS kayıtları HTTP durum kodu varsaymaz; HTTP geri dönüşü mevcut gözleyiciden bir kez ölçülür.
