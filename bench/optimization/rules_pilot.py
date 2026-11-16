@@ -23,6 +23,8 @@ PROGRAM = Path(__file__).resolve()
 NAMESPACE = "mcp__headroom_rule_pilot"
 TOOL = "inspect_result"
 CALL = "call_rule_pilot"
+RECOVERY_TOOL = "recover_result"
+RECOVERY_CALL = "call_rule_pilot_recover"
 MODEL = "local-protocol-fixture"
 FIELDS = ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens", "output_tokens")
 FIXTURE_COUNTERS = ((913, 0, 3), (941, 511, 17))
@@ -67,7 +69,7 @@ def envelope(case, arm):
     return capture
 
 
-def serve(case, arm):
+def serve(case, arm, retrieval_port):
     from mcp.server.mcpserver import MCPServer
     from mcp.types import ToolAnnotations
 
@@ -79,14 +81,24 @@ def serve(case, arm):
         input=struct.pack(">II", len(raw_stdout), exit_code) + raw_stdout + raw_stderr,
         creationflags=subprocess.CREATE_NO_WINDOW)
     assert (captured.stdout, captured.stderr, captured.returncode) == (raw_stdout, raw_stderr, exit_code), "channel_contract_changed"
-    value = encode(envelope(case, arm))
+    capture = envelope(case, arm)
+    value = encode(capture)
     server = MCPServer("headroom_rule_pilot")
+    read_only = ToolAnnotations(read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False)
 
-    @server.tool(structured_output=False, annotations=ToolAnnotations(
-        read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False))
+    @server.tool(structured_output=False, annotations=read_only)
     def inspect_result() -> str:
         """Read the fixed test result. A repeat marker counts all occurrences of the preceding line."""
         return value
+
+    if retrieval_port is not None:
+        @server.tool(structured_output=False, annotations=read_only)
+        def recover_result(content_hash: str) -> str:
+            """Read only this test's fixed result through its Headroom reference hash."""
+            assert re.fullmatch(r"[a-f0-9]{12,24}", content_hash), "invalid_recovery_reference"
+            replay = runpy.run_path(str(HERE / "replay.py"))
+            replay["retrieval"](retrieval_port, content_hash, capture["stdout"], 10)
+            return value
 
     server.run(transport="stdio")
 
@@ -103,6 +115,12 @@ class Provider(runpy.run_path(str(HERE / "replay.py"))["FixtureHandler"]):
         request = json.loads(self.rfile.read(size))
         server.requests.append(request)
         turn = len(server.requests)
+        recovery = getattr(server, "recovery_arm", None)
+        marker = None
+        if recovery is not None and turn == 2:
+            outputs = [item["output"] for item in request["input"]
+                       if item.get("type") == "function_call_output" and item.get("call_id") == CALL]
+            marker = re.search(r"<<ccr:([a-f0-9]{12,24}),string,[^>]+>>", encode(outputs))
         close_probe = self.headers.get("X-Proof-Case") in ("read-to-eof", "close-after-terminal")
         if close_probe and turn == 1:
             item = {"type": "message", "id": "msg_closure", "role": "assistant", "status": "completed",
@@ -117,14 +135,25 @@ class Provider(runpy.run_path(str(HERE / "replay.py"))["FixtureHandler"]):
                 return
             item = {"type": "function_call", "id": "fc_rule_pilot", "call_id": CALL, "name": TOOL,
                     "namespace": NAMESPACE, "arguments": "{}"}
-        elif turn == 2:
+        elif marker is not None:
+            item = {"type": "function_call", "id": "fc_rule_pilot_recover", "call_id": RECOVERY_CALL,
+                    "name": RECOVERY_TOOL, "namespace": NAMESPACE, "arguments": encode({"content_hash": marker[1]})}
+        elif turn == 2 or recovery is not None and turn == 3:
+            if turn == 3:
+                outputs = [part.get("text") for item in request["input"]
+                           if item.get("type") == "function_call_output" and item.get("call_id") == RECOVERY_CALL
+                           for part in item["output"]]
+                if encode(envelope(server.case, recovery)) not in outputs:
+                    server.failure = "recovered_tool_output_changed"
+                    self.send_error(400)
+                    return
             item = {"type": "message", "id": "msg_rule_pilot", "role": "assistant", "status": "completed",
                     "content": [{"type": "output_text", "text": encode(CASES[server.case][4]), "annotations": []}]}
         else:
             server.failure = "unexpected_model_request"
             self.send_error(400)
             return
-        input_tokens, cached, output_tokens = FIXTURE_COUNTERS[turn - 1]
+        input_tokens, cached, output_tokens = (*FIXTURE_COUNTERS, (1063, 600, 31))[turn - 1]
         response = {"id": "resp_pilot_" + str(turn), "object": "response", "status": "completed",
                     "model": MODEL, "output": [item], "usage": {"input_tokens": input_tokens,
                         "input_tokens_details": {"cached_tokens": cached}, "output_tokens": output_tokens,
@@ -206,61 +235,51 @@ def closure_check(engine, server, usage, mode):
             **usage_since(engine, usage, before, FIXTURE_COUNTERS[:1])}
 
 
-def run_cli(cli, engine, provider, supervisor, directory, case, arm, usage):
-    directory.mkdir()
-    home, work, temp = (directory / name for name in ("codex-home", "workspace", "temp"))
-    for path in (home, work, temp):
-        path.mkdir()
-    before = usage_ids(engine, usage)
-    provider.case, provider.requests, provider.failure = case, [], None
+def client_args(cli, work, case, arm, model, overrides, *, prompt=None, retrieval_port=None):
+    mcp_args = ["-I", "-B", str(PROGRAM), "--mcp", case, arm]
+    if retrieval_port is not None:
+        mcp_args.extend(["--retrieve-from", str(retrieval_port)])
     config = {
-        "model_provider": "fixture", "model_providers.fixture.name": "Owned fixture",
-        "model_providers.fixture.base_url": f"http://127.0.0.1:{engine.port}/v1",
-        "model_providers.fixture.wire_api": "responses", "model_providers.fixture.env_key": "RULES_PILOT_TOKEN",
-        "model_providers.fixture.requires_openai_auth": False, "windows.sandbox": "unelevated",
+        "windows.sandbox": "unelevated",
         "analytics.enabled": False, "feedback.enabled": False, "otel.exporter": "none", "otel.metrics_exporter": "none",
         "web_search": "disabled", "approval_policy": "never", "model_reasoning_effort": "high",
         "mcp_servers.headroom_rule_pilot.command": sys.executable,
-        "mcp_servers.headroom_rule_pilot.args": ["-I", "-B", str(PROGRAM), "--mcp", case, arm],
+        "mcp_servers.headroom_rule_pilot.args": mcp_args,
         "mcp_servers.headroom_rule_pilot.required": True,
+        **overrides,
     }
     command = [str(cli), "--no-daemon", "exec", "--ignore-user-config", "--ephemeral", "--skip-git-repo-check",
-        "--sandbox", "read-only", "--json", "--color", "never", "-C", str(work), "--model", MODEL]
+        "--sandbox", "read-only", "--json", "--color", "never", "-C", str(work), "--model", model]
     for feature in ("apps", "hooks", "plugins", "remote_plugin", "plugin_sharing", "skill_mcp_dependency_install", "shell_tool"):
         command.extend(["--disable", feature])
     for key, value in config.items():
         command.extend(["-c", key + "=" + encode(value)])
-    command.append("Call the fixed inspect_result tool once. " + CASES[case][3])
-    env = {key: value for key, value in os.environ.items() if not key.upper().startswith(
+    return [*command, prompt or "Call the fixed inspect_result tool once. " + CASES[case][3]]
+
+
+def client_environment():
+    return {key: value for key, value in os.environ.items() if not key.upper().startswith(
         ("OPENAI_", "ANTHROPIC_", "CODEX_", "CLAUDE_", "OPENCODE_", "HEADROOM_", "OTEL_")) and not key.upper().endswith("_PROXY")}
-    env.update(CODEX_HOME=str(home), TEMP=str(temp), TMP=str(temp), RULES_PILOT_TOKEN=provider.auth[len("Bearer "):])
+
+
+def run_client(command, work, env, supervisor, timeout):
     job = supervisor.KillOnCloseJob()
     child = None
     try:
         child = subprocess.Popen(command, cwd=work, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                  stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW)
         job.assign(child.pid)
-        stdout, _ = child.communicate(timeout=60)
+        stdout, _ = child.communicate(timeout=timeout)
+        return child.returncode, stdout
     finally:
         job.close()
         if child is not None and child.poll() is None:
             child.wait(timeout=15)
-        for path in home.rglob("*"):
-            flags = path.lstat().st_file_attributes
-            assert path.resolve().is_relative_to(home.resolve()) and not flags & stat.FILE_ATTRIBUTE_REPARSE_POINT
-            if path.is_file():
-                if flags & stat.FILE_ATTRIBUTE_READONLY:
-                    path.chmod(stat.S_IWRITE)
-                path.unlink()
-    assert child.returncode == 0 and provider.failure is None and len(provider.requests) == 2, provider.failure or "cli_probe_failed"
-    events = [json.loads(line) for line in stdout.splitlines() if line.startswith(b"{")]
-    messages = [event["item"]["text"] for event in events if event.get("type") == "item.completed"
-                and event["item"].get("type") == "agent_message"]
-    assert len(messages) == 1 and encode(json.loads(messages[0])) == encode(CASES[case][4]), "fixture_answer_oracle_failed"
-    assert sum(event.get("type") == "turn.completed" for event in events) == 1, "cli_turn_incomplete"
-    second = provider.requests[1]
-    calls = [item for item in second["input"] if item.get("type") == "function_call" and item.get("call_id") == CALL]
-    outputs = [item["output"] for item in second["input"] if item.get("type") == "function_call_output" and item.get("call_id") == CALL]
+
+
+def inspect_tool_output(engine, second_request, case, arm, usage):
+    calls = [item for item in second_request["input"] if item.get("type") == "function_call" and item.get("call_id") == CALL]
+    outputs = [item["output"] for item in second_request["input"] if item.get("type") == "function_call_output" and item.get("call_id") == CALL]
     assert len(calls) == len(outputs) == 1 and (calls[0].get("namespace"), calls[0].get("name")) == (NAMESPACE, TOOL), "mcp_call_identity_changed"
     output = outputs[0]
     assert isinstance(output, list) and len(output) == 2 and all(part.get("type") == "input_text" for part in output), "tool_wire_parts_changed"
@@ -276,11 +295,46 @@ def run_cli(cli, engine, provider, supervisor, directory, case, arm, usage):
         marker = re.fullmatch(r"<<ccr:([a-f0-9]{12,24}),string,[^>]+>>", actual["stdout"])
         assert marker is not None, "stdout_changed_without_recovery"
         usage["replay"].retrieval(engine.port, marker[1], expected_envelope["stdout"], 10)
+    return {"tool_output_type": type(output).__name__, "mcp_stdout_bytes": len(expected_envelope["stdout"].encode()),
+            "forwarded_stdout_bytes": len(actual["stdout"].encode()), "exact_native_ccr_readback": ccr, "channels_exact": True}
+
+
+def run_cli(cli, engine, provider, supervisor, directory, case, arm, usage):
+    directory.mkdir()
+    home, work, temp = (directory / name for name in ("codex-home", "workspace", "temp"))
+    for path in (home, work, temp):
+        path.mkdir()
+    before = usage_ids(engine, usage)
+    provider.case, provider.requests, provider.failure = case, [], None
+    config = {
+        "model_provider": "fixture", "model_providers.fixture.name": "Owned fixture",
+        "model_providers.fixture.base_url": f"http://127.0.0.1:{engine.port}/v1",
+        "model_providers.fixture.wire_api": "responses", "model_providers.fixture.env_key": "RULES_PILOT_TOKEN",
+        "model_providers.fixture.requires_openai_auth": False,
+    }
+    command = client_args(cli, work, case, arm, MODEL, config)
+    env = client_environment()
+    env.update(CODEX_HOME=str(home), TEMP=str(temp), TMP=str(temp), RULES_PILOT_TOKEN=provider.auth[len("Bearer "):])
+    try:
+        exit_code, stdout = run_client(command, work, env, supervisor, 60)
+    finally:
+        for path in home.rglob("*"):
+            flags = path.lstat().st_file_attributes
+            assert path.resolve().is_relative_to(home.resolve()) and not flags & stat.FILE_ATTRIBUTE_REPARSE_POINT
+            if path.is_file():
+                if flags & stat.FILE_ATTRIBUTE_READONLY:
+                    path.chmod(stat.S_IWRITE)
+                path.unlink()
+    assert exit_code == 0 and provider.failure is None and len(provider.requests) == 2, provider.failure or "cli_probe_failed"
+    events = [json.loads(line) for line in stdout.splitlines() if line.startswith(b"{")]
+    messages = [event["item"]["text"] for event in events if event.get("type") == "item.completed"
+                and event["item"].get("type") == "agent_message"]
+    assert len(messages) == 1 and encode(json.loads(messages[0])) == encode(CASES[case][4]), "fixture_answer_oracle_failed"
+    assert sum(event.get("type") == "turn.completed" for event in events) == 1, "cli_turn_incomplete"
+    tool = inspect_tool_output(engine, provider.requests[1], case, arm, usage)
     assert all(body["model"] == MODEL and body.get("reasoning", {}).get("effort") == "high" for body in provider.requests), "paired_model_or_effort_changed"
-    return {"case": case, "arm": arm, "cli_exit": child.returncode, "oracle": True,
-            "tool_output_type": type(output).__name__, "mcp_stdout_bytes": len(expected_envelope["stdout"].encode()),
-            "forwarded_stdout_bytes": len(actual["stdout"].encode()), "exact_native_ccr_readback": ccr,
-            "channels_exact": True, **usage_since(engine, usage, before, FIXTURE_COUNTERS)}
+    return {"case": case, "arm": arm, "cli_exit": exit_code, "oracle": True,
+            **tool, **usage_since(engine, usage, before, FIXTURE_COUNTERS)}
 
 
 def main():
@@ -289,11 +343,13 @@ def main():
     modes.add_argument("--mcp", nargs=2, metavar=("CASE", "ARM"))
     modes.add_argument("--run", action="store_true")
     parser.add_argument("--codex", type=Path)
+    parser.add_argument("--retrieve-from", type=int)
     args = parser.parse_args()
     if args.mcp:
         case, arm = args.mcp
         assert case in CASES and arm in ("control", "candidate")
-        serve(case, arm)
+        assert args.retrieve_from is None or 1024 <= args.retrieve_from <= 65535
+        serve(case, arm, args.retrieve_from)
         return 0
     assert os.name == "nt" and Path.cwd().resolve() == ROOT == Path(r"D:\Projeler\Headroom")
     os.environ["LITELLM_LOCAL_MODEL_COST_MAP"] = "True"

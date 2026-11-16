@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041-e3 — ilk eşlenmiş karşılaştırmanın yerel provası geçti
+
+- Ana ajan hesap kapsamı, rota sahipliği ve toplam kullanım ölçümü nedeniyle `bench/optimization/rules_live.py` aracını geliştirdi. İki kol aynı boş Git çalışma alanında, aynı salt okunur görevle ve ayrı sahipli motorlarla çalıştı. Ham kolda bir CCR geri çağrısı özgün stdout'u doğruladı. Sıkıştırılmış kol çıktıyı doğrudan aldı. İki JSON sonucu da beklenen sayılarla birebir eşleşti.
+- Yerel sağlayıcıyla 3 kontrol ve 2 sıkıştırma isteğinin tamamı motor kullanım kaydıyla eşleşti. Önceki MCP ve SSE yolunun 10 isteği de paylaşılan yardımcı değişikliğinden sonra geçti. Giden HTTP sınırında yanlış hedef, yanlış model/efor, taşan gövde ve beşinci gönderim reddedildi. İki motor normal kapandı ve kaynak fingerprint'leri eşleşti. [Kanıt](proofs/rules-live-preflight.json).
+- **45/54 ve H041-e3 açık.** Ayrı Headroom ChatGPT test profili oturum durumunu doğruladı. Canlı pilot için kullanıcı model/efor ve kota kapsamını seçer. İlk çift kol başına dört HTTP gönderimiyle sınırlıdır. Bağımsız tekrarlar, sağlayıcı cache durumu ve gerçek tasarruf yüzdesi açık. Bu dilimde 0 canlı sağlayıcı isteği çalıştı. Yerel koşudaki sayaçlar fixture değerleridir.
+
 ## H041-e3 — izole MCP yolu ve SSE kullanım düzeltmesi yerelde doğrulandı
 
 - Ana ajan ayrı stdout/stderr/exit üreten sabit MCP aracı, gerçek Codex CLI ve sahipli motoru bağladı. Dört yerel CLI oturumunda iki yeni görev örneği eşlendi. Araç kimliği, kesin çıktı, hata durumu ve üç CCR geri alımı doğrulandı. Karşı uç sabit yerel yanıtlar üretti. [Kanıt](proofs/responses-terminal-usage.json).

@@ -1,0 +1,59 @@
+{
+  "task": "H041-e3",
+  "scope": "single paired CLI pilot preflight with a deterministic loopback provider",
+  "status": "local_preflight_pass_live_acceptance_open",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "cli": "codex-cli 0.169.0-alpha.11.1",
+  "case": "counts",
+  "provider_calls_outside_loopback": 0,
+  "live_provider_savings_percent": null,
+  "existing_isolated_chatgpt_login_detected": true,
+  "live_provider_verified": false,
+  "model_and_effort_for_live_run": "user_selected",
+  "maximum_model_http_attempts_per_arm": 4,
+  "maximum_model_http_attempts_per_pair": 8,
+  "maximum_cli_seconds_per_arm": 120,
+  "maximum_http_request_bytes": 262144,
+  "paired_loopback_rows": [
+    {
+      "arm": "control",
+      "request_count": 3,
+      "usage_record_count": 3,
+      "exact_answer": true,
+      "fixed_tool_call": true,
+      "recovery_tool_calls": 1,
+      "exact_native_ccr_readback": true,
+      "channels_exact": true,
+      "forwarded_stdout_bytes": 33
+    },
+    {
+      "arm": "candidate",
+      "request_count": 2,
+      "usage_record_count": 2,
+      "exact_answer": true,
+      "fixed_tool_call": true,
+      "recovery_tool_calls": 0,
+      "exact_native_ccr_readback": false,
+      "channels_exact": true,
+      "forwarded_stdout_bytes": 219
+    }
+  ],
+  "unknown_cache_write_preserved": true,
+  "guard": {
+    "forwarded": 4,
+    "rejected": 9,
+    "redirect_followed": false,
+    "buffered_request_allowed": true
+  },
+  "shared_mcp_and_sse_usage_records": 10,
+  "temporary_cli_artifacts_removed": true,
+  "owned_engines_closed_gracefully": 2,
+  "tracked_and_runtime_fingerprints_match": true,
+  "earlier_failure": "Protected tool names must be sorted before the desktop controller starts the helper",
+  "raw_evidence": {
+    "local_pair": "work/proofs/optimization/rules-live/5ea0203c971744339a16ba94b8895a95/result.json",
+    "http_guard": "work/proofs/optimization/rules-live/guard-22f32f6690c248b0af5e17a6da3e3885/result.json",
+    "shared_mcp_and_sse_regression": "work/proofs/optimization/rules-pilot/c9e72c1b2d7e475c86e60be3d02b6389/result.json",
+    "earlier_protection_configuration_failure": "work/proofs/optimization/rules-live/f4226064694045a199d773b05f0e784d/result.json"
+  }
+}
