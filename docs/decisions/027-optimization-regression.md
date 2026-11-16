@@ -24,6 +24,18 @@ Responses'ta farklı sonuçlar arasındaki ortak blok da kısaltıldı. Bir önc
 
 Anthropic'te 14 önceki mesaj başlangıcı her iki kolda da değişti. İki kısa akışın odaklı teşhisinde değişiklik `cache_control` alanındaydı. Hatalı araç sonucu bayrağı korundu. Otomatik cache işaretini hareket ettiren davranış dedup'tan ayrı incelenecek. Gerçek sağlayıcı cache etkisi kendi kullanım ölçümüyle kabul edilir.
 
+### Responses tekrar referansının doğruluğu
+
+Ana ajan motorun son gönderim biçimini ve çağrı kapsamını üstlenir. Responses HTTP ve WebSocket için eski parça referansı, aynı açık oturum kimliğinde ve aynı araç/argümanlarla dönen yeni bir `function_call_output` için tam çıktı referansıyla değiştirilir. Aynı istek dizisinde önceki çağrı ve sonucu eksiksiz görünmeli. Önceki sonuç ile yeni ham sonuç eşit olmalı ve çağrı kimliği bir kez çözülmeli. Kısaltılmış sonuca referans verilmez. Yanıt arşivine veya yeni bir araca ihtiyaç duyulmaz. Mevcut etkin dedup ayarı ve önceki gönderilmiş mesajlar korunur.
+
+1. İki farklı çağrı kimliği, aynı araç ve argüman, aynı tam çıktı. İkinci sonuç tek önceki çağrı kimliğine gönderme yapar ve aynı yerel tokenizer ile küçülür. Sonraki istek aynı geçmişi korur ve yeni tekrar oluştuğu iddia edilmez. Duraklatma mevcut referansa erişimi kesmez.
+2. Önceki belirsiz parça örneği, farklı argüman veya hata/çıkış zarfı, tam kaynak ve kesin sayı. Yeni referans oluşmaz. Özgün veri ve mevcut CCR geri alma davranışı korunur.
+3. Oturum kimliği yok, yeni kapsam, çakışan çağrı kimliği veya yalnız önceki yanıta gönderme var. Aynı istek içinde özgün çıktı doğrulanamazsa bu kural devreye girmez. Sonraki bir istek kaynak veya hedef kimliğini yeniden kullanırsa, taşınan referansın yerini özgün sonuç alır.
+
+Odaklı protokol testleri, gerçek motorun HTTP/WebSocket girdileri ve CCR regresyonu çalışır. Son aday `docs/development/WORKFLOW.md` yerel kalite kapısından geçer. Kullanım kanıtı yerel istek JSON'u ve çıktı sayımıdır. Canlı görev kalitesi ve sağlayıcı cache etkisi ayrı kabulde kalır.
+
+Yerel kabul geçti. Aynı fixture her iki taşıma yolunda 405 → 307 o200k_base girdi tokenına indi (%24,20). 52 gönderim, iki çağrı kimliği çakışması sonrası özgün çıktı, üç birebir CCR geri alması ve aktif stream duraklatma kontrolleri geçti. [Doğrulama kaydı](../proofs/responses-repeat-safety.json).
+
 ### Context Mode / Context Diet pilotu
 
 16 Kasım'da kullanıcı isteğiyle iki aday model çağrısı olmadan, ayrı süreç ve state köklerinde sınandı. Billion Context kapsam dışındadır. Deney; 14 stdout/stderr/exit çıktısını üç kez Headroom, Diet → Headroom ve Mode → Headroom yollarından geçirdi. Üç ek JSON sorgu örneğinde metin ve kesin sayılar karşılaştırıldı. [Plan](../../bench/context_tools/README.md), [kabul ve sınırlar](../proofs/context-tools-pilot.md).

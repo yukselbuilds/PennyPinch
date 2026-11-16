@@ -1,0 +1,119 @@
+{
+  "status": "local_windows_10_pass",
+  "task": "H041",
+  "checked_on": "2026-11-16",
+  "os": "Windows-10-10.0.19045-SP0",
+  "engine": "0.44.0",
+  "baseline": {
+    "path": "docs/proofs/duplicate-tool-results.json",
+    "sha256": "1d544313cdd00f5ebed0acfcfd22dec4ff8feb5481fb976fd307c5f425317c2a"
+  },
+  "scope": "Unambiguous whole Responses function output repeats after final prefix replay.",
+  "surfaces": [
+    "Responses HTTP/SSE",
+    "Responses WebSocket"
+  ],
+  "fixture_requests": 52,
+  "graceful_repeat_engine_stops": 2,
+  "exact_ccr_readbacks": 3,
+  "observed_cases": [
+    "ambiguous",
+    "changed_arguments",
+    "changed_failure",
+    "collision",
+    "cross_session",
+    "exact",
+    "long_log",
+    "no_session",
+    "numeric",
+    "source",
+    "stateful"
+  ],
+  "replay": {
+    "reference_kept_on_pause_and_resume": true,
+    "fresh_repeat_while_paused_remained_raw": true,
+    "reused_call_id_restores_original_result": [
+      "http",
+      "websocket"
+    ],
+    "active_stream_pause_regressions": [
+      "responses",
+      "responses_websocket"
+    ]
+  },
+  "local_o200k_base_fixture": {
+    "enabled": {
+      "request_original_tokens": 405,
+      "request_forwarded_tokens": 307,
+      "new_result_original_tokens": 112,
+      "new_result_forwarded_tokens": 20,
+      "request_saved_percent": 24.2
+    },
+    "disabled": {
+      "request_original_tokens": 405,
+      "request_forwarded_tokens": 405,
+      "new_result_original_tokens": 112,
+      "new_result_forwarded_tokens": 112,
+      "request_saved_percent": 0.0
+    }
+  },
+  "usage_fixture_counts": {
+    "responses_usage": 8,
+    "websocket_usage": 12,
+    "anthropic_usage": 6,
+    "chat_usage": 10,
+    "chat_ccr_sse_usage": 1
+  },
+  "local_gate": {
+    "protocol_python_tests": 12,
+    "usage_python_tests": 18,
+    "frontend_tests": 223,
+    "rust_tests": 467,
+    "rust_opt_in_skipped": 24,
+    "format_pass": true,
+    "frontend_build_pass": true,
+    "native_build_pass": true
+  },
+  "verified_input_count": 453,
+  "overlay_sha256": "caefac5eb7467e2466d017cc3347bce515a59f6c04cab86a7310f0d377acf1e3",
+  "artifacts": {
+    "repeat": {
+      "path": "work/proofs/optimization/responses-repeat/959fc490-fcaa-40c2-8817-516043459bff/result.json",
+      "sha256": "de59b30855a4bb286b956a7463ad22c378167a3160ee8c49c9457865d9a3ba67"
+    },
+    "focused": {
+      "path": "work/proofs/optimization/responses-repeat/verification-d9dbd38cba/focus-c8a094e507.json",
+      "sha256": "af8b9de6ea94cb9ec00cd9e7d507b84606eddfa1db05e190738e8e5a8b02e850"
+    },
+    "gate": {
+      "path": "work/proofs/optimization/responses-repeat/verification-d9dbd38cba/gate-8f4a9dfa81.json",
+      "sha256": "cf1c4354085d21bf800db08ad5055b307ca58b7946859d4733362073372be65e"
+    },
+    "responses_usage": {
+      "path": "work/proofs/optimization/desktop-responses-usage/runs/bee74341-b074-47f1-8278-9f05ae46d18a/result.json",
+      "sha256": "572e57e402419747fef943daf459c11600036488cfbda8d049f3022f75436467"
+    },
+    "websocket_usage": {
+      "path": "work/proofs/optimization/desktop-ws-usage/runs/07f42bb2-46d7-45f5-86ed-3bff86db0abd/result.json",
+      "sha256": "ed0dd1730acb35ed6958b8d230b8adc518f570ca9265e2da703abcae78bae8cc"
+    },
+    "anthropic_usage": {
+      "path": "work/proofs/optimization/desktop-anthropic-usage/c8e54cbc-e442-42d5-8e96-014cca317403/result.json",
+      "sha256": "da5efc44b64be6ba46f0d449d56b0cf7b84e3f9d58b45ea20486117229dbad77"
+    },
+    "chat_usage": {
+      "path": "work/proofs/optimization/desktop-chat-usage/4f0712aa-4117-4a08-8089-e0c7b634565e/result.json",
+      "sha256": "247344f6c44db88bdc6abb00333d02bf819cefe4c82c4ad3bb99e6ccfc885608"
+    },
+    "chat_ccr_sse_usage": {
+      "path": "work/proofs/optimization/desktop-chat-usage/e3c968de-b435-43c7-9ef7-634c340dab7f/result.json",
+      "sha256": "445712cc758cf57e63f7c961044ad974c0a0f327b7454b19cd711cf1844a36f4"
+    },
+    "active_pause": {
+      "path": "work/proofs/pause/runs/4c525bc1-e885-4621-8e40-bad808457ea5/result.json",
+      "sha256": "838d224756e90da197b1d38cd8f05df97a6e78a2fc94ddaf677133ad7a9a55bb"
+    }
+  },
+  "live_provider_model_quality_cache_and_billing": "not_tested",
+  "windows_11_macos_linux": "not_tested_for_this_change"
+}

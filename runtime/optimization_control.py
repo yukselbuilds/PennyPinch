@@ -1,7 +1,7 @@
 """Application-owned, in-memory pause at request boundaries for the pinned engine."""
 from __future__ import annotations
 
-from collections import deque
+from collections import Counter, deque
 import contextvars
 import copy
 import hashlib
@@ -18,6 +18,7 @@ CONTROL_PATH = "/__headroom_desktop/control"
 USAGE_PATH = "/__headroom_desktop/provider-usage"
 ANTHROPIC_MESSAGES_PATH = "/v1/messages"
 RESPONSES_PATH = "/responses"
+RESPONSES_SESSION_HEADERS = ("conversation_id", "session_id", "x-headroom-session-id", "x-codex-thread-id")
 CHAT_COMPLETIONS_PATH = "/chat/completions"
 MAX_PAYLOAD = 2 * 1024 * 1024
 MAX_TRACKERS = 64
@@ -26,6 +27,12 @@ MAX_USAGE_ATTEMPTS = 16
 MAX_USAGE_EVENT_BYTES = 128 * 1024
 MAX_TOKEN_COUNT = (1 << 53) - 1
 USAGE_FIELDS = ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens", "output_tokens")
+REPEAT_ID = re.compile(r"[A-Za-z0-9_-]{1,96}")
+REPEAT_START = "[Identical to the complete tool result above (call_id: "
+REPEAT_END = ").]"
+REPEAT_STATUS_TEXT = re.compile(
+    r"(?im)^[^\S\r\n]*(?:stderr\b|exit[ _-](?:code|status)\b|process exited\b|error\b|fatal\b|traceback\b)"
+)
 _request = contextvars.ContextVar("headroom_desktop_request", default=None)
 
 
@@ -45,6 +52,7 @@ class RequestState:
     usage: UsageTrace | None = None
     responses_ccr_failed: bool = False
     ws_usage: WebSocketUsage | None = None
+    explicit_session: bool = False
 
 
 def _token_count(value):
@@ -472,6 +480,97 @@ def _preserve(current: list, candidate: list, previous: tuple | None, prefix: An
     return prefix.overlay_cached_prefix(candidate, current, original, forwarded)
 
 
+def _responses_call_counts(items):
+    return Counter(item["call_id"] for item in items
+                   if isinstance(item, dict) and isinstance(item.get("call_id"), str))
+
+
+def _restore_ambiguous_responses_references(original, forwarded, previous):
+    if not previous or len(original) != len(forwarded):
+        return forwarded
+    old, sent = previous
+    restored = forwarded
+    counts = None
+    for index, item in enumerate(forwarded):
+        if not isinstance(item, dict) or item.get("type") != "function_call_output":
+            continue
+        text = item.get("output")
+        if not isinstance(text, str) or not text.startswith(REPEAT_START) or not text.endswith(REPEAT_END):
+            continue
+        source = text[len(REPEAT_START):-len(REPEAT_END)]
+        if not REPEAT_ID.fullmatch(source) or item == original[index]:
+            continue
+        if counts is None:
+            counts = _responses_call_counts(original), _responses_call_counts(forwarded)
+            # Reuse the prior proof only while both versions of its complete prefix still match.
+            stable = 0
+            for raw, wire, prior_raw, prior_wire in zip(original, forwarded, old, sent):
+                if raw != prior_raw or wire != prior_wire:
+                    break
+                stable += 1
+        target = item.get("call_id")
+        if index < stable and isinstance(target, str) and all(seen[source] == seen[target] == 2 for seen in counts):
+            continue
+        if restored is forwarded:
+            restored = list(forwarded)
+        restored[index] = original[index]
+    return restored
+
+
+def _repeat_response_outputs(original, forwarded, previous, protected_ids, tool_excluded, count_text):
+    """Replace a new whole result only when its source is in the forwarded prefix."""
+    if not previous or len(original) != len(forwarded):
+        return forwarded, 0
+    old, sent = previous
+    boundary = len(old)
+    if (not 0 < boundary < len(original) or len(sent) != boundary
+            or original[:boundary] != old or forwarded[:boundary] != sent):
+        return forwarded, 0
+
+    uses = Counter()
+    owners = {}
+    for index, item in enumerate(original):
+        identity = item.get("call_id") if isinstance(item, dict) else None
+        if not isinstance(identity, str) or not REPEAT_ID.fullmatch(identity):
+            continue
+        uses[identity] += 1
+        if item.get("type") == "function_call":
+            owners[identity] = (index, item)
+    forwarded_uses = _responses_call_counts(forwarded)
+
+    sources = {}
+    repeated = forwarded
+    attempted = 0
+    for index, item in enumerate(original):
+        if not isinstance(item, dict) or item.get("type") != "function_call_output" or forwarded[index] != item:
+            continue
+        identity, value = item.get("call_id"), item.get("output")
+        if (not isinstance(identity, str) or uses[identity] != 2 or forwarded_uses[identity] != 2
+                or identity not in owners or identity in protected_ids
+                or set(item) - {"type", "call_id", "id", "status", "output"} or item.get("status") not in (None, "completed")
+                or not isinstance(value, str) or value.count("\n") < 2 or value.lstrip().startswith(("{", "[", "<"))
+                or REPEAT_STATUS_TEXT.search(value) or "<<ccr:" in value or ("Retrieve " in value and "hash=" in value)):
+            continue
+        owner_index, owner = owners[identity]
+        name, arguments = owner.get("name"), owner.get("arguments")
+        if (owner_index >= index or forwarded[owner_index] != owner or owner.get("status") not in (None, "completed")
+                or set(owner) - {"type", "call_id", "id", "status", "name", "arguments"}
+                or not isinstance(name, str) or not name or tool_excluded(name) or not isinstance(arguments, str)):
+            continue
+        key = (name, arguments, value)
+        if index < boundary:
+            sources.setdefault(key, identity)
+        elif (source := sources.get(key)) is not None:
+            pointer = f"{REPEAT_START}{source}{REPEAT_END}"
+            tokens = count_text(value)
+            if len(pointer.encode()) < len(value.encode()) and count_text(pointer) < tokens:
+                if repeated is forwarded:
+                    repeated = list(forwarded)
+                repeated[index] = {**item, "output": pointer}
+                attempted += tokens
+    return repeated, attempted
+
+
 class Gate:
     def __init__(self, generation: str, secret: str, prefix: Any):
         self.generation, self._secret, self.prefix = generation, secret, prefix
@@ -633,10 +732,11 @@ class ControlMiddleware:
             else: await send({"type": "websocket.close", "code": 1008})
             return
         kind = "responses_ws" if scope["type"] == "websocket" else "responses" if path.endswith("/responses") else "anthropic" if path.endswith("/messages") else "other"
-        route_headers = ("authorization", "x-api-key", "chatgpt-account-id", "openai-organization", "openai-project", "x-headroom-project-id", "x-headroom-cwd", "x-headroom-base-url", "x-headroom-original-path", "anthropic-beta", "anthropic-version", "conversation_id", "session_id", "x-headroom-session-id", "x-codex-thread-id")
+        route_headers = ("authorization", "x-api-key", "chatgpt-account-id", "openai-organization", "openai-project", "x-headroom-project-id", "x-headroom-cwd", "x-headroom-base-url", "x-headroom-original-path", "anthropic-beta", "anthropic-version", *RESPONSES_SESSION_HEADERS)
         state = RequestState(self.gate, self.gate.enabled, kind,
                              headers.get("x-headroom-bypass", "").lower() == "true" or headers.get("x-headroom-mode", "").lower() == "passthrough",
-                             _digest([path, "responses" if kind == "responses_ws" else kind, [(k, headers.get(k)) for k in route_headers]]))
+                              _digest([path, "responses" if kind == "responses_ws" else kind, [(k, headers.get(k)) for k in route_headers]]),
+                              explicit_session=any(headers.get(key, "").strip() for key in RESPONSES_SESSION_HEADERS))
         post = scope["type"] == "http" and scope.get("method") == "POST"
         if post and path == ANTHROPIC_MESSAGES_PATH:
             state.usage = UsageTrace()
@@ -690,6 +790,7 @@ def install(generation: str, secret: str) -> dict[str, str]:
     import headroom.cache.prefix_tracker as prefix
     import headroom.proxy.handlers.openai as openai
     import headroom.proxy.server as server
+    from headroom.config import DEFAULT_BYTE_EXACT_EXCLUDE_TOOLS, DEFAULT_EXCLUDE_TOOLS, DEFAULT_VERBATIM_EXCLUDE_TOOLS, is_tool_excluded
     from headroom.proxy.sse_byte_buffer_policy import parse_sse_events_from_byte_buffer
 
     root = Path(server.__file__).resolve().parents[1]
@@ -706,6 +807,15 @@ def install(generation: str, secret: str) -> dict[str, str]:
     original_payload = openai.OpenAIHandlerMixin._compress_openai_responses_payload
     original_executor = openai.OpenAIHandlerMixin._compress_openai_responses_payload_in_executor
     original_ws_usage = openai._extract_responses_usage
+    repeat_protection = contextvars.ContextVar("headroom_desktop_repeat_protection", default=None)
+    protected_tools = DEFAULT_EXCLUDE_TOOLS | DEFAULT_VERBATIM_EXCLUDE_TOOLS | DEFAULT_BYTE_EXACT_EXCLUDE_TOOLS
+
+    def defer_responses_repeat(items, output_types, count_tokens=None, protected_call_ids=None):
+        # The vendor invokes this only with dedup enabled. Use its protected IDs after replay.
+        pending = repeat_protection.get()
+        if pending is not None:
+            pending.append(set(protected_call_ids or ()))
+        return 0, 0
 
     def websocket_usage(event):
         result = original_ws_usage(event)
@@ -742,7 +852,17 @@ def install(generation: str, secret: str) -> dict[str, str]:
             return original_payload(proxy, body, **kwargs)
         gate = state.gate
         key, tracker, previous = gate.prepare(body, state)
-        result = original_payload(proxy, body, **kwargs) if state.enabled else (body, False, 0, [], "desktop_paused", len(_encoded(body)), len(_encoded(body)), 0)
+        stateless = body.get("previous_response_id") is None and body.get("conversation") is None
+        protection = [] if state.explicit_session and stateless and key == "input" and previous else None
+        if state.enabled:
+            token = repeat_protection.set(protection)
+            try:
+                result = original_payload(proxy, body, **kwargs)
+            finally:
+                repeat_protection.reset(token)
+        else:
+            size = len(_encoded(body))
+            result = (body, False, 0, [], "desktop_paused", size, size, 0)
         if tracker is None: return result
         candidate, *rest = result
         original_items = body[key]
@@ -752,24 +872,48 @@ def install(generation: str, secret: str) -> dict[str, str]:
             state.replay_failed = True
             with gate.lock: gate.history_safe = False
             raise
+        if key == "input":
+            forwarded = _restore_ambiguous_responses_references(original_items, forwarded, previous)
         candidate = {**candidate, key: forwarded}
         if previous and previous[0] and hasattr(tracker, "_desktop_forwarded_tools"):
             old_tools = tracker._desktop_forwarded_tools
             if old_tools is not None: candidate["tools"] = copy.deepcopy(old_tools)
-        gate.record(tracker, original_items, forwarded, candidate.get("tools"), state)
         # Count only the final payload delta; replay does not book fresh compression attempts.
+        transforms = list(rest[2]) if state.enabled else []
+        reason, attempted = rest[3], rest[6] if state.enabled else 0
         try:
             tokenizer = proxy.openai_provider.get_token_counter(kwargs["model"])
-            saved = tokenizer.count_text(_encoded(body).decode()) - tokenizer.count_text(_encoded(candidate).decode())
+            count = tokenizer.count_text
+            before, after = _encoded(body), _encoded(candidate)
+            before_tokens, after_tokens = count(before.decode()), count(after.decode())
         except Exception:
             state.replay_failed = True
             raise ReplayUnavailable() from None
-        return candidate, candidate != body, saved, rest[2] if state.enabled else [], rest[3], len(_encoded(body)), len(_encoded(candidate)), rest[6] if state.enabled else 0
+        if protection and len(protection) == 1:
+            try:
+                blocked = protected_tools | set(proxy.config.exclude_tools or ())
+                repeated, extra = _repeat_response_outputs(original_items, forwarded, previous, protection[0],
+                                                            lambda name: is_tool_excluded(name, blocked), count)
+                if extra:
+                    compacted = _encoded({**candidate, key: repeated})
+                    compacted_tokens = count(compacted.decode())
+                    if compacted_tokens < after_tokens and len(compacted) < len(after):
+                        forwarded, candidate[key], after, after_tokens = repeated, repeated, compacted, compacted_tokens
+                        transforms.append("router:responses_exact_repeat")
+                        # The router may already have counted these units. Use a lower bound on the union.
+                        attempted = max(attempted, extra)
+                        reason = None
+            except (TypeError, ValueError):
+                # Optional repeat detection can leave the previously validated payload in place.
+                pass
+        gate.record(tracker, original_items, forwarded, candidate.get("tools"), state)
+        return candidate, candidate != body, before_tokens - after_tokens, transforms, reason, len(before), len(after), attempted
 
     async def executor(proxy, body, **kwargs):
         state = _request.get()
         if state is None: return await original_executor(proxy, body, **kwargs)
-        frame = RequestState(state.gate, state.gate.enabled, state.kind, state.bypass, state.scope_key) if state.kind == "responses_ws" else state
+        frame = RequestState(state.gate, state.gate.enabled, state.kind, state.bypass, state.scope_key,
+                             explicit_session=state.explicit_session) if state.kind == "responses_ws" else state
         token = _request.set(frame)
         try: return await original_executor(proxy, body, **kwargs)
         except Exception:
@@ -801,6 +945,7 @@ def install(generation: str, secret: str) -> dict[str, str]:
     prefix.normalize_message_cache_control = normalize
     openai.OpenAIHandlerMixin._compress_openai_responses_payload = payload
     openai.OpenAIHandlerMixin._compress_openai_responses_payload_in_executor = executor
+    openai._dedup_responses_output_items = defer_responses_repeat
     openai._extract_responses_usage = websocket_usage
     server.create_app = create
     return {"active": "true", "version": "0.44.0", "source_sha256": hashlib.sha256(_encoded(expected)).hexdigest(),

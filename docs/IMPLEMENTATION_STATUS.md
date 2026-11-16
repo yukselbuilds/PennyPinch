@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041 — Responses tekrar referansı yerel dilimi tamamlandı
+
+- Ana ajan çağrı kimliği ve gönderilen geçmişin güvenliğini üstlendi. Responses tam tekrarı aynı açık oturumda aynı araç ve argümanla dönen ham önceki çıktıya, çağrı kimliğiyle bağlanır. Belirsiz parça eşleşmesi kapanır. Duraklatma geçerli önceki referansı korur. Yeni bir çakışma varsa özgün çıktı geri gelir.
+- Windows 10 ve 0.44.0 motorunda 52 yerel HTTP/SSE ve WebSocket gönderimi, üç birebir CCR geri alması ve iki normal motor kapanışı geçti. Aynı kısa örnekte 405 → 307 yerel girdi tokenı (%24,20). Tekrarlanan çıktı 112 → 20. Kapalı kontrolde 405 → 405. Aktif stream duraklatma ve 37 kullanım senaryosu da geçti. Son kapıda 30 Python, 223 frontend ve 467 Rust testi ile iki derleme geçti. [Kanıt](proofs/responses-repeat-safety.json).
+- **45/54 ve ana H041 açık.** Bu dilimin TASKS kabulü tamamlandı. Sıradaki iş Anthropic otomatik `cache_control` işareti. Canlı görev kalitesi, sağlayıcı cache ve fatura etkisi ile diğer işletim sistemleri bu değişiklik için doğrulanmadı. Geliştirme sohbetinin token tasarrufu ölçülmedi.
+
 ## H041 — tekrar eden yeni araç çıktısı deneyi tamamlandı
 
 - Ana ajan çağrı kimliği, prefix ve birebir geri alma kabulünü üstlendi. Gerçek 0.44.0 `coding` profilinde tekrar filtresinin zaten açık olduğu görüldü. Sadece test kollarından birinde kapatıldı. İki eşlenmiş tekrar, üç protokol, 168 gönderim, 32 birebir CCR ve dört normal kapanış doğrulandı. 57 ana deney girdisi önce/sonra eşleşti. [Kanıt](proofs/duplicate-tool-results.json).

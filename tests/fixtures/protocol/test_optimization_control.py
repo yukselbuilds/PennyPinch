@@ -16,6 +16,53 @@ import optimization_control as control
 import headroom.cache.prefix_tracker as prefix
 
 
+class ResponsesRepeatTests(unittest.TestCase):
+    def test_reference_is_resolved_against_actual_forwarded_items(self):
+        value = "\n".join(f"Diagnostic item {number} returned the expected value" for number in range(12))
+
+        def result(identity, **fields):
+            return {"type": "function_call_output", "call_id": identity, "output": value, **fields}
+
+        def owner(identity, **fields):
+            return {"type": "function_call", "call_id": identity, "name": "inspect", "arguments": "{}", **fields}
+
+        old = [owner("first"), result("first")]
+        current = [*old, owner("second"), result("second")]
+
+        def repeat(original, forwarded, previous=(old, old), protected=()):
+            return control._repeat_response_outputs(original, forwarded, previous, protected, lambda _: False, len)
+
+        forwarded, attempted = repeat(current, current)
+        self.assertEqual(forwarded, [*current[:-1], result("second", output=
+                         "[Identical to the complete tool result above (call_id: first).]")])
+        self.assertEqual(attempted, len(value))
+        self.assertEqual(current[-1], result("second"))
+        prior = (current, forwarded)
+        tail = {"type": "message", "role": "user", "content": "Continue"}
+        restore = control._restore_ambiguous_responses_references
+        self.assertEqual(restore([*current, tail], [*forwarded, tail], prior), [*forwarded, tail])
+        for identity in ("first", "second"):
+            duplicate = owner(identity)
+            self.assertEqual(restore([*current, duplicate], [*forwarded, duplicate], prior), [*current, duplicate])
+        changed = [owner("first", arguments='{"different":true}'), *current[1:]]
+        self.assertEqual(restore(changed, [changed[0], *forwarded[1:]], prior), changed)
+
+        altered_old = [old[0], result("first", output="already compressed")]
+        for label, original, candidate, previous, protected in (
+            ("no prefix", current, current, None, ()),
+            ("already compressed", current, [*altered_old, *current[2:]], (old, altered_old), ()),
+            ("forwarded ID collision", [*current, {"type": "message"}], [*current, owner("first")], (old, old), ()),
+            ("original ID collision", [*current, owner("first")], [*current, {"type": "message"}], (old, old), ()),
+            ("source protection", current, current, (old, old), {"first"}),
+            ("target protection", current, current, (old, old), {"second"}),
+            ("changed owner", current, [*old, owner("second", arguments="{\"changed\":true}"), current[-1]], (old, old), ()),
+            ("tool namespace", [*old, owner("second", namespace="other"), current[-1]],
+             [*old, owner("second", namespace="other"), current[-1]], (old, old), ()),
+        ):
+            with self.subTest(label=label):
+                self.assertEqual(repeat(original, candidate, previous, protected), (candidate, 0))
+
+
 class PauseTests(unittest.TestCase):
     def gate(self): return control.Gate(uuid.uuid4().hex, uuid.uuid4().hex, prefix)
     def state(self, gate, enabled=True, kind="responses"):
@@ -206,6 +253,7 @@ class PauseTests(unittest.TestCase):
         async def timeout(*args, **kwargs): raise TimeoutError()
         attributes = [(server, "create_app"), (prefix.SessionTrackerStore, "resolve_tracker"),
                       (prefix, "normalize_message_cache_control"),
+                      (openai, "_dedup_responses_output_items"), (openai, "_extract_responses_usage"),
                       (openai.OpenAIHandlerMixin, "_compress_openai_responses_payload"),
                       (openai.OpenAIHandlerMixin, "_compress_openai_responses_payload_in_executor")]
         with contextlib.ExitStack() as stack:
