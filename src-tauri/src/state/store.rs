@@ -94,6 +94,8 @@ pub struct UserPreferences {
     pub operating: OperatingPreferences,
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub show_recommendations: bool,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub experimental_rules: bool,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -139,6 +141,7 @@ impl Default for UserPreferences {
             theme: "system".to_owned(),
             operating: OperatingPreferences::default(),
             show_recommendations: false,
+            experimental_rules: false,
         }
     }
 }
@@ -291,6 +294,7 @@ impl PreferenceStore {
             theme,
             None,
             None,
+            None,
             expected_revision,
             expected_fingerprint,
         )
@@ -303,6 +307,7 @@ impl PreferenceStore {
         theme: String,
         operating: Option<OperatingPreferences>,
         show_recommendations: Option<bool>,
+        experimental_rules: Option<bool>,
         expected_revision: u64,
         expected_fingerprint: Option<String>,
     ) -> PreferencesReply {
@@ -312,6 +317,7 @@ impl PreferenceStore {
                 theme: theme.clone(),
                 operating: operating.clone().unwrap_or_default(),
                 show_recommendations: show_recommendations.unwrap_or_default(),
+                experimental_rules: experimental_rules.unwrap_or_default(),
             })
             || expected_fingerprint
                 .as_deref()
@@ -355,6 +361,8 @@ impl PreferenceStore {
                 operating: operating.unwrap_or(current.document.preferences.operating),
                 show_recommendations: show_recommendations
                     .unwrap_or(current.document.preferences.show_recommendations),
+                experimental_rules: experimental_rules
+                    .unwrap_or(current.document.preferences.experimental_rules),
             },
             runtime_manifest: RuntimeManifestReference::storage_compatible(),
         };
@@ -369,6 +377,13 @@ impl PreferenceStore {
             PreferencesReply::Snapshot(snapshot) => Ok(snapshot.preferences.operating),
             _ => Err(()),
         }
+    }
+
+    pub(crate) fn experimental_rules_enabled(&self) -> bool {
+        matches!(
+            self.get_preferences(Uuid::new_v4().to_string()),
+            PreferencesReply::Snapshot(snapshot) if snapshot.preferences.experimental_rules
+        )
     }
 
     #[cfg(test)]

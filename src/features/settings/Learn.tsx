@@ -1,11 +1,15 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PreferenceLanguage } from "../../lib/preferences";
 
 const copy = {
   tr: {
     body: "Bir Codex veya Claude Code oturum dosyası (.jsonl) seç. Learn, tekrar eden hataları cihazında inceleyip öneri gösterir.",
     action: "Oturum dosyası seç",
+    experimentalTitle: "Deneysel kurallar",
+    experimentalBody: "Seçtiğin oturumdan yerel kural adaylarını incele.",
+    experimentalAction: "Kural adaylarını önizle",
+    experimentalReady: "Kural adayları hazır. Kaynak değişiklikleriyle birlikte değerlendir.",
     busy: "Dosya seçimi veya inceleme sürüyor…",
     ready: "Learn önerileri hazır.",
     empty: "Bu dosyada aynı çağrının art arda en az üç kez başarısız olduğu bir durum bulunamadı.",
@@ -30,6 +34,10 @@ const copy = {
   en: {
     body: "Choose a Codex or Claude Code session file (.jsonl). Learn looks for repeated failures on your device and shows suggestions.",
     action: "Choose session file",
+    experimentalTitle: "Experimental rules",
+    experimentalBody: "Review local rule candidates from a session you choose.",
+    experimentalAction: "Preview rule candidates",
+    experimentalReady: "Rule candidates are ready. Review them alongside source changes.",
     busy: "Waiting for file selection or analysis…",
     ready: "Learn suggestions are ready.",
     empty: "This file has no call that failed at least three times in a row.",
@@ -62,34 +70,43 @@ type Suggestion = {
 type Result = { status: "ready"; source: "codex" | "claude_code"; suggestions: Suggestion[] }
   | { status: keyof typeof copy.en.errors | "busy" | "cancelled" };
 
-export function Learn({ language }: { language: PreferenceLanguage }) {
+function Preview({ language, experimental = false, enabled = true }: {
+  language: PreferenceLanguage;
+  experimental?: boolean;
+  enabled?: boolean;
+}) {
   const text = copy[language];
   const numbers = new Intl.NumberFormat(language);
   const available = isTauri() && navigator.userAgent.includes("Windows NT");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  const request = useRef(0);
+  useEffect(() => () => { request.current += 1; }, []);
 
   async function select() {
+    const sequence = ++request.current;
     setBusy(true);
     try {
-      const reply = await invoke<Result>("preview_learn", { turkish: language === "tr" });
-      if (reply.status !== "cancelled") setResult(reply);
+      const reply = await invoke<Result>("preview_learn", {
+        turkish: language === "tr", ...(experimental ? { experimentalRules: true } : {}),
+      });
+      if (request.current === sequence && reply.status !== "cancelled") setResult(reply);
     } catch {
-      setResult({ status: "failed" });
+      if (request.current === sequence) setResult({ status: "failed" });
     } finally {
-      setBusy(false);
+      if (request.current === sequence) setBusy(false);
     }
   }
 
   const status = busy || result?.status === "busy" ? text.busy
     : !available ? text.errors.unavailable
-    : result?.status === "ready" ? (result.suggestions.length === 0 ? text.empty : text.ready)
+    : result?.status === "ready" ? (result.suggestions.length === 0 ? text.empty : experimental ? text.experimentalReady : text.ready)
     : result && result.status !== "cancelled" ? text.errors[result.status]
     : "";
-  return <section className="operating-settings" aria-labelledby="learn-title">
-    <div className="operating-settings__heading"><h3 id="learn-title">Learn</h3><p>{text.body}</p></div>
-    <div className="operating-settings__section operating-settings__section--status">
-      <button className="button" type="button" disabled={!available || busy} onClick={() => void select()}>{text.action}</button>
+  return <div className="operating-settings__section operating-settings__section--status">
+      <button className="button" type="button" disabled={!available || busy || !enabled} onClick={() => void select()}>
+        {experimental ? text.experimentalAction : text.action}
+      </button>
       <div className="operating-settings__status-line" role="status">{status}</div>
       {!busy && result?.status === "ready" && result.suggestions.length > 0 && <>
         <h4>{result.source === "codex" ? "Codex" : "Claude Code"}</h4>
@@ -102,6 +119,26 @@ export function Learn({ language }: { language: PreferenceLanguage }) {
           </li>)}
         </ul>
       </>}
-    </div>
+    </div>;
+}
+
+export function Learn({ language, experimental, preferencesReady, onExperimentalChange }: {
+  language: PreferenceLanguage;
+  experimental: boolean;
+  preferencesReady: boolean;
+  onExperimentalChange: (enabled: boolean) => void;
+}) {
+  const text = copy[language];
+  return <section className="operating-settings" aria-labelledby="learn-title">
+    <div className="operating-settings__heading"><h3 id="learn-title">Learn</h3><p>{text.body}</p></div>
+    <Preview language={language} />
+    <section aria-labelledby="experimental-rules-title">
+      <label className="setting-row">
+        <span><strong id="experimental-rules-title">{text.experimentalTitle}</strong><small>{text.experimentalBody}</small></span>
+        <input type="checkbox" aria-label={text.experimentalTitle} checked={experimental} disabled={!preferencesReady}
+          onChange={event => onExperimentalChange(event.target.checked)} />
+      </label>
+      {experimental && <Preview language={language} experimental enabled={preferencesReady} />}
+    </section>
   </section>;
 }

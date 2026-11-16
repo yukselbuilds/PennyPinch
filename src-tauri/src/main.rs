@@ -393,6 +393,7 @@ fn save_preferences(
     theme: String,
     operating: Option<OperatingPreferences>,
     show_recommendations: Option<bool>,
+    experimental_rules: Option<bool>,
     expected_revision: u64,
     expected_fingerprint: Option<String>,
 ) -> PreferencesReply {
@@ -402,6 +403,7 @@ fn save_preferences(
         theme,
         operating,
         show_recommendations,
+        experimental_rules,
         expected_revision,
         expected_fingerprint,
     );
@@ -784,11 +786,16 @@ async fn select_client_file(
 async fn preview_learn(
     window: tauri::WebviewWindow,
     state: tauri::State<'_, RuntimeManager>,
+    preferences: tauri::State<'_, PreferenceStore>,
     turkish: bool,
+    experimental_rules: Option<bool>,
 ) -> Result<runtime::learn::Preview, ()> {
     #[cfg(windows)]
     {
         let runtime = state.inner().clone();
+        let preference_gate = experimental_rules
+            .unwrap_or_default()
+            .then(|| preferences.inner().clone());
         let Some(owner) = (window.label() == "main")
             .then(|| picker_owner_handle(&window))
             .flatten()
@@ -796,14 +803,14 @@ async fn preview_learn(
             return Ok(runtime::learn::Preview::Unavailable);
         };
         Ok(tauri::async_runtime::spawn_blocking(move || {
-            runtime::learn::select(&runtime, owner, turkish)
+            runtime::learn::select(&runtime, owner, turkish, preference_gate.as_ref())
         })
         .await
         .unwrap_or(runtime::learn::Preview::Failed))
     }
     #[cfg(not(windows))]
     {
-        let _ = (window, state, turkish);
+        let _ = (window, state, preferences, turkish, experimental_rules);
         Ok(runtime::learn::Preview::Unavailable)
     }
 }

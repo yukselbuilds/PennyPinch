@@ -214,7 +214,7 @@ export default function App() {
   const preferencesWriteLocked = useRef(false);
   const preferencesRevision = useRef(0);
   const preferencesFingerprint = useRef<string | null>(null);
-  const persistedPreferences = useRef<UserPreferences>({ language: "tr", theme: "system", operating: defaultOperatingPreferences(), show_recommendations: false });
+  const persistedPreferences = useRef<UserPreferences>({ language: "tr", theme: "system", operating: defaultOperatingPreferences(), show_recommendations: false, experimental_rules: false });
   const showRecommendations = persistedPreferences.current.show_recommendations;
   const overview = useOverviewMetrics(period, screen === "overview", showRecommendations);
   const labels = copy[language] as Labels;
@@ -252,7 +252,7 @@ export default function App() {
       setPreferencesIssue(null);
       setPreferencesStatus("loaded");
     } else if (result.kind === "desktop_unavailable") {
-      persistedPreferences.current = { language, theme, operating: defaultOperatingPreferences(), show_recommendations: false };
+      persistedPreferences.current = { language, theme, operating: defaultOperatingPreferences(), show_recommendations: false, experimental_rules: false };
       setPreferencesIssue(null);
       setPreferencesStatus("session_only");
     } else {
@@ -268,6 +268,7 @@ export default function App() {
       theme: change.theme ?? theme,
       operating: change.operating ?? persistedPreferences.current.operating,
       show_recommendations: change.show_recommendations ?? persistedPreferences.current.show_recommendations,
+      experimental_rules: change.experimental_rules ?? persistedPreferences.current.experimental_rules,
     };
     if (preferencesStatus === "session_only") {
       persistedPreferences.current = next;
@@ -520,7 +521,9 @@ function renderSettings(
       <button className="text-button" disabled={preferencesBusy} onClick={onPreferencesRetry}>{labels.preferencesRetry}</button>
     </div>}
     <Settings language={language} preferences={preferences.operating} status={preferencesStatus} onSave={onOperatingSave} onBusyChange={onOperatingBusy} />
-    <Learn language={language} />
+    <Learn language={language} experimental={preferences.experimental_rules}
+      preferencesReady={preferencesStatus === "loaded" || preferencesStatus === "saved"}
+      onExperimentalChange={enabled => onPreferencesChange({ experimental_rules: enabled })} />
     <Updates language={language} runtimeKey={runtimeKey} />
   </section>;
 }

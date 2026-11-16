@@ -8,6 +8,7 @@ export interface UserPreferences {
   theme: PreferenceTheme;
   operating: OperatingPreferences;
   show_recommendations: boolean;
+  experimental_rules: boolean;
 }
 
 export interface OperatingPreferences {
@@ -125,11 +126,21 @@ function decodePreferences(value: unknown): UserPreferences | null {
     if (typeof value.show_recommendations !== "boolean") return null;
     keys.push("show_recommendations");
   }
+  if (Object.hasOwn(value, "experimental_rules")) {
+    if (typeof value.experimental_rules !== "boolean") return null;
+    keys.push("experimental_rules");
+  }
   if (!hasExactKeys(value, keys)) return null;
   if ((value.language !== "tr" && value.language !== "en") ||
       (value.theme !== "system" && value.theme !== "light" && value.theme !== "dark")) return null;
   const operating=Object.hasOwn(value,"operating")?decodeOperatingPreferences(value.operating):defaultOperatingPreferences();
-  return operating ? { language: value.language, theme: value.theme, operating, show_recommendations: value.show_recommendations === true } : null;
+  return operating ? {
+    language: value.language,
+    theme: value.theme,
+    operating,
+    show_recommendations: value.show_recommendations === true,
+    experimental_rules: value.experimental_rules === true,
+  } : null;
 }
 
 function decodeManifest(value: unknown): RuntimeManifestReference | null {
@@ -221,6 +232,7 @@ export function createPreferencesClient(options: ClientOptions) {
         theme: preferences.theme,
         ...(Object.hasOwn(preferences,"operating")?{operating:preferences.operating}:{}),
         ...(Object.hasOwn(preferences, "show_recommendations") ? { showRecommendations: preferences.show_recommendations } : {}),
+        ...(Object.hasOwn(preferences, "experimental_rules") ? { experimentalRules: preferences.experimental_rules } : {}),
         expectedRevision,
         expectedFingerprint,
       });

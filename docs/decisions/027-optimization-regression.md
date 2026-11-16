@@ -89,6 +89,16 @@ Komut proje kökünde çalıştırılır.
 
 **Tamamlama kapısı:** e1–e4 somut kanıt ve ilgili kaynak/test/config + araç/ortam önce/sonra fingerprint'leriyle kapanır. Her dilimde gerçek mevcut arayüz/komut doğrulanır; son ürün adayında [WORKFLOW](../development/WORKFLOW.md) kalite kapısı ve gerekli native akış bir kez çalışır. Mock/yerel filtre PASS'i canlı sağlayıcı veya başka işletim sistemi kabulü değildir. Bu plan için ürün testi veya yeni benchmark çalıştırmak gerekmez. Ana H041 açık; normal sıradaki adım H041-d Chat Completions kullanım ölçümüdür.
 
+#### H041-e1 uygulama kabulü
+
+Kalıcı tercih ve dosya erişimi ana ajandadır. `experimental_rules` mevcut revision/fingerprint korumalı tercih kaydına eklenir. Eksik alan eski ve yeni kayıtta kapalı okunur. Dil, tema, çalışma tercihleri ve yerel öneriler kaydı bu tercihi korur. Ayarlar → Learn altında ayrı anahtar yalnız yerel kural adaylarının dosya seçimini açar. Mevcut Learn dosya seçimi bağımsız çalışır. Motor başlatma ve hafıza tercihleri bu alanı kullanmaz.
+
+- Açık tercihyle seçilen tek Codex/Claude Code JSONL dosyası mevcut sınırlı analiz yolundan geçer. Sonuç yalnız ekranda tutulur. Native komut, deneysel isteklerde tercihi seçiciden önce ve sonuçtan önce tekrar kontrol eder. Kapalı veya bozuk tercih dosya seçimi başlatmaz.
+- Dosya iptali önceki sonucu korur. Geçersiz dosya sabit hata üretir. Kapatma veya sayfa değişimi önceki denemeyi görünür sonuç yapmaz. Açma/kapatma ve yeniden açılış, mevcut motor durumuyla birlikte gerçek Windows penceresinde sınanır.
+- Legacy kayıt, yeniden açılış, eşzamanlı eski revision ve bağımsız tercihler odaklı testle doğrulanır. Son adayda yerel kalite kapısı, gerçek Tauri IPC → native seçici → sabit Python → görünür öneri ve erişilebilirlik kontrolü gerekir. Etkinleştirme ve replay e2–e4 kabulündedir.
+
+H041-e1 Windows 10 yerel kabulü geçti. Varsayılan kapalı kalıcı tercih ve 24 native kontrol doğrulandı. Dosya seçimi sürerken başka bir kayıt isteği tercihi kapattığında sonuç reddedildi. Codex/Claude önerisi, iptal ve bozuk/boş dosya, açık/kapalı yeniden açılış ve motor/diğer ayarlardan bağımsızlık geçti. 224 frontend, 468 Rust testi, iki derleme ve iki sıfır ihlalli erişilebilirlik denetimi kaydedildi. [Yerel kabul](../proofs/experimental-rules-preview.json).
+
 ### H041-b yerel deney koşulları
 
 Ana ajan ölçüm, runtime ve cache sözleşmesi nedeniyle deney ve kabulü üstlenir. `bench/optimization/ccr-policy-plan.json` iki eşlenmiş tekrarı önceden belirler. Her tekrarda iki ayrı motor kullanılır. Bir oturum üç kısa istekten oluşur. İkincisi üç kısa istekten sonra sıkıştırılabilir uzun log ve korumalı kesin sayısal bir Read sonucu alır. Ayrı temiz oturumdaki kısa istek, yapışkan aracın başka oturuma taşınmadığını denetler. Tüm istekler izole Anthropic SSE fixture'ına gider.

@@ -1,0 +1,82 @@
+{
+  "task": "H041-e1",
+  "status": "local_windows_10_pass",
+  "checked_on": "2026-11-16",
+  "engine": "0.44.0",
+  "os": "Windows-10-10.0.19045-SP0",
+  "end_to_end": "Preferences -> Learn experimental switch -> native picker -> pinned local preview -> visible candidates",
+  "preference": "experimental_rules",
+  "default": false,
+  "storage": "Existing atomic revision and fingerprint guarded preference document",
+  "native_checks": {
+    "initial_off": true,
+    "native_gate_off": true,
+    "existing_learn_independent": true,
+    "enabled_independently": true,
+    "codex_native_preview": true,
+    "cancel_preserved": true,
+    "invalid_file": true,
+    "claude_native_preview": true,
+    "content_absent": true,
+    "axe_learn": 0,
+    "off_clears_result": true,
+    "engine_start_keeps_off": true,
+    "toggle_keeps_engine_stopped": true,
+    "appearance_preserved_experiment": true,
+    "empty_transcript": true,
+    "axe_dark_en": 0,
+    "reopened_enabled": true,
+    "results_session_only": true,
+    "independent_recommendations": true,
+    "concurrent_disable_blocks_preview": true,
+    "reload_after_external_disable": true,
+    "reopened_disabled": true,
+    "restart_keeps_engine_stopped": true,
+    "operating_unchanged": true
+  },
+  "native_normal_exits": 3,
+  "original_app_state_restored": true,
+  "provider_model_requests": 0,
+  "local_gate": {
+    "preference_frontend_focused": 8,
+    "preference_rust_focused": 13,
+    "frontend": 224,
+    "rust": 468,
+    "opt_in_rust_skipped": 24,
+    "format": true,
+    "frontend_build": true,
+    "embedded_native_build": true
+  },
+  "artifacts": {
+    "focus": {
+      "path": "work/proofs/optimization/experimental-preview/verification-dcd7ac192e/focus-b26fce2f6c.json",
+      "sha256": "e2d96274845174d4c3315ce2653346b39a37d71817135fac583719b3c58937d7"
+    },
+    "gate": {
+      "path": "work/proofs/optimization/experimental-preview/verification-dcd7ac192e/gate-8a3f7d37ba.json",
+      "sha256": "7a584f534ccf202e98e417d29afe69202f5e0fc50e75b87c5d79b1e303888f00"
+    },
+    "native": {
+      "path": "work/proofs/optimization/experimental-preview/native-46c454d81162/result.json",
+      "sha256": "1e5e07ed1d086bd1f76ae998444a3195d399f614cd345555f4d70a5b9920c255"
+    },
+    "native_gui": {
+      "path": "work/proofs/optimization/experimental-preview/native-46c454d81162/gui-checks.json",
+      "sha256": "ac516e22883eda8ea8c6d99e14ff36b7d4efb5f5122b899daef441bd181b7b59"
+    }
+  },
+  "render_checks": {
+    "learn-light-tr.png": {
+      "path": "work/proofs/optimization/experimental-preview/native-46c454d81162/learn-light-tr.png",
+      "sha256": "095dab09cc572fce90bba3e7ec08d847c1c992b729395d8920b0c76b85995098"
+    },
+    "learn-dark-en.png": {
+      "path": "work/proofs/optimization/experimental-preview/native-46c454d81162/learn-dark-en.png",
+      "sha256": "18d3a093fcb38e79bec9c41e2c1e50e1b91995d5db80c9b1c700f1ede6040b93"
+    }
+  },
+  "verified_input_count": 409,
+  "local_replay_and_rule_activation": "pending_H041_e2_to_e4",
+  "live_quality_and_provider_savings": "not_tested",
+  "windows_11_macos_linux": "not_tested_for_this_change"
+}

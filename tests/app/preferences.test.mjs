@@ -33,7 +33,7 @@ function snapshot(overrides = {}) {
 
 test("decodes exact typed preferences and the pinned manifest reference", () => {
   const decoded = decodePreferencesSnapshot(snapshot(), requestId);
-  assert.deepEqual(decoded?.preferences, { language: "en", theme: "dark", operating: defaultOperatingPreferences(), show_recommendations: false });
+  assert.deepEqual(decoded?.preferences, { language: "en", theme: "dark", operating: defaultOperatingPreferences(), show_recommendations: false, experimental_rules: false });
   assert.equal(decoded?.revision, 3);
   assert.equal(decoded?.state_fingerprint, fingerprint);
   assert.equal(decoded?.runtime_manifest.ccr_ttl_seconds, 7200);
@@ -57,6 +57,26 @@ test("rejects unknown fields, request mismatch, unsafe revisions, fingerprints, 
   assert.equal(decodePreferencesSnapshot(snapshot({ runtime_manifest: { ...snapshot().runtime_manifest, ccr_ttl_seconds: 1800 } }), requestId), null);
   assert.equal(decodePreferencesSnapshot(snapshot({ unexpected: true }), requestId), null);
   assert.equal(decodePreferencesSnapshot(snapshot({ preferences: { language: "tr", theme: "light", show_recommendations: "true" } }), requestId), null);
+  assert.equal(decodePreferencesSnapshot(snapshot({ preferences: { language: "tr", theme: "light", experimental_rules: "true" } }), requestId), null);
+});
+
+test("experimental preview is optional in old replies and sends its own strict preference", async () => {
+  const calls = [];
+  const client = createPreferencesClient({
+    isNative: () => true,
+    createRequestId: () => requestId,
+    invoke: async (command, args) => {
+      calls.push([command, args]);
+      return snapshot({ preferences: { language: "en", theme: "dark", experimental_rules: true } });
+    },
+  });
+  const reply = await client.readPreferences();
+  assert.equal(reply.snapshot.preferences.experimental_rules, true);
+  assert.equal(reply.snapshot.preferences.show_recommendations, false);
+  await client.savePreferences({ ...reply.snapshot.preferences, experimental_rules: false }, 3, fingerprint);
+  assert.equal(calls[1][1].experimentalRules, false);
+  assert.equal(calls[1][1].showRecommendations, false);
+  assert.deepEqual(calls[1][1].operating, defaultOperatingPreferences());
 });
 
 const fixedErrors = {

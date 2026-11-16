@@ -76,7 +76,16 @@ mod windows {
         }
     }
 
-    pub(crate) fn select(manager: &RuntimeManager, owner: usize, turkish: bool) -> Preview {
+    pub(crate) fn select(
+        manager: &RuntimeManager,
+        owner: usize,
+        turkish: bool,
+        experimental: Option<&crate::state::store::PreferenceStore>,
+    ) -> Preview {
+        let allowed = || experimental.is_none_or(|store| store.experimental_rules_enabled());
+        if !allowed() {
+            return Preview::Unavailable;
+        }
         if SELECTING.swap(true, Ordering::AcqRel) {
             return Preview::Busy;
         }
@@ -84,10 +93,18 @@ mod windows {
         let picker = thread::Builder::new()
             .name("headroom-learn-picker-sta".into())
             .spawn(move || crate::integrations::picker::select_learn_session(owner, turkish));
-        match picker.ok().and_then(|thread| thread.join().ok()) {
-            Some(Ok(Some(path))) => analyze(manager, &path).unwrap_or_else(|failure| failure),
+        let reply = match picker.ok().and_then(|thread| thread.join().ok()) {
+            Some(Ok(Some(path))) if allowed() => {
+                analyze(manager, &path).unwrap_or_else(|failure| failure)
+            }
+            Some(Ok(Some(_))) => Preview::Unavailable,
             Some(Ok(None)) => Preview::Cancelled,
             _ => Preview::Failed,
+        };
+        if allowed() {
+            reply
+        } else {
+            Preview::Unavailable
         }
     }
 

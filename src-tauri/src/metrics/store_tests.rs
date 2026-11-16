@@ -80,6 +80,7 @@ fn operating_retention_is_shared_by_ingest_overview_activity_and_reopen() {
                     ..Default::default()
                 }),
                 None,
+                None,
                 current.revision,
                 current.state_fingerprint
             ),

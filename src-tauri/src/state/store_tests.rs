@@ -77,6 +77,83 @@ fn redirected_preference_lock_preserves_both_files() {
 }
 
 #[test]
+fn experimental_rules_default_off_and_preserve_revision_and_other_preferences() {
+    let fixture = Fixture::new();
+    let original = snapshot(fixture.store.get_preferences(REQUEST_ID.into()));
+    assert!(!original.preferences.experimental_rules);
+    assert!(!fixture.store.experimental_rules_enabled());
+    let enabled = snapshot(fixture.store.save_with_operating(
+        REQUEST_ID.into(),
+        "en".into(),
+        "dark".into(),
+        None,
+        None,
+        Some(true),
+        original.revision,
+        original.state_fingerprint.clone(),
+    ));
+    assert!(fixture.store.experimental_rules_enabled());
+    assert!(!enabled.preferences.show_recommendations);
+    assert_eq!(
+        enabled.preferences.operating,
+        original.preferences.operating
+    );
+    let path = fixture.store.file_path_for_test();
+    let bytes = fs::read(&path).unwrap();
+    assert_eq!(
+        error_code(fixture.store.save_with_operating(
+            REQUEST_ID.into(),
+            "tr".into(),
+            "system".into(),
+            None,
+            None,
+            Some(false),
+            original.revision,
+            original.state_fingerprint,
+        )),
+        "config_conflict"
+    );
+    assert_eq!(fs::read(&path).unwrap(), bytes);
+    let reopened =
+        PreferenceStore::for_test(fixture.project_root.clone(), fixture.relative_root.clone())
+            .unwrap();
+    assert!(reopened.experimental_rules_enabled());
+    let changed = snapshot(reopened.save_preferences(
+        REQUEST_ID.into(),
+        "tr".into(),
+        "light".into(),
+        enabled.revision,
+        enabled.state_fingerprint,
+    ));
+    assert!(changed.preferences.experimental_rules);
+    let disabled = snapshot(reopened.save_with_operating(
+        REQUEST_ID.into(),
+        "tr".into(),
+        "light".into(),
+        None,
+        Some(true),
+        Some(false),
+        changed.revision,
+        changed.state_fingerprint,
+    ));
+    assert!(!disabled.preferences.experimental_rules);
+    assert!(disabled.preferences.show_recommendations);
+    assert_eq!(
+        disabled.preferences.operating,
+        original.preferences.operating
+    );
+    assert!(!fixture.store.experimental_rules_enabled());
+    let mut corrupt: serde_json::Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+    assert!(corrupt["preferences"].get("experimental_rules").is_none());
+    corrupt["preferences"]["experimental_rules"] = "true".into();
+    let bad = serde_json::to_vec(&corrupt).unwrap();
+    fs::write(&path, &bad).unwrap();
+    assert!(!fixture.store.experimental_rules_enabled());
+    assert_eq!(fs::read(&path).unwrap(), bad);
+    fixture.cleanup();
+}
+
+#[test]
 fn previous_engine_preferences_migrate_without_rewrite_and_legacy_save_preserves_them() {
     use super::store::OperatingPreferences;
     let fixture = Fixture::new();
@@ -128,6 +205,7 @@ fn previous_engine_preferences_migrate_without_rewrite_and_legacy_save_preserves
         "dark".into(),
         Some(wanted.clone()),
         Some(true),
+        None,
         read.revision,
         read.state_fingerprint.clone(),
     ));
@@ -141,6 +219,7 @@ fn previous_engine_preferences_migrate_without_rewrite_and_legacy_save_preserves
             "dark".into(),
             Some(Default::default()),
             Some(false),
+            None,
             read.revision,
             read.state_fingerprint
         )),
@@ -169,6 +248,7 @@ fn previous_engine_preferences_migrate_without_rewrite_and_legacy_save_preserves
             "light".into(),
             Some(invalid),
             None,
+            None,
             theme.revision,
             theme.state_fingerprint
         )),
@@ -181,6 +261,7 @@ fn previous_engine_preferences_migrate_without_rewrite_and_legacy_save_preserves
         "light".into(),
         None,
         Some(false),
+        None,
         theme.revision,
         snapshot(reopened.get_preferences(REQUEST_ID.into())).state_fingerprint,
     ));

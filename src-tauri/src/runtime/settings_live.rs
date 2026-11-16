@@ -145,6 +145,7 @@ fn save(prefs: &PreferenceStore, tools: Vec<String>) {
                 ..Default::default()
             }),
             None,
+            None,
             current.revision,
             current.state_fingerprint
         ),

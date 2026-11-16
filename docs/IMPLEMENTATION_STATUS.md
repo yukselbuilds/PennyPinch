@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041-e1 — kapalı varsayılan ve yerel önizleme tamamlandı
+
+- Ana ajan kalıcı tercih ve native dosya erişimi kabulünü üstlendi. Ayarlar → Learn altında bağımsız Deneysel kurallar anahtarı, kapalı varsayılan ve kural adayı önizlemesi eklendi. Eski kayıt eksik alanı kapalı okur. Dil/tema, çalışma ayarları ve yerel öneriler kaydı tercihi korur. [Kanıt](proofs/experimental-rules-preview.json).
+- Windows 10 gerçek Tauri penceresinde Codex/Claude dosyası, iptal, bozuk/boş dosya ve seçim sürerken kapatma doğrulandı. Etkin ve kapalı tercihyle yeniden açılış, mevcut Learn bağımsızlığı ve motoru kapalı tercihle başlatma geçti. Üç pencere normal kapandı. Asıl uygulama state'i birebir geri yüklendi.
+- Son adayda 224 frontend, 468 Rust testi, biçim ve iki derleme geçti. İki Learn erişilebilirlik taramasında sıfır ihlal var. Açık Türkçe ve koyu İngilizce görünüm incelendi.
+- **45/54 ve ana H041 açık.** TASKS'ta e1 tamamlandı. Sıradaki e2 korumalı yerel kural/replay. Gerçek kuralın etkinleştirilmesi ve görev başına toplam kullanım e3/e4 kabulünü bekliyor. Geliştirme sohbetinin token tasarrufu ölçülmedi.
+
 ## H041 — Learn öneri faydasının yerel pilotu tamamlandı
 
 - Ana ajan gözlenen kaynak değişikliğini ve öneri maliyetini ayırdı. Windows 10 ve sabit 0.44.0 ile 8 gerçek fixture komutu ve 8 Codex/Claude önizlemesi geçti. Yanlış çalışma dizinindeki üç eş çağrı bulundu. Doğru dizindeki başarı ayrı kaldı. Mevcut proje kuralı çalışma kökünü zaten belirliyor. [Kanıt](proofs/learn-merit-pilot.json).

@@ -160,6 +160,7 @@ fn managed_app_engine_lifecycle() {
             ..Default::default()
         }),
         None,
+        None,
         0,
         None,
     );
