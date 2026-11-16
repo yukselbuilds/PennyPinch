@@ -1,0 +1,184 @@
+{
+  "task": "H041",
+  "status": "local_learn_merit_pilot_complete",
+  "checked_on": "2026-11-16",
+  "os": "Windows-10-10.0.19045-SP0",
+  "engine": "0.44.0",
+  "scope": "Current desktop preview script on synthetic Codex and Claude Code transcripts derived from actual local fixture commands.",
+  "observed_commands": 8,
+  "preview_invocations": 8,
+  "scenarios": {
+    "codex": {
+      "stable_failure_then_workdir_repair": [
+        {
+          "kind": "path",
+          "failures": 3,
+          "recoveries": 0,
+          "first_line": 3
+        }
+      ],
+      "repair_after_first_failure": [],
+      "required_retests_with_edits": [],
+      "required_retests_with_edits_missing": [
+        {
+          "kind": "path",
+          "failures": 3,
+          "recoveries": 1,
+          "first_line": 3
+        }
+      ]
+    },
+    "claude_code": {
+      "stable_failure_then_workdir_repair": [
+        {
+          "kind": "path",
+          "failures": 3,
+          "recoveries": 0,
+          "first_line": 2
+        }
+      ],
+      "repair_after_first_failure": [],
+      "required_retests_with_edits": [],
+      "required_retests_with_edits_missing": [
+        {
+          "kind": "path",
+          "failures": 3,
+          "recoveries": 1,
+          "first_line": 2
+        }
+      ]
+    }
+  },
+  "observed_calls": {
+    "workdir_repair": [
+      {
+        "exit_code": 1,
+        "read_inputs_before": {
+          "value.txt": null
+        },
+        "read_inputs_after": {
+          "value.txt": null
+        },
+        "same_invocation": true
+      },
+      {
+        "exit_code": 1,
+        "read_inputs_before": {
+          "value.txt": null
+        },
+        "read_inputs_after": {
+          "value.txt": null
+        },
+        "same_invocation": true
+      },
+      {
+        "exit_code": 1,
+        "read_inputs_before": {
+          "value.txt": null
+        },
+        "read_inputs_after": {
+          "value.txt": null
+        },
+        "same_invocation": true
+      },
+      {
+        "exit_code": 0,
+        "read_inputs_before": {
+          "value.txt": "ad7c11345e522e277b4c6a4e9b4933bf85b7867e1aae0c4d960a2dde9232e6cb"
+        },
+        "read_inputs_after": {
+          "value.txt": "ad7c11345e522e277b4c6a4e9b4933bf85b7867e1aae0c4d960a2dde9232e6cb"
+        },
+        "same_invocation": false
+      }
+    ],
+    "required_retests": [
+      {
+        "exit_code": 1,
+        "read_inputs_before": {
+          "revision.txt": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+          "value-a.txt": null
+        },
+        "read_inputs_after": {
+          "revision.txt": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+          "value-a.txt": null
+        },
+        "same_invocation": true
+      },
+      {
+        "exit_code": 1,
+        "read_inputs_before": {
+          "revision.txt": "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d",
+          "value-b.txt": null
+        },
+        "read_inputs_after": {
+          "revision.txt": "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d",
+          "value-b.txt": null
+        },
+        "same_invocation": true
+      },
+      {
+        "exit_code": 1,
+        "read_inputs_before": {
+          "revision.txt": "2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6",
+          "value-c.txt": null
+        },
+        "read_inputs_after": {
+          "revision.txt": "2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6",
+          "value-c.txt": null
+        },
+        "same_invocation": true
+      },
+      {
+        "exit_code": 0,
+        "read_inputs_before": {
+          "revision.txt": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6",
+          "value-ready.txt": "ad7c11345e522e277b4c6a4e9b4933bf85b7867e1aae0c4d960a2dde9232e6cb"
+        },
+        "read_inputs_after": {
+          "revision.txt": "b24d6d33736ecd5604a4b17bc9c6481039fac362bb7df044ef1c10a2bfd21db6",
+          "value-ready.txt": "ad7c11345e522e277b4c6a4e9b4933bf85b7867e1aae0c4d960a2dde9232e6cb"
+        },
+        "same_invocation": true
+      }
+    ]
+  },
+  "displayed_guidance": {
+    "tr": {
+      "text": "İlk denemeden önce çalışma klasörünü ve dosya yolunu doğrula.",
+      "tokens_o200k_base": 18
+    },
+    "en": {
+      "text": "Confirm the working directory and file path before the first attempt.",
+      "tokens_o200k_base": 12
+    }
+  },
+  "project_policy_references": {
+    "workspace": {
+      "file": "AGENTS.md",
+      "line": 5
+    },
+    "changed_inputs": {
+      "file": "AGENTS.md",
+      "line": 39
+    },
+    "workflow": {
+      "file": "docs/development/WORKFLOW.md",
+      "line": 69
+    }
+  },
+  "decision": {
+    "workdir_advice": "The project already identifies the canonical workspace and runs acceptance commands from that root.",
+    "revision_advice": "Same-invocation recovery does not establish cause. Required retests are distinguished when the edit is visible.",
+    "rule_promotion": "keep_preview_only"
+  },
+  "token_basis": "Only the visible suggestion string was counted. Avoided model usage and billing were not measured.",
+  "verified_input_count": 23,
+  "raw_evidence": {
+    "path": "work/proofs/optimization/learn-merit/dc866b54d54f4c65875c6b664ac08115/result.json",
+    "sha256": "0806be62243b8271b86590147e0b29700506bd5bee293c06fb09b29223e1cbc7"
+  },
+  "rerun_command": "pinned-python -I -B bench/optimization/learn_merit.py --run",
+  "live_model_quality_and_provider_cost": "not_tested",
+  "paid_model_calls": 0
+}

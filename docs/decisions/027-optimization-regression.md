@@ -194,6 +194,22 @@ Sabitlenen motorun Learn algılayıcısına aynı oturumda, aynı araç ve girdi
 
 İnceleme 16 MiB, 64.000 satır ve 15 saniye ile sınırlıdır. İçerik analiz sürecinde kalır. Modele gönderim, geçmiş taraması, kalıcı sonuç, dosya yazımı ve token tasarrufu tahmini bu akışa dahil değildir. Motorun `--no-learn` varsayımı sürer.
 
+### Learn öneri faydasının yerel pilotu
+
+Ana ajan ölçüm ve kaynak değişikliği ayrımını üstlenir. Sabit 0.44.0 paketindeki masaüstü önizleme programına yalnız projeye ait yapay görevlerin kayıtları verilir. Aynı araç işlemleri Codex ve Claude Code biçimlerinde karşılaştırılır. Süreç sonucu, çağrının girdileri ve ilgili dosyalar için çağrı öncesi ve sonrası fingerprint kaydedilir. Kısa öneri ekrandaki metinle ve mevcut `AGENTS.md` / `WORKFLOW.md` maddeleriyle karşılaştırılır.
+
+1. Yanlış çalışma dizininde üç aynı başarısız okuma ve düzeltilen dizinde başarı. Önizleme başarısız örnekleri bulmalı, farklı dizindeki başarıyı aynı çağrının toparlanması saymamalı. İlk hatadan sonra düzeltmeyi gösteren eşlenmiş kayıt öneri üretmemeli.
+2. Gerçek kaynak değişikliklerinin ardından aynı kontrolün çalıştırılması. Düzenleme kayıtları varken gerekli tekrarların korunması beklenir. Aynı ham çağrı sonuçlarından düzenleme olayları çıkarıldığında yanlış yorumlanabilecek öneri ve başarı sayısı ayrı gözlenir. Bu öneri bir kuralı kabul etmek için tek başına yeterli değildir.
+3. Önizleme cevaplarında dosya, çağrı ve içerik sızıntısı aranır. Üretilen yalnız kısa önerinin yerel token boyutu ölçülür. Onaylanmış talimatlar, motor tercihleri ve gerçek model trafiği mevcut kapsamda kalır. Gerçek görev başarısı ve net sağlayıcı kullanımı ayrı eşlenmiş kabulde kalır.
+
+Yerel pilot geçti. İki gerçek fixture akışında toplam 8 komut ve aynı olaylardan üretilen 8 Codex/Claude Code önizlemesi çalıştı. Dizin önerisinin eylemi mevcut çalışma kökü kuralıyla örtüşüyor. Kaynak düzenlemeleri görüldüğünde gerekli tekrarlar öneri üretmedi. Düzenleme olayları çıkarıldığında iki biçim de aynı üç hatayı ve bir toparlanmayı gösterdi. Bu örnek, gözlenen toparlanmanın nedenini veya kaç tekrarın önlenebileceğini belirlemiyor. Önerinin kendisi Türkçede 18, İngilizcede 12 yerel token. Canlı kabul açık. [Kanıt](../proofs/learn-merit-pilot.json).
+
+Komut proje kökünde çalıştırılır.
+
+```powershell
+& 'work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime/python.exe' -I -B bench/optimization/learn_merit.py --run
+```
+
 ## İlk ölçümlerin planı
 
 9 Kasım 2026. H038 sonrasında bağımlılıkları hazır olan H041 başladı. Ana ajan ölçüm semantiği, gerçek motor ve performans kabulünü üstlenir. Ponytail full uygulanır. Ücretsiz yerel deneyler ilerler. Canlı API-key ve diğer işletim sistemi kabulü açık kalır.

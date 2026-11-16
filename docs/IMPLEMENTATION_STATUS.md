@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041 — Learn öneri faydasının yerel pilotu tamamlandı
+
+- Ana ajan gözlenen kaynak değişikliğini ve öneri maliyetini ayırdı. Windows 10 ve sabit 0.44.0 ile 8 gerçek fixture komutu ve 8 Codex/Claude önizlemesi geçti. Yanlış çalışma dizinindeki üç eş çağrı bulundu. Doğru dizindeki başarı ayrı kaldı. Mevcut proje kuralı çalışma kökünü zaten belirliyor. [Kanıt](proofs/learn-merit-pilot.json).
+- Düzenlemeler görünürken aynı kontrolün gerekli tekrarları öneri üretmedi. Aynı sonuçlarda düzenleme kayıtları çıkarılınca üç hata ve bir toparlanma göründü. Kaynak farkı ve başarı nedeni öneriden çıkarılamaz. Pilot öneriyi önizlemede tutuyor. Ekrandaki cümle Türkçede 18, İngilizcede 12 yerel tokenizer tokenı.
+- **45/54 ve ana H041 açık.** TASKS'ta yerel pilot işaretlendi. Gerçek görev başarısı ve sağlayıcı kullanımı kabulü açık. Sıradaki yerel dilim H041-e1'in varsayılan kapalı ve bağımsız önizleme tercihi. Geliştirme sohbetinin token tasarrufu ölçülmedi.
+
 ## H041 — güvenli hedefli sorgunun yerel prototipi tamamlandı
 
 - Ana ajan arşiv erişimini ve ölçümü üstlendi. 0.44.0, Windows 10 ve üç eşlenmiş koşuda 27 motor gönderimi geçti. 1.000 satırlık raporun hedef kaydı, kayıt sayısı, kesin sayı ve satır sonları birebir korundu. Özgün çıktı, araç kimliği, stdout/stderr ve exit geri alınabildi. Kapsam, kapasite, belirsiz kayıt ve tam Read sınamaları geçti. [Kanıt](proofs/targeted-query-pilot.json).
