@@ -122,6 +122,18 @@ Geçiş, proje içindeki sürümlü Windows kaynak ve çıktı köklerini kullan
 
 Normal kabul güncel motorun hazır olması, gerçek yerel akış, ölçüm ve Learn ile sahipli kapanışı içerir. Hata kabulü değiştirilmiş dosya, yanlış pin ve tercih çatışmasını reddeder. Yerel ürün kapısı, Windows kaynak staging ve gerçek paketli motor kontrolü son adayda kaydedilir. macOS kaynak/staging kontrolleri yerelde yürür. Yeni native macOS ve Windows 11 kanıtı kendi ortamında kaydedilir. GitHub Actions için önceki kota sınırı geçerlidir.
 
+### H041-d Chat Completions kullanım ölçümü
+
+Ana ajan taşıma kapsamını, sayaçları ve istek sahipliğini üstlenir. Pinned 0.44.0 motorun `/v1/chat/completions` rotasında ortak HTTP istemcilerinin gönderimlerini gözle. JSON ve SSE kullanımını gerçek motor istek kimliğine bağla. `prompt_tokens` cache ayrıntılarını içerir. `completion_tokens` çıktı sayısıdır. İsteğe bağlı cache alanları ve `total_tokens` tutarlılığı ayrı değerlendirilir. Akışta aynı yanıt kimliğinin son kullanım parçası ve `[DONE]` gerekir. Yerel tokenizer ve sağlayıcı kullanımı ayrı kalır. [OpenAI Chat Completions sözleşmesi](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create).
+
+1. Normal JSON, standart SSE ve CCR devamı. Girdi/cache toplamını bir kez hesapla, ayrı çağrıları say ve mevcut masaüstü istek ayrıntısına ulaştır. Sentetik CCR örneğinde 2.400 girdi, 29 çıktı, 2.000 önbellek okuma, 100 yazma ve iki gönderim beklenir.
+2. Eksik kullanım, kesik akış, çelişkili sayaç ve başarısız gönderim. Gözlenen sıfır sıfırdır. Eksik veya çelişkili toplam bilinmiyor kalır. Başarılı tekrar, önceki başarısız gönderimin kullanımını açıklamaz.
+3. Parçalanan ve eşzamanlı akışlar, açık `include_usage: false`, özel okuma ucunda motor nesli ve erişim kontrolü. İstek seçenekleri, model, reasoning, auth ve istemciye giden parçalar gözlemci tarafından değişmeden geçer. Kapsam, ortak istemcilerde gözlenen Chat Completions gönderimleridir.
+
+Odaklı parser ve native okuyucu denemelerinden sonra loopback motoru ve önceki Responses/Anthropic senaryoları kullanılır. Son yerel adayda [WORKFLOW kalite kapısı](../development/WORKFLOW.md) ve pin kontrolü çalışır. Canlı sağlayıcı ve diğer OS kabulü kendi ortamında ölçülür.
+
+Windows 10 yerel adayında 11 senaryo ve 14 sentetik upstream gönderimi doğrulandı. İki CCR çağrısının toplamı 2.400 girdi ve 29 çıktı olarak native okuyucu, SQLite ve Etkinlik ayrıntısına ulaştı. Geçerli cache ayrıntıları 2.000 okuma ve 100 yazma. Yerel cevap önbelleğindeki tekrar yeni sağlayıcı ölçümü üretmedi. Kesik SSE için motor yalnız özel kullanım kaydı ve hata sayacı üretiyor. Etkinlik satırı oluşmadığı için bu kayıttan bir satır türetilmez. İsteğe bağlı tamponlu Chat CCR ayrı test profilinde sınandı. [Kabul](../proofs/chat-completions-usage.json).
+
 ### Learn önizlemesi
 
 Kullanıcı 15 Kasım’da Learn’in isteğe bağlı eklenmesini istedi. Ayarlar’da tek bir Codex veya Claude Code JSONL oturumu seçmek bir inceleme başlatır. Seçici iptal edildiğinde önceki sonuç ekranda kalır. Windows uygulaması, mevcut motor paketindeki doğrulanmış Python ile yalnız seçilen dosyayı okur. Motoru başlatmak gerekmez.

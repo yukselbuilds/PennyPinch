@@ -18,6 +18,7 @@ CONTROL_PATH = "/__headroom_desktop/control"
 USAGE_PATH = "/__headroom_desktop/provider-usage"
 ANTHROPIC_MESSAGES_PATH = "/v1/messages"
 RESPONSES_PATH = "/responses"
+CHAT_COMPLETIONS_PATH = "/chat/completions"
 MAX_PAYLOAD = 2 * 1024 * 1024
 MAX_TRACKERS = 64
 MAX_REPLAY_BYTES = 64 * 1024 * 1024
@@ -79,8 +80,8 @@ class UsageTrace:
                 attempt.get("status") is not None and 200 <= attempt["status"] < 300
             ) else None for attempt in self.attempts]
             usage[name] = None if self.truncated else _sum_known(values)
-        usage["total_input_tokens"] = (usage["input_tokens"] if self.surface in {"openai_responses", "openai_responses_ws"}
-                                       else _sum_known([usage[name] for name in USAGE_FIELDS[:3]]))
+        usage["total_input_tokens"] = (_sum_known([usage[name] for name in USAGE_FIELDS[:3]])
+                                        if self.surface == "anthropic_messages" else usage["input_tokens"])
         usage["total_tokens"] = _sum_known([usage["total_input_tokens"], usage["output_tokens"]])
         result = {"surface": self.surface, "request_id": self.request_id, "client_status": status, "truncated": self.truncated,
                   "attempts": copy.deepcopy(self.attempts), "usage": usage}
@@ -207,9 +208,70 @@ async def _observe_responses_sse(chunks, attempt, parse_events):
         yield chunk
 
 
+def _chat_usage(value, *, chunk=False):
+    if (not isinstance(value, dict) or value.get("error") is not None
+            or value.get("object") != ("chat.completion.chunk" if chunk else "chat.completion")
+            or not isinstance(value.get("usage"), dict)):
+        return None
+    usage = value["usage"]
+    details = usage.get("prompt_tokens_details")
+    details = details if isinstance(details, dict) else {}
+    prompt = _token_count(usage.get("prompt_tokens"))
+    completion = _token_count(usage.get("completion_tokens"))
+    total = _token_count(usage.get("total_tokens"))
+    cached = _token_count(details.get("cached_tokens"))
+    written = _token_count(details.get("cache_write_tokens"))
+    if (prompt is not None and (cached or 0) + (written or 0) > prompt
+            or None not in (prompt, completion, total) and prompt + completion != total):
+        return None
+    return dict(zip(USAGE_FIELDS, (prompt, cached, written, completion), strict=True))
+
+
+async def _observe_chat_sse(chunks, attempt, parse_events):
+    buffer = bytearray()
+    response_id = None
+    usage = None
+    usage_seen = done = invalid = False
+    async for chunk in chunks:
+        if not invalid:
+            try:
+                if len(buffer) + len(chunk) > MAX_USAGE_EVENT_BYTES:
+                    raise ValueError()
+                buffer.extend(chunk)
+                for event_name, data in parse_events(buffer):
+                    if done or event_name not in (None, "message"):
+                        raise ValueError()
+                    if data == "[DONE]":
+                        done = True
+                        continue
+                    value = json.loads(data)
+                    if (usage_seen or not isinstance(value, dict) or value.get("error") is not None
+                            or value.get("object") != "chat.completion.chunk" or not isinstance(value.get("id"), str)
+                            or not value["id"] or response_id is not None and value["id"] != response_id
+                            or not isinstance(value.get("choices"), list)):
+                        raise ValueError()
+                    response_id = value["id"]
+                    if value.get("usage") is not None:
+                        if value["choices"]:
+                            raise ValueError()
+                        usage_seen = True
+                        usage = _chat_usage(value, chunk=True)
+            except (ValueError, RecursionError):
+                invalid = True
+                buffer.clear()
+        yield chunk
+    if not invalid and done and not buffer:
+        attempt["usage"] = usage
+
+
 def _install_usage(proxy, gate, parse_events, response_not_read):
     startup = proxy.startup
     record_outcome = proxy._record_request_outcome
+    transports = {
+        "anthropic_messages": (ANTHROPIC_MESSAGES_PATH, _observe_anthropic_sse),
+        "openai_responses": (RESPONSES_PATH, _observe_responses_sse),
+        "openai_chat_completions": (CHAT_COMPLETIONS_PATH, _observe_chat_sse),
+    }
 
     async def start():
         await startup()
@@ -219,11 +281,13 @@ def _install_usage(proxy, gate, parse_events, response_not_read):
             # Bind each transport separately: ChatGPT can use the dedicated HTTP/1 client.
             async def observe(request, _send=client.send, **options):
                 state = _request.get()
-                path = ANTHROPIC_MESSAGES_PATH if state is not None and state.kind == "anthropic" else RESPONSES_PATH
-                if (state is None or state.gate is not gate or state.usage is None
-                        or request.method != "POST" or not request.url.path.endswith(path)):
+                trace = state.usage if state is not None and state.gate is gate else None
+                if trace is None or request.method != "POST":
                     return await _send(request, **options)
-                attempt = state.usage.begin_attempt()
+                transport = transports.get(trace.surface)
+                if transport is None or not request.url.path.endswith(transport[0]):
+                    return await _send(request, **options)
+                attempt = trace.begin_attempt()
                 response = await _send(request, **options)
                 if attempt is None:
                     return response
@@ -233,15 +297,16 @@ def _install_usage(proxy, gate, parse_events, response_not_read):
                 media_type = response.headers.get("content-type", "").split(";", 1)[0].strip().lower()
                 if media_type == "application/json" and response.is_stream_consumed:
                     try:
-                        if state.kind == "anthropic":
+                        if trace.surface == "anthropic_messages":
                             attempt["usage"] = _anthropic_json_usage(response.content)
                         elif len(response.content) <= MAX_PAYLOAD:
-                            attempt["usage"] = _responses_usage(json.loads(response.content))
+                            parse = _chat_usage if trace.surface == "openai_chat_completions" else _responses_usage
+                            attempt["usage"] = parse(json.loads(response.content))
                     except (ValueError, RecursionError, response_not_read):
                         pass
                 elif media_type == "text/event-stream":
                     read = response.aiter_bytes
-                    observer = _observe_anthropic_sse if state.kind == "anthropic" else _observe_responses_sse
+                    observer = transport[1]
 
                     def observed_read(*args, **kwargs):
                         return observer(read(*args, **kwargs), attempt, parse_events)
@@ -572,14 +637,17 @@ class ControlMiddleware:
         state = RequestState(self.gate, self.gate.enabled, kind,
                              headers.get("x-headroom-bypass", "").lower() == "true" or headers.get("x-headroom-mode", "").lower() == "passthrough",
                              _digest([path, "responses" if kind == "responses_ws" else kind, [(k, headers.get(k)) for k in route_headers]]))
-        if scope["type"] == "http" and scope.get("method") == "POST" and path == ANTHROPIC_MESSAGES_PATH:
+        post = scope["type"] == "http" and scope.get("method") == "POST"
+        if post and path == ANTHROPIC_MESSAGES_PATH:
             state.usage = UsageTrace()
-        elif scope["type"] == "http" and scope.get("method") == "POST" and path.endswith(RESPONSES_PATH):
+        elif post and path.endswith(RESPONSES_PATH):
             state.usage = UsageTrace(surface="openai_responses")
+        elif post and path == "/v1" + CHAT_COMPLETIONS_PATH:
+            state.usage = UsageTrace(surface="openai_chat_completions")
         elif scope["type"] == "websocket" and path.endswith(RESPONSES_PATH):
             state.ws_usage = WebSocketUsage()
         token = _request.set(state)
-        counted = scope["type"] == "http" and scope.get("method") == "POST" and kind in {"responses", "anthropic"} or scope.get("method") == "POST" and path.endswith("/chat/completions")
+        counted = post and (kind in {"responses", "anthropic"} or path.endswith(CHAT_COMPLETIONS_PATH))
         started = False
         completed = False
         status = None

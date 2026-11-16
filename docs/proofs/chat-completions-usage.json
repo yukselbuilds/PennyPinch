@@ -1,0 +1,259 @@
+{
+  "task": "H041-d",
+  "slice": "chat_completions_usage",
+  "date": "2026-11-16",
+  "passed": true,
+  "os": "Windows-10-10.0.19045-SP0",
+  "engine": "0.44.0",
+  "scope": "pinned desktop engine, direct Chat Completions JSON/SSE, native activity projection",
+  "checks": {
+    "windows_scenarios": {
+      "chat_default": 10,
+      "chat_buffered_ccr": 1,
+      "responses_http": 8,
+      "responses_websocket": 12,
+      "anthropic": 6
+    },
+    "chat_upstream_sends": 14,
+    "normal_shutdowns": 9,
+    "python_tests": 18,
+    "rust_tests": 467,
+    "rust_optin_ignored": 24,
+    "frontend_tests": 223,
+    "native_detail_projection": "pass",
+    "source_fingerprints": 436,
+    "codegraph_sync_changed_files": 7
+  },
+  "counter_example": {
+    "input_tokens": 2400,
+    "cache_read_input_tokens": 2000,
+    "cache_creation_input_tokens": 100,
+    "output_tokens": 29,
+    "total_input_tokens": 2400,
+    "total_tokens": 2429
+  },
+  "counter_example_basis": "synthetic provider counters, inclusive prompt total",
+  "chat_cases": {
+    "json": {
+      "client_status": 200,
+      "attempts": 1,
+      "upstream_statuses": [
+        200
+      ],
+      "usage": {
+        "input_tokens": 13,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": null,
+        "output_tokens": 2,
+        "total_input_tokens": 13,
+        "total_tokens": 15
+      },
+      "original_retrieved": false,
+      "stats_row": true
+    },
+    "local_response_cache": {
+      "cached": true,
+      "model_sends": 0,
+      "provider_usage_record": false
+    },
+    "zero": {
+      "client_status": 200,
+      "attempts": 1,
+      "upstream_statuses": [
+        200
+      ],
+      "usage": {
+        "input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 0,
+        "total_input_tokens": 0,
+        "total_tokens": 0
+      },
+      "original_retrieved": false,
+      "stats_row": true
+    },
+    "retry": {
+      "client_status": 200,
+      "attempts": 2,
+      "upstream_statuses": [
+        429,
+        200
+      ],
+      "usage": {
+        "input_tokens": null,
+        "cache_read_input_tokens": null,
+        "cache_creation_input_tokens": null,
+        "output_tokens": null,
+        "total_input_tokens": null,
+        "total_tokens": null
+      },
+      "original_retrieved": false,
+      "stats_row": true
+    },
+    "ccr-json": {
+      "client_status": 200,
+      "attempts": 2,
+      "upstream_statuses": [
+        200,
+        200
+      ],
+      "usage": {
+        "input_tokens": 2400,
+        "cache_read_input_tokens": 2000,
+        "cache_creation_input_tokens": 100,
+        "output_tokens": 29,
+        "total_input_tokens": 2400,
+        "total_tokens": 2429
+      },
+      "original_retrieved": true,
+      "stats_row": true,
+      "native_detail_projection": "pass"
+    },
+    "ccr-error": {
+      "client_status": 200,
+      "attempts": 2,
+      "upstream_statuses": [
+        200,
+        400
+      ],
+      "usage": {
+        "input_tokens": null,
+        "cache_read_input_tokens": null,
+        "cache_creation_input_tokens": null,
+        "output_tokens": null,
+        "total_input_tokens": null,
+        "total_tokens": null
+      },
+      "original_retrieved": true,
+      "stats_row": true
+    },
+    "sse-disabled": {
+      "client_status": 200,
+      "attempts": 1,
+      "upstream_statuses": [
+        200
+      ],
+      "usage": {
+        "input_tokens": null,
+        "cache_read_input_tokens": null,
+        "cache_creation_input_tokens": null,
+        "output_tokens": null,
+        "total_input_tokens": null,
+        "total_tokens": null
+      },
+      "original_retrieved": false,
+      "stats_row": true
+    },
+    "sse-cut": {
+      "client_status": 200,
+      "attempts": 1,
+      "upstream_statuses": [
+        200
+      ],
+      "usage": {
+        "input_tokens": null,
+        "cache_read_input_tokens": null,
+        "cache_creation_input_tokens": null,
+        "output_tokens": null,
+        "total_input_tokens": null,
+        "total_tokens": null
+      },
+      "original_retrieved": false,
+      "stats_row": false
+    },
+    "sse-a": {
+      "client_status": 200,
+      "attempts": 1,
+      "upstream_statuses": [
+        200
+      ],
+      "usage": {
+        "input_tokens": 700,
+        "cache_read_input_tokens": 600,
+        "cache_creation_input_tokens": 0,
+        "output_tokens": 7,
+        "total_input_tokens": 700,
+        "total_tokens": 707
+      },
+      "original_retrieved": false
+    },
+    "sse-b": {
+      "client_status": 200,
+      "attempts": 1,
+      "upstream_statuses": [
+        200
+      ],
+      "usage": {
+        "input_tokens": 800,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": null,
+        "output_tokens": 9,
+        "total_input_tokens": 800,
+        "total_tokens": 809
+      },
+      "original_retrieved": false
+    },
+    "isolated_buffered_ccr": {
+      "client_status": 200,
+      "attempts": 2,
+      "upstream_statuses": [
+        200,
+        200
+      ],
+      "usage": {
+        "input_tokens": 2400,
+        "cache_read_input_tokens": 2000,
+        "cache_creation_input_tokens": 100,
+        "output_tokens": 29,
+        "total_input_tokens": 2400,
+        "total_tokens": 2429
+      },
+      "original_retrieved": true,
+      "stats_row": true
+    }
+  },
+  "review": "Own ASGI scope and exact motor outcome id, bounded parser and raw stream forwarding, inclusive cache details, no double-counted retries, and reader-to-SQLite detail were checked. Frontend uses the existing usage detail fields.",
+  "limits": [
+    "Live providers and arbitrary compatible dialects",
+    "No Activity row for a stream the bundled engine classifies as failed",
+    "Task quality, actual billing, other operating systems and installer packaging"
+  ],
+  "inputs_before_after_match": true,
+  "development_token_savings": null,
+  "model_calls": 0,
+  "ci_runs": 0,
+  "proofs": {
+    "quality": {
+      "path": "work/proofs/optimization/desktop-chat-usage/verification-d4f31f98d2/gate-10820ac28b.json",
+      "sha256": "fc2e53d763d97e61991695daa6a7b34cdcb154917adc911e596c970aa0c8a7d0"
+    },
+    "chat_default": {
+      "path": "work/proofs/optimization/desktop-chat-usage/a4fc4e6b-7332-4b3d-83d8-fdfd9df9e5c3/result.json",
+      "sha256": "bf6a0241cfc11e478100452bba276ab89f47f2c9045dfcb6101fd260def2f183"
+    },
+    "chat_buffered_ccr": {
+      "path": "work/proofs/optimization/desktop-chat-usage/7beecb02-6fa2-4ffb-b97c-5b2d6a2b5544/result.json",
+      "sha256": "7ddece3dac7821b94ec993c24bcc0cb38c4fd43285e3b56fbf06102fe9661927"
+    },
+    "responses_http": {
+      "path": "work/proofs/optimization/desktop-responses-usage/runs/e2adfb30-1cfd-475c-a591-4d4d89e8b4af/result.json",
+      "sha256": "bbfe469262efc1681d91cfe13406bac675c4ed48f1e4458145f1e164532d815e"
+    },
+    "responses_websocket": {
+      "path": "work/proofs/optimization/desktop-ws-usage/runs/aee09098-75ca-4e01-a571-a2335ef81488/result.json",
+      "sha256": "2dc583a135e6d1a555730f82b3a4712c88b3802b3c7164b9fef7601750001b07"
+    },
+    "anthropic": {
+      "path": "work/proofs/optimization/desktop-anthropic-usage/c19de80a-aaf7-45c3-9634-fea67eefd48f/result.json",
+      "sha256": "5bb3bf7e1e8c53fc5a21de49e272d50d0fb02f78cbcdd680f1a8ba46aa462479"
+    }
+  },
+  "decision_sha256": "aa9ce48d86e2597f67b8626a0c54789dcd3420f8d311dc3e4f85a0694a32817e",
+  "closure": {
+    "main_task_open": true,
+    "main_progress": "45/54",
+    "working_tasks_other_bytes_preserved": true,
+    "proof_scope": "Windows local protocol acceptance"
+  }
+}

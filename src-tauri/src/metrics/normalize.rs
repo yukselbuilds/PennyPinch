@@ -546,7 +546,10 @@ impl UsageRecord {
             || !(1..=16).contains(&self.attempts.len())
             || !matches!(
                 surface,
-                "anthropic_messages" | "openai_responses" | "openai_responses_ws"
+                "anthropic_messages"
+                    | "openai_responses"
+                    | "openai_responses_ws"
+                    | "openai_chat_completions"
             )
         {
             return ProviderUsage::default();
@@ -572,13 +575,13 @@ impl UsageRecord {
         let reported_input = sum(|usage| usage.input_tokens);
         let cached_input = sum(|usage| usage.cache_read_input_tokens);
         let cache_write_input = sum(|usage| usage.cache_creation_input_tokens);
-        let input = if matches!(surface, "openai_responses" | "openai_responses_ws") {
-            reported_input
-        } else {
+        let input = if surface == "anthropic_messages" {
             (|| {
                 let input = reported_input? + cached_input? + cache_write_input?;
                 (input <= MAX_TOKEN_COUNT).then_some(input)
             })()
+        } else {
+            reported_input
         };
         ProviderUsage {
             input,

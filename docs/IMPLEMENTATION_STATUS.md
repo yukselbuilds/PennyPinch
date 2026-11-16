@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041-d — Chat Completions yerel dilimi tamamlandı
+
+- Ana ajan taşıma, sayaç ve istek sahipliğini üstlendi. Standart JSON ve SSE gönderimleri aynı motor istek kimliğine bağlandı. Cache ayrıntıları `prompt_tokens` toplamına tekrar eklenmiyor. Kesik/çelişkili akış ve başarısız gönderim toplamı bilinmiyor bırakıyor. Yerel cevap önbelleği sağlayıcı kullanımı oluşturmuyor.
+- Windows 10 ve 0.44.0 motorunda 11 senaryo, 14 gönderim ve üç normal Chat kapanışı geçti. CCR ve izole tamponlu CCR, 429 sonrası tekrar, farklı modelle paralel akış, sıfır/eksik kullanım ve özel kayıt nesli doğrulandı. İki gönderimin 2.400 girdi, 29 çıktı, 2.000 cache okuma ve 100 yazması native okuyucu → SQLite → istek ayrıntısına ulaştı. Kesik akış özel kayıtta bilinmiyor ve motorun Etkinlik satırı yok. [Kabul](proofs/chat-completions-usage.json).
+- 8 Responses HTTP/SSE, 12 WebSocket ve 6 Anthropic regresyon kontrolü geçti. Son kapıda 18 Python, 467 Rust ve 223 frontend testi, biçim ve iki derleme geçti. 24 opt-in Rust testi normal koşuda atlandı. İlgili 436 girdi güncel kanıtla eşleşti. Canlı sağlayıcı, gerçek görev kullanımı, başka işletim sistemleri ve yeni kurucu kendi kabulünü bekliyor.
+- **45/54.** H041-d'nin yerel protokol dilimleri tamam. Canlı kabul ve ana H041 açık. Sıradaki yerel iş yeni ve birebir tekrar eden araç çıktısını mevcut Headroom tabanına karşı sınamak. Learn deney planı ayrı ve varsayılan kapalı. Geliştirme sohbetinin token tasarrufu ölçülmedi.
+
 ## H041-e — isteğe bağlı deneysel kurallar planlandı
 
 - Kullanıcı ModHarness-RL yaklaşımını Learn gibi isteğe bağlı istedi. Ana ajan kapsam, ölçüm ve izin sözleşmesini planladı. Ayarlar → Learn altında ayrı tercih varsayılan kapalı; Learn/motor açılışıyla etkinleşmez. Akış öneri → yerel deneme → yalnız kabul edilmiş sürümü kapsamla etkinleştirmedir. [Plan](decisions/027-optimization-regression.md#h041-e-deneysel-kurallar).

@@ -361,6 +361,12 @@ mod tests {
         assert_owned_usage_detail("desktop-ws-usage", 1);
     }
 
+    #[test]
+    #[ignore = "run by the isolated Chat Completions engine proof"]
+    fn owned_chat_usage_reaches_activity_detail() {
+        assert_owned_usage_detail("desktop-chat-usage", 2);
+    }
+
     fn assert_owned_usage_detail(proof_directory: &str, expected_attempts: u64) {
         use crate::metrics::store::{MetricsStore, Period};
         use serde::Deserialize;
