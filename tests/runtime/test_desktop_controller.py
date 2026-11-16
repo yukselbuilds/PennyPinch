@@ -347,7 +347,7 @@ class DesktopRuntimeSmokeTests(unittest.TestCase):
             self.assertEqual(shim.get("version"), "0.44.0")
             self.assertEqual(
                 shim.get("prefix_tracker_sha256"),
-                "f1af4ee279f879efc48ddfebbff125a088893bb64ee960ca2dbd4ad1cdb628ee",
+                json.loads(manifest.read_bytes())["engine"]["prefix_tracker_sha256"],
             )
             self.assertEqual(
                 shim.get("shim_sha256"),

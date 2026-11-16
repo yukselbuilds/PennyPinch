@@ -1,0 +1,167 @@
+{
+  "task": "H041-e3 and H041-d usage regression",
+  "status": "windows_10_local_pass_live_ab_open",
+  "checked_on": "2026-11-16",
+  "os": "Windows-10-10.0.19045-SP0",
+  "cli": "codex-cli 0.169.0-alpha.11.1",
+  "engine": "0.44.0",
+  "observed_problem": "A client that closed after response.completed appeared in request stats without the detailed usage row.",
+  "change": "Bind the engine request ID before cancellable outcome cleanup and retain matching verified Responses SSE counters after an early close.",
+  "closure_before": [
+    {
+      "mode": "read-to-eof",
+      "terminal_received": true,
+      "done_received": true,
+      "stats_request_count": 1,
+      "usage_record_count": 1,
+      "missing_usage_records": 0,
+      "cache_write_when_present": "unknown"
+    },
+    {
+      "mode": "close-after-terminal",
+      "terminal_received": true,
+      "done_received": false,
+      "stats_request_count": 1,
+      "usage_record_count": 0,
+      "missing_usage_records": 1,
+      "cache_write_when_present": null
+    }
+  ],
+  "closure_after": [
+    {
+      "mode": "read-to-eof",
+      "terminal_received": true,
+      "done_received": true,
+      "stats_request_count": 1,
+      "usage_record_count": 1,
+      "missing_usage_records": 0,
+      "cache_write_when_present": "unknown"
+    },
+    {
+      "mode": "close-after-terminal",
+      "terminal_received": true,
+      "done_received": false,
+      "stats_request_count": 1,
+      "usage_record_count": 1,
+      "missing_usage_records": 0,
+      "cache_write_when_present": "unknown"
+    }
+  ],
+  "codex_mcp_before": {
+    "cli_sessions": 4,
+    "stats_requests": 8,
+    "usage_records": 0
+  },
+  "codex_mcp_after": [
+    {
+      "case": "counts",
+      "arm": "control",
+      "cli_exit": 0,
+      "oracle": true,
+      "tool_output_type": "list",
+      "mcp_stdout_bytes": 2752,
+      "forwarded_stdout_bytes": 33,
+      "exact_native_ccr_readback": true,
+      "channels_exact": true,
+      "stats_request_count": 2,
+      "usage_record_count": 2,
+      "missing_usage_records": 0,
+      "cache_write_when_present": "unknown"
+    },
+    {
+      "case": "counts",
+      "arm": "candidate",
+      "cli_exit": 0,
+      "oracle": true,
+      "tool_output_type": "list",
+      "mcp_stdout_bytes": 219,
+      "forwarded_stdout_bytes": 219,
+      "exact_native_ccr_readback": false,
+      "channels_exact": true,
+      "stats_request_count": 2,
+      "usage_record_count": 2,
+      "missing_usage_records": 0,
+      "cache_write_when_present": "unknown"
+    },
+    {
+      "case": "failed_check",
+      "arm": "control",
+      "cli_exit": 0,
+      "oracle": true,
+      "tool_output_type": "list",
+      "mcp_stdout_bytes": 931,
+      "forwarded_stdout_bytes": 32,
+      "exact_native_ccr_readback": true,
+      "channels_exact": true,
+      "stats_request_count": 2,
+      "usage_record_count": 2,
+      "missing_usage_records": 0,
+      "cache_write_when_present": "unknown"
+    },
+    {
+      "case": "failed_check",
+      "arm": "candidate",
+      "cli_exit": 0,
+      "oracle": true,
+      "tool_output_type": "list",
+      "mcp_stdout_bytes": 931,
+      "forwarded_stdout_bytes": 32,
+      "exact_native_ccr_readback": true,
+      "channels_exact": true,
+      "stats_request_count": 2,
+      "usage_record_count": 2,
+      "missing_usage_records": 0,
+      "cache_write_when_present": "unknown"
+    }
+  ],
+  "protection": [
+    "matching provider response identity",
+    "resolved engine request ID",
+    "no early or ambiguous usage totals",
+    "no fabricated cache-write zero",
+    "no general parsing of joined terminal logs"
+  ],
+  "native_reader": {
+    "scenarios": 8,
+    "native_storage_and_activity": "pass",
+    "graceful_stops": 2
+  },
+  "local_gate": {
+    "usage_python": 19,
+    "protocol_python": 12,
+    "controller_python": 10,
+    "pin_check": true,
+    "frontend": 224,
+    "rust": 469,
+    "rust_opt_in_skipped": 24,
+    "format": true,
+    "builds": 2,
+    "controller_fixture_update": "Legacy prefix hash assertion now reads the verified manifest. Focused tests were rerun after that test-only edit."
+  },
+  "provider_model_calls": 0,
+  "fixture_answers_and_counters": "scripted local values",
+  "live_quality_cache_and_savings": "not_tested",
+  "other_os_and_release": "not_tested",
+  "artifacts": {
+    "before_fix": {
+      "path": "work/proofs/optimization/rules-pilot/4ae9566b1a5246018aa70fbcb221e0c2/result.json",
+      "sha256": "4137f80ef2e0170a45293f3ea665c9fefe1157c4b38949af508ec13366c920ec"
+    },
+    "mcp_and_closure": {
+      "path": "work/proofs/optimization/rules-pilot/d91b5014ecb544de91783fe31775b6c1/result.json",
+      "sha256": "03021ddf7dc1a8a740a36e4fa23f406685a4bc46e55fa315a36472e658cdfaa3"
+    },
+    "native_reader": {
+      "path": "work/proofs/optimization/desktop-responses-usage/runs/8ef34719-a2ad-4cc9-af4f-9a2566404ae8/result.json",
+      "sha256": "f4dbbcf429e7bdfe4b428d2e106d397ac7282db5a96269d2e405bd6187ca3b96"
+    },
+    "focused": {
+      "path": "work/proofs/optimization/responses-terminal-usage/focus-67e9aa003a.json",
+      "sha256": "f06399cd942f20e68ee477a821f4f2db8bebba0c705eaebc613259e12f026478"
+    },
+    "gate": {
+      "path": "work/proofs/optimization/responses-terminal-usage/gate-c053bccb9c.json",
+      "sha256": "f85ea808ce2787e41edb5cd4e52e025a0442c087b7cf36501583c0a263f1ae5d"
+    }
+  }
+}

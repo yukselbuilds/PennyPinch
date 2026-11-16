@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041-e3 — izole MCP yolu ve SSE kullanım düzeltmesi yerelde doğrulandı
+
+- Ana ajan ayrı stdout/stderr/exit üreten sabit MCP aracı, gerçek Codex CLI ve sahipli motoru bağladı. Dört yerel CLI oturumunda iki yeni görev örneği eşlendi. Araç kimliği, kesin çıktı, hata durumu ve üç CCR geri alımı doğrulandı. Karşı uç sabit yerel yanıtlar üretti. [Kanıt](proofs/responses-terminal-usage.json).
+- Akışı `response.completed` sonrası kapatınca önce `/stats` satırı kalıyor, ayrıntılı kullanım kaydı düşüyordu. Motor kimliği iptale açık cleanup öncesi eşlendi. Yalnız kimliği ve tamamlanması doğrulanmış Responses SSE sayaçları erken kapanışta korunur. İki kapanış örneği ve dört CLI koşusunda son adayda 10/10 eşleşti. Eksik cache yazma bilinmiyor kaldı.
+- 19 kullanım, 12 protokol ve 10 kontrolcü testi ile pin denetimi geçti. Kontrolcü testindeki eski prefix beklentisi doğrulanan manifestten okunuyor. 224 frontend, 469 Rust testi, biçim ve iki derleme geçti. Mevcut sekiz Responses senaryosu ve native kullanım okuyucusu ayrıca geçti. Motorlar normal kapandı.
+- **45/54 ve H041-e3 açık.** Gerçek hesapla eşlenmiş kalite ve tüm sağlayıcı kullanımının kabulü bekliyor. Model/efor ve kota kapsamı gerçek koşudan önce sabitlenir. Kuralın yerel önizleme kapsamı sürer. Windows 11, diğer OS ve yayın kabulü bu dilimde yapılmadı. Geliştirme sohbeti tasarrufu ölçülmedi.
+
 ## H041-e3 — kontrollü üretici ve yerel karşılaştırma tamamlandı
 
 - Ana ajan çıktı sahipliğini ve ölçüm sözleşmesini üstlendi. Aynı gerçek alt süreçten ayrı stdout/stderr/exit yakalandı. Üç yeni 0.44.0 motorunda 15 eşlenmiş karşılaştırma, 90 istemci isteği ve 93 loopback gönderimi geçti. 36 yerel geri alım ve üç CCR devam isteği özgün stdout'u birebir korudu. Sıfır olmayan çıkış, stderr uyarısı, kesin sayısal Read ve çağrı kimliği doğrulandı. [Kanıt](proofs/rules-producer-comparison.json).

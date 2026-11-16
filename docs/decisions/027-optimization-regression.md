@@ -127,6 +127,16 @@ Ana ajan, sağlayıcı kotası kullanılmadan önce kuralın gerçek istemci ç�
 
 Kuralın genel ek kazanç eşiği geçilmedi. Yerel önizleme kapsamı korunur. Canlı pilot için geri çağrının gerçekten gerektiği ve gerekmediği görevler ayrı değerlendirilir. Karşılaştırma, istemcinin özgün kanalları ve çağrı kapsamını doğrulayabilen sınırlı bir yola bağlanır. Eşlenmiş görevler, beklenen kesin sonuçlar, cache koşulları, kaynak eşikleri ve kullanım sınırı ilk gerçek istekten önce sabitlenir. Standart CLI'nin birleşik çıktıları önceki bulgudaki gibi kapsam dışında kalır. Gerçek görev kalitesi ve tüm sağlayıcı kullanımının ölçümü H041-e3'te açık.
 
+#### H041-e3 izole MCP yolu ve Responses kullanım düzeltmesi
+
+`bench/optimization/rules_pilot.py` kurulu Codex CLI'yi yeni, auth içermeyen bir profilde sahipli 0.44.0 motora bağlar. Salt okunur MCP aracı modelden komut veya yol almaz. Sabit alt süreç stdout, stderr ve çıkış kodunu ayrı üretir. Eşlenmiş kollar aynı araç, model etiketi ve eforla çalışır. Tam sayım ve başarısız komut için beklenen yanıtlar test kodunda sabittir. Akışın karşı ucu yerel yanıt üretir. Gerçek görev kalitesi ve sağlayıcı kullanımı açık kalır.
+
+İlk koşuda dört CLI oturumunun sekiz isteği `/stats` içinde göründü. Özel kullanım kaydı sekizinde de boş kaldı. Gecikmeli `[DONE]` ile yapılan karşılaştırmada, akışı sonuna kadar okuyan istemci için kayıt oluştu. `response.completed` sonrasında bağlantıyı kapatan istemci için kayıt düşüyordu. Motorun gerçek istek kimliği cleanup beklenmeden eşlendi. Responses HTTP/SSE için upstream yanıt kimliği ve doğrulanmış tamamlanma verisiyle kapsanan sayaçlar cleanup iptalinden sonra saklanır. Eksik tamamlanma, çelişen kimlik ve kesilen kayıt bütçesi bu özel yola girmez. Başarısız tekrar ve eksik sayaçlarda toplamın bilinmiyor kalma sözleşmesi korunur.
+
+Son adayda iki kapanış türü ve dört CLI oturumunda **10/10 istek** kullanım kaydıyla eşleşti. JSON yanıtı ve çağrı kimliği, eksik cache yazmanın bilinmiyor kalması ve üç CCR geri alımı doğrulandı. Sekiz mevcut Responses senaryosu ve native okuyucu → SQLite → istek ayrıntısı da geçti. [Kanıt](../proofs/responses-terminal-usage.json).
+
+Canlı e3 koşusu için ilk eşlenmiş çift, kullanıcının seçtiği model/efor ve yetkilendirdiği mevcut hesapla aynı salt okunur aracı ve motor ayarını kullanır. İki kolun normal çıkışı, sabit yanıt kontrolü ve tüm gerçek istek kimlikleri doğrulanır. Bu ön kabul geçerse bağımsız görevler soğuk ve sıcak koşullarda en az üçer çiftle ölçülür. Cache durumu sağlayıcı sayacıyla belgelenir. Birincil ve devam istekleri ile tekrarlar toplanır. Eksik sayaçla özet üretilmez ve ilk koşunun sonucu genel etkinleştirme kabulü sayılmaz. Yerel sonuçtaki genel fayda eşiği ve e4 sırası korunur.
+
 ### H041-b yerel deney koşulları
 
 Ana ajan ölçüm, runtime ve cache sözleşmesi nedeniyle deney ve kabulü üstlenir. `bench/optimization/ccr-policy-plan.json` iki eşlenmiş tekrarı önceden belirler. Her tekrarda iki ayrı motor kullanılır. Bir oturum üç kısa istekten oluşur. İkincisi üç kısa istekten sonra sıkıştırılabilir uzun log ve korumalı kesin sayısal bir Read sonucu alır. Ayrı temiz oturumdaki kısa istek, yapışkan aracın başka oturuma taşınmadığını denetler. Tüm istekler izole Anthropic SSE fixture'ına gider.

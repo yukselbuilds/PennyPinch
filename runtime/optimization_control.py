@@ -81,6 +81,10 @@ class UsageTrace:
         self.attempts.append(attempt)
         return attempt
 
+    def has_verified_responses_stream_usage(self) -> bool:
+        return (self.surface == "openai_responses" and not self.truncated and bool(self.attempts)
+                and all(attempt.get("_verified_responses_terminal") is True for attempt in self.attempts))
+
     def snapshot(self, status: int | None) -> dict:
         usage = {}
         for name in USAGE_FIELDS:
@@ -92,8 +96,10 @@ class UsageTrace:
         usage["total_input_tokens"] = (_sum_known([usage[name] for name in USAGE_FIELDS[:3]])
                                         if self.surface == "anthropic_messages" else usage["input_tokens"])
         usage["total_tokens"] = _sum_known([usage["total_input_tokens"], usage["output_tokens"]])
+        attempts = [{key: copy.deepcopy(value) for key, value in attempt.items() if key != "_verified_responses_terminal"}
+                    for attempt in self.attempts]
         result = {"surface": self.surface, "request_id": self.request_id, "client_status": status, "truncated": self.truncated,
-                  "attempts": copy.deepcopy(self.attempts), "usage": usage}
+                  "attempts": attempts, "usage": usage}
         if self.surface == "openai_responses_ws":
             result["failed"] = self.failed
         return result
@@ -210,10 +216,13 @@ async def _observe_responses_sse(chunks, attempt, parse_events):
                             raise ValueError()
                         stopped = True
                         attempt["usage"] = _responses_usage(value)
+                        # Codex can close after this event, before the optional [DONE] or HTTP EOF.
+                        attempt["_verified_responses_terminal"] = bool(response_id) and attempt["usage"] is not None
             except (ValueError, RecursionError):
                 invalid = True
                 buffer.clear()
                 attempt["usage"] = None
+                attempt.pop("_verified_responses_terminal", None)
         yield chunk
 
 
@@ -336,6 +345,15 @@ def _install_usage(proxy, gate, parse_events, response_not_read):
                 state.usage = None
             elif ledger is not None:
                 trace = ledger.take()
+        if trace is not None:
+            # The engine can log the outcome and then be cancelled during stream cleanup.
+            request_id = outcome.request_id
+            if not isinstance(request_id, str) or not re.fullmatch(r"hr_[0-9]{1,20}_[0-9]{6,20}", request_id):
+                trace.conflicting_ids = True
+            elif trace.request_id is None:
+                trace.request_id = request_id
+            elif trace.request_id != request_id:
+                trace.conflicting_ids = True
         try:
             await record_outcome(outcome)
         except BaseException:
@@ -344,13 +362,6 @@ def _install_usage(proxy, gate, parse_events, response_not_read):
             raise
         if trace is None:
             return
-        request_id = outcome.request_id
-        if not isinstance(request_id, str) or not re.fullmatch(r"hr_[0-9]{1,20}_[0-9]{6,20}", request_id):
-            trace.conflicting_ids = True
-        elif trace.request_id is None:
-            trace.request_id = request_id
-        elif trace.request_id != request_id:
-            trace.conflicting_ids = True
         if websocket and trace.request_id and not trace.conflicting_ids:
             with gate.lock:
                 gate.usage_records.append(trace.snapshot(None))
@@ -779,7 +790,8 @@ class ControlMiddleware:
             with self.gate.lock:
                 if counted: self.gate.active_http -= 1
                 usage = state.usage
-                if (completed and status is not None and usage is not None
+                if (status is not None and usage is not None
+                        and (completed or 200 <= status < 300 and usage.has_verified_responses_stream_usage())
                         and usage.request_id and not usage.conflicting_ids and usage.attempts):
                     self.gate.usage_records.append(usage.snapshot(status))
             _request.reset(token)

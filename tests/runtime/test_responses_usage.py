@@ -1,4 +1,5 @@
 """Responses counters and byte-preserving observation; no account or model calls."""
+import asyncio
 import importlib.util
 import json
 from pathlib import Path
@@ -173,6 +174,56 @@ class ResponsesUsageTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn(b"UNRESOLVED_CALL", messages[1]["body"])
         self.assertIn("error", json.loads(messages[1]["body"]))
         self.assertEqual(gate.active_http, 0)
+
+    async def test_completed_responses_usage_survives_cancelled_cleanup(self):
+        created = event("response.created", response=response(status="in_progress", usage=None))
+        terminal = event("response.completed", response=response())
+        scope = {"type": "http", "method": "POST", "path": "/v1/responses", "headers": []}
+        for raw, conflicting, truncated, expected in (
+            (created + terminal, False, False, True),
+            (created, False, False, False),
+            (terminal, False, False, False),
+            (created + terminal + terminal, False, False, False),
+            (created + terminal, True, False, False),
+            (created + terminal, False, True, False),
+        ):
+            with self.subTest(expected_record=expected, conflicting=conflicting, truncated=truncated):
+                async def interrupted(_outcome):
+                    raise asyncio.CancelledError
+
+                gate = SimpleNamespace(enabled=True, lock=threading.RLock(), active_http=0, usage_records=deque())
+                proxy = SimpleNamespace(startup=None, _record_request_outcome=interrupted)
+                control._install_usage(proxy, gate, parser.parse_sse_events_from_byte_buffer, httpx.ResponseNotRead)
+
+                async def app(_scope, _receive, send):
+                    trace = control._request.get().usage
+                    trace.truncated = truncated
+                    if conflicting:
+                        trace.request_id = "hr_1_000002"
+                    attempt = trace.begin_attempt()
+                    attempt["status"] = 200
+
+                    async def chunks():
+                        yield raw
+
+                    async for _ in control._observe_responses_sse(chunks(), attempt, parser.parse_sse_events_from_byte_buffer):
+                        pass
+                    await send({"type": "http.response.start", "status": 200, "headers": []})
+                    await proxy._record_request_outcome(SimpleNamespace(request_id="hr_1_000001"))
+
+                async def send(_message):
+                    pass
+
+                with self.assertRaises(asyncio.CancelledError):
+                    await control.ControlMiddleware(app, gate=gate)(scope, None, send)
+                self.assertEqual(gate.active_http, 0)
+                if expected:
+                    self.assertEqual(len(gate.usage_records), 1)
+                    recorded = gate.usage_records[0]
+                    self.assertEqual(recorded["request_id"], "hr_1_000001")
+                    self.assertEqual(recorded["attempts"], [{"status": 200, "usage": control._responses_usage(response())}])
+                else:
+                    self.assertFalse(gate.usage_records)
 
 
 if __name__ == "__main__":

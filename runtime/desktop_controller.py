@@ -44,7 +44,7 @@ PINNED_EXPECTED = {
     "site_packages": "Lib/site-packages",
     "prefix_tracker_sha256": "29c7d63d8b63ed3dc4906bd3762ff672f5941947f8f8803180c5d1f13a8bbec0",
     "shim_sha256": "9e47ad68053289d7d02ec942927d5f0c2d14e9d09a867333211f24646f371a8b",
-    "optimization_sha256": "03b46c263d839ba29ffdf3a399367b75261ab73d376fc3bf90220b074e0df27f",
+    "optimization_sha256": "2f550b2549c026286f230610743df63e93062c18cb5f04e354c0efdd66aec46e",
     "optimization_sources_sha256": "d46b875b93c16b2ad27dc44b0537652d99fd6b6981283e05ad3b7ddb00164a3f",
 }
 ERROR_CODES = frozenset(
