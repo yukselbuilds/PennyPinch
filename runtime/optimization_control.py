@@ -53,6 +53,7 @@ class RequestState:
     responses_ccr_failed: bool = False
     ws_usage: WebSocketUsage | None = None
     explicit_session: bool = False
+    skip_anthropic_generated_marker: bool = False
 
 
 def _token_count(value):
@@ -788,8 +789,10 @@ def install(generation: str, secret: str) -> dict[str, str]:
     import httpx
     import headroom._version
     import headroom.cache.prefix_tracker as prefix
+    import headroom.proxy.helpers as helpers
     import headroom.proxy.handlers.openai as openai
     import headroom.proxy.server as server
+    from cache_control_shim import _has_client_markers
     from headroom.config import DEFAULT_BYTE_EXACT_EXCLUDE_TOOLS, DEFAULT_EXCLUDE_TOOLS, DEFAULT_VERBATIM_EXCLUDE_TOOLS, is_tool_excluded
     from headroom.proxy.sse_byte_buffer_policy import parse_sse_events_from_byte_buffer
 
@@ -804,6 +807,7 @@ def install(generation: str, secret: str) -> dict[str, str]:
     original_create = server.create_app
     original_resolve = prefix.SessionTrackerStore.resolve_tracker
     original_normalize = prefix.normalize_message_cache_control
+    original_read = helpers.read_request_json_with_bytes
     original_payload = openai.OpenAIHandlerMixin._compress_openai_responses_payload
     original_executor = openai.OpenAIHandlerMixin._compress_openai_responses_payload_in_executor
     original_ws_usage = openai._extract_responses_usage
@@ -831,18 +835,32 @@ def install(generation: str, secret: str) -> dict[str, str]:
             state.previous = (tracker.get_last_original_messages(), tracker.get_last_forwarded_messages())
         return tracker
 
+    async def read_request(request):
+        body, raw = await original_read(request)
+        state = _request.get()
+        if (state is not None and state.kind == "anthropic" and not state.bypass
+                and len(raw) <= helpers.request_limit_policy.COMPRESSION_BODY_MAX_BYTES):
+            # An automatic directive owns the final eligible block and uses a breakpoint slot.
+            state.skip_anthropic_generated_marker = isinstance(body.get("cache_control"), dict) or (
+                helpers.count_cache_breakpoints(body.get("system"), body.get("messages"), body.get("tools"))["total"] >= 4
+            )
+        return body, raw
+
     def normalize(messages, previous_forwarded_messages=None, client_messages=None):
         state = _request.get()
-        if state is not None and state.kind == "anthropic" and not state.enabled and not state.bypass:
-            try:
-                messages = _preserve(client_messages or [], messages, state.previous, prefix)
-            except ReplayUnavailable:
-                state.replay_failed = True
-                with state.gate.lock: state.gate.history_safe = False
-                raise
-            from cache_control_shim import _has_client_markers
-            if state.previous and state.previous[0] and not _has_client_markers(client_messages):
-                # Keep the prior generated breakpoint during pause; do not move it onto a fresh tail.
+        if state is not None and state.kind == "anthropic" and not state.bypass:
+            if not state.enabled:
+                try:
+                    messages = _preserve(client_messages or [], messages, state.previous, prefix)
+                except ReplayUnavailable:
+                    state.replay_failed = True
+                    with state.gate.lock: state.gate.history_safe = False
+                    raise
+            paused_prefix = not state.enabled and state.previous and state.previous[0]
+            if (state.skip_anthropic_generated_marker or paused_prefix) and not _has_client_markers(client_messages):
+                if state.skip_anthropic_generated_marker:
+                    # Drop a generated marker carried forward by replay before the request is recorded.
+                    return prefix.mirror_client_message_cache_control(messages, client_messages)
                 return messages
         return original_normalize(messages, previous_forwarded_messages, client_messages)
 
@@ -943,6 +961,7 @@ def install(generation: str, secret: str) -> dict[str, str]:
     create.__desktop_control__ = True
     prefix.SessionTrackerStore.resolve_tracker = resolve
     prefix.normalize_message_cache_control = normalize
+    helpers.read_request_json_with_bytes = read_request
     openai.OpenAIHandlerMixin._compress_openai_responses_payload = payload
     openai.OpenAIHandlerMixin._compress_openai_responses_payload_in_executor = executor
     openai._dedup_responses_output_items = defer_responses_repeat

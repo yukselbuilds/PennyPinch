@@ -36,6 +36,16 @@ Odaklı protokol testleri, gerçek motorun HTTP/WebSocket girdileri ve CCR regre
 
 Yerel kabul geçti. Aynı fixture her iki taşıma yolunda 405 → 307 o200k_base girdi tokenına indi (%24,20). 52 gönderim, iki çağrı kimliği çakışması sonrası özgün çıktı, üç birebir CCR geri alması ve aktif stream duraklatma kontrolleri geçti. [Doğrulama kaydı](../proofs/responses-repeat-safety.json).
 
+### Anthropic otomatik cache işareti
+
+Ana ajan protokol ve sayaç sahipliğini üstlenir. Sabit 0.44.0 motorun eklediği blok işareti, istemcinin blok işaretleri ve üst düzey Anthropic `cache_control` ayrı gözlenir. Düz metin bloklarıyla kısa ekleme, 19 ve 20 konum sınırı ve daha uzun ekleme eşlenir. Önceki gönderinin içeriği, işaretin konumu ve önceki cache yazısına belgelenen erişim aralığı ayrı ölçülür. [Anthropic prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#explicit-cache-breakpoints).
+
+- Aynı isteklerde açık önceki ve yeni işaretler, model, auth, içerik, TTL ve cache taşıyıcıları korunur. İstemcinin üst düzey cache alanına veya dolu dört işaret bütçesine Headroom işaretinin eklenip eklenmediği gerçek upstream gövdesinde denetlenir. Aynı oturumdaki önceki otomatik işaret ve duraklatma akışı kapsamdadır.
+- JSON ve SSE fixture kullanımı motorun özel kullanım kaydına bağlanır. Okuma ve yazma sayaçları fixture yanıtından gelir. Konum mesafesi sağlayıcının cache sayacını veya faturayı temsil etmez.
+- Çakışma doğrulanırsa yalnız Headroom'un ürettiği ek işaretin sahipliği düzeltilir. Özel bir uzun-oturum cache politikası canlı okuma ve yazma ölçümü bekler. Mevcut CCR, duraklatma ve açık istemci işaretleri regresyon koşularıyla sınanır. Son ürün adayı yerel kalite kapısından geçer.
+
+Yerel kabul geçti. 24 eşlenmiş istek iki blok bütçesi çakışmasını ve bir üst düzey 1h çakışmasını yeniden üretti. Son adayda üçü de giderildi. Önceki çıplak içerik ve açık işaretler ile JSON/SSE yanıtından gelen kullanım korunuyor. Düz metin dizisinde önceki yazma noktası 19 konumda erişilebilir kaldı. 20 ve 22 konumluk eklemede önceki noktayı açık istemci işareti erişilebilir tuttu. Canlı cache isabeti ve fatura ölçümü açık. [Yerel doğrulama](../proofs/anthropic-cache-markers.json).
+
 ### Context Mode / Context Diet pilotu
 
 16 Kasım'da kullanıcı isteğiyle iki aday model çağrısı olmadan, ayrı süreç ve state köklerinde sınandı. Billion Context kapsam dışındadır. Deney; 14 stdout/stderr/exit çıktısını üç kez Headroom, Diet → Headroom ve Mode → Headroom yollarından geçirdi. Üç ek JSON sorgu örneğinde metin ve kesin sayılar karşılaştırıldı. [Plan](../../bench/context_tools/README.md), [kabul ve sınırlar](../proofs/context-tools-pilot.md).

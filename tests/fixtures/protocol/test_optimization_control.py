@@ -249,10 +249,12 @@ class PauseTests(unittest.TestCase):
     def test_executor_timeout_disables_pause_and_cannot_fail_open_while_paused(self):
         import cache_control_shim
         import headroom.proxy.handlers.openai as openai
+        import headroom.proxy.helpers as helpers
         import headroom.proxy.server as server
         async def timeout(*args, **kwargs): raise TimeoutError()
         attributes = [(server, "create_app"), (prefix.SessionTrackerStore, "resolve_tracker"),
                       (prefix, "normalize_message_cache_control"),
+                      (helpers, "read_request_json_with_bytes"),
                       (openai, "_dedup_responses_output_items"), (openai, "_extract_responses_usage"),
                       (openai.OpenAIHandlerMixin, "_compress_openai_responses_payload"),
                       (openai.OpenAIHandlerMixin, "_compress_openai_responses_payload_in_executor")]

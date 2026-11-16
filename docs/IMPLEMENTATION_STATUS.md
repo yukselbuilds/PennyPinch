@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041 — Anthropic otomatik cache işareti yerel dilimi tamamlandı
+
+- Ana ajan protokol ve ölçüm sahipliğini üstlendi. Sabit 0.44.0 motorun 24 eşlenmiş isteğinde iki dört-işaret örneği 5 → 4 işarete indi. Üst düzey 1h cache talebinde aynı son bloğa eklenen varsayılan işaret kaldırıldı. Açık istemci işaretleri ve kullanım sayaçlarının yanıt kaynağı korundu. [Kanıt](proofs/anthropic-cache-markers.json).
+- Düz metin örneğinde 19 konumluk eklemede önceki yazma noktası tarama aralığında kaldı. 20 ve 22 konumda açık önceki işaret yazma noktasını erişilebilir tuttu. Uzun eklemeye otomatik ikinci işaret ekleme kararı canlı cache kanıtını bekliyor.
+- Windows 10'da CCR, aktif SSE duraklatma, altı Anthropic sayaç senaryosu, 52 Responses gönderimi ve Chat JSON geçti. 12 odaklı ve 18 kullanım Python testi, 223 frontend, 467 Rust testi ve iki derleme geçti.
+- **45/54 ve ana H041 açık.** Sıradaki yerel dilim güvenli hedefli sorgu adayı. Canlı cache, fatura ve başka işletim sistemleri bu değişiklik için doğrulanmadı. Geliştirme sohbetinin token tasarrufu ölçülmedi.
+
 ## H041 — Responses tekrar referansı yerel dilimi tamamlandı
 
 - Ana ajan çağrı kimliği ve gönderilen geçmişin güvenliğini üstlendi. Responses tam tekrarı aynı açık oturumda aynı araç ve argümanla dönen ham önceki çıktıya, çağrı kimliğiyle bağlanır. Belirsiz parça eşleşmesi kapanır. Duraklatma geçerli önceki referansı korur. Yeni bir çakışma varsa özgün çıktı geri gelir.

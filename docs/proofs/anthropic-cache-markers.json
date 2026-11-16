@@ -1,0 +1,114 @@
+{
+  "status": "local_windows_10_pass",
+  "task": "H041",
+  "checked_on": "2026-11-16",
+  "os": "Windows-10-10.0.19045-SP0",
+  "engine": "0.44.0",
+  "contract_source": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+  "matched_requests": {
+    "baseline": 24,
+    "candidate": 24
+  },
+  "graceful_comparison_engine_stops": 2,
+  "four_client_markers_total": [
+    {
+      "system_or_tools_case_turn": 2,
+      "baseline": 5,
+      "candidate": 4
+    },
+    {
+      "system_or_tools_case_turn": 3,
+      "baseline": 5,
+      "candidate": 4
+    }
+  ],
+  "native_one_hour_with_legacy_marker": {
+    "baseline": 1,
+    "candidate": 0
+  },
+  "previous_write_reachable_in_documented_window_by_appended_text_block_count": {
+    "2": {
+      "legacy": true,
+      "client_blocks": true
+    },
+    "19": {
+      "legacy": true,
+      "client_blocks": true
+    },
+    "20": {
+      "legacy": false,
+      "client_blocks": true
+    },
+    "22": {
+      "legacy": false,
+      "client_blocks": true
+    }
+  },
+  "comparison_invariants": [
+    "Model and valid fixture auth route",
+    "Thinking configuration",
+    "Client message, tool and system contents",
+    "Top-level and explicit client directives",
+    "Synthetic upstream counters and attempt identity"
+  ],
+  "usage": {
+    "source": "synthetic_upstream_json_and_sse_response_fields",
+    "records_compared": 48,
+    "native_anthropic_scenarios": 6
+  },
+  "regressions": {
+    "active_pause_and_ccr_scenarios": 3,
+    "responses_repeat_requests": 52,
+    "chat_json_scenarios": 1
+  },
+  "local_gate": {
+    "protocol_python_tests": 12,
+    "usage_python_tests": 18,
+    "frontend_tests": 223,
+    "rust_tests": 467,
+    "rust_opt_in_skipped": 24,
+    "format_pass": true,
+    "frontend_build_pass": true,
+    "native_build_pass": true
+  },
+  "verified_current_input_count": 449,
+  "overlay_sha256": "03b46c263d839ba29ffdf3a399367b75261ab73d376fc3bf90220b074e0df27f",
+  "artifacts": {
+    "baseline": {
+      "path": "work/proofs/optimization/anthropic-cache-markers/baseline-14a2244b82ad4e5389b4462bd05050d4/result.json",
+      "sha256": "d9bdd3e8fe3714ae1c124eb9c1b916fce2567de8f6f709569200731079cc8db0"
+    },
+    "candidate": {
+      "path": "work/proofs/optimization/anthropic-cache-markers/candidate-b2ee096721d64d879644493f0e7d2c8e/result.json",
+      "sha256": "9be78d8d5a86001b8b11a4df564a2de46acab2371e3b6fa03bc0c7753c774daa"
+    },
+    "focused": {
+      "path": "work/proofs/optimization/anthropic-cache-markers/verification-b5ad38cad9/focus-298abec668.json",
+      "sha256": "26df3085b25419e3501f93287ebfe2da40eb0bb24a8743b9993bc4c31f9a021e"
+    },
+    "gate": {
+      "path": "work/proofs/optimization/anthropic-cache-markers/verification-b5ad38cad9/gate-afef4839d9.json",
+      "sha256": "26c128a16974ae824d18542b4e78ecdf5303c5fdac5530bc724d12c5fec0eca7"
+    },
+    "anthropic_native_usage": {
+      "path": "work/proofs/optimization/desktop-anthropic-usage/9c601c7e-ebf2-4c2e-a5f1-f9894e86f150/result.json",
+      "sha256": "6a196ccdc85833101ba51c10fef5bbeac8615196ee2d97c2081ea8b3490c5aaf"
+    },
+    "paused_active_stream_and_ccr": {
+      "path": "work/proofs/pause/runs/4b134d0f-f794-4828-8b9a-e5830e64abae/result.json",
+      "sha256": "358656b5fc163b65a3ea531074f0f462983253687e7ec985b0adcb773cc0df6c"
+    },
+    "responses_repeat": {
+      "path": "work/proofs/optimization/responses-repeat/d6ed9ce5-cbed-44da-8cf0-0c8c1fae3cd4/result.json",
+      "sha256": "ed9561069150d537dbea8807403359a052a9d092e538388543ecc65857b34190"
+    },
+    "chat_json": {
+      "path": "work/proofs/optimization/desktop-chat-usage/a3826d67-216a-4ffc-b5b9-b88fd713d0e1/result.json",
+      "sha256": "47149c93751bc973bab393492417e635eaaaf6bd7e01b308d4e8cb7271fe16bb"
+    }
+  },
+  "long_turn_automatic_anchor": "No new policy. The documented window comparison uses plain text blocks without a live provider.",
+  "live_provider_model_quality_cache_and_billing": "not_tested",
+  "windows_11_macos_linux": "not_tested_for_this_change",
+  "paid_model_calls": 0
+}
