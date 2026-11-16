@@ -787,12 +787,14 @@ async fn preview_learn(
     window: tauri::WebviewWindow,
     state: tauri::State<'_, RuntimeManager>,
     preferences: tauri::State<'_, PreferenceStore>,
+    archive: tauri::State<'_, runtime::learn::ReplayStore>,
     turkish: bool,
     experimental_rules: Option<bool>,
 ) -> Result<runtime::learn::Preview, ()> {
     #[cfg(windows)]
     {
         let runtime = state.inner().clone();
+        let archive = archive.inner().clone();
         let preference_gate = experimental_rules
             .unwrap_or_default()
             .then(|| preferences.inner().clone());
@@ -803,16 +805,73 @@ async fn preview_learn(
             return Ok(runtime::learn::Preview::Unavailable);
         };
         Ok(tauri::async_runtime::spawn_blocking(move || {
-            runtime::learn::select(&runtime, owner, turkish, preference_gate.as_ref())
+            runtime::learn::select(&runtime, owner, turkish, preference_gate.as_ref(), &archive)
         })
         .await
         .unwrap_or(runtime::learn::Preview::Failed))
     }
     #[cfg(not(windows))]
     {
-        let _ = (window, state, preferences, turkish, experimental_rules);
+        let _ = (
+            window,
+            state,
+            preferences,
+            archive,
+            turkish,
+            experimental_rules,
+        );
         Ok(runtime::learn::Preview::Unavailable)
     }
+}
+
+#[tauri::command]
+async fn replay_rules(
+    window: tauri::WebviewWindow,
+    state: tauri::State<'_, RuntimeManager>,
+    preferences: tauri::State<'_, PreferenceStore>,
+    archive: tauri::State<'_, runtime::learn::ReplayStore>,
+    replay_id: String,
+) -> Result<runtime::learn::Preview, ()> {
+    #[cfg(windows)]
+    {
+        let Some(owner) = (window.label() == "main")
+            .then(|| picker_owner_handle(&window))
+            .flatten()
+        else {
+            return Ok(runtime::learn::Preview::Unavailable);
+        };
+        let (runtime, preferences, archive) = (
+            state.inner().clone(),
+            preferences.inner().clone(),
+            archive.inner().clone(),
+        );
+        Ok(tauri::async_runtime::spawn_blocking(move || {
+            runtime::learn::replay(&runtime, owner, &replay_id, &preferences, &archive)
+        })
+        .await
+        .unwrap_or(runtime::learn::Preview::Failed))
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = (window, state, preferences, archive, replay_id);
+        Ok(runtime::learn::Preview::Unavailable)
+    }
+}
+
+#[tauri::command]
+fn release_rule_preview(
+    window: tauri::WebviewWindow,
+    archive: tauri::State<'_, runtime::learn::ReplayStore>,
+    replay_id: String,
+) {
+    #[cfg(windows)]
+    if window.label() == "main" {
+        if let Some(owner) = picker_owner_handle(&window) {
+            archive.release(owner, &replay_id);
+        }
+    }
+    #[cfg(not(windows))]
+    let _ = (window, archive, replay_id);
 }
 
 fn main() {
@@ -877,6 +936,7 @@ fn main() {
             app.manage(overview);
             app.manage(export::report::ReportManager::default());
             app.manage(runtime::recovery::RecoveryManager::default());
+            app.manage(runtime::learn::ReplayStore::default());
             app.manage(compatibility::catalog::CatalogManager::default());
             app.manage(desktop::lifecycle::Lifecycle::default());
             app.manage(desktop::autostart::Autostart::new());
@@ -929,6 +989,8 @@ fn main() {
             remember_installation_choice,
             select_client_file,
             preview_learn,
+            replay_rules,
+            release_rule_preview,
             preview_connection_plan,
             apply_connection_plan,
             undo_connection,

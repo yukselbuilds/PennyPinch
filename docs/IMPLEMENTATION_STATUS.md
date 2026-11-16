@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041-e2 — korumalı yerel kural/replay tamamlandı
+
+- Ana ajan özgün baytların sahipliğini ve ölçüm sınırını üstlendi. Deneysel kurallar → Yerelde dene, seçilmiş dosyanın bellekteki kopyasında ilk log tekrarı kuralını ve tersini çalıştırır. Kayıt en fazla 16 MiB; erişimi 15 dakika ve ana pencere/uygulama ömrüyle sınırlı. Canlı trafiğe kural uygulanmaz. [Kanıt](proofs/experimental-rules-replay.json).
+- Windows 10 gerçek Tauri penceresinde 17 kontrol geçti. Dosya sonradan değiştirilse de özgün kopya kullanıldı; yeni seçim eski kimliği geçersiz kıldı, yanlış kimlik ve kapalı tercih reddedildi. Belirsiz Claude kanalları ve hata/kaynak çıktıları korundu. Test penceresi normal kapandı; asıl uygulama state'i birebir geri yüklendi. Model çağrısı yapılmadı.
+- Altı Learn testi, bir odaklı arşiv testi, 224 frontend ve 469 Rust testi, biçim ve iki derleme geçti. İki görsel incelendi; Türkçe/açık ve İngilizce/koyu Learn erişilebilirlik taramalarında sıfır ihlal var. Sentetik örnekte yalnız uygun stdout 18.500 → 99 bayt; sağlayıcı token tasarrufu değildir.
+- **45/54 ve ana H041 açık.** TASKS'ta e2 tamamlandı. Sıradaki e3: önceden sabitlenmiş bağımsız görevlerde aynı model/efor/izinlerle gerçek kalite ve tüm çağrıları kapsayan kullanım kabulü. Ücretsiz erişim/ölçüm bulunmadığında bu kabul açık kalır. Etkinleştirme e4'te. Windows 11/diğer OS ve yayın kabulü bu dilimde yapılmadı. Geliştirme sohbeti token tasarrufu ölçülmedi.
+
 ## H041-e1 — kapalı varsayılan ve yerel önizleme tamamlandı
 
 - Ana ajan kalıcı tercih ve native dosya erişimi kabulünü üstlendi. Ayarlar → Learn altında bağımsız Deneysel kurallar anahtarı, kapalı varsayılan ve kural adayı önizlemesi eklendi. Eski kayıt eksik alanı kapalı okur. Dil/tema, çalışma ayarları ve yerel öneriler kaydı tercihi korur. [Kanıt](proofs/experimental-rules-preview.json).

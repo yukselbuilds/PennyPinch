@@ -1,5 +1,6 @@
 """Summarize one user-selected tool transcript without invoking an analyzer."""
 
+import hashlib
 import json
 import re
 import sys
@@ -8,6 +9,8 @@ from pathlib import Path
 
 MAX_BYTES = 16 * 1024 * 1024
 MAX_RECORDS = 64_000
+MAX_REPLAY_OUTPUT = 1024 * 1024
+LOG_LINE = re.compile(r"^(?:INFO|DEBUG|TRACE|WARN|WARNING|ERROR|FATAL|SUMMARY)\b")
 # Codex puts the process status before the output. A string printed by the
 # command itself is not evidence of a failed process.
 CODEX_EXIT = re.compile(
@@ -150,36 +153,40 @@ def read_runs(records, source):
         yield run, False
 
 
-def preview(raw):
+def read_transcript(raw):
     if len(raw) > MAX_BYTES:
-        return {"status": "too_large"}
+        raise OverflowError()
+    lines = raw.decode("utf-8-sig").split("\n", MAX_RECORDS + 1)
+    if len(lines) - int(lines[-1] == "") > MAX_RECORDS:
+        raise OverflowError()
+    records = [(number, json.loads(line)) for number, line in enumerate(lines, 1) if line.strip()]
+    if any(not isinstance(record, dict) for _, record in records):
+        raise ValueError()
+    codex_sessions = {
+        object_or_empty(record.get("payload")).get("id")
+        for _, record in records
+        if record.get("type") == "session_meta"
+        and isinstance(object_or_empty(record.get("payload")).get("id"), str)
+    }
+    claude = any(
+        record.get("type") in ("assistant", "user")
+        and isinstance(record.get("sessionId"), str)
+        and isinstance(record.get("message"), dict)
+        for _, record in records
+    )
+    if len(codex_sessions) > 1 or bool(codex_sessions) == claude:
+        raise ValueError()
+    return records, "codex" if codex_sessions else "claude_code"
+
+
+def preview(raw):
     try:
-        lines = raw.decode("utf-8-sig").split("\n", MAX_RECORDS + 1)
-        if len(lines) - int(lines[-1] == "") > MAX_RECORDS:
-            return {"status": "too_large"}
-        records = [(number, json.loads(line)) for number, line in enumerate(lines, 1) if line.strip()]
-        if any(not isinstance(record, dict) for _, record in records):
-            return {"status": "invalid_file"}
-        codex_sessions = {
-            object_or_empty(record.get("payload")).get("id")
-            for _, record in records
-            if record.get("type") == "session_meta"
-            and isinstance(object_or_empty(record.get("payload")).get("id"), str)
-        }
-        claude = any(
-            record.get("type") in ("assistant", "user")
-            and isinstance(record.get("sessionId"), str)
-            and isinstance(record.get("message"), dict)
-            for _, record in records
-        )
-        if len(codex_sessions) > 1 or bool(codex_sessions) == claude:
-            return {"status": "invalid_file"}
+        records, source = read_transcript(raw)
 
         # Load the exact runtime's detector without its scanners or LLM analyzer.
         from headroom.learn.loops import DEFAULT_MIN_OCCURRENCES, detect_loops
         from headroom.learn.models import SessionData
 
-        source = "codex" if codex_sessions else "claude_code"
         calls, recoveries = Counter(), Counter()
         first_lines = {}
         for run, recovered in read_runs(records, source):
@@ -195,7 +202,97 @@ def preview(raw):
             {"kind": kind, "failures": count, "recoveries": recoveries[kind], "first_line": first_lines[kind]}
             for kind, count in sorted(calls.items())
         ]}
+    except OverflowError:
+        return {"status": "too_large"}
     except (ValueError, RecursionError):
+        return {"status": "invalid_file"}
+
+
+def replay_items(records, source):
+    codex_scope = next((object_or_empty(record.get("payload")).get("id") for _, record in records
+                        if record.get("type") == "session_meta"), None)
+    for _, record in records:
+        if source == "codex":
+            if record.get("type") != "response_item":
+                continue
+            item = object_or_empty(record.get("payload"))
+            kind = item.get("type")
+            if kind not in ("function_call", "function_call_output", "custom_tool_call", "custom_tool_call_output"):
+                continue
+            yield codex_scope, item.get("call_id"), kind.endswith("output"), item
+        elif record.get("type") in ("assistant", "user"):
+            for item in object_or_empty(record.get("message")).get("content", []):
+                if isinstance(item, dict) and item.get("type") in ("tool_use", "tool_result"):
+                    result = item["type"] == "tool_result"
+                    yield record.get("sessionId"), item.get("tool_use_id" if result else "id"), result, item
+
+
+def local_replay(raw):
+    """Try one reviewed transformation, then compare its inverse before counting bytes."""
+    try:
+        records, source = read_transcript(raw)
+        from headroom.transforms.lossless_compaction import collapse_runs, expand_runs
+
+        calls, outputs, ambiguous = {}, {}, set()
+        unowned = 0
+        for scope, identity, result, item in replay_items(records, source):
+            if not isinstance(scope, str) or not scope.strip() or not isinstance(identity, str) or not identity:
+                unowned += int(result)
+                continue
+            key = scope, identity
+            if result and key not in calls:
+                ambiguous.add(key)
+            entries = outputs if result else calls
+            if key in entries and entries[key] != item:
+                ambiguous.add(key)
+            entries[key] = item
+
+        report = {"rule": "repeated_log_lines_v1", "checked": unowned, "protected": 0, "ambiguous": unowned,
+                  "eligible": 0, "compacted": 0, "before_bytes": 0, "after_bytes": 0,
+                  "original_sha256": hashlib.sha256(raw).hexdigest(), "round_trip_exact": True}
+        for key, item in outputs.items():
+            report["checked"] += 1
+            owner = calls.get(key)
+            if key in ambiguous or owner is None:
+                report["ambiguous"] += 1
+                continue
+            if owner.get("name") == "exec_command":
+                try:
+                    arguments = json.loads(owner.get("arguments", ""))
+                except (TypeError, ValueError):
+                    arguments = None
+                if (not isinstance(arguments, dict) or not isinstance(arguments.get("cmd"), str)
+                        or not isinstance(arguments.get("workdir"), str) or not arguments["workdir"]):
+                    report["ambiguous"] += 1
+                    continue
+            # The explicit dictionary is a harness envelope. Printed JSON and merged text have unknown channels.
+            value = item.get("output") if source == "codex" else None
+            valid = (isinstance(value, dict) and type(value.get("exit_code")) is int and value["exit_code"] == 0
+                     and isinstance(value.get("stdout"), str) and value.get("stderr") == ""
+                     and owner.get("name") in ("exec_command", "Bash", "bash"))
+            stdout = value["stdout"] if valid else ""
+            lines = stdout.splitlines()
+            if (not valid or not lines or len(stdout.encode("utf-8")) > MAX_REPLAY_OUTPUT
+                    or len(lines) > 20_000 or not all(LOG_LINE.match(line) for line in lines)):
+                report["protected"] += 1
+                continue
+            compacted = collapse_runs(stdout)
+            restored = expand_runs(compacted)
+            # The whole output envelope is recovered, including channels, status and any unknown metadata.
+            if {**value, "stdout": restored} != value:
+                report["protected"] += 1
+                continue
+            before, after = len(stdout.encode("utf-8")), len(compacted.encode("utf-8"))
+            if after >= before:
+                compacted, after = stdout, before
+            report["eligible"] += 1
+            report["compacted"] += int(compacted != stdout)
+            report["before_bytes"] += before
+            report["after_bytes"] += after
+        return {"status": "trial_ready", "report": report}
+    except OverflowError:
+        return {"status": "too_large"}
+    except (ValueError, RecursionError, TypeError):
         return {"status": "invalid_file"}
 
 
@@ -207,4 +304,5 @@ def block_egress(event, _args):
 if __name__ == "__main__":
     sys.addaudithook(block_egress)
     sys.path.append(str(Path.cwd() / "Lib" / "site-packages"))
-    print(json.dumps(preview(sys.stdin.buffer.read(MAX_BYTES + 1)), ensure_ascii=True))
+    operation = local_replay if sys.argv[1:] == ["replay"] else preview
+    print(json.dumps(operation(sys.stdin.buffer.read(MAX_BYTES + 1)), ensure_ascii=True))
