@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041-e3 — kontrollü üretici ve yerel karşılaştırma tamamlandı
+
+- Ana ajan çıktı sahipliğini ve ölçüm sözleşmesini üstlendi. Aynı gerçek alt süreçten ayrı stdout/stderr/exit yakalandı. Üç yeni 0.44.0 motorunda 15 eşlenmiş karşılaştırma, 90 istemci isteği ve 93 loopback gönderimi geçti. 36 yerel geri alım ve üç CCR devam isteği özgün stdout'u birebir korudu. Sıfır olmayan çıkış, stderr uyarısı, kesin sayısal Read ve çağrı kimliği doğrulandı. [Kanıt](proofs/rules-producer-comparison.json).
+- Geri çağrı olmadan temel kolun 586 giriş tokenına karşı deneysel kol 752 taşıdı (%28,3 artış). Tek CCR devamı olan ölçümde 2.808 → 1.061 (%62,2 azalma). İki ölçümdeki sayılar yerel tam giriş JSON'una ait. Üç tekrarın her birinde sonuçlar eşleşti. Genel ek kazanç eşiği geçilmedi, kural yerel önizleme kapsamında kaldı.
+- **45/54 ve H041-e3 açık.** Canlı kalite, gözlenen cache ve toplam sağlayıcı kullanımı, sınırları belirlenmiş gerçek görev çiftleriyle doğrulanacak. Bunun için özgün kanalları koruyan yetkili bir istemci yolu gerekir. Birleşik CLI çıktısı korunur. Ürün kaynakları değişmedi, ürün kapısı tekrarlanmadı. Yerel deneyde üç motor normal kapandı. Geliştirme sohbeti tasarrufu ölçülmedi.
+
 ## H041-e3 — gerçek CLI uygulanabilirlik önkontrolü tamamlandı; görev açık
 
 - Ana ajan kuralın gerçek istemci çıktısına uygulanabilirliğini ve ölçüm sınırını üstlendi. Kurulu Codex CLI 0.169.0-alpha.11.1 ile üç normal/hata/sınır örneği üçer kez çalıştı: 9 normal CLI çıkışı, 18 sahipli loopback gönderimi. Araç şeması, gerçek dosya içeriği, kesin sayı ve önce/sonra fingerprint'leri geçti. [Kanıt](proofs/rules-client-applicability.json).

@@ -1,0 +1,102 @@
+{
+  "task": "H041-e3",
+  "status": "local_controlled_producer_comparison_complete_live_acceptance_open",
+  "checked_on": "2026-11-16",
+  "os": "Windows-10-10.0.19045-SP0",
+  "engine": "0.44.0",
+  "rule": "repeated_log_lines_v1",
+  "scope": "Fixed local subprocess with separated channels through the same owned coding-profile engine in both arms",
+  "paired_comparisons": 15,
+  "repetitions_per_case": 3,
+  "client_requests": 90,
+  "loopback_upstream_requests": 93,
+  "graceful_engine_stops": 3,
+  "local_ccr_retrievals_verified": 36,
+  "local_ccr_continuations_verified": 3,
+  "measurement": "o200k_base for every canonical upstream input JSON in the three-turn sequence, including the actual local continuation where triggered",
+  "per_case_each_repeat": {
+    "audit": {
+      "control_input_json_tokens": 586,
+      "candidate_input_json_tokens": 752,
+      "reduction_percent": -28.33,
+      "stdout_before_bytes": 4000,
+      "stdout_candidate_bytes": 261,
+      "ccr_continuations_in_control": 0,
+      "ccr_continuations_in_candidate": 0
+    },
+    "audit_retrieval": {
+      "control_input_json_tokens": 2808,
+      "candidate_input_json_tokens": 1061,
+      "reduction_percent": 62.22,
+      "stdout_before_bytes": 4000,
+      "stdout_candidate_bytes": 261,
+      "ccr_continuations_in_control": 1,
+      "ccr_continuations_in_candidate": 0
+    },
+    "warning": {
+      "control_input_json_tokens": 590,
+      "candidate_input_json_tokens": 590,
+      "reduction_percent": 0.0,
+      "stdout_before_bytes": 4000,
+      "stdout_candidate_bytes": 4000,
+      "ccr_continuations_in_control": 0,
+      "ccr_continuations_in_candidate": 0
+    },
+    "failure": {
+      "control_input_json_tokens": 580,
+      "candidate_input_json_tokens": 580,
+      "reduction_percent": 0.0,
+      "stdout_before_bytes": 4000,
+      "stdout_candidate_bytes": 4000,
+      "ccr_continuations_in_control": 0,
+      "ccr_continuations_in_candidate": 0
+    },
+    "exact_read": {
+      "control_input_json_tokens": 575,
+      "candidate_input_json_tokens": 575,
+      "reduction_percent": 0.0,
+      "stdout_before_bytes": 79,
+      "stdout_candidate_bytes": 79,
+      "ccr_continuations_in_control": 0,
+      "ccr_continuations_in_candidate": 0
+    }
+  },
+  "local_resources_and_savings_gate": {
+    "minimum_audit_reduction": -0.2832764505119454,
+    "minimum_audit_with_retrieval_reduction": 0.6221509971509972,
+    "added_turn_p95_ms": 15.125000005355105,
+    "candidate_turn_cpu_p95_ms": 46.875,
+    "engine_peak_sampled_private_bytes": 930611200,
+    "pass": false
+  },
+  "thresholds": {
+    "startup_timeout_seconds": 120,
+    "request_timeout_seconds": 30,
+    "audit_min_full_sequence_reduction_fraction": 0.05,
+    "added_turn_p95_ms": 1000,
+    "candidate_turn_cpu_p95_ms": 2000,
+    "engine_observed_private_bytes": 1610612736
+  },
+  "preparation_observation": "The control emitted nested stdout CCR, so final verification compared its recovered stdout and intact outer envelope. A separate scripted retrieval case measured the real engine continuation.",
+  "decision": "Keep the rule in local preview. The existing engine was smaller without a continuation in this workload.",
+  "actual_provider_calls": 0,
+  "provider_quality_cache_and_total_usage": "not_tested",
+  "other_clients_and_os": "not_tested_for_this_experiment",
+  "producer_scope": "Developer experiment only. Standard Codex CLI merged output remains protected.",
+  "review": "Main agent reviewed capture ownership, exact recovery, preserved error and numeric output, paired call identity, all observed upstream bodies, and normal shutdown.",
+  "product_gate": {
+    "rerun": false,
+    "previous_e2_inputs_matched": 399,
+    "changed_existing_input": "bench/optimization/replay.py",
+    "reason": "Only benchmark sources, task and evidence documents changed"
+  },
+  "plan": {
+    "path": "bench/optimization/rules-producer-plan.json",
+    "sha256": "fe9cdd526663cdaf453ee8cdcd66a56acae7704a632871b8e50307a6ae7c3ea4"
+  },
+  "artifact": {
+    "path": "work/proofs/optimization/rules-producer/fa131a2f750a4c91b102f7be7f63c64e/result.json",
+    "sha256": "71f34f5eb398ac6f2872eee4cbd42960a0c50765b65df25aa918ac6794584829",
+    "matched_fingerprints": 45
+  }
+}

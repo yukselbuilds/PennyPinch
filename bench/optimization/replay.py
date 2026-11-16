@@ -336,7 +336,7 @@ def request(port, body, key, timeout):
                 line = response.readline(65536)
                 if not line:
                     break
-                if not line.startswith(b"data: "):
+                if not line.startswith(b"data: ") or line.strip() == b"data: [DONE]":
                     continue
                 event = json.loads(line[6:])
                 if event["type"] == "response.output_text.delta":
