@@ -1,0 +1,68 @@
+{
+  "task": "H041-d",
+  "slice": "responses_websocket_usage",
+  "date": "2026-11-16",
+  "passed": true,
+  "os": "Windows-10-10.0.19045-SP0",
+  "engine": "0.44.0",
+  "scope": "Windows 10 local development; native reader, SQLite and activity detail",
+  "checks": {
+    "parser_transport_tests": 14,
+    "rust_tests": 467,
+    "frontend_tests": 223,
+    "websocket_checks_including_native_reader": 12,
+    "http_regression_scenarios": 8,
+    "anthropic_regression_scenarios": 6,
+    "normal_shutdowns": 6,
+    "native_usage_projection": "pass",
+    "interleaved_response_ids_and_parallel_connections": "pass",
+    "model_reasoning_change_zero_missing_cut_and_generation_isolation": "pass",
+    "ccr_original_retrieved_and_forwarded": "pass",
+    "connection_retry_not_inference": "pass",
+    "http_fallback_counted_once": "pass",
+    "partial_fallback_unknown": "unit_pass"
+  },
+  "counter_example": {
+    "cache_creation_input_tokens": 100,
+    "cache_read_input_tokens": 2000,
+    "input_tokens": 2400,
+    "output_tokens": 29,
+    "total_input_tokens": 2400,
+    "total_tokens": 2429
+  },
+  "counter_example_basis": "synthetic upstream-reported usage; not a live bill, quality or savings measurement",
+  "scope_semantics": "Each completed upstream response maps to its own actual engine outcome. A client-owned CCR continuation is a new response.create, not an inferred user-task identity. Failed/deferred or ambiguous scope remains unknown.",
+  "runtime_overlay_sha256": "bffa59deb9da3a9c99b7b00f9183566f542e8ae4306c27b7fe602cf4e733ffdd",
+  "plan": {
+    "path": "docs/decisions/027-optimization-regression.md",
+    "sha256": "60a44eb0abb6854caf97d184e03be75bb8e4c0944a293e51331e75b209707ca4"
+  },
+  "proofs": {
+    "quality": {
+      "path": "work/proofs/optimization/desktop-ws-usage/922268b7-6e2e-4e55-8a2e-6e6a27320446/gate-f92d852a0c.json",
+      "sha256": "b67718458ab18bd4ba718d0d50f8d6ef770f58490f8eda804f7c55731fc22ccd"
+    },
+    "websocket": {
+      "path": "work/proofs/optimization/desktop-ws-usage/runs/6c6c4d63-6d6a-47ce-b748-4933f83ccfde/result.json",
+      "sha256": "26c1364df89c5ab09df021e3b4833b1749cf58689e235499eaaad70785156a2a"
+    },
+    "http_regression": {
+      "path": "work/proofs/optimization/desktop-responses-usage/runs/99c23318-7d99-486f-a9f5-f3f433c83fca/result.json",
+      "sha256": "5cf8ca7572d7443531155e933281f82d8ae18ba50514bc7bda57e33d190227dd"
+    },
+    "anthropic_regression": {
+      "path": "work/proofs/optimization/desktop-anthropic-usage/522fff84-380b-455f-84ff-f6d84d35af6b/result.json",
+      "sha256": "d206bcab7ee79f1d2d77f7cef7c6018211f91cedd72f3e11b3f73b757cd11445"
+    }
+  },
+  "review": "Pinned raw-event extractor, exact outcome boundary before await, bounded ids/counters, HTTP fallback, private schema 2, native protocol semantics and existing detail consumer reviewed. Upstream/client bodies and settings are unchanged.",
+  "limits": [
+    "live providers, real agent identity and task-quality savings",
+    "other operating systems",
+    "long-duration load",
+    "new installer packaging"
+  ],
+  "model_calls": 0,
+  "ci_runs": 0,
+  "installer_rebuilt": false
+}

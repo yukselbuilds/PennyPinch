@@ -514,6 +514,7 @@ struct OwnedUsageSnapshot {
 struct UsageRecord {
     surface: Option<String>,
     client_status: Option<u16>,
+    failed: Option<bool>,
     request_id: String,
     truncated: bool,
     attempts: Vec<UsageAttempt>,
@@ -522,6 +523,7 @@ struct UsageRecord {
 #[derive(Deserialize)]
 struct UsageAttempt {
     status: Option<u16>,
+    completed: Option<bool>,
     usage: Option<AttemptCounters>,
 }
 
@@ -542,7 +544,10 @@ impl UsageRecord {
     fn totals(&self, surface: &str) -> ProviderUsage {
         if self.truncated
             || !(1..=16).contains(&self.attempts.len())
-            || !matches!(surface, "anthropic_messages" | "openai_responses")
+            || !matches!(
+                surface,
+                "anthropic_messages" | "openai_responses" | "openai_responses_ws"
+            )
         {
             return ProviderUsage::default();
         }
@@ -550,8 +555,14 @@ impl UsageRecord {
             self.attempts
                 .iter()
                 .try_fold(0u64, |total, attempt| {
-                    let status = attempt.status?;
-                    if !(200..300).contains(&status) {
+                    let successful = if surface == "openai_responses_ws" {
+                        attempt.completed == Some(true)
+                    } else {
+                        attempt
+                            .status
+                            .is_some_and(|status| (200..300).contains(&status))
+                    };
+                    if !successful {
                         return None;
                     }
                     total.checked_add(count(attempt.usage.as_ref()?)?)
@@ -561,7 +572,7 @@ impl UsageRecord {
         let reported_input = sum(|usage| usage.input_tokens);
         let cached_input = sum(|usage| usage.cache_read_input_tokens);
         let cache_write_input = sum(|usage| usage.cache_creation_input_tokens);
-        let input = if surface == "openai_responses" {
+        let input = if matches!(surface, "openai_responses" | "openai_responses_ws") {
             reported_input
         } else {
             (|| {
@@ -696,7 +707,8 @@ pub(crate) fn project_owned_headroom_041(
             let totals = record.totals(surface);
             let failed = record
                 .client_status
-                .is_some_and(|status| (400..600).contains(&status));
+                .is_some_and(|status| (400..600).contains(&status))
+                || surface == "openai_responses_ws" && record.failed == Some(true);
             usage
                 .entry(record.request_id)
                 .and_modify(|entry: &mut CapturedUsage| {

@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041-d — Responses WebSocket yerel dilimi tamamlandı
+
+- Ana ajan yanıt sahipliği ve ölçüm sözleşmesini üstlendi. Ham kullanım, açık yanıt kimliğiyle bağlantı içinde ayrılır ve kayıt yazımının await noktasından önce gerçek motor outcome'ına bağlanır. En fazla 16 aktif yanıt ve sınırlı sayısal metadata tutulur. Yarım, çakışan, ertelenmiş başarısız veya taşmış kapsam bilinmiyor kalır. WS kayıtları HTTP durum kodu varsaymaz; HTTP geri dönüşü mevcut gözleyiciden bir kez ölçülür.
+- Son adayda 14 Python, 467 Rust, 223 frontend testi ve iki derleme geçti. Gerçek 0.44.0 motorunda 12 WS kontrolü, 8 HTTP ve 6 Anthropic senaryosu, altı normal kapanış doğrulandı. Aynı bağlantıda model/efor değişimi, iç içe yanıtlar, paralel bağlantılar, sıfır/eksik sayaç, kopuş ve yeniden bağlanma geçti. İki/üç bağlantı kurma denemesi tek model gönderimi olarak sayıldı. Native okuyucu → SQLite → istek ayrıntısı 2.400 girdi, 29 çıktı, 2.000 cache okuma ve 100 yazmayı bir WS yanıtında doğruladı. 414 güncel girdi kanıta bağlandı. [Kabul](proofs/websocket-usage-desktop.json).
+- CCR'nin özgün içeriği geri alındı ve sonraki istemci isteğinde birebir upstream'e ulaştı. Bu devam, motorun ayrı kaydettiği yeni response.create isteğidir; aynı kullanıcı görevi olduğu tahmin edilmez. Gönderilmiş fakat tamamlanmamış WS gözlemi sonrasında HTTP'ye geçilirse kapsam bilinmiyor tutulur; ilk bağlantı hatasından sonraki HTTP geri dönüşü tam ölçüldü. İstemci/sağlayıcı gövdeleri ile model/auth/efor ayarları ölçüm katmanı tarafından değiştirilmez.
+- **45/54; ana H041 ve H041-d açık.** Sıradaki somut yerel adım Chat Completions kullanım ölçümü. Canlı sağlayıcı, gerçek ajan/görev kalitesi, uzun süreli yük, diğer işletim sistemleri ve yeni kurucu kabulleri ayrı. Bu dilimde Actions veya gerçek model çağrısı başlatılmadı. Geliştirme sohbeti token tasarrufu ölçülmedi.
+
 ## H041-d — Responses HTTP/SSE yerel dilimi tamamlandı
 
 - Ana ajan ölçüm ve sahiplik sözleşmesini üstlendi. Birincil, CCR devamı ve tekrarların kullanımı aynı ASGI bağlamı ve tam motor istek kimliğine bağlandı. Normal ve ayrı HTTP/1 istemcisi kapsandı. Responses girdisindeki cache ayrıntıları ikinci kez toplanmaz; eksik alan ile gerçek sıfır ayrılır. Özel kullanım kaydı sürüm 2'de yüzeyi satır başına taşır; native okuyucu önceki Anthropic biçimini de kabul eder.

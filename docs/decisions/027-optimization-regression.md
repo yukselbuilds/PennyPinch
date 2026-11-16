@@ -58,6 +58,16 @@ Gerçek hata deneyi, sabit motorun Responses CCR devamında gelen HTTP 400'ün J
 
 Kabul: (1) JSON ve parçalı SSE'de bilinen girdi/çıktı/cache değerleri, sıfır ve eksik alan; (2) gerçek sahipli motorda birincil/CCR/tekrar ve eşzamanlı isteklerin ayrı sayaçları, özgün CCR içeriği ve rota korunumu; (3) eksik/başarısız devam, yetkisiz okuma ve yeniden başlatmada izolasyon. Native okuma → SQLite → istek ayrıntısı aynı toplamı göstermeli. Önce/sonra kaynak ve araç fingerprint'leri kaydedilir. Odaklı parser/normalizasyon ve gerçek motor kontrollerinden sonra son adayda WORKFLOW yerel kapısı bir kez çalışır. Actions ve gerçek model çağrısı başlatılmaz.
 
+### H041-d Responses WebSocket kullanım ölçümü
+
+16 Kasım 2026. Ana ajan, sabit 0.44.0 motorun ham kullanım çıkarma ve outcome sınırını bağlar. Her tamamlanan upstream yanıtın sayısal kullanımı, aynı WebSocket bağlamındaki bir sonraki motor outcome kimliğine bağlanır; seçim kayıt yazımının await noktasından önce yapılır. Model, zaman veya sohbet adıyla eşleme yapılmaz. Kayıtlı kaynak hash'leri doğrulanır; sağlayıcı ve istemci baytları değiştirilmez.
+
+Aktif yanıtlar açık `response.id` ile ayrılır; üst sınır 16'dır. Ara içerik tutulmaz. Tamamlanmamış, kimliği belirsiz, yinelenen veya taşmış kapsam bilinen toplam üretmez. Motor önceki başarısız yanıtın kullanımını sonraki outcome'a erteleyebildiğinden bu birleşimde toplam bilinmiyor kalır. Tamamlanan yanıtlar ayrı kayıttır; istemcinin CCR/MCP geri alımından sonra gönderdiği yeni `response.create`, kanıtsız biçimde aynı kullanıcı görevi sayılmaz. [WebSocket protokolü](https://developers.openai.com/api/docs/guides/websocket-mode).
+
+Özel sürüm 2 kayıtta `openai_responses_ws` yüzeyi, HTTP durum kodu yerine yanıtın `completed` gözlemini taşır. Girdi cache dahil sayılır; eksik ayrıntı sıfır yapılmaz. Bağlantı kurulumu tekrarları model çağrısı sayılmaz. WS→HTTP geri dönüşü mevcut HTTP gözleyicisinden ölçülür; WS olayları ayrıca sayılmaz. Daha önce WS gözlemi oluşmuş bağlantıda geri dönüşe geçilirse eksik önceki kapsam nedeniyle toplam bilinmiyor tutulur. Sıkıştırma, model, efor, auth, memory/learn ve pause varsayılanları korunur.
+
+Kabul: (1) aynı bağlantıda ardışık ve farklı yanıt kimlikleriyle iç içe yanıtlar, model/efor değişimi, gerçek sıfır ve eksik cache alanı; (2) eksik/başarısız/yanlış kimlik, taşma ve kopuşta bilinmeyen toplam ile yeniden bağlanmada ayrım; (3) sahipli gerçek motorda WebSocket ve HTTP geri dönüşü, özgün CCR geri alımı ve native okuyucu → SQLite → istek ayrıntısı. Odaklı testler ve HTTP/Anthropic regresyonu son adayda yapılır; WORKFLOW yerel kapısı kaynak/araç önce-sonra fingerprint'iyle bir kez çalışır. Canlı sağlayıcı, diğer OS, Actions ve yeni kurucu bu dilimde başlatılmaz.
+
 ### Güncel Headroom ve Serena adayları
 
 15 Kasım 2026’da Headroom kararlı `0.44.0` ve Serena `2.1.0` yayınları incelendi. Etkin motor `0.41.0` ile sürer. Aday karşılaştırmaları bağımlılık kilidi ve yalıtılmış paketle yürütülür. [Headroom yayın notları](https://github.com/headroomlabs-ai/headroom/releases/tag/v0.44.0) · [Serena yayını](https://github.com/oraios/serena/releases/tag/v2.1.0).

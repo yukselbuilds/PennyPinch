@@ -43,6 +43,7 @@ class RequestState:
     replay_failed: bool = False
     usage: UsageTrace | None = None
     responses_ccr_failed: bool = False
+    ws_usage: WebSocketUsage | None = None
 
 
 def _token_count(value):
@@ -60,6 +61,7 @@ class UsageTrace:
     conflicting_ids: bool = False
     attempts: list[dict] = field(default_factory=list)
     truncated: bool = False
+    failed: bool = False
 
     def begin_attempt(self) -> dict | None:
         if len(self.attempts) >= MAX_USAGE_ATTEMPTS:
@@ -69,17 +71,22 @@ class UsageTrace:
         self.attempts.append(attempt)
         return attempt
 
-    def snapshot(self, status: int) -> dict:
+    def snapshot(self, status: int | None) -> dict:
         usage = {}
         for name in USAGE_FIELDS:
-            values = [(attempt["usage"] or {}).get(name) if attempt["status"] is not None
-                      and 200 <= attempt["status"] < 300 else None for attempt in self.attempts]
+            values = [(attempt["usage"] or {}).get(name) if (
+                attempt.get("completed") is True if self.surface == "openai_responses_ws" else
+                attempt.get("status") is not None and 200 <= attempt["status"] < 300
+            ) else None for attempt in self.attempts]
             usage[name] = None if self.truncated else _sum_known(values)
-        usage["total_input_tokens"] = (usage["input_tokens"] if self.surface == "openai_responses"
+        usage["total_input_tokens"] = (usage["input_tokens"] if self.surface in {"openai_responses", "openai_responses_ws"}
                                        else _sum_known([usage[name] for name in USAGE_FIELDS[:3]]))
         usage["total_tokens"] = _sum_known([usage["total_input_tokens"], usage["output_tokens"]])
-        return {"surface": self.surface, "request_id": self.request_id, "client_status": status, "truncated": self.truncated,
-                "attempts": copy.deepcopy(self.attempts), "usage": usage}
+        result = {"surface": self.surface, "request_id": self.request_id, "client_status": status, "truncated": self.truncated,
+                  "attempts": copy.deepcopy(self.attempts), "usage": usage}
+        if self.surface == "openai_responses_ws":
+            result["failed"] = self.failed
+        return result
 
 
 def _anthropic_json_usage(raw: bytes) -> dict | None:
@@ -245,17 +252,34 @@ def _install_usage(proxy, gate, parse_events, response_not_read):
             client.send = observe
 
     async def record(outcome):
-        await record_outcome(outcome)
         state = _request.get()
-        if state is None or state.gate is not gate or state.usage is None:
+        owned = state is not None and state.gate is gate
+        websocket = owned and state.kind == "responses_ws"
+        ledger = state.ws_usage if websocket else None
+        trace = state.usage if owned else None
+        if websocket:
+            if trace is not None:
+                state.usage = None
+            elif ledger is not None:
+                trace = ledger.take()
+        try:
+            await record_outcome(outcome)
+        except BaseException:
+            if ledger is not None:
+                ledger.uncertain = True
+            raise
+        if trace is None:
             return
         request_id = outcome.request_id
         if not isinstance(request_id, str) or not re.fullmatch(r"hr_[0-9]{1,20}_[0-9]{6,20}", request_id):
-            state.usage.conflicting_ids = True
-        elif state.usage.request_id is None:
-            state.usage.request_id = request_id
-        elif state.usage.request_id != request_id:
-            state.usage.conflicting_ids = True
+            trace.conflicting_ids = True
+        elif trace.request_id is None:
+            trace.request_id = request_id
+        elif trace.request_id != request_id:
+            trace.conflicting_ids = True
+        if websocket and trace.request_id and not trace.conflicting_ids:
+            with gate.lock:
+                gate.usage_records.append(trace.snapshot(None))
 
     proxy.startup = start
     proxy._record_request_outcome = record
@@ -275,6 +299,89 @@ def _install_responses_ccr_errors(proxy, gate):
         return response
 
     proxy._retry_request = checked
+
+
+class WebSocketUsage:
+    """Only ids and bounded counters survive until their exact outcome is recorded."""
+    def __init__(self):
+        self.active = {}
+        self.seen = deque(maxlen=64)
+        self.ready = deque()
+        self.pending_failed = []
+        self.failed = False
+        self.uncertain = False
+
+    def observe(self, event):
+        kind = event.get("type") if isinstance(event, dict) else None
+        if not isinstance(kind, str):
+            self.uncertain = True
+            return
+        if kind == "error":
+            self.uncertain = self.failed = True
+            return
+        if kind not in {"response.created", "response.completed", "response.failed", "response.incomplete"}:
+            return
+        response = event.get("response")
+        identity = response.get("id") if isinstance(response, dict) else None
+        if not isinstance(identity, str) or not 0 < len(identity) <= 128:
+            self.uncertain = True
+            return
+        if kind == "response.created":
+            if identity in self.active or identity in self.seen or len(self.active) >= MAX_USAGE_ATTEMPTS:
+                self.uncertain = True
+            else:
+                self.active[identity] = {"completed": False, "usage": None}
+            return
+        attempt = self.active.pop(identity, None)
+        if attempt is None or identity in self.seen:
+            self.uncertain = True
+        self.seen.append(identity)
+        if kind == "response.completed":
+            if attempt is not None:
+                attempt.update(completed=True, usage=_responses_usage(response))
+            trace = UsageTrace(surface="openai_responses_ws", truncated=self.uncertain or bool(self.pending_failed), failed=self.failed)
+            trace.attempts = (self.pending_failed + ([attempt] if attempt is not None else []))[:MAX_USAGE_ATTEMPTS]
+            self.pending_failed = []
+            self.failed = False
+            if len(self.ready) >= MAX_USAGE_ATTEMPTS:
+                self.uncertain = True
+                self.ready.clear()
+            self.ready.append(trace)
+        else:
+            self.failed |= kind == "response.failed"
+            if attempt is not None and len(self.pending_failed) < MAX_USAGE_ATTEMPTS:
+                self.pending_failed.append(attempt)
+            else:
+                self.uncertain = True
+
+    def take(self):
+        if self.ready:
+            trace = self.ready.popleft()
+            trace.truncated |= self.uncertain
+            return trace
+        if not (self.active or self.pending_failed or self.uncertain):
+            return None
+        trace = UsageTrace(surface="openai_responses_ws", truncated=True, failed=self.failed)
+        trace.attempts = (self.pending_failed + list(self.active.values()))[:MAX_USAGE_ATTEMPTS]
+        self.active.clear()
+        self.pending_failed = []
+        self.failed = False
+        return trace
+
+
+def _install_ws_fallback_usage(proxy, gate):
+    fallback = proxy._ws_http_fallback
+
+    async def observe(*args, **kwargs):
+        state = _request.get()
+        if state is not None and state.gate is gate and state.kind == "responses_ws":
+            prior = state.ws_usage
+            partial = prior is not None and bool(prior.active or prior.seen or prior.pending_failed or prior.ready or prior.uncertain)
+            state.ws_usage = None
+            state.usage = UsageTrace(surface="openai_responses", truncated=partial)
+        return await fallback(*args, **kwargs)
+
+    proxy._ws_http_fallback = observe
 
 
 def _encoded(value: Any) -> bytes:
@@ -469,6 +576,8 @@ class ControlMiddleware:
             state.usage = UsageTrace()
         elif scope["type"] == "http" and scope.get("method") == "POST" and path.endswith(RESPONSES_PATH):
             state.usage = UsageTrace(surface="openai_responses")
+        elif scope["type"] == "websocket" and path.endswith(RESPONSES_PATH):
+            state.ws_usage = WebSocketUsage()
         token = _request.set(state)
         counted = scope["type"] == "http" and scope.get("method") == "POST" and kind in {"responses", "anthropic"} or scope.get("method") == "POST" and path.endswith("/chat/completions")
         started = False
@@ -528,6 +637,14 @@ def install(generation: str, secret: str) -> dict[str, str]:
     original_normalize = prefix.normalize_message_cache_control
     original_payload = openai.OpenAIHandlerMixin._compress_openai_responses_payload
     original_executor = openai.OpenAIHandlerMixin._compress_openai_responses_payload_in_executor
+    original_ws_usage = openai._extract_responses_usage
+
+    def websocket_usage(event):
+        result = original_ws_usage(event)
+        state = _request.get()
+        if state is not None and state.kind == "responses_ws" and state.ws_usage is not None:
+            state.ws_usage.observe(event)
+        return result
 
     def resolve(store, *args, **kwargs):
         tracker = original_resolve(store, *args, **kwargs)
@@ -606,6 +723,7 @@ def install(generation: str, secret: str) -> dict[str, str]:
         proxy.config = ScopedConfig(proxy.config, gate)
         _install_usage(proxy, gate, parse_sse_events_from_byte_buffer, httpx.ResponseNotRead)
         _install_responses_ccr_errors(proxy, gate)
+        _install_ws_fallback_usage(proxy, gate)
         app.add_middleware(ControlMiddleware, gate=gate)
         app.state.desktop_control = gate
         return app
@@ -615,6 +733,7 @@ def install(generation: str, secret: str) -> dict[str, str]:
     prefix.normalize_message_cache_control = normalize
     openai.OpenAIHandlerMixin._compress_openai_responses_payload = payload
     openai.OpenAIHandlerMixin._compress_openai_responses_payload_in_executor = executor
+    openai._extract_responses_usage = websocket_usage
     server.create_app = create
     return {"active": "true", "version": "0.44.0", "source_sha256": hashlib.sha256(_encoded(expected)).hexdigest(),
             "module_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),

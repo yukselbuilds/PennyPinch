@@ -210,6 +210,45 @@ fn owned_responses_usage_keeps_inclusive_input_and_protocols_separate() {
 }
 
 #[test]
+fn owned_websocket_usage_requires_completion_and_preserves_unknown_scope() {
+    use serde_json::json;
+    let stats = json!({"recent_requests":[{"request_id":"hr_1_000001","timestamp":"2026-11-16T12:00:00Z",
+        "input_tokens_original":100,"input_tokens_optimized":80}]});
+    let mut sidecar = json!({"schema_version":2,"runtime_generation":GENERATION,"surface":"provider_usage",
+        "records":[{"request_id":"hr_1_000001","surface":"openai_responses_ws","client_status":null,
+            "failed":false,"truncated":false,"attempts":[{"completed":true,"usage":{
+                "input_tokens":2400,"cache_read_input_tokens":2000,"cache_creation_input_tokens":100,"output_tokens":29}}]}]});
+    let project = |value: &serde_json::Value| {
+        project_owned_headroom_041(
+            &serde_json::to_vec(&stats).unwrap(),
+            Some(&serde_json::to_vec(value).unwrap()),
+            GENERATION,
+        )
+        .unwrap()
+        .batch
+    };
+    let row = project(&sidecar).events.remove(0);
+    assert_eq!(row.provider_usage.input, Some(2400));
+    assert_eq!(row.provider_usage.cached_input, Some(2000));
+    assert_eq!(row.provider_usage.cache_write_input, Some(100));
+    assert_eq!(row.provider_usage.upstream_attempts, Some(1));
+    assert!(row.saved_tokens.is_none());
+    sidecar["records"][0]["attempts"][0]["completed"] = json!(false);
+    sidecar["records"][0]["attempts"][0]["status"] = json!(200);
+    let row = project(&sidecar).events.remove(0);
+    assert_eq!(row.provider_usage.input, None);
+    assert_eq!(row.provider_usage.output, None);
+    sidecar["records"][0]["failed"] = json!(true);
+    sidecar["records"][0]["truncated"] = json!(true);
+    let row = project(&sidecar).events.remove(0);
+    assert_eq!(row.provider_usage, ProviderUsage::default());
+    assert_eq!(
+        row.metadata.outcome,
+        super::request_metadata::Outcome::ErrorReported
+    );
+}
+
+#[test]
 fn provider_conflict_and_missing_snapshots_preserve_the_compression_measurement() {
     let unknown = event("request", Some(100), Some(70));
     let mut known = unknown.clone();

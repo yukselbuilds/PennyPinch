@@ -346,16 +346,22 @@ mod tests {
     #[test]
     #[ignore = "run by the isolated Anthropic engine proof"]
     fn owned_anthropic_usage_reaches_activity_detail() {
-        assert_owned_usage_detail("desktop-anthropic-usage");
+        assert_owned_usage_detail("desktop-anthropic-usage", 2);
     }
 
     #[test]
     #[ignore = "run by the isolated Responses engine proof"]
     fn owned_responses_usage_reaches_activity_detail() {
-        assert_owned_usage_detail("desktop-responses-usage");
+        assert_owned_usage_detail("desktop-responses-usage", 2);
     }
 
-    fn assert_owned_usage_detail(proof_directory: &str) {
+    #[test]
+    #[ignore = "run by the isolated WebSocket engine proof"]
+    fn owned_websocket_usage_reaches_activity_detail() {
+        assert_owned_usage_detail("desktop-ws-usage", 1);
+    }
+
+    fn assert_owned_usage_detail(proof_directory: &str, expected_attempts: u64) {
         use crate::metrics::store::{MetricsStore, Period};
         use serde::Deserialize;
         use std::path::{Path, PathBuf};
@@ -408,7 +414,10 @@ mod tests {
         assert_eq!(row.provider_usage.output, Some(29));
         assert_eq!(row.provider_usage.cached_input, Some(2000));
         assert_eq!(row.provider_usage.cache_write_input, Some(100));
-        assert_eq!(row.provider_usage.upstream_attempts, Some(2));
+        assert_eq!(
+            row.provider_usage.upstream_attempts,
+            Some(expected_attempts)
+        );
         assert!(!row.main_metric_eligible);
         assert!(row.saved_tokens.is_none());
         assert!(!serde_json::to_string(&detail)
