@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041 — tekrar eden yeni araç çıktısı deneyi tamamlandı
+
+- Ana ajan çağrı kimliği, prefix ve birebir geri alma kabulünü üstlendi. Gerçek 0.44.0 `coding` profilinde tekrar filtresinin zaten açık olduğu görüldü. Sadece test kollarından birinde kapatıldı. İki eşlenmiş tekrar, üç protokol, 168 gönderim, 32 birebir CCR ve dört normal kapanış doğrulandı. 57 ana deney girdisi önce/sonra eşleşti. [Kanıt](proofs/duplicate-tool-results.json).
+- Responses kısa yeni tekrarında tam istek 405 → 306 ve yeni sonuç 112 → 19 yerel tokenizer tokenı. Chat ve Anthropic kolları eşit. Model/efor/auth/çağrı kimliği, kaynak ve kesin sayılar korundu. Responses farklı sonuçtaki ortak satırı da katlıyor. İki farklı span aynı kısa etikete geldiğinde özgün metnin hangisi olduğu referanstan doğrulanamadı. Bu dilim üretim ayarını değiştirmedi.
+- Anthropic eski prefix farkı iki ayarda aynı. Odaklı 10 gönderimde değişen alan otomatik `cache_control` ve araç hata bayrağı korundu. İki teşhis süreci normal kapandı. Kod yalnız benchmark kapsamındadır. Önceki 436 ürün girdisi güncel kaynakla eşleşti.
+- **45/54 ve H041 açık.** Sıradaki somut dilim Responses'ta doğrulanamayan tekrar referansını engellemek. Anthropic işaret hareketi ayrı kabul maddesi. Canlı görev kalitesi, cache ve fatura etkisi ölçülmedi. Geliştirme sohbetinin token tasarrufu ölçülmedi.
+
 ## H041-d — Chat Completions yerel dilimi tamamlandı
 
 - Ana ajan taşıma, sayaç ve istek sahipliğini üstlendi. Standart JSON ve SSE gönderimleri aynı motor istek kimliğine bağlandı. Cache ayrıntıları `prompt_tokens` toplamına tekrar eklenmiyor. Kesik/çelişkili akış ve başarısız gönderim toplamı bilinmiyor bırakıyor. Yerel cevap önbelleği sağlayıcı kullanımı oluşturmuyor.

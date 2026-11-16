@@ -1,0 +1,576 @@
+{
+  "task": "H041",
+  "slice": "duplicate_tool_results_replay",
+  "date": "2026-11-16",
+  "evaluation_complete": true,
+  "additional_rule_accepted": false,
+  "owner": "primary agent, output identity and recovery semantics",
+  "engine": "0.44.0",
+  "os": "Windows-10-10.0.19045-SP0",
+  "tokenizer_basis": "o200k_base over serialized upstream request JSON and individual tool result text",
+  "effective_profiles": {
+    "default_coding_dedup_enabled": true,
+    "fixture_control_dedup_enabled": false
+  },
+  "checks": {
+    "surfaces": 3,
+    "pairs": 2,
+    "paired_proxy_sends": 168,
+    "paired_comparisons": 84,
+    "ccr_exact_reads": 32,
+    "prefix_diagnostic_sends": 10,
+    "graceful_shutdowns": 6,
+    "input_fingerprints": 70,
+    "existing_product_inputs_matching": 436,
+    "codegraph_synced_files": 1
+  },
+  "windows_scenarios": {
+    "responses": {
+      "ambiguous_t1": {
+        "disabled": 245,
+        "default": 245,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          119,
+          119
+        ],
+        "risks": []
+      },
+      "ambiguous_t2": {
+        "disabled": 353,
+        "default": 310,
+        "saved_tokens": 43,
+        "saved_percent": 12.181303116147308,
+        "new_output_tokens": [
+          59,
+          16
+        ],
+        "risks": [
+          "exact_recovery_unproven",
+          "fold_outside_exact_repeat_scope"
+        ]
+      },
+      "changed_failure_t1": {
+        "disabled": 250,
+        "default": 250,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          117,
+          117
+        ],
+        "risks": []
+      },
+      "changed_failure_t2": {
+        "disabled": 444,
+        "default": 345,
+        "saved_tokens": 99,
+        "saved_percent": 22.2972972972973,
+        "new_output_tokens": [
+          137,
+          44
+        ],
+        "risks": [
+          "fold_outside_exact_repeat_scope"
+        ]
+      },
+      "exact_t1": {
+        "disabled": 241,
+        "default": 241,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          112,
+          112
+        ],
+        "risks": []
+      },
+      "exact_t2": {
+        "disabled": 405,
+        "default": 306,
+        "saved_tokens": 99,
+        "saved_percent": 24.444444444444443,
+        "new_output_tokens": [
+          112,
+          19
+        ],
+        "risks": []
+      },
+      "exact_t3": {
+        "disabled": 427,
+        "default": 328,
+        "saved_tokens": 99,
+        "saved_percent": 23.185011709601874,
+        "new_output_tokens": null,
+        "risks": []
+      },
+      "long_log_t1": {
+        "disabled": 163,
+        "default": 163,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          37,
+          37
+        ],
+        "risks": []
+      },
+      "long_log_t2": {
+        "disabled": 248,
+        "default": 248,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          37,
+          37
+        ],
+        "risks": []
+      },
+      "numeric_t1": {
+        "disabled": 388,
+        "default": 388,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          242,
+          242
+        ],
+        "risks": []
+      },
+      "numeric_t2": {
+        "disabled": 700,
+        "default": 700,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          242,
+          242
+        ],
+        "risks": []
+      },
+      "other_session_t1": {
+        "disabled": 243,
+        "default": 243,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          112,
+          112
+        ],
+        "risks": []
+      },
+      "source_t1": {
+        "disabled": 1960,
+        "default": 1960,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          1680,
+          1680
+        ],
+        "risks": []
+      },
+      "source_t2": {
+        "disabled": 3844,
+        "default": 3844,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          1680,
+          1680
+        ],
+        "risks": []
+      }
+    },
+    "chat_http_sse": {
+      "ambiguous_t1": {
+        "disabled": 267,
+        "default": 267,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          119,
+          119
+        ],
+        "risks": []
+      },
+      "ambiguous_t2": {
+        "disabled": 389,
+        "default": 389,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          59,
+          59
+        ],
+        "risks": []
+      },
+      "changed_failure_t1": {
+        "disabled": 272,
+        "default": 272,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          117,
+          117
+        ],
+        "risks": []
+      },
+      "changed_failure_t2": {
+        "disabled": 480,
+        "default": 480,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          137,
+          137
+        ],
+        "risks": []
+      },
+      "exact_t1": {
+        "disabled": 263,
+        "default": 263,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          112,
+          112
+        ],
+        "risks": []
+      },
+      "exact_t2": {
+        "disabled": 441,
+        "default": 441,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          112,
+          112
+        ],
+        "risks": []
+      },
+      "exact_t3": {
+        "disabled": 463,
+        "default": 463,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": null,
+        "risks": []
+      },
+      "long_log_t1": {
+        "disabled": 185,
+        "default": 185,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          37,
+          37
+        ],
+        "risks": []
+      },
+      "long_log_t2": {
+        "disabled": 284,
+        "default": 284,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          37,
+          37
+        ],
+        "risks": []
+      },
+      "numeric_t1": {
+        "disabled": 410,
+        "default": 410,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          242,
+          242
+        ],
+        "risks": []
+      },
+      "numeric_t2": {
+        "disabled": 736,
+        "default": 736,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          242,
+          242
+        ],
+        "risks": []
+      },
+      "other_session_t1": {
+        "disabled": 265,
+        "default": 265,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          112,
+          112
+        ],
+        "risks": []
+      },
+      "source_t1": {
+        "disabled": 1982,
+        "default": 1982,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          1680,
+          1680
+        ],
+        "risks": []
+      },
+      "source_t2": {
+        "disabled": 3880,
+        "default": 3880,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          1680,
+          1680
+        ],
+        "risks": []
+      }
+    },
+    "anthropic_http_sse": {
+      "ambiguous_t1": {
+        "disabled": 389,
+        "default": 389,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          119,
+          119
+        ],
+        "risks": []
+      },
+      "ambiguous_t2": {
+        "disabled": 510,
+        "default": 510,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          59,
+          59
+        ],
+        "risks": [
+          "prefix_changed"
+        ]
+      },
+      "changed_failure_t1": {
+        "disabled": 394,
+        "default": 394,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          117,
+          117
+        ],
+        "risks": []
+      },
+      "changed_failure_t2": {
+        "disabled": 606,
+        "default": 606,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          137,
+          137
+        ],
+        "risks": [
+          "prefix_changed"
+        ]
+      },
+      "exact_t1": {
+        "disabled": 385,
+        "default": 385,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          112,
+          112
+        ],
+        "risks": []
+      },
+      "exact_t2": {
+        "disabled": 562,
+        "default": 562,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          112,
+          112
+        ],
+        "risks": [
+          "prefix_changed"
+        ]
+      },
+      "exact_t3": {
+        "disabled": 600,
+        "default": 600,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": null,
+        "risks": [
+          "prefix_changed"
+        ]
+      },
+      "long_log_t1": {
+        "disabled": 307,
+        "default": 307,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          37,
+          37
+        ],
+        "risks": []
+      },
+      "long_log_t2": {
+        "disabled": 8566,
+        "default": 8566,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          8199,
+          8199
+        ],
+        "risks": [
+          "prefix_changed"
+        ]
+      },
+      "numeric_t1": {
+        "disabled": 532,
+        "default": 532,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          242,
+          242
+        ],
+        "risks": []
+      },
+      "numeric_t2": {
+        "disabled": 857,
+        "default": 857,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          242,
+          242
+        ],
+        "risks": [
+          "prefix_changed"
+        ]
+      },
+      "other_session_t1": {
+        "disabled": 387,
+        "default": 387,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          112,
+          112
+        ],
+        "risks": []
+      },
+      "source_t1": {
+        "disabled": 2104,
+        "default": 2104,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          1680,
+          1680
+        ],
+        "risks": []
+      },
+      "source_t2": {
+        "disabled": 4001,
+        "default": 4001,
+        "saved_tokens": 0,
+        "saved_percent": 0.0,
+        "new_output_tokens": [
+          1680,
+          1680
+        ],
+        "risks": [
+          "prefix_changed"
+        ]
+      }
+    }
+  },
+  "findings": {
+    "prefix_changed": 14,
+    "exact_recovery_unproven": 2,
+    "fold_outside_exact_repeat_scope": 4
+  },
+  "anthropic_prefix_failures": {
+    "default": {
+      "anthropic_http_sse": 14
+    },
+    "disabled": {
+      "anthropic_http_sse": 14
+    }
+  },
+  "anthropic_prefix_diagnostic": {
+    "exact": [
+      {
+        "turn": 1,
+        "prefix_changes": [],
+        "error_flag_preserved": true
+      },
+      {
+        "turn": 2,
+        "prefix_changes": [
+          "messages[2].content[0].cache_control"
+        ],
+        "error_flag_preserved": true
+      },
+      {
+        "turn": 3,
+        "prefix_changes": [
+          "messages[4].content[0].cache_control"
+        ],
+        "error_flag_preserved": true
+      }
+    ],
+    "changed_failure": [
+      {
+        "turn": 1,
+        "prefix_changes": [],
+        "error_flag_preserved": true
+      },
+      {
+        "turn": 2,
+        "prefix_changes": [
+          "messages[2].content[0].cache_control"
+        ],
+        "error_flag_preserved": true
+      }
+    ]
+  },
+  "decision": "Existing Responses dedup reduces tokens on a short exact repeat. A shared span is not a full duplicate. One ambiguous anchor failed exact recovery. Constrain the Responses rule before further optimization work. Diagnose the Anthropic cache marker independently.",
+  "limits": [
+    "Synthetic command data and loopback fixtures",
+    "Full real-task quality, provider cache and billing unmeasured",
+    "Production settings preserved during the pilot"
+  ],
+  "proofs": {
+    "paired_replay": {
+      "path": "work/proofs/optimization/duplicate-tool-results/e41c5ecf-0e31-48d3-a431-e4655050262b/result.json",
+      "sha256": "142a692e13861dc7c9edbcb1b3f44e485486c5c42b6d01b9b71fb6f9521e12f6"
+    },
+    "anthropic_prefix": {
+      "path": "work/proofs/optimization/duplicate-tool-results/e41c5ecf-0e31-48d3-a431-e4655050262b/prefix-diagnostic/result.json",
+      "sha256": "2048e418de48ddaee64157b77bbb51594955e85d81bc7c438935a6f46dba76ac"
+    }
+  },
+  "development_token_savings": null,
+  "model_calls": 0,
+  "ci_runs": 0
+}
