@@ -56,6 +56,22 @@ Diet exactOnly bile tekrar adedini ve bütçeye sığmayan tam kaynak/JSON'u kay
 
 Sonraki aday, kullanım ölçümü tamamlandıktan sonra sınırlı yerel sorgudur. Aynı istemcinin izinleri, model/efor, stdout/stderr/exit ve araç kimliği korunur; tam kaynak/sayısal Read geçer, ilk özgün baytlar uygulamaya ait depoda geri alınır. Gerçek ajanla aynı görev başarısı, ek turlar/retrieval ve toplam kullanım kanıtı olmadan varsayılan değişmez. İzinleri aşan genel kod yürütme veya bütün sohbetleri yeniden özetleme bu kabulün parçası değildir. H041 ana görevi açık kalır.
 
+### Güvenli hedefli sorgu prototipi
+
+Arşiv erişimi ve ölçüm sözleşmesi nedeniyle uygulama ana ajandadır. Prototip yalnız geliştirici denemesinde, izinli yolda zaten tamamlanmış belirli bir JSONL raporunun tam kimliğini ve kayıt sayısını döndürür. Sorgu bağımsız dosya, komut ve ağ erişimi almaz. Geçici arşiv, çağıranın sağladığı güvenilir oturum yetkisine bağlıdır. Sorgu argümanı bu yetkiyi belirleyemez. Başka kapsam, arşiv ömrünün sonu, bilinmeyen kayıt ve kapasite aşımı ayrı sınanır. Özgün stdout/stderr baytları ile araç ve çağrı kimliği geri alınabilir.
+
+- Normal, hata ve sınır kabulü. Özgün satır sonu, büyük tamsayı ve kesin ondalık korunur. Eksik veya yinelenen kayıt, bozuk JSONL, bütçe aşımı, stderr ve sıfır dışı çıkışta tam çıktı yolu sürer. Tam kaynak ve sayısal Read yerel motorda birebir sınanır. Sorgu eksik veri üzerinden başarı döndürmez.
+- Üç izole eşlenmiş koşu. Mevcut Headroom ile tam Read ve aynı Headroom üzerinden özel sorgu karşılaştırılır. İki kolda aynı model/efor/auth kullanılır. İlk istek, araç şeması, kısa arşiv referansı, argümanlar ve sonraki istek sayılır. Tam çıktıyı da isteyen üçüncü istek ayrıca sayılır. Sağlayıcı fixture'ı yalnız taşıma kanıtı verir. Gerçek ajan kalitesi, önbellek, çıktı tokenı ve fatura ayrı kabulde kalır.
+- Girdi başına 1 MiB, arşiv başına 4 MiB ve 16 kayıt, JSONL satırı başına 64 KiB, 10.000 satır ve tek senkron yerel sorgu. Ürün davranışına dokunmadan ilgili sürücü ve kaynak fingerprint'leri doğrulanır. Arşiv ömrü ve istemci yetkisi, ürün entegrasyonu için gerçek istemci yolunda ayrıca kabul görmelidir.
+
+Yerel koşu tamamlandı. Üç eşlenmiş tekrarda 27 gönderim ve üç normal motor kapanışı geçti. 1.000 satırlık örnekte tek kayıt ve toplam sayı, tam istek JSON'u toplamını 60.295'ten 693–709'a indirdi. Tam okumayı da içeren üçüncü istek toplamı 61.200–61.228'e çıkardı. Birebir arşiv, araç kimliği, kaynak ve sayısal Read, stdout/stderr/exit ve yetki sınırı kontrolü geçti. Arşiv her prototip koşusunda bellekte tutuldu. Canlı istemci izinleri, aynı modelle görev sonucu, sağlayıcı tokenı ve fatura kabulü açık. [Kanıt](../proofs/targeted-query-pilot.json).
+
+Komut proje kökünde çalıştırılır.
+
+```powershell
+& 'work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime/python.exe' -I -B bench/context_tools/targeted_query_replay.py --run
+```
+
 ### H041-e: deneysel kurallar
 
 16 Kasım 2026 kullanıcı kararı: ModHarness-RL'den esinlenen kural deneyi **isteğe bağlı ve varsayılan kapalıdır**. Ana ajan kapsam, ölçüm ve izin sözleşmesini üstlenir; bu kayıt yalnız plandır. Amaç, büyük araç çıktılarında gereken bilgiyi seçmek ve doğrulanmış hata döngülerini Learn içinde öneri olarak göstermek. [Makale v1](https://arxiv.org/abs/2611.18533v1) yöntem kaynağıdır; buradaki kabul koşulları ürünümüze aittir. Model eğitimi, kendiliğinden kod üretip çalıştırma ve bütün sohbetleri yeniden özetleme kapsam dışıdır.

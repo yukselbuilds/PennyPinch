@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041 — güvenli hedefli sorgunun yerel prototipi tamamlandı
+
+- Ana ajan arşiv erişimini ve ölçümü üstlendi. 0.44.0, Windows 10 ve üç eşlenmiş koşuda 27 motor gönderimi geçti. 1.000 satırlık raporun hedef kaydı, kayıt sayısı, kesin sayı ve satır sonları birebir korundu. Özgün çıktı, araç kimliği, stdout/stderr ve exit geri alınabildi. Kapsam, kapasite, belirsiz kayıt ve tam Read sınamaları geçti. [Kanıt](proofs/targeted-query-pilot.json).
+- 60.295 → 693–709 yerel istek JSON'u tokenı (%98,82–98,85). Şemalar, arşiv referansı, argümanlar ve her iki istek dahil. Sonradan tam okuma istenen üçüncü turda toplam 61.200–61.228. Yerel kazanç tek kayıt ve kayıt sayısı işiyle sınırlı.
+- **45/54 ve ana H041 açık.** TASKS'ta yerel dilim işaretlendi. Sonraki sorgu kabulü gerçek istemci yetkisi ve eşlenmiş aynı model/efor koşusunda görev başarısı ile geri okumalar dahil sağlayıcı kullanımıdır. Prototip geliştirme denemesinde kalıyor. Geliştirme sohbetinin token tasarrufu ölçülmedi.
+
 ## H041 — Anthropic otomatik cache işareti yerel dilimi tamamlandı
 
 - Ana ajan protokol ve ölçüm sahipliğini üstlendi. Sabit 0.44.0 motorun 24 eşlenmiş isteğinde iki dört-işaret örneği 5 → 4 işarete indi. Üst düzey 1h cache talebinde aynı son bloğa eklenen varsayılan işaret kaldırıldı. Açık istemci işaretleri ve kullanım sayaçlarının yanıt kaynağı korundu. [Kanıt](proofs/anthropic-cache-markers.json).

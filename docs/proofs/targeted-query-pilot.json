@@ -1,0 +1,130 @@
+{
+  "task": "H041",
+  "status": "local_targeted_query_prototype_complete",
+  "checked_on": "2026-11-16",
+  "os": "Windows-10-10.0.19045-SP0",
+  "engine": "0.44.0",
+  "scope": "Developer replay over synthetic authorized output. No product registration or settings change.",
+  "operation": "Exact ID selection and record count. Original row bytes are returned.",
+  "archive_lifetime": "bounded_in_memory_for_one_proof_run",
+  "paired_runs": 3,
+  "local_upstream_requests": 27,
+  "graceful_engine_stops": 3,
+  "report_rows": 1000,
+  "report_bytes": 107498,
+  "fixture_model_and_reasoning": {
+    "model": "o4-mini",
+    "effort": "high"
+  },
+  "token_basis": "o200k_base over the canonical JSON of all forwarded input requests in each sequence, not provider usage",
+  "per_arm_requests": {
+    "full_read": 2,
+    "targeted": 2,
+    "targeted_then_full_read": 3
+  },
+  "includes": [
+    "Initial request context",
+    "Tool definitions",
+    "Archive reference",
+    "Tool arguments",
+    "Follow-up request context",
+    "Full reread request for that scenario"
+  ],
+  "run_totals": [
+    {
+      "full_input_json_tokens": 60295,
+      "targeted_input_json_tokens": 693,
+      "targeted_then_full_input_json_tokens": 61200,
+      "full_tool_output_json_tokens": 41525,
+      "targeted_tool_output_json_tokens": 96,
+      "full_arguments_tokens": 6,
+      "targeted_arguments_tokens": 30,
+      "full_tool_schema_tokens": 51,
+      "targeted_tool_schema_tokens": 145,
+      "target_only_reduction_percent": 98.85,
+      "with_full_reread_overhead_percent": 1.5
+    },
+    {
+      "full_input_json_tokens": 60295,
+      "targeted_input_json_tokens": 709,
+      "targeted_then_full_input_json_tokens": 61228,
+      "full_tool_output_json_tokens": 41525,
+      "targeted_tool_output_json_tokens": 100,
+      "full_arguments_tokens": 6,
+      "targeted_arguments_tokens": 34,
+      "full_tool_schema_tokens": 51,
+      "targeted_tool_schema_tokens": 145,
+      "target_only_reduction_percent": 98.82,
+      "with_full_reread_overhead_percent": 1.55
+    },
+    {
+      "full_input_json_tokens": 60295,
+      "targeted_input_json_tokens": 701,
+      "targeted_then_full_input_json_tokens": 61214,
+      "full_tool_output_json_tokens": 41525,
+      "targeted_tool_output_json_tokens": 98,
+      "full_arguments_tokens": 6,
+      "targeted_arguments_tokens": 32,
+      "full_tool_schema_tokens": 51,
+      "targeted_tool_schema_tokens": 145,
+      "target_only_reduction_percent": 98.84,
+      "with_full_reread_overhead_percent": 1.52
+    }
+  ],
+  "protected_outputs_per_run": [
+    {
+      "case": "failed_stdout",
+      "exit_code": 1,
+      "stdout_bytes": 54,
+      "stderr_bytes": 0,
+      "raw_exact": true,
+      "call_id_preserved": true
+    },
+    {
+      "case": "successful_stderr",
+      "exit_code": 0,
+      "stdout_bytes": 108,
+      "stderr_bytes": 16,
+      "raw_exact": true,
+      "call_id_preserved": true
+    },
+    {
+      "case": "source_read",
+      "exit_code": 0,
+      "stdout_bytes": 7080,
+      "stderr_bytes": 0,
+      "raw_exact": true,
+      "call_id_preserved": true
+    },
+    {
+      "case": "numeric_read",
+      "exit_code": 0,
+      "stdout_bytes": 107498,
+      "stderr_bytes": 0,
+      "raw_exact": true,
+      "call_id_preserved": true
+    }
+  ],
+  "boundary_checks": {
+    "missing_record": "record_missing",
+    "duplicate_record": "ambiguous_jsonl",
+    "duplicate_json_key": "invalid_jsonl",
+    "number_as_id": "invalid_jsonl",
+    "nonfinite_number": "invalid_jsonl",
+    "binary_tail": "invalid_jsonl",
+    "row_limit": "query_capacity",
+    "record_limit": "query_capacity",
+    "scope_and_generation": "pass",
+    "arguments": "pass",
+    "archive_byte_and_entry_limits": "pass"
+  },
+  "verified_input_count": 39,
+  "raw_evidence": {
+    "path": "work/proofs/optimization/targeted-query/9ce2224dd2c346318168111d7106c2ee/result.json",
+    "sha256": "a85acf8eae7b3f0807f33288b51ec21280849194be2d5b378dbfdf6493766040"
+  },
+  "rerun_command": "pinned-python -I -B bench/context_tools/targeted_query_replay.py --run",
+  "live_model_quality_and_provider_cost": "not_tested",
+  "real_client_permission_binding": "not_tested",
+  "paid_model_calls": 0
+}
