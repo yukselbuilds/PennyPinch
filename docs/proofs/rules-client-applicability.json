@@ -1,0 +1,72 @@
+{
+  "task": "H041-e3",
+  "stage": "client_applicability_preflight",
+  "status": "local_windows_10_preflight_pass_main_acceptance_open",
+  "checked_on": "2026-11-16",
+  "client": "codex-cli 0.169.0-alpha.11.1",
+  "engine": "0.44.0",
+  "rule": "repeated_log_lines_v1",
+  "cases": 3,
+  "repetitions": 3,
+  "native_cli_exits_zero": 9,
+  "loopback_posts": 18,
+  "observed_wire_type": "string",
+  "protected_outputs": 9,
+  "eligible_outputs": 0,
+  "complete_log_counts": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "truncated_log_counts": [
+    9,
+    9,
+    9
+  ],
+  "exact_integer_and_file_fingerprints_preserved": true,
+  "actual_tool_schema_checked": true,
+  "sandbox": {
+    "mode": "read-only",
+    "windows_implementation": "unelevated",
+    "approval": "never",
+    "scope": "new isolated local fixture profile"
+  },
+  "provider_model_calls": 0,
+  "provider_usage": "not_measured",
+  "real_task_quality": "not_tested",
+  "fixture_usage_is_not_actual_usage": true,
+  "client_private_state_removed": true,
+  "raw_wire_content_exported": false,
+  "product_gate": {
+    "reused_unchanged": "H041-e2",
+    "inputs_rechecked": 400,
+    "path": "work/proofs/optimization/experimental-replay/gate-4e6396b1cc.json",
+    "sha256": "f63e98324c49c8ab10b5bc907eccbd9ecc1a2fca8061328cb65ff95ffe138ff3"
+  },
+  "artifact": {
+    "path": "work/proofs/optimization/rules-client/e9c2b49ad0c34ba79e5b02bff9015646/result.json",
+    "sha256": "cdcc8487c4c2d374fe4bef366c42c07af6389d4a1cab5ff136b86cb5bed0b242"
+  },
+  "plan": {
+    "path": "bench/optimization/rules-client-plan.json",
+    "sha256": "7ab85eaf15ba0644ef482c446f35eaacc7f66ae969f44d6360d87af95e2e236e"
+  },
+  "fingerprinted_inputs": 17,
+  "review": {
+    "owner": "main agent",
+    "blocking_findings": 0,
+    "scope": "real CLI schema/call matching, read-only file identity, owned child cleanup, isolated auth, metadata-only exporter"
+  },
+  "preparation_findings": [
+    "empty isolated CLI profile needed an explicit native Windows sandbox implementation",
+    "250-line producer hit client truncation; final full-output fixture and truncation fixture separated before accepted run"
+  ],
+  "next": "verify a trusted producer path retaining original stdout/stderr/exit and permissions before real paired model trials",
+  "activation": "pending_H041_e4",
+  "windows_11_desktop_other_clients": "not_tested",
+  "development_chat_savings": "not_measured",
+  "configuration_reference": "https://learn.chatgpt.com/docs/config-file/config-reference"
+}

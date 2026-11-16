@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "task": "H041-e3",
+  "stage": "client_applicability_before_live_quality",
+  "rule": "repeated_log_lines_v1",
+  "client_version": "codex-cli 0.169.0-alpha.11.1",
+  "sandbox": "read-only",
+  "windows_sandbox": "unelevated",
+  "approval_policy": "never",
+  "tool_yield_ms": 10000,
+  "log_lines": 100,
+  "repetitions": 3,
+  "cases": ["stdout_only", "stderr_failed_read", "truncated_output"],
+  "limits": {"cli_seconds": 60, "request_bytes": 4194304, "reply_bytes": 2048},
+  "expected": {
+    "cli_exit": 0,
+    "posts_per_run": 2,
+    "explicit_channel_envelope_required_for_eligibility": true,
+    "unknown_channels_must_be_protected": true
+  },
+  "provider": "owned_loopback_scripted_protocol_fixture",
+  "provider_model_calls": 0,
+  "usage_from_fixture_is_not_provider_measurement": true,
+  "quality_gate": {
+    "same_model_effort_permissions_tools": true,
+    "minimum_paired_repetitions_per_held_out_task_and_cache_state": 3,
+    "required": ["all_exact_task_oracles", "observed_cold_and_warm_cache", "primary_retrieval_retry_and_extra_turn_usage", "latency_cpu_ram"],
+    "activation": "blocked_until_real_quality_and_total_usage_acceptance"
+  }
+}

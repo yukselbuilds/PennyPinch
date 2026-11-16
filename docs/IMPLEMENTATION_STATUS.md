@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041-e3 — gerçek CLI uygulanabilirlik önkontrolü tamamlandı; görev açık
+
+- Ana ajan kuralın gerçek istemci çıktısına uygulanabilirliğini ve ölçüm sınırını üstlendi. Kurulu Codex CLI 0.169.0-alpha.11.1 ile üç normal/hata/sınır örneği üçer kez çalıştı: 9 normal CLI çıkışı, 18 sahipli loopback gönderimi. Araç şeması, gerçek dosya içeriği, kesin sayı ve önce/sonra fingerprint'leri geçti. [Kanıt](proofs/rules-client-applicability.json).
+- Wire çıktıları birleşik string; yeni e2 kuralı dokuzunu da korudu, uygun çıktı sıfır. Üç sınır örneğinde istemci 100 satırı 9 satıra kesti. Bu, yeni isteğe bağlı kuralın sınırıdır; temel motorun optimizasyon kabulünü değiştirmez. Önkontrol gerçek model çalıştırmadı; fixture kullanım sayaçları token kazancı sayılmadı.
+- Salt okunur deneme yeni, auth içermeyen profillerde yapıldı. Kullanıcının normal istemci/proje ayarları değiştirilmedi. CLI private kayıtları yalnız sahipli koşu kökünden temizlendi. Ürün kaynakları aynı: e2 kalite kapısının 400 girdisi tekrar hash ile eşleştirildi; başarılı ürün testleri yinelenmedi. Windows 11/diğer istemciler ve gerçek sağlayıcı kabulü yapılmadı.
+- **45/54 ve H041-e3 açık.** Önce stdout/stderr/exit ve çağrı sahipliğinin doğrulanabildiği kontrollü üretici bağlantısı gerekir. Sonra bağımsız görev/oracle, üç eşlenmiş tekrar, gözlenen soğuk/sıcak cache ve kaynak/kazanç eşikleri dondurularak gerçek model A/B yapılır. Birleşik metin tahminle güvenilir kanala çevrilmez; e4 etkinleştirme başlamadı. Geliştirme sohbeti tasarrufu ölçülmedi.
+
 ## H041-e2 — korumalı yerel kural/replay tamamlandı
 
 - Ana ajan özgün baytların sahipliğini ve ölçüm sınırını üstlendi. Deneysel kurallar → Yerelde dene, seçilmiş dosyanın bellekteki kopyasında ilk log tekrarı kuralını ve tersini çalıştırır. Kayıt en fazla 16 MiB; erişimi 15 dakika ve ana pencere/uygulama ömrüyle sınırlı. Canlı trafiğe kural uygulanmaz. [Kanıt](proofs/experimental-rules-replay.json).
