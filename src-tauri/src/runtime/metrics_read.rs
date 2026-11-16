@@ -346,6 +346,16 @@ mod tests {
     #[test]
     #[ignore = "run by the isolated Anthropic engine proof"]
     fn owned_anthropic_usage_reaches_activity_detail() {
+        assert_owned_usage_detail("desktop-anthropic-usage");
+    }
+
+    #[test]
+    #[ignore = "run by the isolated Responses engine proof"]
+    fn owned_responses_usage_reaches_activity_detail() {
+        assert_owned_usage_detail("desktop-responses-usage");
+    }
+
+    fn assert_owned_usage_detail(proof_directory: &str) {
         use crate::metrics::store::{MetricsStore, Period};
         use serde::Deserialize;
         use std::path::{Path, PathBuf};
@@ -363,7 +373,8 @@ mod tests {
         assert!(frame.len() <= 4096);
         let input: ProofInput = serde_json::from_slice(&frame).expect("owned fixture input");
         let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../work/proofs/optimization/desktop-anthropic-usage")
+            .join("../work/proofs/optimization")
+            .join(proof_directory)
             .canonicalize()
             .unwrap();
         let directory = input.directory.canonicalize().unwrap();

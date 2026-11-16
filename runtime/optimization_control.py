@@ -17,6 +17,7 @@ from typing import Any
 CONTROL_PATH = "/__headroom_desktop/control"
 USAGE_PATH = "/__headroom_desktop/provider-usage"
 ANTHROPIC_MESSAGES_PATH = "/v1/messages"
+RESPONSES_PATH = "/responses"
 MAX_PAYLOAD = 2 * 1024 * 1024
 MAX_TRACKERS = 64
 MAX_REPLAY_BYTES = 64 * 1024 * 1024
@@ -41,6 +42,7 @@ class RequestState:
     previous: tuple | None = None
     replay_failed: bool = False
     usage: UsageTrace | None = None
+    responses_ccr_failed: bool = False
 
 
 def _token_count(value):
@@ -53,6 +55,7 @@ def _sum_known(values):
 
 @dataclass
 class UsageTrace:
+    surface: str = "anthropic_messages"
     request_id: str | None = None
     conflicting_ids: bool = False
     attempts: list[dict] = field(default_factory=list)
@@ -69,11 +72,13 @@ class UsageTrace:
     def snapshot(self, status: int) -> dict:
         usage = {}
         for name in USAGE_FIELDS:
-            values = [(attempt["usage"] or {}).get(name) for attempt in self.attempts]
+            values = [(attempt["usage"] or {}).get(name) if attempt["status"] is not None
+                      and 200 <= attempt["status"] < 300 else None for attempt in self.attempts]
             usage[name] = None if self.truncated else _sum_known(values)
-        usage["total_input_tokens"] = _sum_known([usage[name] for name in USAGE_FIELDS[:3]])
+        usage["total_input_tokens"] = (usage["input_tokens"] if self.surface == "openai_responses"
+                                       else _sum_known([usage[name] for name in USAGE_FIELDS[:3]]))
         usage["total_tokens"] = _sum_known([usage["total_input_tokens"], usage["output_tokens"]])
-        return {"request_id": self.request_id, "client_status": status, "truncated": self.truncated,
+        return {"surface": self.surface, "request_id": self.request_id, "client_status": status, "truncated": self.truncated,
                 "attempts": copy.deepcopy(self.attempts), "usage": usage}
 
 
@@ -136,43 +141,108 @@ async def _observe_anthropic_sse(chunks, attempt, parse_events):
         yield chunk
 
 
-def _install_anthropic_usage(proxy, gate, parse_events, response_not_read):
+def _responses_usage(value):
+    if (not isinstance(value, dict) or value.get("object", "response") != "response"
+            or value.get("status") != "completed" or not isinstance(value.get("usage"), dict)):
+        return None
+    usage = value["usage"]
+    details = usage.get("input_tokens_details")
+    details = details if isinstance(details, dict) else {}
+    result = {"input_tokens": _token_count(usage.get("input_tokens")),
+              "cache_read_input_tokens": _token_count(details.get("cached_tokens")),
+              "cache_creation_input_tokens": _token_count(details.get("cache_write_tokens")),
+              "output_tokens": _token_count(usage.get("output_tokens"))}
+    if result["input_tokens"] is not None and any(
+            result[name] is not None and result[name] > result["input_tokens"] for name in USAGE_FIELDS[1:3]):
+        return None
+    return result
+
+
+async def _observe_responses_sse(chunks, attempt, parse_events):
+    buffer = bytearray()
+    response_id = None
+    stopped = invalid = False
+    usage_events = {"response.created", "response.completed", "response.failed", "response.incomplete", "error"}
+    async for chunk in chunks:
+        if not invalid:
+            try:
+                if len(buffer) + len(chunk) > MAX_USAGE_EVENT_BYTES:
+                    raise ValueError()
+                buffer.extend(chunk)
+                for event_name, data in parse_events(buffer):
+                    if data == "[DONE]" and stopped:
+                        continue
+                    if event_name is not None and event_name not in usage_events:
+                        continue
+                    event = json.loads(data)
+                    if not isinstance(event, dict):
+                        raise ValueError()
+                    kind = event.get("type")
+                    if (not isinstance(kind, str) or (event_name is not None and event_name != kind)
+                            or kind in {"response.failed", "response.incomplete", "error"}
+                            or kind in usage_events and stopped):
+                        raise ValueError()
+                    if kind == "response.created":
+                        value = event.get("response")
+                        if response_id is not None or not isinstance(value, dict) or not isinstance(value.get("id"), str):
+                            raise ValueError()
+                        response_id = value["id"]
+                    elif kind == "response.completed":
+                        value = event.get("response")
+                        if not isinstance(value, dict) or response_id is not None and value.get("id") != response_id:
+                            raise ValueError()
+                        stopped = True
+                        attempt["usage"] = _responses_usage(value)
+            except (ValueError, RecursionError):
+                invalid = True
+                buffer.clear()
+                attempt["usage"] = None
+        yield chunk
+
+
+def _install_usage(proxy, gate, parse_events, response_not_read):
     startup = proxy.startup
     record_outcome = proxy._record_request_outcome
 
     async def start():
         await startup()
-        client = proxy.http_client
-        send = client.send
+        clients = {id(client): client for name in ("http_client", "http_client_h1")
+                   if (client := getattr(proxy, name, None)) is not None}
+        for client in clients.values():
+            # Bind each transport separately: ChatGPT can use the dedicated HTTP/1 client.
+            async def observe(request, _send=client.send, **options):
+                state = _request.get()
+                path = ANTHROPIC_MESSAGES_PATH if state is not None and state.kind == "anthropic" else RESPONSES_PATH
+                if (state is None or state.gate is not gate or state.usage is None
+                        or request.method != "POST" or not request.url.path.endswith(path)):
+                    return await _send(request, **options)
+                attempt = state.usage.begin_attempt()
+                response = await _send(request, **options)
+                if attempt is None:
+                    return response
+                attempt["status"] = response.status_code
+                if not response.is_success or response.history:
+                    return response
+                media_type = response.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+                if media_type == "application/json" and response.is_stream_consumed:
+                    try:
+                        if state.kind == "anthropic":
+                            attempt["usage"] = _anthropic_json_usage(response.content)
+                        elif len(response.content) <= MAX_PAYLOAD:
+                            attempt["usage"] = _responses_usage(json.loads(response.content))
+                    except (ValueError, RecursionError, response_not_read):
+                        pass
+                elif media_type == "text/event-stream":
+                    read = response.aiter_bytes
+                    observer = _observe_anthropic_sse if state.kind == "anthropic" else _observe_responses_sse
 
-        async def observe(request, **options):
-            state = _request.get()
-            if (state is None or state.gate is not gate or state.usage is None
-                    or request.method != "POST" or not request.url.path.endswith(ANTHROPIC_MESSAGES_PATH)):
-                return await send(request, **options)
-            attempt = state.usage.begin_attempt()
-            response = await send(request, **options)
-            if attempt is None:
+                    def observed_read(*args, **kwargs):
+                        return observer(read(*args, **kwargs), attempt, parse_events)
+
+                    response.aiter_bytes = observed_read
                 return response
-            attempt["status"] = response.status_code
-            if not response.is_success or response.history:
-                return response
-            media_type = response.headers.get("content-type", "").split(";", 1)[0].strip().lower()
-            if media_type == "application/json" and response.is_stream_consumed:
-                try:
-                    attempt["usage"] = _anthropic_json_usage(response.content)
-                except (ValueError, RecursionError, response_not_read):
-                    pass
-            elif media_type == "text/event-stream":
-                read = response.aiter_bytes
 
-                def observed_read(*args, **kwargs):
-                    return _observe_anthropic_sse(read(*args, **kwargs), attempt, parse_events)
-
-                response.aiter_bytes = observed_read
-            return response
-
-        client.send = observe
+            client.send = observe
 
     async def record(outcome):
         await record_outcome(outcome)
@@ -189,6 +259,22 @@ def _install_anthropic_usage(proxy, gate, parse_events, response_not_read):
 
     proxy.startup = start
     proxy._record_request_outcome = record
+
+
+def _install_responses_ccr_errors(proxy, gate):
+    retry = proxy._retry_request
+
+    async def checked(*args, **kwargs):
+        response = await retry(*args, **kwargs)
+        state = _request.get()
+        if (state is not None and state.gate is gate and state.kind == "responses"
+                and kwargs.get("forwarder_name") == "openai_responses_ccr_continuation"
+                and not response.is_success):
+            # Its CCR handler catches exceptions and can return the preceding tool call.
+            state.responses_ccr_failed = True
+        return response
+
+    proxy._retry_request = checked
 
 
 def _encoded(value: Any) -> bytes:
@@ -369,8 +455,8 @@ class ControlMiddleware:
                   and self._authorized(headers)):
                 with self.gate.lock:
                     records = list(self.gate.usage_records)
-                await self._reply(send, 200, {"schema_version": 1, "runtime_generation": self.gate.generation,
-                                              "surface": "anthropic_messages", "records": records})
+                await self._reply(send, 200, {"schema_version": 2, "runtime_generation": self.gate.generation,
+                                              "surface": "provider_usage", "records": records})
             elif scope["type"] == "http": await self._reply(send, 404, {"error": "not_found"})
             else: await send({"type": "websocket.close", "code": 1008})
             return
@@ -381,16 +467,27 @@ class ControlMiddleware:
                              _digest([path, "responses" if kind == "responses_ws" else kind, [(k, headers.get(k)) for k in route_headers]]))
         if scope["type"] == "http" and scope.get("method") == "POST" and path == ANTHROPIC_MESSAGES_PATH:
             state.usage = UsageTrace()
+        elif scope["type"] == "http" and scope.get("method") == "POST" and path.endswith(RESPONSES_PATH):
+            state.usage = UsageTrace(surface="openai_responses")
         token = _request.set(state)
         counted = scope["type"] == "http" and scope.get("method") == "POST" and kind in {"responses", "anthropic"} or scope.get("method") == "POST" and path.endswith("/chat/completions")
         started = False
         completed = False
         status = None
+        rejected = False
         async def observed_send(message):
-            nonlocal started, status
+            nonlocal started, status, rejected
             if message["type"] == "http.response.start":
                 started = True
                 status = message["status"]
+                if state.responses_ccr_failed:
+                    rejected = True
+                    status = 502
+                    await self._reply(send, status, {"error": {"type": "upstream_error",
+                        "message": "Unable to complete CCR retrieval."}})
+                    return
+            if rejected:
+                return
             await send(message)
         with self.gate.lock:
             if counted: self.gate.active_http += 1
@@ -507,7 +604,8 @@ def install(generation: str, secret: str) -> dict[str, str]:
         gate = Gate(generation, secret, prefix)
         gate.proxy_store = proxy.session_tracker_store
         proxy.config = ScopedConfig(proxy.config, gate)
-        _install_anthropic_usage(proxy, gate, parse_sse_events_from_byte_buffer, httpx.ResponseNotRead)
+        _install_usage(proxy, gate, parse_sse_events_from_byte_buffer, httpx.ResponseNotRead)
+        _install_responses_ccr_errors(proxy, gate)
         app.add_middleware(ControlMiddleware, gate=gate)
         app.state.desktop_control = gate
         return app

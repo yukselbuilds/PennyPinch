@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041-d — Responses HTTP/SSE yerel dilimi tamamlandı
+
+- Ana ajan ölçüm ve sahiplik sözleşmesini üstlendi. Birincil, CCR devamı ve tekrarların kullanımı aynı ASGI bağlamı ve tam motor istek kimliğine bağlandı. Normal ve ayrı HTTP/1 istemcisi kapsandı. Responses girdisindeki cache ayrıntıları ikinci kez toplanmaz; eksik alan ile gerçek sıfır ayrılır. Özel kullanım kaydı sürüm 2'de yüzeyi satır başına taşır; native okuyucu önceki Anthropic biçimini de kabul eder.
+- Son adayda 7 parser/taşıma, 466 Rust, 223 frontend testi ve iki derleme geçti. Gerçek 0.44.0 motorunda 8 Responses ve 6 Anthropic senaryosu, dört normal kapanış doğrulandı. Sentetik tam örnekte 2.400 girdi, 29 çıktı, 2.000 cache okuma ve 100 yazma tokenı native okuyucu → SQLite → istek ayrıntısına ulaştı. 406 güncel girdi kanıta bağlandı. [Kabul](proofs/responses-usage-desktop.json).
+- Hata deneyi, CCR devamındaki HTTP 400'ün motor tarafından HTTP 200 içinde döndürülebildiğini gösterdi. Alt katman istisnası da eski araç çağrısına geri düşüyordu. Son düzeltme, mevcut tekrar politikası bittikten sonra hatayı işaretler; yanıt başlıklarından önce sahipli ASGI sınırı HTTP 502 döndürür ve geçersiz gövdeyi iletmez. Native ayrıntı hata olarak işaretlenir, eksik toplam bilinmiyor kalır. Model/auth/efor ve mevcut tasarruf ölçüm temeli korunur.
+- **45/54; ana H041 ve H041-d açık.** Sonraki somut yerel adım Responses WebSocket'te tur ve devam çağrısı sahipliğini doğrulamak. Chat Completions, canlı sağlayıcı/görev kalitesi, yeni macOS paketi ve Windows 11/temiz OS kabulleri açık. Bu dilim Windows 10 yerel geliştirme kabulüdür; yeni kurucu üretilmedi. Actions veya gerçek model çağrısı başlatılmadı. Geliştirme sohbeti token tasarrufu ölçülmedi.
+
 ## H041 — 0.44.0 Windows paket geçişi tamamlandı
 
 - Ana ajan paket, süreç ve veri uyumunu üstlendi. Sürümlü yeni motor kökü, bağımlılık kilidi, kaynak haritası ve Windows/macOS pinleri 0.44.0’a taşındı. Başlangıçta paket içindeki fiyat haritası kullanılır. Önceki tercih dosyası okuma sırasında korunur. Yeni kayıt, önceki uygulamanın geri alma sonrasında okuyabileceği biçimdedir. Eski ölçüm satırları kabul edilir.

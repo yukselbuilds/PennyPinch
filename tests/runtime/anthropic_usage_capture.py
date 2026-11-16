@@ -78,8 +78,8 @@ def usage_response(engine, token):
 def records(engine):
     status, value = usage_response(engine, engine.control_token)
     require(status == 200 and set(value) == {"schema_version", "runtime_generation", "surface", "records"}
-            and value["schema_version"] == 1 and value["runtime_generation"] == engine.generation
-            and value["surface"] == "anthropic_messages", "usage_snapshot_contract")
+            and value["schema_version"] == 2 and value["runtime_generation"] == engine.generation
+            and value["surface"] == "provider_usage", "usage_snapshot_contract")
     result = {}
     for row in value["records"]:
         require(row["request_id"] not in result, "usage_conflicting_scope")
@@ -98,7 +98,8 @@ def await_records(engine, identities):
 
 
 def check_record(row, upstream, client_status):
-    require(set(row) == {"request_id", "client_status", "truncated", "attempts", "usage"}
+    require(set(row) == {"surface", "request_id", "client_status", "truncated", "attempts", "usage"}
+            and row["surface"] == "anthropic_messages"
             and row["client_status"] == client_status and row["truncated"] is False
             and len(row["attempts"]) == len(upstream), "usage_attempt_coverage")
     for seen, expected in zip(row["attempts"], upstream, strict=True):

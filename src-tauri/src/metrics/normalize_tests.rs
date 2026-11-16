@@ -110,6 +110,17 @@ fn owned_provider_usage_requires_exact_identity_and_sums_every_successful_attemp
     assert_eq!(partial.output, Some(29));
     assert_eq!(partial.cache_write_input, None);
     sidecar["records"][0]["attempts"][0]["status"] = json!(429);
+    sidecar["records"][0]["client_status"] = json!(502);
+    assert_eq!(
+        project(&sidecar)
+            .events
+            .iter()
+            .find(|event| event.after.tokens == Some(80))
+            .unwrap()
+            .metadata
+            .outcome,
+        super::request_metadata::Outcome::ErrorReported
+    );
     let failed = for_after(&project(&sidecar), 80);
     assert_eq!(failed.input, None);
     assert_eq!(failed.output, None);
@@ -122,6 +133,80 @@ fn owned_provider_usage_requires_exact_identity_and_sums_every_successful_attemp
     let ambiguous = for_after(&project(&sidecar), 80);
     assert!(ambiguous.conflicted);
     assert_eq!(ambiguous.upstream_attempts, None);
+}
+
+#[test]
+fn owned_responses_usage_keeps_inclusive_input_and_protocols_separate() {
+    use serde_json::json;
+    let stats = json!({"recent_requests":[
+        {"request_id":"hr_1_000001","timestamp":"2026-11-16T12:00:00Z","model":"shared",
+         "input_tokens_original":100,"input_tokens_optimized":80},
+        {"request_id":"hr_1_000002","timestamp":"2026-11-16T12:00:00Z","model":"shared",
+         "input_tokens_original":300,"input_tokens_optimized":200}
+    ]});
+    let mut sidecar = json!({"schema_version":2,"runtime_generation":GENERATION,"surface":"provider_usage",
+    "records":[
+        {"request_id":"hr_1_000001","surface":"openai_responses","truncated":false,"attempts":[
+            {"status":200,"usage":{"input_tokens":1000,"cache_read_input_tokens":900,"cache_creation_input_tokens":100,"output_tokens":6}},
+            {"status":200,"usage":{"input_tokens":1400,"cache_read_input_tokens":1100,"output_tokens":23}}
+        ]},
+        {"request_id":"hr_1_000002","surface":"anthropic_messages","truncated":false,"attempts":[
+            {"status":200,"usage":{"input_tokens":80,"cache_read_input_tokens":900,"cache_creation_input_tokens":100,"output_tokens":6}}
+        ]}
+    ]});
+    let project = |payload: &serde_json::Value| {
+        project_owned_headroom_041(
+            &serde_json::to_vec(&stats).unwrap(),
+            Some(&serde_json::to_vec(payload).unwrap()),
+            GENERATION,
+        )
+        .unwrap()
+        .batch
+    };
+    let batch = project(&sidecar);
+    let usage = |batch: &NormalizedBatch, after| {
+        batch
+            .events
+            .iter()
+            .find(|event| event.after.tokens == Some(after))
+            .unwrap()
+            .provider_usage
+            .clone()
+    };
+    let responses = usage(&batch, 80);
+    assert_eq!(responses.input, Some(2400));
+    assert_eq!(responses.output, Some(29));
+    assert_eq!(responses.cached_input, Some(2000));
+    assert_eq!(responses.cache_write_input, None);
+    assert_eq!(responses.upstream_attempts, Some(2));
+    assert_eq!(usage(&batch, 200).input, Some(1080));
+    assert!(batch
+        .events
+        .iter()
+        .all(|event| event.saved_tokens.is_none()));
+    sidecar["records"][0]["attempts"][0]["status"] = json!(429);
+    sidecar["records"][0]["client_status"] = json!(502);
+    let failure_batch = project(&sidecar);
+    assert_eq!(
+        failure_batch
+            .events
+            .iter()
+            .find(|event| event.after.tokens == Some(80))
+            .unwrap()
+            .metadata
+            .outcome,
+        super::request_metadata::Outcome::ErrorReported
+    );
+    let failed = usage(&failure_batch, 80);
+    assert_eq!(failed.input, None);
+    assert_eq!(failed.output, None);
+    sidecar["records"][0]["surface"] = json!("responses_ws_unverified");
+    assert_eq!(usage(&project(&sidecar), 80), ProviderUsage::default());
+    sidecar["runtime_generation"] = json!(NEXT_GENERATION);
+    assert!(project(&sidecar)
+        .events
+        .iter()
+        .all(|event| event.provider_usage == ProviderUsage::default()));
 }
 
 #[test]

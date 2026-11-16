@@ -44,6 +44,20 @@ Mevcut trafik kaydı, isteğe bağlı kullanım ucu geçici olarak yanıt vermez
 
 Windows 10 yerel kabulünde gerçek sahipli motor, Rust ölçüm okuyucusu, SQLite ve istek ayrıntısı zinciri geçti. Önbellek alanları ve deneme sayısı yerel tasarruf yüzdesinin temelini değiştirmiyor. Kapsamı API hesabı ve diğer protokoller için ayrı sınayacağız. [Kullanım kaydı kanıtı](../proofs/anthropic-usage-desktop-detail.json).
 
+### H041-d Responses HTTP/SSE kullanım ölçümü
+
+16 Kasım 2026. Ana ajan ölçüm semantiği ve süreç sahipliği nedeniyle uygulama ve kabulü üstlenir. İlk dilim POST Responses HTTP/SSE trafiğidir. WebSocket, Chat Completions, canlı sağlayıcı ve diğer işletim sistemleri kendi kabullerini bekler. Model, reasoning, auth, sıkıştırma profili ve tasarruf yüzdesinin mevcut temeli değişmez.
+
+Kullanım, aynı ASGI isteği bağlamında hem normal hem ayrı HTTP/1 istemcisinin gerçek upstream gönderimlerinde gözlenir. Birincil çağrı, CCR devamı ve tekrarlar aynı motor istek kimliğine bağlanır. Yalnız sayaçlar ve durum tutulur. Eksik/başarısız yanıt, yarım SSE, taşma ve kimlik çelişkisi bilinen toplam üretmez; ölçülen sıfır korunur. SSE baytları değiştirilmeden geçirilir.
+
+Responses `input_tokens` toplam girdidir; cache okuma ve varsa `input_tokens_details.cache_write_tokens` bu toplamın ayrıntılarıdır. Girdiye tekrar eklenmezler. Eksik ayrıntı sıfıra çevrilmez. Yalnız tamamlanmış yanıtın kullanımı kabul edilir. [Kullanım alanları](https://github.com/openai/openai-python/blob/main/src/openai/types/responses/response_usage.py) · [SSE bitişi](https://developers.openai.com/api/reference/resources/responses/streaming-events).
+
+Mevcut gizli anahtarlı kullanım ucu sürüm 2'de her satırın yüzeyini belirtir; Anthropic ile Responses aynı kayıt kuyruğunu paylaşır. Native okuyucu sürüm 1 Anthropic biçimini de kabul eder. Nesil ve tam istek kimliği dışında eşleme yapılmaz. Kalıcı ölçüm/tercih şeması genişletilmez; mevcut sağlayıcı alanları kullanılır.
+
+Gerçek hata deneyi, sabit motorun Responses CCR devamında gelen HTTP 400'ün JSON gövdesini HTTP 200 içinde döndürebildiğini gösterdi. Alt katmanda istisna yükseltmek de yeterli değildir: CCR işleyicisi bunu yakalayıp önceki araç çağrısını geri döndürür. Uygulamaya ait dar koruma, yalnız bu devam yolunda mevcut tekrar politikası bittikten sonra başarısızlığı işaretler. Henüz yanıt başlığı gönderilmeden sahipli ASGI sınırı HTTP 502 üretir ve geçersiz gövdeyi iletmez. Ek gönderim/tekrar yapmaz. Aynı özel kaydın istemci durumuyla native ayrıntı hata olarak işaretlenir; eksik kullanım bilinmiyor kalır.
+
+Kabul: (1) JSON ve parçalı SSE'de bilinen girdi/çıktı/cache değerleri, sıfır ve eksik alan; (2) gerçek sahipli motorda birincil/CCR/tekrar ve eşzamanlı isteklerin ayrı sayaçları, özgün CCR içeriği ve rota korunumu; (3) eksik/başarısız devam, yetkisiz okuma ve yeniden başlatmada izolasyon. Native okuma → SQLite → istek ayrıntısı aynı toplamı göstermeli. Önce/sonra kaynak ve araç fingerprint'leri kaydedilir. Odaklı parser/normalizasyon ve gerçek motor kontrollerinden sonra son adayda WORKFLOW yerel kapısı bir kez çalışır. Actions ve gerçek model çağrısı başlatılmaz.
+
 ### Güncel Headroom ve Serena adayları
 
 15 Kasım 2026’da Headroom kararlı `0.44.0` ve Serena `2.1.0` yayınları incelendi. Etkin motor `0.41.0` ile sürer. Aday karşılaştırmaları bağımlılık kilidi ve yalıtılmış paketle yürütülür. [Headroom yayın notları](https://github.com/headroomlabs-ai/headroom/releases/tag/v0.44.0) · [Serena yayını](https://github.com/oraios/serena/releases/tag/v2.1.0).

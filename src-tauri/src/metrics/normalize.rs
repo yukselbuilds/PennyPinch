@@ -512,6 +512,8 @@ struct OwnedUsageSnapshot {
 
 #[derive(Deserialize)]
 struct UsageRecord {
+    surface: Option<String>,
+    client_status: Option<u16>,
     request_id: String,
     truncated: bool,
     attempts: Vec<UsageAttempt>,
@@ -531,9 +533,17 @@ struct AttemptCounters {
     output_tokens: Option<u64>,
 }
 
+struct CapturedUsage {
+    counters: ProviderUsage,
+    failed: bool,
+}
+
 impl UsageRecord {
-    fn totals(&self) -> ProviderUsage {
-        if self.truncated || !(1..=16).contains(&self.attempts.len()) {
+    fn totals(&self, surface: &str) -> ProviderUsage {
+        if self.truncated
+            || !(1..=16).contains(&self.attempts.len())
+            || !matches!(surface, "anthropic_messages" | "openai_responses")
+        {
             return ProviderUsage::default();
         }
         let sum = |count: fn(&AttemptCounters) -> Option<u64>| {
@@ -548,13 +558,17 @@ impl UsageRecord {
                 })
                 .filter(|&value| value <= MAX_TOKEN_COUNT)
         };
-        let uncached = sum(|usage| usage.input_tokens);
+        let reported_input = sum(|usage| usage.input_tokens);
         let cached_input = sum(|usage| usage.cache_read_input_tokens);
         let cache_write_input = sum(|usage| usage.cache_creation_input_tokens);
-        let input = (|| {
-            let input = uncached? + cached_input? + cache_write_input?;
-            (input <= MAX_TOKEN_COUNT).then_some(input)
-        })();
+        let input = if surface == "openai_responses" {
+            reported_input
+        } else {
+            (|| {
+                let input = reported_input? + cached_input? + cache_write_input?;
+                (input <= MAX_TOKEN_COUNT).then_some(input)
+            })()
+        };
         ProviderUsage {
             input,
             output: sum(|usage| usage.output_tokens),
@@ -658,9 +672,9 @@ pub(crate) fn project_owned_headroom_041(
         .filter(|body| body.len() <= MAX_SNAPSHOT_BYTES)
         .and_then(|body| serde_json::from_slice::<OwnedUsageSnapshot>(body).ok())
         .filter(|snapshot| {
-            snapshot.schema_version == 1
+            ((snapshot.schema_version == 1 && snapshot.surface == "anthropic_messages")
+                || (snapshot.schema_version == 2 && snapshot.surface == "provider_usage"))
                 && snapshot.runtime_generation == runtime_generation
-                && snapshot.surface == "anthropic_messages"
                 && snapshot.records.len() <= 64
         });
     let Some(snapshot) = snapshot else {
@@ -674,11 +688,25 @@ pub(crate) fn project_owned_headroom_041(
     let mut usage = BTreeMap::new();
     for record in snapshot.records {
         if valid_label(&record.request_id) {
-            let totals = record.totals();
+            let surface = match (snapshot.schema_version, record.surface.as_deref()) {
+                (1, None | Some("anthropic_messages")) => "anthropic_messages",
+                (2, Some(surface)) => surface,
+                _ => "",
+            };
+            let totals = record.totals(surface);
+            let failed = record
+                .client_status
+                .is_some_and(|status| (400..600).contains(&status));
             usage
                 .entry(record.request_id)
-                .and_modify(|entry| *entry = ProviderUsage::conflict())
-                .or_insert(totals);
+                .and_modify(|entry: &mut CapturedUsage| {
+                    entry.counters = ProviderUsage::conflict();
+                    entry.failed |= failed;
+                })
+                .or_insert(CapturedUsage {
+                    counters: totals,
+                    failed,
+                });
         }
     }
     project_headroom(
@@ -695,7 +723,7 @@ fn project_headroom(
     runtime_generation: &str,
     engine_version: &str,
     source: Source,
-    usage: &BTreeMap<String, ProviderUsage>,
+    usage: &BTreeMap<String, CapturedUsage>,
 ) -> Result<EngineProjection, NormalizeError> {
     if !matches!(engine_version, "0.41.0" | "0.44.0") {
         return Err(NormalizeError::UnsupportedEngineVersion);
@@ -752,6 +780,9 @@ fn project_headroom(
                 }
             }
         }
+        if !metadata.conflicted && usage.get(request_id).is_some_and(|capture| capture.failed) {
+            metadata.outcome = super::request_metadata::Outcome::ErrorReported;
+        }
         observations.push(Observation {
             metadata,
             attribution: Attribution::observed(row.model.as_deref(), row.provider.as_deref()),
@@ -764,7 +795,10 @@ fn project_headroom(
             optimizer: Optimizer::Headroom,
             before: unverified_reading(row.input_tokens_original),
             after: unverified_reading(row.input_tokens_optimized),
-            provider_usage: usage.get(request_id).cloned().unwrap_or_default(),
+            provider_usage: usage
+                .get(request_id)
+                .map(|capture| capture.counters.clone())
+                .unwrap_or_default(),
         });
     }
     Ok(EngineProjection {

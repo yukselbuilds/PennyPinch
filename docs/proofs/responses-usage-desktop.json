@@ -1,0 +1,63 @@
+{
+  "task": "H041-d",
+  "slice": "responses_http_sse_usage",
+  "date": "2026-11-16",
+  "passed": true,
+  "os": "Windows-10-10.0.19045-SP0",
+  "engine": "0.44.0",
+  "scope": "Windows 10 local development; native reader, SQLite and activity detail",
+  "checks": {
+    "parser_transport_tests": 7,
+    "rust_tests": 466,
+    "frontend_tests": 223,
+    "responses_scenarios": 8,
+    "responses_upstream_calls": 13,
+    "anthropic_regression_scenarios": 6,
+    "normal_shutdowns": 4,
+    "native_usage_projection": "pass",
+    "inclusive_input_not_double_counted": "pass",
+    "missing_zero_failed_parallel_and_generation_isolation": "pass",
+    "failed_ccr_client_status": 502,
+    "failed_ccr_usage": "unknown",
+    "existing_schema_1_anthropic": "pass"
+  },
+  "counter_example": {
+    "input_tokens": 2400,
+    "cache_read_input_tokens": 2000,
+    "cache_creation_input_tokens": 100,
+    "output_tokens": 29,
+    "total_input_tokens": 2400,
+    "total_tokens": 2429
+  },
+  "counter_example_basis": "synthetic upstream-reported usage; not a live bill or savings measurement",
+  "runtime_overlay_sha256": "3df8e4b06797b808fad1cb7b8e8fa62f1c2ebb9ae9c1347d0875dc5f8844df28",
+  "plan": {
+    "path": "docs/decisions/027-optimization-regression.md",
+    "sha256": "382fb0a954a889c73c6dc11b351ef8d708bc35ccab728d6b8d6c92dff83d1db7"
+  },
+  "proofs": {
+    "quality": {
+      "path": "work/proofs/optimization/desktop-responses-usage/9dd05894-e10f-4fc7-92c1-bb74b83124f4/gate-53c8fd6c8e.json",
+      "sha256": "63014a045738fa126e0c774200c3fb1503390d867278d31c936deaa358ad303a"
+    },
+    "responses": {
+      "path": "work/proofs/optimization/desktop-responses-usage/runs/ac9ab3d0-2fcd-434e-ada6-0ac24481fdb7/result.json",
+      "sha256": "9cf2a8d4906e8ef850d9cd47d6c518255d09944050a97a4dc23784c77ca09b00"
+    },
+    "anthropic_regression": {
+      "path": "work/proofs/optimization/desktop-anthropic-usage/d4a3281a-3bd3-4f6e-9b27-9a0452f82254/result.json",
+      "sha256": "58cdf260c3aa413d8ea9fdc6fd57981116b40c442aa2063feeb6aa97bef88d58"
+    }
+  },
+  "review": "Actual request context, both HTTP transports, CCR callback error handling, ASGI response boundary, versioned private snapshot, exact native identity join and existing UI consumer reviewed.",
+  "limits": [
+    "Responses WebSocket",
+    "Chat Completions usage",
+    "live providers and task-quality savings",
+    "other operating systems",
+    "new installer packaging"
+  ],
+  "model_calls": 0,
+  "ci_runs": 0,
+  "installer_rebuilt": false
+}
