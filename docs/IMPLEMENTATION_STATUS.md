@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 16 Kasım 2026.
 
+## H041-e — isteğe bağlı deneysel kurallar planlandı
+
+- Kullanıcı ModHarness-RL yaklaşımını Learn gibi isteğe bağlı istedi. Ana ajan kapsam, ölçüm ve izin sözleşmesini planladı. Ayarlar → Learn altında ayrı tercih varsayılan kapalı; Learn/motor açılışıyla etkinleşmez. Akış öneri → yerel deneme → yalnız kabul edilmiş sürümü kapsamla etkinleştirmedir. [Plan](decisions/027-optimization-regression.md#h041-e-deneysel-kurallar).
+- TASKS ve ürün kapsamı e1 önizleme, e2 korumalı replay, e3 gerçek görev/ölçüm ve e4 gerçek etkinleştirme/geri alma olarak uzlaştırıldı. Hata/çıkış/kaynak/sayı/tekrar ve izinler korunur; aktif geçmiş değişmez, kapatma stream ve önceki CCR erişimini kesmez. Ücretli eğitim/servis veya kendi kendine kural/talimat yazımı kapsam dışında.
+- **45/54; ana H041 ve e1–e4 açık.** Bu yalnız plan eklemesidir; özellik uygulanmadı ve etkinleşmedi. Ürün testleri, Actions, model çağrısı veya kurulum çalıştırılmadı. Önce H041-d Chat Completions kullanım ölçümü; bağımsız kural kabulü ve ilgili hedefli sorgu kanıtı sonrasında e dilimleri. Mevcut kullanıcı TASKS düzenlemeleri aynen korundu. Bu planlama dilimi burada durur; geliştirme token tasarrufu ölçülmedi.
+
 ## H041 — Context Diet / Context Mode yerel pilotu tamamlandı
 
 - Ana ajan ölçüm, hata ve özgün çıktı sözleşmesini üstlendi. Diet 0.5.0 sabit kaynak/CLI filtreleri ve Mode 2.2.0 gerçek stdio MCP paketi yalnız proje içindeki ayrı profillerde çalıştı. Billion Context kullanıcı kararıyla dışarıda. İstemci ve ürün ayarları değişmedi.

@@ -475,6 +475,8 @@ Bu kararlar ilk özellik belgesinin hazırlanmasını engellemez. Sınanan varsa
 - **Yerel öneriler** (H045), içeriksiz ölçüm verisinden sağlık ve optimizasyon önerileri üretir. Ek model çağrısı yapmaz ve öneri kendi başına profil, model veya config değiştirmez. Bilinmeyen trafik veya tasarruf tahmin edilmez.
 - **Learn önizlemesi** Windows’ta Ayarlar’dan bir Codex veya Claude Code JSONL dosyası seçildiğinde çalışır. Tek bir dosyadan art arda başarısız çağrı örüntüleri, ilk örneğin satırı ve sonraki eşdeğer çağrının başarısı gösterilir. Analiz cihazda yapılır ve sonuç bu ekranın ömrüyle sınırlıdır. Motorun arka plan öğrenmesi ve bellek araçları varsayılan kapalıdır. [Karar](docs/decisions/027-optimization-regression.md#learn-önizlemesi).
 
+- **Deneysel kurallar** (planlı, H041-e) Ayarlar → Learn altında ayrı, **varsayılan kapalı** bir özelliktir. Learn'i açmak veya motoru başlatmak bunu açmaz. Kullanıcı seçili dosya/kapsamda öneri → yerel deneme → kabul edilmiş kuralı açıkça etkinleştirme adımlarını izler. Önizleme ve yerel deneme canlı trafiği değiştirmez; model eğitimi, otomatik talimat yazımı ve dışarı veri gönderimi yoktur. Model/reasoning/auth/ajan sayısı ve kaynak/sayısal tam okuma korunur. Etkinleştirme kural sürümü ve desteklenen bağlantı/proje kapsamıyla yeni oturuma uygulanır; kapatma yeni dönüşümleri durdurur ve mevcut stream/özgün CCR erişimini korur. Gerçek görevde kalite ve toplam kullanım kabulü olmayan kural pasif kalır. [Kapsam, sıra ve kabul](docs/decisions/027-optimization-regression.md#h041-e-deneysel-kurallar).
+
 Ürün ilkeleri:
 
 - Codex'in mevcut sohbet veritabanı topluca yeniden etiketlenmez. Olası migration ayrı kapsam/önizleme/geri alma gerektirir; var olan oturumların bulunması izin değildir.
