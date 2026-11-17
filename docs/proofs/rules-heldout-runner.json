@@ -1,0 +1,168 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "independent_runner_and_matrix_summary_verified_locally",
+  "executor": "main",
+  "executor_reason": "Measurement semantics, process ownership and recovery/cache decisions",
+  "scope": "Windows 10 local Codex CLI and pinned engine with a loopback protocol provider; no real model inference",
+  "focused_tests": 22,
+  "focused_breakdown": {
+    "runner_and_pilot": 18,
+    "matrix_summary": 4
+  },
+  "local_pair_requests": 22,
+  "local_pair_usage_records": 22,
+  "cache_mismatch_stop_requests": 3,
+  "new_live_model_calls": 0,
+  "cases": [
+    {
+      "case": "build_manifest_v1",
+      "order": [
+        "control",
+        "candidate"
+      ],
+      "requests": 5,
+      "exact_answers_and_schema": true,
+      "cache_and_resources": {
+        "cache_start_requested": "cold",
+        "cache_start_observed": "cold",
+        "cache_start_matches": true,
+        "all_provider_counters_known": true,
+        "resource_data_complete": true,
+        "pair_metrics": {
+          "added_completed_task_elapsed_ms": -2606,
+          "candidate_completed_task_cpu_ms": 234.375,
+          "engine_observed_private_bytes": 859877376
+        },
+        "matrix_acceptance": "not_tested"
+      },
+      "artifact": {
+        "path": "work/proofs/optimization/rules-live/9ab6929ec331451682530e71db2f2c67/result.json",
+        "sha256": "e7a4ed1780d232cd4bf61be90aaff977f3359ee9942ed6c0d3c86684e0aec353"
+      }
+    },
+    {
+      "case": "failed_release_v1",
+      "order": [
+        "candidate",
+        "control"
+      ],
+      "requests": 6,
+      "exact_answers_and_schema": true,
+      "cache_and_resources": {
+        "cache_start_requested": "warm",
+        "cache_start_observed": "warm",
+        "cache_start_matches": true,
+        "all_provider_counters_known": true,
+        "resource_data_complete": true,
+        "pair_metrics": {
+          "added_completed_task_elapsed_ms": 2453,
+          "candidate_completed_task_cpu_ms": 2734.375,
+          "engine_observed_private_bytes": 865333248
+        },
+        "matrix_acceptance": "not_tested"
+      },
+      "artifact": {
+        "path": "work/proofs/optimization/rules-live/a8f941819379437fa707868471414290/result.json",
+        "sha256": "288a109c0e51f0e39dbae48fb80e1c49f6276cedbb26b145534282cbce7dc949"
+      }
+    },
+    {
+      "case": "exact_source_v1",
+      "order": [
+        "control",
+        "candidate"
+      ],
+      "requests": 6,
+      "exact_answers_and_schema": true,
+      "cache_and_resources": {
+        "cache_start_requested": "cold",
+        "cache_start_observed": "cold",
+        "cache_start_matches": true,
+        "all_provider_counters_known": true,
+        "resource_data_complete": true,
+        "pair_metrics": {
+          "added_completed_task_elapsed_ms": -2393,
+          "candidate_completed_task_cpu_ms": 281.25,
+          "engine_observed_private_bytes": 865099776
+        },
+        "matrix_acceptance": "not_tested"
+      },
+      "artifact": {
+        "path": "work/proofs/optimization/rules-live/1a9d5f0ca44547aa9ee34eac3f961465/result.json",
+        "sha256": "9c5be9caefd513471364136e3b6c272946428a3634cc3f66f7a5cdee03ee8646"
+      }
+    },
+    {
+      "case": "counts",
+      "order": [
+        "control",
+        "candidate"
+      ],
+      "requests": 5,
+      "exact_answers_and_schema": true,
+      "cache_and_resources": null,
+      "artifact": {
+        "path": "work/proofs/optimization/rules-live/cd3a6bdab0f04268a86b9235dc999a27/result.json",
+        "sha256": "d31b6c17c103ea3825394095659b4b91180cb8b9e71197822af009e8337f3751"
+      }
+    }
+  ],
+  "timeout_unit_preserves_partial_usage_and_finishes_resources": true,
+  "cache_mismatch_real_cli_stops_before_second_arm": true,
+  "fixed_producer_never_executes_metadata_commands_or_source": true,
+  "rule_cpu_includes_mcp_preparation_counter": true,
+  "resource_scope_limit": "Main harness and engine PIDs plus timed MCP rule preparation; remaining CLI/MCP startup/tool CPU and remote-provider CPU excluded",
+  "local_performance_observation": "failed_release_v1 local pair had 2734.375 ms candidate CPU and 2453 ms added elapsed; above preset numerical thresholds, retained without relaxation; no matrix performance PASS",
+  "summary_rejects_missing_duplicate_failed_unknown_or_changed_input_trials": true,
+  "live_matrix_records": 0,
+  "live_required_pairs": 18,
+  "live_matrix_acceptance": "not_tested",
+  "general_savings_percent": null,
+  "heldout_data_or_thresholds_changed": false,
+  "only_plan_status_and_runner_availability_updated": true,
+  "product_source_changed": false,
+  "full_product_gate_repeated": false,
+  "review": {
+    "approach": "Ponytail plus code-review/security review of CLI -> fixed MCP producer -> owned engine -> usage/resource records -> acceptance summary",
+    "raw_auth_or_model_text_added_to_proofs": false,
+    "blocking_findings_remaining": 0
+  },
+  "artifacts": {
+    "final_validation": {
+      "path": "work/proofs/optimization/rules-heldout-final/6ff34a0a15ac49afbaa89ae8d289f1e0/result.json",
+      "sha256": "f1870732b6fc587bbaf6baa2554e0e0ebf2a8b5114036900eb3243d785b1283c"
+    },
+    "four_local_pairs": {
+      "path": "work/proofs/optimization/rules-heldout-runner/9e354f8a5f614a46b76566ef0690627d/result.json",
+      "sha256": "7e80ac988ff0e848ba4ac648a3e330a6a05a27d597fc670821d6de1da3e6d3f7"
+    },
+    "summary_focused_tests": {
+      "path": "work/proofs/optimization/rules-heldout-summary/13ba7f64f21b48b78dd799f07a7c8822/focused.json",
+      "sha256": "9806e4c79c1ea00dfab7006dc9d425deacb311680ee87672e86a7d608f17af86"
+    },
+    "cache_stop": {
+      "path": "work/proofs/optimization/rules-live/f22f423c8eb7418eb952783ff6bdb1d2/cache-stop.json",
+      "sha256": "05196c1e6b72b705ba94fcb2840c69b0eed75d5a6161a9adb79c37e9019360a6"
+    },
+    "plan": {
+      "path": "bench/optimization/rules-heldout-plan.json",
+      "sha256": "ff4b60b3e629837573b291897c95de519a80df629429459ab20a4e0b438ab9f0"
+    },
+    "expected_unknown_cache_write_rejection": {
+      "path": "work/proofs/optimization/rules-live/18ad856196894b778ed640752b67303c/result.json",
+      "sha256": "6de566b3359166a15acf56f68caa2372a5578a66b1a646a999177e7525560e47"
+    },
+    "chatgpt_matrix_summary": {
+      "path": "work/proofs/optimization/rules-heldout-final/6ff34a0a15ac49afbaa89ae8d289f1e0/chatgpt-summary.json",
+      "sha256": "de8e306dcb62e413dbf0db4bf7c5905d85c8e2030e6808403d0481ed44f9579c"
+    },
+    "loopback_fixture_matrix_summary": {
+      "path": "work/proofs/optimization/rules-heldout-final/6ff34a0a15ac49afbaa89ae8d289f1e0/loopback_fixture-summary.json",
+      "sha256": "439f08dc223854972ad2a391e6e262e38943145cb4f16f0400a381ccebb6b930"
+    }
+  },
+  "next_step": "One explicitly bounded live held-out pair with the existing selected test account/model/effort; keep cold/warm unknown if not established; collect the full matrix before aggregate acceptance",
+  "main_task_complete": false,
+  "experimental_product_activation": false
+}

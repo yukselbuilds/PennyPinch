@@ -44,27 +44,41 @@ CASES = {
                      {"exit_code": 9, "stderr": "ERROR check=checksum computed=0.512340000000009\r\n"}),
 }
 PLAN = {"thresholds": {"startup_timeout_seconds": 120}}
+HELDOUT_PATH = HERE / "rules-heldout-plan.json"
+HELDOUT_PLAN = json.loads(HELDOUT_PATH.read_bytes())
+HELDOUT_CASES = {item["id"]: item for item in HELDOUT_PLAN["cases"]}
 
 
 def encode(value):
     return json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
 
 
+def case_data(case):
+    if case in CASES:
+        return CASES[case]
+    item = HELDOUT_CASES[case]
+    stdout = "".join(run["text"] * run["occurrences"] for run in item["stdout_runs"])
+    capture = {"stdout": stdout, "stderr": item["stderr"], "exit_code": item["exit_code"]}
+    assert hashlib.sha256(encode(capture).encode()).hexdigest() == item["capture_sha256"], "heldout_capture_changed"
+    return stdout, item["stderr"], item["exit_code"], item["instruction"], item["expected"]
+
+
 def envelope(case, arm):
     from headroom.transforms.lossless_compaction import collapse_runs, expand_runs
 
-    stdout, stderr, exit_code, _, _ = CASES[case]
+    stdout, stderr, exit_code, _, _ = case_data(case)
+    details = HELDOUT_CASES.get(case)
     capture = {"stdout": stdout, "stderr": stderr, "exit_code": exit_code}
     records = [{"type": "session_meta", "payload": {"id": "owned-mcp-probe"}}]
-    for item in ({"type": "function_call", "call_id": CALL, "name": "exec_command",
-                  "arguments": encode({"cmd": "run fixed probe", "workdir": "."})},
+    for item in ({"type": "function_call", "call_id": CALL, "name": details["source_tool"] if details else "exec_command",
+                  "arguments": encode(details["source_arguments"] if details else {"cmd": "run fixed probe", "workdir": "."})},
                  {"type": "function_call_output", "call_id": CALL, "output": capture}):
         records.append({"type": "response_item", "payload": item})
     raw = ("\n".join(map(encode, records)) + "\n").encode()
     result = runpy.run_path(str(ROOT / "runtime/learn_preview.py"))["local_replay"](raw)
     assert result["status"] == "trial_ready", "rule_report_missing"
     report = result["report"]
-    expected = int(case == "counts")
+    expected = int(details["rule_expected_eligible"] if details else case == "counts")
     assert (report["compacted"], report["protected"]) == (expected, 1 - expected), "rule_eligibility_changed"
     assert report["original_sha256"] == hashlib.sha256(raw).hexdigest(), "capture_fingerprint_changed"
     if arm == "candidate" and expected:
@@ -74,20 +88,30 @@ def envelope(case, arm):
     return capture
 
 
-def serve(case, arm, retrieval_port):
+def serve(case, arm, retrieval_port, resource_report=None):
     from mcp.server.mcpserver import MCPServer
     from mcp.types import ToolAnnotations
 
     producer = runpy.run_path(str(ROOT / "bench/context_tools/targeted_query_replay.py"))["PRODUCER"]
-    stdout, stderr, exit_code, _, _ = CASES[case]
+    stdout, stderr, exit_code, _, _ = case_data(case)
     raw_stdout, raw_stderr = stdout.encode(), stderr.encode()
     captured = subprocess.run([sys.executable, "-I", "-B", "-c", producer],
         env={"SystemRoot": os.environ["SystemRoot"]}, cwd=Path.cwd(), capture_output=True, timeout=10,
         input=struct.pack(">II", len(raw_stdout), exit_code) + raw_stdout + raw_stderr,
         creationflags=subprocess.CREATE_NO_WINDOW)
     assert (captured.stdout, captured.stderr, captured.returncode) == (raw_stdout, raw_stderr, exit_code), "channel_contract_changed"
+    started_cpu = time.process_time()
     capture = envelope(case, arm)
     value = encode(capture)
+    prepare_cpu_ms = 1000 * (time.process_time() - started_cpu)
+    if resource_report is not None:
+        destination = resource_report.resolve()
+        base = (ROOT / "work/proofs/optimization/rules-live").resolve(strict=True)
+        assert destination.name == "rule-resources.jsonl" and destination.parent.name == arm
+        assert destination.parent.parent.parent == base and re.fullmatch(r"[a-f0-9]{32}", destination.parent.parent.name)
+        assert not destination.exists() or destination.stat().st_size <= 16 * 1024, "rule_resource_report_limit"
+        with destination.open("a", encoding="ascii") as stream:
+            stream.write(encode({"rule_prepare_cpu_ms": prepare_cpu_ms}) + "\n")
     server = MCPServer("headroom_rule_pilot")
     read_only = ToolAnnotations(read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False)
 
@@ -154,15 +178,20 @@ class Provider(runpy.run_path(str(HERE / "replay.py"))["FixtureHandler"]):
                     self.send_error(400)
                     return
             item = {"type": "message", "id": "msg_rule_pilot", "role": "assistant", "status": "completed",
-                    "content": [{"type": "output_text", "text": encode(CASES[server.case][4]), "annotations": []}]}
+                    "content": [{"type": "output_text", "text": encode(case_data(server.case)[4]), "annotations": []}]}
         else:
             server.failure = "unexpected_model_request"
             self.send_error(400)
             return
         input_tokens, cached, output_tokens = (*FIXTURE_COUNTERS, (1063, 600, 31))[turn - 1]
+        if turn == 1 and getattr(server, "cache_start", None) == "warm":
+            cached = 512
+        input_details = {"cached_tokens": cached}
+        if server.case in HELDOUT_CASES:
+            input_details["cache_write_tokens"] = 0
         response = {"id": "resp_pilot_" + str(turn), "object": "response", "status": "completed",
                     "model": MODEL, "output": [item], "usage": {"input_tokens": input_tokens,
-                        "input_tokens_details": {"cached_tokens": cached}, "output_tokens": output_tokens,
+                        "input_tokens_details": input_details, "output_tokens": output_tokens,
                         "total_tokens": input_tokens + output_tokens}}
         if proof_case == "close-after-terminal-no-status":
             del response["status"]
@@ -249,10 +278,12 @@ def closure_check(engine, server, usage, mode):
             **usage_since(engine, usage, before, FIXTURE_COUNTERS[:1])}
 
 
-def client_args(cli, work, case, arm, model, overrides, *, prompt=None, retrieval_port=None, output_schema=None):
+def client_args(cli, work, case, arm, model, overrides, *, prompt=None, retrieval_port=None, output_schema=None, resource_report=None):
     mcp_args = ["-I", "-B", str(PROGRAM), "--mcp", case, arm]
     if retrieval_port is not None:
         mcp_args.extend(["--retrieve-from", str(retrieval_port)])
+    if resource_report is not None:
+        mcp_args.extend(["--resource-report", str(resource_report)])
     config = {
         "windows.sandbox": "unelevated",
         "analytics.enabled": False, "feedback.enabled": False, "otel.exporter": "none", "otel.metrics_exporter": "none",
@@ -270,7 +301,7 @@ def client_args(cli, work, case, arm, model, overrides, *, prompt=None, retrieva
         command.extend(["-c", key + "=" + encode(value)])
     if output_schema is not None:
         command.extend(["--output-schema", str(output_schema)])
-    return [*command, prompt or "Call the fixed inspect_result tool once. " + CASES[case][3]]
+    return [*command, prompt or "Call the fixed inspect_result tool once. " + case_data(case)[3]]
 
 
 def client_environment():
@@ -360,12 +391,14 @@ def main():
     modes.add_argument("--run", action="store_true")
     parser.add_argument("--codex", type=Path)
     parser.add_argument("--retrieve-from", type=int)
+    parser.add_argument("--resource-report", type=Path)
     args = parser.parse_args()
     if args.mcp:
         case, arm = args.mcp
-        assert case in CASES and arm in ("control", "candidate")
+        assert case in CASES or case in HELDOUT_CASES
+        assert arm in ("control", "candidate")
         assert args.retrieve_from is None or 1024 <= args.retrieve_from <= 65535
-        serve(case, arm, args.retrieve_from)
+        serve(case, arm, args.retrieve_from, args.resource_report)
         return 0
     assert os.name == "nt" and Path.cwd().resolve() == ROOT == Path(r"D:\Projeler\Headroom")
     os.environ["LITELLM_LOCAL_MODEL_COST_MAP"] = "True"

@@ -2,6 +2,7 @@
 import argparse
 from http.server import ThreadingHTTPServer
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -246,12 +247,13 @@ def measure(engine, usage, sent):
     while True:
         ids = set(usage["probe"]["request_logs"](engine))
         rows = usage["records"](engine)
-        matched = len(ids) >= 2 and ids == rows.keys() and sum(len(row["attempts"]) for row in rows.values()) == sent
+        matched = bool(ids) and ids == rows.keys() and sum(len(row["attempts"]) for row in rows.values()) == sent
         if matched or time.monotonic() >= deadline:
             break
         time.sleep(0.1)
     fields = ("total_input_tokens", "output_tokens", "total_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")
-    result = {"request_count": len(ids), "usage_record_count": len(rows), "total_usage": None}
+    result = {"request_count": len(ids), "usage_record_count": len(rows), "total_usage": None,
+              "first_upstream_cache_read_input_tokens": first_cache_read(rows) if matched else None}
     if matched:
         result.update(request_ids=sorted(ids), attempts_per_request=[len(rows[key]["attempts"]) for key in sorted(ids)])
     if matched and all(row["surface"] == "openai_responses" and row["client_status"] == 200 and not row["truncated"]
@@ -271,7 +273,66 @@ def measure(engine, usage, sent):
     return result
 
 
-def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, catalog, counter, usage, auth_home, arm_limit):
+def first_cache_read(rows):
+    identities = [(re.fullmatch(r"hr_[0-9]{1,20}_([0-9]{6,20})", key), key) for key in rows]
+    if not identities or any(match is None for match, _ in identities):
+        return None
+    _, key = min(identities, key=lambda item: int(item[0][1]))
+    row = rows[key]
+    attempts = row.get("attempts", [])
+    if row.get("truncated") or not attempts or attempts[0].get("status") != 200:
+        return None
+    value = (attempts[0].get("usage") or {}).get("cache_read_input_tokens")
+    return value if type(value) is int and value >= 0 else None
+
+
+def read_rule_cpu(path):
+    assert path.stat().st_size <= 16 * 1024, "rule_resource_report_limit"
+    records = [json.loads(line) for line in path.read_text(encoding="ascii").splitlines()]
+    assert records and all(set(item) == {"rule_prepare_cpu_ms"} and type(item["rule_prepare_cpu_ms"]) in (int, float)
+                           and math.isfinite(item["rule_prepare_cpu_ms"]) and item["rule_prepare_cpu_ms"] >= 0
+                           for item in records), "rule_resource_report_invalid"
+    total = sum(item["rule_prepare_cpu_ms"] for item in records)
+    assert math.isfinite(total), "rule_resource_report_invalid"
+    return total
+
+
+def heldout_observations(rows, requested):
+    cached = [row.get("first_upstream_cache_read_input_tokens") for row in rows]
+    observed = "unconfirmed"
+    if len(cached) == 2 and all(type(value) is int and value >= 0 for value in cached):
+        if all(value == 0 for value in cached):
+            observed = "cold"
+        elif all(value > 0 for value in cached):
+            observed = "warm"
+    fields = {"total_input_tokens", "output_tokens", "total_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"}
+    counters_known = len(rows) == 2 and all(isinstance(row.get("total_usage"), dict) and set(row["total_usage"]) == fields
+        and all(type(value) is int and value >= 0 for value in row["total_usage"].values()) for row in rows)
+    resources_known = len(rows) == 2 and all(row.get("resource_error") is None and row.get("resources") is not None
+        and type(row["resources"].get("resource_samples")) is int and row["resources"]["resource_samples"] >= 2
+        and all(type(row["resources"].get(key)) in (int, float) and math.isfinite(row["resources"][key])
+                and row["resources"][key] >= 0 for key in ("local_cpu_ms", "observed_engine_private_bytes")) for row in rows)
+    metrics = None
+    if resources_known and {row["arm"] for row in rows} == {"control", "candidate"}:
+        by_arm = {row["arm"]: row for row in rows}
+        metrics = {"added_completed_task_elapsed_ms": by_arm["candidate"]["elapsed_ms"] - by_arm["control"]["elapsed_ms"],
+                   "candidate_completed_task_cpu_ms": by_arm["candidate"]["resources"]["local_cpu_ms"],
+                   "engine_observed_private_bytes": max(row["resources"]["observed_engine_private_bytes"] for row in rows)}
+    return {"cache_start_requested": requested, "cache_start_observed": observed, "cache_start_matches": observed == requested,
+            "all_provider_counters_known": counters_known, "resource_data_complete": resources_known,
+            "pair_metrics": metrics, "matrix_acceptance": "not_tested"}
+
+
+def arm_budget(sent, index):
+    assert type(sent) is int and 0 <= sent <= ATTEMPTS_PER_PAIR and index in (0, 1), "invalid_pair_budget"
+    available = ATTEMPTS_PER_PAIR - sent - (MIN_ATTEMPTS_PER_ARM if index == 0 else 0)
+    assert available >= MIN_ATTEMPTS_PER_ARM, "paired_request_budget_exhausted"
+    return available
+
+
+def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, catalog, counter, usage, auth_home, arm_limit, *, case=CASE):
+    details = pilot["HELDOUT_CASES"].get(case)
+    schema = details["answer_schema"] if details else ANSWER_SCHEMA
     transient = directory / "client"
     work, temp = directory.parent / "client-workspace", transient / "temp"
     temp.mkdir(parents=True)
@@ -288,29 +349,49 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
         home.mkdir()
         env.update(CODEX_HOME=str(home), RULES_PILOT_TOKEN=fixture.auth.removeprefix("Bearer "))
         config["model_providers.pilot.env_key"] = "RULES_PILOT_TOKEN"
-        fixture.case, fixture.requests, fixture.failure = CASE, [], None
+        fixture.case, fixture.requests, fixture.failure = case, [], None
         fixture.recovery_arm = directory.name
     else:
         env["CODEX_HOME"] = str(auth_home)
         config["cli_auth_credentials_store"] = "file"
     prompt = ("Call the fixed inspect_result tool once. If it returns a Headroom reference, pass its hash to headroom_retrieve. "
               "Return only a JSON object. "
-              + pilot["CASES"][CASE][3])
-    command = pilot["client_args"](cli, work, CASE, directory.name, model, config, prompt=prompt, retrieval_port=engine.port,
-                                   output_schema=directory.parent / "answer-schema.json")
+              + pilot["case_data"](case)[3])
+    rule_report = directory / "rule-resources.jsonl" if details else None
+    command = pilot["client_args"](cli, work, case, directory.name, model, config, prompt=prompt, retrieval_port=engine.port,
+                                   output_schema=directory.parent / "answer-schema.json", resource_report=rule_report)
+    sampler = usage["replay"].Resources([os.getpid(), *engine.pids], pilot["HELDOUT_PLAN"]["acceptance"]["resource_sample_interval_ms"]) if details else None
+    resources, resource_error, run_failure = None, None, None
+    start = time.monotonic()
     try:
-        start = time.monotonic()
         exit_code, stdout = pilot["run_client"](command, work, env, supervisor, ARM_TIMEOUT)
-        elapsed = time.monotonic() - start
+    except subprocess.TimeoutExpired:
+        exit_code, stdout, run_failure = -1, b"", "arm_timeout"
     finally:
+        elapsed = time.monotonic() - start
+        if sampler is not None:
+            try:
+                resources = sampler.finish()
+            except Exception:
+                resource_error = "resource_sampling_failed"
         assert transient.resolve(strict=True) == transient and transient.parent == directory, "temporary_client_scope"
         shutil.rmtree(transient)
     sent = counter.read_bytes().count(b"\n") if counter.exists() else 0
     assert sent <= arm_limit, "request_budget_exceeded"
     row = {"arm": directory.name, "forwarded_http_attempts": sent, "elapsed_ms": round(elapsed * 1000),
            "attempt_limit": arm_limit,
-           **check_turn(exit_code, stdout, pilot["CASES"][CASE][4], expected_capture=pilot["envelope"](CASE, directory.name)),
+           **check_turn(exit_code, stdout, pilot["case_data"](case)[4], expected_capture=pilot["envelope"](case, directory.name)),
            **measure(engine, usage, sent)}
+    if run_failure:
+        row["run_failure"] = run_failure
+    if details:
+        if resources is not None:
+            try:
+                resources["rule_prepare_cpu_ms"] = read_rule_cpu(rule_report)
+                resources["local_cpu_ms"] = resources["harness_cpu_ms"] + resources["engine_cpu_ms"] + resources["rule_prepare_cpu_ms"]
+            except Exception:
+                resource_error = "rule_prepare_cpu_unavailable"
+        row.update(resources=resources, resource_error=resource_error)
     delivery = directory / "tool-delivery.jsonl"
     if delivery.is_file():
         row["forwarded_delivery"] = [json.loads(line) for line in delivery.read_text(encoding="utf-8").splitlines()]
@@ -321,14 +402,14 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
     denied = directory / "guard-rejections.txt"
     if denied.is_file():
         row["guard_rejections"] = denied.read_text(encoding="ascii").splitlines()
-    if fixture is not None:
+    if fixture is not None and row["turn_completed"]:
         assert fixture.failure is None and len(fixture.requests) == sent and sent in (2, 3), fixture.failure or "fixture_wire_scope_changed"
-        assert all(body.get("text", {}).get("format", {}).get("schema") == ANSWER_SCHEMA
+        assert all(body.get("text", {}).get("format", {}).get("schema") == schema
                    and body["text"]["format"].get("type") == "json_schema" for body in fixture.requests), "answer_schema_wire_mismatch"
         row["provider_answer_schema_exact"] = True
         assert all("# Headroom Desktop çalışma kuralları" not in json.dumps(body, ensure_ascii=False)
                    for body in fixture.requests), "repository_instructions_leaked"
-        matches = pilot["inspect_tool_output"](engine, fixture.requests[1], CASE, directory.name, usage)
+        matches = pilot["inspect_tool_output"](engine, fixture.requests[1], case, directory.name, usage)
         assert matches["exact_native_ccr_readback"] == (row["recovery_tool_calls"] == 1) == (sent == 3), "fixture_recovery_mismatch"
         row.update(matches)
     return row
@@ -341,24 +422,40 @@ def account_catalog_allows(catalog_bytes, model, effort):
 
 
 def main():
+    assert os.name == "nt" and Path.cwd().resolve() == ROOT == Path(r"D:\Projeler\Headroom")
+    os.environ["LITELLM_LOCAL_MODEL_COST_MAP"] = "True"
+    pilot = runpy.run_path(str(PROGRAM.with_name("rules_pilot.py")))
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--codex", required=True, type=Path)
     parser.add_argument("--live", action="store_true", help="Use the existing ChatGPT login and its quota")
     parser.add_argument("--codex-home", type=Path, help="Existing Headroom test login profile")
     parser.add_argument("--model")
     parser.add_argument("--effort")
+    parser.add_argument("--case", choices=[CASE, *pilot["HELDOUT_CASES"]], default=CASE)
+    parser.add_argument("--repeat-index", type=int, choices=range(3))
+    parser.add_argument("--cache-start", choices=("cold", "warm"))
     parser.add_argument("--prior-attempts", type=int, choices=range(ATTEMPTS_PER_PAIR), default=0,
                         help="Previously forwarded requests against this paired pilot's limit")
     args = parser.parse_args()
     supplied = (args.model, args.effort, args.codex_home)
     if (args.live and not all(supplied)) or (not args.live and (any(supplied) or args.prior_attempts)):
         parser.error("Pass --model, --effort and --codex-home together with --live")
-    assert os.name == "nt" and Path.cwd().resolve() == ROOT == Path(r"D:\Projeler\Headroom")
-    os.environ["LITELLM_LOCAL_MODEL_COST_MAP"] = "True"
-    pilot = runpy.run_path(str(PROGRAM.with_name("rules_pilot.py")))
+    heldout = args.case in pilot["HELDOUT_CASES"]
+    if heldout and (args.repeat_index is None or args.cache_start is None) or not heldout and (args.repeat_index is not None or args.cache_start is not None):
+        parser.error("Held-out cases require --repeat-index and --cache-start; the preliminary pilot does not use them")
+    plan = pilot["HELDOUT_PLAN"] if heldout else None
+    order = plan["pair_order_by_repetition"][args.repeat_index] if heldout else ["control", "candidate"]
+    assert sorted(order) == ["candidate", "control"], "invalid_arm_order"
+    schema = pilot["HELDOUT_CASES"][args.case]["answer_schema"] if heldout else ANSWER_SCHEMA
     usage_path = ROOT / "tests/runtime/anthropic_usage_capture.py"
     usage = runpy.run_path(str(usage_path))
     replay = usage["replay"]
+    if heldout:
+        assert plan["live_execution"]["max_requests_per_pair"] == plan["live_execution"]["max_requests_per_batch"] == ATTEMPTS_PER_PAIR
+        assert plan["acceptance"]["arm_timeout_seconds"] == ARM_TIMEOUT
+        for filename, digest in plan["rule_sources_frozen"].items():
+            path = (ROOT / filename).resolve(strict=True)
+            assert path.is_relative_to(ROOT) and replay.sha(path) == digest, "frozen_rule_changed"
     runtime = ROOT / "runtime"
     controller = replay.load_module("rules_live_controller", runtime / "desktop_controller.py")
     manifest, payload, _ = controller.load_manifest(runtime / "manifest.json")
@@ -398,7 +495,7 @@ def main():
     catalog = run / "models.json"
     catalog.write_bytes(catalog_bytes)
     answer_schema = run / "answer-schema.json"
-    replay.write_new(answer_schema, ANSWER_SCHEMA)
+    replay.write_new(answer_schema, schema)
     fixture, upstream_port = None, 1
     if args.live:
         from headroom.providers.codex.responses import codex_responses_http_url
@@ -408,22 +505,23 @@ def main():
     else:
         fixture = ThreadingHTTPServer(("127.0.0.1", 0), pilot["Provider"])
         fixture.auth = "Bearer " + replay.SENTINEL
+        fixture.cache_start = args.cache_start
         upstream_port = fixture.server_port
         target = f"http://127.0.0.1:{upstream_port}/v1/responses"
         threading.Thread(target=fixture.serve_forever, daemon=True).start()
     rows, stops, failure = [], [], None
     fingerprints = {}
     try:
-        for arm in ("control", "candidate"):
-            reserved = MIN_ATTEMPTS_PER_ARM if arm == "control" else 0
-            arm_limit = ATTEMPTS_PER_PAIR - pair_counter.stat().st_size - reserved
-            assert arm_limit >= MIN_ATTEMPTS_PER_ARM, "paired_request_budget_exhausted"
+        for index, arm in enumerate(order):
+            arm_limit = arm_budget(pair_counter.stat().st_size, index)
             directory = run / arm
             directory.mkdir()
             staged, counter = stage_arm(replay, directory, payload, target, model, effort, arm_limit,
-                                        expected_capture=pilot["envelope"](CASE, arm))
+                                        expected_capture=pilot["envelope"](args.case, arm))
             sources = json.loads((runtime / "optimization-sources.json").read_bytes())
-            files = [PROGRAM, PROGRAM.with_name("rules_pilot.py"), usage_path, cli, catalog, answer_schema, runner, work / ".git/config", Path(sys.executable),
+            files = [PROGRAM, PROGRAM.with_name("rules_pilot.py"), pilot["HELDOUT_PATH"],
+                     ROOT / "tests/runtime/test_rules_pilot_contract.py", ROOT / "tests/runtime/test_rules_heldout.py",
+                     usage_path, cli, catalog, answer_schema, runner, work / ".git/config", Path(sys.executable),
                      payload / "python313.dll", payload / "runtime-manifest.json", runtime / "learn_preview.py",
                      *staged, *[runtime / path.name for path in staged],
                      *[PROGRAM.with_name(name) for name in ("replay.py", "anthropic_usage.py", "ccr_policy.py", "surfaces.py", "fixtures.py")],
@@ -441,9 +539,14 @@ def main():
             try:
                 engine.start()
                 assert pilot["usage_ids"](engine, usage) == (set(), set()), "engine_not_empty"
-                row = run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, catalog, counter, usage, auth_home, arm_limit)
+                case_options = {"case": args.case} if heldout else {}
+                row = run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, catalog, counter, usage, auth_home, arm_limit, **case_options)
                 rows.append(row)
                 assert row["turn_completed"], "arm_turn_incomplete"
+                if heldout:
+                    cached = row["first_upstream_cache_read_input_tokens"]
+                    assert type(cached) is int and (cached == 0 if args.cache_start == "cold" else cached > 0), "cache_start_unconfirmed"
+                    assert row["resource_error"] is None and row["resources"] is not None, "resource_data_unavailable"
             finally:
                 engine.close()
                 stops.append(engine.stopped)
@@ -458,16 +561,22 @@ def main():
             fixture.shutdown()
             fixture.server_close()
     report = run / "result.json"
+    observations = heldout_observations(rows, args.cache_start) if heldout else None
     if failure is None and any(not row["exact_answer"] or not row["fixed_tool_call"] or row["total_usage"] is None for row in rows):
         failure = "arm_acceptance_failed"
+    if failure is None and heldout and not all(observations[key] for key in ("cache_start_matches", "all_provider_counters_known", "resource_data_complete")):
+        failure = "heldout_measurement_incomplete"
     passed = failure is None and len(rows) == 2
     difference = None
     if passed and args.live:
-        control, candidate = (row["total_usage"]["total_tokens"] for row in rows)
+        totals = {row["arm"]: row["total_usage"]["total_tokens"] for row in rows}
+        control, candidate = totals["control"], totals["candidate"]
         saved = control - candidate
         difference = {"total_tokens_saved": saved, "percent_of_control": round(100 * saved / control, 4) if control else None}
     replay.write_new(report, {"passed": passed, "failure": failure, "provider": "chatgpt" if args.live else "loopback_fixture",
-                              "model": model, "effort": effort, "case": CASE, "cli": version, "platform": platform.platform(),
+                              "model": model, "effort": effort, "case": args.case, "cli": version, "platform": platform.platform(),
+                              "arm_order": order, "repeat_index": args.repeat_index, "heldout_observations": observations,
+                              "general_acceptance": "not_tested",
                               "pair_attempt_limit": ATTEMPTS_PER_PAIR, "arm_timeout_seconds": ARM_TIMEOUT,
                               "prior_attempts": args.prior_attempts, "pair_attempts_total": pair_counter.stat().st_size,
                               "rows": rows, "provider_delta": difference, "stops": stops, "fingerprints": fingerprints})

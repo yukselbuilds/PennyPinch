@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task": "H041-e3",
-  "status": "data_frozen_runner_pending",
+  "status": "data_frozen_runner_implemented",
   "rule": "repeated_log_lines_v1",
   "source_scope": "Controlled fixed tool outputs; not real project builds or production conversations",
   "rule_sources_frozen": {
@@ -203,7 +203,7 @@
   ],
   "live_execution": {
     "enabled_by_this_plan": false,
-    "runner_available": false,
+    "runner_available": true,
     "max_requests_per_batch": 8,
     "max_requests_per_pair": 8,
     "automatically_start_another_batch": false,

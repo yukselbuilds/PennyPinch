@@ -169,6 +169,23 @@ Her görev ve cache başlangıcı için üç eşlenmiş tekrar gerekir; 18 çift
 
 Kabul için bütün kesin yanıtlar ve araç kapsamı geçmeli, her cache grubundaki bütün gerekli görev/tekrar toplamında en az %5 girdi+çıktı tokenı azalması bulunmalıdır. Tüm CCR/retrieval, retry ve ek turlar dahildir. Eşlenmiş tamamlanmış görev süre farkının p95'i en fazla 1.000 ms, kural kolunun tamamlanmış görev yerel CPU p95'i en fazla 2.000 ms, 50 ms aralıkla gözlenen motor süreçlerinin özel bellek toplamı en fazla 1.536 MiB'dir. CPU mevcut sahipli harness/motor süreçlerini ve dönüşümü kapsar; CLI/sağlayıcı CPU'sunu kapsamaz. Süre, CLI turunun tamamını ve sağlayıcı beklemesini kapsar; motorun tek başına ek gecikmesi olarak sunulmaz. `replay.percentile` nearest-rank yöntemi her cache grubuna ayrı uygulanır. Bu sayısal eşikler sonuçtan önce sabittir; yeni kapsam per-request yerine tamamlanmış görevdir. Bağımsız koşucu henüz uygulanmadı; gerçek kalite/kullanım/kaynak ölçümü açık kalır.
 
+#### H041-e3 bağımsız koşucu ve çoklu tekrar özeti
+
+`rules_live.py`, planın üç bağımsız görevini `--case`, sıfırdan başlayan `--repeat-index` ve `--cache-start` ile çalıştırır. Girdi/sayısal kabul değişmeden, göreve özel şema iki kolda aynı kullanılır. İkinci tekrar kural → kontrol sırasındadır; ilk kolun adı bütçe ayırma hesabını değiştirmez. Her komut yalnız bir çift çalıştırır, en fazla sekiz gönderim yapar. İstenen başlangıç cache koşulu doğrulanamazsa kalan kol açılmadan durur; o ana kadarki kullanım ve kaynak verisi saklanır. Zaman aşımı da başarısız/kısmi tur olarak kaydedilir. `first_upstream_cache_read_input_tokens`, motor istek sıra numarasındaki ilk upstream denemesinden alınır; sonraki retry/cache değerleri ilk koşulun yerine geçirilmez.
+
+Kaynak ölçümünde mevcut Win32 örnekleyicisi ana harness ve sahipli motor süreçlerini izler. MCP üreticisindeki kural hazırlığı CPU'su ayrı, boyutu sınırlı bir sayı kaydıyla eklenir. Diğer MCP başlatma/araç CPU'su, CLI ve uzak sağlayıcı CPU'su ölçülmez; toplam sistem CPU'su iddia edilmez. Sayaç eksik/geçersizse kaynak verisi tamam sayılmaz. Şema/çıktı/protokol provası geçen tek çiftin `passed` değeri, 18 çiftlik genel performans kabulü değildir. Başarısız süreç yerel örneğinde CPU ve ek süre sayısal eşikleri aştı; bu sonuç kabul eşiğini değiştirmedi.
+
+`rules_summary.py`, aynı sağlayıcı/model/efor için bütün bağımsız kayıtları tarar; yalnız seçilen başarılı dosyaları almak için seçenek sunmaz. Önce/sonra ve güncel kaynak/araç fingerprint'leri, iki kolun kapsamı ve kapatılması, kesin yanıtlar, tüm sağlayıcı sayaçları ve cache/kaynak bilgisi denetlenir. Eksik, yinelenen, başarısız veya değişmiş girdi kaydı kabul üretemez. Tam matris varsa her cache grubunda toplam giriş+çıkış, %5 net kazanç, nearest-rank p95 süre/CPU ve tepe özel bellek sınırı hesaplanır. Eksik veriyle genel yüzde yazılmaz. Özet komutu istemci veya model başlatmaz; yerel fixture sonucu canlı kabul sayılmaz.
+
+Yerel kabulde 22 odaklı test, dört gerçek CLI/yerel motor çifti ve 22/22 kullanım kaydı geçti. Zorlanmış cache uyuşmazlığı üç gönderimde ikinci kolu açmadan durdu. Bağımsız fixture eksik cache yazma sayacını açık sıfırla bildirir; önceki eksik alan denemesi ve ürünün bilinmiyor davranışı korunur. Plan verisi ve eşikler değişmedi. [Koşucu ve özet kanıtı](../proofs/rules-heldout-runner.json). Bağımsız gerçek model çağrısı yapılmadı; 18 canlı çift ve genel fayda/kaynak kabulü açık.
+
+Yerel tek çift ve salt okunur canlı özet komutları, proje kökünden sabit Python ile çalıştırılır. `--live` ve mevcut test profilinin açık parametreleri olmadan çift loopback kullanır. Özetin eksik veriyle çıkış kodu 1 döndürmesi beklenir.
+
+```powershell
+& 'work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime/python.exe' -I -B bench/optimization/rules_live.py --codex '<sabit-codex.exe-yolu>' --case build_manifest_v1 --repeat-index 0 --cache-start cold
+& 'work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime/python.exe' -I -B bench/optimization/rules_summary.py --provider chatgpt --model gpt-6-luna --effort medium
+```
+
 ### H041-b yerel deney koşulları
 
 Ana ajan ölçüm, runtime ve cache sözleşmesi nedeniyle deney ve kabulü üstlenir. `bench/optimization/ccr-policy-plan.json` iki eşlenmiş tekrarı önceden belirler. Her tekrarda iki ayrı motor kullanılır. Bir oturum üç kısa istekten oluşur. İkincisi üç kısa istekten sonra sıkıştırılabilir uzun log ve korumalı kesin sayısal bir Read sonucu alır. Ayrı temiz oturumdaki kısa istek, yapışkan aracın başka oturuma taşınmadığını denetler. Tüm istekler izole Anthropic SSE fixture'ına gider.
