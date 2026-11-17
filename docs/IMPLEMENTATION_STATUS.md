@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## H041-e3 — Luna canlı kontrolünde geri çağırma doğrulandı, eşleşme açık
+
+- Ayrı Headroom profiliyle `gpt-6-luna` / `medium` canlı olarak çalıştı. CLI sabit aracı bir kez çağırdı ve Headroom referansından özgün çıktıyı geri aldı. Kontrol kolu dört HTTP gönderiminden sonra beşinci istekte koşum sınırına ulaştı. Tam yanıt ve iki kolun toplam sağlayıcı kullanımı elde edilemedi. Deneme motoru normal kapandı.
+- Codex `account/read`, aynı test profilinin Free planda olduğunu döndürdü. Bu gözlem GPT-6.1 Sol'un güncel katalogda bulunmamasıyla tutarlı. [OpenAI model erişimi](https://learn.chatgpt.com/docs/models?surface=cli).
+- Pilot, sekiz gönderimlik toplamdan sıkıştırılmış kolun asgari iki gönderimini ayırıyor. Kalan payı kontrol kolu kullanabiliyor. Yerel sınır testinde yeni çift için 5+3, iki önceki gönderimle 2+4+2 sınandı. Yerel eşleşmede 5/5 kullanım kaydı geçti. [Kanıt](proofs/rules-live-luna-control.json).
+- **45/54 ve H041-e3 açık.** Önceki iki Sol gönderimiyle birlikte toplam altı gönderim kaydedildi. Kalan iki gönderim yeni bir eşlenmiş ölçüm için yetersiz. Canlı tam yanıtlar, tasarruf yüzdesi ve bağımsız tekrarlar açık.
+
 ## H041-e3 — ilk canlı model test hesabında reddedildi
 
 - Kullanıcının onayladığı `gpt-6.1-sol` / `low` çifti, ayrı Headroom ChatGPT profiliyle başlatıldı. İki kontrol gönderiminde de sağlayıcı HTTP 400 döndürdü. İkinci gönderimin hata etiketleri model ve hesap uyumsuzluğunu gösterdi. Sağlayıcı kullanımı bilinmiyor. Sıkıştırılmış kol başlatılmadı. Her iki sahipli motor normal kapandı.

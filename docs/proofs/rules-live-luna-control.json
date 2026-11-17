@@ -1,0 +1,43 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "live_control_recovery_observed_pair_incomplete",
+  "profile_scope": "previously authenticated isolated Headroom test profile",
+  "codex_account_plan": "free",
+  "model_access_source": "https://learn.chatgpt.com/docs/models?surface=cli",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "prior_http_attempts": 2,
+  "forwarded_luna_http_attempts": 4,
+  "authorized_http_attempt_limit": 8,
+  "live_http_attempts_total": 6,
+  "remaining_http_attempts_in_limit": 2,
+  "mcp_inspection_and_recovery_completed": true,
+  "owned_native_retrieval_http_status": 200,
+  "fifth_control_send_blocked_by_arm_limit": true,
+  "control_turn_completed": false,
+  "candidate_started": false,
+  "provider_usage": null,
+  "provider_savings_percent": null,
+  "live_engine_graceful_exit": true,
+  "local_followup": {
+    "matched_usage_records": 5,
+    "fresh_pair_guard_attempts": [
+      5,
+      3
+    ],
+    "retry_guard_including_prior_attempts": [
+      2,
+      4,
+      2
+    ],
+    "pair_limit": 8,
+    "paired_runtime_and_cli_fingerprints_match": true
+  },
+  "raw_evidence": {
+    "luna_live_control": "work/proofs/optimization/rules-live/2ddae7509a53479eb68f4ae66278b9ec/result.json",
+    "codex_account_plan": "work/proofs/optimization/rules-live/account-plan-4f38646a0e294ec4b7230e20124abffd/result.json",
+    "final_local_pair": "work/proofs/optimization/rules-live/101dcf1b42e1478999577669394f6159/result.json",
+    "shared_budget_guard": "work/proofs/optimization/rules-live/pair-budget-b3963cbe305840eeb120857544a644e8/result.json"
+  }
+}

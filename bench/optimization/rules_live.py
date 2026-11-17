@@ -17,8 +17,8 @@ import uuid
 PROGRAM = Path(__file__).resolve()
 ROOT = PROGRAM.parents[2]
 CASE = "counts"
-ATTEMPTS_PER_ARM = 4
-ATTEMPTS_PER_PAIR = 2 * ATTEMPTS_PER_ARM
+ATTEMPTS_PER_PAIR = 8
+MIN_ATTEMPTS_PER_ARM = 2
 ARM_TIMEOUT = 120
 MAX_REQUEST_BYTES = 256 * 1024
 
@@ -57,16 +57,25 @@ def upstream_error_summary(status, content):
                                       if isinstance(error, str) and re.search(pattern, error, re.IGNORECASE)]}
 
 
-def guard_upstream(target, model, effort, counter, pair_counter):
+def guard_upstream(target, model, effort, counter, pair_counter, arm_limit):
     import httpx
 
     send = httpx.AsyncClient.send
-    remaining = ATTEMPTS_PER_ARM
+    remaining = arm_limit
+
+    def reject(request, reason):
+        with Path(counter).with_name("guard-rejections.txt").open("a", encoding="ascii") as stream:
+            stream.write(reason + "\n")
+        return httpx.Response(400, request=request, json={"error": {"message": "Pilot request outside scope"}})
 
     async def bounded(client, request, **options):
         nonlocal remaining
+        if Path(pair_counter).stat().st_size >= ATTEMPTS_PER_PAIR:
+            return reject(request, "pair_request_limit")
+        if remaining == 0:
+            return reject(request, "arm_request_limit")
         body = None
-        if (remaining and Path(pair_counter).stat().st_size < ATTEMPTS_PER_PAIR and request.method == "POST" and str(request.url) == target
+        if (request.method == "POST" and str(request.url) == target
                 and 0 < len(request.content) <= MAX_REQUEST_BYTES):
             try:
                 body = json.loads(request.content)
@@ -75,7 +84,7 @@ def guard_upstream(target, model, effort, counter, pair_counter):
         reasoning = body.get("reasoning") if isinstance(body, dict) else None
         if (not isinstance(body, dict) or body.get("model") != model
                 or not isinstance(reasoning, dict) or reasoning.get("effort") != effort or type(body.get("stream")) is not bool):
-            return httpx.Response(400, request=request, json={"error": {"message": "Pilot request outside scope"}})
+            return reject(request, "request_outside_scope")
         remaining -= 1
         with Path(pair_counter).open("ab") as stream:
             stream.write(b"1")
@@ -98,14 +107,14 @@ def guard_upstream(target, model, effort, counter, pair_counter):
     httpx.AsyncClient.send = bounded
 
 
-def stage_arm(replay, directory, payload, target, model, effort):
+def stage_arm(replay, directory, payload, target, model, effort, arm_limit):
     staged = replay.prepare_fixture_runtime(directory, payload)
     helper = directory / "fixture-runtime/desktop_helper.py"
     source = helper.read_bytes()
     anchor = b'"from headroom.cli import main; main()"'
     assert source.count(anchor) == 1, "engine_bootstrap_changed"
     counter = directory / "http-attempts.txt"
-    guard_args = (target, model, effort, str(counter), str(directory.parent / "pair-attempts.txt"))
+    guard_args = (target, model, effort, str(counter), str(directory.parent / "pair-attempts.txt"), arm_limit)
     guard = f"import runpy; runpy.run_path({str(PROGRAM)!r})['guard_upstream']{guard_args!r}; "
     helper.write_bytes(source.replace(anchor, repr(guard).encode() + b" " + anchor, 1))
     return staged, counter
@@ -155,7 +164,7 @@ def measure(engine, usage, sent):
             "request_ids": sorted(ids), "attempts_per_request": [len(rows[key]["attempts"]) for key in sorted(ids)]}
 
 
-def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, catalog, counter, usage, auth_home):
+def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, catalog, counter, usage, auth_home, arm_limit):
     transient = directory / "client"
     work, temp = directory.parent / "client-workspace", transient / "temp"
     temp.mkdir(parents=True)
@@ -189,12 +198,15 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
         assert transient.resolve(strict=True) == transient and transient.parent == directory, "temporary_client_scope"
         shutil.rmtree(transient)
     sent = counter.read_bytes().count(b"\n") if counter.exists() else 0
-    assert sent <= ATTEMPTS_PER_ARM, "request_budget_exceeded"
+    assert sent <= arm_limit, "request_budget_exceeded"
     row = {"arm": directory.name, "forwarded_http_attempts": sent, "elapsed_ms": round(elapsed * 1000),
-           **check_turn(exit_code, stdout, pilot["CASES"][CASE][4]), **measure(engine, usage, sent)}
+           "attempt_limit": arm_limit, **check_turn(exit_code, stdout, pilot["CASES"][CASE][4]), **measure(engine, usage, sent)}
     failures = directory / "upstream-errors.jsonl"
     if failures.is_file():
         row["upstream_errors"] = [json.loads(line) for line in failures.read_text(encoding="utf-8").splitlines()]
+    denied = directory / "guard-rejections.txt"
+    if denied.is_file():
+        row["guard_rejections"] = denied.read_text(encoding="ascii").splitlines()
     if fixture is not None:
         assert fixture.failure is None and len(fixture.requests) == sent and sent in (2, 3), fixture.failure or "fixture_wire_scope_changed"
         assert all("# Headroom Desktop çalışma kuralları" not in json.dumps(body, ensure_ascii=False)
@@ -284,9 +296,12 @@ def main():
     fingerprints = {}
     try:
         for arm in ("control", "candidate"):
+            reserved = MIN_ATTEMPTS_PER_ARM if arm == "control" else 0
+            arm_limit = ATTEMPTS_PER_PAIR - pair_counter.stat().st_size - reserved
+            assert arm_limit >= MIN_ATTEMPTS_PER_ARM, "paired_request_budget_exhausted"
             directory = run / arm
             directory.mkdir()
-            staged, counter = stage_arm(replay, directory, payload, target, model, effort)
+            staged, counter = stage_arm(replay, directory, payload, target, model, effort, arm_limit)
             sources = json.loads((runtime / "optimization-sources.json").read_bytes())
             files = [PROGRAM, PROGRAM.with_name("rules_pilot.py"), usage_path, cli, catalog, runner, work / ".git/config", Path(sys.executable),
                      payload / "python313.dll", payload / "runtime-manifest.json", runtime / "learn_preview.py",
@@ -306,7 +321,7 @@ def main():
             try:
                 engine.start()
                 assert pilot["usage_ids"](engine, usage) == (set(), set()), "engine_not_empty"
-                row = run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, catalog, counter, usage, auth_home)
+                row = run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, catalog, counter, usage, auth_home, arm_limit)
                 rows.append(row)
                 assert all(row[key] for key in ("turn_completed", "exact_answer", "fixed_tool_call")) and row["total_usage"] is not None, "arm_acceptance_failed"
             finally:
@@ -331,7 +346,7 @@ def main():
         difference = {"total_tokens_saved": saved, "percent_of_control": round(100 * saved / control, 4) if control else None}
     replay.write_new(report, {"passed": passed, "failure": failure, "provider": "chatgpt" if args.live else "loopback_fixture",
                               "model": model, "effort": effort, "case": CASE, "cli": version, "platform": platform.platform(),
-                              "attempt_limit_per_arm": ATTEMPTS_PER_ARM, "arm_timeout_seconds": ARM_TIMEOUT,
+                              "pair_attempt_limit": ATTEMPTS_PER_PAIR, "arm_timeout_seconds": ARM_TIMEOUT,
                               "prior_attempts": args.prior_attempts, "pair_attempts_total": pair_counter.stat().st_size,
                               "rows": rows, "provider_delta": difference, "stops": stops, "fingerprints": fingerprints})
     print(pilot["encode"]({"passed": passed, "failure": failure, "rows": rows, "provider_delta": difference, "report": str(report)}))
