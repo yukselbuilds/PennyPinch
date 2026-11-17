@@ -34,7 +34,7 @@ SETTLED = "INFO check=pass exact_limit=9223372036854775859\r\n"
 HELD = "WARN check=held signed_factor=-0.062500000000001\r\n"
 CASES = {
     "counts": (SETTLED * 37 + HELD * 8 + SETTLED * 11, "", 0,
-               "Report passed, held, exact_limit and signed_factor. Preserve the exact numerals as strings.",
+               "Report passed and held as JSON integers. Report exact_limit and signed_factor as strings, preserving all digits and signs.",
                {"passed": 48, "held": 8, "exact_limit": "9223372036854775859", "signed_factor": "-0.062500000000001"}),
     "failed_check": (SETTLED * 19, "ERROR check=checksum computed=0.512340000000009\r\n", 9,
                      "Report exit_code and the exact stderr line as JSON.",
@@ -246,7 +246,7 @@ def closure_check(engine, server, usage, mode):
             **usage_since(engine, usage, before, FIXTURE_COUNTERS[:1])}
 
 
-def client_args(cli, work, case, arm, model, overrides, *, prompt=None, retrieval_port=None):
+def client_args(cli, work, case, arm, model, overrides, *, prompt=None, retrieval_port=None, output_schema=None):
     mcp_args = ["-I", "-B", str(PROGRAM), "--mcp", case, arm]
     if retrieval_port is not None:
         mcp_args.extend(["--retrieve-from", str(retrieval_port)])
@@ -265,6 +265,8 @@ def client_args(cli, work, case, arm, model, overrides, *, prompt=None, retrieva
         command.extend(["--disable", feature])
     for key, value in config.items():
         command.extend(["-c", key + "=" + encode(value)])
+    if output_schema is not None:
+        command.extend(["--output-schema", str(output_schema)])
     return [*command, prompt or "Call the fixed inspect_result tool once. " + CASES[case][3]]
 
 

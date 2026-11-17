@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## H041-e3 — canlı kalite pilotunun yanıt sözleşmesi düzeltildi
+
+- Önceki pilot talimatı bütün sayıları string istemesine rağmen `passed` ve `held` tamsayı olarak doğrulanıyordu. Ayrıca doğru son JSON'dan önce ilerleme mesajı gelmesi tek başına başarısızlık üretiyordu. Bu iki sorun yerelde yeniden üretildi. Eski canlı kaydın iki sayım alanı için değer ve tür bilgisi tutulmadığından sayısal hatanın kesin nedeni bilinmiyor.
+- İki kol artık aynı açık tür talimatını ve aynı JSON şemasını kullanıyor. Şema alan türlerini tanımlıyor. Beklenen yanıt değerleri doğrulayıcıda kalıyor. Son asistan yanıtındaki alanlar ve türler birebir denetleniyor. Yanlış son yanıt, string sayım, float, boolean ve ek alanlar reddediliyor. İlerleme ve ek model turlarının kullanımı toplamda kalıyor. Tür hatası ve gerçekten yanlış değer ayrı tanı alıyor.
+- Altı odaklı sözleşme testi ve gerçek Codex CLI → motor → yerel sağlayıcı karşılaştırması geçti. Her iki kolun tüm gönderimlerinde şema eşleşti. Beş kullanım kaydı, normal kapanış ve kaynak parmak izleri doğrulandı. Ara koşuda değişen parmak izi geçersiz sayıldı, son sabit aday yeniden sınandı. [Kanıt](proofs/rules-answer-contract.json).
+- **45/54 ve H041-e3 açık.** Bu dilimde ürün kaynakları değişmedi. Yeni canlı model çağrısı yapılmadı. Düzeltilen sayaç ve yanıt sözleşmesiyle canlı kalite ve eşlenmiş tasarruf kabulü bekliyor.
+
 ## H041-e3 — tek canlı istekte içerik türüne bağlı kullanım kaybı bulundu
 
 - Kullanıcının onayladığı tek `gpt-6-luna` / `medium` isteği ayrı test hesabında tamamlandı. Kaynak ve ortam parmak izleri eşleşti. Sağlayıcının tamamlanma olayı 9.386 giriş, 8 çıkış ve gözlenen sıfır cache okuma/yazma bildirdi. Yanıt kimliği eşleşti ve `status` tamamlanmıştı. İçerik türü özeti standart SSE değerinden farklıydı. Ayrıntılı okuyucu bu nedenle akıştaki sayaçları incelememişti.

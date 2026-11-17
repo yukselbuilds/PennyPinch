@@ -41,6 +41,13 @@
   "candidate_http_successes_with_unknown_total_usage": 3,
   "provider_savings_percent": null,
   "pair_acceptance": false,
+  "answer_contract_review": {
+    "prompt_requested_numerals_as_strings": true,
+    "counts_oracle_required_integers": true,
+    "candidate_count_values_and_types_retained": false,
+    "numeric_count_error_confirmed": false,
+    "review_evidence": "docs/proofs/rules-answer-contract.json"
+  },
   "same_pair_input_fingerprints_verified": true,
   "owned_engines_closed_gracefully": 2,
   "local_runner_regression": {

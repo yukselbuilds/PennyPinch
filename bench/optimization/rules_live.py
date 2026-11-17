@@ -21,6 +21,17 @@ ATTEMPTS_PER_PAIR = 8
 MIN_ATTEMPTS_PER_ARM = 2
 ARM_TIMEOUT = 120
 MAX_REQUEST_BYTES = 256 * 1024
+ANSWER_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "passed": {"type": "integer"},
+        "held": {"type": "integer"},
+        "exact_limit": {"type": "string"},
+        "signed_factor": {"type": "string"},
+    },
+    "required": ["passed", "held", "exact_limit", "signed_factor"],
+    "additionalProperties": False,
+}
 
 
 def upstream_error_summary(status, content):
@@ -137,14 +148,19 @@ def check_turn(exit_code, stdout, expected):
     result = {
         "turn_completed": exit_code == 0 and sum(event.get("type") == "turn.completed" for event in events) == 1
             and not any(event.get("type") in ("error", "turn.failed") for event in events),
-        "exact_answer": len(messages) == 1 and exact_keys and all(exact_fields.values()),
+        "exact_answer": exact_keys and all(exact_fields.values()),
         "fixed_tool_call": tools in (["inspect_result"], ["inspect_result", "recover_result"])
             and all(item.get("server") == "headroom_rule_pilot" and item.get("status") == "completed" for item in calls),
         "recovery_tool_calls": tools.count("recover_result"),
     }
     if not result["exact_answer"]:
+        fields = answer if isinstance(answer, dict) else {}
         result["answer_checks"] = {"message_count": len(messages), "json_object": isinstance(answer, dict),
-                                   "expected_keys_only": exact_keys, "exact_fields": exact_fields}
+                                   "expected_keys_only": exact_keys, "exact_fields": exact_fields,
+                                   "type_matches": {key: key in fields and type(fields[key]) is type(value)
+                                                    for key, value in expected.items()},
+                                   "integer_string_matches": {key: fields.get(key) == str(value)
+                                                              for key, value in expected.items() if type(value) is int}}
     return result
 
 
@@ -203,7 +219,8 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
     prompt = ("Call the fixed inspect_result tool once. If it returns a Headroom reference, pass its hash to recover_result. "
               "A repeat marker gives the total occurrences of the preceding line in that run. Return only a JSON object. "
               + pilot["CASES"][CASE][3])
-    command = pilot["client_args"](cli, work, CASE, directory.name, model, config, prompt=prompt, retrieval_port=engine.port)
+    command = pilot["client_args"](cli, work, CASE, directory.name, model, config, prompt=prompt, retrieval_port=engine.port,
+                                   output_schema=directory.parent / "answer-schema.json")
     try:
         start = time.monotonic()
         exit_code, stdout = pilot["run_client"](command, work, env, supervisor, ARM_TIMEOUT)
@@ -223,6 +240,9 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
         row["guard_rejections"] = denied.read_text(encoding="ascii").splitlines()
     if fixture is not None:
         assert fixture.failure is None and len(fixture.requests) == sent and sent in (2, 3), fixture.failure or "fixture_wire_scope_changed"
+        assert all(body.get("text", {}).get("format", {}).get("schema") == ANSWER_SCHEMA
+                   and body["text"]["format"].get("type") == "json_schema" for body in fixture.requests), "answer_schema_wire_mismatch"
+        row["provider_answer_schema_exact"] = True
         assert all("# Headroom Desktop çalışma kuralları" not in json.dumps(body, ensure_ascii=False)
                    for body in fixture.requests), "repository_instructions_leaked"
         matches = pilot["inspect_tool_output"](engine, fixture.requests[1], CASE, directory.name, usage)
@@ -294,6 +314,8 @@ def main():
                    capture_output=True, check=True, timeout=10)
     catalog = run / "models.json"
     catalog.write_bytes(catalog_bytes)
+    answer_schema = run / "answer-schema.json"
+    replay.write_new(answer_schema, ANSWER_SCHEMA)
     fixture, upstream_port = None, 1
     if args.live:
         from headroom.providers.codex.responses import codex_responses_http_url
@@ -317,7 +339,7 @@ def main():
             directory.mkdir()
             staged, counter = stage_arm(replay, directory, payload, target, model, effort, arm_limit)
             sources = json.loads((runtime / "optimization-sources.json").read_bytes())
-            files = [PROGRAM, PROGRAM.with_name("rules_pilot.py"), usage_path, cli, catalog, runner, work / ".git/config", Path(sys.executable),
+            files = [PROGRAM, PROGRAM.with_name("rules_pilot.py"), usage_path, cli, catalog, answer_schema, runner, work / ".git/config", Path(sys.executable),
                      payload / "python313.dll", payload / "runtime-manifest.json", runtime / "learn_preview.py",
                      *staged, *[runtime / path.name for path in staged],
                      *[PROGRAM.with_name(name) for name in ("replay.py", "anthropic_usage.py", "ccr_policy.py", "surfaces.py", "fixtures.py")],

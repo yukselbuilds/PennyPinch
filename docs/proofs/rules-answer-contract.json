@@ -1,0 +1,41 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "answer_contract_corrected_local_pair_passes_live_retest_open",
+  "prior_prompt_count_type_conflict_reproduced": true,
+  "prior_progress_message_false_rejection_reproduced": true,
+  "expected_values_and_exact_numeric_types_preserved": true,
+  "candidate_live_count_values_and_types_retained": false,
+  "prior_live_count_error_interpretation": "type mismatch and numeric mismatch cannot be distinguished from retained metadata",
+  "new_contract": {
+    "passed": "JSON integer",
+    "held": "JSON integer",
+    "exact_limit": "exact string",
+    "signed_factor": "exact string",
+    "quality_output": "final assistant message",
+    "all_request_usage_included": true,
+    "answer_values_in_schema": false,
+    "same_cli_output_schema_reaches_provider_for_both_arms": true
+  },
+  "focused_tests": 6,
+  "local_pair_completed_arms": 2,
+  "local_provider_usage_records": 5,
+  "graceful_engine_stops": 2,
+  "provider_model_calls_outside_loopback": 0,
+  "live_rule_quality_and_savings_percent": null,
+  "intermediate_run_invalidated_for_changed_input": true,
+  "artifacts": {
+    "focused_contract": {
+      "path": "work/proofs/optimization/rules-answer-contract/final-c1f68f74c9784a46b904553abe942c1b/result.json",
+      "sha256": "2ae635090c6d428a2c3f2b6e4aca5f1a7ea74dc57a13d5dea411dc72da8c52e4"
+    },
+    "final_local_pair": {
+      "path": "work/proofs/optimization/rules-live/57836be0c4864ef8b71f1c8ae2df0be2/result.json",
+      "sha256": "9208b960587ce8ae813efbc7d082560172fd8eb769dfc3be28c995b9efa35735"
+    },
+    "invalidated_intermediate": {
+      "path": "work/proofs/optimization/rules-live/d14198f8f391469d9d35b908fbf1880d/result.json",
+      "sha256": "127ecf98cc6132248c2a92c670579d16bf021c21612b68b455c5e77281aa9e3a"
+    }
+  }
+}
