@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "task": "H041-e3",
+  "status": "data_frozen_runner_pending",
+  "rule": "repeated_log_lines_v1",
+  "source_scope": "Controlled fixed tool outputs; not real project builds or production conversations",
+  "rule_sources_frozen": {
+    "runtime\\learn_preview.py": "e253009e1e0edbff36712902567a853c3dcf29ecc8336928514f78d894b24f98",
+    "work\\proofs\\packaging\\artifacts\\headroom-engine-0.44.0\\runtime\\Lib\\site-packages\\headroom\\transforms\\lossless_compaction.py": "2706e7949eccfbba538dea6d6e07b8d1467131116e5bc85df7e517eb9cb67c0f"
+  },
+  "excluded_design_cases": [
+    "counts",
+    "failed_check",
+    "audit",
+    "audit_retrieval",
+    "warning",
+    "failure",
+    "exact_read"
+  ],
+  "model_and_effort": "Explicit user selection from the existing test-account catalog; no override",
+  "cases": [
+    {
+      "id": "build_manifest_v1",
+      "source_tool": "exec_command",
+      "source_arguments": {
+        "cmd": "fixed build manifest",
+        "workdir": "."
+      },
+      "stdout_runs": [
+        {
+          "text": "INFO stage=resolve result=ok\r\n",
+          "occurrences": 31
+        },
+        {
+          "text": "INFO stage=compile result=ok\r\n",
+          "occurrences": 17
+        },
+        {
+          "text": "WARN stage=compile code=W_OPTIONAL_HINT\r\n",
+          "occurrences": 4
+        },
+        {
+          "text": "INFO stage=compile result=ok\r\n",
+          "occurrences": 9
+        },
+        {
+          "text": "INFO stage=publish artifact=app_9e6a.bin digest=fe8e53c7d6f24b1a\r\n",
+          "occurrences": 1
+        }
+      ],
+      "stderr": "",
+      "exit_code": 0,
+      "rule_expected_eligible": true,
+      "instruction": "Compute compile_ok as the total records with stage=compile and result=ok, and warnings as the total WARN records. Calculate counts programmatically, summing separated runs and respecting repeat markers. Report both counts as integers, and the final published artifact and digest as strings. Return only the requested JSON fields.",
+      "expected": {
+        "compile_ok": 26,
+        "warnings": 4,
+        "artifact": "app_9e6a.bin",
+        "digest": "fe8e53c7d6f24b1a"
+      },
+      "answer_schema": {
+        "type": "object",
+        "properties": {
+          "compile_ok": {
+            "type": "integer"
+          },
+          "warnings": {
+            "type": "integer"
+          },
+          "artifact": {
+            "type": "string"
+          },
+          "digest": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "compile_ok",
+          "warnings",
+          "artifact",
+          "digest"
+        ],
+        "additionalProperties": false
+      },
+      "capture_sha256": "cc20e4567b559719c00450a7ab5ace7e3fac8a15d57e62d811badeefc88a875c"
+    },
+    {
+      "id": "failed_release_v1",
+      "source_tool": "exec_command",
+      "source_arguments": {
+        "cmd": "fixed failed release",
+        "workdir": "."
+      },
+      "stdout_runs": [
+        {
+          "text": "INFO stage=upload result=pending\r\n",
+          "occurrences": 27
+        }
+      ],
+      "stderr": "ERROR deploy code=E_VERIFY fraction=0.800000000000007\r\n",
+      "exit_code": 23,
+      "rule_expected_eligible": false,
+      "instruction": "Report exit_code as an integer, outcome as passed for a successful process or failed otherwise, and stderr as the exact string including its line ending. Preserve every digit without numeric conversion. Return only the requested JSON fields.",
+      "expected": {
+        "exit_code": 23,
+        "outcome": "failed",
+        "stderr": "ERROR deploy code=E_VERIFY fraction=0.800000000000007\r\n"
+      },
+      "answer_schema": {
+        "type": "object",
+        "properties": {
+          "exit_code": {
+            "type": "integer"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "stderr": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "exit_code",
+          "outcome",
+          "stderr"
+        ],
+        "additionalProperties": false
+      },
+      "capture_sha256": "ea22a9a6ff8e8ba0537bea70f1e9ba0a8db83e7a46b11202b5306c3653ba07a9"
+    },
+    {
+      "id": "exact_source_v1",
+      "source_tool": "Read",
+      "source_arguments": {
+        "file_path": "src/fixed.ts"
+      },
+      "stdout_runs": [
+        {
+          "text": "// generated build marker\r\n",
+          "occurrences": 29
+        },
+        {
+          "text": "export const selectedTier = \"06\";\r\nexport const maxBatch = 9007199254741081n;\r\nexport const adjustment = \"-0.000000000000003\";\r\nexport const signedZero = \"-0.000\";\r\n",
+          "occurrences": 1
+        }
+      ],
+      "stderr": "",
+      "exit_code": 0,
+      "rule_expected_eligible": false,
+      "instruction": "Read the fixed source. Report selectedTier, maxBatch, adjustment and signedZero as strings. Preserve string contents exactly and keep the BigInt suffix on maxBatch. Do not convert values to numbers. Return only the requested JSON fields.",
+      "expected": {
+        "selectedTier": "06",
+        "maxBatch": "9007199254741081n",
+        "adjustment": "-0.000000000000003",
+        "signedZero": "-0.000"
+      },
+      "answer_schema": {
+        "type": "object",
+        "properties": {
+          "selectedTier": {
+            "type": "string"
+          },
+          "maxBatch": {
+            "type": "string"
+          },
+          "adjustment": {
+            "type": "string"
+          },
+          "signedZero": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "selectedTier",
+          "maxBatch",
+          "adjustment",
+          "signedZero"
+        ],
+        "additionalProperties": false
+      },
+      "capture_sha256": "89244914ef701e4800fd7326832a9628fe6a8e95be9240abaadf203c4344ba07"
+    }
+  ],
+  "repetitions_per_case_and_cache_start": 3,
+  "required_cache_starts": [
+    "cold",
+    "warm"
+  ],
+  "planned_pairs": 18,
+  "pair_order_by_repetition": [
+    [
+      "control",
+      "candidate"
+    ],
+    [
+      "candidate",
+      "control"
+    ],
+    [
+      "control",
+      "candidate"
+    ]
+  ],
+  "live_execution": {
+    "enabled_by_this_plan": false,
+    "runner_available": false,
+    "max_requests_per_batch": 8,
+    "max_requests_per_pair": 8,
+    "automatically_start_another_batch": false,
+    "keep_failed_and_incomplete_records": true,
+    "no_unbudgeted_warmup_or_cache_probing_calls": true
+  },
+  "cache_classification": {
+    "scope": "First completed upstream request in each arm; later cache reads remain in totals",
+    "cold": "Both arms report zero cache-read tokens on their first request",
+    "warm": "Both arms report positive cache-read tokens on their first request; partial-prefix cache only",
+    "mixed_missing_or_unestablished": "Record as unconfirmed, leave required condition open, stop the batch without automatic retries",
+    "force_cache_reset_or_claim_task_prefix_cache": false
+  },
+  "acceptance": {
+    "all_answers_exact": true,
+    "all_tool_ownership_completion_and_error_checks_pass": true,
+    "all_provider_usage_including_retrieval_retry_extra_turns_known": true,
+    "minimum_total_provider_usage_reduction_fraction_per_cache_start": 0.05,
+    "candidate_completed_task_cpu_p95_ms": 2000,
+    "added_completed_task_elapsed_p95_ms": 1000,
+    "engine_observed_private_bytes": 1610612736,
+    "resource_sample_interval_ms": 50,
+    "arm_timeout_seconds": 120,
+    "resource_scope": "Owned harness and engine PIDs, including compaction; CLI and remote-provider CPU excluded",
+    "elapsed_scope": "Whole completed CLI task including provider wait; paired candidate-minus-control differences",
+    "percentile_method": "Existing replay.percentile nearest rank, computed separately for each cache-start group",
+    "aggregate_method": "Sum input plus output across every required case and repetition in each cache-start group; cache reads are already in input",
+    "no_threshold_relaxation_or_failed_sample_discard": true
+  },
+  "live_quality_usage_and_resources": "not_tested",
+  "automatic_product_activation": false
+}

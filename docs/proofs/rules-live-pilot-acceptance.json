@@ -1,0 +1,116 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "live_pilot_preliminary_acceptance_passed_heldout_data_frozen",
+  "executor": "main",
+  "executor_reason": "Quality, provider usage and cache/resource acceptance decisions",
+  "live_run": {
+    "provider": "chatgpt",
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "cli": "codex-cli 0.169.0-alpha.11.1",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "pair_attempt_limit": 8,
+    "pair_attempts_total": 8
+  },
+  "live_arms": [
+    {
+      "arm": "control",
+      "forwarded_http_attempts": 4,
+      "elapsed_ms": 16438,
+      "turn_completed": true,
+      "exact_answer": true,
+      "fixed_tool_call": true,
+      "tool_checks": {
+        "call_count": 2,
+        "sequence_valid": true,
+        "owned_server": true,
+        "all_completed": true,
+        "no_reported_errors": true
+      },
+      "recovery_tool_calls": 1,
+      "request_count": 4,
+      "usage_record_count": 4,
+      "total_usage": {
+        "total_input_tokens": 40342,
+        "output_tokens": 378,
+        "total_tokens": 40720,
+        "cache_read_input_tokens": 19072,
+        "cache_creation_input_tokens": 0
+      }
+    },
+    {
+      "arm": "candidate",
+      "forwarded_http_attempts": 4,
+      "elapsed_ms": 18823,
+      "turn_completed": true,
+      "exact_answer": true,
+      "fixed_tool_call": true,
+      "tool_checks": {
+        "call_count": 1,
+        "sequence_valid": true,
+        "owned_server": true,
+        "all_completed": true,
+        "no_reported_errors": true
+      },
+      "recovery_tool_calls": 0,
+      "request_count": 4,
+      "usage_record_count": 4,
+      "total_usage": {
+        "total_input_tokens": 39875,
+        "output_tokens": 577,
+        "total_tokens": 40452,
+        "cache_read_input_tokens": 28800,
+        "cache_creation_input_tokens": 0
+      }
+    }
+  ],
+  "live_pilot_passed": true,
+  "single_pair_provider_delta": {
+    "total_tokens_saved": 268,
+    "percent_of_control": 0.6582
+  },
+  "all_three_producer_results_exact_at_cli": true,
+  "full_recovery_exact_at_provider": true,
+  "multi_retrieval_branch_exercised_in_this_live_pair": false,
+  "multi_retrieval_branch_prior_focused_tests": true,
+  "live_fingerprints_before_after_match": true,
+  "both_owned_engines_closed_normally": true,
+  "cache_condition": "observed_provider_counters_not_controlled_cold_warm",
+  "pilot_cpu_memory_acceptance": "not_tested",
+  "general_savings_or_activation_accepted": false,
+  "main_task_complete": false,
+  "heldout_preparation": {
+    "cases": 3,
+    "independent_of_frozen_rule_design": true,
+    "scope": "Controlled fixed tool outputs; no real project build",
+    "local_oracles_and_rule_eligibility_checked": true,
+    "planned_pairs": 18,
+    "runner_available": false,
+    "model_calls": 0,
+    "live_quality_usage_resources": "not_tested",
+    "automatically_start_live_batches": false
+  },
+  "source_changed_this_slice": "New benchmark plan data only; existing pilot and product source unchanged",
+  "successful_focused_or_product_tests_repeated": false,
+  "artifacts": {
+    "live_pair": {
+      "path": "work/proofs/optimization/rules-live/8bce68a9b6ca4d92b9b1af0029d50eb7/result.json",
+      "sha256": "1be95f455d42b325b051818eb76db8c8f5829b13d47724adc47dbb500e241007"
+    },
+    "heldout_plan": {
+      "path": "bench/optimization/rules-heldout-plan.json",
+      "sha256": "a045134d2bdb7e5fe090f3a600b43434bc1f52d3e08a25b579b04c771de66ae4"
+    },
+    "heldout_data_and_rule_validation": {
+      "path": "work/proofs/optimization/rules-heldout-freeze/40de6e4c4d144b9badeb2bd0d0c21f71/result.json",
+      "sha256": "d2ac52da5202f4b098277d997c3010c51761f899b4acdb1e3bbb934ce932b31b"
+    }
+  },
+  "next_step": "Implement the independent case runner with scoped schemas, recorded cache starts, alternating pair order and resource sampling; validate locally before live use",
+  "open_acceptance": [
+    "Independent held-out tasks and at least three paired repeats per required cache start",
+    "Predeclared cache and latency/CPU/memory/net-benefit gates",
+    "Scoped activation and rollback after acceptance"
+  ]
+}
