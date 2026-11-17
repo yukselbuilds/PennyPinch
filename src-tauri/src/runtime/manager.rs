@@ -129,9 +129,9 @@ fn startup_diagnostic_for_test() -> StartupDiagnostic {
 
 pub(crate) const EXPECTED_ENGINE_VERSION: &str = "0.44.0";
 const EXPECTED_MANIFEST_SHA256: &str =
-    "30a5e35d3fcbab8ea0b7fa58a145468dbc3cf2e3a50ff563f7a54b9b83cbd475";
+    "79010c4c72099860284cf14aa0be9df471a233e8557da39f0377a52a0dc558a8";
 const EXPECTED_WINDOWS_MANIFEST_SHA256: &str =
-    "44a53ac3dc785357ae77e5de1bc6655d94fb8f693bb16974c996f41b16fb1465";
+    "ad65ce218cdb6de94a8a27ba6faa893e267403b542343f3168cad6db670f069e";
 pub(crate) const ACTIVE_MANIFEST: &str = if cfg!(debug_assertions) {
     include_str!("../../../runtime/manifest.json")
 } else {
@@ -143,7 +143,7 @@ const ACTIVE_MANIFEST_SHA256: &str = if cfg!(debug_assertions) {
     EXPECTED_WINDOWS_MANIFEST_SHA256
 };
 const EXPECTED_CONTROLLER_SHA256: &str =
-    "4e5f01b76bbb202588ebe1729771120943abb93ac6aedbe9dca037fc941a0533";
+    "792a22182b3f3c4ca8f5eef525b1f312b76b5c05d634c1f600802ad6719a7eb0";
 const EXPECTED_HELPER_SHA256: &str =
     "0fa23e60d7b4191d44dc672d216da80d80338423a2c1a0360bae2bee0b4b2249";
 #[cfg(windows)]
@@ -152,7 +152,7 @@ const EXPECTED_RETRIEVAL_BRIDGE_SHA256: &str =
 const EXPECTED_SHIM_SHA256: &str =
     "9e47ad68053289d7d02ec942927d5f0c2d14e9d09a867333211f24646f371a8b";
 const EXPECTED_OPTIMIZATION_SHA256: &str =
-    "42eebd44a7327de71be2f4d1c78a16db759c6ee4b8465f3a93c864ffeec49f0b";
+    "bc5080f6806131c63ff2b693152655d6301b968c7d96dccee67c0afe9d880c7c";
 const EXPECTED_OPTIMIZATION_SOURCES_SHA256: &str =
     "d46b875b93c16b2ad27dc44b0537652d99fd6b6981283e05ad3b7ddb00164a3f";
 pub(crate) const EXPECTED_RUNTIME_MANIFEST_SHA256: &str =

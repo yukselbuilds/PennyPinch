@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## H041-e3 — tek canlı istekte içerik türüne bağlı kullanım kaybı bulundu
+
+- Kullanıcının onayladığı tek `gpt-6-luna` / `medium` isteği ayrı test hesabında tamamlandı. Kaynak ve ortam parmak izleri eşleşti. Sağlayıcının tamamlanma olayı 9.386 giriş, 8 çıkış ve gözlenen sıfır cache okuma/yazma bildirdi. Yanıt kimliği eşleşti ve `status` tamamlanmıştı. İçerik türü özeti standart SSE değerinden farklıydı. Ayrıntılı okuyucu bu nedenle akıştaki sayaçları incelememişti.
+- Okuyucu, Responses için akış olarak istenen başarılı yanıtı içerik türü farklı olduğunda da inceliyor. Tamamlanma, kimlik ve sayaç kontrolleri uygulanıyor. İki HTTP taşıyıcısında altı başarısız alt senaryoyla kayıp yeniden üretildi. Düzeltme sonrasında 31 odaklı test, 12/12 motor kullanım kaydı, 224 arayüz testi, 469 Rust testi ve iki derleme geçti. Native kullanım aktarımı da doğrulandı. [Kanıt](proofs/responses-stream-content-type.json).
+- **45/54 ve H041-e3 açık.** Canlı çağrı 1/1 sınırında kaldı. Yeni düzeltme, canlı sayaç metadatasıyla yeniden kurulan yerel akışta 9.394 toplam tokenı korudu. Düzeltilmiş okuyucunun yeni canlı yanıtla doğrulaması, deneysel kuralın kesin çıktısı ve eşlenmiş tasarruf kabulü açık.
+
 ## H041-e3 — Responses tamamlanma olayı için kullanım okuyucusu düzeltildi
 
 - Canlı çiftin motor geçmişinde yedi kullanım satırı ve dört pozitif cache okuması bulundu. Geçmişe yazılan motor sayaçları, eşleşmiş sağlayıcı kullanım kaydının yerini almadı. Aynı anda canlı akışın terminal alan şekli kaydedilmediği için gerçek koşudaki kaybın kesin nedeni açık.

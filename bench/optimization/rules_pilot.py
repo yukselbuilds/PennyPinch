@@ -28,7 +28,8 @@ RECOVERY_CALL = "call_rule_pilot_recover"
 MODEL = "local-protocol-fixture"
 FIELDS = ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens", "output_tokens")
 FIXTURE_COUNTERS = ((913, 0, 3), (941, 511, 17))
-CLOSURE_MODES = ("read-to-eof", "close-after-terminal", "close-after-terminal-no-status")
+CLOSURE_MODES = ("read-to-eof", "close-after-terminal", "close-after-terminal-no-status",
+                 "close-after-terminal-nonstandard-type")
 SETTLED = "INFO check=pass exact_limit=9223372036854775859\r\n"
 HELD = "WARN check=held signed_factor=-0.062500000000001\r\n"
 CASES = {
@@ -164,7 +165,8 @@ class Provider(runpy.run_path(str(HERE / "replay.py"))["FixtureHandler"]):
             del response["status"]
         frames = _openai_responses_to_sse(response)
         self.send_response(200)
-        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Content-Type", "application/octet-stream" if proof_case == "close-after-terminal-nonstandard-type"
+                         else "text/event-stream")
         self.send_header("Content-Length", str(sum(map(len, frames))))
         self.send_header("Connection", "close")
         self.end_headers()

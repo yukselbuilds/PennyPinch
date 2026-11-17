@@ -327,7 +327,8 @@ def _install_usage(proxy, gate, parse_events, response_not_read):
                             attempt["usage"] = parse(json.loads(response.content))
                     except (ValueError, RecursionError, response_not_read):
                         pass
-                elif media_type == "text/event-stream":
+                elif (media_type == "text/event-stream"
+                      or trace.surface == "openai_responses" and options.get("stream") is True):
                     read = response.aiter_bytes
                     observer = transport[1]
 

@@ -145,6 +145,8 @@ Varsayılan komut yalnız yerel yanıtlarla çalışır. Canlı komut `--live`, 
 
 `ResponseCompletedEvent` tamamlanmış yanıtı taşır. Pinli OpenAI şeması iç `status` alanını isteğe bağlı tanımlar. Responses HTTP/SSE okuyucusu, aynı kimlikli `response.created` ve `response.completed` olayları varken eksik veya `null` iç durum alanını kabul eder. Açıkça çelişen durum, kimlik uyuşmazlığı ve kullanımı olmayan akış bilinmiyor kalır. Yerel terminal olayı ve erken kapanış testi geçti. Canlı koşudan kalan kayıtlar terminal alanını göstermediği için bu davranışın canlı doğrulaması açıktır. [Yerel doğrulama](../proofs/responses-optional-terminal-status.json).
 
+Tek canlı Luna tanı isteğinde tamamlanma olayı `status=completed` ve 9.386 giriş, 8 çıkış sayacı taşıdı. İçerik türü standart SSE olarak sınıflanmadığı için kullanım okuyucusu yanıtı atladı. Responses için `stream=True` ile gönderilmiş başarılı yanıtın olayları da incelenir. Tamamlanma ve kimlik doğrulaması akış içeriğinden yapılır. Kesik, çelişen veya sayaçları eksik akışlar bilinmiyor kalır. Ham akış kaydedilmedi. Yerel yeniden kurma, canlı sayaç ve olay metadatasını kullanır. [İçerik türü doğrulaması](../proofs/responses-stream-content-type.json).
+
 ### H041-b yerel deney koşulları
 
 Ana ajan ölçüm, runtime ve cache sözleşmesi nedeniyle deney ve kabulü üstlenir. `bench/optimization/ccr-policy-plan.json` iki eşlenmiş tekrarı önceden belirler. Her tekrarda iki ayrı motor kullanılır. Bir oturum üç kısa istekten oluşur. İkincisi üç kısa istekten sonra sıkıştırılabilir uzun log ve korumalı kesin sayısal bir Read sonucu alır. Ayrı temiz oturumdaki kısa istek, yapışkan aracın başka oturuma taşınmadığını denetler. Tüm istekler izole Anthropic SSE fixture'ına gider.

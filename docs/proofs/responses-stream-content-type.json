@@ -1,0 +1,88 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "single_live_usage_loss_identified_and_fixed_locally",
+  "single_live_probe": {
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "authorized_http_limit": 1,
+    "sent": 1,
+    "completed": true,
+    "matching_stats_and_ledger_ids": 1,
+    "terminal_status": "completed",
+    "created_and_terminal_identity_match": true,
+    "normalized_media_type_classification": "other",
+    "exact_header_value_retained": false,
+    "wire_usage": {
+      "input_tokens": 9386,
+      "output_tokens": 8,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    },
+    "wire_total_input_and_output": 9394,
+    "old_ledger_total_usage": null,
+    "normal_engine_exit": true
+  },
+  "confirmed_reader_gap": "Streamed Responses with a nonstandard content type bypassed usage observation.",
+  "change": "Inspect streamed Responses and require valid completion events and matching identity regardless of content-type header.",
+  "local_verification": {
+    "header_loss_reproduced_subcases": 6,
+    "http_transports": 2,
+    "focused_python_tests": 31,
+    "engine_usage_matches": 12,
+    "nonstandard_header_early_close": {
+      "mode": "close-after-terminal-nonstandard-type",
+      "terminal_received": true,
+      "done_received": false,
+      "terminal_status_present": true,
+      "stats_request_count": 1,
+      "usage_record_count": 1,
+      "missing_usage_records": 0,
+      "cache_write_when_present": "unknown"
+    },
+    "live_counter_metadata_replay_total": 9394,
+    "frontend_tests": 224,
+    "rust_tests": 469,
+    "rust_opt_in_skipped": 24,
+    "format": true,
+    "frontend_build": true,
+    "native_build": true,
+    "native_usage_to_sqlite_and_activity_detail": true
+  },
+  "new_live_call_after_fix": false,
+  "live_rule_quality_and_paired_savings_percent": null,
+  "artifacts": {
+    "single_live_probe": {
+      "path": "work/proofs/optimization/responses-optional-status/live-eb8c94baefdd43ccb4bac19129a00557/result.json",
+      "sha256": "0713dddc9a246dafb8321f27ef8b7cd36999e641a347ee95965b31f8ca1990e7"
+    },
+    "probe_self_check": {
+      "path": "work/proofs/optimization/responses-optional-status/probe-check-b1b782071ac84b45ba1d50a94002fbc1/result.json",
+      "sha256": "56eb36e1353fcaeda58c232a5c9ea7138ccb56e41f8274b39eb3d9da2b2fb528"
+    },
+    "header_loss_before_fix": {
+      "path": "work/proofs/optimization/responses-content-type/before-692aba32b9d4462ca725be481fb4ed33/result.json",
+      "sha256": "0176c0a16e744d8c783fb16530fb487215c58a4b62f6658c5c9114d06169358a"
+    },
+    "focused_tests": {
+      "path": "work/proofs/optimization/responses-content-type/focus-7a20c0429b134d7a97892809efdee3f7/result.json",
+      "sha256": "b58422814c5c458811cf1bf300361261fbad036f53e33fbe460b9441f22e07af"
+    },
+    "engine_and_cli": {
+      "path": "work/proofs/optimization/rules-pilot/4c26cb06005444e0a00bb05d92c6c761/result.json",
+      "sha256": "84a84917ca7a31dd6ae4f145d609c2254b5569bdc1e27ee5ed5bb4b7dd460e90"
+    },
+    "full_local_gate": {
+      "path": "work/proofs/optimization/responses-content-type/gate-5caebb6d965c4eb08b4d9113845cddfb/result.json",
+      "sha256": "5aa34660d67cf1425bfa8f585308cf37114cf84ef12659045cad92527ab329aa"
+    },
+    "native_reader": {
+      "path": "work/proofs/optimization/desktop-responses-usage/runs/8186d9f1-43eb-462b-a8a0-9162cf64a2ba/result.json",
+      "sha256": "394fabaaa98cc7ba12fa647c23b8117b80a4992578d6067cf265900e09a00350"
+    },
+    "counter_metadata_replay": {
+      "path": "work/proofs/optimization/responses-content-type/wire-replay-af78a526c2114307a16a1851262f3804/result.json",
+      "sha256": "2ba3ff04c12d0648be1f95fdaebb7a8aacba3d7cc5abafa90e28efaadad13767"
+    }
+  }
+}

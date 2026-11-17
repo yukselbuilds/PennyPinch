@@ -153,6 +153,48 @@ class ResponsesUsageTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(len(state.usage.attempts), 2)
             self.assertEqual(calls[:2], [("/backend-api/codex/responses", "Bearer fixture", b"original")] * 2)
 
+    async def test_streamed_responses_usage_with_nonstandard_content_type(self):
+        created = event("response.created", response=response(status="in_progress", usage=None))
+        terminal = event("response.completed", response=response())
+        cases = ((None, created + terminal), ("application/octet-stream", created + terminal),
+                 ("text/plain; charset=utf-8", created + terminal), (None, created),
+                 ("text/plain", created + event("response.completed", response=response(id="conflict"))))
+
+        class Stream(httpx.AsyncByteStream):
+            async def __aiter__(self):
+                for index in range(0, len(raw), 71):
+                    yield raw[index:index + 71]
+
+        async def handler(request):
+            return httpx.Response(200, headers={"content-type": media} if media else {}, stream=Stream())
+
+        async def no_op(*args):
+            pass
+
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client, \
+                httpx.AsyncClient(transport=httpx.MockTransport(handler)) as h1:
+            proxy = SimpleNamespace(startup=no_op, _record_request_outcome=no_op,
+                                    http_client=client, http_client_h1=h1)
+            gate = object()
+            control._install_usage(proxy, gate, parser.parse_sse_events_from_byte_buffer, httpx.ResponseNotRead)
+            await proxy.startup()
+            for transport in (client, h1):
+                for media, raw in cases:
+                    with self.subTest(media=media, valid=raw == created + terminal):
+                        state = control.RequestState(gate, True, "responses", False, "scope",
+                                                     usage=control.UsageTrace(surface="openai_responses"))
+                        token = control._request.set(state)
+                        try:
+                            request = transport.build_request("POST", "https://fixture.invalid/backend-api/codex/responses",
+                                                              content=b"original")
+                            result = await transport.send(request, stream=True)
+                            self.assertEqual(b"".join([chunk async for chunk in result.aiter_bytes()]), raw)
+                            await result.aclose()
+                        finally:
+                            control._request.reset(token)
+                        expected = control._responses_usage(response()) if raw == created + terminal else None
+                        self.assertEqual(state.usage.attempts[0]["usage"], expected)
+
     async def test_ccr_failure_is_flagged_without_repeating_request(self):
         calls = []
         async def retry(*args, **kwargs):
