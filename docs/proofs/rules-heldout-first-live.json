@@ -1,0 +1,167 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "first_independent_live_quality_failed_rule_candidate_rejected",
+  "executor": "main",
+  "executor_reason": "Quality gate, provider usage and reversible representation semantics",
+  "live_run": {
+    "provider": "chatgpt",
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "cli": "codex-cli 0.169.0-alpha.11.1",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "case": "build_manifest_v1",
+    "repeat_index": 0,
+    "arm_order": [
+      "control",
+      "candidate"
+    ],
+    "pair_attempt_limit": 8,
+    "pair_attempts_total": 8
+  },
+  "live_arms": [
+    {
+      "arm": "control",
+      "elapsed_ms": 28465,
+      "turn_completed": true,
+      "exact_answer": true,
+      "fixed_tool_call": true,
+      "tool_checks": {
+        "call_count": 2,
+        "sequence_valid": true,
+        "owned_server": true,
+        "all_completed": true,
+        "no_reported_errors": true
+      },
+      "recovery_tool_calls": 1,
+      "request_count": 4,
+      "usage_record_count": 4,
+      "first_upstream_cache_read_input_tokens": 0,
+      "total_usage": {
+        "total_input_tokens": 39866,
+        "output_tokens": 379,
+        "total_tokens": 40245,
+        "cache_read_input_tokens": 28672,
+        "cache_creation_input_tokens": 0
+      },
+      "resources": {
+        "harness_cpu_ms": 0.0,
+        "engine_cpu_ms": 453.125,
+        "observed_engine_private_bytes": 864718848,
+        "observed_harness_private_bytes": 40493056,
+        "observed_working_set_bytes": 456552448,
+        "resource_samples": 451,
+        "rule_prepare_cpu_ms": 46.875,
+        "local_cpu_ms": 500.0
+      }
+    },
+    {
+      "arm": "candidate",
+      "elapsed_ms": 20952,
+      "turn_completed": true,
+      "exact_answer": false,
+      "fixed_tool_call": true,
+      "tool_checks": {
+        "call_count": 1,
+        "sequence_valid": true,
+        "owned_server": true,
+        "all_completed": true,
+        "no_reported_errors": true
+      },
+      "recovery_tool_calls": 0,
+      "request_count": 4,
+      "usage_record_count": 4,
+      "first_upstream_cache_read_input_tokens": 0,
+      "total_usage": {
+        "total_input_tokens": 39646,
+        "output_tokens": 508,
+        "total_tokens": 40154,
+        "cache_read_input_tokens": 18944,
+        "cache_creation_input_tokens": 0
+      },
+      "resources": {
+        "harness_cpu_ms": 0.0,
+        "engine_cpu_ms": 468.75,
+        "observed_engine_private_bytes": 865103872,
+        "observed_harness_private_bytes": 39940096,
+        "observed_working_set_bytes": 456564736,
+        "resource_samples": 332,
+        "rule_prepare_cpu_ms": 62.5,
+        "local_cpu_ms": 531.25
+      }
+    }
+  ],
+  "candidate_exact_fields": {
+    "compile_ok": false,
+    "warnings": false,
+    "artifact": true,
+    "digest": true
+  },
+  "candidate_all_field_types_match": true,
+  "confirmed_cold_start_for_both_arms": true,
+  "all_provider_counters_known": true,
+  "before_after_fingerprints_match": true,
+  "both_owned_engines_closed_normally": true,
+  "independent_quality_gate_passed": false,
+  "accepted_savings_percent": null,
+  "original_report_unchanged": true,
+  "matrix_summary": {
+    "records": 1,
+    "invalid": 1,
+    "missing": 17,
+    "accepted": false
+  },
+  "current_repeated_log_lines_v1_candidate": "rejected_for_live_activation",
+  "remaining_matrix_calls_started": false,
+  "local_diagnosis": {
+    "fixed_fixture_original_and_old_rule_roundtrip_exact": true,
+    "numeric_oracle_unchanged": true,
+    "model_counting_code_retained": false,
+    "exact_model_error_root_cause": "not_determined"
+  },
+  "local_successor_prototype": {
+    "source": "bench/optimization/rules_runs_json.py",
+    "status": "local_only",
+    "representation": "Explicit line and occurrences JSON records with original line endings",
+    "focused_tests": 3,
+    "roundtrip_exact": true,
+    "explicit_count_calculation_exact": true,
+    "fixed_fixture_bytes": {
+      "original_bytes": 1940,
+      "old_marker_bytes": 291,
+      "prototype_json_bytes": 392,
+      "old_round_trip_exact": true,
+      "new_round_trip_exact": true,
+      "explicit_counts_match": true,
+      "run_records": 5
+    },
+    "new_live_model_calls": 0,
+    "product_runtime_or_existing_rule_modified": false,
+    "eligibility_runtime_and_live_quality": "not_tested",
+    "fresh_independent_tasks_required": true,
+    "old_heldout_case_now_development_data_for_this_prototype": true
+  },
+  "total_live_requests_this_slice": 8,
+  "product_defaults_or_activation_changed": false,
+  "full_product_gate_repeated": false,
+  "artifacts": {
+    "independent_live_pair": {
+      "path": "work/proofs/optimization/rules-live/5487468ace824cb799291169b88df883/result.json",
+      "sha256": "91dfd52319b32e170e5023521663007574d49c88032834df0cb7add012457de6"
+    },
+    "local_json_prototype": {
+      "path": "work/proofs/optimization/rules-runs-json/dbec966d04754237bfa8afe7816b2bfa/result.json",
+      "sha256": "d629d864396ef639119506a369283100e9af8e94e8106f6b13adc2e9330766d2"
+    },
+    "matrix_rejection": {
+      "path": "work/proofs/optimization/rules-heldout-rejection/787bb6f9d2114d57ba0d154aad42504c/matrix-summary.json",
+      "sha256": "166883e4b7d0f8b5368bfe0a997d8245910cb7ea3fdd31429653b1183600d66b"
+    },
+    "unchanged_frozen_plan": {
+      "path": "bench/optimization/rules-heldout-plan.json",
+      "sha256": "ff4b60b3e629837573b291897c95de519a80df629429459ab20a4e0b438ab9f0"
+    }
+  },
+  "next_step": "Bound the explicit-JSON prototype with protected stdout/stderr/exit/source eligibility and fresh held-out data locally; do not repeat or activate the rejected marker rule",
+  "main_task_complete": false
+}

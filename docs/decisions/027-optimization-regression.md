@@ -186,6 +186,16 @@ Yerel tek çift ve salt okunur canlı özet komutları, proje kökünden sabit P
 & 'work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime/python.exe' -I -B bench/optimization/rules_summary.py --provider chatgpt --model gpt-6-luna --effort medium
 ```
 
+#### H041-e3 ilk bağımsız canlı kalite reddi
+
+`build_manifest_v1` / tekrar 0 / cold için aynı seçili `gpt-6-luna` / `medium` çifti sekiz gönderimde tamamlandı. İki ilk upstream isteği de sıfır cache okumasıyla cold sınıfını doğruladı. Kontrol doğru cevap verdi; kural kolu derleme ve uyarı adetlerinde hata yaptı. Artifact/digest ve türler doğruydu. 8/8 kullanım kaydı, araç kapsamı, normal kapanış ve önce/sonra fingerprint'leri tamdı. 40.245 → 40.154 toplam token gözlendi; yanlış yanıt yüzünden tasarruf kabulü üretilmedi. Özet bir başarısız kayıt ve 17 eksik çiftle reddetti. Planın bütün doğruluk kontrollerini geçme koşulu gereği bu kural adayı canlı etkinleştirmeye alınmaz; kalan çiftler otomatik çalıştırılmaz. [Kanıt](../proofs/rules-heldout-first-live.json).
+
+Pinli `collapse_runs` / `expand_runs` yerel geri dönüşümünde 1.940 bayt özgün çıktı birebir korundu. Modelin yazdığı sayım kodu saklanmadığı için hatanın kesin mekanizması bilinmiyor. Dönüşümün byte düzeyinde tersinir olması, modelin görev sayımlarını doğru yaptığı anlamına gelmedi. Bu ret bütün Headroom motoru veya başka modeller için uyumsuzluk iddiası değildir; ölçülen isteğe bağlı kural/rota/model/efor/görev kapsamına aittir.
+
+İkinci gösterim adayı `rules_runs_json.py` içinde yalnız yerel prototiptir. Protokol, `headroom.runs.json.v1` çerçevesinde özgün satırı ve toplam `occurrences` tamsayısını ayrı alanlarla taşır; kod veya talimat çalıştırmaz. Saf kodlayıcı/çözücü 16 MiB ve 64.000 satırla sınırlıdır. Bu bir ürün kural kaydı veya motor hook'u değildir. Üç testte CRLF/LF/Unicode, boş metin, işarete benzeyen özgün satır, yanlış tür/alan, genişleme sınırı ve açık adetten yerel hesap geçti. Sabit örnekte 392 bayt ve birebir geri alma gözlendi; gerçek model kalitesi veya token kazancı ölçülmedi. Eski kural, veri ve eşikler değiştirilmedi.
+
+Bu prototip, mevcut bağımsız örneğin başarısızlığı görülerek tasarlandı. Aynı örnek yeni adayın bağımsız kabul verisi sayılmaz. Sonraki yerel kapsam mevcut uygun stdout, stderr/exit ve Read korumalarını yeni gösterime bağlamaktır. Gerçek kalite/etkinleştirme kabulünden önce farklı bağımsız görevler ve kaynak/cache koşulları sabitlenir. Başarısız eski kayıt korunur; kabul toleransları gevşetilmez ve önceki matrise geriye dönük PASS verilmez.
+
 ### H041-b yerel deney koşulları
 
 Ana ajan ölçüm, runtime ve cache sözleşmesi nedeniyle deney ve kabulü üstlenir. `bench/optimization/ccr-policy-plan.json` iki eşlenmiş tekrarı önceden belirler. Her tekrarda iki ayrı motor kullanılır. Bir oturum üç kısa istekten oluşur. İkincisi üç kısa istekten sonra sıkıştırılabilir uzun log ve korumalı kesin sayısal bir Read sonucu alır. Ayrı temiz oturumdaki kısa istek, yapışkan aracın başka oturuma taşınmadığını denetler. Tüm istekler izole Anthropic SSE fixture'ına gider.
