@@ -1,0 +1,106 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "both_live_answers_exact_harness_retrieval_count_rejected",
+  "executor": "main",
+  "executor_reason": "Quality contract, provider usage and retrieval ownership",
+  "live_run": {
+    "provider": "chatgpt",
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "cli": "codex-cli 0.169.0-alpha.11.1",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "pair_attempt_limit": 8,
+    "pair_attempts_total": 8
+  },
+  "live_arms": [
+    {
+      "arm": "control",
+      "forwarded_http_attempts": 5,
+      "turn_completed": true,
+      "exact_answer": true,
+      "fixed_tool_call": false,
+      "recovery_tool_calls": 2,
+      "request_count": 5,
+      "usage_record_count": 5,
+      "total_usage": {
+        "total_input_tokens": 51895,
+        "output_tokens": 668,
+        "total_tokens": 52563,
+        "cache_read_input_tokens": 29824,
+        "cache_creation_input_tokens": 0
+      }
+    },
+    {
+      "arm": "candidate",
+      "forwarded_http_attempts": 3,
+      "turn_completed": true,
+      "exact_answer": true,
+      "fixed_tool_call": true,
+      "recovery_tool_calls": 0,
+      "request_count": 3,
+      "usage_record_count": 3,
+      "total_usage": {
+        "total_input_tokens": 29382,
+        "output_tokens": 229,
+        "total_tokens": 29611,
+        "cache_read_input_tokens": 18944,
+        "cache_creation_input_tokens": 0
+      }
+    }
+  ],
+  "both_final_answers_exact": true,
+  "all_four_producer_results_exact_at_cli": true,
+  "full_recovery_seen_exact_at_provider": true,
+  "all_usage_known": true,
+  "observed_total_usage_difference": {
+    "tokens": 22952,
+    "percent_of_control": 43.6657,
+    "scope": "Single ordered pilot pair, including both recovery turns; observed cache only"
+  },
+  "original_harness_passed": false,
+  "original_live_artifact_reclassified": false,
+  "original_live_tool_status_and_full_call_scope_separately_retained": false,
+  "corrected_tool_contract_live_validation": "not_tested",
+  "accepted_general_savings_percent": null,
+  "cache_condition": "observed_provider_counters_not_controlled_cold_warm",
+  "live_fingerprints_before_after_match": true,
+  "both_owned_engines_closed_normally": true,
+  "harness_correction": {
+    "one_producer_then_read_only_recovery_repeats": true,
+    "all_recovery_retry_extra_turn_usage_still_required": true,
+    "owned_server_and_completed_error_free_calls_required": true,
+    "separate_tool_checks_now_recorded": true,
+    "request_and_time_limits_changed": false,
+    "answer_oracle_model_effort_or_permissions_changed": false,
+    "focused_tests": 10,
+    "local_requests": 5,
+    "extra_live_requests": 0
+  },
+  "product_source_changed_this_slice": false,
+  "full_product_gate_repeated": false,
+  "artifacts": {
+    "original_live_pair": {
+      "path": "work/proofs/optimization/rules-live/23da3d98982149a186831229c41975dd/result.json",
+      "sha256": "1ca101dc4b556b52f0ad7c90d97d1a0a9e24d09ca89a2893094333370986e5a1"
+    },
+    "focused_and_local_validation": {
+      "path": "work/proofs/optimization/rules-retrieval-budget/23c1b5c1ca2546a6b37a69ee2240a12f/result.json",
+      "sha256": "e1c2a0c24f584c7717ed3774cad9ff811ffd531f96f0862337e518924cd3362f"
+    },
+    "local_pair": {
+      "path": "work/proofs/optimization/rules-live/75805bd924844650b89f3a445cc600db/result.json",
+      "sha256": "c760aee8f32c45f85cd6a79271e712cb49547039b74ee3e8e75b2bf50e6ea898"
+    },
+    "local_delivery": {
+      "path": "work/proofs/optimization/rules-live/75805bd924844650b89f3a445cc600db/chatgpt-routing-recovery.json",
+      "sha256": "ab529da208156f13343019a3d0ac690233225f641ef4d270be0ac32334aa158f"
+    }
+  },
+  "open_acceptance": [
+    "Corrected tool contract captured in a live pair",
+    "Independent held-out tasks and at least three paired repeats",
+    "Predeclared cold/warm provider cache and resource conditions",
+    "General net-benefit and scoped activation gates"
+  ]
+}

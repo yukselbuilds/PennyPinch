@@ -200,14 +200,20 @@ def check_turn(exit_code, stdout, expected, *, expected_capture=None):
     exact_fields = {key: isinstance(answer, dict) and key in answer and type(answer[key]) is type(value) and answer[key] == value
                     for key, value in expected.items()}
     exact_keys = isinstance(answer, dict) and set(answer) == set(expected)
+    tool_checks = {
+        "call_count": len(calls),
+        "sequence_valid": tools[:1] == ["inspect_result"] and all(tool == RECOVERY_TOOL for tool in tools[1:]),
+        "owned_server": all(item.get("server") == "headroom_rule_pilot" for item in calls),
+        "all_completed": all(item.get("status") == "completed" for item in calls),
+        "no_reported_errors": not any(tool_reported_error(item) for item in calls),
+    }
     # JSON equality alone would accept 48.0 as an exact integer result.
     result = {
         "turn_completed": exit_code == 0 and sum(event.get("type") == "turn.completed" for event in events) == 1
             and not any(event.get("type") in ("error", "turn.failed") for event in events),
         "exact_answer": exact_keys and all(exact_fields.values()),
-        "fixed_tool_call": tools in (["inspect_result"], ["inspect_result", RECOVERY_TOOL])
-            and all(item.get("server") == "headroom_rule_pilot" and item.get("status") == "completed"
-                    and not tool_reported_error(item) for item in calls),
+        "fixed_tool_call": all(tool_checks[key] for key in ("sequence_valid", "owned_server", "all_completed", "no_reported_errors")),
+        "tool_checks": tool_checks,
         "recovery_tool_calls": tools.count(RECOVERY_TOOL),
     }
     if not result["exact_answer"]:

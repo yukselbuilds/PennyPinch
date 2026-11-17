@@ -1,6 +1,14 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## H041-e3 — iki canlı yanıt doğru, koşum sözleşmesi düzeltildi
+
+- Ana ajan, kalite/ölçüm ve geri çağrı sahipliği nedeniyle bu dilimi üstlendi. Aynı ayrı ChatGPT test hesabında `gpt-6-luna` / `medium` ile kodla sayım talimatı iki kolda da kesin doğru yanıt verdi. Sekiz gönderim sınırında 5 kontrol + 3 sıkıştırma isteği ve 8/8 sağlayıcı kullanım kaydı doğrulandı. Dört üretici sonucu CLI'de, tam geri çağrı sağlayıcı girişinde eşleşti. İki motor normal kapandı; kaynak/ortam fingerprint'leri koşu boyunca aynı kaldı. [Kanıt](proofs/rules-live-programmatic-counts.json).
+- Kontrol 51.895 giriş + 668 çıkış = 52.563; sıkıştırılmış kol 29.382 giriş + 229 çıkış = 29.611 token kullandı. Kontrolün iki geri çağrısı toplamda. Gözlenen fark 22.952 token ve %43,6657. Cache okumaları 29.824 ve 18.944, gözlenen yazma iki kolda sıfırdı. Cache okumaları girdi toplamında; bu tek sıralı çift kontrollü soğuk/sıcak deney veya genel tasarruf kabulü değildir.
+- Eski denetleyici yalnız sıfır/bir geri çağrılı araç dizisini kabul ettiğinden kontrol kolunu reddetti. Plan, geri çağrı/retry/ek turların tamamını sayar; bir geri çağrı sınırı tanımlamaz. Tek `inspect_result` sonrası salt okunur geri çağrı tekrarları kabul edilir hale getirildi. Sahip sunucu, tamamlanma ve açık hata kontrolleri korunur. Bu kontroller artık ayrı bayraklar ve toplam çağrı sayısıyla kaydedilir. Kesin yanıt, model/efor/izin, süre ve gönderim sınırı aynı.
+- On odaklı testte tekrar, ikinci üretici, yabancı araç/sunucu ve başarısız/hatalı sonuçlar sınandı. Beş istekli gerçek CLI/yerel ChatGPT rota provası geçti. Ek canlı istek sıfır; ürün kaynakları değişmediğinden tam ürün kapısı tekrarlanmadı. Eski canlı kayıt ayrı araç durum/sahiplik bayraklarını saklamadığından geriye dönük PASS yapılmadı.
+- **45/54 ve H041-e3 açık.** Sonraki adım düzeltilen denetleyicinin ayrı araç kontrol bayraklarıyla sınırlı canlı çifti kaydetmek. Sonrasında bağımsız görevler, en az üç eşlenmiş tekrar ve önceden sabitlenmiş cache/kaynak koşulları gerekir. Deneysel kuralın canlı etkinleştirmesi kapalı ve e4 başlamadı.
+
 ## H041-e3 — canlı geri çağrı doğru, sayım kabulü açık
 
 - Ana ajan, rota/ölçüm ve kalite sözleşmesi nedeniyle bu dilimi üstlendi. Aynı ayrı ChatGPT test hesabında `gpt-6-luna` / `medium` ile sınırlı çift 7/8 gönderimde tamamlandı. Üç üretici sonucu CLI'de, kanonik `headroom_retrieve` ile geri alınan tam içerik sağlayıcı girişinde birebir eşleşti. Geri çağrı çıktısı yeniden offload edilmedi. İki motor normal kapandı ve kaynak/ortam fingerprint'leri koşu boyunca aynı kaldı. [Canlı kanıt](proofs/rules-live-canonical-pair.json).

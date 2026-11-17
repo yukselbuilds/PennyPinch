@@ -93,6 +93,31 @@ class RulesPilotContractTests(unittest.TestCase):
         self.assertTrue(row["producer_delivery"][0]["error_reported"])
         self.assertFalse(row["producer_delivery"][0]["capture_exact"])
 
+    def test_retrieval_repeats_keep_one_producer_and_owned_successful_calls(self):
+        def result(names, **changes):
+            items = [{"type": "mcp_tool_call", "server": "headroom_rule_pilot", "status": "completed", "tool": name}
+                     for name in names]
+            if items:
+                items[-1].update(changes)
+            events = [{"type": "item.completed", "item": item} for item in items]
+            events.extend([{"type": "item.completed", "item": {"type": "agent_message", "text": json.dumps(EXPECTED)}},
+                           {"type": "turn.completed"}])
+            return live["check_turn"](0, b"\n".join(json.dumps(event).encode() for event in events), EXPECTED)
+
+        names = ["inspect_result", "headroom_retrieve", "headroom_retrieve"]
+        accepted = result(names)
+        self.assertTrue(accepted["fixed_tool_call"])
+        self.assertEqual(accepted["recovery_tool_calls"], 2)
+        self.assertEqual(accepted["tool_checks"]["call_count"], 3)
+        for invalid in ([], ["headroom_retrieve"], names + ["inspect_result"], names + ["other_tool"]):
+            self.assertFalse(result(invalid)["fixed_tool_call"])
+        for changes, diagnostic in (({"server": "other_server"}, "owned_server"),
+                                    ({"status": "failed"}, "all_completed"),
+                                    ({"result": {"isError": True}}, "no_reported_errors")):
+            rejected = result(names, **changes)
+            self.assertFalse(rejected["fixed_tool_call"])
+            self.assertFalse(rejected["tool_checks"][diagnostic])
+
     def test_forwarded_capture_matches_its_owned_call(self):
         capture = {"stdout": "PRIVATE_FORWARDED_CANARY", "stderr": "", "exit_code": 0}
         body = {"input": [
