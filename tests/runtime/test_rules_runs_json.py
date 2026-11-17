@@ -7,6 +7,19 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def snapshot(output=None, *, tool="exec_command", scope="owned-json-trial", call_id="json-call", arguments=None):
+    if output is None:
+        output = {"stdout": "INFO queue=alpha result=sent\r\n" * 30, "stderr": "", "exit_code": 0, "producer_id": "fixed"}
+    return [{"type": "session_meta", "payload": {"id": scope}},
+            {"type": "response_item", "payload": {"type": "function_call", "call_id": call_id, "name": tool,
+                "arguments": json.dumps(arguments if arguments is not None else {"cmd": "fixed producer", "workdir": "."})}},
+            {"type": "response_item", "payload": {"type": "function_call_output", "call_id": call_id, "output": output}}]
+
+
+def encoded(records):
+    return ("\n".join(json.dumps(item, separators=(",", ":")) for item in records) + "\n").encode()
+
+
 class ExplicitRunsTests(unittest.TestCase):
     def setUp(self):
         self.prototype = runpy.run_path(str(ROOT / "bench/optimization/rules_runs_json.py"))
@@ -44,6 +57,49 @@ class ExplicitRunsTests(unittest.TestCase):
                     self.prototype["decode_runs"](json.dumps(frame))
         with self.assertRaises(ValueError):
             self.prototype["encode_runs"]("x\n" * 64001)
+
+    def test_guarded_capture_changes_only_owned_successful_stdout(self):
+        records = snapshot()
+        original = records[-1]["payload"]["output"]
+        result = self.prototype["trial_capture"](encoded(records), "owned-json-trial", "json-call")
+        self.assertEqual(result["status"], "candidate_ready")
+        candidate = result["candidate"]
+        self.assertEqual({**candidate, "stdout": self.prototype["decode_runs"](candidate["stdout"])}, original)
+        self.assertEqual({key: value for key, value in candidate.items() if key != "stdout"},
+                         {key: value for key, value in original.items() if key != "stdout"})
+        self.assertLess(result["after_bytes"], result["before_bytes"])
+
+    def test_error_source_numeric_and_unknown_channels_are_preserved(self):
+        ordinary = snapshot()[-1]["payload"]["output"]
+        variants = [snapshot({**ordinary, "stderr": "WARN exact=0.123456789012349\r\n"}),
+                    snapshot({**ordinary, "exit_code": 7}), snapshot({**ordinary, "exit_code": False}),
+                    snapshot(ordinary, tool="Read"), snapshot({**ordinary, "stdout": "9007199254741199\n" * 30}),
+                    snapshot(json.dumps(ordinary)), snapshot({**ordinary, "isError": True})]
+        errored = snapshot()
+        errored[-1]["payload"]["error"] = "fixed_error"
+        variants.append(errored)
+        for records in variants:
+            with self.subTest(tool=records[1]["payload"]["name"]):
+                result = self.prototype["trial_capture"](encoded(records), "owned-json-trial", "json-call")
+                self.assertEqual(result["status"], "protected")
+                self.assertEqual(result["candidate"], records[-1]["payload"]["output"])
+
+    def test_owner_call_conflicts_merged_history_and_bad_input_are_rejected(self):
+        records = snapshot()
+        for owner, identity in (("other-owner", "json-call"), ("owned-json-trial", "other-call")):
+            self.assertEqual(self.prototype["trial_capture"](encoded(records), owner, identity)["status"], "ambiguous")
+        conflict = snapshot()
+        conflict.append({"type": "response_item", "payload": {**conflict[-1]["payload"], "output": {"stdout": "different"}}})
+        for altered in (conflict, records + records[1:], [records[0], records[-1], records[1]],
+                        snapshot(arguments={"cmd": "fixed producer"}), snapshot(scope="")):
+            self.assertEqual(self.prototype["trial_capture"](encoded(altered), "owned-json-trial", "json-call")["status"], "ambiguous")
+        self.assertEqual(self.prototype["trial_capture"](b'broken-json', "owned-json-trial", "json-call")["status"], "invalid_file")
+
+    def test_small_nonreducing_stdout_is_returned_unchanged(self):
+        records = snapshot({"stdout": "INFO once\n", "stderr": "", "exit_code": 0})
+        result = self.prototype["trial_capture"](encoded(records), "owned-json-trial", "json-call")
+        self.assertEqual(result["status"], "unchanged")
+        self.assertEqual(result["candidate"], records[-1]["payload"]["output"])
 
 
 if __name__ == "__main__":

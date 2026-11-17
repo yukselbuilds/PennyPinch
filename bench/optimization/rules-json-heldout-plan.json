@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "task": "H041-e3",
+  "candidate_id": "explicit_runs_json_v1",
+  "status": "guard_verified_data_frozen_adapter_pending",
+  "source_scope": "Controlled fixed tool outputs; no real user project or conversation",
+  "representation": "headroom.runs.json.v1",
+  "eligibility": "Existing local_replay gate plus one explicit owner/call binding and error-flag protection; only a smaller whole-capture-reversible stdout is emitted",
+  "source_fingerprints": {
+    "bench/optimization/rules_runs_json.py": "d4f840526ef40598fe1fd789f4b04be81da3407ef67cc6eef79ee615549c1486",
+    "tests/runtime/test_rules_runs_json.py": "1cf74930d4e64cecd4c41e3844f0d2f2daaa7e64263cd4b241dba39a18f5cbf6",
+    "runtime/learn_preview.py": "e253009e1e0edbff36712902567a853c3dcf29ecc8336928514f78d894b24f98",
+    "work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime/python.exe": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+    "work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime/python313.dll": "252e5fc0653d2a8ffd4f47c1b716937831d1510257f105275eedea254a64a376",
+    "work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime/Lib/site-packages/headroom/transforms/lossless_compaction.py": "2706e7949eccfbba538dea6d6e07b8d1467131116e5bc85df7e517eb9cb67c0f"
+  },
+  "excluded_design_cases": [
+    "audit",
+    "audit_retrieval",
+    "build_manifest_v1",
+    "counts",
+    "exact_read",
+    "exact_source_v1",
+    "failed_check",
+    "failed_release_v1",
+    "failure",
+    "owned-json-trial",
+    "warning"
+  ],
+  "cases": [
+    {
+      "id": "json_queue_receipts_v1",
+      "source_tool": "exec_command",
+      "source_arguments": {
+        "cmd": "fixed queue receipt capture",
+        "workdir": "."
+      },
+      "stdout_runs": [
+        {
+          "text": "INFO queue=amber outcome=sent\r\n",
+          "occurrences": 23
+        },
+        {
+          "text": "WARN queue=blue outcome=retry\r\n",
+          "occurrences": 6
+        },
+        {
+          "text": "INFO queue=amber outcome=sent\r\n",
+          "occurrences": 14
+        },
+        {
+          "text": "INFO queue=green outcome=sent\r\n",
+          "occurrences": 5
+        },
+        {
+          "text": "INFO receipt_id=rcpt_k4Z state=sealed\r\n",
+          "occurrences": 1
+        }
+      ],
+      "stderr": "",
+      "exit_code": 0,
+      "expected_guard_status": "candidate_ready",
+      "instruction": "Compute sent as all records with outcome=sent, and retry as all records with outcome=retry. Calculate totals programmatically across separated runs. Report sent and retry as integers, and the final receipt_id and state as strings. Return only those JSON fields.",
+      "expected": {
+        "sent": 42,
+        "retry": 6,
+        "receipt_id": "rcpt_k4Z",
+        "state": "sealed"
+      },
+      "answer_schema": {
+        "type": "object",
+        "properties": {
+          "sent": {
+            "type": "integer"
+          },
+          "retry": {
+            "type": "integer"
+          },
+          "receipt_id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sent",
+          "retry",
+          "receipt_id",
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "capture_sha256": "0fa03c0495450a88453313b2a24add83dde5bd534203d12bcba7026169577492"
+    },
+    {
+      "id": "json_failed_archive_v1",
+      "source_tool": "exec_command",
+      "source_arguments": {
+        "cmd": "fixed failed archive capture",
+        "workdir": "."
+      },
+      "stdout_runs": [
+        {
+          "text": "INFO archive=pack phase=waiting\r\n",
+          "occurrences": 21
+        }
+      ],
+      "stderr": "ERROR stage=archive code=E_INTEGRITY value=0.123456789012349\r\n",
+      "exit_code": 17,
+      "expected_guard_status": "protected",
+      "instruction": "Report exit_code as an integer, outcome as passed for a successful process or failed otherwise, and stderr as its exact string including the line ending. Preserve digits and signs without numeric conversion. Return only those JSON fields.",
+      "expected": {
+        "exit_code": 17,
+        "outcome": "failed",
+        "stderr": "ERROR stage=archive code=E_INTEGRITY value=0.123456789012349\r\n"
+      },
+      "answer_schema": {
+        "type": "object",
+        "properties": {
+          "exit_code": {
+            "type": "integer"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "stderr": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "exit_code",
+          "outcome",
+          "stderr"
+        ],
+        "additionalProperties": false
+      },
+      "capture_sha256": "90b95a643bdb541c1f5ed544c8becaf903ccb0ae764bab377a9ced55f471fe0a"
+    },
+    {
+      "id": "json_precision_source_v1",
+      "source_tool": "Read",
+      "source_arguments": {
+        "file_path": "src/receipt-contract.ts"
+      },
+      "stdout_runs": [
+        {
+          "text": "// fixed receipt contract\r\n",
+          "occurrences": 33
+        },
+        {
+          "text": "export const lane = \"çınar\";\r\nexport const limit = 9007199254741199n;\nexport const epsilon = \"+0.000000000000017\";\r\nexport const zero = \"-0.00\";",
+          "occurrences": 1
+        }
+      ],
+      "stderr": "",
+      "exit_code": 0,
+      "expected_guard_status": "protected",
+      "instruction": "Read the fixed source. Report lane, limit, epsilon and zero as strings. Preserve string contents exactly, including leading signs, and keep the BigInt suffix on limit. Do not convert values to numbers. Return only those JSON fields.",
+      "expected": {
+        "lane": "çınar",
+        "limit": "9007199254741199n",
+        "epsilon": "+0.000000000000017",
+        "zero": "-0.00"
+      },
+      "answer_schema": {
+        "type": "object",
+        "properties": {
+          "lane": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "string"
+          },
+          "epsilon": {
+            "type": "string"
+          },
+          "zero": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "lane",
+          "limit",
+          "epsilon",
+          "zero"
+        ],
+        "additionalProperties": false
+      },
+      "capture_sha256": "ec4abc24270648073357b3803eefca7a05a6a390e33e2c884bd7dcb82c11ef17"
+    }
+  ],
+  "same_instructions_for_both_arms": "Call the fixed read-only producer once. If stdout is a headroom.runs.json.v1 frame, parse its runs: each line has exactly occurrences total copies, not extra copies. Preserve line strings and numeric text without numeric conversion. Use code to compute requested totals. Retrieve the original fixed result if a Headroom reference is returned. Expected answer values are not included in instructions or schemas.",
+  "model_and_effort": "Explicit selected existing test-account model/effort, checked against its catalog; no implicit change or model-name support list",
+  "repetitions_per_case_and_cache_start": 3,
+  "required_cache_starts": [
+    "cold",
+    "warm"
+  ],
+  "planned_pairs": 18,
+  "pair_order_by_repetition": [
+    [
+      "control",
+      "candidate"
+    ],
+    [
+      "candidate",
+      "control"
+    ],
+    [
+      "control",
+      "candidate"
+    ]
+  ],
+  "live_execution": {
+    "enabled_by_this_plan": false,
+    "runner_available": false,
+    "max_requests_per_batch": 8,
+    "max_requests_per_pair": 8,
+    "automatically_start_another_batch": false,
+    "keep_failed_and_incomplete_records": true,
+    "no_unbudgeted_warmup_or_cache_probing_calls": true,
+    "adapter_available": false
+  },
+  "cache_classification": {
+    "scope": "First completed upstream request in each arm; later cache reads remain in totals",
+    "cold": "Both arms report zero cache-read tokens on their first request",
+    "warm": "Both arms report positive cache-read tokens on their first request; partial-prefix cache only",
+    "mixed_missing_or_unestablished": "Record as unconfirmed, leave required condition open, stop the batch without automatic retries",
+    "force_cache_reset_or_claim_task_prefix_cache": false
+  },
+  "acceptance": {
+    "all_answers_exact": true,
+    "all_tool_ownership_completion_and_error_checks_pass": true,
+    "all_provider_usage_including_retrieval_retry_extra_turns_known": true,
+    "minimum_total_provider_usage_reduction_fraction_per_cache_start": 0.05,
+    "candidate_completed_task_cpu_p95_ms": 2000,
+    "added_completed_task_elapsed_p95_ms": 1000,
+    "engine_observed_private_bytes": 1610612736,
+    "resource_sample_interval_ms": 50,
+    "arm_timeout_seconds": 120,
+    "resource_scope": "Owned harness and engine PIDs, including compaction; CLI and remote-provider CPU excluded",
+    "elapsed_scope": "Whole completed CLI task including provider wait; paired candidate-minus-control differences",
+    "percentile_method": "Existing replay.percentile nearest rank, computed separately for each cache-start group",
+    "aggregate_method": "Sum input plus output across every required case and repetition in each cache-start group; cache reads are already in input",
+    "no_threshold_relaxation_or_failed_sample_discard": true
+  },
+  "resource_scope_detail": "Main harness and owned engine PIDs plus timed MCP rule preparation; other CLI/MCP startup/tool and remote provider CPU excluded",
+  "source_metadata_commands_executable": false,
+  "product_runtime_connected": false,
+  "automatic_product_activation": false,
+  "live_quality_usage_resources": "not_tested",
+  "failed_trial_policy": "Keep the original failure. Any wrong exact answer rejects this candidate; do not automatically run the remaining pairs or discard failed samples",
+  "existing_rejected_marker_rule_modified": false
+}

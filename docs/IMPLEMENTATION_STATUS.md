@@ -1,6 +1,14 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## H041-e3 — JSON adayı korumalı, yeni görev verisi sabit
+
+- Ana ajan sahiplik, kanal koruması ve tersinir gösterim sözleşmesi nedeniyle uygulamayı üstlendi. `rules_runs_json.py` içindeki `trial_capture`, mevcut `local_replay` / `read_transcript` / `replay_items` yolunu kullanır. Yalnız tek beklenen sahip/call_id'ye bağlı çağrı-sonuç çifti ele alınır. stderr, başarısız/belirsiz exit, Read/sayısal veya kanalı belirsiz veri ve açık hata bayrakları korunur. Sahiplik çakışması reddedilir. Bütün çıktı ve metadata geri dönüşümde aynı kalmalı; JSON daha büyükse özgün stdout döner. [Kanıt](proofs/rules-json-guard.json).
+- Yedi odaklı test geçti. Dört yeni koruma testi, uygulama öncesinde eksik `trial_capture` ile başarısız olmuştu. Normal/hata/sınır testlerinde doğru sahiplik, salt başarılı stdout, CRLF/Unicode, çerçeve/genişleme sınırı ve metadata koruması denetlendi. Yerel kabul kontrollü Codex yakalaması kapsamındadır. Gerçek CLI veya motor denemesi yapılmadı; bu dilimde model çağrısı **0**. Ürün kaynakları değişmediği için tam ürün kapısı yenilenmedi.
+- Uygulama sabitlendikten sonra önceki geliştirme/başarısız görevlerden ayrı üç kontrollü görev hazırlandı. Kuyruk/receipt görevinde özgün stdout 1.527 → 358 bayt ve birebir ters dönüşüm; başarısız arşiv ve hassas kaynak görevinde değişmeyen çıktı doğrulandı. Kesin yanıtlar özgün girdiden dönüşümden bağımsız hesaplandı; yeni şemalar/talimatlar beklenen değerleri açıklamıyor. Bu ölçümler sağlayıcı tokenı veya canlı model kalitesi değildir.
+- [Ayrı plan](../bench/optimization/rules-json-heldout-plan.json), `explicit_runs_json_v1` kimliğiyle yeni görevleri ve kaynak/test/araç fingerprint'lerini sabitler. Üç tekrar × iki başlangıç cache durumu ve önceki sayısal kazanç/gecikme/CPU/bellek eşikleri aynı. Eski başarısız canlı kayıt ile dondurulmuş marker planı değişmedi. Yeni plan otomatik canlı çağrı başlatmaz; CLI adaptörü ve ürün bağlantısı henüz yoktur.
+- **45/54 ve H041-e3 açık.** Sonraki somut adım yeni adayı/veriyi mevcut izole CLI/motor koşucusuna ayrı kabul kimliğiyle bağlamak. Şema/model/rota, özgün geri çağrı, cache/kaynak/bütçe ve eski ret kaydının ayrımını önce yerelde doğrulamak gerekir. Bundan sonra sınırlı canlı çift ve bağımsız tekrarlar düşünülebilir. E4 ve canlı etkinleştirme kapalı.
+
 ## H041-e3 — ilk bağımsız canlı görev kalite kapısını geçemedi
 
 - Ana ajan kalite/ölçüm ve tersinir gösterim kararları nedeniyle dilimi üstlendi. Ayrı test hesabında aynı `gpt-6-luna` / `medium` ile `build_manifest_v1`, tekrar 0, kontrol → kural ve istenen cold başlangıçta çalıştı. İki ilk upstream isteğinde cache okuma sıfırdı. Toplam sekiz gönderim ve 8/8 kullanım kaydı, araç sırası/sahiplik/tamamlanma/hata kontrolleri, kaynak kayıtları ve iki normal motor kapanışı doğrulandı. Fingerprint'ler eşleşti. [Canlı sonuç ve yerel aday](proofs/rules-heldout-first-live.json).

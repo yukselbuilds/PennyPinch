@@ -1,0 +1,84 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "json_capture_guard_verified_fresh_data_frozen_adapter_pending",
+  "executor": "main",
+  "executor_reason": "Ownership, channel protection and reversible representation acceptance",
+  "candidate_id": "explicit_runs_json_v1",
+  "scope": "Local single-owned Codex capture only; no product hook, CLI/model or engine trial",
+  "focused_tests": 7,
+  "red_guard_tests_before_implementation": 4,
+  "fresh_fixed_cases": [
+    {
+      "case": "json_queue_receipts_v1",
+      "status": "candidate_ready",
+      "source_oracle_exact": true,
+      "whole_capture_roundtrip_exact": true,
+      "original_stdout_bytes": 1527,
+      "candidate_stdout_bytes": 358
+    },
+    {
+      "case": "json_failed_archive_v1",
+      "status": "protected",
+      "source_oracle_exact": true,
+      "whole_capture_roundtrip_exact": true,
+      "original_stdout_bytes": 693,
+      "candidate_stdout_bytes": 693
+    },
+    {
+      "case": "json_precision_source_v1",
+      "status": "protected",
+      "source_oracle_exact": true,
+      "whole_capture_roundtrip_exact": true,
+      "original_stdout_bytes": 1037,
+      "candidate_stdout_bytes": 1037
+    }
+  ],
+  "eligibility_reuses": "runtime/learn_preview.py local_replay/read_transcript/replay_items",
+  "guards": {
+    "expected_owner_and_call_id_required": true,
+    "one_call_one_result_only": true,
+    "ambiguous_or_conflicting_scope_rejected": true,
+    "stderr_exit_read_numeric_and_unknown_channels_preserved": true,
+    "explicit_error_flags_protected": true,
+    "unmodified_metadata_and_whole_capture_roundtrip_required": true,
+    "nonreducing_frame_keeps_original": true,
+    "metadata_commands_or_source_code_executed": false
+  },
+  "prior_rejected_marker_candidate_or_frozen_data_modified": false,
+  "thresholds_relaxed": false,
+  "before_after_and_current_fingerprints_match": true,
+  "fresh_plan_pairs": 18,
+  "fresh_plan_automatically_starts_model_calls": false,
+  "client_adapter_available": false,
+  "local_real_client_validation": "not_tested",
+  "live_quality_usage_resources": "not_tested",
+  "new_model_calls": 0,
+  "product_source_changed": false,
+  "full_product_gate_repeated": false,
+  "main_task_complete": false,
+  "review": "Ponytail/code-quality review of the guarded capture, real eligibility parser, schema/oracle data and all new callers; no blocking findings remain in this local scope",
+  "artifacts": {
+    "focused_guard_tests": {
+      "path": "work/proofs/optimization/rules-json-guard/7148dc44999c43eaaa1a9b91e4cf3591/focused.json",
+      "sha256": "9df2dcd93ddf30613546d13a0d2d583a7a7db63fac362bb6cdf9f5651a9ecd9e"
+    },
+    "fresh_data_and_local_guard": {
+      "path": "work/proofs/optimization/rules-json-freeze/f9bb5ebf49ff49a3b37ef2e6c18c1be1/result.json",
+      "sha256": "dc7d0683c1004486ad264e58aa2b70d16ef42c0793785f8d4e74d694622a33ca"
+    },
+    "new_frozen_plan": {
+      "path": "bench/optimization/rules-json-heldout-plan.json",
+      "sha256": "b96c00d2fdfb7e160ece5b0664e1aaff74229ba3af6f2db809b979db7b860c4a"
+    },
+    "unchanged_old_plan": {
+      "path": "bench/optimization/rules-heldout-plan.json",
+      "sha256": "ff4b60b3e629837573b291897c95de519a80df629429459ab20a4e0b438ab9f0"
+    },
+    "original_rejected_live_pair": {
+      "path": "work/proofs/optimization/rules-live/5487468ace824cb799291169b88df883/result.json",
+      "sha256": "91dfd52319b32e170e5023521663007574d49c88032834df0cb7add012457de6"
+    }
+  },
+  "next_step": "Connect this candidate and its separate frozen dataset to the existing isolated CLI/engine harness; verify model/schema, raw recovery, cache/resource/budget and rejection isolation locally before any live pair"
+}
