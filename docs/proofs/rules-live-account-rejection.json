@@ -1,0 +1,58 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "chatgpt_rejected_selected_model",
+  "provider": "chatgpt_codex_responses",
+  "profile_scope": "previously authenticated isolated Headroom test profile",
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "low",
+  "authorized_http_attempt_limit": 8,
+  "live_http_attempts": 2,
+  "remaining_http_attempts_in_limit": 6,
+  "upstream_http_statuses": [
+    400,
+    400
+  ],
+  "second_response_diagnostic_tags": [
+    "unsupported",
+    "invalid",
+    "sign_in",
+    "model"
+  ],
+  "provider_usage": null,
+  "provider_savings_percent": null,
+  "control_turn_completed": false,
+  "candidate_started": false,
+  "catalog_refreshed_via_codex": true,
+  "selected_model_listed": false,
+  "listed_models_and_default_efforts": [
+    {
+      "slug": "gpt-6-luna",
+      "default_effort": "medium"
+    },
+    {
+      "slug": "gpt-5.6-terra",
+      "default_effort": "medium"
+    },
+    {
+      "slug": "gpt-5.6-luna",
+      "default_effort": "medium"
+    }
+  ],
+  "owned_live_engines_closed_gracefully": 2,
+  "local_followup": {
+    "matched_usage_records": 5,
+    "paired_runtime_and_cli_fingerprints_match": true,
+    "retry_guard_max": 8,
+    "provider_error_tags_redacted": 3,
+    "refreshed_catalog_replayed_in_negative_gate_test": true,
+    "unavailable_selection_stopped_before_engine_launch": true
+  },
+  "raw_evidence": {
+    "first_live_request": "work/proofs/optimization/rules-live/c3200ae743a2440a86aa5d24b455dc07/result.json",
+    "live_retry": "work/proofs/optimization/rules-live/19e153240817487b961eec895583fbb0/result.json",
+    "final_local_pair": "work/proofs/optimization/rules-live/891a6a8300d3472c8a0548dae6edcba2/result.json",
+    "retry_guard": "work/proofs/optimization/rules-live/retry-guard-35d06d8b930643cf99d997318dbf6685/result.json",
+    "account_catalog_gate": "work/proofs/optimization/rules-live/catalog-e8358464963b408b908559dd76098fd1/result.json"
+  }
+}

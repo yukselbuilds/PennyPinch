@@ -18,11 +18,46 @@ PROGRAM = Path(__file__).resolve()
 ROOT = PROGRAM.parents[2]
 CASE = "counts"
 ATTEMPTS_PER_ARM = 4
+ATTEMPTS_PER_PAIR = 2 * ATTEMPTS_PER_ARM
 ARM_TIMEOUT = 120
 MAX_REQUEST_BYTES = 256 * 1024
 
 
-def guard_upstream(target, model, effort, counter):
+def upstream_error_summary(status, content):
+    text = content.decode("utf-8", errors="replace") if len(content) <= 16 * 1024 else ""
+    try:
+        body = json.loads(text) if text else None
+    except (ValueError, RecursionError):
+        body = text if not text.lstrip().startswith("<") else None
+    error = body.get("error", body.get("detail", body.get("message"))) if isinstance(body, dict) else body
+    if isinstance(error, dict):
+        error = " ".join(error[key] for key in ("code", "type", "param", "message") if isinstance(error.get(key), str))
+    # Emit fixed protocol labels only. Provider messages can contain account data.
+    markers = {
+        "unsupported": r"unsupported|not support(?:ed)?|not available",
+        "invalid": r"(?<![.\w])invalid(?:_request|_value|\b)|not valid",
+        "missing": r"missing|required|must be provided",
+        "sign_in": r"login|sign.in|account|authentication",
+        "quota": r"\bquota\b|usage.limit|rate.limit",
+        "model": r"\bmodel\b",
+        "instructions": r"\binstructions\b",
+        "tools": r"\btools?\b",
+        "function": r"\bfunction\b",
+        "namespace": r"\bnamespace\b",
+        "tool_search": r"\btool_search\b",
+        "reasoning": r"\breasoning\b|\beffort\b",
+        "service_tier": r"\bservice_tier\b",
+        "store": r"\bstore\b",
+        "stream": r"\bstream\b|\bwebsocket\b",
+        "input": r"\binput\b",
+        "include": r"\binclude\b",
+        "verbosity": r"\bverbosity\b",
+    }
+    return {"status": status, "tags": [tag for tag, pattern in markers.items()
+                                      if isinstance(error, str) and re.search(pattern, error, re.IGNORECASE)]}
+
+
+def guard_upstream(target, model, effort, counter, pair_counter):
     import httpx
 
     send = httpx.AsyncClient.send
@@ -31,7 +66,7 @@ def guard_upstream(target, model, effort, counter):
     async def bounded(client, request, **options):
         nonlocal remaining
         body = None
-        if (remaining and request.method == "POST" and str(request.url) == target
+        if (remaining and Path(pair_counter).stat().st_size < ATTEMPTS_PER_PAIR and request.method == "POST" and str(request.url) == target
                 and 0 < len(request.content) <= MAX_REQUEST_BYTES):
             try:
                 body = json.loads(request.content)
@@ -42,9 +77,23 @@ def guard_upstream(target, model, effort, counter):
                 or not isinstance(reasoning, dict) or reasoning.get("effort") != effort or type(body.get("stream")) is not bool):
             return httpx.Response(400, request=request, json={"error": {"message": "Pilot request outside scope"}})
         remaining -= 1
+        with Path(pair_counter).open("ab") as stream:
+            stream.write(b"1")
         with Path(counter).open("ab") as stream:
             stream.write(b"1\n")
-        return await send(client, request, **{**options, "follow_redirects": False})
+        response = await send(client, request, **{**options, "follow_redirects": False})
+        if response.is_error:
+            read = response.aread
+
+            async def observe_error():
+                content = await read()
+                result = upstream_error_summary(response.status_code, content)
+                with Path(counter).with_name("upstream-errors.jsonl").open("a", encoding="utf-8") as stream:
+                    stream.write(json.dumps(result) + "\n")
+                return content
+
+            response.aread = observe_error
+        return response
 
     httpx.AsyncClient.send = bounded
 
@@ -56,7 +105,8 @@ def stage_arm(replay, directory, payload, target, model, effort):
     anchor = b'"from headroom.cli import main; main()"'
     assert source.count(anchor) == 1, "engine_bootstrap_changed"
     counter = directory / "http-attempts.txt"
-    guard = f"import runpy; runpy.run_path({str(PROGRAM)!r})['guard_upstream']({target!r}, {model!r}, {effort!r}, {str(counter)!r}); "
+    guard_args = (target, model, effort, str(counter), str(directory.parent / "pair-attempts.txt"))
+    guard = f"import runpy; runpy.run_path({str(PROGRAM)!r})['guard_upstream']{guard_args!r}; "
     helper.write_bytes(source.replace(anchor, repr(guard).encode() + b" " + anchor, 1))
     return staged, counter
 
@@ -142,6 +192,9 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
     assert sent <= ATTEMPTS_PER_ARM, "request_budget_exceeded"
     row = {"arm": directory.name, "forwarded_http_attempts": sent, "elapsed_ms": round(elapsed * 1000),
            **check_turn(exit_code, stdout, pilot["CASES"][CASE][4]), **measure(engine, usage, sent)}
+    failures = directory / "upstream-errors.jsonl"
+    if failures.is_file():
+        row["upstream_errors"] = [json.loads(line) for line in failures.read_text(encoding="utf-8").splitlines()]
     if fixture is not None:
         assert fixture.failure is None and len(fixture.requests) == sent and sent in (2, 3), fixture.failure or "fixture_wire_scope_changed"
         assert all("# Headroom Desktop çalışma kuralları" not in json.dumps(body, ensure_ascii=False)
@@ -152,6 +205,12 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
     return row
 
 
+def account_catalog_allows(catalog_bytes, model, effort):
+    return any(row["slug"] == model and row.get("visibility") == "list"
+               and any(level["effort"] == effort for level in row["supported_reasoning_levels"])
+               for row in json.loads(catalog_bytes)["models"])
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--codex", required=True, type=Path)
@@ -159,9 +218,11 @@ def main():
     parser.add_argument("--codex-home", type=Path, help="Existing Headroom test login profile")
     parser.add_argument("--model")
     parser.add_argument("--effort")
+    parser.add_argument("--prior-attempts", type=int, choices=range(ATTEMPTS_PER_PAIR), default=0,
+                        help="Previously forwarded requests against this paired pilot's limit")
     args = parser.parse_args()
     supplied = (args.model, args.effort, args.codex_home)
-    if (args.live and not all(supplied)) or (not args.live and any(supplied)):
+    if (args.live and not all(supplied)) or (not args.live and (any(supplied) or args.prior_attempts)):
         parser.error("Pass --model, --effort and --codex-home together with --live")
     assert os.name == "nt" and Path.cwd().resolve() == ROOT == Path(r"D:\Projeler\Headroom")
     os.environ["LITELLM_LOCAL_MODEL_COST_MAP"] = "True"
@@ -179,30 +240,33 @@ def main():
     assert cli.name == "codex.exe" and cli.is_relative_to((Path(os.environ["LOCALAPPDATA"]) / "OpenAI/Codex/bin").resolve())
     version = subprocess.run([str(cli), "--version"], capture_output=True, timeout=10, check=True).stdout.decode().strip()
     assert version == "codex-cli 0.169.0-alpha.11.1", "cli_fingerprint_changed"
-    catalog_bytes = subprocess.run([str(cli), "debug", "models", "--bundled"], capture_output=True, timeout=15, check=True).stdout
+    env = pilot["client_environment"]()
+    catalog_command = [str(cli), "debug", "models", "--bundled"]
     auth_home = None
     if args.live:
-        models = json.loads(catalog_bytes)["models"]
-        assert any(row["slug"] == args.model and args.effort in {level["effort"] for level in row["supported_reasoning_levels"]}
-                   for row in models), "model_or_effort_not_in_bundled_catalog"
-        env = pilot["client_environment"]()
         auth_home = args.codex_home.resolve(strict=True)
         owned_profiles = Path(os.environ["LOCALAPPDATA"]).resolve(strict=True) / "dev.headroom.desktop/desktop-live-proof"
         assert auth_home.parent == owned_profiles and auth_home.is_dir(), "owned_test_profile_required"
         env["CODEX_HOME"] = str(auth_home)
-        status = subprocess.run([str(cli), "-c", 'cli_auth_credentials_store="file"', "login", "status"],
-                                capture_output=True, timeout=10, env=env)
+        authenticated_cli = [str(cli), "-c", 'cli_auth_credentials_store="file"']
+        status = subprocess.run([*authenticated_cli, "login", "status"], capture_output=True, timeout=10, env=env)
         assert status.returncode == 0 and b"chatgpt" in (status.stdout + status.stderr).lower(), "existing_chatgpt_login_required"
+        catalog_command = [*authenticated_cli, "debug", "models"]
+    catalog_bytes = subprocess.run(catalog_command, capture_output=True, timeout=20, check=True, env=env).stdout
+    if args.live and not account_catalog_allows(catalog_bytes, args.model, args.effort):
+        parser.error("Selected model or effort is unavailable in the Headroom test account catalog")
     model, effort = (args.model, args.effort) if args.live else (pilot["MODEL"], "high")
     run = ROOT / "work/proofs/optimization/rules-live" / uuid.uuid4().hex
     assert run.resolve().is_relative_to(ROOT)
     run.mkdir(parents=True)
+    pair_counter = run / "pair-attempts.txt"
+    pair_counter.write_bytes(b"1" * args.prior_attempts)
     work = run / "client-workspace"
     work.mkdir()
     git_env = {key: value for key, value in pilot["client_environment"]().items() if not key.upper().startswith("GIT_")}
     subprocess.run(["git", "init", "--quiet", "--template="], cwd=work, env=git_env,
                    capture_output=True, check=True, timeout=10)
-    catalog = run / "bundled-models.json"
+    catalog = run / "models.json"
     catalog.write_bytes(catalog_bytes)
     fixture, upstream_port = None, 1
     if args.live:
@@ -268,6 +332,7 @@ def main():
     replay.write_new(report, {"passed": passed, "failure": failure, "provider": "chatgpt" if args.live else "loopback_fixture",
                               "model": model, "effort": effort, "case": CASE, "cli": version, "platform": platform.platform(),
                               "attempt_limit_per_arm": ATTEMPTS_PER_ARM, "arm_timeout_seconds": ARM_TIMEOUT,
+                              "prior_attempts": args.prior_attempts, "pair_attempts_total": pair_counter.stat().st_size,
                               "rows": rows, "provider_delta": difference, "stops": stops, "fingerprints": fingerprints})
     print(pilot["encode"]({"passed": passed, "failure": failure, "rows": rows, "provider_delta": difference, "report": str(report)}))
     return 0 if passed else 1

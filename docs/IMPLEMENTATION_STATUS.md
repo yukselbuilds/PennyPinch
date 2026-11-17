@@ -1,5 +1,11 @@
 # Headroom Desktop — güncel devir
-16 Kasım 2026.
+17 Kasım 2026.
+
+## H041-e3 — ilk canlı model test hesabında reddedildi
+
+- Kullanıcının onayladığı `gpt-6.1-sol` / `low` çifti, ayrı Headroom ChatGPT profiliyle başlatıldı. İki kontrol gönderiminde de sağlayıcı HTTP 400 döndürdü. İkinci gönderimin hata etiketleri model ve hesap uyumsuzluğunu gösterdi. Sağlayıcı kullanımı bilinmiyor. Sıkıştırılmış kol başlatılmadı. Her iki sahipli motor normal kapandı.
+- Aynı profilin Codex kataloğu yenilendi. `gpt-6.1-sol` listede yoktu. `gpt-6-luna` / `medium` listedeydi. Pilot artık model ve eforu bu katalogla başlatmadan önce doğruluyor. Ret tanısı yalnız HTTP durumunu ve sabit etiketleri saklıyor. Yeniden denemelerde sekizlik üst sınır önceki gönderimleri de kapsıyor. [Kanıt](proofs/rules-live-account-rejection.json).
+- **45/54 ve H041-e3 açık.** Onaylı sekiz gönderimin ikisi kullanıldı. Bir sonraki adım, kullanıcı seçtiğinde katalogdaki model ve eforla kalan altı gönderim sınırında ilk eşlenmiş koşuyu tamamlamak. Sağlayıcı kullanım yüzdesi ve bağımsız tekrarlar açık.
 
 ## H041-e3 — ilk eşlenmiş karşılaştırmanın yerel provası geçti
 
