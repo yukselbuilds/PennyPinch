@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## H041-e3 — ilk tam canlı çift çıktı ve kullanım kabulünü geçemedi
+
+- Kullanıcının onayladığı yeni `gpt-6-luna` / `medium` koşusunda ham kol dört kayıtlı HTTP gönderimiyle tamamlandı ve özgün çıktıyı geri aldı. Sıkıştırılmış kol aynı çalışma alanı ve katalogla üç gönderimde tamamlandı. Sekiz gönderimlik payın yedisi kullanıldı. İki motor normal kapandı ve fingerprint'ler eşleşti.
+- İki kol da kesin çıktı kontrolünü geçemedi. Sıkıştırılmış kol `exact_limit` ve `signed_factor` değerlerini korudu. `passed` ve `held` beklenen değerlere eşleşmedi. Ham kolun ilk raporu yalnız genel doğruluk sonucunu sakladı. Yedi istek kimliği kullanım kayıtlarıyla eşleşti. Sağlayıcı toplamı iki kol için de bilinmiyor kaldı. [Canlı çift](proofs/rules-live-luna-pair.json).
+- Koşum aracı, normal tamamlanan kontrol kolundaki doğruluk veya kullanım hatasını raporlayıp sıkıştırılmış kola devam ediyor. Genel kabul yine her iki kolun doğru çıktısını ve eksiksiz toplamını gerektiriyor. Tanı alan düzeyinde eşleşmeyi ve sayaç varlığını kaydediyor. Yerel olumlu ve olumsuz kabul yolları doğrulandı.
+- **45/54 ve H041-e3 açık.** Canlı çıktı doğruluğu, tam sağlayıcı kullanımı ve bağımsız tekrarlar açık. Etkinleştirme kapısı için bu koşuda yeterli kanıt elde edilmedi.
+
 ## H041-e3 — Luna canlı kontrolünde geri çağırma doğrulandı, eşleşme açık
 
 - Ayrı Headroom profiliyle `gpt-6-luna` / `medium` canlı olarak çalıştı. CLI sabit aracı bir kez çağırdı ve Headroom referansından özgün çıktıyı geri aldı. Kontrol kolu dört HTTP gönderiminden sonra beşinci istekte koşum sınırına ulaştı. Tam yanıt ve iki kolun toplam sağlayıcı kullanımı elde edilemedi. Deneme motoru normal kapandı.

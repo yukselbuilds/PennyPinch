@@ -1,0 +1,59 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "live_pair_completed_acceptance_failed",
+  "provider": "chatgpt_codex_responses",
+  "profile_scope": "previously authenticated isolated Headroom test profile",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "approved_fresh_pair_request_limit": 8,
+  "live_attempts_this_pair": 7,
+  "native_cli_turns_completed": 2,
+  "control_and_candidate": [
+    {
+      "arm": "control",
+      "turn_completed": true,
+      "exact_answer": false,
+      "fixed_tool_call": true,
+      "recovery_tool_calls": 1,
+      "forwarded_http_attempts": 4,
+      "usage_record_count": 4,
+      "total_usage": null
+    },
+    {
+      "arm": "candidate",
+      "turn_completed": true,
+      "exact_answer": false,
+      "fixed_tool_call": true,
+      "recovery_tool_calls": 0,
+      "forwarded_http_attempts": 3,
+      "usage_record_count": 3,
+      "total_usage": null
+    }
+  ],
+  "candidate_final_message_fields_exact": {
+    "passed": false,
+    "held": false,
+    "exact_limit": true,
+    "signed_factor": true
+  },
+  "candidate_final_message_json_object": true,
+  "candidate_http_successes_with_unknown_total_usage": 3,
+  "provider_savings_percent": null,
+  "pair_acceptance": false,
+  "same_pair_input_fingerprints_verified": true,
+  "owned_engines_closed_gracefully": 2,
+  "local_runner_regression": {
+    "happy_path_usage_records": 5,
+    "candidate_runs_after_incorrect_completed_control": true,
+    "missing_usage_preserved": true,
+    "strict_oracle_preserved": true
+  },
+  "raw_evidence": {
+    "live_control": "work/proofs/optimization/rules-live/5a3112ee3d1b4cccabe1b8944f127869/result.json",
+    "live_candidate_continuation": "work/proofs/optimization/rules-live/5a3112ee3d1b4cccabe1b8944f127869/candidate-resume.json",
+    "final_local_pair": "work/proofs/optimization/rules-live/046b59c7fa8047bf965751357b30cee1/result.json",
+    "failed_control_regression": "work/proofs/optimization/rules-live/434fb5d9957b4678a63747957d2c397e/result.json",
+    "negative_gate_checks": "work/proofs/optimization/rules-live/434fb5d9957b4678a63747957d2c397e/negative-checks.json"
+  }
+}

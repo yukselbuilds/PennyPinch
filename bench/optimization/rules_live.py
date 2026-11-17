@@ -127,19 +127,25 @@ def check_turn(exit_code, stdout, expected):
     calls = [item for item in items if item.get("type") == "mcp_tool_call"]
     tools = [item.get("tool") for item in calls]
     try:
-        answer = json.loads(messages[0]) if len(messages) == 1 else None
-    except (ValueError, RecursionError):
+        answer = json.loads(messages[-1]) if messages else None
+    except (TypeError, ValueError, RecursionError):
         answer = None
+    exact_fields = {key: isinstance(answer, dict) and key in answer and type(answer[key]) is type(value) and answer[key] == value
+                    for key, value in expected.items()}
+    exact_keys = isinstance(answer, dict) and set(answer) == set(expected)
     # JSON equality alone would accept 48.0 as an exact integer result.
-    return {
+    result = {
         "turn_completed": exit_code == 0 and sum(event.get("type") == "turn.completed" for event in events) == 1
             and not any(event.get("type") in ("error", "turn.failed") for event in events),
-        "exact_answer": isinstance(answer, dict) and answer == expected
-            and all(type(answer[key]) is type(value) for key, value in expected.items()),
+        "exact_answer": len(messages) == 1 and exact_keys and all(exact_fields.values()),
         "fixed_tool_call": tools in (["inspect_result"], ["inspect_result", "recover_result"])
             and all(item.get("server") == "headroom_rule_pilot" and item.get("status") == "completed" for item in calls),
         "recovery_tool_calls": tools.count("recover_result"),
     }
+    if not result["exact_answer"]:
+        result["answer_checks"] = {"message_count": len(messages), "json_object": isinstance(answer, dict),
+                                   "expected_keys_only": exact_keys, "exact_fields": exact_fields}
+    return result
 
 
 def measure(engine, usage, sent):
@@ -147,21 +153,29 @@ def measure(engine, usage, sent):
     while True:
         ids = set(usage["probe"]["request_logs"](engine))
         rows = usage["records"](engine)
-        if len(ids) >= 2 and ids == rows.keys() and sum(len(row["attempts"]) for row in rows.values()) == sent:
+        matched = len(ids) >= 2 and ids == rows.keys() and sum(len(row["attempts"]) for row in rows.values()) == sent
+        if matched or time.monotonic() >= deadline:
             break
-        if time.monotonic() >= deadline:
-            return {"request_count": len(ids), "usage_record_count": len(rows), "total_usage": None}
         time.sleep(0.1)
-    complete = all(row["surface"] == "openai_responses" and row["client_status"] == 200 and not row["truncated"]
-                   and row["usage"]["total_tokens"] is not None for row in rows.values())
-    totals = None
-    if complete:
+    fields = ("total_input_tokens", "output_tokens", "total_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")
+    result = {"request_count": len(ids), "usage_record_count": len(rows), "total_usage": None}
+    if matched:
+        result.update(request_ids=sorted(ids), attempts_per_request=[len(rows[key]["attempts"]) for key in sorted(ids)])
+    if matched and all(row["surface"] == "openai_responses" and row["client_status"] == 200 and not row["truncated"]
+                       and row["usage"]["total_tokens"] is not None for row in rows.values()):
         totals = {}
-        for key in ("total_input_tokens", "output_tokens", "total_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"):
+        for key in fields:
             counts = [row["usage"][key] for row in rows.values()]
             totals[key] = sum(counts) if all(value is not None for value in counts) else None
-    return {"request_count": len(ids), "usage_record_count": len(rows), "total_usage": totals,
-            "request_ids": sorted(ids), "attempts_per_request": [len(rows[key]["attempts"]) for key in sorted(ids)]}
+        result["total_usage"] = totals
+    else:
+        result["observed_usage_fields"] = [
+            {"request_id": key, "client_status": row["client_status"], "truncated": row["truncated"],
+             "attempt_http_statuses": [attempt["status"] for attempt in row["attempts"]],
+             "available": {field: row["usage"].get(field) is not None for field in fields}}
+            for key, row in sorted(rows.items())
+        ]
+    return result
 
 
 def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, catalog, counter, usage, auth_home, arm_limit):
@@ -323,7 +337,7 @@ def main():
                 assert pilot["usage_ids"](engine, usage) == (set(), set()), "engine_not_empty"
                 row = run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, catalog, counter, usage, auth_home, arm_limit)
                 rows.append(row)
-                assert all(row[key] for key in ("turn_completed", "exact_answer", "fixed_tool_call")) and row["total_usage"] is not None, "arm_acceptance_failed"
+                assert row["turn_completed"], "arm_turn_incomplete"
             finally:
                 engine.close()
                 stops.append(engine.stopped)
@@ -338,6 +352,8 @@ def main():
             fixture.shutdown()
             fixture.server_close()
     report = run / "result.json"
+    if failure is None and any(not row["exact_answer"] or not row["fixed_tool_call"] or row["total_usage"] is None for row in rows):
+        failure = "arm_acceptance_failed"
     passed = failure is None and len(rows) == 2
     difference = None
     if passed and args.live:
