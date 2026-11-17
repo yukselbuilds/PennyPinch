@@ -33,5 +33,11 @@
       "path": "work/proofs/optimization/rules-live/2f12cfb1480a428b9d76dbca63ef6243/result.json",
       "sha256": "265137cd6b1f69323f54267b0eb6892e4d817b49e27885eef9d1193643d9fb2c"
     }
+  },
+  "code_mode_followup": {
+    "evidence": "docs/proofs/rules-code-mode-recovery.json",
+    "earlier_scripted_provider_call_type": "function_call",
+    "additional_replay_call_type": "custom_tool_call",
+    "pilot_recovery_tool_aligned_with_vendor_protection": true
   }
 }

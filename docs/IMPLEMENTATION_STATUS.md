@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## H041-e3 — kod modu geri çağrı uyumsuzluğu yerelde giderildi
+
+- Devam isteğiyle aynı hesap/model/eforda yürütülen tanılı canlı koşu sekiz istekte tamamlandı. Üç üretici sonucu CLI'de birebir doğruydu. Ham son yanıt eşleşmedi, sıkıştırılmış yanıt doğruydu. İlk aktarım tanısı yalnız `function_call` biçimini sınıfladığından kod modu çıktıları sınıflanmamış kaldı. Canlı model kataloğu `tool_mode=code_mode_only` bildirdi.
+- Pinli motor, `functions.exec` içindeki geri çağrıyı `headroom_retrieve` adıyla koruyor. Pilotun `recover_result` adı aynı korumaya girmiyordu. Gerçek yerel motorda eski adla geri alınan stdout yeniden CCR referansına dönüştü. Aynı içerik `headroom_retrieve` ile birebir korundu. Pilot bu adla hizalandı. Aktarım tanısı `custom_tool_call` ve JSON içine sarılmış sonuçları da kapsıyor. [Kanıt](proofs/rules-code-mode-recovery.json).
+- Dokuz odaklı test, beş istekli CLI/yerel ChatGPT rota kontrolü ve eski/yeni isimli iki kod modu senaryosu geçti. Üretici sonuçları ve sağlayıcı girişindeki geri çağrı metni eşleşti. Model metni ve hash değeri tanı kaydına eklenmedi.
+- **45/54 ve H041-e3 açık.** Eski canlı koşudaki son aktarım gövdesi saklanmadığı için bu uyumsuzluğun o yanıtı tek başına açıkladığı kesinleşmedi. İsim düzeltmesinden sonra canlı çift henüz çalıştırılmadı. Sonraki adım yeni ad ve kod modu tanısıyla sınırlı canlı kalite kabulü. Bağımsız tekrarlar ve genel fayda kapısı açık.
+
 ## H041-e3 — geri çağrı aktarımı yerelde doğrulandı, canlı tanı hazır
 
 - Ana ajan çağrı sahipliği ve ölçüm semantiği nedeniyle izole pilotu inceledi. Sentetik ChatGPT hesap başlığıyla gerçek CLI ve motor, yalnız sahipli yerel sağlayıcıya yönlendirildi. Beş istek, üç araç sonucu ve bir geri çağrı metni doğrulandı. Kontrol ve sıkıştırılmış kolun yanıtları doğruydu. Geri çağrı içeriği CLI'de ve sağlayıcı girişinde birebir eşleşti. [Kanıt](proofs/rules-recovery-delivery.json).

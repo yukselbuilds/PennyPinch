@@ -19,6 +19,8 @@ def check(answer, *, progress=False):
 
 class RulesPilotContractTests(unittest.TestCase):
     def test_requested_schema_matches_exact_answer_types_without_giving_the_answer(self):
+        self.assertEqual(live["RECOVERY_TOOL"], pilot["RECOVERY_TOOL"])
+        self.assertEqual(live["RECOVERY_TOOL"], "headroom_retrieve")
         schema = live["ANSWER_SCHEMA"]
         types = {int: "integer", str: "string"}
         self.assertEqual(schema["properties"], {key: {"type": types[type(value)]} for key, value in EXPECTED.items()})
@@ -91,9 +93,9 @@ class RulesPilotContractTests(unittest.TestCase):
     def test_forwarded_capture_matches_its_owned_call(self):
         capture = {"stdout": "PRIVATE_FORWARDED_CANARY", "stderr": "", "exit_code": 0}
         body = {"input": [
-            {"type": "function_call", "call_id": "owned", "namespace": "mcp__headroom_rule_pilot", "name": "recover_result"},
+            {"type": "function_call", "call_id": "owned", "namespace": "mcp__headroom_rule_pilot", "name": "headroom_retrieve"},
             {"type": "function_call_output", "call_id": "owned", "output": [{"type": "input_text", "text": pilot["encode"](capture)}]},
-            {"type": "function_call", "call_id": "other", "namespace": "other_server", "name": "recover_result"},
+            {"type": "function_call", "call_id": "other", "namespace": "other_server", "name": "headroom_retrieve"},
             {"type": "function_call_output", "call_id": "other", "output": pilot["encode"](capture)},
             {"type": "function_call", "call_id": [], "name": "recover_result"},
             {"type": "function_call_output", "call_id": [], "output": None},
@@ -107,6 +109,25 @@ class RulesPilotContractTests(unittest.TestCase):
         self.assertFalse(result[0]["capture_exact"])
         self.assertTrue(result[0]["ccr_marker_present"])
         self.assertEqual(live["forwarded_tool_evidence"]({"input": None}, capture), [])
+
+    def test_code_mode_retrieval_uses_the_vendor_protection_name(self):
+        from headroom.config import unwrap_tool_call_name
+
+        capture = {"stdout": "PRIVATE_CODE_MODE_CANARY", "stderr": "", "exit_code": 0}
+        old_script = "const result = await tools.mcp__headroom_rule_pilot__recover_result({content_hash:'owned'}); text(result);"
+        script = old_script.replace("recover_result", pilot["RECOVERY_TOOL"])
+        self.assertEqual(unwrap_tool_call_name("exec", old_script), "exec")
+        self.assertEqual(unwrap_tool_call_name("exec", script), "headroom_retrieve")
+        body = {"input": [
+            {"type": "custom_tool_call", "call_id": "code", "name": "exec", "namespace": "functions", "input": script},
+            {"type": "custom_tool_call_output", "call_id": "code", "output": "Output:\n" + pilot["encode"](capture)},
+        ]}
+        result, = live["forwarded_tool_evidence"](body, capture)
+        self.assertEqual(result["tool"], "headroom_retrieve")
+        self.assertTrue(result["capture_exact"])
+        self.assertNotIn("PRIVATE_CODE_MODE_CANARY", json.dumps(result))
+        body["input"][1]["output"] = json.dumps({"content": [{"type": "text", "text": pilot["encode"](capture)}]})
+        self.assertTrue(live["forwarded_tool_evidence"](body, capture)[0]["capture_exact"])
 
 
 if __name__ == "__main__":

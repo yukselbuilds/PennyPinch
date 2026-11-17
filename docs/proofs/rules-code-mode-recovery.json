@@ -1,0 +1,73 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "pilot_code_mode_recovery_compatibility_fixed_locally",
+  "diagnostic_live_run": {
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "request_limit_this_run": 8,
+    "sent": 8,
+    "provider_usage_records": 8,
+    "producer_results_exact_at_cli": 3,
+    "account_catalog_tool_mode": "code_mode_only",
+    "control_final_answer_exact": false,
+    "candidate_final_answer_exact": true,
+    "outgoing_tool_calls_unclassified_by_previous_inspector": true,
+    "actual_live_tool_call_payload_retained": false,
+    "total_tokens_by_arm": [
+      50240,
+      29433
+    ]
+  },
+  "controlled_engine_code_mode_reproduction": [
+    {
+      "tool": "recover_result",
+      "whole_capture_exact": false,
+      "stdout_exact": false,
+      "stdout_ccr_marker": true,
+      "other_channels_exact": true
+    },
+    {
+      "tool": "headroom_retrieve",
+      "whole_capture_exact": true,
+      "stdout_exact": true,
+      "stdout_ccr_marker": false,
+      "other_channels_exact": true
+    }
+  ],
+  "pilot_recovery_tool_after_fix": "headroom_retrieve",
+  "vendor_retrieval_unwrap_reused": true,
+  "custom_tool_calls_and_json_wrapped_capture_covered": true,
+  "focused_tests": 9,
+  "post_fix_loopback_requests": 5,
+  "post_fix_cli_turns": 2,
+  "new_live_validation_after_name_alignment": false,
+  "cause_of_prior_live_wrong_answer_fully_confirmed": false,
+  "accepted_live_savings_percent": null,
+  "artifacts": {
+    "diagnostic_live_pair": {
+      "path": "work/proofs/optimization/rules-live/f445d7885c234d81815657ddec3e2411/result.json",
+      "sha256": "ba5a417bc467a8ecf2e4cd61e78bee74c9eeb1649a30a8228469a6b23602a2e4"
+    },
+    "live_account_model_catalog": {
+      "path": "work/proofs/optimization/rules-live/f445d7885c234d81815657ddec3e2411/models.json",
+      "sha256": "34918d115f024f32239d5c545b5a49aaaa2776f84c15e427309013b440b36234"
+    },
+    "focused_contract": {
+      "path": "work/proofs/optimization/rules-recovery/canonical-final-96a45e73e4c1428aade08dd8275780af/result.json",
+      "sha256": "472c2cf13e72201b1f89d257021a2f0fce9878819c6505e9fbda236cd5d7623c"
+    },
+    "local_chatgpt_route": {
+      "path": "work/proofs/optimization/rules-live/f4b8650e877c4f018253051bc2517408/result.json",
+      "sha256": "527c34b3624ffb980712cd377555bd0be267496c2b95fa01be987fd935d9e913"
+    },
+    "local_delivery": {
+      "path": "work/proofs/optimization/rules-live/f4b8650e877c4f018253051bc2517408/chatgpt-routing-recovery.json",
+      "sha256": "d45bfdfb2eadb254a09e001641eb94719a3f4359f02075a56c9732a89d5e54f0"
+    },
+    "code_mode_reproduction": {
+      "path": "work/proofs/optimization/rules-recovery/code-mode-6ba1c18778e3422886bfac07869a0068/result.json",
+      "sha256": "716f8cc923a8b2b395581d79aeb9cab56d3fa9d16fb8d7b874ae37d8f6f2d6f0"
+    }
+  }
+}

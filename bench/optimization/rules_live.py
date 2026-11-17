@@ -17,6 +17,7 @@ import uuid
 PROGRAM = Path(__file__).resolve()
 ROOT = PROGRAM.parents[2]
 CASE = "counts"
+RECOVERY_TOOL = "headroom_retrieve"
 ATTEMPTS_PER_PAIR = 8
 MIN_ATTEMPTS_PER_ARM = 2
 ARM_TIMEOUT = 120
@@ -70,28 +71,36 @@ def upstream_error_summary(status, content):
 
 def capture_evidence(tool, texts, capture):
     encoded = json.dumps(capture, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
-    return {"tool": tool, "capture_exact": encoded in texts, "text_blocks": len(texts),
+    quoted = json.dumps(encoded, ensure_ascii=True)
+    return {"tool": tool, "capture_exact": any(encoded in text or quoted in text for text in texts),
+            "text_blocks": len(texts),
             "ccr_marker_present": any("<<ccr:" in value for value in texts)}
 
 
 def forwarded_tool_evidence(body, capture):
+    from headroom.config import unwrap_tool_call_name
+
     items = body.get("input", [])
     if not isinstance(items, list):
         return []
     calls = {}
     for item in items:
-        if not isinstance(item, dict) or item.get("type") != "function_call":
+        if not isinstance(item, dict) or item.get("type") not in ("function_call", "custom_tool_call"):
             continue
         identity = item.get("call_id")
         if not isinstance(identity, str) or not identity:
             continue
-        for tool in ("inspect_result", "recover_result"):
+        name = item.get("name")
+        if name in ("exec", "functions.exec"):
+            effective = unwrap_tool_call_name(name, item.get("input") or item.get("arguments"))
+            calls[identity] = RECOVERY_TOOL if effective == RECOVERY_TOOL else "exec"
+        for tool in ("inspect_result", RECOVERY_TOOL):
             if ((item.get("namespace") == "mcp__headroom_rule_pilot" and item.get("name") == tool)
                     or item.get("name") == "mcp__headroom_rule_pilot__" + tool):
                 calls[identity] = tool
     results = []
     for item in items:
-        if (not isinstance(item, dict) or item.get("type") != "function_call_output"
+        if (not isinstance(item, dict) or item.get("type") not in ("function_call_output", "custom_tool_call_output")
                 or not isinstance(item.get("call_id"), str) or item["call_id"] not in calls):
             continue
         value = item.get("output")
@@ -196,10 +205,10 @@ def check_turn(exit_code, stdout, expected, *, expected_capture=None):
         "turn_completed": exit_code == 0 and sum(event.get("type") == "turn.completed" for event in events) == 1
             and not any(event.get("type") in ("error", "turn.failed") for event in events),
         "exact_answer": exact_keys and all(exact_fields.values()),
-        "fixed_tool_call": tools in (["inspect_result"], ["inspect_result", "recover_result"])
+        "fixed_tool_call": tools in (["inspect_result"], ["inspect_result", RECOVERY_TOOL])
             and all(item.get("server") == "headroom_rule_pilot" and item.get("status") == "completed"
                     and not tool_reported_error(item) for item in calls),
-        "recovery_tool_calls": tools.count("recover_result"),
+        "recovery_tool_calls": tools.count(RECOVERY_TOOL),
     }
     if not result["exact_answer"]:
         fields = answer if isinstance(answer, dict) else {}
@@ -212,7 +221,7 @@ def check_turn(exit_code, stdout, expected, *, expected_capture=None):
     if expected_capture is not None:
         delivery = []
         for item in calls:
-            if item.get("server") != "headroom_rule_pilot" or item.get("tool") not in ("inspect_result", "recover_result"):
+            if item.get("server") != "headroom_rule_pilot" or item.get("tool") not in ("inspect_result", RECOVERY_TOOL):
                 continue
             value = item.get("result")
             content = value.get("content", []) if isinstance(value, dict) else []
@@ -278,7 +287,7 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
     else:
         env["CODEX_HOME"] = str(auth_home)
         config["cli_auth_credentials_store"] = "file"
-    prompt = ("Call the fixed inspect_result tool once. If it returns a Headroom reference, pass its hash to recover_result. "
+    prompt = ("Call the fixed inspect_result tool once. If it returns a Headroom reference, pass its hash to headroom_retrieve. "
               "A repeat marker gives the total occurrences of the preceding line in that run. Return only a JSON object. "
               + pilot["CASES"][CASE][3])
     command = pilot["client_args"](cli, work, CASE, directory.name, model, config, prompt=prompt, retrieval_port=engine.port,

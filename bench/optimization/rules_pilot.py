@@ -23,7 +23,7 @@ PROGRAM = Path(__file__).resolve()
 NAMESPACE = "mcp__headroom_rule_pilot"
 TOOL = "inspect_result"
 CALL = "call_rule_pilot"
-RECOVERY_TOOL = "recover_result"
+RECOVERY_TOOL = "headroom_retrieve"
 RECOVERY_CALL = "call_rule_pilot_recover"
 MODEL = "local-protocol-fixture"
 FIELDS = ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens", "output_tokens")
@@ -95,7 +95,7 @@ def serve(case, arm, retrieval_port):
 
     if retrieval_port is not None:
         @server.tool(structured_output=False, annotations=read_only)
-        def recover_result(content_hash: str) -> str:
+        def headroom_retrieve(content_hash: str) -> str:
             """Read only this test's fixed result through its Headroom reference hash."""
             assert re.fullmatch(r"[a-f0-9]{12,24}", content_hash), "invalid_recovery_reference"
             replay = runpy.run_path(str(HERE / "replay.py"))
