@@ -149,6 +149,8 @@ Tek canlı Luna tanı isteğinde tamamlanma olayı `status=completed` ve 9.386 g
 
 Pilotun çıktı sözleşmesi `passed` ve `held` için tamsayı, `exact_limit` ve `signed_factor` için string gerektirir. Önceki genel string talimatı bu koşulla çelişiyordu. İki kol artık aynı açık talimatı ve aynı `--output-schema` dosyasını kullanır. Şemada beklenen sayısal yanıtlar bulunmaz. Son asistan mesajı birebir değerlendirilir. Ara ilerleme mesajları kullanım toplamına dahildir. Tür uyuşmazlığı doğru değere çevrilerek kabul edilmez. Önceki canlı kayıt alan eşleşmesini sakladığından, iki sayımın sayısal olarak yanlış olduğu o kayıttan çıkarılamaz. [Yanıt sözleşmesi doğrulaması](../proofs/rules-answer-contract.json).
 
+Yeni canlı Luna çiftinde beş kontrol ve üç sıkıştırma isteğinin tüm sayaçları gözlendi. Toplam girdi ve çıktı 49.826 → 29.592 idi. Sıkıştırılmış son yanıt birebir doğruydu. Ham kolun dört değeri eşleşmedi. Bu çiftin kalite kabulü olumsuz kaldı. CCR kaydının özgün stdout ile eşitliği ve başarılı yerel retrieval doğrulandı. Modele gönderilen geri çağrı gövdesinin bütünlüğü bu kayıttan kanıtlanamadı. Bağımsız tekrarlar, kalite ve genel fayda kabulü açık. [Sayaçları ölçülen canlı çift](../proofs/rules-live-counted-pair.json).
+
 ### H041-b yerel deney koşulları
 
 Ana ajan ölçüm, runtime ve cache sözleşmesi nedeniyle deney ve kabulü üstlenir. `bench/optimization/ccr-policy-plan.json` iki eşlenmiş tekrarı önceden belirler. Her tekrarda iki ayrı motor kullanılır. Bir oturum üç kısa istekten oluşur. İkincisi üç kısa istekten sonra sıkıştırılabilir uzun log ve korumalı kesin sayısal bir Read sonucu alır. Ayrı temiz oturumdaki kısa istek, yapışkan aracın başka oturuma taşınmadığını denetler. Tüm istekler izole Anthropic SSE fixture'ına gider.

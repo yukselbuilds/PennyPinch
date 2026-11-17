@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## H041-e3 — canlı çiftin tüm token sayaçları ölçüldü
+
+- Kullanıcının onayladığı yeni sekizlik koşu, aynı ayrı ChatGPT hesabında `gpt-6-luna` / `medium` ile tamamlandı. Kontrol kolu beş, sıkıştırılmış kol üç sağlayıcı isteği kullandı. Sekiz motor kimliği ve kullanım kaydı eşleşti. Cache okuma/yazma, giriş ve çıkış toplamları eksiksizdi. İki motor normal kapandı, kaynak parmak izleri eşleşti. [Kanıt](proofs/rules-live-counted-pair.json).
+- Ham kol 49.304 giriş ve 522 çıkış olmak üzere 49.826 token kullandı. Sıkıştırılmış kol 29.299 giriş ve 293 çıkış olmak üzere 29.592 token kullandı. Cache okumaları sırasıyla 28.672 ve 9.600, gözlenen yazma iki kolda da sıfırdı. Cache okumaları girdi toplamının içinde.
+- Sıkıştırılmış kolun dört alanı ve türleri beklenen yanıtla birebir eşleşti. Ham kolun türleri doğruydu, dört değeri eşleşmedi. CCR kaydı özgün stdout ile aynıydı ve geri çağrı HTTP 200 aldı. Modele iletilen son geri çağrı gövdesi saklanmadığından ham yanıt hatasının nedeni henüz belirlenemedi. Çiftin kalite kabulü olumsuz, tasarruf yüzdesi açık.
+- **45/54 ve H041-e3 açık.** Düzeltilen kullanım okuyucusu bu canlı koşuda doğrulandı. Sonraki adım ham kolun geri çağrı çıktısının modele eksiksiz aktarımını kontrollü yerel yolda doğrulamak. Bağımsız tekrarlar ve genel fayda kabulü sürüyor.
+
 ## H041-e3 — canlı kalite pilotunun yanıt sözleşmesi düzeltildi
 
 - Önceki pilot talimatı bütün sayıları string istemesine rağmen `passed` ve `held` tamsayı olarak doğrulanıyordu. Ayrıca doğru son JSON'dan önce ilerleme mesajı gelmesi tek başına başarısızlık üretiyordu. Bu iki sorun yerelde yeniden üretildi. Eski canlı kaydın iki sayım alanı için değer ve tür bilgisi tutulmadığından sayısal hatanın kesin nedeni bilinmiyor.

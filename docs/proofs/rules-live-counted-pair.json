@@ -1,0 +1,66 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "live_metering_accepted_paired_quality_failed",
+  "provider": "chatgpt_codex_responses",
+  "profile_scope": "previously authenticated isolated Headroom test profile",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "approved_fresh_pair_request_limit": 8,
+  "sent": 8,
+  "provider_input_includes_cache_reads": true,
+  "provider_usage": [
+    {
+      "arm": "control",
+      "http_requests": 5,
+      "request_usage_records": 5,
+      "upstream_attempts": 5,
+      "retrieval_calls": 1,
+      "final_answer_exact": false,
+      "total_input_tokens": 49304,
+      "output_tokens": 522,
+      "total_tokens": 49826,
+      "cache_read_input_tokens": 28672,
+      "cache_creation_input_tokens": 0
+    },
+    {
+      "arm": "candidate",
+      "http_requests": 3,
+      "request_usage_records": 3,
+      "upstream_attempts": 3,
+      "retrieval_calls": 0,
+      "final_answer_exact": true,
+      "total_input_tokens": 29299,
+      "output_tokens": 293,
+      "total_tokens": 29592,
+      "cache_read_input_tokens": 9600,
+      "cache_creation_input_tokens": 0
+    }
+  ],
+  "live_metering_request_identity_matches": 8,
+  "control_final_answer_types_correct": true,
+  "control_final_answer_values_exact": {
+    "passed": false,
+    "held": false,
+    "exact_limit": false,
+    "signed_factor": false
+  },
+  "control_cache_original_equals_fixed_stdout": true,
+  "control_retrieval_http_status": 200,
+  "model_received_control_recovery_text_retained": false,
+  "paired_quality_accepted": false,
+  "accepted_savings_percent": null,
+  "independent_repeats_and_full_utility_gate": "open",
+  "graceful_engine_exits": 2,
+  "candidate_sources_unchanged": true,
+  "artifacts": {
+    "live_pair": {
+      "path": "work/proofs/optimization/rules-live/5d0e9b149db0488d8b7c73f891f780c7/result.json",
+      "sha256": "6504bcaf86f5b21d85a57928f40ba7b2f7c885cf0a6bda0f12b89588b6e5ddb6"
+    },
+    "recovery_local_check": {
+      "path": "work/proofs/optimization/rules-live/5d0e9b149db0488d8b7c73f891f780c7/recovery-local-check.json",
+      "sha256": "27fe583c189a78ebda7f5c08ae7ec1b70b88f4562804e6f3b2a377d214a29ffa"
+    }
+  }
+}

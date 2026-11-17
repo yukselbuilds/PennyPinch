@@ -84,5 +84,10 @@
       "path": "work/proofs/optimization/responses-content-type/wire-replay-af78a526c2114307a16a1851262f3804/result.json",
       "sha256": "2ba3ff04c12d0648be1f95fdaebb7a8aacba3d7cc5abafa90e28efaadad13767"
     }
+  },
+  "subsequent_live_validation": {
+    "evidence": "docs/proofs/rules-live-counted-pair.json",
+    "request_id_matches": 8,
+    "usage_complete": true
   }
 }
