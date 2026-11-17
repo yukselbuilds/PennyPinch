@@ -10,6 +10,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 PLAN = ROOT / "bench/optimization/rules-heldout-plan.json"
+PLANS = {"repeated_log_lines_v1": PLAN, "explicit_runs_json_v1": ROOT / "bench/optimization/rules-json-heldout-plan.json"}
 FIELDS = {"total_input_tokens", "output_tokens", "total_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"}
 
 
@@ -86,7 +87,11 @@ def summarize(plan, records):
         "invalid_pairs": invalid, "cache_groups": groups, "automatic_product_activation": False}
 
 
-def verify_inputs(record, run):
+def matches_candidate(record, candidate):
+    return record.get("candidate_id", "repeated_log_lines_v1") == candidate
+
+
+def verify_inputs(record, run, plan_path=PLAN):
     local_app = Path(os.environ["LOCALAPPDATA"]).resolve(strict=True)
     codex = local_app / "OpenAI/Codex/bin"
     profiles = local_app / "dev.headroom.desktop/desktop-live-proof"
@@ -105,7 +110,7 @@ def verify_inputs(record, run):
                 stable[path.as_posix()] = digest
             elif path.name == "models.json":
                 stable["account_model_catalog"] = digest
-    for path in (ROOT / "bench/optimization/rules_live.py", ROOT / "bench/optimization/rules_pilot.py", PLAN, Path(sys.executable).resolve()):
+    for path in (ROOT / "bench/optimization/rules_live.py", ROOT / "bench/optimization/rules_pilot.py", plan_path, Path(sys.executable).resolve()):
         assert stable.get(path.as_posix()) == sha(path), "required_input_missing"
     return stable
 
@@ -116,10 +121,12 @@ def main():
     parser.add_argument("--provider", choices=("chatgpt", "loopback_fixture"), required=True)
     parser.add_argument("--model", required=True)
     parser.add_argument("--effort", required=True)
+    parser.add_argument("--candidate", choices=PLANS, default="repeated_log_lines_v1")
     args = parser.parse_args()
-    sources = [Path(__file__).resolve(), PLAN, ROOT / "tests/runtime/test_rules_summary.py", Path(sys.executable).resolve()]
+    plan_path = PLANS[args.candidate]
+    sources = [Path(__file__).resolve(), plan_path, ROOT / "tests/runtime/test_rules_summary.py", ROOT / "tests/runtime/test_rules_json_adapter.py", Path(sys.executable).resolve()]
     before = {str(path): sha(path) for path in sources}
-    plan = json.loads(PLAN.read_bytes())
+    plan = json.loads(plan_path.read_bytes())
     records, artifacts, signatures = [], [], []
     base = ROOT / "work/proofs/optimization/rules-live"
     for run in sorted(base.iterdir()):
@@ -131,10 +138,12 @@ def main():
         record = json.loads(raw)
         if (record.get("provider"), record.get("model"), record.get("effort")) != (args.provider, args.model, args.effort):
             continue
+        if not matches_candidate(record, args.candidate):
+            continue
         if record.get("case") not in {case["id"] for case in plan["cases"]}:
             continue
         try:
-            signature = verify_inputs(record, run)
+            signature = verify_inputs(record, run, plan_path)
             if signatures:
                 assert signature == signatures[0], "inconsistent_trial_inputs"
             else:
@@ -147,7 +156,7 @@ def main():
     result = summarize(plan, records)
     after = {str(path): sha(path) for path in sources}
     assert before == after, "summary_inputs_changed"
-    result.update(provider=args.provider, model=args.model, effort=args.effort, artifacts=artifacts,
+    result.update(provider=args.provider, model=args.model, effort=args.effort, candidate_id=args.candidate, artifacts=artifacts,
                   fingerprints={"before": before, "after": after}, model_calls=0,
                   scope="Live matrix acceptance" if args.provider == "chatgpt" else "Local protocol fixtures only")
     print(json.dumps(result, separators=(",", ":")))

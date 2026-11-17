@@ -2,7 +2,7 @@
   "schema_version": 1,
   "task": "H041-e3",
   "candidate_id": "explicit_runs_json_v1",
-  "status": "guard_verified_data_frozen_adapter_pending",
+  "status": "guard_verified_data_frozen_adapter_implemented",
   "source_scope": "Controlled fixed tool outputs; no real user project or conversation",
   "representation": "headroom.runs.json.v1",
   "eligibility": "Existing local_replay gate plus one explicit owner/call binding and error-flag protection; only a smaller whole-capture-reversible stdout is emitted",
@@ -214,13 +214,13 @@
   ],
   "live_execution": {
     "enabled_by_this_plan": false,
-    "runner_available": false,
+    "runner_available": true,
     "max_requests_per_batch": 8,
     "max_requests_per_pair": 8,
     "automatically_start_another_batch": false,
     "keep_failed_and_incomplete_records": true,
     "no_unbudgeted_warmup_or_cache_probing_calls": true,
-    "adapter_available": false
+    "adapter_available": true
   },
   "cache_classification": {
     "scope": "First completed upstream request in each arm; later cache reads remain in totals",

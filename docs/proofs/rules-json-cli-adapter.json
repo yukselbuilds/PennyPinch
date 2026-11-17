@@ -1,0 +1,222 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "json_candidate_cli_adapter_verified_locally_ready_for_bounded_live_pair",
+  "executor": "main",
+  "executor_reason": "Recovery ownership, candidate isolation and measurement/timing semantics",
+  "candidate_id": "explicit_runs_json_v1",
+  "scope": "Windows 10 pinned real Codex CLI -> owned engine -> loopback Responses fixture",
+  "focused_tests": 35,
+  "final_candidate_local_upstream_responses_requests": 31,
+  "all_slice_local_upstream_responses_requests": 67,
+  "new_real_model_requests": 0,
+  "local_pairs": [
+    {
+      "case": "json_queue_receipts_v1",
+      "candidate_id": "explicit_runs_json_v1",
+      "passed": true,
+      "failure": null,
+      "requests": 5,
+      "fixture_setup": {
+        "elapsed_ms": 2886,
+        "cpu_ms": 2843.75,
+        "model_requests": 0,
+        "scope": "Local fixture renderer setup before task sampling"
+      },
+      "metrics": {
+        "added_completed_task_elapsed_ms": -298,
+        "candidate_completed_task_cpu_ms": 265.625,
+        "engine_observed_private_bytes": 865738752
+      },
+      "artifact": {
+        "path": "work/proofs/optimization/rules-live/72d77db04f0d48a183c87373dc7930a3/result.json",
+        "sha256": "8a475080e4af0dc1561acb79afc9e553fc7c6f64a8e594fc2ece6fe09fc8cd96"
+      }
+    },
+    {
+      "case": "json_failed_archive_v1",
+      "candidate_id": "explicit_runs_json_v1",
+      "passed": true,
+      "failure": null,
+      "requests": 6,
+      "fixture_setup": {
+        "elapsed_ms": 3320,
+        "cpu_ms": 3328.125,
+        "model_requests": 0,
+        "scope": "Local fixture renderer setup before task sampling"
+      },
+      "metrics": {
+        "added_completed_task_elapsed_ms": -1323,
+        "candidate_completed_task_cpu_ms": 281.25,
+        "engine_observed_private_bytes": 865239040
+      },
+      "artifact": {
+        "path": "work/proofs/optimization/rules-live/a2fd592f941243099db9bc93ec2ee9a3/result.json",
+        "sha256": "923d83827afe644530e63fc474b3480aac00a8bc4dc6d12616b2f5c08d9bfbb3"
+      }
+    },
+    {
+      "case": "json_precision_source_v1",
+      "candidate_id": "explicit_runs_json_v1",
+      "passed": true,
+      "failure": null,
+      "requests": 6,
+      "fixture_setup": {
+        "elapsed_ms": 4099,
+        "cpu_ms": 4062.5,
+        "model_requests": 0,
+        "scope": "Local fixture renderer setup before task sampling"
+      },
+      "metrics": {
+        "added_completed_task_elapsed_ms": -201,
+        "candidate_completed_task_cpu_ms": 218.75,
+        "engine_observed_private_bytes": 865837056
+      },
+      "artifact": {
+        "path": "work/proofs/optimization/rules-live/f06e1abc88244fbba359e9655ec54918/result.json",
+        "sha256": "31a1d14da9687fb4c36b984788c22e1eb4db202e5803cd36a88866c53cd65179"
+      }
+    },
+    {
+      "case": "counts",
+      "candidate_id": "repeated_log_lines_v1",
+      "passed": true,
+      "failure": null,
+      "requests": 5,
+      "fixture_setup": {
+        "elapsed_ms": 2607,
+        "cpu_ms": 2578.125,
+        "model_requests": 0,
+        "scope": "Local fixture renderer setup before task sampling"
+      },
+      "metrics": null,
+      "artifact": {
+        "path": "work/proofs/optimization/rules-live/b988007338ba406fbc75b22f2ac2b7d9/result.json",
+        "sha256": "ede1caaf61837a892a48fe2a7f9e1d38dd0c37999d2d699b1ce409f4634aded5"
+      }
+    },
+    {
+      "case": "json_queue_receipts_v1",
+      "candidate_id": "explicit_runs_json_v1",
+      "passed": true,
+      "failure": null,
+      "requests": 6,
+      "fixture_setup": {
+        "elapsed_ms": 2837,
+        "cpu_ms": 2796.875,
+        "model_requests": 0,
+        "scope": "Local fixture renderer setup before task sampling"
+      },
+      "metrics": {
+        "added_completed_task_elapsed_ms": -280,
+        "candidate_completed_task_cpu_ms": 250.0,
+        "engine_observed_private_bytes": 864481280
+      },
+      "artifact": {
+        "path": "work/proofs/optimization/rules-live/49673794194841218ca27514e24baab8/result.json",
+        "sha256": "49919cf251a7c9cddeb2ba363b83aed2fa4bf43eb3b5f1ff71628238a28caa83"
+      }
+    },
+    {
+      "case": "json_failed_archive_v1",
+      "candidate_id": "explicit_runs_json_v1",
+      "passed": false,
+      "failure": "cache_start_unconfirmed",
+      "requests": 3,
+      "fixture_setup": {
+        "elapsed_ms": 3938,
+        "cpu_ms": 3796.875,
+        "model_requests": 0,
+        "scope": "Local fixture renderer setup before task sampling"
+      },
+      "metrics": null,
+      "artifact": {
+        "path": "work/proofs/optimization/rules-live/afb13b5b533b48cea9f097c077986ee2/result.json",
+        "sha256": "2b1a401fc372463d80667bb4d94d23250dc566939136e35adfb7ffea7079c37e"
+      }
+    }
+  ],
+  "raw_recovery": {
+    "actual_owned_engine_store_and_http_retrieval": true,
+    "original_before_json_frame_exact_at_cli_and_provider": true,
+    "frame_seeded_for_forced_branch": true,
+    "default_retrieval_trigger_not_inferred_from_forced_test": true,
+    "no_raw_recompression_marker": true
+  },
+  "cache_mismatch": {
+    "second_arm_started": false,
+    "partial_usage_and_resources_retained": true
+  },
+  "candidate_isolation": {
+    "json_live_rows": 0,
+    "json_live_missing_pairs": 18,
+    "previous_marker_live_rejection_unchanged": true,
+    "old_failed_and_superseded_local_rows_preserved": true,
+    "separate_summary_candidate_selector": true
+  },
+  "timing_correction": {
+    "root_cause": "The loopback provider imported the heavy SSE renderer inside its first request, charging setup only to the first arm",
+    "observed_request_thread_setup_cpu_ms": 3437.5,
+    "renderer_initialization_now_before_task_sampling": true,
+    "fixture_setup_elapsed_and_cpu_recorded_separately": true,
+    "model_cache_warmup_calls": 0,
+    "all_final_local_observed_pair_metrics_within_fixed_numerical_limits": true,
+    "matrix_performance_acceptance": "not_tested"
+  },
+  "frozen_representation_source_tests_data_and_acceptance_thresholds_changed": false,
+  "plan_status_and_adapter_available_updated": true,
+  "before_after_and_current_fingerprints_match": true,
+  "product_source_or_defaults_changed": false,
+  "full_product_gate_repeated": false,
+  "live_quality_total_usage_and_matrix_resources": "not_tested",
+  "accepted_general_savings_percent": null,
+  "main_task_complete": false,
+  "artifacts": {
+    "final_validation": {
+      "path": "work/proofs/optimization/rules-json-adapter-final/d8d342656ec54a5e8e1e264126c93d02/result.json",
+      "sha256": "5b2924df06cc4aaf4ef00703461308aa772bf46db496239abfbe3e4f3b77b266"
+    },
+    "focused_tests": {
+      "path": "work/proofs/optimization/rules-json-adapter/44ccf41d11cb4fed9806bfae0ba605f4/focused.json",
+      "sha256": "0f4f161634a5af816ef6553a336ec9ad71aa28b022d3a0822e8fbd42d97bd15d"
+    },
+    "four_local_pairs": {
+      "path": "work/proofs/optimization/rules-json-adapter/98fa22693e8b469ab7953b2f02aa595a/native.json",
+      "sha256": "6c7a95052e523835ffb9db16b0a0eb3f458b886a4b3cf6cae95c5e90f25dca05"
+    },
+    "raw_recovery": {
+      "path": "work/proofs/optimization/rules-live/49673794194841218ca27514e24baab8/json-recovery.json",
+      "sha256": "d67bdf3b71a7facc7434ba2041360e7f287b2f39585394b48d1f935ba202aa21"
+    },
+    "cache_mismatch_stop": {
+      "path": "work/proofs/optimization/rules-live/afb13b5b533b48cea9f097c077986ee2/json-stop.json",
+      "sha256": "8a35e1adca367e73a35e538d90468d8ee9beac036c9def79ec2de03a2f508524"
+    },
+    "thread_diagnosis": {
+      "path": "work/proofs/optimization/rules-live/087c545caaec40e98f5764b96dc3053d/thread-diagnosis.json",
+      "sha256": "211426445b460787baee542397f45342dc587aef7a0fbaf60960dabdbceb8200"
+    },
+    "superseded_timing_validation": {
+      "path": "work/proofs/optimization/rules-json-adapter-final/ed2bf62b8212462f8e4df6d32463a134/result.json",
+      "sha256": "d9b8ce12f831da84de336a56bdd6c417ce426827fd692e03ce8a331731cd1a83"
+    },
+    "plan": {
+      "path": "bench/optimization/rules-json-heldout-plan.json",
+      "sha256": "82a7e0a54615d1db158dc90716ddd77539db245f09b5bc56f4c35df86b9d2c4a"
+    },
+    "chatgpt_explicit_runs_json_v1_summary": {
+      "path": "work/proofs/optimization/rules-json-adapter-final/d8d342656ec54a5e8e1e264126c93d02/chatgpt-explicit_runs_json_v1.json",
+      "sha256": "20621f82a49bdbb84ec697c6c480f1536eb2253e012bcdef785fbb2ae793f7aa"
+    },
+    "loopback_fixture_explicit_runs_json_v1_summary": {
+      "path": "work/proofs/optimization/rules-json-adapter-final/d8d342656ec54a5e8e1e264126c93d02/loopback_fixture-explicit_runs_json_v1.json",
+      "sha256": "012f4631d9c324155c79839839f6b82a6067a94917d0809c890b61ad94691b03"
+    },
+    "chatgpt_repeated_log_lines_v1_summary": {
+      "path": "work/proofs/optimization/rules-json-adapter-final/d8d342656ec54a5e8e1e264126c93d02/chatgpt-repeated_log_lines_v1.json",
+      "sha256": "de86cbcfef6d629c30bf459637c1d3b864c4f4900174d648bc5bdef835bf60d4"
+    }
+  },
+  "review": "Ponytail plus quality/security review of case selection, MCP raw recovery, guard metadata, candidate summaries and common fixture setup; blocking findings resolved",
+  "next_step": "One live json_queue_receipts_v1 repeat 0/cold pair using the existing explicitly selected test account/model/effort, max eight upstream requests; no automatic retry or follow-on batch"
+}

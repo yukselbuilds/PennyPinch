@@ -204,6 +204,22 @@ Yedi odaklı kontrol ve uygulama sabitlendikten sonra hazırlanan üç yeni gör
 
 Yeni plan eski plandaki 18 çift, dönüşümlü kol sırası, cache sınıflaması ve %5 kazanç / 1.000 ms ek p95 görev süresi / 2.000 ms yerel p95 görev CPU'su / 1.536 MiB gözlenen motor özel belleği kabulünü aynen taşır. Otomatik çağrı, ısıtma veya yeni batch yoktur. Mevcut test hesabı/model/efor/izin değiştirilmez. Yeni adayın CLI adaptörü, ham özgün geri çağrı yolu, cache/kaynak/bütçe ve ayrı ret kayıtları önce yerelde doğrulanmadan canlı deneme yapılmaz. Yeni adaya ait canlı kalite/kullanım/kaynak kabulü `not_tested`; e3/e4 sırası ve kalite reddi korunur.
 
+#### H041-e3 JSON CLI adaptörünün yerel kabulü
+
+Yeni adayın üç görevi aynı izole CLI/owned-engine koşucusuna bağlandı. `case_details` ve `case_plan`, JSON veri/şemasını eski marker planından ayırır. JSON talimatı iki kolda aynıdır; mevcut model/efor ve sekiz gönderim sınırı korunur. Rapor `candidate_id` taşır; özetin `--candidate` seçimi eski ret kaydını yeni adaya geçirmez. Eski varsayılan pilot yolu da yerelde yeniden doğrulandı.
+
+JSON adayı bir CCR referansı üretmişse test aracı önce aynı sahipli motordan çerçevenin birebir geri alındığını denetler, sonra JSON dönüşümünden önceki ham stdout/stderr/exit zarfını döndürür. Diğer araca/çağrıya göre içerik varsayımı yapılmaz. Üretici ve upstream tanısının geri çağrı beklentisi ayrı özgün zarftır; içerik/hash değeri tanı satırına eklenmez. Kontrollü zorunlu senaryoda test motorunun kendi SQLite deposuna sabit JSON çerçevesi konuldu ve gerçek CLI → MCP → motor retrieval → ham sonuç → upstream yolu geçti. Bu senaryo varsayılan retrieval tetik eşiği kanıtı değildir.
+
+Yerel doğrulamada ilk kola yüklenen bir ölçüm hatası bulundu. Sahte sağlayıcı, `_openai_responses_to_sse` importunu ilk upstream istekte yapıyordu. İş parçacığı CPU/stack metadata'sı ilk istek thread'inde yaklaşık 3.438 ms CPU ve import yolunu gösterdi. Bu kurulum artık `prepare_provider` ile her iki kolun zaman/CPU örneklemesinden önce yapılır. Kurulum CPU/süresi `fixture_setup` içinde ayrıca raporlanır; düşürülen/atlanmış maliyet veya model cache ısıtma isteği yoktur. İstek sırasında yapılan fixture/engine/kural işi önceki kapsamda ölçülür. Tamamlanmış görev ve setup safhaları ayrı kalır; sayısal eşikler değiştirilmez. Aynı hata örneğindeki 4.062,5 ms yerel kural-kolu CPU ölçümü son adayda 281,25 ms, ayrı fixture kurulumu 3.328,125 ms idi. Bu ürün motorunda hızlanma iddiası değildir.
+
+Son adayda 35 odaklı test ve 31 yerel upstream Responses gönderimi geçti: dört CLI çifti 22, ham geri çağrı altı ve cache durma kontrolü üç gönderim. Düzeltme öncesi 31 ve tanı beş gönderim ayrı kanıtlarla korundu. Normal kapanış, kaynak/ortam fingerprint'leri, doğru şema/yanıt ve bütün kullanım kayıtları doğrulandı. Kısa yerel gözlemler sabit kaynak eşikleri içindeydi; tam canlı matris kabulü verilmedi. [Kanıt](../proofs/rules-json-cli-adapter.json). Gerçek model çağrısı sıfır. JSON adayının gerçek sağlayıcı özetinde sıfır kayıt/18 eksik çift ve eski marker adayının korunmuş ret kaydı doğrulandı. Sonraki adım aynı seçili hesap/model/eforla sınırlı ilk JSON canlı çiftidir; otomatik ek batch yoktur.
+
+Yeni adayın salt okunur canlı özet komutu:
+
+```powershell
+& 'work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime/python.exe' -I -B bench/optimization/rules_summary.py --candidate explicit_runs_json_v1 --provider chatgpt --model gpt-6-luna --effort medium
+```
+
 ### H041-b yerel deney koşulları
 
 Ana ajan ölçüm, runtime ve cache sözleşmesi nedeniyle deney ve kabulü üstlenir. `bench/optimization/ccr-policy-plan.json` iki eşlenmiş tekrarı önceden belirler. Her tekrarda iki ayrı motor kullanılır. Bir oturum üç kısa istekten oluşur. İkincisi üç kısa istekten sonra sıkıştırılabilir uzun log ve korumalı kesin sayısal bir Read sonucu alır. Ayrı temiz oturumdaki kısa istek, yapışkan aracın başka oturuma taşınmadığını denetler. Tüm istekler izole Anthropic SSE fixture'ına gider.

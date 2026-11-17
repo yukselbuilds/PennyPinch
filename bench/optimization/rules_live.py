@@ -78,7 +78,7 @@ def capture_evidence(tool, texts, capture):
             "ccr_marker_present": any("<<ccr:" in value for value in texts)}
 
 
-def forwarded_tool_evidence(body, capture):
+def forwarded_tool_evidence(body, capture, *, original_capture=None):
     from headroom.config import unwrap_tool_call_name
 
     items = body.get("input", [])
@@ -111,11 +111,13 @@ def forwarded_tool_evidence(body, capture):
         elif isinstance(value, list):
             texts = [part["text"] for part in value if isinstance(part, dict)
                      and part.get("type") == "input_text" and isinstance(part.get("text"), str)]
-        results.append(capture_evidence(calls[item.get("call_id")], texts, capture))
+        tool = calls[item["call_id"]]
+        expected = original_capture if tool == RECOVERY_TOOL and original_capture is not None else capture
+        results.append(capture_evidence(tool, texts, expected))
     return results
 
 
-def guard_upstream(target, model, effort, counter, pair_counter, arm_limit, expected_capture=None):
+def guard_upstream(target, model, effort, counter, pair_counter, arm_limit, expected_capture=None, original_capture=None):
     import httpx
 
     send = httpx.AsyncClient.send
@@ -149,7 +151,7 @@ def guard_upstream(target, model, effort, counter, pair_counter, arm_limit, expe
         with Path(counter).open("ab") as stream:
             stream.write(b"1\n")
         if expected_capture is not None:
-            entry = {"outputs": forwarded_tool_evidence(body, expected_capture)}
+            entry = {"outputs": forwarded_tool_evidence(body, expected_capture, original_capture=original_capture)}
             with Path(counter).with_name("tool-delivery.jsonl").open("a", encoding="utf-8") as stream:
                 stream.write(json.dumps(entry) + "\n")
         response = await send(client, request, **{**options, "follow_redirects": False})
@@ -169,14 +171,14 @@ def guard_upstream(target, model, effort, counter, pair_counter, arm_limit, expe
     httpx.AsyncClient.send = bounded
 
 
-def stage_arm(replay, directory, payload, target, model, effort, arm_limit, expected_capture=None):
+def stage_arm(replay, directory, payload, target, model, effort, arm_limit, expected_capture=None, original_capture=None):
     staged = replay.prepare_fixture_runtime(directory, payload)
     helper = directory / "fixture-runtime/desktop_helper.py"
     source = helper.read_bytes()
     anchor = b'"from headroom.cli import main; main()"'
     assert source.count(anchor) == 1, "engine_bootstrap_changed"
     counter = directory / "http-attempts.txt"
-    guard_args = (target, model, effort, str(counter), str(directory.parent / "pair-attempts.txt"), arm_limit, expected_capture)
+    guard_args = (target, model, effort, str(counter), str(directory.parent / "pair-attempts.txt"), arm_limit, expected_capture, original_capture)
     guard = f"import runpy; runpy.run_path({str(PROGRAM)!r})['guard_upstream']{guard_args!r}; "
     helper.write_bytes(source.replace(anchor, repr(guard).encode() + b" " + anchor, 1))
     return staged, counter
@@ -188,7 +190,7 @@ def tool_reported_error(item):
         result.get("isError") is True or result.get("is_error") is True)
 
 
-def check_turn(exit_code, stdout, expected, *, expected_capture=None):
+def check_turn(exit_code, stdout, expected, *, expected_capture=None, original_capture=None):
     events = [json.loads(line) for line in stdout.splitlines() if line.startswith(b"{")]
     items = [event["item"] for event in events if event.get("type") == "item.completed"]
     messages = [item["text"] for item in items if item.get("type") == "agent_message"]
@@ -236,7 +238,8 @@ def check_turn(exit_code, stdout, expected, *, expected_capture=None):
                 content = []
             texts = [part["text"] for part in content if isinstance(part, dict)
                      and part.get("type") == "text" and isinstance(part.get("text"), str)]
-            delivery.append({**capture_evidence(item["tool"], texts, expected_capture),
+            expected_tool_capture = original_capture if item["tool"] == RECOVERY_TOOL and original_capture is not None else expected_capture
+            delivery.append({**capture_evidence(item["tool"], texts, expected_tool_capture),
                              "error_reported": tool_reported_error(item)})
         result["producer_delivery"] = delivery
     return result
@@ -330,8 +333,17 @@ def arm_budget(sent, index):
     return available
 
 
+def task_prompt(pilot, case):
+    plan = pilot["case_plan"](case)
+    if case in pilot["JSON_CASES"]:
+        return plan["same_instructions_for_both_arms"] + " " + pilot["case_data"](case)[3]
+    return ("Call the fixed inspect_result tool once. If it returns a Headroom reference, pass its hash to headroom_retrieve. "
+            "Return only a JSON object. " + pilot["case_data"](case)[3])
+
+
 def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, catalog, counter, usage, auth_home, arm_limit, *, case=CASE):
-    details = pilot["HELDOUT_CASES"].get(case)
+    details = pilot["case_details"](case)
+    plan = pilot["case_plan"](case)
     schema = details["answer_schema"] if details else ANSWER_SCHEMA
     transient = directory / "client"
     work, temp = directory.parent / "client-workspace", transient / "temp"
@@ -354,13 +366,11 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
     else:
         env["CODEX_HOME"] = str(auth_home)
         config["cli_auth_credentials_store"] = "file"
-    prompt = ("Call the fixed inspect_result tool once. If it returns a Headroom reference, pass its hash to headroom_retrieve. "
-              "Return only a JSON object. "
-              + pilot["case_data"](case)[3])
+    prompt = task_prompt(pilot, case)
     rule_report = directory / "rule-resources.jsonl" if details else None
     command = pilot["client_args"](cli, work, case, directory.name, model, config, prompt=prompt, retrieval_port=engine.port,
                                    output_schema=directory.parent / "answer-schema.json", resource_report=rule_report)
-    sampler = usage["replay"].Resources([os.getpid(), *engine.pids], pilot["HELDOUT_PLAN"]["acceptance"]["resource_sample_interval_ms"]) if details else None
+    sampler = usage["replay"].Resources([os.getpid(), *engine.pids], plan["acceptance"]["resource_sample_interval_ms"]) if details else None
     resources, resource_error, run_failure = None, None, None
     start = time.monotonic()
     try:
@@ -380,7 +390,8 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
     assert sent <= arm_limit, "request_budget_exceeded"
     row = {"arm": directory.name, "forwarded_http_attempts": sent, "elapsed_ms": round(elapsed * 1000),
            "attempt_limit": arm_limit,
-           **check_turn(exit_code, stdout, pilot["case_data"](case)[4], expected_capture=pilot["envelope"](case, directory.name)),
+           **check_turn(exit_code, stdout, pilot["case_data"](case)[4], expected_capture=pilot["envelope"](case, directory.name),
+                        original_capture=pilot["recovery_capture"](case, directory.name) if case in pilot["JSON_CASES"] else None),
            **measure(engine, usage, sent)}
     if run_failure:
         row["run_failure"] = run_failure
@@ -410,7 +421,9 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
         assert all("# Headroom Desktop çalışma kuralları" not in json.dumps(body, ensure_ascii=False)
                    for body in fixture.requests), "repository_instructions_leaked"
         matches = pilot["inspect_tool_output"](engine, fixture.requests[1], case, directory.name, usage)
-        assert matches["exact_native_ccr_readback"] == (row["recovery_tool_calls"] == 1) == (sent == 3), "fixture_recovery_mismatch"
+        forced = getattr(fixture, "force_recovery_hash", None) is not None
+        assert (matches["exact_native_ccr_readback"] or forced) == (row["recovery_tool_calls"] == 1) == (sent == 3), "fixture_recovery_mismatch"
+        row["fixture_forced_recovery"] = forced
         row.update(matches)
     return row
 
@@ -431,7 +444,7 @@ def main():
     parser.add_argument("--codex-home", type=Path, help="Existing Headroom test login profile")
     parser.add_argument("--model")
     parser.add_argument("--effort")
-    parser.add_argument("--case", choices=[CASE, *pilot["HELDOUT_CASES"]], default=CASE)
+    parser.add_argument("--case", choices=[CASE, *pilot["HELDOUT_CASES"], *pilot["JSON_CASES"]], default=CASE)
     parser.add_argument("--repeat-index", type=int, choices=range(3))
     parser.add_argument("--cache-start", choices=("cold", "warm"))
     parser.add_argument("--prior-attempts", type=int, choices=range(ATTEMPTS_PER_PAIR), default=0,
@@ -440,20 +453,21 @@ def main():
     supplied = (args.model, args.effort, args.codex_home)
     if (args.live and not all(supplied)) or (not args.live and (any(supplied) or args.prior_attempts)):
         parser.error("Pass --model, --effort and --codex-home together with --live")
-    heldout = args.case in pilot["HELDOUT_CASES"]
+    plan = pilot["case_plan"](args.case)
+    heldout = plan is not None
     if heldout and (args.repeat_index is None or args.cache_start is None) or not heldout and (args.repeat_index is not None or args.cache_start is not None):
         parser.error("Held-out cases require --repeat-index and --cache-start; the preliminary pilot does not use them")
-    plan = pilot["HELDOUT_PLAN"] if heldout else None
+    candidate_id = plan["candidate_id"] if args.case in pilot["JSON_CASES"] else "repeated_log_lines_v1"
     order = plan["pair_order_by_repetition"][args.repeat_index] if heldout else ["control", "candidate"]
     assert sorted(order) == ["candidate", "control"], "invalid_arm_order"
-    schema = pilot["HELDOUT_CASES"][args.case]["answer_schema"] if heldout else ANSWER_SCHEMA
+    schema = pilot["case_details"](args.case)["answer_schema"] if heldout else ANSWER_SCHEMA
     usage_path = ROOT / "tests/runtime/anthropic_usage_capture.py"
     usage = runpy.run_path(str(usage_path))
     replay = usage["replay"]
     if heldout:
         assert plan["live_execution"]["max_requests_per_pair"] == plan["live_execution"]["max_requests_per_batch"] == ATTEMPTS_PER_PAIR
         assert plan["acceptance"]["arm_timeout_seconds"] == ARM_TIMEOUT
-        for filename, digest in plan["rule_sources_frozen"].items():
+        for filename, digest in (plan.get("rule_sources_frozen") or plan["source_fingerprints"]).items():
             path = (ROOT / filename).resolve(strict=True)
             assert path.is_relative_to(ROOT) and replay.sha(path) == digest, "frozen_rule_changed"
     runtime = ROOT / "runtime"
@@ -496,13 +510,14 @@ def main():
     catalog.write_bytes(catalog_bytes)
     answer_schema = run / "answer-schema.json"
     replay.write_new(answer_schema, schema)
-    fixture, upstream_port = None, 1
+    fixture, fixture_setup, upstream_port = None, None, 1
     if args.live:
         from headroom.providers.codex.responses import codex_responses_http_url
 
         target = codex_responses_http_url()
         assert target == "https://chatgpt.com/backend-api/codex/responses", "unexpected_chatgpt_origin"
     else:
+        fixture_setup = pilot["prepare_provider"]()
         fixture = ThreadingHTTPServer(("127.0.0.1", 0), pilot["Provider"])
         fixture.auth = "Bearer " + replay.SENTINEL
         fixture.cache_start = args.cache_start
@@ -516,11 +531,13 @@ def main():
             arm_limit = arm_budget(pair_counter.stat().st_size, index)
             directory = run / arm
             directory.mkdir()
+            recovery_options = {"original_capture": pilot["recovery_capture"](args.case, arm)} if args.case in pilot["JSON_CASES"] else {}
             staged, counter = stage_arm(replay, directory, payload, target, model, effort, arm_limit,
-                                        expected_capture=pilot["envelope"](args.case, arm))
+                                        expected_capture=pilot["envelope"](args.case, arm), **recovery_options)
             sources = json.loads((runtime / "optimization-sources.json").read_bytes())
-            files = [PROGRAM, PROGRAM.with_name("rules_pilot.py"), pilot["HELDOUT_PATH"],
+            files = [PROGRAM, PROGRAM.with_name("rules_pilot.py"), pilot["HELDOUT_PATH"], pilot["JSON_PATH"], PROGRAM.with_name("rules_runs_json.py"),
                      ROOT / "tests/runtime/test_rules_pilot_contract.py", ROOT / "tests/runtime/test_rules_heldout.py",
+                     ROOT / "tests/runtime/test_rules_json_adapter.py", ROOT / "tests/runtime/test_rules_runs_json.py",
                      usage_path, cli, catalog, answer_schema, runner, work / ".git/config", Path(sys.executable),
                      payload / "python313.dll", payload / "runtime-manifest.json", runtime / "learn_preview.py",
                      *staged, *[runtime / path.name for path in staged],
@@ -529,6 +546,8 @@ def main():
                      *[payload / "Lib/site-packages/headroom" / name for name in sources],
                      payload / "Lib/site-packages/headroom/providers/codex/endpoints.py",
                      payload / "Lib/site-packages/headroom/transforms/lossless_compaction.py",
+                     payload / "Lib/site-packages/headroom/proxy/handlers/openai.py",
+                     payload / "Lib/site-packages/headroom/proxy/handlers/__init__.py",
                      payload / "Lib/site-packages/mcp-2.3.0.dist-info/RECORD"]
             if auth_home is not None:
                 files.append(auth_home / "config.toml")
@@ -575,6 +594,8 @@ def main():
         difference = {"total_tokens_saved": saved, "percent_of_control": round(100 * saved / control, 4) if control else None}
     replay.write_new(report, {"passed": passed, "failure": failure, "provider": "chatgpt" if args.live else "loopback_fixture",
                               "model": model, "effort": effort, "case": args.case, "cli": version, "platform": platform.platform(),
+                              "candidate_id": candidate_id,
+                              "fixture_setup": fixture_setup,
                               "arm_order": order, "repeat_index": args.repeat_index, "heldout_observations": observations,
                               "general_acceptance": "not_tested",
                               "pair_attempt_limit": ATTEMPTS_PER_PAIR, "arm_timeout_seconds": ARM_TIMEOUT,

@@ -47,16 +47,27 @@ PLAN = {"thresholds": {"startup_timeout_seconds": 120}}
 HELDOUT_PATH = HERE / "rules-heldout-plan.json"
 HELDOUT_PLAN = json.loads(HELDOUT_PATH.read_bytes())
 HELDOUT_CASES = {item["id"]: item for item in HELDOUT_PLAN["cases"]}
+JSON_PATH = HERE / "rules-json-heldout-plan.json"
+JSON_PLAN = json.loads(JSON_PATH.read_bytes())
+JSON_CASES = {item["id"]: item for item in JSON_PLAN["cases"]}
 
 
 def encode(value):
     return json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
 
 
+def case_details(case):
+    return JSON_CASES.get(case) or HELDOUT_CASES.get(case)
+
+
+def case_plan(case):
+    return JSON_PLAN if case in JSON_CASES else HELDOUT_PLAN if case in HELDOUT_CASES else None
+
+
 def case_data(case):
     if case in CASES:
         return CASES[case]
-    item = HELDOUT_CASES[case]
+    item = case_details(case)
     stdout = "".join(run["text"] * run["occurrences"] for run in item["stdout_runs"])
     capture = {"stdout": stdout, "stderr": item["stderr"], "exit_code": item["exit_code"]}
     assert hashlib.sha256(encode(capture).encode()).hexdigest() == item["capture_sha256"], "heldout_capture_changed"
@@ -67,7 +78,7 @@ def envelope(case, arm):
     from headroom.transforms.lossless_compaction import collapse_runs, expand_runs
 
     stdout, stderr, exit_code, _, _ = case_data(case)
-    details = HELDOUT_CASES.get(case)
+    details = case_details(case)
     capture = {"stdout": stdout, "stderr": stderr, "exit_code": exit_code}
     records = [{"type": "session_meta", "payload": {"id": "owned-mcp-probe"}}]
     for item in ({"type": "function_call", "call_id": CALL, "name": details["source_tool"] if details else "exec_command",
@@ -75,6 +86,10 @@ def envelope(case, arm):
                  {"type": "function_call_output", "call_id": CALL, "output": capture}):
         records.append({"type": "response_item", "payload": item})
     raw = ("\n".join(map(encode, records)) + "\n").encode()
+    if case in JSON_CASES:
+        trial = runpy.run_path(str(HERE / "rules_runs_json.py"))["trial_capture"](raw, "owned-mcp-probe", CALL)
+        assert trial["status"] == details["expected_guard_status"], "json_capture_guard_changed"
+        return trial["candidate"] if arm == "candidate" else capture
     result = runpy.run_path(str(ROOT / "runtime/learn_preview.py"))["local_replay"](raw)
     assert result["status"] == "trial_ready", "rule_report_missing"
     report = result["report"]
@@ -86,6 +101,13 @@ def envelope(case, arm):
         assert expand_runs(compacted) == stdout and report["after_bytes"] == len(compacted.encode()), "restore_changed"
         return {**capture, "stdout": compacted}
     return capture
+
+
+def recovery_capture(case, arm):
+    if case in JSON_CASES:
+        stdout, stderr, exit_code, _, _ = case_data(case)
+        return {"stdout": stdout, "stderr": stderr, "exit_code": exit_code}
+    return envelope(case, arm)
 
 
 def serve(case, arm, retrieval_port, resource_report=None):
@@ -103,6 +125,7 @@ def serve(case, arm, retrieval_port, resource_report=None):
     started_cpu = time.process_time()
     capture = envelope(case, arm)
     value = encode(capture)
+    recovery_value = encode(recovery_capture(case, arm)) if case in JSON_CASES else value
     prepare_cpu_ms = 1000 * (time.process_time() - started_cpu)
     if resource_report is not None:
         destination = resource_report.resolve()
@@ -127,14 +150,16 @@ def serve(case, arm, retrieval_port, resource_report=None):
             assert re.fullmatch(r"[a-f0-9]{12,24}", content_hash), "invalid_recovery_reference"
             replay = runpy.run_path(str(HERE / "replay.py"))
             replay["retrieval"](retrieval_port, content_hash, capture["stdout"], 10)
-            return value
+            return recovery_value
 
     server.run(transport="stdio")
 
 
 class Provider(runpy.run_path(str(HERE / "replay.py"))["FixtureHandler"]):
+    render_sse = None
+
     def do_POST(self):
-        from headroom.proxy.handlers.openai import _openai_responses_to_sse
+        assert callable(self.render_sse), "fixture_renderer_not_prepared"
 
         size = int(self.headers.get("Content-Length", "0"))
         server = self.server
@@ -150,6 +175,10 @@ class Provider(runpy.run_path(str(HERE / "replay.py"))["FixtureHandler"]):
             outputs = [item["output"] for item in request["input"]
                        if item.get("type") == "function_call_output" and item.get("call_id") == CALL]
             marker = re.search(r"<<ccr:([a-f0-9]{12,24}),string,[^>]+>>", encode(outputs))
+            forced = getattr(server, "force_recovery_hash", None)
+            if forced is not None:
+                assert re.fullmatch(r"[a-f0-9]{12,24}", forced), "invalid_fixture_recovery_hash"
+                marker = (None, forced)
         proof_case = self.headers.get("X-Proof-Case")
         close_probe = proof_case in CLOSURE_MODES
         if close_probe and turn == 1:
@@ -173,7 +202,7 @@ class Provider(runpy.run_path(str(HERE / "replay.py"))["FixtureHandler"]):
                 outputs = [part.get("text") for item in request["input"]
                            if item.get("type") == "function_call_output" and item.get("call_id") == RECOVERY_CALL
                            for part in item["output"]]
-                if encode(envelope(server.case, recovery)) not in outputs:
+                if encode(recovery_capture(server.case, recovery)) not in outputs:
                     server.failure = "recovered_tool_output_changed"
                     self.send_error(400)
                     return
@@ -187,7 +216,7 @@ class Provider(runpy.run_path(str(HERE / "replay.py"))["FixtureHandler"]):
         if turn == 1 and getattr(server, "cache_start", None) == "warm":
             cached = 512
         input_details = {"cached_tokens": cached}
-        if server.case in HELDOUT_CASES:
+        if case_plan(server.case) is not None:
             input_details["cache_write_tokens"] = 0
         response = {"id": "resp_pilot_" + str(turn), "object": "response", "status": "completed",
                     "model": MODEL, "output": [item], "usage": {"input_tokens": input_tokens,
@@ -195,7 +224,7 @@ class Provider(runpy.run_path(str(HERE / "replay.py"))["FixtureHandler"]):
                         "total_tokens": input_tokens + output_tokens}}
         if proof_case == "close-after-terminal-no-status":
             del response["status"]
-        frames = _openai_responses_to_sse(response)
+        frames = self.render_sse(response)
         self.send_response(200)
         self.send_header("Content-Type", "application/octet-stream" if proof_case == "close-after-terminal-nonstandard-type"
                          else "text/event-stream")
@@ -213,6 +242,16 @@ class Provider(runpy.run_path(str(HERE / "replay.py"))["FixtureHandler"]):
         else:
             self.wfile.write(b"".join(frames))
         self.close_connection = True
+
+
+def prepare_provider():
+    started, cpu = time.monotonic(), time.process_time()
+    from headroom.proxy.handlers.openai import _openai_responses_to_sse
+
+    Provider.render_sse = staticmethod(_openai_responses_to_sse)
+    return {"elapsed_ms": round(1000 * (time.monotonic() - started)),
+            "cpu_ms": 1000 * (time.process_time() - cpu), "model_requests": 0,
+            "scope": "Local fixture renderer setup before task sampling"}
 
 
 def usage_since(engine, usage, before, counters):
@@ -395,7 +434,7 @@ def main():
     args = parser.parse_args()
     if args.mcp:
         case, arm = args.mcp
-        assert case in CASES or case in HELDOUT_CASES
+        assert case in CASES or case_details(case) is not None
         assert arm in ("control", "candidate")
         assert args.retrieve_from is None or 1024 <= args.retrieve_from <= 65535
         serve(case, arm, args.retrieve_from, args.resource_report)
@@ -420,7 +459,7 @@ def main():
     run.mkdir(parents=True)
     staged = replay.prepare_fixture_runtime(run, payload)
     sources = json.loads((runtime / "optimization-sources.json").read_bytes())
-    files = [PROGRAM, usage_path, runner, Path(sys.executable), cli, payload / "python313.dll", payload / "runtime-manifest.json",
+    files = [PROGRAM, HELDOUT_PATH, JSON_PATH, HERE / "rules_runs_json.py", usage_path, runner, Path(sys.executable), cli, payload / "python313.dll", payload / "runtime-manifest.json",
              runtime / "learn_preview.py", *staged, *[runtime / path.name for path in staged],
              *[HERE / name for name in ("replay.py", "anthropic_usage.py", "ccr_policy.py", "surfaces.py", "fixtures.py")],
              *[ROOT / "bench/context_tools" / name for name in ("targeted_query.py", "targeted_query_replay.py")],
@@ -430,6 +469,7 @@ def main():
              payload / "Lib/site-packages/mcp-2.3.0.dist-info/RECORD"]
     fingerprints = lambda: {str(path): replay.sha(path) for path in files}
     before = fingerprints()
+    fixture_setup = prepare_provider()
     server = ThreadingHTTPServer(("127.0.0.1", 0), Provider)
     server.auth = "Bearer " + replay.SENTINEL
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -468,6 +508,7 @@ def main():
         "cli": version, "engine": manifest["engine"]["version"], "closure_probes": closures,
         "os": platform.platform(), "rows": results, "stop": engine.stopped, "model_calls_outside_loopback": 0,
         "usage_source": "scripted fixture", "quality_source": "scripted fixture validated by exact-answer reader",
+        "fixture_setup": fixture_setup,
         "before": before, "after": after})
     print(encode({"passed": usage_complete, "observation_complete": observation_complete, "failure": failure,
                   "proof": report.relative_to(ROOT).as_posix()}), flush=True)
