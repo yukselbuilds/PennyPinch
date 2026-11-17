@@ -1,0 +1,115 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "bounded_live_pair_incomplete_optional_rule_frozen",
+  "executor": "main",
+  "executor_reason": "Quality/cost acceptance, minimal visible diagnostics and scope decisions",
+  "candidate_id": "explicit_runs_json_v1",
+  "case": "json_queue_receipts_v1",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "cli": "codex-cli 0.169.0-alpha.11.1",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "max_upstream_requests": 8,
+  "actual_upstream_requests": 8,
+  "requests_by_arm": {
+    "control": 5,
+    "candidate": 3
+  },
+  "control": {
+    "completed": true,
+    "exact_answer": true,
+    "owned_tool_sequence_valid": true,
+    "provider_usage_records": 5,
+    "total_usage": {
+      "total_input_tokens": 51161,
+      "output_tokens": 734,
+      "total_tokens": 51895,
+      "cache_read_input_tokens": 29568,
+      "cache_creation_input_tokens": 0
+    },
+    "visible_final_counts": {
+      "sent": 42,
+      "retry": 6
+    }
+  },
+  "candidate": {
+    "completed": false,
+    "final_answer_available": false,
+    "provider_total_usage": null,
+    "forwarded_requests": 3,
+    "usage_ledger_records": 4,
+    "boundary_denied_ingress_record_retained": true,
+    "normal_tool_completions": [
+      "inspect_result",
+      "inspect_result"
+    ],
+    "distinct_tool_call_identities_retained": false
+  },
+  "requested_cache_start": "cold",
+  "verified_pair_cache_start": "unconfirmed",
+  "original_pair_passed": false,
+  "accepted_savings_percent": null,
+  "observer_source_and_registration_before_after_match": true,
+  "both_owned_engines_closed_normally": true,
+  "early_rule_registered_before_live": true,
+  "pilot_signal_threshold_fraction": 0.05,
+  "early_decision": "incomplete_freeze_without_automatic_retry",
+  "freeze_is_not_a_claim_that_all_models_or_basic_headroom_fail": true,
+  "automatic_retry_follow_on_or_third_candidate": false,
+  "diagnostics": {
+    "metadata_projection_self_checks": 2,
+    "only_fixed_integer_counts_and_normal_tool_status_order": true,
+    "private_reasoning_raw_code_prompt_or_arbitrary_strings_retained": false,
+    "candidate_counting_error_not_inferred_from_missing_final": true
+  },
+  "live_responses_usage_acceptance": {
+    "scope": "Windows 10, pinned engine 0.44.0, CLI 0.169.0-alpha.11.1, selected ChatGPT test account/model/effort over HTTP/SSE",
+    "completed_control_requests_with_fully_matched_usage": 5,
+    "all_input_output_cache_counters_known": true,
+    "unknown_usage_for_boundary_denial_kept_unknown": true,
+    "api_key_websocket_chat_or_other_accounts_not_inferred": true
+  },
+  "gemini_review": {
+    "path": "docs/research/optimization-roi-review-2026-11-17.md",
+    "decisions": "Early stop and research/core distinction adopted; new minimum size, certainty flags and general savings claims not adopted without proof",
+    "advice_document_sha256": "9a3fc20ce4213edfb058bf7273d3e50ad4f7d94ee79d2d8541610c850b165876"
+  },
+  "matrix": {
+    "records": 1,
+    "invalid": 1,
+    "missing": 17,
+    "accepted": false
+  },
+  "product_source_or_defaults_changed": false,
+  "deterministic_product_tests_repeated": false,
+  "new_live_upstream_calls_this_slice": 8,
+  "main_task_complete": false,
+  "artifacts": {
+    "original_live_pair": {
+      "path": "work/proofs/optimization/rules-live/6d91b09f6a364e04bb46b3a10f2fcf78/result.json",
+      "sha256": "e010b1ed5824728567a1dd06b4dcc720efdb3757b646a7966e49b9800fe7b09b"
+    },
+    "before_run_registration": {
+      "path": "work/proofs/optimization/rules-json-live-observed/ebad81ac7d894274b255010881fd11fa/registration.json",
+      "sha256": "48bed0d39f7a2bd44b2a6d6b78c8d0e1862175fe0fb763edf66612749b4601af"
+    },
+    "bounded_normal_metadata": {
+      "path": "work/proofs/optimization/rules-json-live-observed/ebad81ac7d894274b255010881fd11fa/observation.json",
+      "sha256": "fe773b3a61a3aae420da461abc8a22f12a6d1d4456db919528c46b4b139e7db4"
+    },
+    "matrix_summary": {
+      "path": "work/proofs/optimization/rules-json-live-observed/ebad81ac7d894274b255010881fd11fa/matrix-summary.json",
+      "sha256": "c4431f8551aaedd8758b4b442c1ee47bb881166fc95d7f3ab9633cc8183edb76"
+    },
+    "unchanged_candidate_plan": {
+      "path": "bench/optimization/rules-json-heldout-plan.json",
+      "sha256": "82a7e0a54615d1db158dc90716ddd77539db245f09b5bc56f4c35df86b9d2c4a"
+    },
+    "local_query_measurement": {
+      "path": "docs/proofs/targeted-query-pilot.json",
+      "sha256": "0d66d924bd158f978c13234a60167ebc1ecf74f8a717478e7bcf3673c13d14d3"
+    }
+  },
+  "next_active_work": "Existing H041 safe targeted-query client/permission pilot; include full rereads in total provider usage; deferred OS/API evidence stays open"
+}

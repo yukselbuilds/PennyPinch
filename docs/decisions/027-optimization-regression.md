@@ -220,6 +220,16 @@ Yeni adayın salt okunur canlı özet komutu:
 & 'work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime/python.exe' -I -B bench/optimization/rules_summary.py --candidate explicit_runs_json_v1 --provider chatgpt --model gpt-6-luna --effort medium
 ```
 
+#### H041-e3 sınırlı canlı JSON denemesi ve ROI durması
+
+17 Kasım kullanıcı Gemini değerlendirmesini ana ajanın kararına bıraktı. Kod/veri/eşikler ve genel kabul korunarak ilk gerçek çift için ek bir iş kararı sonuçtan önce `registration.json` içine yazıldı: kalite hatası ret; eksik tur/sayaç/cache koşulu durma; geçerli ama %5'in altında ilk toplam-kullanım sinyali isteğe bağlı kural Ar-Ge'sini dondurma nedenidir. %5 üstü ilk sinyal mevcut tam matrisin yerine geçmez. Yeni otomatik tekrar, batch veya üçüncü aday geliştirme yoktur. [Değerlendirme](../research/optimization-roi-review-2026-11-17.md).
+
+Aynı seçili test hesabı/model/efor ve görevle beş kontrol + üç aday upstream gönderimi yapıldı. Kontrol doğru tamamlandı; aday son turunu bitiremeden sekiz gönderim sınırına ulaştı. CLI'nin görünür kaydında aday için iki `inspect_result` tamamlanması var, son sayım/cevap yok. Aday toplamı ve çiftin cold koşulu bilinmiyor; buna yanlış aritmetik veya negatif genel kazanç etiketi verilmez. Araç kimlikleri veya ham sayım kodu saklanmadığından bu olay sayısından daha ayrıntılı neden çıkarılmaz. Önceden kayıtlı eksik ölçüm durma koşuluyla bu opsiyonel kol donduruldu, e3/e4 tamamlanmadı. [Kanıt](../proofs/rules-json-live-pilot.json).
+
+Gözlem katmanı yalnız bu sabit görevin `sent`/`retry` alanlarında 0–64.000 arası gerçek tamsayıları ve bilinen normal araçların sıra/durum/hata bayraklarını kaydetti. Boolean/taşan değer ve keyfi stringler atıldı; özel reasoning, prompt ve ham model kodu tutulmadı. İki yapay projeksiyon kontrolü ve gerçek normal araç kaydı incelendi. Model isteği/talimatı/bütçesi değiştirilmedi. Kontrolün beş tamamlanmış isteğinde giriş/çıkış/cache sayaçları tam eşleşti; adayın reddedilen ek ingress satırında kullanım bilinmiyor kaldı. İki motor normal kapandı; kaynak ve araç fingerprint'leri aynıydı. Ürün/test kaynağı değişmediği için mevcut 35 test yeniden çalıştırılmadı.
+
+H041-d altındaki canlı sağlayıcı dilimi, Windows 10 / pinli 0.44.0 / CLI 0.169.0-alpha.11.1 / seçili ChatGPT hesabı-modeli-eforu / Responses HTTP-SSE için doğrulandı. Bu, JSON fayda kabulü, API-key, WebSocket, Chat, başka hesap/model veya OS kabulü değildir. Diğer kutular ve ana H041 açık kalır. Aynı ana görevdeki bağımsız güvenli hedefli sorgu istemci/izin pilotu bir sonraki önceliktir; dondurulmuş e3'ün bağımlısı e4'e geçilmez. Ana görevi kapatma veya yayın yetkisi çıkarılmaz.
+
 ### H041-b yerel deney koşulları
 
 Ana ajan ölçüm, runtime ve cache sözleşmesi nedeniyle deney ve kabulü üstlenir. `bench/optimization/ccr-policy-plan.json` iki eşlenmiş tekrarı önceden belirler. Her tekrarda iki ayrı motor kullanılır. Bir oturum üç kısa istekten oluşur. İkincisi üç kısa istekten sonra sıkıştırılabilir uzun log ve korumalı kesin sayısal bir Read sonucu alır. Ayrı temiz oturumdaki kısa istek, yapışkan aracın başka oturuma taşınmadığını denetler. Tüm istekler izole Anthropic SSE fixture'ına gider.
