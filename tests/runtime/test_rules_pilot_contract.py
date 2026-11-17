@@ -71,6 +71,43 @@ class RulesPilotContractTests(unittest.TestCase):
         ]
         self.assertFalse(live["check_turn"](0, b"\n".join(json.dumps(event).encode() for event in events), EXPECTED)["exact_answer"])
 
+    def test_producer_capture_is_matched_without_retaining_content(self):
+        capture = {"stdout": "PRIVATE_DELIVERY_CANARY", "stderr": "", "exit_code": 0}
+        call = {"type": "mcp_tool_call", "server": "headroom_rule_pilot", "tool": "inspect_result",
+                "status": "completed", "result": {"content": [{"type": "text", "text": pilot["encode"](capture)}]}}
+        events = [{"type": "item.completed", "item": call},
+                  {"type": "item.completed", "item": {"type": "agent_message", "text": json.dumps(EXPECTED)}},
+                  {"type": "turn.completed"}]
+        row = live["check_turn"](0, b"\n".join(json.dumps(event).encode() for event in events), EXPECTED, expected_capture=capture)
+        self.assertTrue(row["fixed_tool_call"])
+        self.assertTrue(row["producer_delivery"][0]["capture_exact"])
+        self.assertNotIn("PRIVATE_DELIVERY_CANARY", json.dumps(row))
+        call["result"] = {"content": None, "isError": True}
+        row = live["check_turn"](0, b"\n".join(json.dumps(event).encode() for event in events), EXPECTED, expected_capture=capture)
+        self.assertFalse(row["fixed_tool_call"])
+        self.assertTrue(row["producer_delivery"][0]["error_reported"])
+        self.assertFalse(row["producer_delivery"][0]["capture_exact"])
+
+    def test_forwarded_capture_matches_its_owned_call(self):
+        capture = {"stdout": "PRIVATE_FORWARDED_CANARY", "stderr": "", "exit_code": 0}
+        body = {"input": [
+            {"type": "function_call", "call_id": "owned", "namespace": "mcp__headroom_rule_pilot", "name": "recover_result"},
+            {"type": "function_call_output", "call_id": "owned", "output": [{"type": "input_text", "text": pilot["encode"](capture)}]},
+            {"type": "function_call", "call_id": "other", "namespace": "other_server", "name": "recover_result"},
+            {"type": "function_call_output", "call_id": "other", "output": pilot["encode"](capture)},
+            {"type": "function_call", "call_id": [], "name": "recover_result"},
+            {"type": "function_call_output", "call_id": [], "output": None},
+        ]}
+        result = live["forwarded_tool_evidence"](body, capture)
+        self.assertEqual(len(result), 1)
+        self.assertTrue(result[0]["capture_exact"])
+        self.assertNotIn("PRIVATE_FORWARDED_CANARY", json.dumps(result))
+        body["input"][1]["output"] = [{"type": "input_text", "text": "<<ccr:owned,string,test>>"}]
+        result = live["forwarded_tool_evidence"](body, capture)
+        self.assertFalse(result[0]["capture_exact"])
+        self.assertTrue(result[0]["ccr_marker_present"])
+        self.assertEqual(live["forwarded_tool_evidence"]({"input": None}, capture), [])
+
 
 if __name__ == "__main__":
     unittest.main()

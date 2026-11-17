@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## H041-e3 — geri çağrı aktarımı yerelde doğrulandı, canlı tanı hazır
+
+- Ana ajan çağrı sahipliği ve ölçüm semantiği nedeniyle izole pilotu inceledi. Sentetik ChatGPT hesap başlığıyla gerçek CLI ve motor, yalnız sahipli yerel sağlayıcıya yönlendirildi. Beş istek, üç araç sonucu ve bir geri çağrı metni doğrulandı. Kontrol ve sıkıştırılmış kolun yanıtları doğruydu. Geri çağrı içeriği CLI'de ve sağlayıcı girişinde birebir eşleşti. [Kanıt](proofs/rules-recovery-delivery.json).
+- Pilot, üreticiden CLI'ye gelen sonuç ile motordan çıkan sonuç için eşleşme ve CCR bayrakları kaydediyor. Kayda metin veya hash değeri eklenmiyor. `completed` durumundaki açık MCP hata sonucunun eski kontrolde başarılı sayıldığı da yerelde yeniden üretildi ve düzeltildi. Sekiz odaklı sözleşme testi geçti.
+- **45/54 ve H041-e3 açık.** Bu dilimde yeni gerçek sağlayıcı çağrısı yapılmadı. Önceki canlı ham kol hatasının nedeni mevcut kayıtlardan belirlenemiyor. Sonraki sınırlı canlı koşuda üretici sonucu, motor sonrası aktarım ve son yanıt aynı kapsamda karşılaştırılabilecek. Genel fayda ve bağımsız tekrar kabulleri açık.
+
 ## H041-e3 — canlı çiftin tüm token sayaçları ölçüldü
 
 - Kullanıcının onayladığı yeni sekizlik koşu, aynı ayrı ChatGPT hesabında `gpt-6-luna` / `medium` ile tamamlandı. Kontrol kolu beş, sıkıştırılmış kol üç sağlayıcı isteği kullandı. Sekiz motor kimliği ve kullanım kaydı eşleşti. Cache okuma/yazma, giriş ve çıkış toplamları eksiksizdi. İki motor normal kapandı, kaynak parmak izleri eşleşti. [Kanıt](proofs/rules-live-counted-pair.json).

@@ -68,7 +68,44 @@ def upstream_error_summary(status, content):
                                       if isinstance(error, str) and re.search(pattern, error, re.IGNORECASE)]}
 
 
-def guard_upstream(target, model, effort, counter, pair_counter, arm_limit):
+def capture_evidence(tool, texts, capture):
+    encoded = json.dumps(capture, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+    return {"tool": tool, "capture_exact": encoded in texts, "text_blocks": len(texts),
+            "ccr_marker_present": any("<<ccr:" in value for value in texts)}
+
+
+def forwarded_tool_evidence(body, capture):
+    items = body.get("input", [])
+    if not isinstance(items, list):
+        return []
+    calls = {}
+    for item in items:
+        if not isinstance(item, dict) or item.get("type") != "function_call":
+            continue
+        identity = item.get("call_id")
+        if not isinstance(identity, str) or not identity:
+            continue
+        for tool in ("inspect_result", "recover_result"):
+            if ((item.get("namespace") == "mcp__headroom_rule_pilot" and item.get("name") == tool)
+                    or item.get("name") == "mcp__headroom_rule_pilot__" + tool):
+                calls[identity] = tool
+    results = []
+    for item in items:
+        if (not isinstance(item, dict) or item.get("type") != "function_call_output"
+                or not isinstance(item.get("call_id"), str) or item["call_id"] not in calls):
+            continue
+        value = item.get("output")
+        texts = []
+        if isinstance(value, str):
+            texts = [value]
+        elif isinstance(value, list):
+            texts = [part["text"] for part in value if isinstance(part, dict)
+                     and part.get("type") == "input_text" and isinstance(part.get("text"), str)]
+        results.append(capture_evidence(calls[item.get("call_id")], texts, capture))
+    return results
+
+
+def guard_upstream(target, model, effort, counter, pair_counter, arm_limit, expected_capture=None):
     import httpx
 
     send = httpx.AsyncClient.send
@@ -101,6 +138,10 @@ def guard_upstream(target, model, effort, counter, pair_counter, arm_limit):
             stream.write(b"1")
         with Path(counter).open("ab") as stream:
             stream.write(b"1\n")
+        if expected_capture is not None:
+            entry = {"outputs": forwarded_tool_evidence(body, expected_capture)}
+            with Path(counter).with_name("tool-delivery.jsonl").open("a", encoding="utf-8") as stream:
+                stream.write(json.dumps(entry) + "\n")
         response = await send(client, request, **{**options, "follow_redirects": False})
         if response.is_error:
             read = response.aread
@@ -118,20 +159,26 @@ def guard_upstream(target, model, effort, counter, pair_counter, arm_limit):
     httpx.AsyncClient.send = bounded
 
 
-def stage_arm(replay, directory, payload, target, model, effort, arm_limit):
+def stage_arm(replay, directory, payload, target, model, effort, arm_limit, expected_capture=None):
     staged = replay.prepare_fixture_runtime(directory, payload)
     helper = directory / "fixture-runtime/desktop_helper.py"
     source = helper.read_bytes()
     anchor = b'"from headroom.cli import main; main()"'
     assert source.count(anchor) == 1, "engine_bootstrap_changed"
     counter = directory / "http-attempts.txt"
-    guard_args = (target, model, effort, str(counter), str(directory.parent / "pair-attempts.txt"), arm_limit)
+    guard_args = (target, model, effort, str(counter), str(directory.parent / "pair-attempts.txt"), arm_limit, expected_capture)
     guard = f"import runpy; runpy.run_path({str(PROGRAM)!r})['guard_upstream']{guard_args!r}; "
     helper.write_bytes(source.replace(anchor, repr(guard).encode() + b" " + anchor, 1))
     return staged, counter
 
 
-def check_turn(exit_code, stdout, expected):
+def tool_reported_error(item):
+    result = item.get("result")
+    return item.get("error") is not None or isinstance(result, dict) and (
+        result.get("isError") is True or result.get("is_error") is True)
+
+
+def check_turn(exit_code, stdout, expected, *, expected_capture=None):
     events = [json.loads(line) for line in stdout.splitlines() if line.startswith(b"{")]
     items = [event["item"] for event in events if event.get("type") == "item.completed"]
     messages = [item["text"] for item in items if item.get("type") == "agent_message"]
@@ -150,7 +197,8 @@ def check_turn(exit_code, stdout, expected):
             and not any(event.get("type") in ("error", "turn.failed") for event in events),
         "exact_answer": exact_keys and all(exact_fields.values()),
         "fixed_tool_call": tools in (["inspect_result"], ["inspect_result", "recover_result"])
-            and all(item.get("server") == "headroom_rule_pilot" and item.get("status") == "completed" for item in calls),
+            and all(item.get("server") == "headroom_rule_pilot" and item.get("status") == "completed"
+                    and not tool_reported_error(item) for item in calls),
         "recovery_tool_calls": tools.count("recover_result"),
     }
     if not result["exact_answer"]:
@@ -161,6 +209,20 @@ def check_turn(exit_code, stdout, expected):
                                                     for key, value in expected.items()},
                                    "integer_string_matches": {key: fields.get(key) == str(value)
                                                               for key, value in expected.items() if type(value) is int}}
+    if expected_capture is not None:
+        delivery = []
+        for item in calls:
+            if item.get("server") != "headroom_rule_pilot" or item.get("tool") not in ("inspect_result", "recover_result"):
+                continue
+            value = item.get("result")
+            content = value.get("content", []) if isinstance(value, dict) else []
+            if not isinstance(content, list):
+                content = []
+            texts = [part["text"] for part in content if isinstance(part, dict)
+                     and part.get("type") == "text" and isinstance(part.get("text"), str)]
+            delivery.append({**capture_evidence(item["tool"], texts, expected_capture),
+                             "error_reported": tool_reported_error(item)})
+        result["producer_delivery"] = delivery
     return result
 
 
@@ -231,7 +293,13 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
     sent = counter.read_bytes().count(b"\n") if counter.exists() else 0
     assert sent <= arm_limit, "request_budget_exceeded"
     row = {"arm": directory.name, "forwarded_http_attempts": sent, "elapsed_ms": round(elapsed * 1000),
-           "attempt_limit": arm_limit, **check_turn(exit_code, stdout, pilot["CASES"][CASE][4]), **measure(engine, usage, sent)}
+           "attempt_limit": arm_limit,
+           **check_turn(exit_code, stdout, pilot["CASES"][CASE][4], expected_capture=pilot["envelope"](CASE, directory.name)),
+           **measure(engine, usage, sent)}
+    delivery = directory / "tool-delivery.jsonl"
+    if delivery.is_file():
+        row["forwarded_delivery"] = [json.loads(line) for line in delivery.read_text(encoding="utf-8").splitlines()]
+        assert len(row["forwarded_delivery"]) == sent, "tool_delivery_request_scope_changed"
     failures = directory / "upstream-errors.jsonl"
     if failures.is_file():
         row["upstream_errors"] = [json.loads(line) for line in failures.read_text(encoding="utf-8").splitlines()]
@@ -337,7 +405,8 @@ def main():
             assert arm_limit >= MIN_ATTEMPTS_PER_ARM, "paired_request_budget_exhausted"
             directory = run / arm
             directory.mkdir()
-            staged, counter = stage_arm(replay, directory, payload, target, model, effort, arm_limit)
+            staged, counter = stage_arm(replay, directory, payload, target, model, effort, arm_limit,
+                                        expected_capture=pilot["envelope"](CASE, arm))
             sources = json.loads((runtime / "optimization-sources.json").read_bytes())
             files = [PROGRAM, PROGRAM.with_name("rules_pilot.py"), usage_path, cli, catalog, answer_schema, runner, work / ".git/config", Path(sys.executable),
                      payload / "python313.dll", payload / "runtime-manifest.json", runtime / "learn_preview.py",

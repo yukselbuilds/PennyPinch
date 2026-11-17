@@ -1,0 +1,37 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "local_chatgpt_recovery_delivery_verified_live_cause_open",
+  "scope": "actual Codex CLI and owned Headroom engine using a synthetic ChatGPT routing hint and loopback provider",
+  "live_provider_calls_this_change": 0,
+  "local_provider_requests": 5,
+  "local_cli_turns_completed": 2,
+  "producer_captures_exact_at_cli": 3,
+  "recovered_capture_exact_at_provider": 1,
+  "request_delivery_metadata_entries": 5,
+  "normal_engine_exits": 2,
+  "fixed_answer_and_model_effort_contracts_preserved": true,
+  "completed_mcp_error_misclassification_reproduced": true,
+  "focused_tests": 8,
+  "metadata_only_content_not_retained": true,
+  "live_control_wrong_answer_cause": "unknown, prior live delivery metadata unavailable",
+  "live_savings_percent": null,
+  "artifacts": {
+    "focused_contract": {
+      "path": "work/proofs/optimization/rules-recovery/focus-893942d185024db3999f3420fa8214dc/result.json",
+      "sha256": "2fddbf4a5765cccb9839eca2e46e16f917ddd2adaecf9cdf8b31a7856ee9100b"
+    },
+    "local_chatgpt_route": {
+      "path": "work/proofs/optimization/rules-live/d19c45f3c9934520801207d3504d61a7/result.json",
+      "sha256": "1f6a9c64cb5c18fcddf2eac25ac7c2919f1bc97a6781586388237e93dac58d5d"
+    },
+    "delivery_check": {
+      "path": "work/proofs/optimization/rules-live/d19c45f3c9934520801207d3504d61a7/chatgpt-routing-recovery.json",
+      "sha256": "fad27833e6fb5a3ba36f0984c93d4f620192ec7f589445c9a3d225867e88452f"
+    },
+    "initial_fixture_setup_failure": {
+      "path": "work/proofs/optimization/rules-live/2f12cfb1480a428b9d76dbca63ef6243/result.json",
+      "sha256": "265137cd6b1f69323f54267b0eb6892e4d817b49e27885eef9d1193643d9fb2c"
+    }
+  }
+}

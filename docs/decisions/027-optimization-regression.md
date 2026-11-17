@@ -151,6 +151,8 @@ Pilotun çıktı sözleşmesi `passed` ve `held` için tamsayı, `exact_limit` v
 
 Yeni canlı Luna çiftinde beş kontrol ve üç sıkıştırma isteğinin tüm sayaçları gözlendi. Toplam girdi ve çıktı 49.826 → 29.592 idi. Sıkıştırılmış son yanıt birebir doğruydu. Ham kolun dört değeri eşleşmedi. Bu çiftin kalite kabulü olumsuz kaldı. CCR kaydının özgün stdout ile eşitliği ve başarılı yerel retrieval doğrulandı. Modele gönderilen geri çağrı gövdesinin bütünlüğü bu kayıttan kanıtlanamadı. Bağımsız tekrarlar, kalite ve genel fayda kabulü açık. [Sayaçları ölçülen canlı çift](../proofs/rules-live-counted-pair.json).
 
+Pilotun geri çağrı tanısı, sabit üreticinin CLI'ye döndürdüğü sonuç ile motordan sağlayıcıya gönderilen sonucu ayrı eşleşme bayraklarıyla izler. Kontrol yalnız pilotun araç adları ve aynı çağrı kimliğiyle sınırlıdır. İçerik, modelin seçtiği hash ve hata metni kaydedilmez. Açık MCP hatası taşıyan tamamlanmış çağrı başarılı araç sonucu kabul edilmez. Sentetik ChatGPT rota seçimiyle gerçek CLI ve yerel motor testinde geri çağrının iki ucu eşleşti. Bu yerel gözlem, önceki canlı yanıt hatasının nedenini belirlemez. [Geri çağrı aktarımı](../proofs/rules-recovery-delivery.json).
+
 ### H041-b yerel deney koşulları
 
 Ana ajan ölçüm, runtime ve cache sözleşmesi nedeniyle deney ve kabulü üstlenir. `bench/optimization/ccr-policy-plan.json` iki eşlenmiş tekrarı önceden belirler. Her tekrarda iki ayrı motor kullanılır. Bir oturum üç kısa istekten oluşur. İkincisi üç kısa istekten sonra sıkıştırılabilir uzun log ve korumalı kesin sayısal bir Read sonucu alır. Ayrı temiz oturumdaki kısa istek, yapışkan aracın başka oturuma taşınmadığını denetler. Tüm istekler izole Anthropic SSE fixture'ına gider.
