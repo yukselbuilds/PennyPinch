@@ -1,0 +1,161 @@
+{
+  "task": "H041",
+  "date_local": "2026-11-17",
+  "status": "local_cli_mcp_capability_preflight_complete_live_acceptance_open",
+  "executor": "main",
+  "executor_reason": "Session/capability ownership, runtime protection, permissions and measurement semantics",
+  "engine": "0.44.0",
+  "cli": "codex-cli 0.169.0-alpha.11.1",
+  "os": "Windows-10-10.0.19045-SP0",
+  "scope": "Real isolated Codex CLI -> per-process stdio MCP -> pinned Headroom -> scripted loopback Responses fixture; fixed synthetic report only",
+  "focused_tests": 6,
+  "final_local_upstream_requests": 11,
+  "all_local_upstream_requests_including_diagnostics": 65,
+  "real_provider_model_calls": 0,
+  "accepted_provider_savings_percent": null,
+  "checks": {
+    "exact_selected_record_and_1000_record_count": true,
+    "stdout_stderr_exit_and_source_mcp_request_identity_exact": true,
+    "original_report_bytes": 107498,
+    "native_mcp_capture_text_bytes": 128099,
+    "original_wire_comparison": {
+      "stdout": true,
+      "stderr": true,
+      "exit_code": true,
+      "source_tool": true,
+      "source_call_id": true,
+      "same_fields": true
+    },
+    "foreign_cli_query_and_original_read_denied": true,
+    "disabled_Read_missing_from_catalog_and_forced_call_denied": true,
+    "selection_still_works_after_denied_call": true,
+    "complete_count_only_after_full_successful_scan": true,
+    "permission_cannot_be_selected_by_tool_arguments": true,
+    "graceful_engine_stop_and_owned_port_closed": {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    },
+    "current_source_toolchain_and_test_fingerprints_match": true
+  },
+  "cli_error_semantics": "Direct MCP result isError=true; this CLI omits the flag in JSON output and reports status=failed. Missing flags stay null; status is verified separately.",
+  "fixture_only_settings": {
+    "tool_output_token_limit": 65536,
+    "original_read_tool": "Read",
+    "Read_uses_existing_pinned_byte_exact_protection": true
+  },
+  "not_verified": [
+    "Default CLI output budget full recovery",
+    "Native file/shell permission inheritance",
+    "Shared-process subagents",
+    "Live model quality, cache and total provider benefit",
+    "Other clients and operating systems"
+  ],
+  "product_or_global_settings_changed": false,
+  "full_product_gate_repeated": false,
+  "main_task_complete": false,
+  "experimental_e3_remains_frozen": true,
+  "next_step": "Bound original recovery to the default client output budget before the live quality/cost pilot; include every reread and extra turn.",
+  "artifacts": {
+    "final_cli_run": {
+      "path": "work/proofs/optimization/targeted-query-client/fae05d57fbbc47778f5838b1556dfa6b/result.json",
+      "sha256": "9ef00c5a223e78e1012c4b2949a38f6a3c3a1f3918bfbb5da7a8381e74dceddd"
+    },
+    "final_focused_tests": {
+      "path": "work/proofs/optimization/targeted-query-client-checks/7f6b537956744c66b497d3295cefe5cc/review-final-green.json",
+      "sha256": "d47329c4b1dbe049d74c79742693f1f15b201c3e9a5c6b9f2448483c700056f5"
+    },
+    "direct_mcp_denial": {
+      "path": "work/proofs/optimization/targeted-query-client-checks/7f6b537956744c66b497d3295cefe5cc/mcp-denial-diagnostic.json",
+      "sha256": "9338054a94e14730eda8a2ed675614b7e08ef9dc22e21f8f29d1123829027315"
+    },
+    "initial_red": {
+      "path": "work/proofs/optimization/targeted-query-client-checks/7f6b537956744c66b497d3295cefe5cc/red.json",
+      "sha256": "374a828fb6820db0cc90366b4a4c5a19bf3d8b9ef9c28f015a03491ca9a5bf5c"
+    }
+  },
+  "historical_projection_limits": [
+    "The early complete_original_seen substring check was not used as evidence of archive loss; the final reader parses the JSON capture.",
+    "Early is_error=false defaults did not prove a successful tool call. The final candidate preserves null and verifies the native failed status."
+  ],
+  "attempt_history": [
+    {
+      "path": "work/proofs/optimization/targeted-query-client/1903177bb28145fa982b2a2fc2079c03/result.json",
+      "sha256": "89080b301440b04cfbc01ac22829f8ad1fa076403282f990c8037b447987e77c",
+      "passed": false,
+      "failure": "jsondecodeerror",
+      "local_requests": 4
+    },
+    {
+      "path": "work/proofs/optimization/targeted-query-client/1961f49d692147b683fae7b156ba01b9/result.json",
+      "sha256": "6112ad6e6bfc3dfd90c8a183826ab3959bdb53266ecb7d7bdf657ecdfff210d7",
+      "passed": false,
+      "failure": "jsondecodeerror",
+      "local_requests": 4
+    },
+    {
+      "path": "work/proofs/optimization/targeted-query-client/5acbf8072296414982dedeaabcd8ccf9/result.json",
+      "sha256": "7234328bc3df6444043a7f3426522cf1d624e57503bfff3f733c8957b3699bd2",
+      "passed": false,
+      "failure": "AssertionError",
+      "local_requests": 2
+    },
+    {
+      "path": "work/proofs/optimization/targeted-query-client/601a141ce42847c4939ba90bfc55890f/result.json",
+      "sha256": "74104bdfa585a771fae21bb1c579d3db6a3f7e3aa9a8c66def3461e9a29e6ccc",
+      "passed": false,
+      "failure": "foreign_tool_not_error",
+      "local_requests": 7
+    },
+    {
+      "path": "work/proofs/optimization/targeted-query-client/8079b9f0ea8b4d6d82cd22d940e5b6a2/result.json",
+      "sha256": "c54d2a0f0e879cac24ce91ce02581d77605f4d34b5f4569fdf97b544ee4b91e3",
+      "passed": false,
+      "failure": "original_report_changed",
+      "local_requests": 4
+    },
+    {
+      "path": "work/proofs/optimization/targeted-query-client/882dc5a3f1c34b1d8d506448aa4e922f/result.json",
+      "sha256": "4e7e365c9764042bee9c8f005bfc93a509f60d574bf6422c1c97f655ed998d82",
+      "passed": false,
+      "failure": "foreign_archive_not_rejected",
+      "local_requests": 6
+    },
+    {
+      "path": "work/proofs/optimization/targeted-query-client/b5b73785b8a74454a92be08fb1ed10d8/result.json",
+      "sha256": "2ac34a87419956080e921e4253a1a07d3627ae0ad10f29c4cffb825b382711f8",
+      "passed": false,
+      "failure": "foreign_tool_not_error",
+      "local_requests": 7
+    },
+    {
+      "path": "work/proofs/optimization/targeted-query-client/b68de6a84e9a479282cf3f6a6979c863/result.json",
+      "sha256": "bb98ce7ac6908ba94acdd016fc1d95f9aaf921e8ea2dc71af8a6ab4ac0d4184f",
+      "passed": false,
+      "failure": "tool_output_shape_changed",
+      "local_requests": 2
+    },
+    {
+      "path": "work/proofs/optimization/targeted-query-client/c6a61fd58fa043cd89235a124fc43f43/result.json",
+      "sha256": "db73ff40207e3612d77bbed1c2459458e54fe3a2e34cd731f2eb34b94217c76b",
+      "passed": true,
+      "failure": null,
+      "local_requests": 11
+    },
+    {
+      "path": "work/proofs/optimization/targeted-query-client/f947c6dadb1d445b89ffae670525972a/result.json",
+      "sha256": "96b3c84859c17b1e978cd71163cc55985b5511ec03599c029326cf2a10b249df",
+      "passed": false,
+      "failure": "foreign_tool_not_error",
+      "local_requests": 7
+    },
+    {
+      "path": "work/proofs/optimization/targeted-query-client/fae05d57fbbc47778f5838b1556dfa6b/result.json",
+      "sha256": "9ef00c5a223e78e1012c4b2949a38f6a3c3a1f3918bfbb5da7a8381e74dceddd",
+      "passed": true,
+      "failure": null,
+      "local_requests": 11
+    }
+  ]
+}

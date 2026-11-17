@@ -72,6 +72,24 @@ Komut proje kökünde çalıştırılır.
 & 'work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime/python.exe' -I -B bench/context_tools/targeted_query_replay.py --run
 ```
 
+#### Hedefli sorgunun gerçek CLI oturum sınırı
+
+17 Kasım sonraki dilim: mevcut arşivi yalnız bu Codex CLI sürecine ait stdio MCP sunucusuna bağla. Ana ajan izin/sahiplik kararını üstlenir. Kaynak, sabit sentetik raporu üreten mevcut çocuk süreçtir; kullanıcı dosyası, shell komutu, URL veya istemcinin verdiği sahip kimliği kabul edilmez. Her sunucu yeni bellek arşivi/yetkisi alır; yalnız gerçek MCP isteğinin kimliği kaynak metadata'sına bağlanır. Bu kimlik modelin function-call kimliği veya alt ajan kimliği sayılmaz.
+
+- İzinli akış: gerçek CLI → rapor referansı → tam ID sorgusu → özgün çıktı. Kayıt/sayı/satır sonları, stdout/stderr/exit ve kaynak MCP istek kimliği korunur. `matched_count=1` ve `truncated=false` yalnız bütün JSONL taraması başarılıysa eklenir; hatada bilinmeyen sayı sıfıra çevrilmez.
+- Yabancı oturum: ilk CLI'nin referansını yeni stdio sunucusunda sorgulama ve özgününü okuma reddedilir. Model argümanı yetki, dosya veya komut seçemez. Sunucu yeniden açılınca eski referans da geçersizdir.
+- Kapalı araç: aynı gerçek CLI'nin `disabled_tools` ayarıyla özgün okuma aracı listelenmez; sağlayıcı fixture'ı çağırmaya zorlasa da özgün içerik dönmez. Bu, ayrı MCP araç iznini sınar; native Read/shell dosya sandbox'ının otomatik miras alındığını kanıtlamaz.
+
+Doğrulama yeni `tests/runtime/test_targeted_query_client.py` odaklı testleri ve pinli CLI/0.44.0 motoruyla `bench/context_tools/targeted_query_client_replay.py --run --codex <pinli CLI>` üzerinden yapılır; komutlar dosyalar eklendikten sonra çalıştırılır. Sağlayıcı yalnız loopback fixture'dır; auth sentetik, model sonucu ve kullanım sayaçları betiklenmiştir. Gerçek model kalitesi/tasarrufu, genel dosya izinleri, alt ajan ve diğer istemci/OS kabulleri açık kalır. Aynı ana H041 sürer; e3/e4 yeniden açılmaz, ürün varsayılanları ve gerçek istemci ayarları değişmez.
+
+Varsayılan CLI bütçeli ön kontrolde tam özgün okumanın model metni 11.984 karakterde kesildi; yerel araç sonucu 128.099 bayttı, truncation işareti vardı ve CCR işareti yoktu. Bu başarısız kabul korunur. Son taşıma/izin adayında yalnız izole fixture profiline `tool_output_token_limit=65536` yazılır. Veri ve birebir geri okuma kabulü küçültülmez; bu sonuç varsayılan CLI bütçesinde tam geri okuma veya üretim hazır oluşu sayılmaz. Genel istemci entegrasyonunda izinli parça okuma/bütçe sınırı ayrıca çözülmelidir. Ayarın kapsamı [resmî yapılandırma kaynağıyla](https://learn.chatgpt.com/docs/config-file/config-reference) karşılaştırıldı.
+
+Yüksek bütçeli ilk denemede özgün araç çıktısı CLI'de tamdı; model yolunda tekrar sıkıştırılmıştı. Yeni kurtarma aracını genel `read_original` adıyla tanımlamak yeterli değildir. MCP'nin özgün okuma eylemi, sabit motordaki kaynak/byte-exact korumasının tanıdığı `Read` olarak kaydedilir. İç arşiv okuma metodu değişmez; genel istemci veya motor ayarı değiştirilmez. Son kabul hem CLI'nin hem motordan çıkan özgün zarfın birebirliğini gerektirir.
+
+Yerel önkontrol tamamlandı: altı odaklı test ve son adayın üç gerçek CLI senaryosunda 11 loopback gönderimi/11 kullanım kaydı geçti. Hedef kayıt, 1.000 kayıt sayısı ve özgün stdout/stderr/exit/kaynak kimliği birebir. Yeni CLI'nin sorgu ve özgün okuması reddedildi; kapalı `Read` katalogda yoktu, zorlanan çağrı çalışmadı ve sonraki sorgu devam etti. Doğrudan MCP'de `isError=true`; pinli CLI bu alanı JSON kaydına taşımayıp `status=failed` gösterdi. Eksik bayrak bilinmiyor kalır, hata durumu ayrıca doğrulanır. Önce/sonra/güncel fingerprint'ler ve normal motor kapanışı geçti. Tanılarla toplam 65 yerel gönderim; gerçek sağlayıcı çağrısı sıfır. Eski başarısız kayıtlar değiştirilmedi. [Kanıt](../proofs/targeted-query-client.json).
+
+Genel kabul açık: ilk iş varsayılan istemci bütçesinde izinli parçalardan birebir özgün geri okumadır. Ondan sonra gerçek dosya/ajan izni ve canlı model kalitesi, bütün ek turlar dahil toplam kullanım/maliyet sınanır. Ürün kayıt/varsayılanları değişmedi, H041 kapanmadı ve e3/e4 dondurulmuş kaldı.
+
 ### H041-e: deneysel kurallar
 
 16 Kasım 2026 kullanıcı kararı: ModHarness-RL'den esinlenen kural deneyi **isteğe bağlı ve varsayılan kapalıdır**. Ana ajan kapsam, ölçüm ve izin sözleşmesini üstlenir; bu kayıt yalnız plandır. Amaç, büyük araç çıktılarında gereken bilgiyi seçmek ve doğrulanmış hata döngülerini Learn içinde öneri olarak göstermek. [Makale v1](https://arxiv.org/abs/2611.18533v1) yöntem kaynağıdır; buradaki kabul koşulları ürünümüze aittir. Model eğitimi, kendiliğinden kod üretip çalıştırma ve bütün sohbetleri yeniden özetleme kapsam dışıdır.
