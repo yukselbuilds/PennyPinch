@@ -1,0 +1,59 @@
+{
+  "task": "H041-e3",
+  "date_local": "2026-11-17",
+  "status": "local_responses_compatibility_fixed_live_verification_open",
+  "prior_live_request_history_rows": 7,
+  "prior_live_history_rows_with_cache_reads": 4,
+  "prior_live_terminal_shape_retained": false,
+  "prior_live_cause_confirmed": false,
+  "reproduced_optional_status_failures_before": [
+    "omitted_status",
+    "null_status"
+  ],
+  "compatible_completion": "response.completed with identity matching response.created",
+  "focused_python_tests": 30,
+  "fixture_engine_and_cli_usage_matches": 11,
+  "optional_status_early_close": {
+    "mode": "close-after-terminal-no-status",
+    "terminal_received": true,
+    "done_received": false,
+    "terminal_status_present": false,
+    "stats_request_count": 1,
+    "usage_record_count": 1,
+    "missing_usage_records": 0,
+    "cache_write_when_present": "unknown"
+  },
+  "local_gate": {
+    "frontend_tests": 224,
+    "rust_tests": 469,
+    "rust_opt_in_skipped": 24,
+    "fmt": true,
+    "frontend_build": true,
+    "native_build": true,
+    "native_usage_to_sqlite_and_activity_detail": true
+  },
+  "live_provider_model_calls_this_change": 0,
+  "live_provider_quality_and_savings": null,
+  "artifacts": {
+    "before_fix": {
+      "path": "work/proofs/optimization/responses-optional-status/before-1cd65a8c9ec64caf9bf788b350179e74/result.json",
+      "sha256": "fb7839e3d8616c3b5b9861585ab071320ea37a78a86e050f2d05ad2a76b86af6"
+    },
+    "focused_tests": {
+      "path": "work/proofs/optimization/responses-optional-status/focus-9a0513d4d661460ea3ef13cc78680b0e/result.json",
+      "sha256": "1a1cc8ac0ea7f2b2fbd92abe545581f57b827b1034deb8b86bcead49a58cd1cb"
+    },
+    "engine_and_cli": {
+      "path": "work/proofs/optimization/rules-pilot/dee0c2632f0143389f92be8cc63132a7/result.json",
+      "sha256": "f8a309bdfc83a05860187a757c4d793d7eb3387318d66ad7769e2fee805f5bb5"
+    },
+    "full_local_gate": {
+      "path": "work/proofs/optimization/responses-optional-status/gate-10c94f4f12f04873860c8e8c9d73c064/result.json",
+      "sha256": "aa590b571a6a3f48e158b13146d1a62660e834c39019ca70c0402ec1938d037f"
+    },
+    "native_reader": {
+      "path": "work/proofs/optimization/desktop-responses-usage/runs/79d61163-e047-499f-995f-0f9179097f59/result.json",
+      "sha256": "f99378a3d4fe05959b6cf1749b672e1141ca3e29d45ff26ff35322a8b80e1498"
+    }
+  }
+}

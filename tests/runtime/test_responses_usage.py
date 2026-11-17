@@ -92,6 +92,21 @@ class ResponsesUsageTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(await self.inspect(created))
         self.assertIsNone(await self.inspect(final[:-4]))
 
+    async def test_completed_event_with_optional_status(self):
+        created = event("response.created", response=response(status="in_progress", usage=None))
+        expected = control._responses_usage(response())
+        missing = response()
+        del missing["status"]
+        for completed in (missing, response(status=None)):
+            with self.subTest(status_present="status" in completed):
+                final = event("response.completed", response=completed)
+                self.assertEqual(await self.inspect(created + final), expected)
+                self.assertIsNone(await self.inspect(final))
+                self.assertIsNone(control._responses_usage(completed))
+        for completed in (response(status="incomplete"), response(status="failed"),
+                          response(id="another", status=None)):
+            self.assertIsNone(await self.inspect(created + event("response.completed", response=completed)))
+
     async def test_invalid_sse_never_reports_partial_or_unbounded_usage(self):
         created = event("response.created", response=response(status="in_progress", usage=None))
         final = event("response.completed", response=response())
@@ -178,9 +193,12 @@ class ResponsesUsageTests(unittest.IsolatedAsyncioTestCase):
     async def test_completed_responses_usage_survives_cancelled_cleanup(self):
         created = event("response.created", response=response(status="in_progress", usage=None))
         terminal = event("response.completed", response=response())
+        missing = response()
+        del missing["status"]
         scope = {"type": "http", "method": "POST", "path": "/v1/responses", "headers": []}
         for raw, conflicting, truncated, expected in (
             (created + terminal, False, False, True),
+            (created + event("response.completed", response=missing), False, False, True),
             (created, False, False, False),
             (terminal, False, False, False),
             (created + terminal + terminal, False, False, False),

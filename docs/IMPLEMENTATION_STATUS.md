@@ -1,6 +1,13 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## H041-e3 — Responses tamamlanma olayı için kullanım okuyucusu düzeltildi
+
+- Canlı çiftin motor geçmişinde yedi kullanım satırı ve dört pozitif cache okuması bulundu. Geçmişe yazılan motor sayaçları, eşleşmiş sağlayıcı kullanım kaydının yerini almadı. Aynı anda canlı akışın terminal alan şekli kaydedilmediği için gerçek koşudaki kaybın kesin nedeni açık.
+- Paketli OpenAI şemasında `Response.status` isteğe bağlıdır. Yerel testte `status` eksik veya `null` olduğunda mevcut okuyucu, doğru kimlikle gelen `response.completed` olayının sayaçlarını düşürdü. Tamamlanma olayı ile `response.created` yanıtının kimliği eşleştiğinde olayın tamamlanma durumu kullanılıyor. Çelişen durum, farklı kimlik ve eksik sayaçlar bilinmiyor kalıyor.
+- 30 odaklı Python testi geçti. Yerel motor ve gerçek CLI ile 11 istek kullanım kaydıyla eşleşti. Terminal durum alanı eksik kapanışta da kullanım kaydı önceki kimlikle korundu. 224 arayüz ve 469 Rust testi, biçim ve iki derleme geçti. Native okuyucunun SQLite ve istek ayrıntısına aktarımı da doğrulandı. [Kanıt](proofs/responses-optional-terminal-status.json).
+- **45/54 ve H041-e3 açık.** Düzeltilen sayaç yolu için canlı sağlayıcı doğrulaması ve deneysel kuralın kesin çıktı kabulü bekliyor. Bu dilimde gerçek model çağrısı yapılmadı.
+
 ## H041-e3 — ilk tam canlı çift çıktı ve kullanım kabulünü geçemedi
 
 - Kullanıcının onayladığı yeni `gpt-6-luna` / `medium` koşusunda ham kol dört kayıtlı HTTP gönderimiyle tamamlandı ve özgün çıktıyı geri aldı. Sıkıştırılmış kol aynı çalışma alanı ve katalogla üç gönderimde tamamlandı. Sekiz gönderimlik payın yedisi kullanıldı. İki motor normal kapandı ve fingerprint'ler eşleşti.

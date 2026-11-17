@@ -164,9 +164,12 @@ async def _observe_anthropic_sse(chunks, attempt, parse_events):
         yield chunk
 
 
-def _responses_usage(value):
+def _responses_usage(value, *, verified_terminal=False):
     if (not isinstance(value, dict) or value.get("object", "response") != "response"
-            or value.get("status") != "completed" or not isinstance(value.get("usage"), dict)):
+            or not isinstance(value.get("usage"), dict)):
+        return None
+    status = value.get("status")
+    if status != "completed" and not (verified_terminal and status is None):
         return None
     usage = value["usage"]
     details = usage.get("input_tokens_details")
@@ -215,9 +218,11 @@ async def _observe_responses_sse(chunks, attempt, parse_events):
                         if not isinstance(value, dict) or response_id is not None and value.get("id") != response_id:
                             raise ValueError()
                         stopped = True
-                        attempt["usage"] = _responses_usage(value)
+                        verified_id = bool(response_id)
+                        # The completed event supplies status when its response ID matches creation.
+                        attempt["usage"] = _responses_usage(value, verified_terminal=verified_id)
                         # Codex can close after this event, before the optional [DONE] or HTTP EOF.
-                        attempt["_verified_responses_terminal"] = bool(response_id) and attempt["usage"] is not None
+                        attempt["_verified_responses_terminal"] = verified_id and attempt["usage"] is not None
             except (ValueError, RecursionError):
                 invalid = True
                 buffer.clear()

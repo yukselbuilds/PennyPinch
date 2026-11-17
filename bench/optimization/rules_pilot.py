@@ -28,6 +28,7 @@ RECOVERY_CALL = "call_rule_pilot_recover"
 MODEL = "local-protocol-fixture"
 FIELDS = ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens", "output_tokens")
 FIXTURE_COUNTERS = ((913, 0, 3), (941, 511, 17))
+CLOSURE_MODES = ("read-to-eof", "close-after-terminal", "close-after-terminal-no-status")
 SETTLED = "INFO check=pass exact_limit=9223372036854775859\r\n"
 HELD = "WARN check=held signed_factor=-0.062500000000001\r\n"
 CASES = {
@@ -121,7 +122,8 @@ class Provider(runpy.run_path(str(HERE / "replay.py"))["FixtureHandler"]):
             outputs = [item["output"] for item in request["input"]
                        if item.get("type") == "function_call_output" and item.get("call_id") == CALL]
             marker = re.search(r"<<ccr:([a-f0-9]{12,24}),string,[^>]+>>", encode(outputs))
-        close_probe = self.headers.get("X-Proof-Case") in ("read-to-eof", "close-after-terminal")
+        proof_case = self.headers.get("X-Proof-Case")
+        close_probe = proof_case in CLOSURE_MODES
         if close_probe and turn == 1:
             item = {"type": "message", "id": "msg_closure", "role": "assistant", "status": "completed",
                     "content": [{"type": "output_text", "text": "FIXTURE_OK", "annotations": []}]}
@@ -158,6 +160,8 @@ class Provider(runpy.run_path(str(HERE / "replay.py"))["FixtureHandler"]):
                     "model": MODEL, "output": [item], "usage": {"input_tokens": input_tokens,
                         "input_tokens_details": {"cached_tokens": cached}, "output_tokens": output_tokens,
                         "total_tokens": input_tokens + output_tokens}}
+        if proof_case == "close-after-terminal-no-status":
+            del response["status"]
         frames = _openai_responses_to_sse(response)
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
@@ -220,18 +224,23 @@ def closure_check(engine, server, usage, mode):
         response = connection.getresponse()
         assert response.status == 200
         terminal = done = False
+        status_present = None
         while (line := response.readline(65536)):
             if line.startswith(b"data: [DONE]"):
                 done = True
-            elif line.startswith(b"data: ") and json.loads(line[6:]).get("type") == "response.completed":
-                terminal = True
-                if mode == "close-after-terminal":
-                    break
+            elif line.startswith(b"data: "):
+                event = json.loads(line[6:])
+                if event.get("type") == "response.completed":
+                    terminal = True
+                    status_present = "status" in event["response"]
+                    if mode != "read-to-eof":
+                        break
         assert terminal and len(server.requests) == 1 and done == (mode == "read-to-eof"), "closure_probe_incomplete"
+        assert status_present == (mode != "close-after-terminal-no-status"), "terminal_status_shape_changed"
         response.close()
     finally:
         connection.close()
-    return {"mode": mode, "terminal_received": terminal, "done_received": done,
+    return {"mode": mode, "terminal_received": terminal, "done_received": done, "terminal_status_present": status_present,
             **usage_since(engine, usage, before, FIXTURE_COUNTERS[:1])}
 
 
@@ -389,7 +398,7 @@ def main():
     try:
         engine.start()
         assert usage["usage_response"](engine, None)[0] == 404 and not usage["records"](engine), "usage_boundary_failed"
-        for mode in ("read-to-eof", "close-after-terminal"):
+        for mode in CLOSURE_MODES:
             row = closure_check(engine, server, usage, mode)
             closures.append(row)
             print(encode(row), flush=True)
@@ -412,7 +421,7 @@ def main():
             server.shutdown()
             server.server_close()
     after = fingerprints()
-    observation_complete = failure is None and before == after and len(results) == 4 and len(closures) == 2
+    observation_complete = failure is None and before == after and len(results) == 4 and len(closures) == len(CLOSURE_MODES)
     usage_complete = observation_complete and all(row["missing_usage_records"] == 0 for row in [*closures, *results])
     report = run / "result.json"
     replay.write_new(report, {"passed": usage_complete, "observation_complete": observation_complete, "failure": failure,

@@ -143,6 +143,8 @@ Varsayılan komut yalnız yerel yanıtlarla çalışır. Canlı komut `--live`, 
 
 17 Kasım canlı Luna çiftinde iki tur normal tamamlandı. Kontrol dört ve sıkıştırılmış kol üç sağlayıcı HTTP gönderimi kullandı. Kontrol geri çağırmayı tamamladı. İki kol da kesin çıktı kontrolünü geçemedi ve iki kullanım toplamı bilinmiyor kaldı. Sıkıştırılmış son mesaj JSON olarak ayrıştı. Hassas sınır ve katsayı eşleşti, iki sayım alanı eşleşmedi. Normal biten kontrol kolunun kalite veya kullanım kabulü olumsuzsa koşum diğer kolun kanıtını da toplar. Kabul ve tasarruf yüzdesi için iki kolun şartları sürer. [Canlı çift](../proofs/rules-live-luna-pair.json).
 
+`ResponseCompletedEvent` tamamlanmış yanıtı taşır. Pinli OpenAI şeması iç `status` alanını isteğe bağlı tanımlar. Responses HTTP/SSE okuyucusu, aynı kimlikli `response.created` ve `response.completed` olayları varken eksik veya `null` iç durum alanını kabul eder. Açıkça çelişen durum, kimlik uyuşmazlığı ve kullanımı olmayan akış bilinmiyor kalır. Yerel terminal olayı ve erken kapanış testi geçti. Canlı koşudan kalan kayıtlar terminal alanını göstermediği için bu davranışın canlı doğrulaması açıktır. [Yerel doğrulama](../proofs/responses-optional-terminal-status.json).
+
 ### H041-b yerel deney koşulları
 
 Ana ajan ölçüm, runtime ve cache sözleşmesi nedeniyle deney ve kabulü üstlenir. `bench/optimization/ccr-policy-plan.json` iki eşlenmiş tekrarı önceden belirler. Her tekrarda iki ayrı motor kullanılır. Bir oturum üç kısa istekten oluşur. İkincisi üç kısa istekten sonra sıkıştırılabilir uzun log ve korumalı kesin sayısal bir Read sonucu alır. Ayrı temiz oturumdaki kısa istek, yapışkan aracın başka oturuma taşınmadığını denetler. Tüm istekler izole Anthropic SSE fixture'ına gider.
