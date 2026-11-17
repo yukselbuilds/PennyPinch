@@ -288,7 +288,7 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
         env["CODEX_HOME"] = str(auth_home)
         config["cli_auth_credentials_store"] = "file"
     prompt = ("Call the fixed inspect_result tool once. If it returns a Headroom reference, pass its hash to headroom_retrieve. "
-              "A repeat marker gives the total occurrences of the preceding line in that run. Return only a JSON object. "
+              "Return only a JSON object. "
               + pilot["CASES"][CASE][3])
     command = pilot["client_args"](cli, work, CASE, directory.name, model, config, prompt=prompt, retrieval_port=engine.port,
                                    output_schema=directory.parent / "answer-schema.json")

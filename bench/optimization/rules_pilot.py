@@ -34,7 +34,10 @@ SETTLED = "INFO check=pass exact_limit=9223372036854775859\r\n"
 HELD = "WARN check=held signed_factor=-0.062500000000001\r\n"
 CASES = {
     "counts": (SETTLED * 37 + HELD * 8 + SETTLED * 11, "", 0,
-               "Report passed and held as JSON integers. Report exact_limit and signed_factor as strings, preserving all digits and signs.",
+               "Compute passed as the total number of stdout records with check=pass and held as the total with check=held. "
+               "Calculate the totals programmatically from the returned text, summing separated runs. In code mode, use JavaScript. "
+               "A repeat marker gives the total occurrences of the preceding line in that run. "
+               "Report passed and held as JSON integers. Report exact_limit and signed_factor as strings, preserving all digits and signs without numeric conversion.",
                {"passed": 48, "held": 8, "exact_limit": "9223372036854775859", "signed_factor": "-0.062500000000001"}),
     "failed_check": (SETTLED * 19, "ERROR check=checksum computed=0.512340000000009\r\n", 9,
                      "Report exit_code and the exact stderr line as JSON.",

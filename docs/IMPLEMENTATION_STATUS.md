@@ -1,6 +1,14 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## H041-e3 — canlı geri çağrı doğru, sayım kabulü açık
+
+- Ana ajan, rota/ölçüm ve kalite sözleşmesi nedeniyle bu dilimi üstlendi. Aynı ayrı ChatGPT test hesabında `gpt-6-luna` / `medium` ile sınırlı çift 7/8 gönderimde tamamlandı. Üç üretici sonucu CLI'de, kanonik `headroom_retrieve` ile geri alınan tam içerik sağlayıcı girişinde birebir eşleşti. Geri çağrı çıktısı yeniden offload edilmedi. İki motor normal kapandı ve kaynak/ortam fingerprint'leri koşu boyunca aynı kaldı. [Canlı kanıt](proofs/rules-live-canonical-pair.json).
+- 7/7 sağlayıcı kullanım kaydı tamdı. Kontrol 40.104 giriş + 612 çıkış = 40.716, sıkıştırılmış kol 29.181 giriş + 367 çıkış = 29.548 token kullandı. Cache okumaları 28.672 ve 17.024, gözlenen yazma iki kolda sıfırdı. Cache okumaları girdi toplamına dahildir; bu çift kontrollü soğuk/sıcak deney değildir.
+- Kontrolün `passed` sayımı eşleşmedi; diğer üç alan ve bütün türler doğruydu. Sıkıştırılmış yanıt tam doğruydu. **Çift kalite kapısını geçmedi; kabul edilmiş tasarruf yüzdesi yok.** Önceki yanlış yanıtların nedenleri bu gözlemle bütünüyle açıklanmış sayılmaz.
+- İki kolun aynı görev talimatı açıklaştırıldı. `check=pass` / `check=held` kayıtları ve ayrı tekrar grupları kodla toplanacak; kesin değerler sayıya çevrilmeden metin kalacak. Beklenen değerler talimata eklenmedi, kesin yanıt veya toleranslar değiştirilmedi. Dokuz odaklı test ve beş istekli gerçek CLI/yerel ChatGPT rota provası geçti. Bu talimatın canlı kalite kabulü `not_tested`. Ek canlı istek sıfır; ürün kaynakları değişmediği için tam ürün kapısı tekrarlanmadı.
+- **45/54 ve H041-e3 açık.** Sonraki adım aynı model/eforda programla sayım talimatıyla iki kolun tam doğruluk kabulü. Ardından bağımsız görevler, en az üç eşlenmiş tekrar ve önceden sabitlenmiş cache/kaynak koşulları gerekir. Deneysel kuralın canlı etkinleştirmesi açılmadı; e4'e geçilmedi.
+
 ## H041-e3 — kod modu geri çağrı uyumsuzluğu yerelde giderildi
 
 - Devam isteğiyle aynı hesap/model/eforda yürütülen tanılı canlı koşu sekiz istekte tamamlandı. Üç üretici sonucu CLI'de birebir doğruydu. Ham son yanıt eşleşmedi, sıkıştırılmış yanıt doğruydu. İlk aktarım tanısı yalnız `function_call` biçimini sınıfladığından kod modu çıktıları sınıflanmamış kaldı. Canlı model kataloğu `tool_mode=code_mode_only` bildirdi.

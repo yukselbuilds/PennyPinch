@@ -28,6 +28,9 @@ class RulesPilotContractTests(unittest.TestCase):
         self.assertFalse(schema["additionalProperties"])
         self.assertFalse(any(character.isdigit() for character in json.dumps(schema)))
         prompt = pilot["CASES"]["counts"][3]
+        self.assertIn("stdout records with check=pass", prompt)
+        self.assertIn("Calculate the totals programmatically", prompt)
+        self.assertFalse(any(character.isdigit() for character in prompt))
         self.assertIn("passed and held as JSON integers", prompt)
         self.assertIn("exact_limit and signed_factor as strings", prompt)
 
