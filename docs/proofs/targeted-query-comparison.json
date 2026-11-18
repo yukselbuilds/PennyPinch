@@ -1194,5 +1194,118 @@
     },
     "targeted_live_wire_format": "unknown",
     "live_retried_after_observer_update": false
+  },
+  "live_verified_readback": {
+    "date": "2026-11-18",
+    "run": "c1da497ae9154d26976e5cad91749efd",
+    "entry_point": "bench/context_tools/targeted_query_compare.py --live --require-readback",
+    "account_scope": "existing isolated ChatGPT Free profile",
+    "comparison_accepted": true,
+    "provider_requests": 7,
+    "preset": {
+      "cli": "codex-cli 0.169.0-alpha.11.1",
+      "engine": "0.44.0",
+      "os": "Windows-10-10.0.19045-SP0",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "report_bytes": 5926,
+      "report_rows": 48,
+      "report_sha256": "d9a7ea509ff676ba9051e1f52237dabbf424f4a1ee78b3e3ae4b2c5193459318",
+      "prompt_sha256": "60a78c10caa21c9fed4c7fd5b08e917cd67ef6b7d7f1736972352268aa5e4c68",
+      "attempts_per_arm": 4,
+      "attempts_per_pair": 8
+    },
+    "arms": {
+      "full_read": {
+        "requests": 3,
+        "usage_records": 3,
+        "exact_answer": true,
+        "cli_original_read_exact": true,
+        "first_request_cached_input": 0,
+        "original_read_at_engine_input_by_attempt": [
+          false,
+          false,
+          true
+        ],
+        "original_read_on_wire_by_attempt": [
+          false,
+          false,
+          true
+        ],
+        "provider_usage": {
+          "total_input_tokens": 34430,
+          "output_tokens": 320,
+          "total_tokens": 34750,
+          "cache_read_input_tokens": 10112,
+          "cache_creation_input_tokens": 0
+        },
+        "owned_engine_closed": true,
+        "input_fingerprints": {
+          "count": 44,
+          "matched": true,
+          "sha256_of_sorted_input_hashes": "60b79d629a1aab01d9f5b072d3041156bb2666e2cdf8b618203ac8980f67c613"
+        }
+      },
+      "targeted": {
+        "requests": 4,
+        "usage_records": 4,
+        "exact_answer": true,
+        "cli_original_read_exact": true,
+        "first_request_cached_input": 0,
+        "original_read_at_engine_input_by_attempt": [
+          false,
+          false,
+          false,
+          true
+        ],
+        "original_read_on_wire_by_attempt": [
+          false,
+          false,
+          false,
+          true
+        ],
+        "provider_usage": {
+          "total_input_tokens": 45310,
+          "output_tokens": 269,
+          "total_tokens": 45579,
+          "cache_read_input_tokens": 30464,
+          "cache_creation_input_tokens": 0
+        },
+        "owned_engine_closed": true,
+        "input_fingerprints": {
+          "count": 44,
+          "matched": true,
+          "sha256_of_sorted_input_hashes": "30e3294b787f54eae35cf3cdef2638c333eff9c6c0236570f03276f9f122ef20"
+        }
+      }
+    },
+    "candidate_extra_provider_tokens": {
+      "tokens": 10829,
+      "percent": 31.16
+    },
+    "dollar_cost_measured": false,
+    "scope": "one paired synthetic report task with mandatory original read; token counts include cached input",
+    "reused_local_evidence": {
+      "loopback_run": "cb19457801d34dc189670d3e015d88c8",
+      "loopback_requests": 6,
+      "loopback_inputs": {
+        "full_read": {
+          "count": 44,
+          "matched": true,
+          "sha256_of_sorted_input_hashes": "c8526acab83582a6d57bd794f5a61ff5816038a07de670443d409fb2e0f539bd"
+        },
+        "targeted": {
+          "count": 44,
+          "matched": true,
+          "sha256_of_sorted_input_hashes": "d0650b3348904fec289d9bbf48597948aaa660445734530a897cb5e85011bb03"
+        }
+      },
+      "focused_tests": 23,
+      "unit_inputs": {
+        "count": 30,
+        "matched": true,
+        "sha256_of_sorted_input_hashes": "47f9e628bf79250687b7d7a90b89fe0add079d75174c54bc2e7ea568965ded06"
+      }
+    }
   }
 }

@@ -1,13 +1,23 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Zorunlu geri okumanın canlı token kıyası tamamlandı
+
+Ana ajan canlı kullanım eşlemesini ve bütünlüğü doğruladı. Aynı rapor, model ve eforla iki doğru yanıt çıktı. Her iki kolda da tam 5.926 bayt motor girişinde ve sağlayıcı isteğinde doğrulandı. Doğrudan okuma üç istekte 34.750, sorgu ve tam okuma dört istekte 45.579 token kullandı. Bu işte aday farkı 10.829 token (%31,16 artış). Yedi kullanım kaydı eşleşti ve iki motor normal kapandı. İlk cache okuması iki kolda da sıfırdı. Fatura tutarı açık. [Kanıt](proofs/targeted-query-comparison.json)
+
+23 odaklı test ve altı yerel isteğin kanıtı eşleşen girdi parmak izleriyle tekrar kullanıldı. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+H041-d kapsamında Responses WebSocket için mevcut yetkili ücretsiz profilin rota önkoşullarını kontrol et. Uygun canlı yol varsa tek küçük istekte bağlantıyı ve kullanım kaydını doğrula. Diğer protokol ve hesap kabulleri kendi kanıtlarını bekliyor. [Karar](decisions/027-optimization-regression.md#h041-d-responses-websocket-kullanım-ölçümü)
+
 ## 18 Kasım — Motor girişinde ve çıkışında tam rapor denetimi
 
 Ana ajan ölçüm ve motor girişini üstlendi. İkinci izole canlı çift iki doğru yanıt ve sekiz eşleşen kullanım kaydı üretti. Adayın 5.926 baytı CLI’de birebir döndü. Sağlayıcı isteğindeki özgün baytlar doğrulanamadı. Canlı tasarruf yüzdesi ve fatura tutarı açık. [Kanıt](proofs/targeted-query-comparison.json)
 
 Yerel provada gerçek CLI sorgu ve tam okuma sonucunu aynı kod çıktısına yazdı. Denetim iki sonucu arşiv ve kaynak çağrısıyla eşleştirdi. İki kolun son isteğinde tam rapor hem motor girişinde hem sağlayıcıya iletilen istekte doğrulandı. 23 odaklı test ve altı yerel istek geçti. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### Önceki canlı doğrulama planı
 
 Sonraki eşlenmiş koşuda aynı giriş ve çıkış denetimiyle canlı adayın özgün raporunu doğrula. İzole ücretsiz profil ve sekiz istek sınırı geçerli. Herhangi bir noktada bayt eşleşmesi eksikse kullanım sayaçlarını ve hangi aşamanın gözlendiğini kanıtta koru. [Karar](decisions/027-optimization-regression.md#zorunlu-geri-okumanın-canlı-kullanım-kıyası)
 
