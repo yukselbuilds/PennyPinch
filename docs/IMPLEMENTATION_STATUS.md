@@ -7,7 +7,7 @@ Ana ajan güncel motor pinini ve performans eşiklerini doğruladı. Önceki 0.4
 
 ### Sıradaki yerel dilim
 
-H041’in kayıtlı yerel yük ve ölçüm kabulleri güncel. Kısıtlı native dosya doğrulaması için uygun Codex sandbox ortamı, diğer canlı protokoller için yetkili erişim, Windows 11 ve macOS ARM64 için ilgili işletim sistemi gerekiyor. Bağımlılık sağlandığında ilgili kabulü kendi ortamında çalıştır. [Açık kabuller](validation/optimization-benefit.md#h041-açık-kabulleri)
+18 Kasım erişim kontrolü. Kurulu Codex ve Windows sürümleri önceki kısıtlı dosya testiyle aynı. Dosya kabulü uygun MXC veya yönetici tarafından hazırlanmış elevated sandbox bekliyor. GitHub CLI oturumu geçersiz ve tarayıcıdan dahil kota ile sıfır ücret sınırı doğrulanamadı. Uzak sağlayıcı testleri yetkili API erişimi bekliyor. H041 açık. [Erişim kaydı](validation/optimization-benefit.md#18-kasım-erişim-kontrolü).
 
 ## 18 Kasım — Learn önerisinin ilk canlı kıyası tamamlandı
 
