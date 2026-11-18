@@ -156,6 +156,10 @@ Canlı çiftte dört ve dört istek eşleşti. İki JSON cevap doğru ve iki CLI
 
 Yerel test, önceki denetleyicide birebir düz metin ve JSON dizesi biçimlerinin gözden kaçtığını gösterdi. Denetleyici şimdi bu iki biçimi de tam raporla karşılaştırıyor. Kesilmiş içerik, araç hatası ve eşleşmeyen çağrı geçersiz kalıyor. Son yerel adayda 22 odaklı test ve altı eşleşen motor isteği geçti. Canlı sonuç denetleyici değişikliğinden önce kaydedildi. [Kanıt](../proofs/targeted-query-comparison.json)
 
+Güncellenen denetleyiciyle ikinci canlı çift de iki doğru yanıt ve sekiz eşleşen sayaç verdi. Kontrolün özgün raporu sağlayıcı isteğinde doğrulandı. Adayın tam raporu yine yalnız CLI’de doğrulandı. İkinci koşunun token farkı ve ücret kabulü açık kaldı.
+
+Yerel yeniden üretimde sorgu sonucu ve tam okuma aynı kod çıktısında peş peşe geldiğinde eski denetleyici özgün raporu tanıyamadı. Güncel denetleyici iki sonucu aynı arşiv ve kaynak çağrısıyla eşleştiriyor. Farklı arşiv ve kesilmiş içerik reddediliyor. Motorun JSON okuması ve sağlayıcı gönderimi aynı istek için ayrı bayt eşleşmesi kaydediyor. Yerel çiftte iki kolun son isteğinde tam rapor her iki noktada doğrulandı. 23 odaklı test, altı yerel istek ve normal motor kapanışı geçti. Canlı adayın çıktı biçimi belirsiz. [Kanıt](../proofs/targeted-query-comparison.json)
+
 ### H041-e: deneysel kurallar
 
 16 Kasım 2026 kullanıcı kararı: ModHarness-RL'den esinlenen kural deneyi **isteğe bağlı ve varsayılan kapalıdır**. Ana ajan kapsam, ölçüm ve izin sözleşmesini üstlenir; bu kayıt yalnız plandır. Amaç, büyük araç çıktılarında gereken bilgiyi seçmek ve doğrulanmış hata döngülerini Learn içinde öneri olarak göstermek. [Makale v1](https://arxiv.org/abs/2611.18533v1) yöntem kaynağıdır; buradaki kabul koşulları ürünümüze aittir. Model eğitimi, kendiliğinden kod üretip çalıştırma ve bütün sohbetleri yeniden özetleme kapsam dışıdır.

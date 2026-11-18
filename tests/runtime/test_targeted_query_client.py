@@ -112,6 +112,22 @@ class TargetedQueryComparisonTests(unittest.TestCase):
                          {"type": "function_call_output", "call_id": "read", "output": json.dumps(value)}]
         self.assertTrue(observe(body)["original_read_on_wire"])
 
+    def test_code_mode_grouped_outputs_require_the_same_archive_and_complete_read(self):
+        bench = self.bench
+        session = client["ReportSession"](query.ToolOutput(bench["CAPTURE"], "", bench["REPORT"], b"", 0))
+        reference = session.capture("mcp:fixture")
+        selected = session.select(bench["select_args"](reference))
+        original = session.read_part(reference["archive_id"], "stdout", 0)
+
+        def wrapped(value):
+            return json.dumps({"content": [{"type": "text", "text": json.dumps(value)}], "isError": False})
+
+        inspect = bench["original_read_in_output"]
+        prefix = "Wall time: 0.1 seconds\nOutput:\n"
+        self.assertTrue(inspect(prefix + wrapped(selected) + "\n" + wrapped(original)))
+        self.assertFalse(inspect(prefix + wrapped({**selected, "archive_id": "b" * 32}) + "\n" + wrapped(original)))
+        self.assertFalse(inspect(prefix + wrapped(selected) + "\n" + wrapped({**original, "text": original["text"][:-1]})))
+
     def test_code_mode_fixture_uses_only_the_named_report_call(self):
         item = self.bench["fixture_call"]("read_archived_report", {"offset": 0}, 2, code_mode=True)
         self.assertEqual((item["type"], item["namespace"], item["name"], item["call_id"]),

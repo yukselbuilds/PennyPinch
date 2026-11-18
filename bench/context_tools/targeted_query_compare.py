@@ -1,6 +1,7 @@
 """Pair full Read and exact-ID query over one fixed report in the real Codex CLI."""
 import argparse
 from collections import Counter
+from contextvars import ContextVar
 import hashlib
 from http.server import ThreadingHTTPServer
 import json
@@ -116,7 +117,7 @@ def wire_tool(entry, namespace=None):
     return name if name in REPORT_TOOLS else "other"
 
 
-def tool_output_value(output):
+def tool_output_text(output):
     if isinstance(output, list):
         if not all(isinstance(part, dict) and part.get("type") in ("text", "input_text")
                    and isinstance(part.get("text"), str) for part in output):
@@ -125,8 +126,13 @@ def tool_output_value(output):
     if not isinstance(output, str):
         return None
     header = re.search(r"(?m)^Output:[ \t]*\r?\n", output)
-    if header is not None:
-        output = output[header.end():]
+    return output[header.end():] if header is not None else output
+
+
+def tool_output_value(output):
+    output = tool_output_text(output)
+    if output is None:
+        return None
     if output == REPORT_TEXT or output.removesuffix("\n").removesuffix("\r") == REPORT_TEXT:
         return REPORT_TEXT
     try:
@@ -135,13 +141,38 @@ def tool_output_value(output):
         return None
 
 
-def original_read_in_output(output):
-    value = tool_output_value(output)
+def unwrap_mcp_output(value):
     if isinstance(value, dict) and "content" in value:
         content = value["content"]
         if not isinstance(content, list) or len(content) != 1 or value.get("isError", False) is not False:
-            return False
-        value = tool_output_value(content)
+            return None
+        return tool_output_value(content)
+    return value
+
+
+def grouped_read_matches(output, reference=None):
+    text = tool_output_text(output)
+    if text is None:
+        return False
+    text = text.lstrip()
+    try:
+        selected, end = json.JSONDecoder().raw_decode(text)
+        original = json.loads(text[end:])
+    except (ValueError, RecursionError):
+        return False
+    selected, original = unwrap_mcp_output(selected), unwrap_mcp_output(original)
+    if not isinstance(selected, dict) or not isinstance(original, dict):
+        return False
+    if reference is None:
+        reference = {key: selected.get(key) for key in ("archive_id", "source_tool", "source_call_id")}
+    return valid_reference(reference) and delivered(SELECT, reference, selected) and delivered(READ, reference, original)
+
+
+def original_read_in_output(output):
+    value = tool_output_value(output)
+    if value is None:
+        return grouped_read_matches(output)
+    value = unwrap_mcp_output(value)
     if value == REPORT_TEXT:
         return True
     if not isinstance(value, dict):
@@ -187,18 +218,29 @@ def wire_observation(body):
 
 def observe_guarded_requests(counter):
     import httpx
+    from headroom.proxy import helpers
 
     send = httpx.AsyncClient.send
+    read = helpers.read_request_json_with_bytes
     trace = Path(counter).with_name("wire-summary.jsonl")
+    at_engine_input = ContextVar("readback_at_engine_input", default=None)
+
+    async def observed_read(request):
+        body, raw = await read(request)
+        if request.method == "POST" and request.url.path == "/v1/responses" and isinstance(body, dict):
+            at_engine_input.set(wire_observation(body)["original_read_on_wire"])
+        return body, raw
 
     async def observed(client, request, **options):
         # The outer guard admits only bounded JSON model requests to the selected target.
         row = wire_observation(json.loads(request.content))
+        row["original_read_at_engine_input"] = at_engine_input.get()
         with trace.open("a", encoding="ascii") as stream:
             stream.write(json.dumps(row) + "\n")
         return await send(client, request, **options)
 
     httpx.AsyncClient.send = observed
+    helpers.read_request_json_with_bytes = observed_read
 
 
 def delivered(tool, reference, value):
@@ -240,19 +282,11 @@ def fixture_provider(client_replay, *, code_mode=False, force_readback=False, gr
             assert (wire["code_mode_exec"] if code_mode else wire["advertised"] == sorted(ARMS[server.scenario])), "tool_catalog_scope_changed"
             assert body.get("text", {}).get("format", {}).get("schema") == SCHEMA, "answer_schema_wire_mismatch"
             if turn > 1:
-                value = json.loads(client_replay["tool_text"](body, turn - 1, code_mode=code_mode))
-                if code_mode and isinstance(value, dict) and "content" in value:
-                    assert not value.get("isError"), "fixture_code_mode_tool_error"
-                    value = json.loads(value["content"][0]["text"])
-                if turn == 2:
-                    assert valid_reference(value), "fixture_reference_invalid"
-                    server.reference = value
+                raw_output = client_replay["tool_text"](body, turn - 1, code_mode=code_mode)
+                if group_readback and server.scenario == "targeted" and expected[turn - 2] == READ:
+                    assert grouped_read_matches(raw_output, server.reference), "fixture_grouped_report_changed"
                 else:
-                    text = value.get("text", "") if isinstance(value, dict) else ""
-                    server.last_delivery = {"text_bytes": len(text.encode()) if isinstance(text, str) else None,
-                        "ccr_marker": "<<ccr:" in json.dumps(value, ensure_ascii=True),
-                        "stdout_equals_original": text == REPORT.decode() if isinstance(text, str) else False}
-                    assert delivered(expected[turn - 2], server.reference, value), "fixture_tool_bytes_changed"
+                    self.check_single_output(raw_output, expected, turn)
             if turn > len(expected):
                 return {"type": "message", "id": "msg_query_pair", "role": "assistant", "status": "completed",
                         "content": [{"type": "output_text", "text": pilot["encode"](ANSWER), "annotations": []}]}
@@ -261,8 +295,23 @@ def fixture_provider(client_replay, *, code_mode=False, force_readback=False, gr
             item = fixture_call(tool, args, turn, code_mode=code_mode)
             if group_readback and server.scenario == "targeted" and tool == READ:
                 select = pilot["encode"](select_args(server.reference))
-                item["input"] = f"await tools.{NAMESPACE}__{SELECT}({select}); " + item["input"]
+                item["input"] = f"text(await tools.{NAMESPACE}__{SELECT}({select})); " + item["input"]
             return item
+
+        def check_single_output(self, raw_output, expected, turn):
+            server = self.server
+            value = json.loads(raw_output)
+            if code_mode:
+                value = unwrap_mcp_output(value)
+            if turn == 2:
+                assert valid_reference(value), "fixture_reference_invalid"
+                server.reference = value
+            else:
+                text = value.get("text", "") if isinstance(value, dict) else ""
+                server.last_delivery = {"text_bytes": len(text.encode()) if isinstance(text, str) else None,
+                    "ccr_marker": "<<ccr:" in json.dumps(value, ensure_ascii=True),
+                    "stdout_equals_original": text == REPORT_TEXT}
+                assert delivered(expected[turn - 2], server.reference, value), "fixture_tool_bytes_changed"
 
     return Provider
 

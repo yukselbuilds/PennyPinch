@@ -1,13 +1,23 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Motor girişinde ve çıkışında tam rapor denetimi
+
+Ana ajan ölçüm ve motor girişini üstlendi. İkinci izole canlı çift iki doğru yanıt ve sekiz eşleşen kullanım kaydı üretti. Adayın 5.926 baytı CLI’de birebir döndü. Sağlayıcı isteğindeki özgün baytlar doğrulanamadı. Canlı tasarruf yüzdesi ve fatura tutarı açık. [Kanıt](proofs/targeted-query-comparison.json)
+
+Yerel provada gerçek CLI sorgu ve tam okuma sonucunu aynı kod çıktısına yazdı. Denetim iki sonucu arşiv ve kaynak çağrısıyla eşleştirdi. İki kolun son isteğinde tam rapor hem motor girişinde hem sağlayıcıya iletilen istekte doğrulandı. 23 odaklı test ve altı yerel istek geçti. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+Sonraki eşlenmiş koşuda aynı giriş ve çıkış denetimiyle canlı adayın özgün raporunu doğrula. İzole ücretsiz profil ve sekiz istek sınırı geçerli. Herhangi bir noktada bayt eşleşmesi eksikse kullanım sayaçlarını ve hangi aşamanın gözlendiğini kanıtta koru. [Karar](decisions/027-optimization-regression.md#zorunlu-geri-okumanın-canlı-kullanım-kıyası)
+
 ## 18 Kasım — Zorunlu geri okumalı canlı kıyas
 
 Ana ajan kullanım ve bayt eşitliği denetimini üstlendi. İzole ChatGPT Free çiftinde iki doğru yanıt ve 8/8 sağlayıcı kullanım kaydı var. İki CLI geri okuması birebir. Kontrolün tam 5.926 baytı sağlayıcı isteğinde doğrulandı. Adayda bu doğrulama eksik kaldı. Geçerli token kıyası ve fatura tutarı açık. Her iki motor normal kapandı. [Kanıt](proofs/targeted-query-comparison.json)
 
 Aynı tam rapor düz metin veya JSON dizesi olarak geldiğinde denetleyicinin onu tanıyacağı yerel testle doğrulandı. Son adayda 22 odaklı test ve altı yerel istek geçti. **45/54 ana görev tamamlandı. H041 açık.** Dokuz alt kabul ve ayrı izlenen Windows 11 doğrulaması kaldı. [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### Önceki canlı doğrulama planı
 
 Bir sonraki eşlenmiş canlı koşuda güncel denetleyiciyle adayın sağlayıcıya giden özgün raporunu doğrula. İzole ücretsiz profil ve sekiz istek sınırı geçerli. Dolar tutarı için ayrıca istek bazında ücret kanıtı gerekiyor. Diğer açık rota ve ortam kabulleri görev listesinde duruyor. [Karar](decisions/027-optimization-regression.md#zorunlu-geri-okumanın-canlı-kullanım-kıyası)
 

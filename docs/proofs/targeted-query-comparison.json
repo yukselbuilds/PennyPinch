@@ -1047,5 +1047,152 @@
       "targeted_live_wire_format": "unknown",
       "live_retried_after_update": false
     }
+  },
+  "grouped_readback_diagnostic": {
+    "date": "2026-11-18",
+    "entry_point": "bench/context_tools/targeted_query_compare.py --require-readback",
+    "paired_preset": {
+      "cli": "codex-cli 0.169.0-alpha.11.1",
+      "engine": "0.44.0",
+      "os": "Windows-10-10.0.19045-SP0",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "prompt_sha256": "60a78c10caa21c9fed4c7fd5b08e917cd67ef6b7d7f1736972352268aa5e4c68",
+      "report_sha256": "d9a7ea509ff676ba9051e1f52237dabbf424f4a1ee78b3e3ae4b2c5193459318",
+      "report_bytes": 5926,
+      "report_rows": 48,
+      "attempts_per_arm": 4,
+      "attempts_per_pair": 8
+    },
+    "live_repeat": {
+      "run": "092652741d574d23948e7ad6c4d3825b",
+      "account_scope": "existing isolated ChatGPT Free profile",
+      "status": "targeted_wire_read_unverified",
+      "comparison_accepted": false,
+      "provider_requests": 8,
+      "arms": {
+        "full_read": {
+          "requests": 4,
+          "usage_records": 4,
+          "exact_answer": true,
+          "cli_original_read_exact": true,
+          "search_calls": 0,
+          "owned_engine_closed": true,
+          "original_read_on_wire": true,
+          "input_fingerprints": {
+            "count": 44,
+            "matched_during_run": true,
+            "sha256_of_sorted_input_hashes": "e957af40a2d2d53fae03a3a81cfcc9dcc9b52be577ae9b998f5591606d3a9652",
+            "inputs_changed_after_run": [
+              "bench/context_tools/targeted_query_compare.py"
+            ]
+          },
+          "provider_usage": {
+            "total_input_tokens": 45073,
+            "output_tokens": 416,
+            "total_tokens": 45489,
+            "cache_read_input_tokens": 20096,
+            "cache_creation_input_tokens": 0
+          }
+        },
+        "targeted": {
+          "requests": 4,
+          "usage_records": 4,
+          "exact_answer": true,
+          "cli_original_read_exact": true,
+          "search_calls": 1,
+          "owned_engine_closed": true,
+          "original_read_on_wire": false,
+          "input_fingerprints": {
+            "count": 44,
+            "matched_during_run": true,
+            "sha256_of_sorted_input_hashes": "a20d14161be0a8b3def272854d87b06bde2e3889ff44447ec70e0202af7cc0ce",
+            "inputs_changed_after_run": [
+              "bench/context_tools/targeted_query_compare.py"
+            ]
+          },
+          "provider_usage": {
+            "total_input_tokens": 45419,
+            "output_tokens": 337,
+            "total_tokens": 45756,
+            "cache_read_input_tokens": 20224,
+            "cache_creation_input_tokens": 0
+          }
+        }
+      },
+      "provider_token_delta": null,
+      "dollar_cost_measured": false,
+      "engine_input_observation": "not_in_this_run"
+    },
+    "local_reproduction": {
+      "run": "cb19457801d34dc189670d3e015d88c8",
+      "passed": true,
+      "provider_requests": 0,
+      "engine_requests": 6,
+      "targeted_output": "two Code Mode results from the same capture, selection followed by complete read",
+      "arms": {
+        "full_read": {
+          "requests": 3,
+          "usage_records": 3,
+          "exact_answer": true,
+          "cli_original_read_exact": true,
+          "search_calls": 0,
+          "owned_engine_closed": true,
+          "original_read_on_wire": true,
+          "input_fingerprints": {
+            "count": 44,
+            "matched_during_run": true,
+            "sha256_of_sorted_input_hashes": "c8526acab83582a6d57bd794f5a61ff5816038a07de670443d409fb2e0f539bd",
+            "inputs_changed_after_run": []
+          },
+          "original_read_at_engine_input_by_attempt": [
+            false,
+            false,
+            true
+          ],
+          "original_read_on_wire_by_attempt": [
+            false,
+            false,
+            true
+          ]
+        },
+        "targeted": {
+          "requests": 3,
+          "usage_records": 3,
+          "exact_answer": true,
+          "cli_original_read_exact": true,
+          "search_calls": 1,
+          "owned_engine_closed": true,
+          "original_read_on_wire": true,
+          "input_fingerprints": {
+            "count": 44,
+            "matched_during_run": true,
+            "sha256_of_sorted_input_hashes": "d0650b3348904fec289d9bbf48597948aaa660445734530a897cb5e85011bb03",
+            "inputs_changed_after_run": []
+          },
+          "original_read_at_engine_input_by_attempt": [
+            false,
+            false,
+            true
+          ],
+          "original_read_on_wire_by_attempt": [
+            false,
+            false,
+            true
+          ]
+        }
+      }
+    },
+    "focused_tests": {
+      "count": 23,
+      "input_fingerprints": {
+        "count": 30,
+        "matched_during_run": true,
+        "sha256_of_sorted_input_hashes": "47f9e628bf79250687b7d7a90b89fe0add079d75174c54bc2e7ea568965ded06",
+        "inputs_changed_after_run": []
+      }
+    },
+    "targeted_live_wire_format": "unknown",
+    "live_retried_after_observer_update": false
   }
 }
