@@ -353,6 +353,14 @@ Odaklı parser ve native okuyucu denemelerinden sonra loopback motoru ve önceki
 
 Windows 10 yerel adayında 11 senaryo ve 14 sentetik upstream gönderimi doğrulandı. İki CCR çağrısının toplamı 2.400 girdi ve 29 çıktı olarak native okuyucu, SQLite ve Etkinlik ayrıntısına ulaştı. Geçerli cache ayrıntıları 2.000 okuma ve 100 yazma. Yerel cevap önbelleğindeki tekrar yeni sağlayıcı ölçümü üretmedi. Kesik SSE için motor yalnız özel kullanım kaydı ve hata sayacı üretiyor. Etkinlik satırı oluşmadığı için bu kayıttan bir satır türetilmez. İsteğe bağlı tamponlu Chat CCR ayrı test profilinde sınandı. [Kabul](../proofs/chat-completions-usage.json).
 
+#### SSE kullanımında olay başına sınır
+
+18 Kasım. Masaüstünün kullanım gözlemcisi, tamamlanmamış olay ve yeni ağ verisinin toplamını 128 KiB ile sınırlıyordu. Anthropic, Responses ve Chat Completions akışlarında tek başına geçerli olayların birlikte ulaşması bu sınırı aşabiliyor ve kullanım sayaçlarını kaybettiriyordu.
+
+Üç gözlemci sabit 0.44.0 motorunun mevcut LF/CRLF ayrıştırıcısını ortak bir tamponla besler. Tam olaylar tüketildiğinde yer açılır. Tamamlanmamış olay en fazla 128 KiB tutulur. İstemciye verilen akış aynı baytları ve sırayı korur. Tek olay sınırı geçerse ölçüm bilinmiyor kalır. Yanıt aktarımı devam eder.
+
+24 odaklı Python testi ve 5 Rust manifest kontrolü geçti. Windows 10’da güncel 0.44.0 motoruyla üç protokolde toplam altı gzip yanıtı sınandı. Geçerli birleşik olaylarda tüm mevcut sayaçlar korundu. Tek olay 131.073 bayt olduğunda ölçüm bilinmiyor kaldı. Altı akış da HTTP 200 ve birebir baytlarla iletildi. İstek kayıtları birebir eşleşti ve motor normal kapandı. Sağlayıcı kullanımı sentetik sayaçlardan gelir. [Yerel kanıt](../proofs/sse-usage-event-limit.json)
+
 ### Learn önizlemesi
 
 Kullanıcı 15 Kasım’da Learn’in isteğe bağlı eklenmesini istedi. Ayarlar’da tek bir Codex veya Claude Code JSONL oturumu seçmek bir inceleme başlatır. Seçici iptal edildiğinde önceki sonuç ekranda kalır. Windows uygulaması, mevcut motor paketindeki doğrulanmış Python ile yalnız seçilen dosyayı okur. Motoru başlatmak gerekmez.

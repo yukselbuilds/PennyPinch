@@ -1,0 +1,165 @@
+{
+  "task": "H041-d SSE usage event bounds",
+  "date_local": "2026-11-18",
+  "status": "local_regression_corrected",
+  "executor": "main",
+  "executor_reason": "Usage accounting and pinned runtime contract",
+  "engine": "0.44.0",
+  "os": "Windows-10-10.0.19045-SP0",
+  "scope": "Application-owned streaming usage observer and its expected source manifests. The pinned 0.44.0 vendor code is unchanged.",
+  "symptom": "Usage disappeared when a single decoded HTTP chunk contained multiple complete SSE events whose individual sizes were below the event limit.",
+  "max_event_bytes": 131072,
+  "red_failed_subtests": 9,
+  "focused_python_tests_passed": 24,
+  "native_manifest_tests_passed": 5,
+  "native_format_check": "pass",
+  "native_checks_command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--manifest-path",
+    "src-tauri/Cargo.toml",
+    "manifest",
+    "--",
+    "--test-threads=1"
+  ],
+  "native_checks_evidence": "Local command result with current runtime pin snapshot. The independently captured Python and motor checks have before/after fingerprints.",
+  "loopback_requests": 6,
+  "rows": [
+    {
+      "case": "anthropic-combined",
+      "client_status": 200,
+      "gzip_bytes": 578,
+      "decoded_sse_bytes": 131941,
+      "largest_event_bytes": 65654,
+      "byte_exact": true,
+      "attempt_and_stats_match": true,
+      "usage": {
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 700,
+        "input_tokens": 31,
+        "output_tokens": 7,
+        "total_input_tokens": 731,
+        "total_tokens": 738
+      }
+    },
+    {
+      "case": "anthropic-oversized",
+      "client_status": 200,
+      "gzip_bytes": 515,
+      "decoded_sse_bytes": 131706,
+      "largest_event_bytes": 131073,
+      "byte_exact": true,
+      "attempt_and_stats_match": true,
+      "usage": {
+        "cache_creation_input_tokens": null,
+        "cache_read_input_tokens": null,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_input_tokens": null,
+        "total_tokens": null
+      }
+    },
+    {
+      "case": "responses-combined",
+      "client_status": 200,
+      "gzip_bytes": 513,
+      "decoded_sse_bytes": 131737,
+      "largest_event_bytes": 65629,
+      "byte_exact": true,
+      "attempt_and_stats_match": true,
+      "usage": {
+        "cache_creation_input_tokens": 100,
+        "cache_read_input_tokens": 900,
+        "input_tokens": 1000,
+        "output_tokens": 6,
+        "total_input_tokens": 1000,
+        "total_tokens": 1006
+      }
+    },
+    {
+      "case": "responses-oversized",
+      "client_status": 200,
+      "gzip_bytes": 464,
+      "decoded_sse_bytes": 131552,
+      "largest_event_bytes": 131073,
+      "byte_exact": true,
+      "attempt_and_stats_match": true,
+      "usage": {
+        "cache_creation_input_tokens": null,
+        "cache_read_input_tokens": null,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_input_tokens": null,
+        "total_tokens": null
+      }
+    },
+    {
+      "case": "chat-combined",
+      "client_status": 200,
+      "gzip_bytes": 490,
+      "decoded_sse_bytes": 131581,
+      "largest_event_bytes": 65675,
+      "byte_exact": true,
+      "attempt_and_stats_match": true,
+      "usage": {
+        "cache_creation_input_tokens": null,
+        "cache_read_input_tokens": 900,
+        "input_tokens": 1000,
+        "output_tokens": 6,
+        "total_input_tokens": 1000,
+        "total_tokens": 1006
+      }
+    },
+    {
+      "case": "chat-oversized",
+      "client_status": 200,
+      "gzip_bytes": 396,
+      "decoded_sse_bytes": 131304,
+      "largest_event_bytes": 131073,
+      "byte_exact": true,
+      "attempt_and_stats_match": true,
+      "usage": {
+        "cache_creation_input_tokens": null,
+        "cache_read_input_tokens": null,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_input_tokens": null,
+        "total_tokens": null
+      }
+    }
+  ],
+  "stop": {
+    "shutdown": "graceful",
+    "engine_exit_code": 0,
+    "owned_port_closed": true,
+    "force_fallback": false
+  },
+  "provider_model_calls": 0,
+  "provider_savings_percent": null,
+  "main_task_complete": false,
+  "next": "Restore original output in bounded parts at the default Codex CLI output budget.",
+  "artifacts": {
+    "pre_fix_reproduction": {
+      "path": "work/proofs/optimization/sse-usage-event-limit/2cbf5d0b8dd4403aa5d8914584e99607/red.json",
+      "sha256": "ab3eff349e67b65e3638f7714426e9059ec726f7a6ed41c275ac2123f4918409"
+    },
+    "final_focused_tests": {
+      "path": "work/proofs/optimization/sse-usage-event-limit/2cbf5d0b8dd4403aa5d8914584e99607/focused.json",
+      "sha256": "9d5f59eeed11fef61e42eb3cf533dd7702f86e62b8aeb854837e354d5d99d868"
+    },
+    "pinned_loopback_engine": {
+      "path": "work/proofs/optimization/sse-usage-event-limit/2cbf5d0b8dd4403aa5d8914584e99607/fc92b369568a4533a6641c1a6f1e4330/result.json",
+      "sha256": "b92708bc1843ba5ca3fbccf997bb2a6070e7dba9836273dfba4d50bc88dfc8b7"
+    },
+    "loopback_harness": {
+      "path": "work/proofs/optimization/sse-usage-event-limit/2cbf5d0b8dd4403aa5d8914584e99607/capture.py",
+      "sha256": "82abf76c66dc581aa68987b0a602a916c721a7bf7094993fed9ae096758596b3"
+    },
+    "overlay_pins": {
+      "path": "work/proofs/pause/pin-backups/53d1eb5f-d1dc-4fe4-879f-77d14d5c22a5/result.json",
+      "sha256": "924e479901515289dad766dfbba11d101e13ec4ce907a5b11845c0dba3998efe"
+    }
+  }
+}

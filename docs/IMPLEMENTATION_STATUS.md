@@ -1,11 +1,17 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — SSE token sayaçları birleşik akışta korunuyor
+
+Masaüstünün kullanım gözlemcisi, ağ parçası büyüklüğü yüzünden geçerli SSE olaylarını reddediyordu. Ana ajan ölçüm sınırını olay başına uyguladı ve uygulama manifestlerinin parmak izlerini eşledi. Güncel 0.44.0 motoruyla üç protokolde altı sıkıştırılmış HTTP yanıtı birebir iletildi. Geçerli sayaçlar istek kayıtlarıyla eşleşti. Tek aşırı büyük olayda kullanım bilinmiyor kaldı. 24 Python ve 5 Rust kontrolü geçti. [Yerel kanıt](proofs/sse-usage-event-limit.json)
+
+**H041 açık, 45/54 ana görev tamamlandı.** Önceki sürüme dönük testler kendi kanıtlarında durur. Yeni geliştirme ve yerel doğrulama mevcut güncel adayla yürür. Sırada kayıtlı hedefli sorgu planındaki varsayılan CLI bütçesiyle özgün çıktının parçalı geri okunması var. [Görev listesi](../TASKS.md)
+
 ## 18 Kasım — Geri dönüşte tercih uyumu sağlandı
 
 Ana ajan, motorun okuduğu ortak tercihler ile yerel önizleme seçiminin ayrı kaydedilmesini uyguladı. Açılışta geçerli eski inline tercih taşınır. 17 tercih testi geçti. Önceki `8206da4` okuyucusu eski hatalı belgeyi reddetti ve yeni belgeyi açtı. 0.41.0 motoru aynı koruma listesiyle çalışıp korumalı çıktıyı iletti. Son eski motor koşusunda kapanış da doğrulandı. 0.44.0 iki başlangıç ve iki korumalı istekle geçti. [Kanıt](proofs/preferences-rollback.json)
 
-**Etkin H041 açık, 45/54 ana görev tamamlandı.** H041-d için olay sınırı kaynaklı SSE sayaç kaybı yerel olarak üç protokolde tekrarlandı ve sıraya alındı. Ölçüm düzeltmesinden sonra kayıtlı varsayılan bütçeli hedefli sorgu planına dönülür. Tarih, grafik ve tepsi bulguları ayrı takip maddeleri olarak listelendi. [Görev listesi](../TASKS.md#dev002--mevcut-kodun-ilk-ponytail-denetimi)
+Bu adımı izleyen SSE düzeltmesi yukarıda kayıtlıdır. Tarih, grafik ve tepsi bulguları ayrı takip maddeleri olarak listelendi. [Görev listesi](../TASKS.md#dev002--mevcut-kodun-ilk-ponytail-denetimi)
 
 ## H041 — hedefli sorgu CLI oturum/araç önkontrolü tamamlandı
 

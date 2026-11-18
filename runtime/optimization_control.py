@@ -117,6 +117,18 @@ def _anthropic_json_usage(raw: bytes) -> dict | None:
     return {name: _token_count(usage.get(name)) for name in USAGE_FIELDS}
 
 
+def _bounded_usage_events(buffer, chunk, parse_events):
+    # Draining complete events restores space while leaving a split event in the buffer.
+    remaining = memoryview(chunk)
+    while remaining:
+        room = MAX_USAGE_EVENT_BYTES - len(buffer)
+        if room <= 0:
+            raise ValueError("usage_event_limit")
+        buffer.extend(remaining[:room])
+        yield from parse_events(buffer)
+        remaining = remaining[room:]
+
+
 async def _observe_anthropic_sse(chunks, attempt, parse_events):
     buffer = bytearray()
     usage = dict.fromkeys(USAGE_FIELDS)
@@ -125,10 +137,7 @@ async def _observe_anthropic_sse(chunks, attempt, parse_events):
     async for chunk in chunks:
         if not invalid:
             try:
-                if len(buffer) + len(chunk) > MAX_USAGE_EVENT_BYTES:
-                    raise ValueError()
-                buffer.extend(chunk)
-                for event_name, data in parse_events(buffer):
+                for event_name, data in _bounded_usage_events(buffer, chunk, parse_events):
                     if event_name is not None and event_name not in usage_events:
                         continue
                     event = json.loads(data)
@@ -192,10 +201,7 @@ async def _observe_responses_sse(chunks, attempt, parse_events):
     async for chunk in chunks:
         if not invalid:
             try:
-                if len(buffer) + len(chunk) > MAX_USAGE_EVENT_BYTES:
-                    raise ValueError()
-                buffer.extend(chunk)
-                for event_name, data in parse_events(buffer):
+                for event_name, data in _bounded_usage_events(buffer, chunk, parse_events):
                     if data == "[DONE]" and stopped:
                         continue
                     if event_name is not None and event_name not in usage_events:
@@ -258,10 +264,7 @@ async def _observe_chat_sse(chunks, attempt, parse_events):
     async for chunk in chunks:
         if not invalid:
             try:
-                if len(buffer) + len(chunk) > MAX_USAGE_EVENT_BYTES:
-                    raise ValueError()
-                buffer.extend(chunk)
-                for event_name, data in parse_events(buffer):
+                for event_name, data in _bounded_usage_events(buffer, chunk, parse_events):
                     if done or event_name not in (None, "message"):
                         raise ValueError()
                     if data == "[DONE]":
