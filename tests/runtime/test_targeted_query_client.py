@@ -128,6 +128,25 @@ class TargetedQueryComparisonTests(unittest.TestCase):
         extended = {**output, "output": [{**content, "text": prefix + "\nOutput:\n" + json.dumps(wrapper)}]}
         self.assertFalse(permitted("parent", call, extended, issued, receipts))
 
+    def test_native_file_profile_refusal_is_separate_from_a_denied_read(self):
+        probe = runpy.run_path(str(ROOT / "bench/context_tools/targeted_query_native_files.py"))
+        observe = probe["observe_read"]
+        refused, data = observe(1, b"", b"Restricted read-only access requires the elevated Windows sandbox backend",
+                                b"fixture", check_outside=True)
+        self.assertEqual(refused["status"], "restricted_backend_required")
+        self.assertFalse(refused["outside_denied"])
+        self.assertIsNone(data)
+        allowed = b'{"started":true,"allowed":"Zml4dHVyZQ==","outside":"access_denied"}'
+        checked, data = observe(0, allowed, b"", b"fixture", check_outside=True)
+        self.assertEqual(checked["status"], "boundary_verified")
+        self.assertTrue(checked["outside_denied"])
+        self.assertEqual(data, b"fixture")
+        accessible = allowed.replace(b"access_denied", b"opened")
+        checked, data = observe(0, accessible, b"", b"fixture", check_outside=True)
+        self.assertEqual(checked["status"], "boundary_unverified")
+        self.assertFalse(checked["outside_denied"])
+        self.assertIsNone(data)
+
 
 class TargetedQueryClientTests(unittest.TestCase):
     def setUp(self):

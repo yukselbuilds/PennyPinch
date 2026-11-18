@@ -140,6 +140,12 @@ Paylaşım kapalı kontrol 10 istekte tamamlandı. Paylaşım açık ve arşiv t
 
 Tek MCP bağlantısında iki başarılı 5.926 baytlık okuma ve iki çapraz red gözlendi. Her iki izinli çıktı motor çıkışında birebir kaldı. 10 yerel kullanım satırı, 19 odaklı test, üç seçici motor regresyon isteği ve yedi sorgu/geri okuma isteği geçti. Model çağrısı sıfırdı. Kanıt, tek izinli sentetik dosya ve izole yerel sağlayıcıyla sınırlı. Genel native dosya izinleri ve geri okuma dahil canlı maliyet açık. [Kanıt](../proofs/targeted-query-comparison.json)
 
+#### Native dosya izinleri ve arşiv geri alımı
+
+18 Kasım. Pinli Codex CLI, izole salt okunur sandbox’ta izinli sentetik dosyayı açtı. Arşiv, sandbox’ın gerçekten döndürdüğü 5.926 baytı aldı. Hedef kayıt, 48 satır sayısı ve özgün baytlar korundu. Ayrı testte yeni oluşturulan bir dosyaya Windows ACL okuma yasağı verildi. Codex aynı koşuda izinli dosyayı okudu ve ACL’li dosyada erişim reddi aldı. ACL geri yüklendi ve dosya baytları eşleşti. 20 odaklı test geçti.
+
+Codex’in kısıtlı okuma profili iki kez komut başlamadan durdu. Unelevated backend bu profil için yükseltilmiş sandbox istedi. MXC bu çalıştırıcıda yoktu. Bu koşular dosya reddi olarak sayılmadı. Genel Codex profil sınırı uygun backend ile açık. Geri okuma dahil canlı maliyet ayrı kabulde kalır. [Motor ve izin kanıtı](../proofs/targeted-query-comparison.json) · [OpenAI Windows sandbox belgesi](https://learn.chatgpt.com/docs/windows/windows-sandbox)
+
 ### H041-e: deneysel kurallar
 
 16 Kasım 2026 kullanıcı kararı: ModHarness-RL'den esinlenen kural deneyi **isteğe bağlı ve varsayılan kapalıdır**. Ana ajan kapsam, ölçüm ve izin sözleşmesini üstlenir; bu kayıt yalnız plandır. Amaç, büyük araç çıktılarında gereken bilgiyi seçmek ve doğrulanmış hata döngülerini Learn içinde öneri olarak göstermek. [Makale v1](https://arxiv.org/abs/2611.18533v1) yöntem kaynağıdır; buradaki kabul koşulları ürünümüze aittir. Model eğitimi, kendiliğinden kod üretip çalıştırma ve bütün sohbetleri yeniden özetleme kapsam dışıdır.

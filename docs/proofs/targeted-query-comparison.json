@@ -840,5 +840,65 @@
         }
       }
     }
+  },
+  "native_file_permissions": {
+    "date": "2026-11-18",
+    "run": "native-files-29c8d22cdad646ffbf25b01dfbbbd072",
+    "entry_point": "bench/context_tools/targeted_query_native_files.py --codex <pinned Codex CLI>",
+    "cli": "codex-cli 0.169.0-alpha.11.1",
+    "os": "Windows-10-10.0.19045-SP0",
+    "native_file_scope_verified": false,
+    "checks": {
+      "restricted_unelevated": {
+        "exit_code": 1,
+        "status": "restricted_backend_required",
+        "command_started": false,
+        "inside_exact": false,
+        "outside_denied": false
+      },
+      "restricted_mxc": {
+        "exit_code": 1,
+        "status": "mxc_unavailable",
+        "command_started": false,
+        "inside_exact": false,
+        "outside_denied": false
+      },
+      "approved_only": {
+        "exit_code": 0,
+        "status": "approved_read_verified",
+        "command_started": true,
+        "inside_exact": true,
+        "outside_denied": false
+      },
+      "windows_acl_control": {
+        "exit_code": 0,
+        "status": "windows_acl_denial_verified",
+        "command_started": true,
+        "inside_exact": true,
+        "outside_denied": true,
+        "acl_restored": true
+      }
+    },
+    "accepted_read_archive": {
+      "record_exact": true,
+      "original_exact": true,
+      "bytes": 5926,
+      "record_count": 48
+    },
+    "external_model_requests": 0,
+    "native_profile_blocker": "a backend that supports restricted reads is required",
+    "input_fingerprints": {
+      "count": 14,
+      "matched": true,
+      "sha256_of_sorted_input_hashes": "f1f032bbc9d672e7df6a2bfa0475a63fc26d7f46dc532f92df079399b2a2b32d"
+    },
+    "focused_tests": {
+      "count": 20,
+      "input_fingerprints": {
+        "count": 11,
+        "matched": true,
+        "sha256_of_sorted_input_hashes": "a97afaf1840c707790668c90855f05e6133c1be6393350ebdb464cc5b34bfcd5"
+      }
+    }
   }
 }

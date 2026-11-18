@@ -1,13 +1,23 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Native dosya okuması arşiv ve geri alımla doğrulandı
+
+Codex sandbox’ının izinli dosyadan okuduğu 5.926 bayt arşive bağlandı. 48 kayıttan kesin sorgu ve birebir tam geri alım geçti. Ayrı ACL kontrolünde Codex aynı izinli dosyayı okudu ve Windows tarafından engellenen test dosyasında erişim reddi aldı. Test dosyasının ACL’si geri yüklendi. 20 odaklı test geçti. [Kanıt](proofs/targeted-query-comparison.json)
+
+Windows 10’daki unelevated backend kısıtlı okuma profiline sahip komutu başlamadan reddetti. MXC bu çalıştırıcıda kullanılamadı. Kısıtlı Codex profili uygun sandbox ortamında ayrı kabul bekliyor. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+İzinli sabit görevde bir geri okumanın dahil olduğu canlı kullanım kıyasını mevcut ücretsiz izole profille yürüt. İki kolda kesin sonuç ve tüm sağlayıcı isteklerini eşleştir. Kısıtlı native dosya profili için uygun Windows sandbox ortamı gerektiğini takip et. [Karar](decisions/027-optimization-regression.md#native-dosya-izinleri-ve-arşiv-geri-alımı)
+
 ## 18 Kasım — Gerçek Codex okuması seçici motor korumasına bağlandı
 
 Ana ajan izinli çağrı ile başarılı okuma kaydının eşlemesini üstlendi. İzole gerçek Codex ve tek paylaşımlı MCP bağlantısında iki 5.926 baytlık sonuç motor çıkışında özgün kaldı. İki çapraz arşiv okuması reddedildi. Ana ajanın aynı isteğindeki diğer çıktı sıkıştırıldı ve geri çağırmadan birebir alındı. 0.44.0 motoru 10 istek ve 10 kullanım kaydı eşledi. [Kanıt](proofs/targeted-query-comparison.json)
 
 19 odaklı test, üç sentetik motor regresyon isteği ve yedi normal sorgu/geri okuma isteği geçti. Model çağrısı sıfırdı. **45/54 ana görev tamamlandı. H041 açık.** Tek test kaynağına ait yerel kanıt tamamlandı. Genel native dosya izinleri, geri okuma dahil canlı maliyet ve diğer kapanış kabulleri açık. [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### Önceki dosya izni planı
 
 Genel native dosya kapsamını gerçek istemci izinleriyle doğrula. İzinli kaynak ve izin dışı kaynak için özgün okuma, sorgu ve geri alım kabulünü mevcut dosya sözleşmesine bağla. [Karar](decisions/027-optimization-regression.md#gerçek-codex-mcp-okumasından-seçici-koruma)
 
