@@ -1,6 +1,16 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Hedefli sorgunun eşlenmiş provası geçti
+
+Ana ajan araç izinlerini ve kullanım eşlemesini üstlendi. Aynı 48 satırlık raporda tam Read üç, hedefli sorgu ve ardından tam Read dört yerel istekle tamamlandı. Özgün değer, kaynak kimliği ve seçilen satır eşleşti. 12 odaklı kontrol, yedi kullanım kaydı ve iki normal motor kapanışı geçti. [Kanıt](proofs/targeted-query-comparison.json)
+
+**45/54 ana görev tamamlandı. H041 açık.** İzole ChatGPT Free profiliyle yapılan canlı denemede ilk kol dört sağlayıcı yanıtı ve bir rapor yakalamasından sonra istek sınırına ulaştı. Tam Read, son cevap ve ikinci kol tamamlanmadığı için token ve maliyet farkı belirlenemedi. Sıradaki yerel inceleme, sağlayıcıya giden araç kataloğunda tam okumanın adı ve görünürlüğü ile CLI'nin çağrı/sonlandırma olaylarını sınırlı tanı verisiyle eşlemek. [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+**H041 · Canlı Read çağrısını incele.** Eşlenmiş provanın yerel kabulü tamamlandı. İlk canlı kolun durduğu noktayı araç adının sağlayıcıya iletimi ve CLI olaylarının sınırlı kaydı üzerinden incele. Yeni sağlayıcı denemesinden önce Read çağrısının açık adını ve çağrı sırasını yerel provada doğrula. [Son kanıt](proofs/targeted-query-comparison.json)
+
 ## 18 Kasım — Varsayılan CLI bütçesinde parçalı geri okuma geçti
 
 Ana ajan arşiv sahipliğini ve istek ölçümünü üstlendi. Varsayılan çıktıyla izole Codex CLI ve güncel 0.44.0 motoru, 107.498 baytı 18 stdout parçası ve boş stderr kaydıyla birebir geri okudu. İzinli akış, başka oturum, kapalı Read ve gerçek çocuk süreçten alınan başarısız rapor birlikte geçti. 10 odaklı test ve 34 eşleşen yerel kullanım kaydı var. İlk koşunun 10 satırlık ham tanı listesi hatası korunur. Son koşu paneldeki 25 satırlık görünümü kullandı. [Kanıt](proofs/targeted-query-default-budget.json)

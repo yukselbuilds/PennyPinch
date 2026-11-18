@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-18",
+  "task": "H041 targeted report comparison",
+  "entry_point": "bench/context_tools/targeted_query_compare.py",
+  "cli": "codex-cli 0.169.0-alpha.11.1",
+  "engine": "0.44.0",
+  "os": "Windows-10-10.0.19045-SP0",
+  "report_bytes": 5926,
+  "report_rows": 48,
+  "report_sha256": "d9a7ea509ff676ba9051e1f52237dabbf424f4a1ee78b3e3ae4b2c5193459318",
+  "attempts_per_arm": 4,
+  "attempts_per_pair": 8,
+  "first_upstream_cache_read": 0,
+  "default_cli_output_budget": true,
+  "gate": "exact answer and tool delivery, both cold first requests, all attempts measured, one pair",
+  "unit_tests": {
+    "passed": true,
+    "count": 12,
+    "fingerprints": {
+      "count": 8,
+      "matched": true,
+      "sha256_of_sorted_input_hashes": "46066bc084305dbea1fe6f08f9f01f1f9c4193a25c3ccd45f7a88f97700f1ffb"
+    }
+  },
+  "loopback": {
+    "passed": true,
+    "upstream_attempts": 7,
+    "model_calls": 0,
+    "usage_source": "scripted counters",
+    "run": "14d58b8950cc484f8844a5aff064502f",
+    "arms": [
+      {
+        "arm": "full_read",
+        "forwarded_http_attempts": 3,
+        "request_count": 3,
+        "usage_record_count": 3,
+        "read_calls": 1,
+        "query_calls": 0,
+        "exact_answer": true,
+        "tool_delivery_exact": true,
+        "fixture_payloads_exact": true,
+        "stop": {
+          "shutdown": "graceful",
+          "engine_exit_code": 0,
+          "owned_port_closed": true,
+          "force_fallback": false
+        }
+      },
+      {
+        "arm": "targeted",
+        "forwarded_http_attempts": 4,
+        "request_count": 4,
+        "usage_record_count": 4,
+        "read_calls": 1,
+        "query_calls": 1,
+        "exact_answer": true,
+        "tool_delivery_exact": true,
+        "fixture_payloads_exact": true,
+        "stop": {
+          "shutdown": "graceful",
+          "engine_exit_code": 0,
+          "owned_port_closed": true,
+          "force_fallback": false
+        }
+      }
+    ]
+  },
+  "live": {
+    "passed": false,
+    "run": "f9a765464e4941d689ab172b71f03490",
+    "account_scope": "existing Headroom-owned ChatGPT Free test profile",
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "upstream_attempts": 4,
+    "upstream_200s": 4,
+    "blocked_before_upstream": 1,
+    "stop_reason": "arm_request_limit",
+    "completed_mcp_calls": 1,
+    "read_calls": 0,
+    "query_calls": 0,
+    "exact_answer": false,
+    "full_read_turn_completed": false,
+    "targeted_arm_started": false,
+    "paired_provider_token_delta": null,
+    "stop": {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    }
+  },
+  "input_fingerprints": {
+    "loopback": {
+      "full_read": {
+        "count": 43,
+        "matched": true,
+        "sha256_of_sorted_input_hashes": "cf7d30351a1921a7a3b1a254693c3c4e058c64e258c6cd5fd1afd81f528cc720"
+      },
+      "targeted": {
+        "count": 43,
+        "matched": true,
+        "sha256_of_sorted_input_hashes": "9e2f0fe1d27925ef7f7a4eee0303ebf90d7ba7ce7393e77903170cfe7c8fbe6b"
+      }
+    },
+    "live": {
+      "full_read": {
+        "count": 44,
+        "matched": true,
+        "sha256_of_sorted_input_hashes": "3fb3949225ef69332ffcd9b0c3f91691f4d3e7335de335f2f3cb4ceb1d6f15ff"
+      }
+    }
+  },
+  "local_diagnostics": [
+    "unsorted_protected_tool_list_prevented_engine_start",
+    "startup_guard_rejection_distinguished_from_client_requests"
+  ],
+  "dollar_cost_measured": false,
+  "native_files_or_subagents_verified": false
+}

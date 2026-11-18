@@ -109,6 +109,8 @@ def dashboard_request_ids(engine, exchange):
 
 
 class Provider(pilot["Provider"]):
+    turn_counts = SCENARIOS
+
     def next_item(self, body, turn):
         server, scenario = self.server, self.server.scenario
         tools = {tool["name"] for schema in body.get("tools", []) if schema.get("type") == "namespace"
@@ -177,7 +179,7 @@ class Provider(pilot["Provider"]):
             size = int(self.headers.get("Content-Length", "0"))
             assert self.path == "/v1/responses" and 0 < size <= 2 * 1024 * 1024, "fixture_scope"
             assert self.headers.get("Authorization") == server.auth, "fixture_auth_changed"
-            assert server.total_requests < sum(SCENARIOS.values()), "fixture_request_budget"
+            assert server.total_requests < sum(self.turn_counts.values()), "fixture_request_budget"
             body = json.loads(self.rfile.read(size))
             server.requests.append(body)
             server.total_requests += 1
@@ -186,7 +188,7 @@ class Provider(pilot["Provider"]):
                     server.output_part_types.update(part.get("type") if part.get("type") in ("text", "input_text") else "other"
                         for part in entry["output"] if isinstance(part, dict))
             turn = len(server.requests)
-            assert turn <= SCENARIOS[server.scenario], "unexpected_fixture_turn"
+            assert turn <= self.turn_counts[server.scenario], "unexpected_fixture_turn"
             item = self.next_item(body, turn)
             input_tokens, cached, output = COUNTERS[turn - 1]
             response = {"id": f"resp_query_{server.scenario}_{turn}", "object": "response", "status": "completed",

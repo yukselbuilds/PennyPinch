@@ -78,14 +78,16 @@ class ReportSession:
             end = offset + (end - offset) // 2
 
 
-def serve(failed_report=False):
+def serve(failed_report=False, *, source=None):
     from mcp.server.mcpserver import MCPServer
     from mcp.server.mcpserver.context import Context
     from mcp.server.mcpserver.exceptions import ToolError
     from mcp.types import ToolAnnotations
     from pydantic import StrictInt
 
-    raw, stderr, exit_code = FAILURE_FIXTURE if failed_report else (b"".join(prototype["report_rows"]()), b"", 0)
+    if source is None:
+        source = FAILURE_FIXTURE if failed_report else (b"".join(prototype["report_rows"]()), b"", 0)
+    raw, stderr, exit_code = source
     captured = subprocess.run([sys.executable, "-I", "-B", "-c", prototype["PRODUCER"]],
         input=struct.pack(">II", len(raw), exit_code) + raw + stderr, capture_output=True, timeout=10,
         env={"SystemRoot": os.environ.get("SystemRoot", "")}, cwd=Path.cwd(),

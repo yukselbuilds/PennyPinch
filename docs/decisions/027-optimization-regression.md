@@ -98,6 +98,12 @@ Windows 10, Codex CLI 0.169.0-alpha.11.1 ve güncel 0.44.0 motoruyla dört yerel
 
 Bu büyük örnekte ilk referans, sorgu ve parçalı tam okuma yerel fixture'a toplam 22 istek gönderdi. Koşudaki yanıt ve kullanım sayaçları yerel fixture'dan gelir. Canlı karşılaştırma için aynı model ve eforla tam okuma, hedefli sorgu ve gerekirse geri okuma koşulları önceden belirlenir. Parçalı geri okuma dahil bütün ek istekler toplam kullanımda sayılır. Bu pilotun gerçek dosya/alt ajan yetkileri ve sağlayıcı maliyeti kendi kabulünü bekler.
 
+#### Eşlenmiş tam Read ve hedefli sorgu provası
+
+18 Kasım. Önceden sabitlenen 48 JSONL kaydı 5.926 bayt tutar ve tek varsayılan Read yanıtına sığar. İki kol aynı soruyla kesin kaydı, satır sayısını ve sayısal değerlerin tüm rakamlarını ister. Aday kolda gerekirse `Read` kullanılabilir. Tam çıktı yolu, araç şemaları ve geri okuma aktarımları ölçüme dahildir. Her kol ilk sağlayıcı isteğinde sıfır cache isabetiyle başlamalı, kesin yanıt ve her isteğin giriş/çıkış sayaçları doğrulanmalıdır. Çalışma bir çiftle sınırlıdır. Kol başına dört, çift başına sekiz sağlayıcı gönderimi ayrılmıştır.
+
+Gerçek CLI ve 0.44.0 motorla yerel fixture provası 3 + 4 istek, yedi kullanım satırı ve iki normal motor kapanışı verdi. Aday provasında tam okuma bilinçli olarak istendi ve ek istek sayıldı. 12 odaklı kontrol geçti. Canlı ChatGPT Free koşusunda kontrol kolunun ilk dört isteği HTTP 200 döndü. CLI rapor referansını aldı. Bir sonraki istek sağlayıcıya gönderilmeden sınırda kesildi. Tam Read ve son cevap gözlenmedi; aday kol başlatılmadı. Canlı tasarruf yüzdesi ve maliyet bilinmiyor. Gerçek dosya/alt ajan izinleri açık. [Kanıt](../proofs/targeted-query-comparison.json)
+
 ### H041-e: deneysel kurallar
 
 16 Kasım 2026 kullanıcı kararı: ModHarness-RL'den esinlenen kural deneyi **isteğe bağlı ve varsayılan kapalıdır**. Ana ajan kapsam, ölçüm ve izin sözleşmesini üstlenir; bu kayıt yalnız plandır. Amaç, büyük araç çıktılarında gereken bilgiyi seçmek ve doğrulanmış hata döngülerini Learn içinde öneri olarak göstermek. [Makale v1](https://arxiv.org/abs/2611.18533v1) yöntem kaynağıdır; buradaki kabul koşulları ürünümüze aittir. Model eğitimi, kendiliğinden kod üretip çalıştırma ve bütün sohbetleri yeniden özetleme kapsam dışıdır.

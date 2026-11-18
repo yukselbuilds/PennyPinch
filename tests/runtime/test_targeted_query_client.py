@@ -13,6 +13,31 @@ query = client["query"]
 RAW = b'{"id":"a","value":18446744073709551617}\r\n{"id":"b","decimal":0.1234567890123456789012345}'
 
 
+class TargetedQueryComparisonTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.bench = runpy.run_path(str(ROOT / "bench/context_tools/targeted_query_compare.py"))
+
+    def test_oracle_requires_exact_types_digits_and_keys(self):
+        expected = self.bench["ANSWER"]
+        matches = self.bench["exact_answer"]
+        self.assertTrue(matches(json.dumps(expected)))
+        self.assertFalse(matches(json.dumps({**expected, "record_count": float(expected["record_count"])})))
+        self.assertFalse(matches(json.dumps({**expected, "ratio": expected["ratio"][:-1]})))
+        self.assertFalse(matches(json.dumps({**expected, "extra": False})))
+
+    def test_comparison_counts_fallback_and_requires_full_cold_counters(self):
+        accepted = self.bench["accepted"]
+        row = {"turn_completed": True, "exact_answer": True, "tool_delivery_exact": True,
+               "first_upstream_cache_read_input_tokens": 0, "forwarded_http_attempts": 4,
+               "request_count": 4, "total_usage": {"total_input_tokens": 4000, "output_tokens": 52,
+                   "cache_read_input_tokens": 1700, "total_tokens": 4052}}
+        self.assertTrue(accepted(row))
+        self.assertFalse(accepted({**row, "first_upstream_cache_read_input_tokens": None}))
+        self.assertFalse(accepted({**row, "request_count": 3}))
+        self.assertFalse(accepted({**row, "total_usage": {**row["total_usage"], "output_tokens": None}}))
+
+
 class TargetedQueryClientTests(unittest.TestCase):
     def setUp(self):
         self.output = query.ToolOutput(query.REPORT_TOOL, "not-a-model-call-id", RAW, b"", 0)
