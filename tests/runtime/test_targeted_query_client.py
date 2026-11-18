@@ -82,6 +82,15 @@ class TargetedQueryComparisonTests(unittest.TestCase):
                            "output": [{"type": "input_text", "text": "Sandbox execution\r\nOutput:\r\n" + result}]}]}
         self.assertEqual(replay["tool_text"](body, 1, code_mode=True), result)
 
+    def test_scope_uses_one_valid_thread_from_request_metadata(self):
+        scope = runpy.run_path(str(ROOT / "bench/context_tools/targeted_query_scope.py"))
+        thread = "c43812ad-f501-4912-b535-c74e3a7fe7ac"
+        parse = scope["transport_thread"]
+        self.assertEqual(parse({"threadId": thread, "sessionId": thread}), thread)
+        self.assertIsNone(parse({"sessionId": thread, "arguments": {"threadId": thread}}))
+        self.assertIsNone(parse({"threadId": "wrong"}))
+        self.assertIsNone(parse({"threadId": thread, "thread_id": thread}))
+
 
 class TargetedQueryClientTests(unittest.TestCase):
     def setUp(self):

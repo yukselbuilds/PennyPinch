@@ -1,5 +1,9 @@
 """Exercise file-bound report tools in real parent and child Codex threads on loopback."""
 import argparse
+from collections import Counter
+from collections.abc import Mapping
+from contextvars import ContextVar
+import hashlib
 from http.server import ThreadingHTTPServer
 import json
 import os
@@ -25,6 +29,114 @@ CHILD_PROMPT = "Exercise report ownership in the isolated fixture."
 PARENT_FINAL, CHILD_FINAL = "HEADROOM_PARENT_SCOPE_OK", "HEADROOM_CHILD_SCOPE_OK"
 TURN_LIMITS = {"parent": 6, "child": 4}
 OUTSIDE_PATH_ARGUMENT = "../outside.jsonl"
+TURN_HEADER = "x-codex-turn-metadata"
+ACTOR_FIELDS = {"threadid", "sessionid", "agentid", "agentname", "agentpath", "parentthreadid"}
+
+
+def transport_thread(fields):
+    values = [value for key, value in fields.items() if key.replace("_", "").lower() == "threadid"]
+    if len(values) != 1 or not isinstance(values[0], str):
+        return None
+    try:
+        thread = uuid.UUID(values[0])
+    except ValueError:
+        return None
+    return str(thread) if thread.int and str(thread) == values[0].lower() else None
+
+
+def request_metadata(ctx):
+    fields = ctx.request_context.meta or {}
+    return fields if isinstance(fields, Mapping) else fields.model_dump(exclude_none=True)
+
+
+def thread_hash(thread):
+    return hashlib.sha256(thread.encode("ascii")).hexdigest() if thread else None
+
+
+def append_probe(path, value):
+    with path.open("a", encoding="ascii") as stream:
+        stream.write(json.dumps(value, ensure_ascii=True) + "\n")
+
+
+def mcp_observer(path):
+    connection = uuid.uuid4().hex
+
+    def note(tool, ctx):
+        fields = request_metadata(ctx)
+        labels = {key.replace("_", "").lower() for key in fields}
+        append_probe(path, {"tool": tool, "connection": connection, "metadata_fields": len(fields),
+            "actor_metadata_fields": sorted(labels & ACTOR_FIELDS), "thread_hash": thread_hash(transport_thread(fields)),
+            "transport_request_present": ctx.request_context.request is not None})
+
+    return note
+
+
+def install_owned_engine_probe(target, directory):
+    import httpx
+    from headroom.proxy import server
+
+    ingress = Path(directory) / "ingress-summary.jsonl"
+    egress = Path(directory) / "egress-summary.jsonl"
+    owner = ContextVar("scope_fixture_thread", default=None)
+    send = httpx.AsyncClient.send
+    create = server.create_app
+    remaining = sum(TURN_LIMITS.values())
+
+    async def bounded(client, request, **options):
+        nonlocal remaining
+        thread = owner.get()
+        if remaining == 0 or thread is None or request.method != "POST" or str(request.url) != target:
+            return httpx.Response(400, request=request, json={"error": {"message": "Local scope fixture only"}})
+        remaining -= 1
+        append_probe(egress, {"thread_hash": thread, "body_hash": hashlib.sha256(request.content).hexdigest()})
+        return await send(client, request, **{**options, "follow_redirects": False})
+
+    class IngressObserver:
+        def __init__(self, app):
+            self.app = app
+
+        async def __call__(self, scope, receive, respond):
+            if scope["type"] != "http" or scope["path"] != "/v1/responses":
+                return await self.app(scope, receive, respond)
+            metadata = json.loads(dict(scope["headers"]).get(TURN_HEADER.encode("ascii"), b"{}"))
+            thread = thread_hash(transport_thread(metadata))
+            append_probe(ingress, {"thread_hash": thread})
+            token = owner.set(thread)
+            try:
+                return await self.app(scope, receive, respond)
+            finally:
+                owner.reset(token)
+
+    def create_observed(config=None):
+        app = create(config)
+        app.add_middleware(IngressObserver)
+        return app
+
+    httpx.AsyncClient.send = bounded
+    server.create_app = create_observed
+
+
+def prepare_engine(core, usage, pilot, supervisor, run, upstream_port):
+    runtime = ROOT / "runtime"
+    controller = core.load_module("scope_engine_controller", runtime / "desktop_controller.py")
+    manifest, payload, _ = controller.load_manifest(runtime / "manifest.json")
+    assert manifest["engine"]["version"] == "0.44.0" and core.sha(Path(sys.executable)) == manifest["engine"]["python_sha256"], "engine_pin"
+    staged = core.prepare_fixture_runtime(run, payload)
+    helper = run / "fixture-runtime/desktop_helper.py"
+    source = helper.read_bytes()
+    anchor = b'"from headroom.cli import main; main()"'
+    assert source.count(anchor) == 1, "engine_bootstrap_changed"
+    target = f"http://127.0.0.1:{upstream_port}/v1/responses"
+    hook = f"import runpy; runpy.run_path({str(ENTRY)!r})['install_owned_engine_probe']({target!r}, {str(run)!r}); "
+    helper.write_bytes(source.replace(anchor, repr(hook).encode("ascii") + b" " + anchor, 1))
+    engine = usage["probe"]["UsageEngine"](controller, supervisor, payload, run / "engine", upstream_port, pilot["PLAN"])
+    files = [*staged, *[runtime / path.name for path in staged], payload / "runtime-manifest.json", payload / "python313.dll"]
+    files.extend(payload / "Lib/site-packages/headroom" / name for name in json.loads((runtime / "optimization-sources.json").read_bytes()))
+    return engine, files
+
+
+def summary_rows(path):
+    return [json.loads(line) for line in path.read_bytes().splitlines()] if path.is_file() else []
 
 
 def approved_report(workspace):
@@ -103,7 +215,7 @@ def scope_handler(replay):
                     return native("wait_agent", {"timeout_ms": 25000})
                 if turn == 4:
                     wait = json_output(replay["tool_text"](body, 3))
-                    assert server.observed["child_file_exact"] and server.child_thread != server.parent_thread, "child_route_unconfirmed"
+                    assert server.observed["child_file_exact"], "child_route_unconfirmed"
                     assert wait.get("timed_out") is False and child_notification(body, server.spawned_task), "child_completion_unconfirmed"
                     server.observed["child_completion_confirmed"] = True
                     return report(READ, compare["read_args"](server.references["child"]))
@@ -145,20 +257,28 @@ def scope_handler(replay):
                 size = int(self.headers.get("Content-Length", "0"))
                 assert self.path == "/v1/responses" and self.headers.get("Authorization") == "Bearer scope-loopback", "request_scope"
                 assert 0 < size <= 262144, "request_size"
-                body = json.loads(self.rfile.read(size))
+                raw = self.rfile.read(size)
+                body = json.loads(raw)
                 assert body.get("model") == compare["LIVE_MODEL"] and compare["wire_observation"](body)["code_mode_exec"], "request_contract"
-                meta = json.loads(self.headers["x-codex-turn-metadata"])
-                thread = str(uuid.UUID(meta["thread_id"]))
-                assert OUTSIDE.strip().decode() not in json.dumps(body) and "HEADROOM_OUTSIDE_SCOPE_CANARY" not in json.dumps(body), "outside_content_seen"
+                if server.engine_routed:
+                    assert TURN_HEADER not in self.headers, "unexpected_upstream_turn_header"
+                    body_key = hashlib.sha256(raw).hexdigest()
+                    matches = {row["thread_hash"] for row in summary_rows(server.run / "egress-summary.jsonl") if row["body_hash"] == body_key}
+                    assert len(matches) == 1 and None not in matches, "upstream_owner_unconfirmed"
+                    thread, = matches
+                else:
+                    thread = thread_hash(transport_thread(json.loads(self.headers[TURN_HEADER])))
+                    assert thread is not None, "client_thread_unconfirmed"
+                assert "HEADROOM_OUTSIDE_SCOPE_CANARY" not in json.dumps(body), "outside_content_seen"
                 with server.lock:
                     if server.parent_thread is None:
                         server.parent_thread = thread
                     actor = "parent" if thread == server.parent_thread else "child"
                     if actor == "child":
-                        assert server.references.get("parent") is not None, "child_started_outside_fixture"
                         if server.child_thread is None:
                             server.child_thread = thread
                         assert thread == server.child_thread, "unexpected_child_thread"
+                    assert actor == "parent" or server.references.get("parent") is not None, "child_started_outside_fixture"
                     server.turns[actor] += 1
                     turn = server.turns[actor]
                     assert turn <= TURN_LIMITS[actor], "request_budget"
@@ -187,6 +307,8 @@ def main():
     parser.add_argument("--codex", required=True, type=Path)
     parser.add_argument("--catalog", required=True, type=Path)
     parser.add_argument("--share-mcp", action="store_true", help="Test the native MCP sharing feature in the isolated client")
+    parser.add_argument("--engine", action="store_true", help="Route through the pinned Headroom engine on loopback")
+    parser.add_argument("--agent-scope", action="store_true", help="Partition report archives by the MCP request thread")
     args = parser.parse_args()
     assert os.name == "nt" and Path.cwd().resolve() == ROOT == Path(r"D:\Projeler\Headroom"), "canonical_workspace"
     cli = args.codex.resolve(strict=True)
@@ -200,7 +322,8 @@ def main():
     replay = runpy.run_path(str(compare["REPLAY_PATH"]))
     pilot = replay["pilot"]
     pilot["prepare_provider"]()
-    core = runpy.run_path(str(ROOT / "tests/runtime/anthropic_usage_capture.py"))["replay"]
+    usage = runpy.run_path(str(ROOT / "tests/runtime/anthropic_usage_capture.py"))
+    core = usage["replay"]
     runner = Path(sys.executable).with_name("headroom_runtime.py")
     supervisor = core.load_module("scope_supervisor", runner)
     run = PROOFS / uuid.uuid4().hex
@@ -212,14 +335,19 @@ def main():
     approved, outside = work / "approved.jsonl", run / "outside.jsonl"
     approved.write_bytes(REPORT)
     outside.write_bytes(OUTSIDE)
-    files = (ENTRY, compare["PROGRAM"], catalog, cli, Path(sys.executable), runner, approved, outside,
-             ENTRY.with_name("targeted_query_client.py"), compare["REPLAY_PATH"], ROOT / "bench/optimization/rules_pilot.py")
-    before = {str(path): core.sha(path) for path in files}
+    files = [ENTRY, compare["PROGRAM"], catalog, cli, Path(sys.executable), runner, approved, outside,
+             ENTRY.with_name("targeted_query_client.py"), compare["REPLAY_PATH"], ROOT / "bench/optimization/rules_pilot.py"]
+    engine, engine_counts, engine_stop = None, None, None
     with ThreadingHTTPServer(("127.0.0.1", 0), scope_handler(replay)) as server:
+        server.run, server.engine_routed = run, args.engine
         server.parent_thread, server.spawned_task, server.child_thread, server.failure = None, None, None, None
         server.references, server.observed, server.foreign_reads, server.turns = {}, {}, {}, dict.fromkeys(TURN_LIMITS, 0)
         server.lock = threading.Lock()
         threading.Thread(target=server.serve_forever, daemon=True).start()
+        if args.engine:
+            engine, staged = prepare_engine(core, usage, pilot, supervisor, run, server.server_port)
+            files.extend(staged)
+        before = {str(path): core.sha(path) for path in files}
         config = {"model_provider": "scope", "model_providers.scope.name": "Owned scope fixture",
             "model_providers.scope.base_url": f"http://127.0.0.1:{server.server_port}/v1", "model_providers.scope.wire_api": "responses",
             "model_providers.scope.env_key": "RULES_PILOT_TOKEN", "model_providers.scope.supports_websockets": False,
@@ -229,40 +357,74 @@ def main():
             "project_doc_max_bytes": 0, "log_dir": str(state / "logs"),
             "mcp_servers.headroom_rule_pilot.args": ["-I", "-B", str(ENTRY), "--mcp", str(work)],
             "mcp_servers.headroom_rule_pilot.enabled_tools": [CAPTURE, READ]}
+        if args.agent_scope:
+            config["mcp_servers.headroom_rule_pilot.args"].append("--agent-scope")
         env = pilot["client_environment"]()
         env.update(CODEX_HOME=str(state / "home"), CODEX_SQLITE_HOME=str(state / "db"), TEMP=str(state / "temp"),
                    TMP=str(state / "temp"), RULES_PILOT_TOKEN="scope-loopback")
-        command = pilot["client_args"](cli, work, "counts", "control", compare["LIVE_MODEL"], config,
-            prompt="Exercise the native parent and child report scope in this fixed local fixture.")
         try:
+            if engine is not None:
+                engine.start()
+                config["model_providers.scope.base_url"] = f"http://127.0.0.1:{engine.port}/v1"
+            command = pilot["client_args"](cli, work, "counts", "control", compare["LIVE_MODEL"], config,
+                prompt="Exercise the native parent and child report scope in this fixed local fixture.")
             exit_code, output = pilot["run_client"](command, work, env, supervisor, 75)
+            if engine is not None:
+                engine_counts = {"request_logs": len(usage["probe"]["request_logs"](engine)), "usage_records": len(usage["records"](engine))}
         except subprocess.TimeoutExpired:
             exit_code, output = -1, b""
         finally:
-            server.shutdown()
-            compare["remove_client_state"](state)
+            try:
+                if engine is not None:
+                    engine.close()
+                    engine_stop = engine.stopped
+            finally:
+                server.shutdown()
+                compare["remove_client_state"](state)
     after = {str(path): core.sha(path) for path in files}
     records = [json.loads(line) for line in output.splitlines() if line.startswith(b"{")]
     parent_final = any(event.get("type") == "item.completed" and event.get("item", {}).get("text") == PARENT_FINAL for event in records)
     expected = {"parent_file_exact", "child_file_exact", "child_denied_parent_archive", "parent_denied_child_archive",
                 "child_completion_confirmed", "outside_path_override_ignored"}
+    context_rows = summary_rows(run / "mcp-context.jsonl")
+    ingress = summary_rows(run / "ingress-summary.jsonl")
+    threads = {"parent": server.parent_thread, "child": server.child_thread}
+    actor_by_thread = {thread: actor for actor, thread in threads.items() if thread is not None}
+    ingress_counts = dict(Counter(actor_by_thread.get(row["thread_hash"], "unknown") for row in ingress))
+    has_identity = len(actor_by_thread) == 2
+    context_matches = sum(row["thread_hash"] in actor_by_thread for row in context_rows)
+    engine_verified = args.engine and has_identity and ingress_counts == TURN_LIMITS and engine_counts == {"request_logs": 10, "usage_records": 10}
     passed = (exit_code == 0 and server.failure is None and server.turns == TURN_LIMITS and parent_final
+              and has_identity and (not args.engine or engine_verified) and context_matches == len(context_rows) == 6
               and set(server.observed) == expected and all(server.observed.values()) and before == after)
     result = {"passed": passed, "cli": version, "failure": server.failure, "cli_exit": exit_code, "turns": server.turns,
               "observed": server.observed, "parent_final": parent_final, "external_model_requests": 0,
               "requested_mcp_connection_sharing": args.share_mcp, "foreign_reads": server.foreign_reads,
+              "agent_scope": args.agent_scope,
+              "engine_routed": args.engine, "engine_verified": engine_verified, "ingress_requests": ingress_counts,
+              "distinct_ingress_threads": len({row["thread_hash"] for row in ingress if row["thread_hash"]}),
+              "engine_counts": engine_counts, "engine_stop": engine_stop,
+              "mcp_context": {"calls": len(context_rows), "connections": len({row["connection"] for row in context_rows}),
+                  "calls_with_actor_metadata": sum(bool(row["actor_metadata_fields"]) for row in context_rows),
+                  "calls_matching_client_thread": context_matches,
+                  "calls_with_transport_request": sum(row["transport_request_present"] for row in context_rows)},
               "fixture_file_bytes": len(REPORT), "before": before, "after": after}
     with (run / "result.json").open("x", encoding="utf-8") as stream:
         json.dump(result, stream, indent=2)
         stream.write("\n")
-    print(json.dumps({**{key: result[key] for key in ("passed", "failure", "cli_exit", "turns", "observed", "foreign_reads")},
+    print(json.dumps({**{key: result[key] for key in ("passed", "failure", "cli_exit", "turns", "foreign_reads",
+                         "engine_verified", "ingress_requests", "mcp_context")},
                       "proof": (run / "result.json").relative_to(ROOT).as_posix()}))
     return 0 if passed else 1
 
 
 if __name__ == "__main__":
-    if sys.argv[1:2] == ["--mcp"] and len(sys.argv) == 3:
-        source = approved_report(Path(sys.argv[2]))
-        runpy.run_path(str(ENTRY.with_name("targeted_query_client.py")))["serve"](source=(source, b"", 0), read_tool=READ)
+    if sys.argv[1:2] == ["--mcp"] and (len(sys.argv) == 3 or sys.argv[3:] == ["--agent-scope"]):
+        workspace = Path(sys.argv[2])
+        source = approved_report(workspace)
+        note = mcp_observer(workspace.parent / "mcp-context.jsonl")
+        scope = (lambda ctx: transport_thread(request_metadata(ctx))) if "--agent-scope" in sys.argv[3:] else None
+        runpy.run_path(str(ENTRY.with_name("targeted_query_client.py")))["serve"](
+            source=(source, b"", 0), read_tool=READ, observe_request=note, request_scope=scope)
     else:
         raise SystemExit(main())

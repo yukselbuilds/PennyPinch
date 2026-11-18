@@ -78,7 +78,7 @@ class ReportSession:
             end = offset + (end - offset) // 2
 
 
-def serve(failed_report=False, *, source=None, read_tool="Read"):
+def serve(failed_report=False, *, source=None, read_tool="Read", observe_request=None, request_scope=None):
     from mcp.server.mcpserver import MCPServer
     from mcp.server.mcpserver.context import Context
     from mcp.server.mcpserver.exceptions import ToolError
@@ -93,33 +93,49 @@ def serve(failed_report=False, *, source=None, read_tool="Read"):
         env={"SystemRoot": os.environ.get("SystemRoot", "")}, cwd=Path.cwd(),
         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert (captured.stdout, captured.stderr, captured.returncode) == (raw, stderr, exit_code), "fixed_producer_changed"
-    session = ReportSession(query.ToolOutput(query.REPORT_TOOL, "", captured.stdout, captured.stderr, captured.returncode))
+    output = query.ToolOutput(query.REPORT_TOOL, "", captured.stdout, captured.stderr, captured.returncode)
+    session = ReportSession(output)
+    scoped_sessions = {}
     server = MCPServer("headroom_query_pilot")
     annotations = ToolAnnotations(read_only_hint=True, destructive_hint=False, open_world_hint=False)
+
+    def owned_session(ctx, tool, *, capture=False):
+        if observe_request is not None:
+            observe_request(tool, ctx)
+        if request_scope is None:
+            return session
+        owner = request_scope(ctx)
+        if owner is None:
+            raise ToolError("archive_unavailable")
+        if owner not in scoped_sessions:
+            if not capture or len(scoped_sessions) >= 2:
+                raise ToolError("archive_unavailable")
+            scoped_sessions[owner] = ReportSession(output)
+        return scoped_sessions[owner]
 
     @server.tool(structured_output=False, annotations=annotations)
     async def read_structured_report(ctx: Context) -> str:
         """Capture only the fixed synthetic report. Return this connection's archive reference."""
         try:
-            return encode(session.capture("mcp:" + str(ctx.request_id)))
+            return encode(owned_session(ctx, query.REPORT_TOOL, capture=True).capture("mcp:" + str(ctx.request_id)))
         except ValueError:
             raise ToolError("archive_capture_unavailable") from None
 
     @server.tool(structured_output=False, annotations=annotations)
-    async def select_report_record(archive_id: str, record_id: str) -> str:
+    async def select_report_record(archive_id: str, record_id: str, ctx: Context) -> str:
         """Select an exact ID and count all records in this connection's captured report."""
         try:
-            return encode(session.select({"archive_id": archive_id, "record_id": record_id}))
+            return encode(owned_session(ctx, "select_report_record").select({"archive_id": archive_id, "record_id": record_id}))
         except LookupError:
             raise ToolError("archive_unavailable") from None
         except ValueError:
             raise ToolError("invalid_query") from None
 
     @server.tool(name=read_tool, structured_output=False, annotations=annotations)
-    async def Read(archive_id: str, stream: Literal["stdout", "stderr"], offset: StrictInt) -> str:
+    async def Read(archive_id: str, stream: Literal["stdout", "stderr"], offset: StrictInt, ctx: Context) -> str:
         """Read original bytes as UTF-8 text. Start each stream at 0; continue at next_offset up to total_bytes."""
         try:
-            return encode(session.read_part(archive_id, stream, offset))
+            return encode(owned_session(ctx, read_tool).read_part(archive_id, stream, offset))
         except LookupError:
             raise ToolError("archive_unavailable") from None
         except ValueError:

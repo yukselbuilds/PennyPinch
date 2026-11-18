@@ -1,13 +1,23 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Headroom yolunda paylaşımlı MCP arşivi ajan başına ayrıldı
+
+Ana ajan istek sahipliğini üstlendi. Pinli Codex CLI ve 0.44.0 motorunda MCP’nin kendi thread alanı motor girişindeki iki kimliğe eşleşti. Motor, Codex üst veri başlığını yerel sağlayıcıya iletmedi. Paylaşım açık ve tek bağlantı kullanılan prototipte, thread başına ayrı arşiv iki çapraz okumayı reddetti. Her ajan izinli 66 baytı birebir aldı. Bağlantıya bağlı kontrol kolunda alt ajan ana arşivi okuyabildi. [Kanıt](proofs/targeted-query-comparison.json)
+
+İki başarılı kapsam koşusunda 10’ar istek ve 10’ar kullanım satırı eşleşti. Negatif kontrol altı istek kullandı ve üç motor normal kapandı. 17 odaklı test ile yedi istekli mevcut sorgu ve geri okuma regresyonu geçti. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+Uzun kod kipi sonuçlarında geri çağırmaya taşınan özgün çıktıyı, doğrulanmış thread ve izinli çağrı kimliğiyle seçici olarak koru. Aynı istekteki diğer araç çıktılarının mevcut sıkıştırma yolunu ve tam geri okumayı doğrula. [Karar](decisions/027-optimization-regression.md#headroom-yolunda-ajan-sahipliği)
+
 ## 18 Kasım — Codex arşivinin ajan sınırı ölçüldü
 
 Ana ajan izin ve sahipliği üstlendi. Gerçek Codex CLI ve yerel sağlayıcıyla ana ajan ve bir alt ajan açıldı. MCP paylaşımı kapalı 10 istekli koşuda ikisi de 66 baytlık izinli dosyayı kendi arşivinden birebir aldı. İki yabancı referans reddedildi. Modelin çalışma alanı dışını gösteren yol argümanı kaynak dosyayı değiştirmedi. Alt ajan tamamlanması, ayrı thread ve ana ajana gelen yerel ajan mesajı ile doğrulandı. [Kanıt](proofs/targeted-query-comparison.json)
 
 Paylaşım açık koşuda alt ajan, ana ajanın arşivini birebir okuyabildi. Koşu altıncı yerel istekte izin kabulünü geçemedi. Sorgu prototipinde ayrı bağlantı veya doğrulanmış ajan kimliği, ajan başına arşiv yetkisinin kabul koşuludur. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### Önceki motor sahipliği planı
 
 Paylaşımlı Codex bağlantısında çağıran ajanın güvenilir kimliğini belirle. Ajan sahipliği ve izinli araç kimliğiyle sınırlandırılmış kod kipi çıktı korumasını 0.44.0 motor yolunda doğrula. [Karar](decisions/027-optimization-regression.md#codex-dosya-ve-alt-ajan-yetkisi)
 

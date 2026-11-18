@@ -122,6 +122,12 @@ Yerel sonuca göre canlı sınır kol başına dört, toplam sekiz olarak korund
 
 Aynı CLI ve katalogla `mcp_connection_sharing` açıkken alt ajan ana ajanın arşivini birebir aldı. Bu, prototipin bağlantı düzeyindeki sahibi ile ajan kimliğinin ayrıldığını gösterir. Ürün kabulünde güvenilir ajan kimliği veya gerçekten ayrık MCP bağlantısı gerekir. Model çağrısı sıfırdı. Bu kapsam tek sentetik kaynaklı MCP denemesidir. Genel native dosya izinleri, Headroom motorundan geçen korumalı kod kipi ve desteklenen diğer istemciler ayrı kanıt bekliyor. [İzin kanıtı](../proofs/targeted-query-comparison.json)
 
+#### Headroom yolunda ajan sahipliği
+
+18 Kasım. Pinli Codex CLI’nin stdio MCP araç çağrılarındaki doğrulanabilir thread UUID’si, 0.44.0 motor girişindeki iki kimlikle eşleşti. Çıkışta `x-codex-turn-metadata` başlığı çıkarıldı. İzole test giriş ve çıkış eşlemesini gövde ve thread özetlerinden yaptı. Prototip, MCP bağlamındaki geçerli thread başına ayrı arşiv oluşturur. Eksik, geçersiz veya yinelenen thread alanı arşiv yetkisi üretmez. Modelin araç argümanları arşiv sahibini belirlemez.
+
+Paylaşım kapalı kontrol 10 istekte tamamlandı. Paylaşım açık ve arşiv tek bağlantıya bağlı kontrol altı istekte çapraz veri dönüşünü yeniden üretti. Aynı paylaşım açıkken thread’e göre ayrılan prototip, tek MCP bağlantısı ve 10 yerel istekte iki çapraz okumayı reddetti. Altı MCP çağrısı doğru iki giriş thread’ine dağıldı. İki izinli 66 baytlık çıktı birebir ulaştı. 17 odaklı test ve yedi istekli normal sorgu/geri okuma regresyonu geçti. Model çağrısı sıfırdı. Büyük kod kipi çıktılarındaki seçici koruma ve genel native dosya kapsamı kendi kabulünü bekliyor. [Motor kanıtı](../proofs/targeted-query-comparison.json)
+
 ### H041-e: deneysel kurallar
 
 16 Kasım 2026 kullanıcı kararı: ModHarness-RL'den esinlenen kural deneyi **isteğe bağlı ve varsayılan kapalıdır**. Ana ajan kapsam, ölçüm ve izin sözleşmesini üstlenir; bu kayıt yalnız plandır. Amaç, büyük araç çıktılarında gereken bilgiyi seçmek ve doğrulanmış hata döngülerini Learn içinde öneri olarak göstermek. [Makale v1](https://arxiv.org/abs/2611.18533v1) yöntem kaynağıdır; buradaki kabul koşulları ürünümüze aittir. Model eğitimi, kendiliğinden kod üretip çalıştırma ve bütün sohbetleri yeniden özetleme kapsam dışıdır.

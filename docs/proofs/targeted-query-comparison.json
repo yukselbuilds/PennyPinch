@@ -522,5 +522,176 @@
         }
       }
     }
+  },
+  "engine_agent_scope": {
+    "date": "2026-11-18",
+    "entry_point": "bench/context_tools/targeted_query_scope.py",
+    "engine": "0.44.0",
+    "cli": "codex-cli 0.169.0-alpha.11.1",
+    "provider_model_requests": 0,
+    "fixture_bytes": 66,
+    "owner_source": "the validated thread UUID in the isolated native CLI MCP request metadata",
+    "native_turn_header_forwarded": false,
+    "native_filesystem_sandbox_verified": false,
+    "large_code_mode_output_protection_verified": false,
+    "scope_test_requests": 26,
+    "runs": {
+      "separate": {
+        "run": "d40bc379e0d44bacb1739d733fb0f88a",
+        "passed": true,
+        "failure": null,
+        "requested_mcp_connection_sharing": false,
+        "agent_scope": false,
+        "turns": {
+          "parent": 6,
+          "child": 4
+        },
+        "observed": {
+          "child_denied_parent_archive": true,
+          "child_file_exact": true,
+          "child_completion_confirmed": true,
+          "parent_denied_child_archive": true,
+          "parent_file_exact": true,
+          "outside_path_override_ignored": true
+        },
+        "foreign_reads": {
+          "child": "denied",
+          "parent": "denied"
+        },
+        "mcp_context": {
+          "calls": 6,
+          "connections": 2,
+          "calls_with_actor_metadata": 6,
+          "calls_matching_client_thread": 6,
+          "calls_with_transport_request": 0
+        },
+        "engine_counts": {
+          "request_logs": 10,
+          "usage_records": 10
+        },
+        "engine_stop": {
+          "shutdown": "graceful",
+          "engine_exit_code": 0,
+          "owned_port_closed": true,
+          "force_fallback": false
+        },
+        "mcp_calls_per_thread": [
+          3,
+          3
+        ],
+        "input_fingerprints": {
+          "count": 37,
+          "matched": true,
+          "sha256_of_sorted_input_hashes": "6b038c3aae38c611cb677370046eaf16ce5df641f192c8038a874d67bb8556f0"
+        }
+      },
+      "shared_connection_owner": {
+        "run": "3f72d39a79d94cacba774fcc7ad60783",
+        "passed": false,
+        "failure": "child_denial_unconfirmed",
+        "requested_mcp_connection_sharing": true,
+        "agent_scope": false,
+        "turns": {
+          "parent": 4,
+          "child": 2
+        },
+        "observed": {},
+        "foreign_reads": {
+          "child": "returned"
+        },
+        "mcp_context": {
+          "calls": 2,
+          "connections": 1,
+          "calls_with_actor_metadata": 2,
+          "calls_matching_client_thread": 2,
+          "calls_with_transport_request": 0
+        },
+        "engine_counts": {
+          "request_logs": 4,
+          "usage_records": 6
+        },
+        "engine_stop": {
+          "shutdown": "graceful",
+          "engine_exit_code": 0,
+          "owned_port_closed": true,
+          "force_fallback": false
+        },
+        "mcp_calls_per_thread": [
+          1,
+          1
+        ],
+        "input_fingerprints": {
+          "count": 37,
+          "matched": true,
+          "sha256_of_sorted_input_hashes": "638fe81835b3b1c819b20c44e1db2bfae0766354c9bf3f15169f700438e9c3ee"
+        }
+      },
+      "shared_thread_owner": {
+        "run": "1e9f6d6fb21e4c25afa639e885b4093b",
+        "passed": true,
+        "failure": null,
+        "requested_mcp_connection_sharing": true,
+        "agent_scope": true,
+        "turns": {
+          "parent": 6,
+          "child": 4
+        },
+        "observed": {
+          "child_denied_parent_archive": true,
+          "child_file_exact": true,
+          "child_completion_confirmed": true,
+          "parent_denied_child_archive": true,
+          "parent_file_exact": true,
+          "outside_path_override_ignored": true
+        },
+        "foreign_reads": {
+          "child": "denied",
+          "parent": "denied"
+        },
+        "mcp_context": {
+          "calls": 6,
+          "connections": 1,
+          "calls_with_actor_metadata": 6,
+          "calls_matching_client_thread": 6,
+          "calls_with_transport_request": 0
+        },
+        "engine_counts": {
+          "request_logs": 10,
+          "usage_records": 10
+        },
+        "engine_stop": {
+          "shutdown": "graceful",
+          "engine_exit_code": 0,
+          "owned_port_closed": true,
+          "force_fallback": false
+        },
+        "mcp_calls_per_thread": [
+          3,
+          3
+        ],
+        "input_fingerprints": {
+          "count": 37,
+          "matched": true,
+          "sha256_of_sorted_input_hashes": "b6fbc5b9bcf38b246a7894c1aee8523eee5f0b3e4dc23af79d8a0c82c0c3a102"
+        }
+      }
+    },
+    "unit_tests_passed": 17,
+    "ordinary_query_and_readback_regression": {
+      "run": "f109511b50df47feaad2211c9d621d8d",
+      "requests": 7,
+      "input_fingerprints": {
+        "full_read": {
+          "count": 43,
+          "matched": true,
+          "sha256_of_sorted_input_hashes": "7b94050ab7a53bdace6baf7eb47f85b3ef2be22358419f706cf5275bfccdb3a9"
+        },
+        "targeted": {
+          "count": 43,
+          "matched": true,
+          "sha256_of_sorted_input_hashes": "95e51420ed023337429da58b817b4edb065a372e2343e0c506b05938ac8f9b03"
+        }
+      }
+    }
   }
 }
