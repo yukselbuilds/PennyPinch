@@ -88,7 +88,15 @@ Yüksek bütçeli ilk denemede özgün araç çıktısı CLI'de tamdı; model yo
 
 Yerel önkontrol tamamlandı: altı odaklı test ve son adayın üç gerçek CLI senaryosunda 11 loopback gönderimi/11 kullanım kaydı geçti. Hedef kayıt, 1.000 kayıt sayısı ve özgün stdout/stderr/exit/kaynak kimliği birebir. Yeni CLI'nin sorgu ve özgün okuması reddedildi; kapalı `Read` katalogda yoktu, zorlanan çağrı çalışmadı ve sonraki sorgu devam etti. Doğrudan MCP'de `isError=true`; pinli CLI bu alanı JSON kaydına taşımayıp `status=failed` gösterdi. Eksik bayrak bilinmiyor kalır, hata durumu ayrıca doğrulanır. Önce/sonra/güncel fingerprint'ler ve normal motor kapanışı geçti. Tanılarla toplam 65 yerel gönderim; gerçek sağlayıcı çağrısı sıfır. Eski başarısız kayıtlar değiştirilmedi. [Kanıt](../proofs/targeted-query-client.json).
 
-Genel kabul açık: ilk iş varsayılan istemci bütçesinde izinli parçalardan birebir özgün geri okumadır. Ondan sonra gerçek dosya/ajan izni ve canlı model kalitesi, bütün ek turlar dahil toplam kullanım/maliyet sınanır. Ürün kayıt/varsayılanları değişmedi, H041 kapanmadı ve e3/e4 dondurulmuş kaldı.
+Bu ön kontrolden sonraki yerel kabul aşağıdadır. Gerçek dosya/ajan izni ve canlı model kalitesi ile bütün ek turlar dahil toplam kullanım/maliyet açık kalır.
+
+#### Varsayılan CLI bütçesinde parçalı geri okuma
+
+18 Kasım. Aynı sahipli `Read` aracı stdout veya stderr için UTF-8 metin ve bayt aralığı döndürür. Ham parça en fazla 6 KiB, kodlanmış yanıt en fazla 8 KiB olur. Okuma UTF-8 karakterini bölmez. Aralıklar sıralı birleştirilir. Eksik, yinelenen veya sırasız parça tam okuma üretmez. Kaynak MCP istek kimliği ve çıkış kodu her parçada doğrulanır.
+
+Windows 10, Codex CLI 0.169.0-alpha.11.1 ve güncel 0.44.0 motoruyla dört yerel senaryo geçti. Çıktı bütçesi varsayılandı. 107.498 bayt, 18 stdout parçası ve boş stderr kaydıyla birebir geri geldi. Ayrı başarısız raporun 16 bayt stdout, 23 bayt stderr ve çıkış kodu 9 korundu. Yabancı CLI sorgu ve okumayı yapamadı. Kapalı `Read` çağrısı sonuç üretmedi ve izinli sorgu çalıştı. İlk 22 istekli koşuda ham tanı görünümünün 10 satırlık sınırı tam kullanım eşlemesini engelledi. Son aday paneldeki `recent_requests` görünümünü kullanır. 34 test isteğinin tamamı motor kullanım satırına eşleşti. On odaklı test ile motorun normal kapanışı geçti. [Kanıt](../proofs/targeted-query-default-budget.json)
+
+Bu büyük örnekte ilk referans, sorgu ve parçalı tam okuma yerel fixture'a toplam 22 istek gönderdi. Koşudaki yanıt ve kullanım sayaçları yerel fixture'dan gelir. Canlı karşılaştırma için aynı model ve eforla tam okuma, hedefli sorgu ve gerekirse geri okuma koşulları önceden belirlenir. Parçalı geri okuma dahil bütün ek istekler toplam kullanımda sayılır. Bu pilotun gerçek dosya/alt ajan yetkileri ve sağlayıcı maliyeti kendi kabulünü bekler.
 
 ### H041-e: deneysel kurallar
 

@@ -1,0 +1,94 @@
+{
+  "task": "H041 targeted query default-budget readback",
+  "date_local": "2026-11-18",
+  "status": "local_default_budget_readback_passed",
+  "executor": "main",
+  "executor_reason": "Archive scope, exact readback boundary and usage identity",
+  "scope": "Pinned Windows 10 CLI and engine with fixed synthetic reports and isolated stdio MCP. Scripted local Responses fixture.",
+  "cli": "codex-cli 0.169.0-alpha.11.1",
+  "engine": "0.44.0",
+  "os": "Windows-10-10.0.19045-SP0",
+  "focused_tests_passed": 10,
+  "tool_output_token_limit_override": null,
+  "max_raw_bytes_per_part": 6144,
+  "max_encoded_bytes_per_reply": 8192,
+  "report_success": {
+    "parts": 19,
+    "stdout_bytes": 107498,
+    "stderr_bytes": 0,
+    "exit_code": 0,
+    "max_encoded_reply_bytes": 7536,
+    "exact": true,
+    "stdout_parts": 18,
+    "stderr_parts": 1,
+    "requests_with_capture_and_selection": 22
+  },
+  "report_failure": {
+    "parts": 2,
+    "stdout_bytes": 16,
+    "stderr_bytes": 23,
+    "exit_code": 9,
+    "max_encoded_reply_bytes": 232,
+    "exact": true,
+    "requests_with_capture_and_selection": 5
+  },
+  "checks": {
+    "ordered_ranges_and_original_bytes": true,
+    "permission_errors_and_disabled_Read": true,
+    "source_identity_and_exit_code": true,
+    "reject_missing_duplicate_or_out_of_order_ranges": true,
+    "stats_projection": "recent_requests",
+    "stats_projection_max_rows": 25
+  },
+  "final_loopback_requests": 34,
+  "matched_usage_records": 34,
+  "requests_by_scenario": {
+    "authorized": 22,
+    "foreign": 3,
+    "disabled": 4,
+    "failed_report": 5
+  },
+  "all_loopback_requests_this_slice": 56,
+  "engine_stop": {
+    "shutdown": "graceful",
+    "engine_exit_code": 0,
+    "owned_port_closed": true,
+    "force_fallback": false
+  },
+  "real_provider_model_calls": 0,
+  "accepted_provider_savings_percent": null,
+  "native_file_permissions_subagents_or_other_oss": "not_tested",
+  "main_H041_complete": false,
+  "history": "The first default-budget run reached all 22 planned authorized requests and their tool completions. The run remained failed because the older raw diagnostic projection only has 10 rows. The earlier full-read truncation and 65,536-token high-budget pilot remain separate.",
+  "next": "Bound a matched live-quality and total-usage comparison including recovery requests before introducing the pilot into a product client.",
+  "artifacts": {
+    "test_baseline": {
+      "path": "work/proofs/optimization/targeted-query-default-budget/9d75a1c7660a4c1d9e51c97251bfb9c2/red.json",
+      "sha256": "a99e9d1f3936dbd18541e4b4a0ff234bb61a6f68ebcde9e50a90cb3ca6fd4dbc"
+    },
+    "scope_regression": {
+      "path": "work/proofs/optimization/targeted-query-default-budget/9d75a1c7660a4c1d9e51c97251bfb9c2/scope-red.json",
+      "sha256": "06d2478b045a3f4007705a4751c4275d389ed620b95a9739f461ae888dd799d7"
+    },
+    "focus_and_preregistered_shape": {
+      "path": "work/proofs/optimization/targeted-query-default-budget/9d75a1c7660a4c1d9e51c97251bfb9c2/focused.json",
+      "sha256": "2546168c0771adb13e9de6e18e931aedc1c8368ba2a6ec1ebc511d2d44836b1a"
+    },
+    "final_unit_checks": {
+      "path": "work/proofs/optimization/targeted-query-default-budget/9d75a1c7660a4c1d9e51c97251bfb9c2/scope-green.json",
+      "sha256": "dbfce25a54bf811041c0edad2385100038e2bfe70f358bc9ebf0de2d10db7ab0"
+    },
+    "first_default_budget_run": {
+      "path": "work/proofs/optimization/targeted-query-client/70dd3d4570b34f76b2b7f464e9dc67af/result.json",
+      "sha256": "27c0d2b3764e597d034d23b786b26d613e7f937584e05679f43a78b81038acfd"
+    },
+    "final_cli_run": {
+      "path": "work/proofs/optimization/targeted-query-client/a1eccdcd02ad476baa1c1ba04fcd916b/result.json",
+      "sha256": "65ecf77f3bd54825da59b943674ad14029fc4e55681c8ca588a88023960086f5"
+    },
+    "previous_high_budget_proof": {
+      "path": "docs/proofs/targeted-query-client.json",
+      "sha256": "d4adfee7a4dbf5e2f537825c432857a82ab0e4da601448e9333ce0b8ac71bceb"
+    }
+  }
+}

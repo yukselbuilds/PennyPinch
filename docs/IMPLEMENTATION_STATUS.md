@@ -1,11 +1,17 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Varsayılan CLI bütçesinde parçalı geri okuma geçti
+
+Ana ajan arşiv sahipliğini ve istek ölçümünü üstlendi. Varsayılan çıktıyla izole Codex CLI ve güncel 0.44.0 motoru, 107.498 baytı 18 stdout parçası ve boş stderr kaydıyla birebir geri okudu. İzinli akış, başka oturum, kapalı Read ve gerçek çocuk süreçten alınan başarısız rapor birlikte geçti. 10 odaklı test ve 34 eşleşen yerel kullanım kaydı var. İlk koşunun 10 satırlık ham tanı listesi hatası korunur. Son koşu paneldeki 25 satırlık görünümü kullandı. [Kanıt](proofs/targeted-query-default-budget.json)
+
+**H041 açık, 45/54 ana görev tamamlandı.** Aşağıdaki parçalı geri okuma planı uygulandı. Sırada hedefli sorgunun canlı kalite ve net kullanım karşılaştırması için eşlenmiş senaryo ve bütçenin belirlenmesi var. Büyük raporun tam geri okuması bu örnekte tek başına 19 araç çağrısı gerektirdi. Canlı maliyete bütün geri okumalar ve ek istekler dahildir. Yerel sayaçlardan tasarruf oranı çıkarılmaz. [Görev listesi](../TASKS.md)
+
 ## 18 Kasım — SSE token sayaçları birleşik akışta korunuyor
 
 Masaüstünün kullanım gözlemcisi, ağ parçası büyüklüğü yüzünden geçerli SSE olaylarını reddediyordu. Ana ajan ölçüm sınırını olay başına uyguladı ve uygulama manifestlerinin parmak izlerini eşledi. Güncel 0.44.0 motoruyla üç protokolde altı sıkıştırılmış HTTP yanıtı birebir iletildi. Geçerli sayaçlar istek kayıtlarıyla eşleşti. Tek aşırı büyük olayda kullanım bilinmiyor kaldı. 24 Python ve 5 Rust kontrolü geçti. [Yerel kanıt](proofs/sse-usage-event-limit.json)
 
-**H041 açık, 45/54 ana görev tamamlandı.** Önceki sürüme dönük testler kendi kanıtlarında durur. Yeni geliştirme ve yerel doğrulama mevcut güncel adayla yürür. Sırada kayıtlı hedefli sorgu planındaki varsayılan CLI bütçesiyle özgün çıktının parçalı geri okunması var. [Görev listesi](../TASKS.md)
+Bu ölçüm düzeltmesinden sonra yapılan parçalı geri okuma yukarıda kayıtlıdır. [Görev listesi](../TASKS.md)
 
 ## 18 Kasım — Geri dönüşte tercih uyumu sağlandı
 

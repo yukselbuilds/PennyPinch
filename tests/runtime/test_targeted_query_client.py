@@ -1,7 +1,9 @@
 """A query capability belongs to one CLI-owned MCP server, never to tool arguments."""
 from dataclasses import replace
+import json
 from pathlib import Path
 import runpy
+from types import SimpleNamespace
 import unittest
 
 
@@ -62,6 +64,75 @@ class TargetedQueryClientTests(unittest.TestCase):
             original = session.read_original(handle)
             self.assertEqual((original["stdout"].encode(), original["stderr"].encode(), original["exit_code"]),
                              (output.stdout, output.stderr, output.exit_code))
+
+    def test_read_parts_preserve_utf8_ranges_and_bound_escaped_output(self):
+        # Put a multibyte character across the nominal chunk boundary.
+        raw = b"x" * 6143 + "λ\r\n".encode() + b"\x00" * 7200 + b"last"
+        error = "Uyarı — λ\r\n".encode()
+        session = client["ReportSession"](replace(self.output, stdout=raw, stderr=error, exit_code=9))
+        ref = session.capture("mcp-part")
+        first = session.read_part(ref["archive_id"], "stdout", 0)
+        self.assertEqual(first["next_offset"], 6143)
+        for stream, expected in (("stdout", raw), ("stderr", error)):
+            offset, parts = 0, []
+            while True:
+                part = session.read_part(ref["archive_id"], stream, offset)
+                self.assertEqual({key: part[key] for key in ref}, ref)
+                self.assertEqual((part["stream"], part["offset"], part["exit_code"]), (stream, offset, 9))
+                self.assertEqual(part["total_bytes"], len(expected))
+                self.assertLessEqual(len(client["encode"](part).encode()), 8192)
+                data = part["text"].encode()
+                self.assertTrue(data)
+                parts.append(data)
+                offset += len(data)
+                self.assertEqual(part["next_offset"], offset)
+                if offset == len(expected):
+                    break
+            self.assertEqual(b"".join(parts), expected)
+            if stream == "stdout":
+                self.assertLess(len(parts[-1]), 6144)
+
+    def test_read_parts_validate_bounds_and_deny_a_foreign_archive(self):
+        session = client["ReportSession"](replace(self.output, stdout="AλZ".encode()))
+        handle = session.capture("mcp-part")["archive_id"]
+        for stream, offset in (("file", 0), ("stdout", -1), ("stdout", 5), ("stdout", 2), ("stdout", True), ("stdout", "1")):
+            with self.subTest(stream=stream, offset=offset), self.assertRaisesRegex(ValueError, "^invalid_read_range$"):
+                session.read_part(handle, stream, offset)
+        other = client["ReportSession"](self.output)
+        with self.assertRaisesRegex(LookupError, "^archive_unavailable$"):
+            other.read_part(handle, "stdout", 0)
+        empty = session.read_part(handle, "stderr", 0)
+        self.assertEqual((empty["text"], empty["next_offset"], empty["total_bytes"]), ("", 0, 0))
+
+    def test_readback_rejects_an_incomplete_duplicate_or_out_of_order_range(self):
+        replay = runpy.run_path(str(ROOT / "bench/context_tools/targeted_query_client_replay.py"))
+        ref = self.session.capture("mcp-readback")
+        expected = b"abcd"
+        reader = replay["Readback"](ref, expected, b"", 0)
+        page = {**ref, "stream": "stdout", "offset": 0, "next_offset": 2, "total_bytes": 4, "text": "ab", "exit_code": 0}
+        with self.assertRaisesRegex(AssertionError, "readback_incomplete"):
+            reader.finish()
+        with self.assertRaisesRegex(AssertionError, "read_part_range_changed"):
+            reader.accept({**page, "offset": 2, "next_offset": 4, "text": "cd"})
+        reader.accept(page)
+        with self.assertRaisesRegex(AssertionError, "read_part_range_changed"):
+            reader.accept(page)
+        with self.assertRaisesRegex(AssertionError, "readback_incomplete"):
+            reader.finish()
+        reader.accept({**page, "offset": 2, "next_offset": 4, "text": "cd"})
+        reader.accept({**page, "stream": "stderr", "next_offset": 0, "total_bytes": 0, "text": ""})
+        self.assertEqual(reader.finish(), {"stdout": b"abcd", "stderr": b""})
+
+    def test_scope_uses_the_dashboard_window_to_cover_all_22_requests(self):
+        replay = runpy.run_path(str(ROOT / "bench/context_tools/targeted_query_client_replay.py"))
+        rows = [{"request_id": f"hr_100_{i:06}"} for i in range(22)]
+        data = json.dumps({"recent_requests": rows, "request_logs": rows[-10:]}).encode()
+        engine = SimpleNamespace(port=1, control_token="fixture")
+        def exchange(port, method, path, headers):
+            self.assertEqual((port, method, path), (1, "GET", "/stats?cached=1"))
+            self.assertEqual(headers, {"X-Headroom-Desktop-Control": "fixture"})
+            return 200, "application/json", data
+        self.assertEqual(replay["dashboard_request_ids"](engine, exchange), {row["request_id"] for row in rows})
 
     def test_responses_text_parts_are_read_without_accepting_nontext_content(self):
         replay = runpy.run_path(str(ROOT / "bench/context_tools/targeted_query_client_replay.py"))
