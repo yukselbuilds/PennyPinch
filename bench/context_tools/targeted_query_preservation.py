@@ -18,6 +18,7 @@ ENTRY = Path(__file__).resolve()
 ROOT = ENTRY.parents[2]
 scope = runpy.run_path(str(ENTRY.with_name("targeted_query_scope.py")))
 compare = scope["compare"]
+replay = runpy.run_path(str(compare["REPLAY_PATH"]))
 REPORT = compare["REPORT"]
 OWNED = "call_query_1"
 ORDINARY = "call_ordinary_1"
@@ -33,7 +34,42 @@ def receipt(thread, call, output):
     return [thread, call["call_id"], digest(call), digest(output)]
 
 
-def protected_scripts(body, thread, receipts):
+def issued_read(thread, call, args):
+    invocation = {key: call[key] for key in ("type", "namespace", "name", "input")}
+    return [thread, call["call_id"], digest(invocation), digest(args)]
+
+
+def native_read_value(output):
+    identity = output.get("call_id")
+    match = re.fullmatch(r"call_query_([1-9][0-9]{0,3})", identity) if isinstance(identity, str) else None
+    if match is None:
+        return None
+    parts = output.get("output")
+    if isinstance(parts, list) and (not 1 <= len(parts) <= 2
+            or any(not isinstance(part, dict) or set(part) != {"type", "text"} for part in parts)):
+        return None
+    try:
+        wrapper = json.loads(replay["tool_text"]({"input": [output]}, int(match[1]), code_mode=True))
+        if not isinstance(wrapper, dict) or wrapper.keys() - {"content", "isError"} or wrapper.get("isError", False) is not False:
+            return None
+        content = wrapper["content"]
+        if not isinstance(content, list) or len(content) != 1 or set(content[0]) != {"type", "text"} or content[0]["type"] != "text":
+            return None
+        value = json.loads(content[0]["text"])
+    except (AssertionError, KeyError, TypeError, ValueError):
+        return None
+    return value if isinstance(value, dict) and {"archive_id", "stream", "offset"} <= value.keys() else None
+
+
+def native_read_matches(thread, call, output, issued, reads):
+    value = native_read_value(output)
+    if value is None or [thread, digest(value)] not in reads:
+        return False
+    args = {key: value[key] for key in ("archive_id", "stream", "offset")}
+    return issued_read(thread, call, args) in issued
+
+
+def protected_scripts(body, thread, receipts, *, native_match=None):
     entries = body.get("input")
     if thread is None or not isinstance(entries, list):
         return set()
@@ -55,21 +91,33 @@ def protected_scripts(body, thread, receipts):
         if call_counts[identity] != 1 or output_counts[identity] != 1 or scripts[script] != 1:
             continue
         output = by_id[identity]
-        if output.get("type") == "custom_tool_call_output" and tuple(receipt(thread, call, output)) in accepted:
+        if output.get("type") == "custom_tool_call_output" and (tuple(receipt(thread, call, output)) in accepted
+                or native_match is not None and native_match(thread, call, output)):
             protected.add(script)
     return protected
 
 
-def install_preservation(owner, directory):
+def install_preservation(owner, directory, mode):
     from headroom.proxy.handlers import openai
 
-    grants = scope["summary_rows"](Path(directory) / "owned-read-receipts.jsonl")
+    path = Path(directory)
+    rows = scope["summary_rows"]
+    grants = rows(path / "owned-read-receipts.jsonl") if mode == "fixture" else []
     active = ContextVar("owned_read_scripts", default=frozenset())
     original = openai.OpenAIHandlerMixin._compress_openai_responses_payload
     unwrap = openai.unwrap_tool_call_name
 
     def payload(proxy, body, **kwargs):
-        selected = protected_scripts(body, owner.get(), grants)
+        if mode == "mcp":
+            issued, reads = rows(path / "issued-reads.jsonl"), rows(path / "mcp-read-receipts.jsonl")
+            selected = protected_scripts(body, owner.get(), (), native_match=
+                lambda thread, call, output: native_read_matches(thread, call, output, issued, reads))
+            for call in body.get("input", []):
+                if isinstance(call, dict) and isinstance(call.get("input"), str) and call["input"] in selected:
+                    output = forwarded_output(body, call["call_id"])
+                    scope["append_probe"](path / "native-protected-digests.jsonl", [owner.get(), call["call_id"], digest(output)])
+        else:
+            selected = protected_scripts(body, owner.get(), grants)
         token = active.set(frozenset(selected))
         try:
             return original(proxy, body, **kwargs)
@@ -174,7 +222,7 @@ def main():
     with ThreadingHTTPServer(("127.0.0.1", 0), handler(pilot)) as server:
         server.bodies = []
         threading.Thread(target=server.serve_forever, daemon=True).start()
-        engine, staged = scope["prepare_engine"](core, usage, pilot, supervisor, run, server.server_port, preserve_owned_reads=True)
+        engine, staged = scope["prepare_engine"](core, usage, pilot, supervisor, run, server.server_port, preservation="fixture")
         files = (ENTRY, scope["ENTRY"], compare["PROGRAM"], ENTRY.with_name("targeted_query_client.py"),
                  usage_path, pilot_path, runner, Path(sys.executable), grants, *staged)
         before = {str(path): core.sha(path) for path in files}

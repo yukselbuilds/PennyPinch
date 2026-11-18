@@ -78,7 +78,7 @@ class ReportSession:
             end = offset + (end - offset) // 2
 
 
-def serve(failed_report=False, *, source=None, read_tool="Read", observe_request=None, request_scope=None):
+def serve(failed_report=False, *, source=None, read_tool="Read", observe_request=None, request_scope=None, record_read=None):
     from mcp.server.mcpserver import MCPServer
     from mcp.server.mcpserver.context import Context
     from mcp.server.mcpserver.exceptions import ToolError
@@ -135,7 +135,10 @@ def serve(failed_report=False, *, source=None, read_tool="Read", observe_request
     async def Read(archive_id: str, stream: Literal["stdout", "stderr"], offset: StrictInt, ctx: Context) -> str:
         """Read original bytes as UTF-8 text. Start each stream at 0; continue at next_offset up to total_bytes."""
         try:
-            return encode(owned_session(ctx, read_tool).read_part(archive_id, stream, offset))
+            value = owned_session(ctx, read_tool).read_part(archive_id, stream, offset)
+            if record_read is not None:
+                record_read(ctx, value)
+            return encode(value)
         except LookupError:
             raise ToolError("archive_unavailable") from None
         except ValueError:

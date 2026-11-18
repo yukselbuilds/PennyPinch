@@ -31,6 +31,7 @@ TURN_LIMITS = {"parent": 6, "child": 4}
 OUTSIDE_PATH_ARGUMENT = "../outside.jsonl"
 TURN_HEADER = "x-codex-turn-metadata"
 ACTOR_FIELDS = {"threadid", "sessionid", "agentid", "agentname", "agentpath", "parentthreadid"}
+ORDINARY_CALL = "call_query_105"
 
 
 def transport_thread(fields):
@@ -117,7 +118,7 @@ def install_owned_engine_probe(target, directory):
     return owner
 
 
-def prepare_engine(core, usage, pilot, supervisor, run, upstream_port, *, preserve_owned_reads=False):
+def prepare_engine(core, usage, pilot, supervisor, run, upstream_port, *, preservation=None):
     runtime = ROOT / "runtime"
     controller = core.load_module("scope_engine_controller", runtime / "desktop_controller.py")
     manifest, payload, _ = controller.load_manifest(runtime / "manifest.json")
@@ -129,9 +130,10 @@ def prepare_engine(core, usage, pilot, supervisor, run, upstream_port, *, preser
     assert source.count(anchor) == 1, "engine_bootstrap_changed"
     target = f"http://127.0.0.1:{upstream_port}/v1/responses"
     hook = f"import runpy; scope_owner=runpy.run_path({str(ENTRY)!r})['install_owned_engine_probe']({target!r}, {str(run)!r}); "
-    if preserve_owned_reads:
+    assert preservation in (None, "fixture", "mcp"), "unknown_preservation_mode"
+    if preservation is not None:
         policy = ENTRY.with_name("targeted_query_preservation.py")
-        hook += f"runpy.run_path({str(policy)!r})['install_preservation'](scope_owner, {str(run)!r}); "
+        hook += f"runpy.run_path({str(policy)!r})['install_preservation'](scope_owner, {str(run)!r}, {preservation!r}); "
     helper.write_bytes(source.replace(anchor, repr(hook).encode("ascii") + b" " + anchor, 1))
     engine = usage["probe"]["UsageEngine"](controller, supervisor, payload, run / "engine", upstream_port, pilot["PLAN"])
     files = [*staged, *[runtime / path.name for path in staged], payload / "runtime-manifest.json", payload / "python313.dll"]
@@ -143,7 +145,7 @@ def summary_rows(path):
     return [json.loads(line) for line in path.read_bytes().splitlines()] if path.is_file() else []
 
 
-def approved_report(workspace):
+def approved_report(workspace, expected=REPORT):
     assert workspace.resolve(strict=True) == workspace and workspace.name == "workspace" and workspace.parent.parent == PROOFS, "workspace_outside_fixture"
     path = workspace / "approved.jsonl"
     metadata = path.lstat()
@@ -152,8 +154,8 @@ def approved_report(workspace):
     with path.open("rb") as stream:
         current = os.fstat(stream.fileno())
         assert (current.st_dev, current.st_ino) == (metadata.st_dev, metadata.st_ino), "report_changed_before_open"
-        data = stream.read(len(REPORT) + 1)
-    assert data == REPORT, "report_fixture_changed"
+        data = stream.read(len(expected) + 1)
+    assert data == expected, "report_fixture_changed"
     return data
 
 
@@ -171,9 +173,9 @@ def child_notification(body, task):
                and any(CHILD_FINAL in (part.get("text") or "") for part in item.get("content", [])) for item in body.get("input", []))
 
 
-def read_exact(value, reference):
-    return value == {**reference, "stream": "stdout", "offset": 0, "total_bytes": len(REPORT),
-                     "next_offset": len(REPORT), "exit_code": 0, "text": REPORT.decode("utf-8")}
+def read_exact(value, reference, expected=REPORT):
+    return value == {**reference, "stream": "stdout", "offset": 0, "total_bytes": len(expected),
+                     "next_offset": len(expected), "exit_code": 0, "text": expected.decode("utf-8")}
 
 
 def foreign_read_outcome(text, reference):
@@ -199,10 +201,30 @@ def scope_handler(replay):
     pilot = replay["pilot"]
 
     class Handler(pilot["Provider"]):
+        def owned_output(self, body, actor, turn):
+            server = self.server
+            value = json_output(replay["tool_text"](body, turn, code_mode=True))
+            assert read_exact(value, server.references[actor], server.source), f"{actor}_file_changed"
+            if server.policy is not None:
+                identity = f"call_query_{turn}"
+                item = server.policy["forwarded_output"](body, identity)
+                proof = [getattr(server, actor + "_thread"), identity, server.policy["digest"](item)]
+                assert proof in summary_rows(server.run / "native-protected-digests.jsonl"), "native_wrapper_changed"
+                server.observed[actor + "_wrapper_preserved"] = True
+            server.observed[actor + "_file_exact"] = True
+
         def reply(self, body, actor, turn):
             server = self.server
             native = lambda name, args: collaboration_call(name, args, turn)
-            report = lambda name, args: compare["fixture_call"](name, args, turn, code_mode=True)
+
+            def report(name, args):
+                call = compare["fixture_call"](name, args, turn, code_mode=True)
+                reference = server.references.get(actor)
+                if server.policy is not None and name == READ and reference is not None and args == compare["read_args"](reference):
+                    issued = server.policy["issued_read"](getattr(server, actor + "_thread"), call, args)
+                    append_probe(server.run / "issued-reads.jsonl", issued)
+                return call
+
             if actor == "parent":
                 if turn == 1:
                     return report(CAPTURE, {"path": OUTSIDE_PATH_ARGUMENT})
@@ -229,10 +251,18 @@ def scope_handler(replay):
                     server.foreign_reads[actor] = outcome
                     assert outcome == "denied", "parent_denial_unconfirmed"
                     server.observed["parent_denied_child_archive"] = True
-                    return report(READ, compare["read_args"](server.references[actor]))
-                value = json_output(replay["tool_text"](body, 5, code_mode=True))
-                assert read_exact(value, server.references[actor]), "parent_file_changed"
-                server.observed["parent_file_exact"] = True
+                    call = report(READ, compare["read_args"](server.references[actor]))
+                    if server.policy is not None:
+                        text = json.dumps({"text": server.source.decode("utf-8")}, ensure_ascii=True)
+                        ordinary = {**call, "id": "fc_ordinary_native", "call_id": ORDINARY_CALL,
+                            "input": "text(" + json.dumps({"content": [{"type": "text", "text": text}], "isError": False}) + ");"}
+                        return [call, ordinary]
+                    return call
+                self.owned_output(body, actor, 5)
+                if server.policy is not None:
+                    other = server.policy["forwarded_output"](body, ORDINARY_CALL)
+                    server.ordinary_ccr = server.policy["ccr_hash"](other)
+                    server.observed["same_request_ordinary_compacted"] = True
                 server.observed["outside_path_override_ignored"] = True
                 return message(PARENT_FINAL)
             if turn == 1:
@@ -250,9 +280,7 @@ def scope_handler(replay):
                 assert compare["valid_reference"](ref) and ref["archive_id"] != server.references["parent"]["archive_id"], "child_reference_invalid"
                 server.references[actor] = ref
                 return report(READ, compare["read_args"](ref))
-            value = json_output(replay["tool_text"](body, 3, code_mode=True))
-            assert read_exact(value, server.references[actor]), "child_file_changed"
-            server.observed["child_file_exact"] = True
+            self.owned_output(body, actor, 3)
             return message(CHILD_FINAL)
 
         def do_POST(self):
@@ -288,7 +316,7 @@ def scope_handler(replay):
                     assert turn <= TURN_LIMITS[actor], "request_budget"
                     item = self.reply(body, actor, turn)
                 response = {"id": f"resp_scope_{actor}_{turn}", "model": compare["LIVE_MODEL"], "object": "response",
-                    "status": "completed", "output": [item], "usage": {"input_tokens": 100, "output_tokens": 5,
+                    "status": "completed", "output": item if isinstance(item, list) else [item], "usage": {"input_tokens": 100, "output_tokens": 5,
                         "total_tokens": 105, "input_tokens_details": {"cached_tokens": 0}}}
                 wire = b"".join(pilot["Provider"].render_sse(response))
                 self.send_response(200)
@@ -313,7 +341,10 @@ def main():
     parser.add_argument("--share-mcp", action="store_true", help="Test the native MCP sharing feature in the isolated client")
     parser.add_argument("--engine", action="store_true", help="Route through the pinned Headroom engine on loopback")
     parser.add_argument("--agent-scope", action="store_true", help="Partition report archives by the MCP request thread")
+    parser.add_argument("--native-preservation", action="store_true", help="Trace a large read from MCP through selective engine preservation")
     args = parser.parse_args()
+    if args.native_preservation and not (args.engine and args.share_mcp and args.agent_scope):
+        parser.error("--native-preservation requires --engine --share-mcp --agent-scope")
     assert os.name == "nt" and Path.cwd().resolve() == ROOT == Path(r"D:\Projeler\Headroom"), "canonical_workspace"
     cli = args.codex.resolve(strict=True)
     bin_dir = (Path(os.environ["LOCALAPPDATA"]) / "OpenAI/Codex/bin").resolve(strict=True)
@@ -337,20 +368,27 @@ def main():
     for name in ("home", "temp"):
         (state / name).mkdir(parents=True)
     approved, outside = work / "approved.jsonl", run / "outside.jsonl"
-    approved.write_bytes(REPORT)
+    report_data = compare["REPORT"] if args.native_preservation else REPORT
+    approved.write_bytes(report_data)
     outside.write_bytes(OUTSIDE)
     files = [ENTRY, compare["PROGRAM"], catalog, cli, Path(sys.executable), runner, approved, outside,
              ENTRY.with_name("targeted_query_client.py"), compare["REPLAY_PATH"], ROOT / "bench/optimization/rules_pilot.py"]
     engine, engine_counts, engine_stop = None, None, None
+    policy_path = ENTRY.with_name("targeted_query_preservation.py")
     with ThreadingHTTPServer(("127.0.0.1", 0), scope_handler(replay)) as server:
         server.run, server.engine_routed = run, args.engine
+        server.source, server.ordinary_ccr = report_data, None
+        server.policy = runpy.run_path(str(policy_path)) if args.native_preservation else None
         server.parent_thread, server.spawned_task, server.child_thread, server.failure = None, None, None, None
         server.references, server.observed, server.foreign_reads, server.turns = {}, {}, {}, dict.fromkeys(TURN_LIMITS, 0)
         server.lock = threading.Lock()
         threading.Thread(target=server.serve_forever, daemon=True).start()
         if args.engine:
-            engine, staged = prepare_engine(core, usage, pilot, supervisor, run, server.server_port)
+            engine, staged = prepare_engine(core, usage, pilot, supervisor, run, server.server_port,
+                preservation="mcp" if args.native_preservation else None)
             files.extend(staged)
+        if args.native_preservation:
+            files.append(policy_path)
         before = {str(path): core.sha(path) for path in files}
         config = {"model_provider": "scope", "model_providers.scope.name": "Owned scope fixture",
             "model_providers.scope.base_url": f"http://127.0.0.1:{server.server_port}/v1", "model_providers.scope.wire_api": "responses",
@@ -363,6 +401,8 @@ def main():
             "mcp_servers.headroom_rule_pilot.enabled_tools": [CAPTURE, READ]}
         if args.agent_scope:
             config["mcp_servers.headroom_rule_pilot.args"].append("--agent-scope")
+        if args.native_preservation:
+            config["mcp_servers.headroom_rule_pilot.args"].append("--native-preservation")
         env = pilot["client_environment"]()
         env.update(CODEX_HOME=str(state / "home"), CODEX_SQLITE_HOME=str(state / "db"), TEMP=str(state / "temp"),
                    TMP=str(state / "temp"), RULES_PILOT_TOKEN="scope-loopback")
@@ -375,6 +415,12 @@ def main():
             exit_code, output = pilot["run_client"](command, work, env, supervisor, 75)
             if engine is not None:
                 engine_counts = {"request_logs": len(usage["probe"]["request_logs"](engine)), "usage_records": len(usage["records"](engine))}
+                if server.ordinary_ccr is not None:
+                    try:
+                        core.retrieval(engine.port, server.ordinary_ccr, report_data.decode("utf-8"), 10)
+                        server.observed["ordinary_retrieved_exact"] = True
+                    except (AssertionError, KeyError, ValueError):
+                        server.failure = "ordinary_retrieval_mismatch"
         except subprocess.TimeoutExpired:
             exit_code, output = -1, b""
         finally:
@@ -390,6 +436,8 @@ def main():
     parent_final = any(event.get("type") == "item.completed" and event.get("item", {}).get("text") == PARENT_FINAL for event in records)
     expected = {"parent_file_exact", "child_file_exact", "child_denied_parent_archive", "parent_denied_child_archive",
                 "child_completion_confirmed", "outside_path_override_ignored"}
+    if args.native_preservation:
+        expected.update(("parent_wrapper_preserved", "child_wrapper_preserved", "same_request_ordinary_compacted", "ordinary_retrieved_exact"))
     context_rows = summary_rows(run / "mcp-context.jsonl")
     ingress = summary_rows(run / "ingress-summary.jsonl")
     threads = {"parent": server.parent_thread, "child": server.child_thread}
@@ -398,7 +446,9 @@ def main():
     has_identity = len(actor_by_thread) == 2
     context_matches = sum(row["thread_hash"] in actor_by_thread for row in context_rows)
     engine_verified = args.engine and has_identity and ingress_counts == TURN_LIMITS and engine_counts == {"request_logs": 10, "usage_records": 10}
-    passed = (exit_code == 0 and server.failure is None and server.turns == TURN_LIMITS and parent_final
+    reads = summary_rows(run / "mcp-read-receipts.jsonl")
+    native_receipts_verified = not args.native_preservation or len(reads) == 2 and {row[0] for row in reads} == actor_by_thread.keys()
+    passed = (exit_code == 0 and server.failure is None and server.turns == TURN_LIMITS and parent_final and native_receipts_verified
               and has_identity and (not args.engine or engine_verified) and context_matches == len(context_rows) == 6
               and set(server.observed) == expected and all(server.observed.values()) and before == after)
     result = {"passed": passed, "cli": version, "failure": server.failure, "cli_exit": exit_code, "turns": server.turns,
@@ -412,7 +462,8 @@ def main():
                   "calls_with_actor_metadata": sum(bool(row["actor_metadata_fields"]) for row in context_rows),
                   "calls_matching_client_thread": context_matches,
                   "calls_with_transport_request": sum(row["transport_request_present"] for row in context_rows)},
-              "fixture_file_bytes": len(REPORT), "before": before, "after": after}
+              "fixture_file_bytes": len(report_data), "native_preservation": args.native_preservation,
+              "successful_mcp_read_receipts": len(reads), "before": before, "after": after}
     with (run / "result.json").open("x", encoding="utf-8") as stream:
         json.dump(result, stream, indent=2)
         stream.write("\n")
@@ -423,12 +474,21 @@ def main():
 
 
 if __name__ == "__main__":
-    if sys.argv[1:2] == ["--mcp"] and (len(sys.argv) == 3 or sys.argv[3:] == ["--agent-scope"]):
+    if len(sys.argv) >= 3 and sys.argv[1] == "--mcp" and sys.argv[3:] in ([], ["--agent-scope"], ["--agent-scope", "--native-preservation"]):
         workspace = Path(sys.argv[2])
-        source = approved_report(workspace)
+        native_enabled = "--native-preservation" in sys.argv[3:]
+        source = approved_report(workspace, compare["REPORT"] if native_enabled else REPORT)
         note = mcp_observer(workspace.parent / "mcp-context.jsonl")
         scope = (lambda ctx: transport_thread(request_metadata(ctx))) if "--agent-scope" in sys.argv[3:] else None
+        record = None
+        if native_enabled:
+            digest = runpy.run_path(str(ENTRY.with_name("targeted_query_preservation.py")))["digest"]
+
+            def record(ctx, value):
+                thread = thread_hash(transport_thread(request_metadata(ctx)))
+                append_probe(workspace.parent / "mcp-read-receipts.jsonl", [thread, digest(value)])
+
         runpy.run_path(str(ENTRY.with_name("targeted_query_client.py")))["serve"](
-            source=(source, b"", 0), read_tool=READ, observe_request=note, request_scope=scope)
+            source=(source, b"", 0), read_tool=READ, observe_request=note, request_scope=scope, record_read=record)
     else:
         raise SystemExit(main())

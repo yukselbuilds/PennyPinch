@@ -134,6 +134,12 @@ Paylaşım kapalı kontrol 10 istekte tamamlandı. Paylaşım açık ve arşiv t
 
 Üç sentetik motor isteği, 18 odaklı test ve 10 istekli gerçek Codex sahiplik regresyonu geçti. Model çağrısı sıfırdı. Motor denemesinin çağrı/çıktı kaydı sabit arşiv okumasını kullanan test sürücüsünde üretildi. Genel dosya kapsamı, gerçek MCP okumasından üretilen seçici koruma kaydı ve canlı maliyet kabulü açık. [Kanıt](../proofs/targeted-query-comparison.json)
 
+#### Gerçek Codex MCP okumasından seçici koruma
+
+18 Kasım. Yerel fixture’ın gönderdiği izinli çağrı ile arşivden başarılı `Read` sonrasında kaydedilen çıktı özeti eşleştirildi. Eşleşme, aynı thread’i, benzersiz çağrı kimliğini, arşiv aralığını ve özgün MCP zarfını gerektirir. Gerçek Codex’in iki parçalı Code Mode zarfı desteklenir. Zarf içine eklenen doğrulanmamış alan koruma almaz. Geri alma testi aynı istekteki diğer sonucu olağan CCR yolunda özgün metne döndürdü.
+
+Tek MCP bağlantısında iki başarılı 5.926 baytlık okuma ve iki çapraz red gözlendi. Her iki izinli çıktı motor çıkışında birebir kaldı. 10 yerel kullanım satırı, 19 odaklı test, üç seçici motor regresyon isteği ve yedi sorgu/geri okuma isteği geçti. Model çağrısı sıfırdı. Kanıt, tek izinli sentetik dosya ve izole yerel sağlayıcıyla sınırlı. Genel native dosya izinleri ve geri okuma dahil canlı maliyet açık. [Kanıt](../proofs/targeted-query-comparison.json)
+
 ### H041-e: deneysel kurallar
 
 16 Kasım 2026 kullanıcı kararı: ModHarness-RL'den esinlenen kural deneyi **isteğe bağlı ve varsayılan kapalıdır**. Ana ajan kapsam, ölçüm ve izin sözleşmesini üstlenir; bu kayıt yalnız plandır. Amaç, büyük araç çıktılarında gereken bilgiyi seçmek ve doğrulanmış hata döngülerini Learn içinde öneri olarak göstermek. [Makale v1](https://arxiv.org/abs/2611.18533v1) yöntem kaynağıdır; buradaki kabul koşulları ürünümüze aittir. Model eğitimi, kendiliğinden kod üretip çalıştırma ve bütün sohbetleri yeniden özetleme kapsam dışıdır.

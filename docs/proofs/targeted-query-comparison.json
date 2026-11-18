@@ -761,5 +761,84 @@
         "sha256_of_sorted_input_hashes": "ee57a20c7525540cb2d3ef4eef2f271c2439e5e8a2d345f15c0fd369118fb0e3"
       }
     }
+  },
+  "native_selective_preservation": {
+    "date": "2026-11-18",
+    "run": "9b06f96baa704aeebceaab960751f345",
+    "entry_point": "bench/context_tools/targeted_query_scope.py --engine --share-mcp --agent-scope --native-preservation",
+    "engine": "0.44.0",
+    "cli": "codex-cli 0.169.0-alpha.11.1",
+    "fixture_file_bytes": 5926,
+    "shared_mcp_connections": 1,
+    "successful_mcp_read_receipts": 2,
+    "matched_call_output_pairs": 2,
+    "native_code_mode_parts": 2,
+    "turns": {
+      "parent": 6,
+      "child": 4
+    },
+    "matching_usage_rows": 10,
+    "observed": {
+      "child_denied_parent_archive": true,
+      "child_wrapper_preserved": true,
+      "child_file_exact": true,
+      "child_completion_confirmed": true,
+      "parent_denied_child_archive": true,
+      "parent_wrapper_preserved": true,
+      "parent_file_exact": true,
+      "same_request_ordinary_compacted": true,
+      "outside_path_override_ignored": true,
+      "ordinary_retrieved_exact": true
+    },
+    "foreign_reads": {
+      "child": "denied",
+      "parent": "denied"
+    },
+    "scope": "one approved synthetic JSONL file in an isolated real Codex parent/child run with a loopback provider",
+    "external_model_requests": 0,
+    "engine_stop": {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    },
+    "input_fingerprints": {
+      "count": 38,
+      "matched": true,
+      "sha256_of_sorted_input_hashes": "203d7d968c83af6a2ba2bde13b62eaeda0fbc33f204adea3cfd7c0da8c986bdf"
+    },
+    "tests": {
+      "count": 19,
+      "input_fingerprints": {
+        "count": 10,
+        "matched": true,
+        "sha256_of_sorted_input_hashes": "434275610aadf9bdd5f7b132e31ad31692daf076711edcff3ebb0afc3de5fdee"
+      }
+    },
+    "synthetic_preservation_regression": {
+      "run": "preservation-11b17072261640318352dcf711d9de46",
+      "requests": 3,
+      "input_fingerprints": {
+        "count": 35,
+        "matched": true,
+        "sha256_of_sorted_input_hashes": "c7877a72f11166e4228ba37d2dd348740a90576caf8e0245053d0232ad952265"
+      }
+    },
+    "ordinary_query_regression": {
+      "run": "7d099d481e0746ff80892ea321f07ffa",
+      "requests": 7,
+      "input_fingerprints": {
+        "full_read": {
+          "count": 43,
+          "matched": true,
+          "sha256_of_sorted_input_hashes": "57f9120c7536a29f0763ca784d73be80f8b61d8022e58c9b2cbac4048e46ff92"
+        },
+        "targeted": {
+          "count": 43,
+          "matched": true,
+          "sha256_of_sorted_input_hashes": "2ab4f6a127baad08559a12044dd25a02c0a50f9f2de16c2d43a7e098c54a3ed1"
+        }
+      }
+    }
   }
 }

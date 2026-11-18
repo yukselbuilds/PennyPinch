@@ -1,13 +1,23 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Gerçek Codex okuması seçici motor korumasına bağlandı
+
+Ana ajan izinli çağrı ile başarılı okuma kaydının eşlemesini üstlendi. İzole gerçek Codex ve tek paylaşımlı MCP bağlantısında iki 5.926 baytlık sonuç motor çıkışında özgün kaldı. İki çapraz arşiv okuması reddedildi. Ana ajanın aynı isteğindeki diğer çıktı sıkıştırıldı ve geri çağırmadan birebir alındı. 0.44.0 motoru 10 istek ve 10 kullanım kaydı eşledi. [Kanıt](proofs/targeted-query-comparison.json)
+
+19 odaklı test, üç sentetik motor regresyon isteği ve yedi normal sorgu/geri okuma isteği geçti. Model çağrısı sıfırdı. **45/54 ana görev tamamlandı. H041 açık.** Tek test kaynağına ait yerel kanıt tamamlandı. Genel native dosya izinleri, geri okuma dahil canlı maliyet ve diğer kapanış kabulleri açık. [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+Genel native dosya kapsamını gerçek istemci izinleriyle doğrula. İzinli kaynak ve izin dışı kaynak için özgün okuma, sorgu ve geri alım kabulünü mevcut dosya sözleşmesine bağla. [Karar](decisions/027-optimization-regression.md#gerçek-codex-mcp-okumasından-seçici-koruma)
+
 ## 18 Kasım — Uzun kod kipi sonucu seçici korundu
 
 Ana ajan çağrı ve çıktı eşlemesini üstlendi. 0.44.0 ile yerel sentetik Responses koşusunda, izinli thread ve benzersiz çağrıya bağlanan 5.926 baytlık sonuç birebir ulaştı. Aynı isteğin diğer kod kipi çıktısı CCR’ye taşındı ve özgün metin geri alındı. Farklı thread ve farklı çağrı kimliği normal sıkıştırma yolunu izledi. Üç motor isteğinin kullanım kayıtları eşleşti. [Kanıt](proofs/targeted-query-comparison.json)
 
 18 odaklı test ile paylaşım açık gerçek Codex kapsam regresyonunun 10 isteği geçti. İki motor normal kapandı. **45/54 ana görev tamamlandı. H041 açık.** Genel dosya ve canlı maliyet kabulü, diğer sağlayıcı rotaları ve işletim sistemi kanıtları görev listesinde açık. [Görev listesi](../TASKS.md#h041--cache-bütünlük-ve-gecikmefayda-regresyonu)
 
-### Sıradaki yerel dilim
+### Önceki MCP bağlama planı
 
 Seçici koruma için çağrı ve çıktı eşlemesini gerçek Codex MCP okumasının tamamlandığı noktada oluştur. Aynı kapsamla uzun çıktıyı ve aynı istekteki diğer sonucun geri alımını doğrula. [Karar](decisions/027-optimization-regression.md#uzun-kod-kipi-çıktısında-seçici-koruma)
 

@@ -106,6 +106,28 @@ class TargetedQueryComparisonTests(unittest.TestCase):
                               "arguments": call["input"]}
         self.assertFalse(bool(decide({"input": [call, alternate_encoding, output]}, "parent", [grant])))
 
+    def test_native_preservation_requires_the_issued_call_and_read_receipt(self):
+        proof = runpy.run_path(str(ROOT / "bench/context_tools/targeted_query_preservation.py"))
+        call, output = proof["read_pair"]()
+        value = proof["native_read_value"](output)
+        args = {key: value[key] for key in ("archive_id", "stream", "offset")}
+        issued = [proof["issued_read"]("parent", call, args)]
+        receipts = [["parent", proof["digest"](value)]]
+        permitted = proof["native_read_matches"]
+        self.assertTrue(permitted("parent", call, output, issued, receipts))
+        self.assertFalse(permitted("parent", call, output, issued, []))
+        self.assertFalse(permitted("child", call, output, issued, receipts))
+        self.assertFalse(permitted("parent", {**call, "input": "text(other);"}, output, issued, receipts))
+        self.assertFalse(permitted("parent", call, {**output, "output": "unverified"}, issued, receipts))
+        content = output["output"][0]
+        prefix, _, encoded = content["text"].partition("\nOutput:\n")
+        split = {**output, "output": [{**content, "text": prefix + "\nOutput:\n"}, {**content, "text": encoded}]}
+        self.assertTrue(permitted("parent", call, split, issued, receipts))
+        wrapper = json.loads(encoded)
+        wrapper["other_result"] = "unrelated output"
+        extended = {**output, "output": [{**content, "text": prefix + "\nOutput:\n" + json.dumps(wrapper)}]}
+        self.assertFalse(permitted("parent", call, extended, issued, receipts))
+
 
 class TargetedQueryClientTests(unittest.TestCase):
     def setUp(self):
