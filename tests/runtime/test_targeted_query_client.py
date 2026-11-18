@@ -91,6 +91,21 @@ class TargetedQueryComparisonTests(unittest.TestCase):
         self.assertIsNone(parse({"threadId": "wrong"}))
         self.assertIsNone(parse({"threadId": thread, "thread_id": thread}))
 
+    def test_selective_read_grant_requires_owner_and_exact_call_output_pair(self):
+        proof = runpy.run_path(str(ROOT / "bench/context_tools/targeted_query_preservation.py"))
+        call, output = proof["read_pair"]()
+        grant = proof["receipt"]("parent", call, output)
+        decide = proof["protected_scripts"]
+        self.assertEqual(decide({"input": [call, output]}, "parent", [grant]), {call["input"]})
+        self.assertFalse(decide({"input": [call, output]}, "child", [grant]))
+        self.assertFalse(decide({"input": [call, {**output, "output": "changed"}]}, "parent", [grant]))
+        duplicate = {**call, "call_id": "duplicated_script"}
+        self.assertFalse(decide({"input": [call, duplicate, output]}, "parent", [grant]))
+        self.assertFalse(decide({"input": [call, output, output]}, "parent", [grant]))
+        alternate_encoding = {"type": "function_call", "name": "exec", "call_id": "other_call",
+                              "arguments": call["input"]}
+        self.assertFalse(bool(decide({"input": [call, alternate_encoding, output]}, "parent", [grant])))
+
 
 class TargetedQueryClientTests(unittest.TestCase):
     def setUp(self):

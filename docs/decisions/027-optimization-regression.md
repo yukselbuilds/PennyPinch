@@ -128,6 +128,12 @@ Aynı CLI ve katalogla `mcp_connection_sharing` açıkken alt ajan ana ajanın a
 
 Paylaşım kapalı kontrol 10 istekte tamamlandı. Paylaşım açık ve arşiv tek bağlantıya bağlı kontrol altı istekte çapraz veri dönüşünü yeniden üretti. Aynı paylaşım açıkken thread’e göre ayrılan prototip, tek MCP bağlantısı ve 10 yerel istekte iki çapraz okumayı reddetti. Altı MCP çağrısı doğru iki giriş thread’ine dağıldı. İki izinli 66 baytlık çıktı birebir ulaştı. 17 odaklı test ve yedi istekli normal sorgu/geri okuma regresyonu geçti. Model çağrısı sıfırdı. Büyük kod kipi çıktılarındaki seçici koruma ve genel native dosya kapsamı kendi kabulünü bekliyor. [Motor kanıtı](../proofs/targeted-query-comparison.json)
 
+#### Uzun kod kipi çıktısında seçici koruma
+
+18 Kasım. Yerel 0.44.0 denemesinde izinli arşiv okumasından üretilen çağrı ve çıktı özetleri, doğrulanmış fixture thread’i ve benzersiz çağrı kimliğiyle eşlendi. Koruma yalnız bu eşleşme için motorun birebir Read yolunu kullandı. Model kodunun metni tek başına yetki üretmez. Aynı kodun farklı çağrı biçimlerinde tekrarı ve birden çok çıktı eşleşmeyi geçersiz kılar. Yerel test kaydı aynı istekte izinli 5.926 baytı birebir, diğer çıktıyı CCR ile geri alınabilir halde doğruladı. Farklı thread ve değişen çağrı olağan sıkıştırmaya girdi.
+
+Üç sentetik motor isteği, 18 odaklı test ve 10 istekli gerçek Codex sahiplik regresyonu geçti. Model çağrısı sıfırdı. Motor denemesinin çağrı/çıktı kaydı sabit arşiv okumasını kullanan test sürücüsünde üretildi. Genel dosya kapsamı, gerçek MCP okumasından üretilen seçici koruma kaydı ve canlı maliyet kabulü açık. [Kanıt](../proofs/targeted-query-comparison.json)
+
 ### H041-e: deneysel kurallar
 
 16 Kasım 2026 kullanıcı kararı: ModHarness-RL'den esinlenen kural deneyi **isteğe bağlı ve varsayılan kapalıdır**. Ana ajan kapsam, ölçüm ve izin sözleşmesini üstlenir; bu kayıt yalnız plandır. Amaç, büyük araç çıktılarında gereken bilgiyi seçmek ve doğrulanmış hata döngülerini Learn içinde öneri olarak göstermek. [Makale v1](https://arxiv.org/abs/2611.18533v1) yöntem kaynağıdır; buradaki kabul koşulları ürünümüze aittir. Model eğitimi, kendiliğinden kod üretip çalıştırma ve bütün sohbetleri yeniden özetleme kapsam dışıdır.

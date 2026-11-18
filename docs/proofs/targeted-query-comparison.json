@@ -693,5 +693,73 @@
         }
       }
     }
+  },
+  "selective_long_output": {
+    "date": "2026-11-18",
+    "entry_point": "bench/context_tools/targeted_query_preservation.py",
+    "run": "preservation-f261d197d71a4ad48bebaaecba371f11",
+    "engine": "0.44.0",
+    "report_bytes": 5926,
+    "producer_scope": "owned synthetic archive with paired Codex code-mode requests assembled by the fixture",
+    "matching_fields": [
+      "verified_fixture_thread",
+      "unique_call_id",
+      "exact_call_digest",
+      "exact_output_digest"
+    ],
+    "local_requests": 3,
+    "external_model_requests": 0,
+    "cases": {
+      "mixed": {
+        "owned_exact": true,
+        "other_compacted": true,
+        "other_retrieved_exact": true
+      },
+      "other_thread": {
+        "compacted": true
+      },
+      "changed_call": {
+        "compacted": true
+      }
+    },
+    "engine_stop": {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    },
+    "input_fingerprints": {
+      "count": 35,
+      "matched": true,
+      "sha256_of_sorted_input_hashes": "6966f64cf377e192881ebd5bd9454e0d1cf8cff6a5f79ae6af1aa9285b0a0c1f"
+    },
+    "focused_tests": {
+      "count": 18,
+      "input_fingerprints": {
+        "count": 10,
+        "matched": true,
+        "sha256_of_sorted_input_hashes": "2c642991c51d1c2ffe059550c85c5ac35d0f54e075295308a2aecbd758808b80"
+      }
+    },
+    "native_ownership_regression": {
+      "run": "4db9dcb1b42b4112aea15bef28d08583",
+      "requests": 10,
+      "matching_mcp_calls": 6,
+      "foreign_reads": {
+        "child": "denied",
+        "parent": "denied"
+      },
+      "engine_stop": {
+        "shutdown": "graceful",
+        "engine_exit_code": 0,
+        "owned_port_closed": true,
+        "force_fallback": false
+      },
+      "input_fingerprints": {
+        "count": 37,
+        "matched": true,
+        "sha256_of_sorted_input_hashes": "ee57a20c7525540cb2d3ef4eef2f271c2439e5e8a2d345f15c0fd369118fb0e3"
+      }
+    }
   }
 }

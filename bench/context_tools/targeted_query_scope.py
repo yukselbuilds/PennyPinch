@@ -114,9 +114,10 @@ def install_owned_engine_probe(target, directory):
 
     httpx.AsyncClient.send = bounded
     server.create_app = create_observed
+    return owner
 
 
-def prepare_engine(core, usage, pilot, supervisor, run, upstream_port):
+def prepare_engine(core, usage, pilot, supervisor, run, upstream_port, *, preserve_owned_reads=False):
     runtime = ROOT / "runtime"
     controller = core.load_module("scope_engine_controller", runtime / "desktop_controller.py")
     manifest, payload, _ = controller.load_manifest(runtime / "manifest.json")
@@ -127,7 +128,10 @@ def prepare_engine(core, usage, pilot, supervisor, run, upstream_port):
     anchor = b'"from headroom.cli import main; main()"'
     assert source.count(anchor) == 1, "engine_bootstrap_changed"
     target = f"http://127.0.0.1:{upstream_port}/v1/responses"
-    hook = f"import runpy; runpy.run_path({str(ENTRY)!r})['install_owned_engine_probe']({target!r}, {str(run)!r}); "
+    hook = f"import runpy; scope_owner=runpy.run_path({str(ENTRY)!r})['install_owned_engine_probe']({target!r}, {str(run)!r}); "
+    if preserve_owned_reads:
+        policy = ENTRY.with_name("targeted_query_preservation.py")
+        hook += f"runpy.run_path({str(policy)!r})['install_preservation'](scope_owner, {str(run)!r}); "
     helper.write_bytes(source.replace(anchor, repr(hook).encode("ascii") + b" " + anchor, 1))
     engine = usage["probe"]["UsageEngine"](controller, supervisor, payload, run / "engine", upstream_port, pilot["PLAN"])
     files = [*staged, *[runtime / path.name for path in staged], payload / "runtime-manifest.json", payload / "python313.dll"]

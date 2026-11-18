@@ -1,13 +1,23 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Uzun kod kipi sonucu seçici korundu
+
+Ana ajan çağrı ve çıktı eşlemesini üstlendi. 0.44.0 ile yerel sentetik Responses koşusunda, izinli thread ve benzersiz çağrıya bağlanan 5.926 baytlık sonuç birebir ulaştı. Aynı isteğin diğer kod kipi çıktısı CCR’ye taşındı ve özgün metin geri alındı. Farklı thread ve farklı çağrı kimliği normal sıkıştırma yolunu izledi. Üç motor isteğinin kullanım kayıtları eşleşti. [Kanıt](proofs/targeted-query-comparison.json)
+
+18 odaklı test ile paylaşım açık gerçek Codex kapsam regresyonunun 10 isteği geçti. İki motor normal kapandı. **45/54 ana görev tamamlandı. H041 açık.** Genel dosya ve canlı maliyet kabulü, diğer sağlayıcı rotaları ve işletim sistemi kanıtları görev listesinde açık. [Görev listesi](../TASKS.md#h041--cache-bütünlük-ve-gecikmefayda-regresyonu)
+
+### Sıradaki yerel dilim
+
+Seçici koruma için çağrı ve çıktı eşlemesini gerçek Codex MCP okumasının tamamlandığı noktada oluştur. Aynı kapsamla uzun çıktıyı ve aynı istekteki diğer sonucun geri alımını doğrula. [Karar](decisions/027-optimization-regression.md#uzun-kod-kipi-çıktısında-seçici-koruma)
+
 ## 18 Kasım — Headroom yolunda paylaşımlı MCP arşivi ajan başına ayrıldı
 
 Ana ajan istek sahipliğini üstlendi. Pinli Codex CLI ve 0.44.0 motorunda MCP’nin kendi thread alanı motor girişindeki iki kimliğe eşleşti. Motor, Codex üst veri başlığını yerel sağlayıcıya iletmedi. Paylaşım açık ve tek bağlantı kullanılan prototipte, thread başına ayrı arşiv iki çapraz okumayı reddetti. Her ajan izinli 66 baytı birebir aldı. Bağlantıya bağlı kontrol kolunda alt ajan ana arşivi okuyabildi. [Kanıt](proofs/targeted-query-comparison.json)
 
 İki başarılı kapsam koşusunda 10’ar istek ve 10’ar kullanım satırı eşleşti. Negatif kontrol altı istek kullandı ve üç motor normal kapandı. 17 odaklı test ile yedi istekli mevcut sorgu ve geri okuma regresyonu geçti. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### Önceki seçici koruma planı
 
 Uzun kod kipi sonuçlarında geri çağırmaya taşınan özgün çıktıyı, doğrulanmış thread ve izinli çağrı kimliğiyle seçici olarak koru. Aynı istekteki diğer araç çıktılarının mevcut sıkıştırma yolunu ve tam geri okumayı doğrula. [Karar](decisions/027-optimization-regression.md#headroom-yolunda-ajan-sahipliği)
 
