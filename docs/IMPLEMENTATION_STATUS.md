@@ -1,13 +1,17 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
-## 18 Kasım — Serena proje pilotu tamamlandı
+## 18 Kasım — Learn önerisinin ilk canlı kıyası tamamlandı
 
-Ana ajan Rust süreç kapsamını ve kaynak doğruluğunu denetledi. Rust 1.92.0 dil sunucusu yalıtılmış kaynak kopyasıyla çalıştı. Üç süreç çiftinde 30 araç sorgusu tamamlandı. Serena Rust referanslarında 4/4, CodeGraph’ın tek sorgusu 2/4 verdi. İki araç da seçilen Rust ve TypeScript tanımları ile dosya sembollerini gösterdi. Araç şeması, çıktı baytı, başlangıç ve özel bellek kaydedildi. Önceki TypeScript referans kanıtının girdileri eşleşti. **45/54 ana görev tamamlandı. H041 açık.** [Ölçüm](proofs/serena-codegraph-pilot.json) · [Görev listesi](../TASKS.md)
+Ana ajan izole hesap ve kullanım eşlemesini üstlendi. 0.44.0 ile sekiz yerel Learn önizlemesi yeniden geçti. ChatGPT Free ve gerçek Codex CLI’de iki kol da güncel paket raporunu okuyup kesin cevabı verdi. Mevcut çalışma kökü kuralına Learn önerisi eklendiğinde bir fazladan yol kontrolü yapıldı. Tekrar ve yanlış okuma iki kolda sıfırdı. Yedi sağlayıcı isteği kullanım kaydıyla eşleşti. Toplam kullanım 30.548 → 41.255 token (%35,05 artış). Learn isteğe bağlı yerel önizlemede kalır. **45/54 ana görev tamamlandı. H041 ve geniş Learn kabulü açık.** [Ölçüm](proofs/learn-merit-pilot.json) · [Görev listesi](../TASKS.md)
 
 ### Sıradaki yerel dilim
 
-Learn öneri faydası pilotunda mevcut yerel örneklerden ayrı, sabit bir görev ve doğruluk ölçütü seç. Mevcut proje yönergesi ile Learn önerisini kapsayan iki kolun görev sonucunu, tekrar sayısını ve token kullanımını aynı izole ücretsiz koşulda ölçmek için girişleri ve istek sınırını önceden kaydet. [Karar](decisions/027-optimization-regression.md#learn-öneri-faydasının-yerel-pilotu)
+H041 kapanış koşullarını güncel kanıtlara bağla. Yerel 0.44.0 paket ve ölçüm kabulleriyle uygun sandbox, yetkili sağlayıcı erişimi ve diğer işletim sistemleri gerektiren kontrolleri ayrı kaydet. Yeni ücretli çağrı veya CI gerektirmeyen somut bir açık kabul varsa önce onu ele al. [Açık kabul koşulları](../TASKS.md#h041--cache-bütünlük-ve-gecikmefayda-regresyonu)
+
+## 18 Kasım — Serena proje pilotu tamamlandı
+
+Ana ajan Rust süreç kapsamını ve kaynak doğruluğunu denetledi. Rust 1.92.0 dil sunucusu yalıtılmış kaynak kopyasıyla çalıştı. Üç süreç çiftinde 30 araç sorgusu tamamlandı. Serena Rust referanslarında 4/4, CodeGraph’ın tek sorgusu 2/4 verdi. İki araç da seçilen Rust ve TypeScript tanımları ile dosya sembollerini gösterdi. Araç şeması, çıktı baytı, başlangıç ve özel bellek kaydedildi. Önceki TypeScript referans kanıtının girdileri eşleşti. **45/54 ana görev tamamlandı. H041 açık.** [Ölçüm](proofs/serena-codegraph-pilot.json) · [Görev listesi](../TASKS.md)
 
 ## 18 Kasım — Serena ve CodeGraph TypeScript referansları karşılaştırıldı
 

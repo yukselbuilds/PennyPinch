@@ -483,6 +483,21 @@ Komut proje kökünde çalıştırılır.
 & 'work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime/python.exe' -I -B bench/optimization/learn_merit.py --run
 ```
 
+#### İzole Codex ile ilk canlı karşılaştırma
+
+18 Kasım’da mevcut önizleme kaynaklarıyla yerel sekiz senaryo yeniden geçti. Canlı çiftte Windows 10, sabit 0.44.0, gerçek Codex CLI ve mevcut izole ChatGPT Free hesabı kullanıldı. İki kola sentetik yayın testinde aynı çalışma kökü kuralı ve aynı iş verildi. Paket raporu doğru sürüm sayısını, ondalık gecikme değerini ve örnek sayısını içeriyordu. Kaynak ağacındaki eski rapor ve eksik dosya yolu yerelde ayrıca doğrulandı. İkinci kola güncel önizlemenin İngilizce yol önerisi eklendi. Hesap, model, efor ve araç aynıydı. Kol başına dört, çift başına sekiz istek sınırı canlı trafikten önce kaydedildi.
+
+| Ölçüm | Çalışma kökü kuralı | Çalışma kökü kuralı ve Learn |
+| --- | ---: | ---: |
+| Kesin cevap ve doğru paket okuması | Geçti | Geçti |
+| Sağlayıcı isteği ve kullanım kaydı | 3/3 | 4/4 |
+| Tekrar ve yanlış okuma | 0 | 0 |
+| Ayrı yol kontrolü | 0 | 1 |
+| Cache hariç giriş tokenı | 10.656 | 11.135 |
+| Toplam giriş ve çıkış tokenı | 30.548 | 41.255 |
+
+İlk cache okuması iki kolda sıfırdı. Toplam kullanım, sonraki isteklerdeki cache okumaları dahil 10.707 token (%35,05) arttı. Öneri bu görevde ek kontrol yanında önlenmiş tekrar veya doğruluk artışı göstermedi. İki motor normal kapandı ve 40 ortak girdi fingerprint’i eşleşti. Tek bir sentetik görev ve sabit kol sırası geniş fayda veya fatura kabulünün yerini tutmaz. Learn önerisi kullanıcı seçimiyle yerel önizlemede kalır. [Sonuç ve yeniden çalıştırma](../proofs/learn-merit-pilot.json).
+
 ## İlk ölçümlerin planı
 
 9 Kasım 2026. H038 sonrasında bağımlılıkları hazır olan H041 başladı. Ana ajan ölçüm semantiği, gerçek motor ve performans kabulünü üstlenir. Ponytail full uygulanır. Ücretsiz yerel deneyler ilerler. Canlı API-key ve diğer işletim sistemi kabulü açık kalır.

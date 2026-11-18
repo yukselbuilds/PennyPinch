@@ -1,7 +1,7 @@
 {
   "task": "H041",
-  "status": "local_learn_merit_pilot_complete",
-  "checked_on": "2026-11-16",
+  "status": "local_and_bounded_live_learn_merit_complete",
+  "checked_on": "2026-11-18",
   "os": "Windows-10-10.0.19045-SP0",
   "engine": "0.44.0",
   "scope": "Current desktop preview script on synthetic Codex and Claude Code transcripts derived from actual local fixture commands.",
@@ -145,7 +145,7 @@
   },
   "displayed_guidance": {
     "tr": {
-      "text": "İlk denemeden önce çalışma klasörünü ve dosya yolunu doğrula.",
+      "text": "\u0130lk denemeden \u00f6nce \u00e7al\u0131\u015fma klas\u00f6r\u00fcn\u00fc ve dosya yolunu do\u011frula.",
       "tokens_o200k_base": 18
     },
     "en": {
@@ -175,10 +175,90 @@
   "token_basis": "Only the visible suggestion string was counted. Avoided model usage and billing were not measured.",
   "verified_input_count": 23,
   "raw_evidence": {
-    "path": "work/proofs/optimization/learn-merit/dc866b54d54f4c65875c6b664ac08115/result.json",
-    "sha256": "0806be62243b8271b86590147e0b29700506bd5bee293c06fb09b29223e1cbc7"
+    "path": "work/proofs/optimization/learn-merit/f2e1940f04164f64bcef709d73db4e9f/result.json",
+    "sha256": "626541204eb0e8dfcacafe4780564bd5bd4c48d35d31edef8937ce92824e17bb"
   },
   "rerun_command": "pinned-python -I -B bench/optimization/learn_merit.py --run",
-  "live_model_quality_and_provider_cost": "not_tested",
-  "paid_model_calls": 0
+  "live_model_quality_and_provider_cost": "bounded_live_quality_passed_no_billing_measurement",
+  "paid_model_calls": 0,
+  "live_comparison": {
+    "scope": "Single paired synthetic release report task in the actual Codex CLI. The arms shared the canonical workspace rule adapted for the fixture; the second received only the verified Learn path suggestion as an addition.",
+    "account": "isolated ChatGPT Free",
+    "cli": "codex-cli 0.169.0-alpha.11.1",
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "request_limits": [
+      4,
+      8
+    ],
+    "quality_gate_passed": true,
+    "benefit_observed": false,
+    "total_token_increase": 10707,
+    "total_token_increase_percent": 35.0498,
+    "additional_actions": [
+      "exists"
+    ],
+    "repeats_avoided": 0,
+    "missing_or_stale_reads_avoided": 0,
+    "dollar_cost_measured": false,
+    "arms": [
+      {
+        "arm": "workspace_rule",
+        "requests": 3,
+        "usage_records": 3,
+        "first_cache_read_input_tokens": 0,
+        "usage": {
+          "total_input_tokens": 30368,
+          "output_tokens": 180,
+          "total_tokens": 30548,
+          "cache_read_input_tokens": 19712,
+          "cache_creation_input_tokens": 0
+        },
+        "uncached_input_tokens": 10656,
+        "exact_answer": true,
+        "exact_staged_read": true,
+        "actions": [
+          "read"
+        ],
+        "repeat_calls": 0,
+        "missing_or_stale_reads": 0,
+        "graceful_owned_shutdown": true
+      },
+      {
+        "arm": "workspace_rule_and_learn",
+        "requests": 4,
+        "usage_records": 4,
+        "first_cache_read_input_tokens": 0,
+        "usage": {
+          "total_input_tokens": 40959,
+          "output_tokens": 296,
+          "total_tokens": 41255,
+          "cache_read_input_tokens": 29824,
+          "cache_creation_input_tokens": 0
+        },
+        "uncached_input_tokens": 11135,
+        "exact_answer": true,
+        "exact_staged_read": true,
+        "actions": [
+          "exists",
+          "read"
+        ],
+        "repeat_calls": 0,
+        "missing_or_stale_reads": 0,
+        "graceful_owned_shutdown": true
+      }
+    ],
+    "local_mcp_checks": 5,
+    "matching_shared_fingerprints": 40,
+    "mcp_preflight_evidence": {
+      "path": "work/proofs/optimization/targeted-query-comparison/learn-f6177da199e54905bf2b1550d70b9f82/mcp-preflight.json",
+      "sha256": "35256f0fb5602c4107d7e2dd24ef85f646f51b2861be119215937c06a8a29c21"
+    },
+    "raw_evidence": {
+      "path": "work/proofs/optimization/targeted-query-comparison/learn-c41d6f00a20443feb13ea0755ca6faf2/result.json",
+      "sha256": "b4536f46a539a0b776012a2fa9d97cc2073dbcc3514e55941d48633a9ec92050"
+    },
+    "rerun_command": "pinned-python -I -B bench/optimization/learn_merit_live.py --live --codex <pinned-codex.exe> --local-evidence <local-result.json>",
+    "decision": "Keep the suggestion in the opt-in local preview. This single pair establishes no general benefit or per-request monetary cost."
+  }
 }
