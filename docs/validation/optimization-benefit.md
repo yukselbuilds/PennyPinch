@@ -103,4 +103,34 @@ Yerel Rust ve istemci testlerinde yanlış nesil ve başka istek kimliği eşle�
 
 120 saniyelik tanıda izlenen içerik ve kayıt depoları yaklaşık 0,2 MiB düzeyinde kaldı. Artış motor sürecinde gözlendi. Sabit kaynakta model başlatıldıktan sonra Kompress’i arka planda yükleyen yol belirlendi. Headroom Desktop bu arka plan yüklemesini kendi motorunda kapattı. İstek gerektiğinde Kompress’i kullanma yolu korunur. Aynı 300 saniye planıyla sonraki koşuda özel bellek artışı 56,18 MiB, tepe 1138,81 MiB ve ek p95 49,88 ms ölçüldü. İki koşuda da ayrı Kompress dosyaları cache’e yazıldı. Bu gözlemler model dosyasının indirilme maliyeti ile yüklenme maliyetini tek başına ayırmaz. [Varsayılan motor ayarlarıyla düzeltme sonrası koşu](../proofs/optimization-stability.json).
 
-Model dosyası indirmeleri kapalı güncel koşu, aynı planla 300 çift, 600 istek ve 249 CCR geri alımı tamamladı. Artış 24,12 MiB, özel bellek tepesi 889,40 MiB, birleşik CPU tek çekirdeğin %4,09’u ve ek p95 47,04 ms oldu. Beş dakikalık pencere için önceden belirlenen bütün eşikler geçti. 653 girdi eşleşti. Motor normal çıkış kodu 0 ile kapandı ve port serbest kaldı. Hugging Face hub cache’inde model yükü sıfır bayttı. Sağlayıcı modeli, eşzamanlı çok istemci yükü ve saatlerce açık kalma ayrı kapsamda kalır.
+0.41.0’da model dosyası indirmeleri kapalı koşu, aynı planla 300 çift, 600 istek ve 249 CCR geri alımı tamamladı. Artış 24,12 MiB, özel bellek tepesi 889,40 MiB, birleşik CPU tek çekirdeğin %4,09’u ve ek p95 47,04 ms oldu. Beş dakikalık pencere için önceden belirlenen bütün eşikler geçti. 653 girdi eşleşti. Motor normal çıkış kodu 0 ile kapandı ve port serbest kaldı. Hugging Face hub cache’inde model yükü sıfır bayttı. Sağlayıcı modeli, eşzamanlı çok istemci yükü ve saatlerce açık kalma ayrı kapsamda kalır.
+
+## Headroom 0.44.0 ile süreli yük
+
+18 Kasım 2026. Önceki 300 saniye planı ve eşikler güncel 0.44.0 pininde kullanıldı. Windows 10’da Responses HTTP/SSE, Chat HTTP/SSE, Anthropic HTTP/SSE ve Responses WebSocket üzerinde 96 ısınma isteği ve 300 ölçüm çifti tamamlandı. 600 ölçüm isteğinde kaynak, kesin sayısal içerik, araç kimliği ve prefix kontrolleri geçti. 249 CCR geri alımı birebir doğrulandı. 688 kaynak ve araç girdisi eşleşti. Motor kod 0 ile normal kapandı ve sahipli port serbest kaldı.
+
+| Ölçüm | Gözlenen | Plan sınırı |
+| --- | ---: | ---: |
+| Ölçüm çifti | 300 | En az 250 |
+| Isınma sonrası özel bellek artışı | 22,96 MiB | En çok 128 MiB |
+| Gözlenen özel bellek tepesi | 914,59 MiB | En çok 1.536 MiB |
+| Ek p95 gecikme | 46,14 ms | En çok 1.000 ms |
+| Birleşik CPU, tek çekirdeğin yüzdesi | %3,32 | En çok %25 |
+
+Aşağıdaki sayılar, her örneğin 75 ölçüm isteğinde aynı `o200k_base` kodlamasıyla sayılan tam JSON gövdeleridir. Ek araç şemaları sayıya dahildir. Değerler yerel sentetik trafikte ana isteğin boyutunu gösterir. [Programatik kanıt](../proofs/optimization-local-acceptance.json).
+
+| Sentetik örnek | Özgün token | İletilen token | Fark |
+| --- | ---: | ---: | ---: |
+| Kaynak okuması | 724.026 | 725.970 | %0,27 artış |
+| Kesin sayısal okuma | 1.114.776 | 1.116.720 | %0,17 artış |
+| Tekrarlayan log | 3.110.226 | 1.079.854 | %65,28 azalma |
+| Kısa JSON | 37.476 | 39.420 | %5,19 artış |
+
+## H041 açık kabulleri
+
+| Kabul | Devam koşulu |
+| --- | --- |
+| Kısıtlı Codex native dosya profili | İzinli ve izin dışı dosyanın aynı adlandırılmış test profilinde çalıştığı uygun sandbox ortamı. [Dosya ve arşiv kanıtı](../proofs/targeted-query-comparison.json) |
+| Canlı kullanım ve fatura | Uzak Chat Completions, Anthropic ve API-key için yetkili erişim. Gerçek fatura farkı için kaynak sağlayıcıdan fatura ölçümü. [Kullanım planı](../decisions/027-optimization-regression.md#h041-d-responses-httpsse-kullanım-ölçümü) |
+| Windows 11 ve yeni macOS ARM64 pini | Windows 11 x64 ve macOS ARM64 üzerinde kendi çalışma, kapanış ve trafik kanıtı. [0.44.0 paket geçişi](../proofs/headroom-044-upgrade.json) |
+| İsteğe bağlı Learn ve deneysel kurallar | Learn’in tek canlı çiftinden sonra geniş fayda kabulü açık. E3 kalite ve net fayda eşiği donduruldu. E4, e3 kabulüne bağlı. [Learn ölçümü](../proofs/learn-merit-pilot.json) · [Ar-Ge kararı](../research/optimization-roi-review-2026-11-17.md) |

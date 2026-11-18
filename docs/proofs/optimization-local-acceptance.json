@@ -189,6 +189,100 @@
     },
     "plan_sha256": "e54202f73ce3ad93e77e6b6f31de176b6bebc8643a962de3f45589a507152335"
   },
+  "current_pinned_stability": {
+    "date": "2026-11-18",
+    "engine": "0.44.0",
+    "environment": {
+      "windows_build": [
+        10,
+        0,
+        19045
+      ],
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "logical_cpus": 16
+    },
+    "scope": "Windows 10, one engine instance and paced serial pairs over four owned loopback protocol surfaces.",
+    "fixture_only": true,
+    "opted_in_experiments": false,
+    "evidence": {
+      "path": "work/proofs/optimization/stability/b9e43098-fe0c-425c-a8e9-0ff169372a82/result.json",
+      "sha256": "4efe8878db6c9df7639ad6b89ffdbded2c360a98fdc4fa642e91bbf1d67854e4"
+    },
+    "merged_plan": {
+      "path": "work/proofs/optimization/stability/b9e43098-fe0c-425c-a8e9-0ff169372a82/plan.json",
+      "sha256": "e54202f73ce3ad93e77e6b6f31de176b6bebc8643a962de3f45589a507152335"
+    },
+    "matched_inputs": 688,
+    "elapsed_seconds": 300.0004423999999,
+    "completed_pairs": 300,
+    "measured_requests": 600,
+    "warmup_requests": 96,
+    "pairs_per_surface": {
+      "responses_http_sse": 84,
+      "chat_http_sse": 72,
+      "anthropic_http_sse": 72,
+      "responses_websocket": 72
+    },
+    "ccr_readbacks": 249,
+    "warm_added_p95_ms": 46.13529999915045,
+    "warm_cpu_p95_ms": 46.875,
+    "engine_private_growth_after_warmup_bytes": 24080384,
+    "maximum_observed_engine_private_bytes": 959012864,
+    "combined_load_cpu_one_core_percent": 3.3177034408266604,
+    "local_request_tokens_by_fixture": {
+      "source_read": {
+        "requests": 75,
+        "original_tokens": 724026,
+        "forwarded_tokens": 725970,
+        "saved_tokens": -1944,
+        "saved_percent": -0.2685
+      },
+      "numeric_read": {
+        "requests": 75,
+        "original_tokens": 1114776,
+        "forwarded_tokens": 1116720,
+        "saved_tokens": -1944,
+        "saved_percent": -0.1744
+      },
+      "repetitive_logs": {
+        "requests": 75,
+        "original_tokens": 3110226,
+        "forwarded_tokens": 1079854,
+        "saved_tokens": 2030372,
+        "saved_percent": 65.2805
+      },
+      "short_json": {
+        "requests": 75,
+        "original_tokens": 37476,
+        "forwarded_tokens": 39420,
+        "saved_tokens": -1944,
+        "saved_percent": -5.1873
+      }
+    },
+    "token_basis": "canonical_full_request_json_including_added_tool_schemas",
+    "token_encoding": "o200k_base",
+    "fixture_network": {
+      "hf_hub_offline": true,
+      "transformers_offline": true,
+      "upstream": "owned_loopback_fixture",
+      "huggingface_hub_payload_bytes": 0,
+      "packet_capture": false
+    },
+    "external_provider_calls": 0,
+    "checks": {
+      "duration": true,
+      "load": true,
+      "memory": true,
+      "cpu": true,
+      "latency": true
+    },
+    "engine_stop": {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    }
+  },
   "relay": {
     "evidence": {
       "path": "work/proofs/optimization/backpressure/dd54bd8a-2b86-4a08-b568-4aad8f9847ad/result.json",

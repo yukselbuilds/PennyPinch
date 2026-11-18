@@ -1,13 +1,17 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
-## 18 Kasım — Learn önerisinin ilk canlı kıyası tamamlandı
+## 18 Kasım — Headroom 0.44.0 süreli yük kabulü
 
-Ana ajan izole hesap ve kullanım eşlemesini üstlendi. 0.44.0 ile sekiz yerel Learn önizlemesi yeniden geçti. ChatGPT Free ve gerçek Codex CLI’de iki kol da güncel paket raporunu okuyup kesin cevabı verdi. Mevcut çalışma kökü kuralına Learn önerisi eklendiğinde bir fazladan yol kontrolü yapıldı. Tekrar ve yanlış okuma iki kolda sıfırdı. Yedi sağlayıcı isteği kullanım kaydıyla eşleşti. Toplam kullanım 30.548 → 41.255 token (%35,05 artış). Learn isteğe bağlı yerel önizlemede kalır. **45/54 ana görev tamamlandı. H041 ve geniş Learn kabulü açık.** [Ölçüm](proofs/learn-merit-pilot.json) · [Görev listesi](../TASKS.md)
+Ana ajan güncel motor pinini ve performans eşiklerini doğruladı. Önceki 0.41.0 ölçümünün planı 0.44.0 üzerinde 300 saniye çalıştı. Dört yerel yüzeyde 300 çift, 600 ölçüm isteği ve 249 birebir CCR geri alımı tamamlandı. Ek p95 46,14 ms, ısınma sonrası bellek artışı 22,96 MiB. 688 girdi eşleşti ve motor normal kapandı. **45/54 ana görev tamamlandı. H041 açık.** [Ölçüm ve açık kabuller](validation/optimization-benefit.md#headroom-0440-ile-süreli-yük) · [Görev listesi](../TASKS.md)
 
 ### Sıradaki yerel dilim
 
-H041 kapanış koşullarını güncel kanıtlara bağla. Yerel 0.44.0 paket ve ölçüm kabulleriyle uygun sandbox, yetkili sağlayıcı erişimi ve diğer işletim sistemleri gerektiren kontrolleri ayrı kaydet. Yeni ücretli çağrı veya CI gerektirmeyen somut bir açık kabul varsa önce onu ele al. [Açık kabul koşulları](../TASKS.md#h041--cache-bütünlük-ve-gecikmefayda-regresyonu)
+H041’in kayıtlı yerel yük ve ölçüm kabulleri güncel. Kısıtlı native dosya doğrulaması için uygun Codex sandbox ortamı, diğer canlı protokoller için yetkili erişim, Windows 11 ve macOS ARM64 için ilgili işletim sistemi gerekiyor. Bağımlılık sağlandığında ilgili kabulü kendi ortamında çalıştır. [Açık kabuller](validation/optimization-benefit.md#h041-açık-kabulleri)
+
+## 18 Kasım — Learn önerisinin ilk canlı kıyası tamamlandı
+
+Ana ajan izole hesap ve kullanım eşlemesini üstlendi. 0.44.0 ile sekiz yerel Learn önizlemesi yeniden geçti. ChatGPT Free ve gerçek Codex CLI’de iki kol da güncel paket raporunu okuyup kesin cevabı verdi. Mevcut çalışma kökü kuralına Learn önerisi eklendiğinde bir fazladan yol kontrolü yapıldı. Tekrar ve yanlış okuma iki kolda sıfırdı. Yedi sağlayıcı isteği kullanım kaydıyla eşleşti. Toplam kullanım 30.548 → 41.255 token (%35,05 artış). Learn isteğe bağlı yerel önizlemede kalır. **45/54 ana görev tamamlandı. H041 ve geniş Learn kabulü açık.** [Ölçüm](proofs/learn-merit-pilot.json) · [Görev listesi](../TASKS.md)
 
 ## 18 Kasım — Serena proje pilotu tamamlandı
 
