@@ -150,8 +150,219 @@
     "sha256_of_sorted_input_hashes": "5a7314b20f6861770b3d2b46a3f17b86482cd6e00f7e6631cc13041149fdfe81"
   },
   "raw_local_proof": "work/proofs/optimization/serena-codegraph/result-53a25a3ab6ed476c8f4b4f91d206eda9.json",
-  "remaining_scope": [
+  "remaining_scope_after_typescript_references": [
     "Rust references",
     "symbol definition and file outline"
-  ]
+  ],
+  "expanded_symbol_pilot": {
+    "date": "2026-11-18",
+    "pilot_completed": true,
+    "os": "Windows-10-10.0.19045-SP0",
+    "source_head": "41261d6649731e772c1474f7ca17eaf3e8976974",
+    "snapshot_files": 194,
+    "scope": "tracked Rust and TS sources; Rust internal crate links described without Cargo, external crates, or build scripts",
+    "targets_and_expected_locations": {
+      "rust": {
+        "file": "src-tauri/src/metrics/query.rs",
+        "symbol": "aggregate_event_refs",
+        "definition_line": 69,
+        "overview": {
+          "AggregateStatus": 7,
+          "BasisTotal": 15,
+          "PeriodTotals": 27,
+          "MetricSummary": 41,
+          "aggregate_unique_events": 65,
+          "aggregate_event_refs": 69
+        }
+      },
+      "typescript": {
+        "file": "src/lib/connectionActions.ts",
+        "symbol": "createConnectionActionClient",
+        "definition_line": 255,
+        "overview": {
+          "createConnectionActionClient": 255,
+          "connectionActionClient": 345
+        }
+      }
+    },
+    "rust_reference_locations": [
+      {
+        "file": "src-tauri/src/metrics/activity.rs",
+        "line": 181
+      },
+      {
+        "file": "src-tauri/src/metrics/attribution.rs",
+        "line": 274
+      },
+      {
+        "file": "src-tauri/src/metrics/query.rs",
+        "line": 66
+      },
+      {
+        "file": "src-tauri/src/metrics/store.rs",
+        "line": 603
+      }
+    ],
+    "versions": {
+      "serena": "2.1.0",
+      "rust_analyzer": "1.92.0 (ded5c06c 2025-12-08)",
+      "typescript_tsgo": "7.0.2",
+      "codegraph": "1.6.2"
+    },
+    "rust_analyzer_archive_sha256": "edcac488265c48737bf615481970e0a0b07fa98380f49d6322f6d53327a1b51a",
+    "method": {
+      "arm_order": [
+        [
+          "codegraph",
+          "serena"
+        ],
+        [
+          "serena",
+          "codegraph"
+        ],
+        [
+          "codegraph",
+          "serena"
+        ]
+      ],
+      "calls_per_process": [
+        "rust_references",
+        "rust_definition",
+        "rust_overview",
+        "typescript_definition",
+        "typescript_overview"
+      ],
+      "fresh_processes": 6,
+      "measured_rpc_queries": 30,
+      "index_files": 190,
+      "index_build_ms": 5595.4971,
+      "prepared_index_sha256": "19f8df8588d862638f74c9e3f48f0d481f5fc3359ee82311e5e8558481beb2a2",
+      "build_tools_in_server_path": false,
+      "context_size": "minified UTF-8 MCP JSON bytes",
+      "memory": "total private bytes of the stdio server process tree at first result"
+    },
+    "reused_typescript_reference_inputs": {
+      "count": 80,
+      "matched": true,
+      "sha256_of_sorted_input_hashes": "5a7314b20f6861770b3d2b46a3f17b86482cd6e00f7e6631cc13041149fdfe81"
+    },
+    "input_fingerprints": {
+      "count": 215,
+      "matched": true,
+      "sha256_of_sorted_input_hashes": "d30ba853ca8ac87a297e7001413d4421d8a02590f95717e814b6d3ecfa5f9ca1"
+    },
+    "observations": {
+      "serena": {
+        "schema_bytes": 6743,
+        "initialize_instructions_bytes": 132,
+        "median_start_to_tools_list_ms": 2059.86,
+        "median_start_to_first_reference_result_ms": 4977.02,
+        "median_process_tree_private_mib_at_first_result": 220.97,
+        "cases": {
+          "rust_references": {
+            "verified_sites_visible": [
+              4,
+              4,
+              4
+            ],
+            "median_result_bytes": 4005,
+            "median_call_ms": 2920.75
+          },
+          "rust_definition": {
+            "verified_sites_visible": [
+              1,
+              1,
+              1
+            ],
+            "median_result_bytes": 453,
+            "median_call_ms": 95.65
+          },
+          "rust_overview": {
+            "verified_sites_visible": [
+              6,
+              6,
+              6
+            ],
+            "median_result_bytes": 553,
+            "median_call_ms": 96.63
+          },
+          "typescript_definition": {
+            "verified_sites_visible": [
+              1,
+              1,
+              1
+            ],
+            "median_result_bytes": 467,
+            "median_call_ms": 96.67
+          },
+          "typescript_overview": {
+            "verified_sites_visible": [
+              2,
+              2,
+              2
+            ],
+            "median_result_bytes": 2205,
+            "median_call_ms": 96.92
+          }
+        }
+      },
+      "codegraph": {
+        "schema_bytes": 1905,
+        "initialize_instructions_bytes": 6865,
+        "median_start_to_tools_list_ms": 977.08,
+        "median_start_to_first_reference_result_ms": 1351.51,
+        "median_process_tree_private_mib_at_first_result": 384.05,
+        "cases": {
+          "rust_references": {
+            "verified_sites_visible": [
+              2,
+              2,
+              2
+            ],
+            "median_result_bytes": 22311,
+            "median_call_ms": 374.9
+          },
+          "rust_definition": {
+            "verified_sites_visible": [
+              1,
+              1,
+              1
+            ],
+            "median_result_bytes": 9600,
+            "median_call_ms": 31.47
+          },
+          "rust_overview": {
+            "verified_sites_visible": [
+              6,
+              6,
+              6
+            ],
+            "median_result_bytes": 6246,
+            "median_call_ms": 5.61
+          },
+          "typescript_definition": {
+            "verified_sites_visible": [
+              1,
+              1,
+              1
+            ],
+            "median_result_bytes": 19897,
+            "median_call_ms": 73.87
+          },
+          "typescript_overview": {
+            "verified_sites_visible": [
+              2,
+              2,
+              2
+            ],
+            "median_result_bytes": 17312,
+            "median_call_ms": 6.9
+          }
+        }
+      }
+    },
+    "result_proof": "work/proofs/optimization/serena-codegraph/symbols/result-95c7abd64d6c43309260f252d73dd62c.json",
+    "owned_processes_closed": true,
+    "external_model_requests": 0
+  }
 }

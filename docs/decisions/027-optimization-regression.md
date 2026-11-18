@@ -399,6 +399,14 @@ Yerel provada dokuz odaklı test, bir hazırlık ve bir üretim geçti. Canlı k
 
 Serena ilk üç sonucun her birinde 5/5, CodeGraph’ın tek sorgusu 1/5 çağrı satırını gösterdi. İlk sonuç boyutu 5.597 ve 17.588 bayttı. Süreçten ilk sonuca ortanca süre 3,75 ve 2,05 saniye, özel bellek 248,42 ve 384,28 MiB oldu. CodeGraph sorgularının başlangıç indeksi her defasında aynı kopyadan alındı. Altı süreç ağacı kapandı. Sonuç bu TypeScript sembolü ve tek çağrılı araç profilleriyle sınırlı. Rust ve sembol tanımı/dosya özeti karşılaştırmaları geniş pilotta açık. [Ölçüm](../proofs/serena-codegraph-pilot.json) · [Serena araçları](https://oraios.github.io/serena/01-about/035_tools.html)
 
+#### Rust referansları, sembol tanımı ve dosya özeti
+
+18 Kasım. Aynı pilotun kalan beş sorgusu 194 dosyalık yalıtılmış kaynak kopyasında üç eşlenmiş süreç çiftiyle çalıştırıldı. Rust 1.92.0 dil sunucusu yalnız test dizininden çalıştı. `rust-project.json` ile kaynak modülleri birbirine bağlandı. Böylece iç referanslar derleme gerektirmeden sorgulandı. TypeScript referanslarının önceki kanıtı parmak izleri uyuştuğu için yeniden kullanıldı. [Rust Analyzer proje biçimi](https://rust-analyzer.github.io/book/non_cargo_based_projects.html)
+
+Rust referanslarında Serena 4/4, CodeGraph’ın tek sorgusu 2/4 verdi. İki araç da seçilen Rust ve TypeScript tanımlarını, Rust dosyasındaki altı seçili sembolü ve TypeScript dosyasındaki iki dışa aktarımı gösterdi. Rust referans çıktısının ortancası Serena’da 4.005, CodeGraph’ta 22.311 bayt oldu. Başlatmadan ilk Rust sonucuna ortanca süre 4,98 ve 1,35 saniye, süreç ağacındaki özel bellek 220,97 ve 384,05 MiB. Serena’nın üç araç şeması 6.743, CodeGraph’ın tek araç şeması 1.905 bayt tuttu. Altı süreç ağacı kapandı.
+
+Serena, bu çalışma kapsamında gerektiğinde açılan dar sembol sorguları için geliştirme aracı adayıdır. Sonuçlar seçilen sembol ve dosya sorgularıyla sınırlı. Pilot ölçümleri Rust ve TypeScript için tamamlandı. [Ölçüm](../proofs/serena-codegraph-pilot.json)
+
 ### Headroom 0.44.0 Windows karşılaştırması
 
 16 Kasım 2026. PyPI’nin Windows x64 wheel’i kendi hash’i ve lock dosyasıyla yalıtılmış bir pakete alındı. Aday kopyasında denetleyici, gözetmen ve optimizasyon katmanının sürüm ve kaynak pinleri güncellendi. İlk açılış koşusundaki gecikme izinde LiteLLM fiyat haritası için ağ bağlantısı görüldü. Eşlenmiş koşuda iki sürüm paket içindeki fiyat haritasını kullandı. [Aday wheel](https://pypi.org/project/headroom-ai/0.44.0/#files) · [Paket ve başlangıç kanıtı](../proofs/headroom-044-candidate.json).
