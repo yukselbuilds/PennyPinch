@@ -1,11 +1,19 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Serena ve CodeGraph TypeScript referansları karşılaştırıldı
+
+Projeye ait yetkili ücretsiz Anthropic oturumu doğrulanamadı. Ana ajan Serena pilotunun kaynak doğruluğu, ölçüm ve süreç sahipliğini üstlendi. Üç eşlenmiş TypeScript koşusunda Serena 5/5 çağrıyı, CodeGraph’ın tek sorgusu 1/5 çağrıyı gösterdi. İlk sonuç 5.597 ve 17.588 bayt, süreçten ilk sonuca ortanca 3,75 ve 2,05 saniye, özel bellek 248,42 ve 384,28 MiB. Altı süreç ağacı kapandı. Serena yalıtılmış pilot klasöründe kurulu. **45/54 ana görev tamamlandı. H041 açık.** [Ölçüm](proofs/serena-codegraph-pilot.json) · [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+Serena pilotunda önce yerel Rust dil sunucusunu ve ayrı kaynak kopyasını doğrula. Sonra Rust referansları ile sembol tanımı ve dosya özetini, bilinen kaynak sonuçları kullanarak aynı dar karşılaştırmaya ekle. Canlı Anthropic kabulü yetkili ücretsiz erişim bekliyor. [Karar](decisions/027-optimization-regression.md#typescript-referans-sorgusunda-serena-ve-codegraph)
+
 ## 18 Kasım — Chat Completions gerçek yerel modelde doğrulandı
 
 Ana ajan rota sınırını, süreç sahipliğini ve sayaç eşlemesini üstlendi. Proje içindeki llama.cpp CPU sunucusunda tek SmolLM2 SSE isteği tamamlandı. Kısıtlı JSON ve 44 girdi, 15 çıktı motorun istek kaydıyla eşleşti. Önbellek okuması sıfır, yazma bilinmiyor. Beş odaklı test geçti ve iki süreç kapandı. Uzak Chat Completions kabulü yetkili ücretsiz erişim bekliyor. **45/54 ana görev tamamlandı. H041 açık.** [Kanıt](proofs/chat-completions-usage.json) · [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### Önceki Anthropic erişimi ve Serena planı
 
 Anthropic canlı koşusu için mevcut yetkili ücretsiz erişimi kontrol et. Erişim bulunamazsa açık kabulü koru ve aynı H041 içinde Serena ile CodeGraph karşılaştırmasına geç. İki araçta aynı küçük, salt okunur sorguyu referans doğruluğu, bağlam boyutu, açılış ve bellek açısından ölç. [Serena değerlendirmesi](research/headroom-serena-2026-11-15.md#serena)
 

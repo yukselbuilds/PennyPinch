@@ -1,0 +1,157 @@
+{
+  "task": "H041",
+  "slice": "serena_codegraph_typescript_references",
+  "date": "2026-11-18",
+  "scope": "one TypeScript symbol and its five exact production call sites, on a 61-file read-only test snapshot",
+  "os": "Windows-10-10.0.19045-SP0",
+  "source_head": "253859ea875ce60a36a710f239f7be76fb77cfa5",
+  "target_file": "src/lib/connectionActions.ts",
+  "symbol": "connectionActionClient",
+  "oracle_call_sites": [
+    {
+      "file": "src/features/integrations/Applications.tsx",
+      "line": 226,
+      "method": "snapshot"
+    },
+    {
+      "file": "src/features/integrations/ConnectDialog.tsx",
+      "line": 762,
+      "method": "snapshot"
+    },
+    {
+      "file": "src/features/integrations/ConnectDialog.tsx",
+      "line": 1054,
+      "method": "apply"
+    },
+    {
+      "file": "src/features/integrations/ConnectDialog.tsx",
+      "line": 1104,
+      "method": "undo"
+    },
+    {
+      "file": "src/features/overview/useOverview.ts",
+      "line": 40,
+      "method": "snapshot"
+    }
+  ],
+  "compared_versions": {
+    "serena": "2.1.0",
+    "typescript_tsgo": "7.0.2",
+    "codegraph": "1.6.2"
+  },
+  "tools": {
+    "serena": {
+      "name": "find_referencing_symbols",
+      "name_path": "connectionActionClient",
+      "relative_path": "src/lib/connectionActions.ts"
+    },
+    "codegraph": {
+      "name": "codegraph_explore",
+      "query": "connectionActionClient callers",
+      "maxFiles": 4
+    }
+  },
+  "method": {
+    "paired_launches": [
+      [
+        "codegraph",
+        "serena"
+      ],
+      [
+        "serena",
+        "codegraph"
+      ],
+      [
+        "codegraph",
+        "serena"
+      ]
+    ],
+    "index_build_ms": 8059.91,
+    "prepared_codegraph_index_sha256": "081a01bd726f7505ef5294d2764cabccf1d0a9e8e56734089ba46067e4629470",
+    "state": "prepared dependencies and index, fresh processes for first calls, same session for each repeat",
+    "memory": "sum of private bytes for stdio process and running descendants at result receipt",
+    "context_size": "UTF-8 bytes of minified MCP JSON, measured for schema, instructions and each result"
+  },
+  "observations": {
+    "serena": {
+      "first_call": {
+        "expected_call_sites_visible": [
+          5,
+          5,
+          5
+        ],
+        "result_bytes": [
+          5597,
+          5597,
+          5597
+        ],
+        "median_process_start_to_result_ms": 3753.52,
+        "median_call_ms": 318.11,
+        "median_process_tree_private_mib": 248.42
+      },
+      "repeat_call": {
+        "expected_call_sites_visible": [
+          5,
+          5,
+          5
+        ],
+        "result_bytes": [
+          5597,
+          5597,
+          5597
+        ],
+        "median_call_ms": 187.32
+      },
+      "median_process_start_to_tools_list_ms": 3428.66,
+      "schema_bytes": 1416,
+      "initialize_instructions_bytes": 132,
+      "process_cleanups": 3
+    },
+    "codegraph": {
+      "first_call": {
+        "expected_call_sites_visible": [
+          1,
+          1,
+          1
+        ],
+        "result_bytes": [
+          17588,
+          17588,
+          17588
+        ],
+        "median_process_start_to_result_ms": 2050.05,
+        "median_call_ms": 583.0,
+        "median_process_tree_private_mib": 384.28
+      },
+      "repeat_call": {
+        "expected_call_sites_visible": [
+          1,
+          1,
+          1
+        ],
+        "result_bytes": [
+          17588,
+          17588,
+          17588
+        ],
+        "median_call_ms": 105.74
+      },
+      "median_process_start_to_tools_list_ms": 1487.15,
+      "schema_bytes": 1904,
+      "initialize_instructions_bytes": 6865,
+      "process_cleanups": 3
+    }
+  },
+  "processes_closed": true,
+  "external_model_requests": 0,
+  "input_fingerprints": {
+    "count": 80,
+    "matched": true,
+    "sha256_of_sorted_input_hashes": "5a7314b20f6861770b3d2b46a3f17b86482cd6e00f7e6631cc13041149fdfe81"
+  },
+  "raw_local_proof": "work/proofs/optimization/serena-codegraph/result-53a25a3ab6ed476c8f4b4f91d206eda9.json",
+  "remaining_scope": [
+    "Rust references",
+    "symbol definition and file outline"
+  ]
+}
