@@ -255,5 +255,66 @@
     "main_progress": "45/54",
     "working_tasks_other_bytes_preserved": true,
     "proof_scope": "Windows local protocol acceptance"
+  },
+  "real_local_inference": {
+    "date": "2026-11-18",
+    "run": "67aebe0883cc48c4907a42fd515617d5",
+    "entry_point": "bench/optimization/chat_real_inference.py",
+    "passed": true,
+    "scope": "actual local CPU inference, synthetic prompt and constrained JSON answer",
+    "os": "Windows-10-10.0.19045-SP0",
+    "engine": "0.44.0",
+    "provider": "llama.cpp b12359",
+    "model": "smollm2-135m-local-chat",
+    "asset_sources": {
+      "server": {
+        "release": "https://github.com/ggml-org/llama.cpp/releases/tag/b12359",
+        "archive_sha256": "837c1655e87df3b66989f4be33a792a1399c785bf259038dc75c900096683e69"
+      },
+      "model": {
+        "revision": "https://huggingface.co/bartowski/SmolLM2-135M-Instruct-GGUF/tree/09816acd5d99df7be770d85ea30822623dab342c",
+        "weights_sha256": "2e8040ceae7815abe0dcb3540b9995eaa1fa0d2ca9e797d0a635ae4433c68c2d"
+      }
+    },
+    "request_limit": 1,
+    "max_output_tokens": 24,
+    "answer_exact": true,
+    "provider_sse_counters_match_owned_record": true,
+    "usage": {
+      "input_tokens": 44,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": null,
+      "output_tokens": 15,
+      "total_input_tokens": 44,
+      "total_tokens": 59
+    },
+    "loopback_model_requests": 1,
+    "remote_model_requests": 0,
+    "provider_closed": true,
+    "engine_stop": {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    },
+    "input_fingerprints": {
+      "count": 70,
+      "matched": true,
+      "sha256_of_sorted_input_hashes": "33417b2bf3822518ff1ae4e50f5510171f2ad6b8fc41d28b071260dca40d50b7"
+    },
+    "focused_tests": {
+      "count": 5,
+      "input_fingerprints": {
+        "count": 7,
+        "matched": true,
+        "sha256_of_sorted_input_hashes": "08bdc5d8f75a3ab93e98fa7b06399855f076caa202a2ecd14b84fe0657fe1395"
+      }
+    },
+    "initial_probe": {
+      "run": "fd625b1a19ac44028fe0fda02f3becc3",
+      "client_status": 403,
+      "provider_sends": 0
+    },
+    "remote_chat_completions": "not_tested_authorized_free_access_unverified"
   }
 }

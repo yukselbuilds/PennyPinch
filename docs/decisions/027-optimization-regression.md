@@ -431,6 +431,12 @@ Odaklı parser ve native okuyucu denemelerinden sonra loopback motoru ve önceki
 
 Windows 10 yerel adayında 11 senaryo ve 14 sentetik upstream gönderimi doğrulandı. İki CCR çağrısının toplamı 2.400 girdi ve 29 çıktı olarak native okuyucu, SQLite ve Etkinlik ayrıntısına ulaştı. Geçerli cache ayrıntıları 2.000 okuma ve 100 yazma. Yerel cevap önbelleğindeki tekrar yeni sağlayıcı ölçümü üretmedi. Kesik SSE için motor yalnız özel kullanım kaydı ve hata sayacı üretiyor. Etkinlik satırı oluşmadığı için bu kayıttan bir satır türetilmez. İsteğe bağlı tamponlu Chat CCR ayrı test profilinde sınandı. [Kabul](../proofs/chat-completions-usage.json).
 
+#### Yerel gerçek modelle Chat Completions doğrulaması
+
+18 Kasım. Chat Completions için yetkili ücretsiz uzak erişim doğrulanamadı. Sabit llama.cpp CPU sunucusu ve SmolLM2-135M, yalnız proje içindeki loopback testinde çalıştırılır. Tek sentetik soru, sınırlandırılmış JSON yanıtı ve `include_usage` açık bir SSE isteği kullanılır. Kabul için doğru JSON, tamamlanmış SSE, tek upstream isteği ve aynı istek kimliğindeki motor kullanım kaydı gerekir. Eksik önbellek ayrıntısı bilinmiyor kalır. [llama.cpp yayını](https://github.com/ggml-org/llama.cpp/releases/tag/b12359) · [Model kaynağı](https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct)
+
+İlk istek test filtresinde HTTP 403 ile durdu. Koşucu, motorun ilettiği `max_completion_tokens` alanına uyarlandı ve sunucunun kendi çıktı sınırı 24 tokenda sabitlendi. Son koşuda gerçek model, şemayla sınırlandırılmış beklenen JSON’u üretti. SSE kullanımındaki 44 girdi ve 15 çıktı aynı isteğin motor kaydına ulaştı. Önbellek okuması sıfır, yazma sayacı eksik kaldı. Beş odaklı test geçti, iki sahipli süreç kapandı. Uzak Chat Completions kabulü yetkili ücretsiz erişim bekliyor. [Ölçüm](../proofs/chat-completions-usage.json)
+
 #### SSE kullanımında olay başına sınır
 
 18 Kasım. Masaüstünün kullanım gözlemcisi, tamamlanmamış olay ve yeni ağ verisinin toplamını 128 KiB ile sınırlıyordu. Anthropic, Responses ve Chat Completions akışlarında tek başına geçerli olayların birlikte ulaşması bu sınırı aşabiliyor ve kullanım sayaçlarını kaybettiriyordu.

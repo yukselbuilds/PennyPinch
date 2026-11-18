@@ -1,11 +1,19 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Chat Completions gerçek yerel modelde doğrulandı
+
+Ana ajan rota sınırını, süreç sahipliğini ve sayaç eşlemesini üstlendi. Proje içindeki llama.cpp CPU sunucusunda tek SmolLM2 SSE isteği tamamlandı. Kısıtlı JSON ve 44 girdi, 15 çıktı motorun istek kaydıyla eşleşti. Önbellek okuması sıfır, yazma bilinmiyor. Beş odaklı test geçti ve iki süreç kapandı. Uzak Chat Completions kabulü yetkili ücretsiz erişim bekliyor. **45/54 ana görev tamamlandı. H041 açık.** [Kanıt](proofs/chat-completions-usage.json) · [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+Anthropic canlı koşusu için mevcut yetkili ücretsiz erişimi kontrol et. Erişim bulunamazsa açık kabulü koru ve aynı H041 içinde Serena ile CodeGraph karşılaştırmasına geç. İki araçta aynı küçük, salt okunur sorguyu referans doğruluğu, bağlam boyutu, açılış ve bellek açısından ölç. [Serena değerlendirmesi](research/headroom-serena-2026-11-15.md#serena)
+
 ## 18 Kasım — ChatGPT Responses WebSocket canlı kullanım kaydı doğrulandı
 
 Ana ajan hesap kapsamını ve sayaç eşleşmesini üstlendi. Windows 10’da izole Free profilli pinli Codex tek WebSocket üretimiyle doğru yanıt verdi. Headroom ve CLI 9.784 girdi, sıfır önbellek okuması ve 8 çıktıda eşleşti. Hazırlığın 2 girdi tokenı ayrı sayıldı. Dokuz odaklı test, yerel prova ve iki normal motor kapanışı geçti. **45/54 ana görev tamamlandı. H041 açık.** [Kanıt](proofs/websocket-usage-desktop.json) · [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### Önceki Chat Completions doğrulama planı
 
 H041-d kapsamında Chat Completions için mevcut yetkili ücretsiz sağlayıcı yolunu belirle. Uygun erişim varsa tek küçük istekte protokolü ve kullanım kaydını doğrula. Anthropic ve API-key kabulü kendi erişimini bekliyor. [Karar](decisions/027-optimization-regression.md#h041-d-chat-completions-kullanım-ölçümü)
 

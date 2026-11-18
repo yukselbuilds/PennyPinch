@@ -20,6 +20,20 @@ def frame(choices, *, usage=None, identity="chatcmpl-fixture"):
                                      "id": identity, "usage": usage}, ensure_ascii=False) + "\r\n\r\n").encode()
 
 
+class RealChatInferenceSmokeTests(unittest.TestCase):
+    def test_usage_requires_complete_answer_and_keeps_absent_cache_unknown(self):
+        root = Path(__file__).resolve().parents[2]
+        inspect = runpy.run_path(str(root / "bench/optimization/chat_real_inference.py"))["inspect_stream"]
+        answer = frame([{"delta": {"content": '{"answer":4}'}, "finish_reason": "stop"}])
+        usage = frame([], usage={"prompt_tokens": 30, "completion_tokens": 6, "total_tokens": 36})
+        row = inspect(answer + usage + DONE)
+        self.assertEqual(row, {"input_tokens": 30, "output_tokens": 6,
+                               "cache_read_input_tokens": None, "cache_creation_input_tokens": None})
+        for incomplete in (answer + usage, answer + DONE, answer + usage + usage + DONE):
+            with self.assertRaises(AssertionError):
+                inspect(incomplete)
+
+
 class ChatUsageTests(unittest.IsolatedAsyncioTestCase):
     def test_cache_is_inclusive_and_missing_counts_stay_unknown(self):
         result = control._chat_usage({"object": "chat.completion", "usage": USAGE})
