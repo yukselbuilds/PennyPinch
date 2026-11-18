@@ -78,7 +78,7 @@ class ReportSession:
             end = offset + (end - offset) // 2
 
 
-def serve(failed_report=False, *, source=None):
+def serve(failed_report=False, *, source=None, read_tool="Read"):
     from mcp.server.mcpserver import MCPServer
     from mcp.server.mcpserver.context import Context
     from mcp.server.mcpserver.exceptions import ToolError
@@ -115,7 +115,7 @@ def serve(failed_report=False, *, source=None):
         except ValueError:
             raise ToolError("invalid_query") from None
 
-    @server.tool(structured_output=False, annotations=annotations)
+    @server.tool(name=read_tool, structured_output=False, annotations=annotations)
     async def Read(archive_id: str, stream: Literal["stdout", "stderr"], offset: StrictInt) -> str:
         """Read original bytes as UTF-8 text. Start each stream at 0; continue at next_offset up to total_bytes."""
         try:

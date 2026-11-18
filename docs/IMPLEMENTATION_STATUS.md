@@ -1,13 +1,23 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Canlı Codex tam raporu okudu
+
+Ana ajan araç ve ölçüm sözleşmesini üstlendi. İzole ChatGPT Free profiliyle rapor yakalama ve açık adlı `read_archived_report` çağrısı tamamlandı. CLI, 5.926 baytlık özgün raporu birebir aldı. Dört sağlayıcı yanıtından sonra beşinci istek yerelde sınırlandı. Nihai yanıt, aday kol ve canlı tasarruf belirlenemedi. [Kanıt](proofs/targeted-query-comparison.json)
+
+Gerçek model kataloğuyla yapılan model çağrısız yerel prova `input.additional_tools` içinde `functions.exec` taşımasını gösterdi. Tanı artık bu biçimi tanıyor ve kesin MCP çağrılarını CLI olaylarıyla doğruluyor. 14 odaklı test, yedi yerel motor isteği ve bir katalog provası geçti. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+Kod kipinde tam okumanın ve sorgunun terminal yanıt dahil normal istek sayısını model çağrısı yapmadan doğrula. Sonraki eşlenmiş ölçümün sınırını bu kanıta dayandır ve iki kolda aynı model, efor ve görev kabulünü koru. [Karar](decisions/027-optimization-regression.md#canlı-tam-okuma-ve-codex-kod-kipi)
+
 ## 18 Kasım — Hedefli sorgunun eşlenmiş provası geçti
 
 Ana ajan araç izinlerini ve kullanım eşlemesini üstlendi. Aynı 48 satırlık raporda tam Read üç, hedefli sorgu ve ardından tam Read dört yerel istekle tamamlandı. Özgün değer, kaynak kimliği ve seçilen satır eşleşti. 12 odaklı kontrol, yedi kullanım kaydı ve iki normal motor kapanışı geçti. [Kanıt](proofs/targeted-query-comparison.json)
 
 **45/54 ana görev tamamlandı. H041 açık.** İzole ChatGPT Free profiliyle yapılan canlı denemede ilk kol dört sağlayıcı yanıtı ve bir rapor yakalamasından sonra istek sınırına ulaştı. Tam Read, son cevap ve ikinci kol tamamlanmadığı için token ve maliyet farkı belirlenemedi. Sıradaki yerel inceleme, sağlayıcıya giden araç kataloğunda tam okumanın adı ve görünürlüğü ile CLI'nin çağrı/sonlandırma olaylarını sınırlı tanı verisiyle eşlemek. [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### Önceki inceleme planı
 
 **H041 · Canlı Read çağrısını incele.** Eşlenmiş provanın yerel kabulü tamamlandı. İlk canlı kolun durduğu noktayı araç adının sağlayıcıya iletimi ve CLI olaylarının sınırlı kaydı üzerinden incele. Yeni sağlayıcı denemesinden önce Read çağrısının açık adını ve çağrı sırasını yerel provada doğrula. [Son kanıt](proofs/targeted-query-comparison.json)
 

@@ -104,6 +104,12 @@ Bu büyük örnekte ilk referans, sorgu ve parçalı tam okuma yerel fixture'a t
 
 Gerçek CLI ve 0.44.0 motorla yerel fixture provası 3 + 4 istek, yedi kullanım satırı ve iki normal motor kapanışı verdi. Aday provasında tam okuma bilinçli olarak istendi ve ek istek sayıldı. 12 odaklı kontrol geçti. Canlı ChatGPT Free koşusunda kontrol kolunun ilk dört isteği HTTP 200 döndü. CLI rapor referansını aldı. Bir sonraki istek sağlayıcıya gönderilmeden sınırda kesildi. Tam Read ve son cevap gözlenmedi; aday kol başlatılmadı. Canlı tasarruf yüzdesi ve maliyet bilinmiyor. Gerçek dosya/alt ajan izinleri açık. [Kanıt](../proofs/targeted-query-comparison.json)
 
+#### Canlı tam okuma ve Codex kod kipi
+
+18 Kasım. Kıyas aracına açık `read_archived_report` adı ve arşiv argümanlarını belirten ortak talimat eklendi. İzole ChatGPT Free koşusunda tam okuma kolu iki başarılı MCP çağrısıyla 5.926 baytlık özgün raporu CLI’ye birebir iletti. Dört sağlayıcı isteği HTTP 200 döndü. Beşinci istek kol sınırında sağlayıcıya gönderilmeden durdu. Son yanıt alınamadı ve aday kol başlamadı. Tasarruf yüzdesi ve maliyet bilinmiyor.
+
+İlk tanı yalnız üst düzey araç dizisini ve doğrudan MCP adlarını bekliyordu. Aynı gerçek model kataloğuyla yerel bir istek, Responses Lite `input.additional_tools` içinde `functions.exec` taşımasını doğruladı. Tanı artık iki biçimi ayırır ve yalnız sabit araç etiketlerini ve olay sayılarını tutar. Kesin araç sırası, arşiv ve çıktı kontrolü CLI olaylarında sürer. 14 odaklı test, yedi yerel motor isteği ve bir katalog provası geçti. [Kanıt](../proofs/targeted-query-comparison.json)
+
 ### H041-e: deneysel kurallar
 
 16 Kasım 2026 kullanıcı kararı: ModHarness-RL'den esinlenen kural deneyi **isteğe bağlı ve varsayılan kapalıdır**. Ana ajan kapsam, ölçüm ve izin sözleşmesini üstlenir; bu kayıt yalnız plandır. Amaç, büyük araç çıktılarında gereken bilgiyi seçmek ve doğrulanmış hata döngülerini Learn içinde öneri olarak göstermek. [Makale v1](https://arxiv.org/abs/2611.18533v1) yöntem kaynağıdır; buradaki kabul koşulları ürünümüze aittir. Model eğitimi, kendiliğinden kod üretip çalıştırma ve bütün sohbetleri yeniden özetleme kapsam dışıdır.

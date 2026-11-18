@@ -37,6 +37,38 @@ class TargetedQueryComparisonTests(unittest.TestCase):
         self.assertFalse(accepted({**row, "request_count": 3}))
         self.assertFalse(accepted({**row, "total_usage": {**row["total_usage"], "output_tokens": None}}))
 
+    def test_wire_observation_keeps_only_known_tool_metadata(self):
+        namespace = "mcp__" + self.bench["SERVER"]
+        read = "read_archived_report"
+        marker = "no-private-input-in-the-proof"
+        reference = {"archive_id": "a" * 32, "source_tool": "read_structured_report", "source_call_id": "mcp:fixture"}
+        body = {"tools": [{"type": "namespace", "name": namespace, "tools": [{"type": "function", "name": read}]}],
+                "input": [{"type": "function_call", "namespace": namespace, "name": reference["source_tool"], "call_id": marker},
+                          {"type": "function_call_output", "call_id": marker, "output": [{"type": "input_text", "text": json.dumps(reference)}]},
+                          {"type": "function_call", "name": namespace + "__" + read, "call_id": "known-read"},
+                          {"type": "function_call", "name": marker, "call_id": "unknown"},
+                          {"type": "function_call_output", "call_id": "missing", "output": marker}]}
+        row = self.bench["wire_observation"](body)
+        self.assertEqual(row["advertised"], [read])
+        self.assertEqual(row["calls"], {reference["source_tool"]: 1, read: 1, "other": 1})
+        self.assertEqual(row["outputs"], {reference["source_tool"]: 1, "unmatched": 1})
+        self.assertEqual(row["intact_archive_references"], 1)
+        self.assertNotIn(marker, json.dumps(row))
+        self.assertNotIn(reference["archive_id"], json.dumps(row))
+
+    def test_code_mode_exec_is_recognized_in_responses_lite_additional_tools(self):
+        marker = "hidden-code-and-output"
+        body = {"input": [{"type": "additional_tools", "tools": [
+                    {"type": "namespace", "name": "functions", "tools": [{"type": "custom", "name": "exec"}]}]},
+                {"type": "custom_tool_call", "namespace": "functions", "name": "exec", "call_id": "code", "input": marker},
+                {"type": "custom_tool_call_output", "call_id": "code", "output": marker}]}
+        row = self.bench["wire_observation"](body)
+        self.assertTrue(row["code_mode_exec"])
+        self.assertEqual(row["advertised"], [])
+        self.assertEqual(row["calls"], {"functions.exec": 1})
+        self.assertEqual(row["outputs"], {"functions.exec": 1})
+        self.assertNotIn(marker, json.dumps(row))
+
 
 class TargetedQueryClientTests(unittest.TestCase):
     def setUp(self):

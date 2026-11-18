@@ -1,5 +1,6 @@
 """Pair full Read and exact-ID query over one fixed report in the real Codex CLI."""
 import argparse
+from collections import Counter
 import hashlib
 from http.server import ThreadingHTTPServer
 import json
@@ -27,7 +28,9 @@ LIVE_PATH = OPTIMIZATION / "rules_live.py"
 USAGE_PATH = ROOT / "tests/runtime/anthropic_usage_capture.py"
 PROOF_ROOT = ROOT / "work/proofs/optimization/targeted-query-comparison"
 SERVER = "headroom_rule_pilot"
-CAPTURE, SELECT, READ = "read_structured_report", "select_report_record", "Read"
+NAMESPACE = "mcp__" + SERVER
+CAPTURE, SELECT, READ = "read_structured_report", "select_report_record", "read_archived_report"
+REPORT_TOOLS = (CAPTURE, SELECT, READ)
 ARMS = {"full_read": (CAPTURE, READ), "targeted": (CAPTURE, SELECT, READ)}
 TARGET_ID = "batch_037"
 LIVE_MODEL, LIVE_EFFORT = "gpt-6-luna", "medium"
@@ -35,9 +38,10 @@ CLI_VERSION = "codex-cli 0.169.0-alpha.11.1"
 ATTEMPTS_PER_ARM = 4
 UPSTREAM = "https://chatgpt.com/backend-api/codex/responses"
 PROMPT = (
-    f"Capture the fixed synthetic report once. Find {TARGET_ID} and count all its report's JSONL records. "
-    "When available, use select_report_record first. Only use Read if you need the original to answer accurately. "
-    "Without select_report_record, read the original stdout starting at offset 0. Do not use other tools. "
+    f"Call {CAPTURE} once. Use the archive_id it returns to find {TARGET_ID} and count all JSONL records. "
+    f"If {SELECT} is available, call it with that archive_id and record_id={TARGET_ID}. "
+    f"If {SELECT} is unavailable or its result is insufficient, call {READ} with the same archive_id, "
+    "stream=stdout, and offset=0. Use only these report tools. "
     "Return one JSON object with id, record_count, units, ratio, and label. Preserve every digit and the sign of "
     "units and ratio as strings, keep label verbatim, and use a JSON integer for record_count."
 )
@@ -85,6 +89,84 @@ def valid_reference(value):
             and 4 < len(value["source_call_id"]) <= 128 and value["source_call_id"].startswith("mcp:"))
 
 
+def wire_tool(entry, namespace=None):
+    name = entry.get("name")
+    if not isinstance(name, str):
+        return "other"
+    scope = namespace or entry.get("namespace")
+    if entry.get("type") in ("custom", "custom_tool_call") and (
+            name == "functions.exec" or (name == "exec" and scope == "functions")):
+        return "functions.exec"
+    prefix = NAMESPACE + "__"
+    if name.startswith(prefix) and namespace is None:
+        name = name[len(prefix):]
+    elif scope != NAMESPACE:
+        return "other"
+    return name if name in REPORT_TOOLS else "other"
+
+
+def intact_reference(output):
+    if isinstance(output, list):
+        output = "".join(part["text"] for part in output if isinstance(part, dict)
+                         and part.get("type") in ("text", "input_text") and isinstance(part.get("text"), str))
+    if not isinstance(output, str):
+        return False
+    output = re.sub(r"\AWall time: [0-9]+(?:\.[0-9]+)? seconds\r?\nOutput:\s*", "", output, count=1)
+    try:
+        return valid_reference(json.loads(output))
+    except (ValueError, RecursionError):
+        return False
+
+
+def wire_observation(body):
+    records = [item for item in body["input"] if isinstance(item, dict)] if isinstance(body.get("input"), list) else []
+    declarations = list(body.get("tools") or [])
+    for item in records:
+        if item.get("type") == "additional_tools" and isinstance(item.get("tools"), list):
+            declarations.extend(item["tools"])
+    advertised = set()
+    for entry in declarations:
+        if not isinstance(entry, dict):
+            continue
+        if entry.get("type") == "namespace" and entry.get("name") in (NAMESPACE, "functions"):
+            namespace = entry["name"]
+            labels = {wire_tool(tool, namespace) for tool in entry.get("tools") or [] if isinstance(tool, dict)}
+            advertised.update(labels if namespace == NAMESPACE else labels & {"functions.exec"})
+        elif entry.get("type") in ("function", "custom"):
+            label = wire_tool(entry)
+            if label != "other":
+                advertised.add(label)
+    calls = {item["call_id"]: wire_tool(item) for item in records
+             if item.get("type") in ("function_call", "custom_tool_call") and isinstance(item.get("call_id"), str)}
+    outputs, intact = Counter(), 0
+    for item in records:
+        if item.get("type") in ("function_call_output", "custom_tool_call_output") and isinstance(item.get("call_id"), str):
+            label = calls.get(item["call_id"], "unmatched")
+            outputs[label] += 1
+            intact += label == CAPTURE and intact_reference(item.get("output"))
+    choice = body.get("tool_choice")
+    return {"advertised": sorted(advertised.intersection(REPORT_TOOLS)), "calls": dict(Counter(calls.values())),
+            "outputs": dict(outputs), "intact_archive_references": intact,
+            "unexpected_namespaced_tool": "other" in advertised, "code_mode_exec": "functions.exec" in advertised,
+            "tool_choice": choice if choice in ("auto", "none", "required") else "other"}
+
+
+def observe_guarded_requests(counter):
+    import httpx
+
+    send = httpx.AsyncClient.send
+    trace = Path(counter).with_name("wire-summary.jsonl")
+
+    async def observed(client, request, **options):
+        # The outer guard admits only bounded JSON model requests to the selected target.
+        row = wire_observation(json.loads(request.content))
+        with trace.open("a", encoding="ascii") as stream:
+            stream.write(json.dumps(row) + "\n")
+        return await send(client, request, **options)
+
+    httpx.AsyncClient.send = observed
+
+
 def delivered(tool, reference, value):
     if tool == SELECT:
         return value == {**reference, "status": "selected", "stdout": RECORD.decode(), "stderr": "", "exit_code": 0,
@@ -103,9 +185,7 @@ def fixture_provider(client_replay):
         def next_item(self, body, turn):
             server = self.server
             expected = ARMS[server.scenario]
-            exposed = {tool["name"] for item in body["tools"] if item.get("name") == pilot["NAMESPACE"]
-                       for tool in item["tools"]}
-            assert exposed == set(expected), "tool_catalog_scope_changed"
+            assert wire_observation(body)["advertised"] == sorted(expected), "tool_catalog_scope_changed"
             assert body.get("text", {}).get("format", {}).get("schema") == SCHEMA, "answer_schema_wire_mismatch"
             if turn > 1:
                 value = json.loads(client_replay["tool_text"](body, turn - 1))
@@ -127,9 +207,14 @@ def fixture_provider(client_replay):
 
 def inspect_turn(stdout, exit_code, arm, reported_error):
     events = [json.loads(line) for line in stdout.splitlines() if line.startswith(b"{")]
+    kinds = ("item.started", "item.completed", "item.failed", "turn.completed", "turn.failed", "error")
+    event_counts = {kind: sum(event.get("type") == kind for event in events) for kind in kinds}
     items = [event["item"] for event in events if event.get("type") == "item.completed"]
     messages = [item["text"] for item in items if item.get("type") == "agent_message"]
     calls = [item for item in items if item.get("type") == "mcp_tool_call"]
+    failed_mcp_events = sum(item.get("status") == "failed" or reported_error(item) for item in calls)
+    failed_mcp_events += sum(event.get("type") == "item.failed" and event.get("item", {}).get("type") == "mcp_tool_call"
+                            for event in events)
     expected = ARMS[arm]
     tools = [item.get("tool") for item in calls]
     valid_sequence = tools == list(expected) or (arm == "targeted" and tools == list(expected[:-1]))
@@ -144,10 +229,11 @@ def inspect_turn(stdout, exit_code, arm, reported_error):
                 and delivered(tool, reference, value) for item, tool, value in zip(calls[1:], tools[1:], values[1:]))
         except (KeyError, IndexError, TypeError, ValueError, AttributeError):
             exact_delivery = False
-    return {"turn_completed": exit_code == 0 and sum(event.get("type") == "turn.completed" for event in events) == 1
-            and not any(event.get("type") in ("error", "turn.failed") for event in events),
+    return {"turn_completed": exit_code == 0 and event_counts["turn.completed"] == 1
+            and not (event_counts["error"] or event_counts["turn.failed"]),
             "exact_answer": bool(messages) and exact_answer(messages[-1]), "tool_delivery_exact": exact_delivery,
-            "call_count": len(calls), "read_calls": tools.count(READ), "query_calls": tools.count(SELECT)}
+            "call_count": len(calls), "read_calls": tools.count(READ), "query_calls": tools.count(SELECT),
+            "event_counts": event_counts, "failed_mcp_events": failed_mcp_events}
 
 
 def accepted(row):
@@ -263,7 +349,13 @@ def run_arm(arm, engine, directory, cli, supervisor, pilot, rules, counter, usag
     finally:
         remove_client_state(transient)
     sent = counter.read_bytes().count(b"\n") if counter.exists() else 0
+    trace = counter.with_name("wire-summary.jsonl")
+    wire = [json.loads(line) for line in trace.read_bytes().splitlines()] if trace.is_file() else []
+    # Code mode advertises its wrapper, while inspect_turn verifies the actual scoped MCP calls.
+    wire_transport = bool(wire) and len(wire) == sent and all(not entry["unexpected_namespaced_tool"] and (
+        entry["advertised"] == sorted(ARMS[arm]) or (entry["code_mode_exec"] and not entry["advertised"])) for entry in wire)
     row = {"arm": arm, "cli_exit": exit_code, "forwarded_http_attempts": sent,
+        "wire": wire, "forwarded_tool_transport_recognized": wire_transport,
         **inspect_turn(stdout, exit_code, arm, rules["tool_reported_error"]), **rules["measure"](engine, usage, sent)}
     if fixture is not None:
         row["fixture_failure"] = fixture.failure
@@ -304,6 +396,7 @@ def main():
         "os": platform.platform(), "model": model, "effort": effort, "arm_order": list(ARMS), "attempts_per_arm": ATTEMPTS_PER_ARM,
         "attempts_per_pair": rules["ATTEMPTS_PER_PAIR"], "first_upstream_cache_read": 0, "report_bytes": len(REPORT),
         "report_sha256": hashlib.sha256(REPORT).hexdigest(), "report_rows": len(ROWS), "default_cli_output_budget": True,
+        "report_tools_by_arm": ARMS,
         "gate": "exact answer and tool delivery, both cold first requests, all attempts measured, one pair"}
     replay.write_new(run / "registration.json", registration)
     fixture, profile, rows, fingerprints, failure = None, None, [], {}, None
@@ -323,6 +416,12 @@ def main():
             directory = run / arm
             directory.mkdir()
             staged, counter = rules["stage_arm"](replay, directory, payload, target, model, effort, ATTEMPTS_PER_ARM)
+            helper = directory / "fixture-runtime/desktop_helper.py"
+            source = helper.read_bytes()
+            anchor = b'"import optimization_control; "'
+            assert source.count(anchor) == 1, "engine_bootstrap_changed"
+            observe = f"import runpy; runpy.run_path({str(PROGRAM)!r})['observe_guarded_requests']({str(counter)!r}); "
+            helper.write_bytes(source.replace(anchor, repr(observe).encode("ascii") + b" " + anchor, 1))
             patched = json.loads((runtime / "optimization-sources.json").read_bytes())
             files = [PROGRAM, REPLAY_PATH, LIVE_PATH, USAGE_PATH, cli, runner, Path(sys.executable), payload / "python313.dll",
                 payload / "runtime-manifest.json", runtime / "manifest.json", run / "answer-schema.json", run / "registration.json",
@@ -352,6 +451,7 @@ def main():
             row["stop"] = engine.stopped
             assert before == after, "fingerprints_changed"
             assert fixture is None or row["fixture_payloads_exact"], "loopback_rehearsal_failed"
+            assert row["forwarded_tool_transport_recognized"], "forwarded_tool_transport_unknown"
             denied = rejections.read_text(encoding="ascii") if rejections.is_file() else ""
             assert denied == startup_rejections, "client_request_rejected_by_guard"
             assert accepted(row), "pair_acceptance_failed"
@@ -377,6 +477,6 @@ def main():
 
 if __name__ == "__main__":
     if sys.argv[1:] == ["--mcp"]:
-        runpy.run_path(str(HERE / "targeted_query_client.py"))["serve"](source=(REPORT, b"", 0))
+        runpy.run_path(str(HERE / "targeted_query_client.py"))["serve"](source=(REPORT, b"", 0), read_tool=READ)
     else:
         raise SystemExit(main())
