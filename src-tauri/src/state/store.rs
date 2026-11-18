@@ -15,6 +15,8 @@ use uuid::Uuid;
 const SCHEMA_VERSION: u8 = 1;
 const MAX_STATE_BYTES: u64 = 4096;
 const MAX_SAFE_REVISION: u64 = 9_007_199_254_740_991;
+const PREFERENCES_FILE: &str = "preferences.json";
+const RULES_OPT_IN_FILE: &str = "experimental-rules.json";
 const MODE: &str = "cache";
 const SAVINGS_PROFILE: &str = "coding";
 const CCR_TTL_SECONDS: u64 = 7200;
@@ -40,6 +42,16 @@ struct StoreLocation {
 struct LoadedDocument {
     document: StoredDocument,
     fingerprint: Option<String>,
+    disk_fingerprint: Option<String>,
+    inline_rules: bool,
+}
+
+// The shared preferences file is the commit point. Either the previous or
+// the pending document can be active while an enabled preference is saved.
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RulesOptIn {
+    enabled_for: [Option<String>; 2],
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -280,6 +292,23 @@ impl PreferenceStore {
         }
     }
 
+    pub(crate) fn migrate_inline_experimental_rules(&self) -> Result<(), StoreError> {
+        let location = self.inner.location.as_ref().map_err(|error| *error)?;
+        let _operation = self
+            .inner
+            .operation
+            .lock()
+            .map_err(|_| StoreError::EnvironmentBlocked)?;
+        let _lock = StoreLock::acquire(location, false)?;
+        let current = load_document(location)?;
+        if current.inline_rules {
+            let mut next = current.document.clone();
+            next.runtime_manifest = RuntimeManifestReference::storage_compatible();
+            save_document(location, &next, &current, &self.inner)?;
+        }
+        Ok(())
+    }
+
     pub fn save_preferences(
         &self,
         request_id: String,
@@ -358,7 +387,8 @@ impl PreferenceStore {
             preferences: UserPreferences {
                 language,
                 theme,
-                operating: operating.unwrap_or(current.document.preferences.operating),
+                operating: operating
+                    .unwrap_or_else(|| current.document.preferences.operating.clone()),
                 show_recommendations: show_recommendations
                     .unwrap_or(current.document.preferences.show_recommendations),
                 experimental_rules: experimental_rules
@@ -366,7 +396,7 @@ impl PreferenceStore {
             },
             runtime_manifest: RuntimeManifestReference::storage_compatible(),
         };
-        match save_document(location, &next, current.fingerprint.as_deref(), &self.inner) {
+        match save_document(location, &next, &current, &self.inner) {
             Ok(fingerprint) => snapshot_reply(request_id, next, Some(fingerprint)),
             Err(error) => error_reply(&request_id, error),
         }
@@ -393,7 +423,7 @@ impl PreferenceStore {
             .location
             .as_ref()
             .expect("valid fixture location");
-        location.root_path().join("preferences.json")
+        location.root_path().join(PREFERENCES_FILE)
     }
 
     #[cfg(test)]
@@ -568,22 +598,11 @@ fn relative_path_is_safe(path: &Path) -> bool {
             .all(|component| matches!(component, Component::Normal(_)))
 }
 
-fn load_document(location: &StoreLocation) -> Result<LoadedDocument, StoreError> {
-    let Some(root) = location.verify_root(false)? else {
-        return Ok(LoadedDocument {
-            document: StoredDocument::defaults(),
-            fingerprint: None,
-        });
-    };
-    let path = root.join("preferences.json");
+fn read_state_bytes(root: &Path, name: &str) -> Result<Option<Vec<u8>>, StoreError> {
+    let path = root.join(name);
     let metadata = match fs::symlink_metadata(&path) {
         Ok(metadata) => metadata,
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-            return Ok(LoadedDocument {
-                document: StoredDocument::defaults(),
-                fingerprint: None,
-            })
-        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
         Err(_) => return Err(StoreError::EnvironmentBlocked),
     };
     if !metadata.is_file()
@@ -605,48 +624,131 @@ fn load_document(location: &StoreLocation) -> Result<LoadedDocument, StoreError>
     if bytes.len() as u64 > MAX_STATE_BYTES {
         return Err(StoreError::UnsupportedSchema);
     }
-    let document: StoredDocument =
+    Ok(Some(bytes))
+}
+
+fn load_document(location: &StoreLocation) -> Result<LoadedDocument, StoreError> {
+    let defaults = || LoadedDocument {
+        document: StoredDocument::defaults(),
+        fingerprint: None,
+        disk_fingerprint: None,
+        inline_rules: false,
+    };
+    let Some(root) = location.verify_root(false)? else {
+        return Ok(defaults());
+    };
+    let Some(bytes) = read_state_bytes(&root, PREFERENCES_FILE)? else {
+        return Ok(defaults());
+    };
+    let mut document: StoredDocument =
         serde_json::from_slice(&bytes).map_err(|_| StoreError::UnsupportedSchema)?;
     document.validate()?;
+    let disk_fingerprint = fingerprint(&bytes);
+    let inline_rules = document.preferences.experimental_rules;
+    // An unavailable extension disables its preview without blocking engine startup.
+    let opted_in = bytes.ends_with(b"\n")
+        && read_state_bytes(&root, RULES_OPT_IN_FILE)
+            .ok()
+            .flatten()
+            .and_then(|bytes| serde_json::from_slice::<RulesOptIn>(&bytes).ok())
+            .is_some_and(|opt_in| {
+                let enabled_for = opt_in.enabled_for.iter().flatten();
+                enabled_for.clone().all(|value| valid_fingerprint(value))
+                    && enabled_for
+                        .into_iter()
+                        .any(|value| value == &disk_fingerprint)
+            });
+    document.preferences.experimental_rules = inline_rules || opted_in;
     Ok(LoadedDocument {
         document,
-        fingerprint: Some(fingerprint(&bytes)),
+        fingerprint: Some(snapshot_fingerprint(&disk_fingerprint, opted_in)),
+        disk_fingerprint: Some(disk_fingerprint),
+        inline_rules,
     })
+}
+
+fn snapshot_fingerprint(disk_fingerprint: &str, opted_in: bool) -> String {
+    if opted_in {
+        fingerprint(format!("experimental-rules:{disk_fingerprint}").as_bytes())
+    } else {
+        disk_fingerprint.to_owned()
+    }
 }
 
 fn save_document(
     location: &StoreLocation,
     document: &StoredDocument,
-    expected_fingerprint: Option<&str>,
+    previous: &LoadedDocument,
     _inner: &StoreInner,
 ) -> Result<String, StoreError> {
     document.validate()?;
     let root = location
         .verify_root(true)?
         .ok_or(StoreError::EnvironmentBlocked)?;
-    let path = root.join("preferences.json");
-    match fs::symlink_metadata(&path) {
-        Ok(metadata) => {
-            if !metadata.is_file()
-                || metadata.file_type().is_symlink()
-                || is_reparse_point(&metadata)
-            {
-                return Err(StoreError::EnvironmentBlocked);
-            }
-            if !fs::canonicalize(&path)
-                .map_err(|_| StoreError::EnvironmentBlocked)?
-                .starts_with(&root)
-            {
-                return Err(StoreError::EnvironmentBlocked);
-            }
-        }
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-        Err(_) => return Err(StoreError::EnvironmentBlocked),
+    let mut compatible = document.clone();
+    let opted_in = std::mem::take(&mut compatible.preferences.experimental_rules);
+    let mut bytes = serde_json::to_vec(&compatible).map_err(|_| StoreError::EnvironmentBlocked)?;
+    if opted_in {
+        // Older writers emit compact JSON without a newline. Their saves cannot
+        // match a staged opt-in even at the same revision and with equal fields.
+        bytes.push(b'\n');
     }
-    let bytes = serde_json::to_vec(document).map_err(|_| StoreError::EnvironmentBlocked)?;
     if bytes.len() as u64 > MAX_STATE_BYTES {
         return Err(StoreError::EnvironmentBlocked);
     }
+    let disk_fingerprint = fingerprint(&bytes);
+    let check_previous = || {
+        if load_document(location)?.fingerprint != previous.fingerprint {
+            return Err(StoreError::ConfigConflict);
+        }
+        Ok(())
+    };
+    let staged = if opted_in {
+        let before = read_state_bytes(&root, RULES_OPT_IN_FILE)?;
+        let keep = if previous.document.preferences.experimental_rules && !previous.inline_rules {
+            previous.disk_fingerprint.clone()
+        } else {
+            None
+        };
+        let opt_in = RulesOptIn {
+            enabled_for: [keep, Some(disk_fingerprint.clone())],
+        };
+        let staged = serde_json::to_vec(&opt_in).map_err(|_| StoreError::EnvironmentBlocked)?;
+        write_state_bytes(location, &root, RULES_OPT_IN_FILE, &staged, || {
+            check_previous()?;
+            if read_state_bytes(&root, RULES_OPT_IN_FILE)? != before {
+                return Err(StoreError::ConfigConflict);
+            }
+            Ok(())
+        })?;
+        Some(staged)
+    } else {
+        None
+    };
+    write_state_bytes(location, &root, PREFERENCES_FILE, &bytes, || {
+        check_previous()?;
+        if let Some(staged) = &staged {
+            if read_state_bytes(&root, RULES_OPT_IN_FILE)?.as_deref() != Some(staged.as_slice()) {
+                return Err(StoreError::ConfigConflict);
+            }
+        }
+        #[cfg(test)]
+        if _inner.fail_replace_once.swap(false, Ordering::SeqCst) {
+            return Err(StoreError::EnvironmentBlocked);
+        }
+        Ok(())
+    })?;
+    Ok(snapshot_fingerprint(&disk_fingerprint, opted_in))
+}
+
+fn write_state_bytes(
+    location: &StoreLocation,
+    root: &Path,
+    name: &str,
+    bytes: &[u8],
+    before_replace: impl FnOnce() -> Result<(), StoreError>,
+) -> Result<(), StoreError> {
+    let path = root.join(name);
     let temp = root.join(format!("preferences-{}.tmp", Uuid::new_v4().simple()));
     let mut temp_owned = false;
     let result = (|| {
@@ -661,7 +763,7 @@ fn save_document(
             .open(&temp)
             .map_err(|_| StoreError::EnvironmentBlocked)?;
         temp_owned = true;
-        file.write_all(&bytes)
+        file.write_all(bytes)
             .map_err(|_| StoreError::EnvironmentBlocked)?;
         file.flush().map_err(|_| StoreError::EnvironmentBlocked)?;
         file.sync_all()
@@ -674,10 +776,7 @@ fn save_document(
         if current_root != root {
             return Err(StoreError::EnvironmentBlocked);
         }
-        let current = load_document(location)?;
-        if current.fingerprint.as_deref() != expected_fingerprint {
-            return Err(StoreError::ConfigConflict);
-        }
+        before_replace()?;
         let temp_metadata =
             fs::symlink_metadata(&temp).map_err(|_| StoreError::EnvironmentBlocked)?;
         if !temp_metadata.is_file()
@@ -685,22 +784,18 @@ fn save_document(
             || is_reparse_point(&temp_metadata)
             || !fs::canonicalize(&temp)
                 .map_err(|_| StoreError::EnvironmentBlocked)?
-                .starts_with(&root)
+                .starts_with(root)
         {
             return Err(StoreError::EnvironmentBlocked);
         }
-        #[cfg(test)]
-        if _inner.fail_replace_once.swap(false, Ordering::SeqCst) {
-            return Err(StoreError::EnvironmentBlocked);
-        }
         replace_file(&temp, &path)?;
-        sync_directory(&root)?;
+        sync_directory(root)?;
         Ok(())
     })();
     if result.is_err() && temp_owned {
-        cleanup_owned_temp(location, &root, &temp);
+        cleanup_owned_temp(location, root, &temp);
     }
-    result.map(|()| fingerprint(&bytes))
+    result
 }
 
 fn cleanup_owned_temp(location: &StoreLocation, root: &Path, temp: &Path) {

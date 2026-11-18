@@ -7,6 +7,189 @@ use uuid::Uuid;
 
 const REQUEST_ID: &str = "7132bced-3ce0-4c1b-8f48-d93d7b96f7ce";
 
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RollbackPreferences {
+    language: String,
+    theme: String,
+    #[serde(default)]
+    operating: super::store::OperatingPreferences,
+    #[serde(default)]
+    show_recommendations: bool,
+}
+
+#[test]
+fn opt_in_save_is_readable_by_the_previous_preference_schema() {
+    let fixture = Fixture::new();
+    let operating = super::store::OperatingPreferences {
+        close_to_tray: false,
+        retention_days: 90,
+        protected_tools: vec!["ReadExact".into()],
+    };
+    let enabled = snapshot(fixture.store.save_with_operating(
+        REQUEST_ID.into(),
+        "en".into(),
+        "dark".into(),
+        Some(operating.clone()),
+        Some(true),
+        Some(true),
+        0,
+        None,
+    ));
+    let on_disk: serde_json::Value =
+        serde_json::from_slice(&fs::read(fixture.store.file_path_for_test()).unwrap()).unwrap();
+    // The 0.41.0 app at 8206da4 rejects unknown preference keys.
+    let legacy: RollbackPreferences = serde_json::from_value(on_disk["preferences"].clone())
+        .expect("previous reader must accept the saved preferences");
+    assert_eq!(on_disk["runtime_manifest"]["engine_version"], "0.41.0");
+    assert_eq!(
+        (legacy.language.as_str(), legacy.theme.as_str()),
+        ("en", "dark")
+    );
+    assert!(legacy.show_recommendations);
+    assert_eq!(legacy.operating, operating);
+    assert!(enabled.preferences.experimental_rules);
+    let reopened = snapshot(fixture.store.get_preferences(REQUEST_ID.into()));
+    assert!(reopened.preferences.experimental_rules);
+    assert_eq!(reopened.state_fingerprint, enabled.state_fingerprint);
+}
+
+#[test]
+fn startup_migrates_an_inline_opt_in_without_losing_the_previous_snapshot_on_failure() {
+    let fixture = Fixture::new();
+    let original = snapshot(fixture.store.save_with_operating(
+        REQUEST_ID.into(),
+        "en".into(),
+        "dark".into(),
+        Some(super::store::OperatingPreferences {
+            protected_tools: vec!["ReadExact".into()],
+            ..Default::default()
+        }),
+        None,
+        None,
+        0,
+        None,
+    ));
+    let path = fixture.store.file_path_for_test();
+    let mut old: serde_json::Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+    old["preferences"]["experimental_rules"] = true.into();
+    let bytes = serde_json::to_vec(&old).unwrap();
+    fs::write(&path, &bytes).unwrap();
+    let before = snapshot(fixture.store.get_preferences(REQUEST_ID.into()));
+    assert!(before.preferences.experimental_rules);
+    assert_eq!(fs::read(&path).unwrap(), bytes);
+
+    fixture.store.fail_before_next_replace();
+    assert!(fixture.store.migrate_inline_experimental_rules().is_err());
+    assert_eq!(fs::read(&path).unwrap(), bytes);
+    assert_eq!(
+        fixture.store.operating().unwrap(),
+        original.preferences.operating
+    );
+    assert!(fixture.store.experimental_rules_enabled());
+
+    fixture.store.migrate_inline_experimental_rules().unwrap();
+    let after = snapshot(fixture.store.get_preferences(REQUEST_ID.into()));
+    assert_eq!(after.revision, before.revision);
+    assert_ne!(after.state_fingerprint, before.state_fingerprint);
+    assert_eq!(after.preferences, before.preferences);
+    let compatible_bytes = fs::read(&path).unwrap();
+    let disk: serde_json::Value = serde_json::from_slice(&compatible_bytes).unwrap();
+    let _legacy: RollbackPreferences = serde_json::from_value(disk["preferences"].clone()).unwrap();
+    fixture.store.migrate_inline_experimental_rules().unwrap();
+    assert_eq!(fs::read(&path).unwrap(), compatible_bytes);
+}
+
+#[test]
+fn interrupted_activation_and_legacy_save_leave_the_experiment_off() {
+    let fixture = Fixture::new();
+    let initial = snapshot(fixture.store.save_preferences(
+        REQUEST_ID.into(),
+        "tr".into(),
+        "system".into(),
+        0,
+        None,
+    ));
+    let path = fixture.store.file_path_for_test();
+    let before = fs::read(&path).unwrap();
+    fixture.store.fail_before_next_replace();
+    assert_eq!(
+        error_code(fixture.store.save_with_operating(
+            REQUEST_ID.into(),
+            "en".into(),
+            "dark".into(),
+            None,
+            None,
+            Some(true),
+            initial.revision,
+            initial.state_fingerprint.clone(),
+        )),
+        "environment_blocked"
+    );
+    assert_eq!(fs::read(&path).unwrap(), before);
+    assert!(fixture.root().join("experimental-rules.json").is_file());
+    assert!(!fixture.store.experimental_rules_enabled());
+
+    // Simulate the previous writer's compact v1 save at the same next revision.
+    let legacy = String::from_utf8(before)
+        .unwrap()
+        .replacen("\"revision\":1", "\"revision\":2", 1)
+        .replacen("\"language\":\"tr\"", "\"language\":\"en\"", 1)
+        .replacen("\"theme\":\"system\"", "\"theme\":\"dark\"", 1);
+    fs::write(&path, legacy).unwrap();
+    let reopened = snapshot(fixture.store.get_preferences(REQUEST_ID.into()));
+    assert_eq!(reopened.revision, 2);
+    assert_eq!(reopened.preferences.theme, "dark");
+    assert!(!reopened.preferences.experimental_rules);
+}
+
+#[test]
+fn invalid_extension_disables_the_preview_and_preserves_core_settings_and_conflicts() {
+    let fixture = Fixture::new();
+    let enabled = snapshot(fixture.store.save_with_operating(
+        REQUEST_ID.into(),
+        "en".into(),
+        "dark".into(),
+        None,
+        None,
+        Some(true),
+        0,
+        None,
+    ));
+    let path = fixture.store.file_path_for_test();
+    let original = fs::read(&path).unwrap();
+    let extension = fixture.root().join("experimental-rules.json");
+    let corrupt = b"{\"enabled_for\":[null,\"invalid\"]}";
+    fs::write(&extension, corrupt).unwrap();
+    let fresh = snapshot(fixture.store.get_preferences(REQUEST_ID.into()));
+    assert!(!fresh.preferences.experimental_rules);
+    assert_eq!(
+        fixture.store.operating().unwrap(),
+        enabled.preferences.operating
+    );
+    assert_eq!(
+        error_code(fixture.store.save_preferences(
+            REQUEST_ID.into(),
+            "tr".into(),
+            "light".into(),
+            enabled.revision,
+            enabled.state_fingerprint,
+        )),
+        "config_conflict"
+    );
+    assert_eq!(fs::read(&path).unwrap(), original);
+    let saved = snapshot(fixture.store.save_preferences(
+        REQUEST_ID.into(),
+        "tr".into(),
+        "light".into(),
+        fresh.revision,
+        fresh.state_fingerprint,
+    ));
+    assert_eq!(saved.preferences.theme, "light");
+    assert!(!saved.preferences.experimental_rules);
+    assert_eq!(fs::read(&extension).unwrap(), corrupt);
+}
+
 #[test]
 #[cfg(any(windows, target_os = "macos"))]
 fn concurrent_readers_restore_saved_appearance() {

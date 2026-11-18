@@ -885,6 +885,8 @@ fn main() {
             let resource_dir = app.path().resource_dir().ok();
             let app_local_data_dir = app.path().app_local_data_dir().ok();
             let preferences = PreferenceStore::new(app_local_data_dir.clone());
+            // A failed migration leaves this version able to read the original preferences.
+            let _ = preferences.migrate_inline_experimental_rules();
             let runtime = RuntimeManager::with_preferences(
                 resource_dir,
                 app_local_data_dir.clone(),

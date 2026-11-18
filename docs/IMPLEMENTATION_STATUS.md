@@ -1,6 +1,12 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Geri dönüşte tercih uyumu sağlandı
+
+Ana ajan, motorun okuduğu ortak tercihler ile yerel önizleme seçiminin ayrı kaydedilmesini uyguladı. Açılışta geçerli eski inline tercih taşınır. 17 tercih testi geçti. Önceki `8206da4` okuyucusu eski hatalı belgeyi reddetti ve yeni belgeyi açtı. 0.41.0 motoru aynı koruma listesiyle çalışıp korumalı çıktıyı iletti. Son eski motor koşusunda kapanış da doğrulandı. 0.44.0 iki başlangıç ve iki korumalı istekle geçti. [Kanıt](proofs/preferences-rollback.json)
+
+**Etkin H041 açık, 45/54 ana görev tamamlandı.** H041-d için olay sınırı kaynaklı SSE sayaç kaybı yerel olarak üç protokolde tekrarlandı ve sıraya alındı. Ölçüm düzeltmesinden sonra kayıtlı varsayılan bütçeli hedefli sorgu planına dönülür. Tarih, grafik ve tepsi bulguları ayrı takip maddeleri olarak listelendi. [Görev listesi](../TASKS.md#dev002--mevcut-kodun-ilk-ponytail-denetimi)
+
 ## H041 — hedefli sorgu CLI oturum/araç önkontrolü tamamlandı
 
 - Ana ajan izin/sahiplik ve ölçüm kararlarını üstlendi. Mevcut geçici arşiv, her izole CLI'ye ait yeni stdio MCP sunucusuna bağlandı. Kaynak sabit sentetik rapordur; model argümanı dosya/komut/URL veya sahip yetkisi seçemez. Kaynak kimliği gerçek MCP istek kimliğidir; model çağrısı veya alt ajan kimliği sayılmaz.

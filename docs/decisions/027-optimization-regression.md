@@ -109,7 +109,7 @@ Genel kabul açık: ilk iş varsayılan istemci bütçesinde izinli parçalardan
 
 #### H041-e1 uygulama kabulü
 
-Kalıcı tercih ve dosya erişimi ana ajandadır. `experimental_rules` mevcut revision/fingerprint korumalı tercih kaydına eklenir. Eksik alan eski ve yeni kayıtta kapalı okunur. Dil, tema, çalışma tercihleri ve yerel öneriler kaydı bu tercihi korur. Ayarlar → Learn altında ayrı anahtar yalnız yerel kural adaylarının dosya seçimini açar. Mevcut Learn dosya seçimi bağımsız çalışır. Motor başlatma ve hafıza tercihleri bu alanı kullanmaz.
+Kalıcı tercih ve dosya erişimi ana ajandadır. Ayarlar → Learn altında ayrı anahtar yalnız yerel kural adaylarının dosya seçimini açar. Mevcut Learn dosya seçimi bağımsız çalışır. Motor başlatma ve hafıza tercihleri bu alanı kullanmaz. `experimental_rules` tercih yanıtında kalır. Eksik kayıt kapalı okunur. Dil, tema, çalışma tercihleri ve yerel öneriler kaydı mevcut seçimi korur. [Geri dönüşte ortak tercih biçimi](#geri-dönüşte-ortak-tercih-biçimi).
 
 - Açık tercihyle seçilen tek Codex/Claude Code JSONL dosyası mevcut sınırlı analiz yolundan geçer. Sonuç yalnız ekranda tutulur. Native komut, deneysel isteklerde tercihi seçiciden önce ve sonuçtan önce tekrar kontrol eder. Kapalı veya bozuk tercih dosya seçimi başlatmaz.
 - Dosya iptali önceki sonucu korur. Geçersiz dosya sabit hata üretir. Kapatma veya sayfa değişimi önceki denemeyi görünür sonuç yapmaz. Açma/kapatma ve yeniden açılış, mevcut motor durumuyla birlikte gerçek Windows penceresinde sınanır.
@@ -330,6 +330,14 @@ Karşılaştırma sırasında etkin sürüm 0.41.0’dı. 0.44.0 Windows paket g
 Geçiş, proje içindeki sürümlü Windows kaynak ve çıktı köklerini kullanır. Önceki motor paketi ve kanıtı korunur. Yeni lock, motor dosyaları, kaynak haritası, denetleyici ve native pinler birlikte doğrulanır. Paketli fiyat haritası her iki platformun başlangıç ayarına alınır. Model, efor, istemci auth ve çalışma profili sözleşmesi geçerlidir.
 
 0.41.0 tercih belgesi yalnız bilinen sürüm ve hash çiftiyle okunur. Okuma diske yazmaz, yanıtta etkin sürüm gösterilir. Kullanıcı tercihi kaydedince mevcut revision ve fingerprint çatışma denetimi sürer. Diskteki tercih referansı önceki uygulamanın da okuyabildiği 0.41.0 biçiminde tutulur. Böylece uygulamayı geri alma sonrasında tercihler okunabilir. Eski ölçüm satırları ve 0.41.0 ölçüm biçimi desteklenir.
+
+#### Geri dönüşte ortak tercih biçimi
+
+18 Kasım. Önceki uygulama, ortak `preferences.json` belgesindeki `experimental_rules` alanını `unsupported_schema` ile reddediyordu. Motor koruma listesini bu belgeden aldığı için başlangıç `config_conflict` veriyordu. Ortak dosya önceki v1 alanlarıyla yazılır. Deneysel önizleme seçimi ayrı `experimental-rules.json` dosyasındaki etkin belge parmak izine bağlıdır. Mevcut geçerli inline seçim uygulama açılışında aynı revision ve aynı ayarlarla taşınır. Salt okuma her iki biçimi de okuyabilir.
+
+Önizleme açıkken dosya kilidi altında yeni belge parmak izi önce ayrı kayda hazırlanır. Ortak dosyanın atomik değişimi ayarları yürürlüğe koyar. Yazma kesilirse eski belgeye ait seçim geçerli kalır. Önceki sürümün yazdığı kompakt JSON, yarım kalmış bir seçimi etkinleştiremez. Önceki sürüm yalnız okuduğunda seçim korunur. Önceki sürüm ayarları yeniden kaydederse yeni sürümde önizleme yeniden açılmalıdır. Ayrı kayıt bozuksa önizleme kapalı görünür. Motor koruma listesini ortak dosyadan okumaya devam eder. Güncel kayıt parmak izi, seçimin geçersiz hale gelmesiyle değişir.
+
+Windows 10’da 17 tercih testi, 0.44.0 motoruyla iki korumalı istek ve `8206da4` kaynaklarından derlenen önceki 0.41.0 yöneticisiyle bir korumalı istek geçti. Önceki okuyucu iki belgeyle de sınandı. Hatalı biçim reddedildi. Düzeltilmiş biçimde gerçek başlangıç, birebir korumalı çıktı ve son koşuda normal kapanış doğrulandı. İlk eski motor kapanış denemesinde beklenen onay gelmedi ve o kayıt korundu. Bu kabul yerel motor ve önceki kaynak sürümüyle sınırlıdır. [Kanıt](../proofs/preferences-rollback.json).
 
 Normal kabul güncel motorun hazır olması, gerçek yerel akış, ölçüm ve Learn ile sahipli kapanışı içerir. Hata kabulü değiştirilmiş dosya, yanlış pin ve tercih çatışmasını reddeder. Yerel ürün kapısı, Windows kaynak staging ve gerçek paketli motor kontrolü son adayda kaydedilir. macOS kaynak/staging kontrolleri yerelde yürür. Yeni native macOS ve Windows 11 kanıtı kendi ortamında kaydedilir. GitHub Actions için önceki kota sınırı geçerlidir.
 

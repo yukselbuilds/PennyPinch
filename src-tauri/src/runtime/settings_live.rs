@@ -130,7 +130,7 @@ fn request(port: u16, tool: &str, content: &str) {
         "local protection request must reach fixture"
     );
 }
-fn save(prefs: &PreferenceStore, tools: Vec<String>) {
+fn save(prefs: &PreferenceStore, tools: Vec<String>, experimental_rules: Option<bool>) {
     let PreferencesReply::Snapshot(current) = prefs.get_preferences(Uuid::new_v4().to_string())
     else {
         panic!("settings fixture prefs unavailable")
@@ -145,7 +145,7 @@ fn save(prefs: &PreferenceStore, tools: Vec<String>) {
                 ..Default::default()
             }),
             None,
-            None,
+            experimental_rules,
             current.revision,
             current.state_fingerprint
         ),
@@ -166,7 +166,8 @@ fn operating_live_tools_apply_at_manual_restart_and_preserve_exact_numeric_resul
     let prefs = PreferenceStore::for_test(project.clone(), relative.join("preferences")).unwrap();
     let first_tool = "headroom_h031_exact_a";
     let second_tool = "headroom_h031_exact_b";
-    save(&prefs, vec![first_tool.into()]);
+    save(&prefs, vec![first_tool.into()], Some(true));
+    assert!(prefs.experimental_rules_enabled());
     let mut layout = RuntimeLayout::from_roots(
         project.clone(),
         project.join("runtime"),
@@ -217,7 +218,8 @@ fn operating_live_tools_apply_at_manual_restart_and_preserve_exact_numeric_resul
         assert_eq!(outputs[0]["output"], content);
         checks.push(json!({"tool":tool,"input_bytes":content.len(),"exact_output":true,"stats_enabled":true,"beacon_enabled":false,"generation":generation}));
         if tool == first_tool {
-            save(&prefs, vec![second_tool.into()]);
+            save(&prefs, vec![second_tool.into()], None);
+            assert!(prefs.experimental_rules_enabled());
             assert_eq!(
                 rt.settings_observation()["protected_tools"],
                 json!([first_tool])

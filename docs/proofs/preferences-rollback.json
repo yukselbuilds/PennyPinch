@@ -1,0 +1,93 @@
+{
+  "task": "H041-e1 / H042 preference rollback",
+  "checked_on": "2026-11-18",
+  "status": "previous_reader_and_engine_start_passed_locally",
+  "executor": "main",
+  "executor_reason": "Persistent state, ownership and compatibility of the live engine startup path",
+  "placement": {
+    "shared_document": "preferences.json",
+    "optional_preview": "experimental-rules.json",
+    "shared_document_replace_is_commit_point": true
+  },
+  "legacy_source": "8206da4fa8bea5a9bb990ade85cd3c52699ca6f9",
+  "windows": "Windows-10-10.0.19045-SP0",
+  "focused_tests_passed": 17,
+  "rust_format_check": "pass",
+  "current_engine": {
+    "pin": "0.44.0",
+    "manager_test_passed": true,
+    "loopback_requests": 2,
+    "exact_protected_outputs": true
+  },
+  "previous_engine": {
+    "pin": "0.41.0",
+    "source_reader_and_manager_match_commit": true,
+    "isolated_fixture": true,
+    "loopback_requests": 1,
+    "passed": true,
+    "preferences_unchanged_by_legacy_startup": true,
+    "provider_model_calls": 0,
+    "scenarios": [
+      {
+        "engine": "config_conflict",
+        "reader": "unsupported_schema",
+        "upstream_requests": 0,
+        "variant": "before_fix"
+      },
+      {
+        "engine": "ready",
+        "legacy_stop_acknowledged": true,
+        "legacy_stop_diagnostic": null,
+        "legacy_stop_error": null,
+        "owned_port_closed": true,
+        "protected_output_exact": true,
+        "reader": "snapshot",
+        "variant": "after_fix",
+        "verified_shutdown": true
+      }
+    ]
+  },
+  "scope": {
+    "older_version_read_keeps_current_opt_in": true,
+    "older_version_save_requires_explicit_preview_reenable": true,
+    "migration_of_valid_inline_preference_happens_at_startup": true,
+    "replacement_interruption_preserves_effective_snapshot": true,
+    "invalid_extension_disables_preview_without_blocking_core_read": true,
+    "preference_reads_do_not_rewrite_document": true,
+    "provider_model_calls": 0,
+    "installed_binary_upgrade_or_rollback": "not_tested",
+    "native_macos_and_win11": "not_tested",
+    "main_task_complete": false
+  },
+  "comparison": "Original test reader rejects inline experimental_rules. The old source manager starts and applies the same configured protected tool when reading the new shared preference document.",
+  "historical_test_limits": [
+    "Initial source archive lacked unrelated compile-time fixture data.",
+    "First previous-engine close check did not obtain the expected acknowledgment; owned endpoint closure was observed. Final fresh-state run observed a normal stop."
+  ],
+  "artifacts": {
+    "focused": {
+      "path": "work/proofs/optimization/preferences-rollback/52e4e186ec644c23ae86d588c8902297/focused.json",
+      "sha256": "9c526419baf61769abfb7661203ca85d459ad9c64b860528eed5231cbb4b40e8"
+    },
+    "legacy_source": {
+      "path": "work/proofs/optimization/preferences-rollback/52e4e186ec644c23ae86d588c8902297/legacy-source.json",
+      "sha256": "c11ea9509d4d9b96c8781323113132152dd456b08390e0877a1ffe8cf28ec0a6"
+    },
+    "legacy_run": {
+      "path": "work/proofs/optimization/preferences-rollback/52e4e186ec644c23ae86d588c8902297/old-runtime-check-final.json",
+      "sha256": "1ee14e39099a5d0f4a20018bf90a7a8536797db08fc6c43b3cd84c5b41f19b4c"
+    },
+    "legacy_result": {
+      "path": "work/proofs/optimization/preferences-rollback/52e4e186ec644c23ae86d588c8902297/old-runtime-result.json",
+      "sha256": "fe7e5274d36fbbdc6bba6c68389778f709144ee29e36617fe84d593a84084718"
+    },
+    "legacy_first_close_attempt": {
+      "path": "work/proofs/optimization/preferences-rollback/52e4e186ec644c23ae86d588c8902297/old-runtime-check-with-fixtures.json",
+      "sha256": "cddb9aaf0fc3d5c6d8fc2289a28b04578e60949ffca9c9f810e626f8de330c22"
+    },
+    "current_protected_settings_smoke": {
+      "path": "work/proofs/settings/live-runs/8c390e99-9efe-4194-b2f5-2396fe8b8e57/result.json",
+      "sha256": "50621c5624f69c6bef1d2de6865940c779e1ae6be45746a2fa078f4e8f802eef"
+    }
+  }
+}
