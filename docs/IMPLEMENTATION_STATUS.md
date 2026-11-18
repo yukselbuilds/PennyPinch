@@ -1,13 +1,21 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — ChatGPT Responses WebSocket canlı kullanım kaydı doğrulandı
+
+Ana ajan hesap kapsamını ve sayaç eşleşmesini üstlendi. Windows 10’da izole Free profilli pinli Codex tek WebSocket üretimiyle doğru yanıt verdi. Headroom ve CLI 9.784 girdi, sıfır önbellek okuması ve 8 çıktıda eşleşti. Hazırlığın 2 girdi tokenı ayrı sayıldı. Dokuz odaklı test, yerel prova ve iki normal motor kapanışı geçti. **45/54 ana görev tamamlandı. H041 açık.** [Kanıt](proofs/websocket-usage-desktop.json) · [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+H041-d kapsamında Chat Completions için mevcut yetkili ücretsiz sağlayıcı yolunu belirle. Uygun erişim varsa tek küçük istekte protokolü ve kullanım kaydını doğrula. Anthropic ve API-key kabulü kendi erişimini bekliyor. [Karar](decisions/027-optimization-regression.md#h041-d-chat-completions-kullanım-ölçümü)
+
 ## 18 Kasım — Zorunlu geri okumanın canlı token kıyası tamamlandı
 
 Ana ajan canlı kullanım eşlemesini ve bütünlüğü doğruladı. Aynı rapor, model ve eforla iki doğru yanıt çıktı. Her iki kolda da tam 5.926 bayt motor girişinde ve sağlayıcı isteğinde doğrulandı. Doğrudan okuma üç istekte 34.750, sorgu ve tam okuma dört istekte 45.579 token kullandı. Bu işte aday farkı 10.829 token (%31,16 artış). Yedi kullanım kaydı eşleşti ve iki motor normal kapandı. İlk cache okuması iki kolda da sıfırdı. Fatura tutarı açık. [Kanıt](proofs/targeted-query-comparison.json)
 
 23 odaklı test ve altı yerel isteğin kanıtı eşleşen girdi parmak izleriyle tekrar kullanıldı. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### Önceki WebSocket doğrulama planı
 
 H041-d kapsamında Responses WebSocket için mevcut yetkili ücretsiz profilin rota önkoşullarını kontrol et. Uygun canlı yol varsa tek küçük istekte bağlantıyı ve kullanım kaydını doğrula. Diğer protokol ve hesap kabulleri kendi kanıtlarını bekliyor. [Karar](decisions/027-optimization-regression.md#h041-d-responses-websocket-kullanım-ölçümü)
 

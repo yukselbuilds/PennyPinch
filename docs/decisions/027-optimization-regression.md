@@ -378,6 +378,12 @@ Aktif yanıtlar açık `response.id` ile ayrılır; üst sınır 16'dır. Ara i�
 
 Kabul: (1) aynı bağlantıda ardışık ve farklı yanıt kimlikleriyle iç içe yanıtlar, model/efor değişimi, gerçek sıfır ve eksik cache alanı; (2) eksik/başarısız/yanlış kimlik, taşma ve kopuşta bilinmeyen toplam ile yeniden bağlanmada ayrım; (3) sahipli gerçek motorda WebSocket ve HTTP geri dönüşü, özgün CCR geri alımı ve native okuyucu → SQLite → istek ayrıntısı. Odaklı testler ve HTTP/Anthropic regresyonu son adayda yapılır; WORKFLOW yerel kapısı kaynak/araç önce-sonra fingerprint'iyle bir kez çalışır. Canlı sağlayıcı, diğer OS, Actions ve yeni kurucu bu dilimde başlatılmaz.
 
+#### İzole ChatGPT profiliyle canlı WebSocket doğrulaması
+
+18 Kasım. Ayrı Windows 10 koşusunda pinli Codex CLI ve 0.44.0 motoru mevcut izole ücretsiz profille sınanır. Tek bağlantıda bir isteğe bağlı hazırlık mesajı ve bir yanıt üretimi geçebilir. Diğer WebSocket uçları, yönlendirme ve upstream HTTP engellenir. Kabul için doğru yanıt, tek tamamlanan üretimin motor kayıt kimliği ve CLI’deki girdi, önbellekten okunan girdi ve çıktı sayaçları eşleşmelidir. Hazırlık ve belirsiz kullanım değişmeden kaydedilir. [Pinli Codex sağlayıcısı](https://github.com/openai/codex/blob/rust-v0.169.0-alpha.11.1/codex-rs/model-provider-info/src/lib.rs) · [OpenAI WebSocket protokolü](https://developers.openai.com/api/docs/guides/websocket-mode)
+
+Yerel provada dokuz odaklı test, bir hazırlık ve bir üretim geçti. Canlı koşuda CLI doğru yanıtı WebSocket üzerinden tamamladı. Motor kayıt kimliğiyle bulunan üretimde 9.784 girdi, sıfır önbellek okuması ve 8 çıktı CLI sayaçlarıyla eşleşti. Hazırlık 2 girdi ve sıfır çıktı olarak ayrı kaldı. Her iki motor normal kapandı. Kabul seçili ChatGPT Free profili, Windows 10 ve sabit sürümler içindir. Diğer hesaplar ve sağlayıcı protokolleri kendi kabullerini bekliyor. [Kanıt](../proofs/websocket-usage-desktop.json)
+
 ### Güncel Headroom ve Serena adayları
 
 15 Kasım 2026’da Headroom kararlı `0.44.0` ve Serena `2.1.0` yayınları incelendi. Etkin motor `0.41.0` ile sürer. Aday karşılaştırmaları bağımlılık kilidi ve yalıtılmış paketle yürütülür. [Headroom yayın notları](https://github.com/headroomlabs-ai/headroom/releases/tag/v0.44.0) · [Serena yayını](https://github.com/oraios/serena/releases/tag/v2.1.0).

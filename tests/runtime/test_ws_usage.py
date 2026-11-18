@@ -26,6 +26,39 @@ def completed(ledger, identity, total=2400, cached=2000, written=100, output=29)
         usage={"input_tokens": total, "output_tokens": output, "input_tokens_details": details})})
 
 
+class LiveWebSocketSmokeTests(unittest.TestCase):
+    def test_websocket_probe_caps_generation_and_checks_model_and_effort(self):
+        import json
+
+        probe = runpy.run_path(str(ROOT / "bench/optimization/ws_live_smoke.py"))
+        request_kind = probe["request_kind"]
+        frame = {"type": "response.create", "model": "fixture-model", "reasoning": {"effort": "medium"}}
+
+        def classify(message, sent=()):
+            return request_kind(json.dumps(message), sent, "fixture-model", "medium")
+
+        self.assertEqual(classify({**frame, "generate": False}), "warmup")
+        self.assertEqual(classify(frame, ("warmup",)), "generate")
+        self.assertIsNone(classify({**frame, "generate": False}, ("warmup",)))
+        self.assertIsNone(classify(frame, ("generate",)))
+        self.assertIsNone(classify({**frame, "generate": 0}))
+        self.assertIsNone(classify({**frame, "reasoning": {"effort": "low"}}))
+        self.assertIsNone(classify({**frame, "model": "different"}))
+
+    def test_websocket_probe_needs_scope_and_cli_counter_agreement(self):
+        probe = runpy.run_path(str(ROOT / "bench/optimization/ws_live_smoke.py"))
+        matched_usage = probe["matched_usage"]
+        usage = {"total_input_tokens": 100, "output_tokens": 5, "cache_read_input_tokens": 20, "total_tokens": 105}
+        row = {"surface": "openai_responses_ws", "truncated": False, "failed": False,
+               "attempts": [{"completed": True}], "usage": usage}
+        cli = {"input_tokens": 100, "cached_input_tokens": 20, "output_tokens": 5}
+        self.assertEqual(matched_usage([row], cli), usage)
+        self.assertIsNone(matched_usage([row, row], cli))
+        self.assertIsNone(matched_usage([{**row, "surface": "openai_responses"}], cli))
+        self.assertIsNone(matched_usage([row], {**cli, "cached_input_tokens": 0}))
+        self.assertIsNone(matched_usage([{**row, "usage": {**usage, "cache_read_input_tokens": None}}], cli))
+
+
 class WebSocketUsageTests(unittest.IsolatedAsyncioTestCase):
     def test_sequential_zero_missing_and_unfinished_responses(self):
         ledger = control.WebSocketUsage()

@@ -64,5 +64,94 @@
   ],
   "model_calls": 0,
   "ci_runs": 0,
-  "installer_rebuilt": false
+  "installer_rebuilt": false,
+  "live_chatgpt_free": {
+    "date": "2026-11-18",
+    "entry_point": "bench/optimization/ws_live_smoke.py",
+    "passed": true,
+    "scope": "one existing isolated ChatGPT Free profile, Windows 10 and the pinned Codex and engine",
+    "preset": {
+      "cli": "codex-cli 0.169.0-alpha.11.1",
+      "engine": "0.44.0",
+      "os": "Windows-10-10.0.19045-SP0",
+      "model": "gpt-6-luna",
+      "effort": "medium"
+    },
+    "limits": {
+      "websocket_connections": 1,
+      "warmups": 1,
+      "generations": 1,
+      "upstream_http_requests": 0
+    },
+    "focused_tests": {
+      "count": 9,
+      "input_fingerprints": {
+        "count": 7,
+        "matched": true,
+        "sha256_of_sorted_input_hashes": "1a1677b8a75057795d784d8f6c40075e7a49eb4e760d66b3707932b4f3418405"
+      }
+    },
+    "loopback": {
+      "run": "aea554f0ec4b4e3f842771e6ab9d29a5",
+      "websocket_connections": 1,
+      "upstream_http_requests": 0,
+      "model_generations": 0,
+      "usage_records": 2,
+      "completed_answer_exact": true,
+      "usage_matches_cli": true,
+      "warmup_usage": {
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_input_tokens": 0,
+        "total_tokens": 0
+      },
+      "generation_usage": {
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 2000,
+        "input_tokens": 2400,
+        "output_tokens": 5,
+        "total_input_tokens": 2400,
+        "total_tokens": 2405
+      },
+      "owned_engine_closed": true,
+      "input_fingerprints": {
+        "count": 44,
+        "matched": true,
+        "sha256_of_sorted_input_hashes": "d8e770298a7aaa500b3559ab4c1baa15085a3a27e3d5ffa76091f03ab7aad88e"
+      }
+    },
+    "live": {
+      "run": "847047fabc554ed7a46af3984db2fc70",
+      "websocket_connections": 1,
+      "upstream_http_requests": 0,
+      "model_generations": 1,
+      "usage_records": 2,
+      "completed_answer_exact": true,
+      "usage_matches_cli": true,
+      "warmup_usage": {
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "input_tokens": 2,
+        "output_tokens": 0,
+        "total_input_tokens": 2,
+        "total_tokens": 2
+      },
+      "generation_usage": {
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "input_tokens": 9784,
+        "output_tokens": 8,
+        "total_input_tokens": 9784,
+        "total_tokens": 9792
+      },
+      "owned_engine_closed": true,
+      "input_fingerprints": {
+        "count": 44,
+        "matched": true,
+        "sha256_of_sorted_input_hashes": "eb8177e6939cae5aa9325e3e608ca64540d825096894536b06876f1827c7d1ce"
+      }
+    }
+  }
 }
