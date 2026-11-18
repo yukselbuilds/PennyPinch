@@ -1,13 +1,23 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Codex arşivinin ajan sınırı ölçüldü
+
+Ana ajan izin ve sahipliği üstlendi. Gerçek Codex CLI ve yerel sağlayıcıyla ana ajan ve bir alt ajan açıldı. MCP paylaşımı kapalı 10 istekli koşuda ikisi de 66 baytlık izinli dosyayı kendi arşivinden birebir aldı. İki yabancı referans reddedildi. Modelin çalışma alanı dışını gösteren yol argümanı kaynak dosyayı değiştirmedi. Alt ajan tamamlanması, ayrı thread ve ana ajana gelen yerel ajan mesajı ile doğrulandı. [Kanıt](proofs/targeted-query-comparison.json)
+
+Paylaşım açık koşuda alt ajan, ana ajanın arşivini birebir okuyabildi. Koşu altıncı yerel istekte izin kabulünü geçemedi. Sorgu prototipinde ayrı bağlantı veya doğrulanmış ajan kimliği, ajan başına arşiv yetkisinin kabul koşuludur. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+Paylaşımlı Codex bağlantısında çağıran ajanın güvenilir kimliğini belirle. Ajan sahipliği ve izinli araç kimliğiyle sınırlandırılmış kod kipi çıktı korumasını 0.44.0 motor yolunda doğrula. [Karar](decisions/027-optimization-regression.md#codex-dosya-ve-alt-ajan-yetkisi)
+
 ## 18 Kasım — Canlı hedefli sorgu %7,45 daha az token kullandı
 
 Kod kipi yerel provasında özgün 5.926 baytlık çıktı CLI’ye ulaştı. Motor bu çıktıyı sağlayıcı isteğinde 33 baytlık CCR işaretine çevirdi. Kıyasın iki izole kolunda kod kipi çıktısı korundu. Son yanıta kadar tam okuma ve hedefli sorgu üçer, sorgu ve ek tam okuma dört yerel istek kullandı. 16 odaklı test, 10 kod kipi isteği ve 7 doğrudan araç regresyon isteği geçti. [Kanıt](proofs/targeted-query-comparison.json)
 
 ChatGPT Free profiliyle aynı model ve eforda tek eşlenmiş sentetik görev çalıştı. İki kol dörder sağlayıcı isteğinde kesin yanıt verdi ve ilk istekler sıfır cache isabetiyle başladı. Giriş ve çıkış toplamı 45.069 → 41.710 token. Fark 3.359 token, %7,45. Canlı aday tam okumaya ihtiyaç duymadı. **45/54 ana görev tamamlandı. H041 açık.** Genel dosya ve alt ajan izinleri ile gerçek maliyet kabulü bekliyor. [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### Önceki izin planı
 
 Hedefli sorgunun gerçek dosya ve alt ajan kapsamını izole istemcide tanımla. Kod kipi çıktısını izinli araç ve istek sahipliği üzerinden koruyan yolu doğrula. [Karar](decisions/027-optimization-regression.md#kod-kipinde-istek-bütçesi-ve-canlı-kıyas)
 

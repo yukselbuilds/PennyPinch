@@ -462,5 +462,65 @@
         }
       }
     }
+  },
+  "file_agent_scope": {
+    "date": "2026-11-18",
+    "entry_point": "bench/context_tools/targeted_query_scope.py",
+    "scope": "native Codex parent and child with one approved synthetic JSONL file, loopback Responses Lite",
+    "cli": "codex-cli 0.169.0-alpha.11.1",
+    "provider_model_requests": 0,
+    "fixture_file_bytes": 66,
+    "native_filesystem_sandbox_verified": false,
+    "headroom_engine_routed": false,
+    "runs": {
+      "separate_connections": {
+        "run": "d5675318f3ff46ccb8be87f27e015bf7",
+        "passed": true,
+        "cli_exit": 0,
+        "failure": null,
+        "requested_mcp_connection_sharing": false,
+        "turns": {
+          "parent": 6,
+          "child": 4
+        },
+        "observed": {
+          "child_denied_parent_archive": true,
+          "child_file_exact": true,
+          "child_completion_confirmed": true,
+          "parent_denied_child_archive": true,
+          "parent_file_exact": true,
+          "outside_path_override_ignored": true
+        },
+        "foreign_reads": {
+          "child": "denied",
+          "parent": "denied"
+        },
+        "input_fingerprints": {
+          "count": 11,
+          "matched": true,
+          "sha256_of_sorted_input_hashes": "54d4dd689e0d7b119e34a3aeb363d47307ae51f3a94995d94a205d2231eddf7e"
+        }
+      },
+      "sharing_enabled": {
+        "run": "e17fc1654a164651a58b56e994686f80",
+        "passed": false,
+        "cli_exit": 1,
+        "failure": "child_denial_unconfirmed",
+        "requested_mcp_connection_sharing": true,
+        "turns": {
+          "parent": 4,
+          "child": 2
+        },
+        "observed": {},
+        "foreign_reads": {
+          "child": "returned"
+        },
+        "input_fingerprints": {
+          "count": 11,
+          "matched": true,
+          "sha256_of_sorted_input_hashes": "54d4dd689e0d7b119e34a3aeb363d47307ae51f3a94995d94a205d2231eddf7e"
+        }
+      }
+    }
   }
 }

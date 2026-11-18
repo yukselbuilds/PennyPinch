@@ -116,6 +116,12 @@ Gerçek CLI ve 0.44.0 motorla yerel fixture provası 3 + 4 istek, yedi kullanım
 
 Yerel sonuca göre canlı sınır kol başına dört, toplam sekiz olarak korundu. İzole ChatGPT Free profilindeki aynı model/eforla 48 satırlık görev iki kolda dörder istek ve doğru son yanıt üretti. İlk isteklerde cache isabeti sıfırdı. Kontrol 44.787 giriş ve 282 çıkış tokenı kullandı. Sorgu 41.481 giriş ve 229 çıkış tokenı kullandı. Toplam fark 3.359 token (%7,45). Canlı adayın sorgu sonrasında tam okumaya ihtiyacı olmadı. Yerel geri okuma provası, canlı tasarrufu geri okumalı işlere genellemez. Fatura ve genel dosya/alt ajan izinleri açık. [Ölçüm](../proofs/targeted-query-comparison.json)
 
+#### Codex dosya ve alt ajan yetkisi
+
+18 Kasım. Pinli Codex CLI ve Responses Lite, gerçek `spawn_agent` / `wait_agent` çağrıları ile bir ana ve bir alt ajan çalıştırdı. Arşiv sunucusu, başlatma sırasında izinli çalışma alanındaki sabit sentetik JSONL dosyasına bağlandı. Araç çağrısına verilen çalışma alanı dışı yol kaynak seçimini değiştirmedi. Paylaşım kapalı koşuda iki ajan kendi arşivinden 66 baytı birebir aldı. Çapraz okumalar iki yönde reddedildi. Alt ajan, ayrı istemci thread'i ve ana ajandaki yerel ajan mesajı ile eşlendi. 6 ana ve 4 alt ajan isteği yerel sağlayıcıda tamamlandı.
+
+Aynı CLI ve katalogla `mcp_connection_sharing` açıkken alt ajan ana ajanın arşivini birebir aldı. Bu, prototipin bağlantı düzeyindeki sahibi ile ajan kimliğinin ayrıldığını gösterir. Ürün kabulünde güvenilir ajan kimliği veya gerçekten ayrık MCP bağlantısı gerekir. Model çağrısı sıfırdı. Bu kapsam tek sentetik kaynaklı MCP denemesidir. Genel native dosya izinleri, Headroom motorundan geçen korumalı kod kipi ve desteklenen diğer istemciler ayrı kanıt bekliyor. [İzin kanıtı](../proofs/targeted-query-comparison.json)
+
 ### H041-e: deneysel kurallar
 
 16 Kasım 2026 kullanıcı kararı: ModHarness-RL'den esinlenen kural deneyi **isteğe bağlı ve varsayılan kapalıdır**. Ana ajan kapsam, ölçüm ve izin sözleşmesini üstlenir; bu kayıt yalnız plandır. Amaç, büyük araç çıktılarında gereken bilgiyi seçmek ve doğrulanmış hata döngülerini Learn içinde öneri olarak göstermek. [Makale v1](https://arxiv.org/abs/2611.18533v1) yöntem kaynağıdır; buradaki kabul koşulları ürünümüze aittir. Model eğitimi, kendiliğinden kod üretip çalıştırma ve bütün sohbetleri yeniden özetleme kapsam dışıdır.
