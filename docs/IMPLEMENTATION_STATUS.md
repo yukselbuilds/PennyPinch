@@ -1,13 +1,23 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 18 Kasım — Canlı hedefli sorgu %7,45 daha az token kullandı
+
+Kod kipi yerel provasında özgün 5.926 baytlık çıktı CLI’ye ulaştı. Motor bu çıktıyı sağlayıcı isteğinde 33 baytlık CCR işaretine çevirdi. Kıyasın iki izole kolunda kod kipi çıktısı korundu. Son yanıta kadar tam okuma ve hedefli sorgu üçer, sorgu ve ek tam okuma dört yerel istek kullandı. 16 odaklı test, 10 kod kipi isteği ve 7 doğrudan araç regresyon isteği geçti. [Kanıt](proofs/targeted-query-comparison.json)
+
+ChatGPT Free profiliyle aynı model ve eforda tek eşlenmiş sentetik görev çalıştı. İki kol dörder sağlayıcı isteğinde kesin yanıt verdi ve ilk istekler sıfır cache isabetiyle başladı. Giriş ve çıkış toplamı 45.069 → 41.710 token. Fark 3.359 token, %7,45. Canlı aday tam okumaya ihtiyaç duymadı. **45/54 ana görev tamamlandı. H041 açık.** Genel dosya ve alt ajan izinleri ile gerçek maliyet kabulü bekliyor. [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+Hedefli sorgunun gerçek dosya ve alt ajan kapsamını izole istemcide tanımla. Kod kipi çıktısını izinli araç ve istek sahipliği üzerinden koruyan yolu doğrula. [Karar](decisions/027-optimization-regression.md#kod-kipinde-istek-bütçesi-ve-canlı-kıyas)
+
 ## 18 Kasım — Canlı Codex tam raporu okudu
 
 Ana ajan araç ve ölçüm sözleşmesini üstlendi. İzole ChatGPT Free profiliyle rapor yakalama ve açık adlı `read_archived_report` çağrısı tamamlandı. CLI, 5.926 baytlık özgün raporu birebir aldı. Dört sağlayıcı yanıtından sonra beşinci istek yerelde sınırlandı. Nihai yanıt, aday kol ve canlı tasarruf belirlenemedi. [Kanıt](proofs/targeted-query-comparison.json)
 
 Gerçek model kataloğuyla yapılan model çağrısız yerel prova `input.additional_tools` içinde `functions.exec` taşımasını gösterdi. Tanı artık bu biçimi tanıyor ve kesin MCP çağrılarını CLI olaylarıyla doğruluyor. 14 odaklı test, yedi yerel motor isteği ve bir katalog provası geçti. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### Önceki bütçe planı
 
 Kod kipinde tam okumanın ve sorgunun terminal yanıt dahil normal istek sayısını model çağrısı yapmadan doğrula. Sonraki eşlenmiş ölçümün sınırını bu kanıta dayandır ve iki kolda aynı model, efor ve görev kabulünü koru. [Karar](decisions/027-optimization-regression.md#canlı-tam-okuma-ve-codex-kod-kipi)
 

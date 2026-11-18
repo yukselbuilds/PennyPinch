@@ -175,32 +175,52 @@ def delivered(tool, reference, value):
                      "next_offset": len(REPORT), "exit_code": 0, "text": REPORT.decode()}
 
 
-def fixture_provider(client_replay):
+def fixture_call(tool, args, turn, *, code_mode):
+    assert tool in REPORT_TOOLS, "fixture_tool_outside_scope"
+    call_id = f"call_query_{turn}"
+    arguments = json.dumps(args, ensure_ascii=True, separators=(",", ":"))
+    if code_mode:
+        return {"type": "custom_tool_call", "id": f"fc_query_{turn}", "call_id": call_id,
+                "name": "exec", "namespace": "functions",
+                "input": f"const report{turn} = await tools.{NAMESPACE}__{tool}({arguments}); text(report{turn});"}
+    return {"type": "function_call", "id": f"fc_query_{turn}", "call_id": call_id,
+            "name": tool, "namespace": NAMESPACE, "arguments": arguments}
+
+
+def fixture_provider(client_replay, *, code_mode=False, force_readback=False):
     pilot = client_replay["pilot"]
+    sequences = {**ARMS, "targeted": (CAPTURE, SELECT)} if code_mode and not force_readback else ARMS
 
     class Provider(client_replay["Provider"]):
-        turn_counts = {arm: len(tools) + 1 for arm, tools in ARMS.items()}
+        turn_counts = {arm: len(tools) + 1 for arm, tools in sequences.items()}
         render_sse = staticmethod(pilot["Provider"].render_sse)
 
         def next_item(self, body, turn):
             server = self.server
-            expected = ARMS[server.scenario]
-            assert wire_observation(body)["advertised"] == sorted(expected), "tool_catalog_scope_changed"
+            expected = sequences[server.scenario]
+            wire = wire_observation(body)
+            assert (wire["code_mode_exec"] if code_mode else wire["advertised"] == sorted(ARMS[server.scenario])), "tool_catalog_scope_changed"
             assert body.get("text", {}).get("format", {}).get("schema") == SCHEMA, "answer_schema_wire_mismatch"
             if turn > 1:
-                value = json.loads(client_replay["tool_text"](body, turn - 1))
+                value = json.loads(client_replay["tool_text"](body, turn - 1, code_mode=code_mode))
+                if code_mode and isinstance(value, dict) and "content" in value:
+                    assert not value.get("isError"), "fixture_code_mode_tool_error"
+                    value = json.loads(value["content"][0]["text"])
                 if turn == 2:
                     assert valid_reference(value), "fixture_reference_invalid"
                     server.reference = value
                 else:
+                    text = value.get("text", "") if isinstance(value, dict) else ""
+                    server.last_delivery = {"text_bytes": len(text.encode()) if isinstance(text, str) else None,
+                        "ccr_marker": "<<ccr:" in json.dumps(value, ensure_ascii=True),
+                        "stdout_equals_original": text == REPORT.decode() if isinstance(text, str) else False}
                     assert delivered(expected[turn - 2], server.reference, value), "fixture_tool_bytes_changed"
             if turn > len(expected):
                 return {"type": "message", "id": "msg_query_pair", "role": "assistant", "status": "completed",
                         "content": [{"type": "output_text", "text": pilot["encode"](ANSWER), "annotations": []}]}
             tool = expected[turn - 1]
             args = {} if tool == CAPTURE else (read_args(server.reference) if tool == READ else select_args(server.reference))
-            return {"type": "function_call", "id": f"fc_query_{turn}", "call_id": f"call_query_{turn}",
-                    "name": tool, "namespace": pilot["NAMESPACE"], "arguments": pilot["encode"](args)}
+            return fixture_call(tool, args, turn, code_mode=code_mode)
 
     return Provider
 
@@ -322,7 +342,8 @@ def run_arm(arm, engine, directory, cli, supervisor, pilot, rules, counter, usag
     work.mkdir(parents=True)
     temp.mkdir()
     run = directory.parent
-    model, effort = (pilot["MODEL"], "high") if fixture is not None else (LIVE_MODEL, LIVE_EFFORT)
+    catalog = run / "models.json"
+    model, effort = (LIVE_MODEL, LIVE_EFFORT) if catalog.is_file() else (pilot["MODEL"], "high")
     env = pilot["client_environment"]()
     env.update(TEMP=str(temp), TMP=str(temp), CODEX_SQLITE_HOME=str(transient / "state"))
     config = {"model_provider": "pilot", "model_providers.pilot.name": "Headroom Query Pilot",
@@ -333,13 +354,16 @@ def run_arm(arm, engine, directory, cli, supervisor, pilot, rules, counter, usag
         f"mcp_servers.{SERVER}.args": ["-I", "-B", str(PROGRAM), "--mcp"], f"mcp_servers.{SERVER}.enabled_tools": list(ARMS[arm])}
     if fixture is None:
         env["CODEX_HOME"] = str(profile)
-        config.update(cli_auth_credentials_store="file", model_catalog_json=str(run / "models.json"))
+        config["cli_auth_credentials_store"] = "file"
     else:
         home = transient / "home"
         home.mkdir()
         env.update(CODEX_HOME=str(home), RULES_PILOT_TOKEN=fixture.auth.removeprefix("Bearer "))
         config["model_providers.pilot.env_key"] = "RULES_PILOT_TOKEN"
         fixture.scenario, fixture.requests, fixture.failure = arm, [], None
+        fixture.last_delivery = None
+    if catalog.is_file():
+        config["model_catalog_json"] = str(catalog)
     command = pilot["client_args"](cli, work, "counts", arm, model, config, prompt=PROMPT,
         output_schema=run / "answer-schema.json")
     try:
@@ -359,15 +383,25 @@ def run_arm(arm, engine, directory, cli, supervisor, pilot, rules, counter, usag
         **inspect_turn(stdout, exit_code, arm, rules["tool_reported_error"]), **rules["measure"](engine, usage, sent)}
     if fixture is not None:
         row["fixture_failure"] = fixture.failure
-        row["fixture_payloads_exact"] = fixture.failure is None and len(fixture.requests) == len(ARMS[arm]) + 1
+        row["fixture_payloads_exact"] = fixture.failure is None and len(fixture.requests) == fixture.RequestHandlerClass.turn_counts[arm]
+        if fixture.failure:
+            row["fixture_failure_site"] = getattr(fixture, "failure_site", None)
+            row["fixture_parse_failure"] = getattr(fixture, "parse_failure", None)
+            row["fixture_last_delivery"] = fixture.last_delivery
     return row
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--codex", type=Path, required=True)
-    parser.add_argument("--live", action="store_true", help="One capped pair using the existing isolated Free ChatGPT profile")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--live", action="store_true", help="One capped pair using the existing isolated Free ChatGPT profile")
+    mode.add_argument("--code-mode-catalog", type=Path, help="Replay a previous isolated model catalog on loopback")
+    parser.add_argument("--code-mode-readback", action="store_true", help="Rehearse the targeted arm with a full-read fallback on loopback")
     args = parser.parse_args()
+    code_mode = args.code_mode_catalog is not None
+    if args.code_mode_readback and not code_mode:
+        parser.error("--code-mode-readback requires --code-mode-catalog")
     assert os.name == "nt" and Path.cwd().resolve() == ROOT == Path(r"D:\Projeler\Headroom"), "canonical_workspace"
     cli = args.codex.resolve(strict=True)
     app_bin = (Path(os.environ["LOCALAPPDATA"]) / "OpenAI/Codex/bin").resolve(strict=True)
@@ -391,13 +425,16 @@ def main():
     pair_counter = run / "pair-attempts.txt"
     pair_counter.write_bytes(b"")
     replay.write_new(run / "answer-schema.json", SCHEMA)
-    model, effort = (LIVE_MODEL, LIVE_EFFORT) if args.live else (pilot["MODEL"], "high")
-    registration = {"mode": "live" if args.live else "loopback", "cli": version, "engine": manifest["engine"]["version"],
-        "os": platform.platform(), "model": model, "effort": effort, "arm_order": list(ARMS), "attempts_per_arm": ATTEMPTS_PER_ARM,
+    arms = ("targeted",) if args.code_mode_readback else tuple(ARMS)
+    protect_exec = args.live or code_mode
+    model, effort = (LIVE_MODEL, LIVE_EFFORT) if args.live or code_mode else (pilot["MODEL"], "high")
+    registration = {"mode": "live" if args.live else "code_mode_loopback" if code_mode else "loopback",
+        "cli": version, "engine": manifest["engine"]["version"],
+        "os": platform.platform(), "model": model, "effort": effort, "arm_order": list(arms), "attempts_per_arm": ATTEMPTS_PER_ARM,
         "attempts_per_pair": rules["ATTEMPTS_PER_PAIR"], "first_upstream_cache_read": 0, "report_bytes": len(REPORT),
         "report_sha256": hashlib.sha256(REPORT).hexdigest(), "report_rows": len(ROWS), "default_cli_output_budget": True,
-        "report_tools_by_arm": ARMS,
-        "gate": "exact answer and tool delivery, both cold first requests, all attempts measured, one pair"}
+        "report_tools_by_arm": ARMS, "protect_code_mode_outputs": protect_exec, "force_readback": args.code_mode_readback,
+        "gate": "exact answer and tool delivery, cold first requests, all attempts measured"}
     replay.write_new(run / "registration.json", registration)
     fixture, profile, rows, fingerprints, failure = None, None, [], {}, None
     try:
@@ -406,13 +443,25 @@ def main():
             (run / "models.json").write_bytes(catalog)
             target, upstream_port = UPSTREAM, 1
         else:
+            if code_mode:
+                source_catalog = args.code_mode_catalog.resolve(strict=True)
+                assert source_catalog.name == "models.json" and source_catalog.parent.parent == PROOF_ROOT, "catalog_scope"
+                source_run = json.loads(source_catalog.with_name("registration.json").read_bytes())
+                assert source_run["mode"] == "live" and source_run["model"] == model and source_run["cli"] == version, "catalog_origin"
+                catalog = source_catalog.read_bytes()
+                assert rules["account_catalog_allows"](catalog, model, effort), "catalog_model_effort"
+                assert any(row.get("slug") == model and row.get("tool_mode") == "code_mode_only" and row.get("use_responses_lite") is True
+                           for row in json.loads(catalog)["models"]), "catalog_code_mode"
+                (run / "models.json").write_bytes(catalog)
             pilot["prepare_provider"]()
-            fixture = ThreadingHTTPServer(("127.0.0.1", 0), fixture_provider(client_replay))
+            provider = fixture_provider(client_replay, code_mode=code_mode, force_readback=args.code_mode_readback)
+            fixture = ThreadingHTTPServer(("127.0.0.1", 0), provider)
             fixture.auth, fixture.total_requests, fixture.output_part_types = "Bearer " + replay.SENTINEL, 0, set()
+            fixture.fixture_model = model
             upstream_port = fixture.server_port
             target = f"http://127.0.0.1:{upstream_port}/v1/responses"
             threading.Thread(target=fixture.serve_forever, daemon=True).start()
-        for arm in ARMS:
+        for arm in arms:
             directory = run / arm
             directory.mkdir()
             staged, counter = rules["stage_arm"](replay, directory, payload, target, model, effort, ATTEMPTS_PER_ARM)
@@ -430,11 +479,14 @@ def main():
                 *[OPTIMIZATION / name for name in ("rules_pilot.py", "replay.py", "anthropic_usage.py", "ccr_policy.py")],
                 payload / "Lib/site-packages/mcp-2.3.0.dist-info/RECORD",
                 *[payload / "Lib/site-packages/headroom" / name for name in patched]]
-            if profile is not None:
+            if args.live or code_mode:
                 files.append(run / "models.json")
             before = {str(path): replay.sha(path) for path in files}
             engine = usage["probe"]["UsageEngine"](controller, supervisor, payload, directory / "engine", upstream_port, pilot["PLAN"])
-            protected = [tool for name in (CAPTURE, SELECT, READ) for tool in (name, pilot["NAMESPACE"] + "__" + name)]
+            protected = [tool for name in REPORT_TOOLS for tool in (name, NAMESPACE + "__" + name)]
+            if protect_exec:
+                # The pinned engine sees the wrapper name, so keep report output intact in this benchmark.
+                protected.extend(("exec", "functions.exec"))
             engine.environment["HEADROOM_DESKTOP_PROTECTED_TOOLS"] = json.dumps(controller.validate_protected_tools(sorted(protected)))
             rejections = directory / "guard-rejections.txt"
             try:
@@ -462,7 +514,7 @@ def main():
             fixture.shutdown()
             fixture.server_close()
     attempts = pair_counter.stat().st_size
-    passed = failure is None and len(rows) == len(ARMS) and attempts == sum(row["forwarded_http_attempts"] for row in rows)
+    passed = failure is None and len(rows) == len(arms) and attempts == sum(row["forwarded_http_attempts"] for row in rows)
     savings = None
     if passed and args.live:
         baseline, candidate = (row["total_usage"]["total_tokens"] for row in rows)

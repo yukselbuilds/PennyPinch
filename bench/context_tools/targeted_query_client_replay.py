@@ -32,9 +32,10 @@ SOURCES = {"authorized": (b"".join(REPORT_ROWS), b"", 0), "failed_report": clien
 DASHBOARD_REQUEST_WINDOW = 25
 
 
-def tool_text(body, turn):
+def tool_text(body, turn, *, code_mode=False):
+    output_kind = "custom_tool_call_output" if code_mode else "function_call_output"
     values = [item["output"] for item in body["input"]
-              if item.get("type") == "function_call_output" and item.get("call_id") == f"call_query_{turn}"]
+              if item.get("type") == output_kind and item.get("call_id") == f"call_query_{turn}"]
     assert len(values) == 1, "tool_output_identity_changed"
     value = values[0]
     if isinstance(value, str):
@@ -43,7 +44,8 @@ def tool_text(body, turn):
         assert isinstance(value, list) and value and all(isinstance(part, dict)
             and part.get("type") in ("text", "input_text") and isinstance(part.get("text"), str) for part in value), "tool_output_shape_changed"
         text = "".join(part["text"] for part in value)
-    header = re.match(r"\AWall time: [0-9]+(?:\.[0-9]+)? seconds\r?\nOutput:\s*", text)
+    header = (re.search(r"(?m)^Output:[ \t]*\r?\n", text) if code_mode
+              else re.match(r"\AWall time: [0-9]+(?:\.[0-9]+)? seconds\r?\nOutput:\s*", text))
     return text[header.end():] if header is not None else text
 
 
@@ -192,7 +194,7 @@ class Provider(pilot["Provider"]):
             item = self.next_item(body, turn)
             input_tokens, cached, output = COUNTERS[turn - 1]
             response = {"id": f"resp_query_{server.scenario}_{turn}", "object": "response", "status": "completed",
-                "model": MODEL, "output": [item], "usage": {"input_tokens": input_tokens,
+                "model": getattr(server, "fixture_model", MODEL), "output": [item], "usage": {"input_tokens": input_tokens,
                     "input_tokens_details": {"cached_tokens": cached}, "output_tokens": output, "total_tokens": input_tokens + output}}
             frames = b"".join(self.render_sse(response))
         except Exception as error:

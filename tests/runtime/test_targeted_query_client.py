@@ -69,6 +69,19 @@ class TargetedQueryComparisonTests(unittest.TestCase):
         self.assertEqual(row["outputs"], {"functions.exec": 1})
         self.assertNotIn(marker, json.dumps(row))
 
+    def test_code_mode_fixture_uses_only_the_named_report_call(self):
+        item = self.bench["fixture_call"]("read_archived_report", {"offset": 0}, 2, code_mode=True)
+        self.assertEqual((item["type"], item["namespace"], item["name"], item["call_id"]),
+                         ("custom_tool_call", "functions", "exec", "call_query_2"))
+        self.assertIn('tools.mcp__headroom_rule_pilot__read_archived_report({"offset":0})', item["input"])
+
+    def test_code_mode_fixture_reads_output_after_runner_metadata(self):
+        replay = runpy.run_path(str(self.bench["REPLAY_PATH"]))
+        result = '{"content":[{"type":"text","text":"owned"}]}'
+        body = {"input": [{"type": "custom_tool_call_output", "call_id": "call_query_1",
+                           "output": [{"type": "input_text", "text": "Sandbox execution\r\nOutput:\r\n" + result}]}]}
+        self.assertEqual(replay["tool_text"](body, 1, code_mode=True), result)
+
 
 class TargetedQueryClientTests(unittest.TestCase):
     def setUp(self):

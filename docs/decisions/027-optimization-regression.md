@@ -110,6 +110,12 @@ Gerçek CLI ve 0.44.0 motorla yerel fixture provası 3 + 4 istek, yedi kullanım
 
 İlk tanı yalnız üst düzey araç dizisini ve doğrudan MCP adlarını bekliyordu. Aynı gerçek model kataloğuyla yerel bir istek, Responses Lite `input.additional_tools` içinde `functions.exec` taşımasını doğruladı. Tanı artık iki biçimi ayırır ve yalnız sabit araç etiketlerini ve olay sayılarını tutar. Kesin araç sırası, arşiv ve çıktı kontrolü CLI olaylarında sürer. 14 odaklı test, yedi yerel motor isteği ve bir katalog provası geçti. [Kanıt](../proofs/targeted-query-comparison.json)
 
+#### Kod kipinde istek bütçesi ve canlı kıyas
+
+18 Kasım. Kod kipinde tam okuma sonucu CLI’ye birebir ulaştı. Motor, sağlayıcıya giden istekte 5.926 baytlık metni 33 baytlık bir CCR işaretine çevirdi. Bu deneyde iki izole motorda da `exec` ve `functions.exec` çıktısı korundu. Gerçek Codex CLI ve sabit 0.44.0 ile sağlayıcıya ulaşan sonuç birebir doğrulandı. Tam okuma ve hedefli sorgu son yanıt dahil üçer, sorgu ve ek tam okuma dört yerel istek kullandı. Kod kipiyle 10, doğrudan araç regresyonuyla 7 yerel istek ve 16 odaklı test geçti.
+
+Yerel sonuca göre canlı sınır kol başına dört, toplam sekiz olarak korundu. İzole ChatGPT Free profilindeki aynı model/eforla 48 satırlık görev iki kolda dörder istek ve doğru son yanıt üretti. İlk isteklerde cache isabeti sıfırdı. Kontrol 44.787 giriş ve 282 çıkış tokenı kullandı. Sorgu 41.481 giriş ve 229 çıkış tokenı kullandı. Toplam fark 3.359 token (%7,45). Canlı adayın sorgu sonrasında tam okumaya ihtiyacı olmadı. Yerel geri okuma provası, canlı tasarrufu geri okumalı işlere genellemez. Fatura ve genel dosya/alt ajan izinleri açık. [Ölçüm](../proofs/targeted-query-comparison.json)
+
 ### H041-e: deneysel kurallar
 
 16 Kasım 2026 kullanıcı kararı: ModHarness-RL'den esinlenen kural deneyi **isteğe bağlı ve varsayılan kapalıdır**. Ana ajan kapsam, ölçüm ve izin sözleşmesini üstlenir; bu kayıt yalnız plandır. Amaç, büyük araç çıktılarında gereken bilgiyi seçmek ve doğrulanmış hata döngülerini Learn içinde öneri olarak göstermek. [Makale v1](https://arxiv.org/abs/2611.18533v1) yöntem kaynağıdır; buradaki kabul koşulları ürünümüze aittir. Model eğitimi, kendiliğinden kod üretip çalıştırma ve bütün sohbetleri yeniden özetleme kapsam dışıdır.
