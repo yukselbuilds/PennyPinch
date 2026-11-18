@@ -37,13 +37,23 @@ LIVE_MODEL, LIVE_EFFORT = "gpt-6-luna", "medium"
 CLI_VERSION = "codex-cli 0.169.0-alpha.11.1"
 ATTEMPTS_PER_ARM = 4
 UPSTREAM = "https://chatgpt.com/backend-api/codex/responses"
+ANSWER_PROMPT = (
+    "Return one JSON object with id, record_count, units, ratio, and label. Preserve every digit and the sign of "
+    "units and ratio as strings, keep label verbatim, and use a JSON integer for record_count."
+)
 PROMPT = (
     f"Call {CAPTURE} once. Use the archive_id it returns to find {TARGET_ID} and count all JSONL records. "
     f"If {SELECT} is available, call it with that archive_id and record_id={TARGET_ID}. "
     f"If {SELECT} is unavailable or its result is insufficient, call {READ} with the same archive_id, "
-    "stream=stdout, and offset=0. Use only these report tools. "
-    "Return one JSON object with id, record_count, units, ratio, and label. Preserve every digit and the sign of "
-    "units and ratio as strings, keep label verbatim, and use a JSON integer for record_count."
+    "stream=stdout, and offset=0. Use only these report tools. " + ANSWER_PROMPT
+)
+READBACK_PROMPT = (
+    f"Call {CAPTURE} once and use its archive_id to find {TARGET_ID} and count all JSONL records. "
+    f"If {SELECT} is available, call it first with that archive_id and record_id={TARGET_ID}. "
+    f"Always verify against the complete original report by calling {READ} once with the same archive_id, "
+    "stream=stdout, and offset=0. In Code Mode, group the calls after capture in a single invocation. "
+    f"Await them in order and print the complete {READ} result exactly once with text(result). "
+    "Use only these report tools. " + ANSWER_PROMPT
 )
 
 
@@ -59,6 +69,7 @@ def report_rows():
 ROWS = tuple(report_rows())
 REPORT = b"".join(row + (b"\r\n" if index % 2 else b"\n") if index < len(ROWS) - 1 else row
                   for index, row in enumerate(ROWS))
+REPORT_TEXT = REPORT.decode("utf-8")
 RECORD = next(row for row in REPORT.splitlines(keepends=True) if json.loads(row)["id"] == TARGET_ID)
 ANSWER = {**json.loads(RECORD, parse_int=str, parse_float=str), "record_count": len(ROWS)}
 SCHEMA = {"type": "object", "properties": {key: {"type": "integer" if type(value) is int else "string"}
@@ -105,17 +116,38 @@ def wire_tool(entry, namespace=None):
     return name if name in REPORT_TOOLS else "other"
 
 
-def intact_reference(output):
+def tool_output_value(output):
     if isinstance(output, list):
-        output = "".join(part["text"] for part in output if isinstance(part, dict)
-                         and part.get("type") in ("text", "input_text") and isinstance(part.get("text"), str))
+        if not all(isinstance(part, dict) and part.get("type") in ("text", "input_text")
+                   and isinstance(part.get("text"), str) for part in output):
+            return None
+        output = "".join(part["text"] for part in output)
     if not isinstance(output, str):
-        return False
-    output = re.sub(r"\AWall time: [0-9]+(?:\.[0-9]+)? seconds\r?\nOutput:\s*", "", output, count=1)
+        return None
+    header = re.search(r"(?m)^Output:[ \t]*\r?\n", output)
+    if header is not None:
+        output = output[header.end():]
+    if output == REPORT_TEXT or output.removesuffix("\n").removesuffix("\r") == REPORT_TEXT:
+        return REPORT_TEXT
     try:
-        return valid_reference(json.loads(output))
+        return json.loads(output)
     except (ValueError, RecursionError):
+        return None
+
+
+def original_read_in_output(output):
+    value = tool_output_value(output)
+    if isinstance(value, dict) and "content" in value:
+        content = value["content"]
+        if not isinstance(content, list) or len(content) != 1 or value.get("isError", False) is not False:
+            return False
+        value = tool_output_value(content)
+    if value == REPORT_TEXT:
+        return True
+    if not isinstance(value, dict):
         return False
+    reference = {key: value.get(key) for key in ("archive_id", "source_tool", "source_call_id")}
+    return valid_reference(reference) and delivered(READ, reference, value)
 
 
 def wire_observation(body):
@@ -138,15 +170,17 @@ def wire_observation(body):
                 advertised.add(label)
     calls = {item["call_id"]: wire_tool(item) for item in records
              if item.get("type") in ("function_call", "custom_tool_call") and isinstance(item.get("call_id"), str)}
-    outputs, intact = Counter(), 0
+    outputs, intact, original_read = Counter(), 0, False
     for item in records:
         if item.get("type") in ("function_call_output", "custom_tool_call_output") and isinstance(item.get("call_id"), str):
             label = calls.get(item["call_id"], "unmatched")
             outputs[label] += 1
-            intact += label == CAPTURE and intact_reference(item.get("output"))
+            intact += label == CAPTURE and valid_reference(tool_output_value(item.get("output")))
+            if label == READ or ("functions.exec" in advertised and label != "unmatched"):
+                original_read |= original_read_in_output(item.get("output"))
     choice = body.get("tool_choice")
     return {"advertised": sorted(advertised.intersection(REPORT_TOOLS)), "calls": dict(Counter(calls.values())),
-            "outputs": dict(outputs), "intact_archive_references": intact,
+            "outputs": dict(outputs), "intact_archive_references": intact, "original_read_on_wire": original_read,
             "unexpected_namespaced_tool": "other" in advertised, "code_mode_exec": "functions.exec" in advertised,
             "tool_choice": choice if choice in ("auto", "none", "required") else "other"}
 
@@ -172,7 +206,7 @@ def delivered(tool, reference, value):
         return value == {**reference, "status": "selected", "stdout": RECORD.decode(), "stderr": "", "exit_code": 0,
                          "record_count": len(ROWS), "matched_count": 1, "truncated": False}
     return value == {**reference, "stream": "stdout", "offset": 0, "total_bytes": len(REPORT),
-                     "next_offset": len(REPORT), "exit_code": 0, "text": REPORT.decode()}
+                     "next_offset": len(REPORT), "exit_code": 0, "text": REPORT_TEXT}
 
 
 def fixture_call(tool, args, turn, *, code_mode):
@@ -187,9 +221,13 @@ def fixture_call(tool, args, turn, *, code_mode):
             "name": tool, "namespace": NAMESPACE, "arguments": arguments}
 
 
-def fixture_provider(client_replay, *, code_mode=False, force_readback=False):
+def fixture_provider(client_replay, *, code_mode=False, force_readback=False, group_readback=False):
     pilot = client_replay["pilot"]
-    sequences = {**ARMS, "targeted": (CAPTURE, SELECT)} if code_mode and not force_readback else ARMS
+    sequences = ARMS.copy()
+    if group_readback:
+        sequences["targeted"] = (CAPTURE, READ)
+    elif code_mode and not force_readback:
+        sequences["targeted"] = (CAPTURE, SELECT)
 
     class Provider(client_replay["Provider"]):
         turn_counts = {arm: len(tools) + 1 for arm, tools in sequences.items()}
@@ -220,7 +258,11 @@ def fixture_provider(client_replay, *, code_mode=False, force_readback=False):
                         "content": [{"type": "output_text", "text": pilot["encode"](ANSWER), "annotations": []}]}
             tool = expected[turn - 1]
             args = {} if tool == CAPTURE else (read_args(server.reference) if tool == READ else select_args(server.reference))
-            return fixture_call(tool, args, turn, code_mode=code_mode)
+            item = fixture_call(tool, args, turn, code_mode=code_mode)
+            if group_readback and server.scenario == "targeted" and tool == READ:
+                select = pilot["encode"](select_args(server.reference))
+                item["input"] = f"await tools.{NAMESPACE}__{SELECT}({select}); " + item["input"]
+            return item
 
     return Provider
 
@@ -256,7 +298,7 @@ def inspect_turn(stdout, exit_code, arm, reported_error):
             "event_counts": event_counts, "failed_mcp_events": failed_mcp_events}
 
 
-def accepted(row):
+def accepted(row, *, require_readback=False):
     usage = row["total_usage"] or {}
     counts = [usage.get(key) for key in ("total_input_tokens", "output_tokens", "cache_read_input_tokens", "total_tokens")]
     first_cache_read = row["first_upstream_cache_read_input_tokens"]
@@ -264,7 +306,9 @@ def accepted(row):
             and type(first_cache_read) is int and first_cache_read == 0
             and 3 <= row["request_count"] == row["forwarded_http_attempts"] <= ATTEMPTS_PER_ARM
             and all(type(value) is int and value >= 0 for value in counts)
-            and 0 < counts[0] + counts[1] == counts[3] and counts[2] <= counts[0])
+            and 0 < counts[0] + counts[1] == counts[3] and counts[2] <= counts[0]
+            and (not require_readback or (row["read_calls"] == 1 and row["failed_mcp_events"] == 0
+                                          and row["original_read_on_wire"])))
 
 
 def remove_client_state(directory):
@@ -336,7 +380,7 @@ def account_catalog(cli, run, pilot, rules, supervisor):
         remove_client_state(state)
 
 
-def run_arm(arm, engine, directory, cli, supervisor, pilot, rules, counter, usage, fixture, profile):
+def run_arm(arm, engine, directory, cli, supervisor, pilot, rules, counter, usage, fixture, profile, *, prompt):
     transient = directory / "client"
     work, temp = transient / "workspace", transient / "temp"
     work.mkdir(parents=True)
@@ -364,7 +408,7 @@ def run_arm(arm, engine, directory, cli, supervisor, pilot, rules, counter, usag
         fixture.last_delivery = None
     if catalog.is_file():
         config["model_catalog_json"] = str(catalog)
-    command = pilot["client_args"](cli, work, "counts", arm, model, config, prompt=PROMPT,
+    command = pilot["client_args"](cli, work, "counts", arm, model, config, prompt=prompt,
         output_schema=run / "answer-schema.json")
     try:
         exit_code, stdout = pilot["run_client"](command, work, env, supervisor, 100)
@@ -380,6 +424,7 @@ def run_arm(arm, engine, directory, cli, supervisor, pilot, rules, counter, usag
         entry["advertised"] == sorted(ARMS[arm]) or (entry["code_mode_exec"] and not entry["advertised"])) for entry in wire)
     row = {"arm": arm, "cli_exit": exit_code, "forwarded_http_attempts": sent,
         "wire": wire, "forwarded_tool_transport_recognized": wire_transport,
+        "original_read_on_wire": any(entry["original_read_on_wire"] for entry in wire),
         **inspect_turn(stdout, exit_code, arm, rules["tool_reported_error"]), **rules["measure"](engine, usage, sent)}
     if fixture is not None:
         row["fixture_failure"] = fixture.failure
@@ -397,11 +442,15 @@ def main():
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--live", action="store_true", help="One capped pair using the existing isolated Free ChatGPT profile")
     mode.add_argument("--code-mode-catalog", type=Path, help="Replay a previous isolated model catalog on loopback")
-    parser.add_argument("--code-mode-readback", action="store_true", help="Rehearse the targeted arm with a full-read fallback on loopback")
+    readback = parser.add_mutually_exclusive_group()
+    readback.add_argument("--code-mode-readback", action="store_true", help="Rehearse the targeted arm with a full-read fallback on loopback")
+    readback.add_argument("--require-readback", action="store_true", help="Require both arms to verify the full original report")
     args = parser.parse_args()
     code_mode = args.code_mode_catalog is not None
     if args.code_mode_readback and not code_mode:
         parser.error("--code-mode-readback requires --code-mode-catalog")
+    if args.require_readback and not (args.live or code_mode):
+        parser.error("--require-readback requires --live or --code-mode-catalog")
     assert os.name == "nt" and Path.cwd().resolve() == ROOT == Path(r"D:\Projeler\Headroom"), "canonical_workspace"
     cli = args.codex.resolve(strict=True)
     app_bin = (Path(os.environ["LOCALAPPDATA"]) / "OpenAI/Codex/bin").resolve(strict=True)
@@ -428,12 +477,15 @@ def main():
     arms = ("targeted",) if args.code_mode_readback else tuple(ARMS)
     protect_exec = args.live or code_mode
     model, effort = (LIVE_MODEL, LIVE_EFFORT) if args.live or code_mode else (pilot["MODEL"], "high")
+    prompt = READBACK_PROMPT if args.require_readback else PROMPT
     registration = {"mode": "live" if args.live else "code_mode_loopback" if code_mode else "loopback",
         "cli": version, "engine": manifest["engine"]["version"],
         "os": platform.platform(), "model": model, "effort": effort, "arm_order": list(arms), "attempts_per_arm": ATTEMPTS_PER_ARM,
         "attempts_per_pair": rules["ATTEMPTS_PER_PAIR"], "first_upstream_cache_read": 0, "report_bytes": len(REPORT),
         "report_sha256": hashlib.sha256(REPORT).hexdigest(), "report_rows": len(ROWS), "default_cli_output_budget": True,
-        "report_tools_by_arm": ARMS, "protect_code_mode_outputs": protect_exec, "force_readback": args.code_mode_readback,
+        "report_tools_by_arm": ARMS, "protect_code_mode_outputs": protect_exec,
+        "force_readback": args.code_mode_readback or args.require_readback,
+        "require_readback": args.require_readback, "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
         "gate": "exact answer and tool delivery, cold first requests, all attempts measured"}
     replay.write_new(run / "registration.json", registration)
     fixture, profile, rows, fingerprints, failure = None, None, [], {}, None
@@ -454,7 +506,8 @@ def main():
                            for row in json.loads(catalog)["models"]), "catalog_code_mode"
                 (run / "models.json").write_bytes(catalog)
             pilot["prepare_provider"]()
-            provider = fixture_provider(client_replay, code_mode=code_mode, force_readback=args.code_mode_readback)
+            provider = fixture_provider(client_replay, code_mode=code_mode, force_readback=args.code_mode_readback,
+                                        group_readback=args.require_readback)
             fixture = ThreadingHTTPServer(("127.0.0.1", 0), provider)
             fixture.auth, fixture.total_requests, fixture.output_part_types = "Bearer " + replay.SENTINEL, 0, set()
             fixture.fixture_model = model
@@ -493,7 +546,7 @@ def main():
                 engine.start()
                 assert pilot["usage_ids"](engine, usage) == (set(), set()), "engine_not_empty"
                 startup_rejections = rejections.read_text(encoding="ascii") if rejections.is_file() else ""
-                row = run_arm(arm, engine, directory, cli, supervisor, pilot, rules, counter, usage, fixture, profile)
+                row = run_arm(arm, engine, directory, cli, supervisor, pilot, rules, counter, usage, fixture, profile, prompt=prompt)
                 row["blocked_during_startup"] = startup_rejections.splitlines()
                 rows.append(row)
             finally:
@@ -506,7 +559,7 @@ def main():
             assert row["forwarded_tool_transport_recognized"], "forwarded_tool_transport_unknown"
             denied = rejections.read_text(encoding="ascii") if rejections.is_file() else ""
             assert denied == startup_rejections, "client_request_rejected_by_guard"
-            assert accepted(row), "pair_acceptance_failed"
+            assert accepted(row, require_readback=args.require_readback), "pair_acceptance_failed"
     except Exception as error:
         failure = str(error) if isinstance(error, AssertionError) and re.fullmatch(r"[a-z0-9_]+", str(error)) else type(error).__name__.lower()
     finally:

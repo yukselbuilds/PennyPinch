@@ -37,6 +37,18 @@ class TargetedQueryComparisonTests(unittest.TestCase):
         self.assertFalse(accepted({**row, "request_count": 3}))
         self.assertFalse(accepted({**row, "total_usage": {**row["total_usage"], "output_tokens": None}}))
 
+    def test_required_readback_needs_one_successful_read_and_original_upstream(self):
+        row = {"turn_completed": True, "exact_answer": True, "tool_delivery_exact": True,
+               "first_upstream_cache_read_input_tokens": 0, "forwarded_http_attempts": 4,
+               "request_count": 4, "total_usage": {"total_input_tokens": 4000, "output_tokens": 52,
+                   "cache_read_input_tokens": 1700, "total_tokens": 4052},
+               "read_calls": 1, "failed_mcp_events": 0, "original_read_on_wire": True}
+        accepted = self.bench["accepted"]
+        self.assertTrue(accepted(row, require_readback=True))
+        self.assertFalse(accepted({**row, "read_calls": 0}, require_readback=True))
+        self.assertFalse(accepted({**row, "failed_mcp_events": 1}, require_readback=True))
+        self.assertFalse(accepted({**row, "original_read_on_wire": False}, require_readback=True))
+
     def test_wire_observation_keeps_only_known_tool_metadata(self):
         namespace = "mcp__" + self.bench["SERVER"]
         read = "read_archived_report"
@@ -68,6 +80,37 @@ class TargetedQueryComparisonTests(unittest.TestCase):
         self.assertEqual(row["calls"], {"functions.exec": 1})
         self.assertEqual(row["outputs"], {"functions.exec": 1})
         self.assertNotIn(marker, json.dumps(row))
+
+    def test_wire_readback_requires_a_matched_exact_original_result(self):
+        read = self.bench["READ"]
+        report = self.bench["REPORT"].decode("utf-8")
+        reference = {"archive_id": "a" * 32, "source_tool": self.bench["CAPTURE"], "source_call_id": "mcp:fixture"}
+        value = {**reference, "stream": "stdout", "offset": 0, "total_bytes": len(report.encode()),
+                 "next_offset": len(report.encode()), "exit_code": 0, "text": report}
+        body = {"input": [{"type": "additional_tools", "tools": [
+                    {"type": "namespace", "name": "functions", "tools": [{"type": "custom", "name": "exec"}]}]},
+                {"type": "custom_tool_call", "name": "exec", "call_id": "read"},
+                {"type": "custom_tool_call_output", "call_id": "read"}]}
+        output = body["input"][-1]
+        observe = self.bench["wire_observation"]
+        for text, is_error, matched, expected in ((report, False, True, True), (report[:-1], False, True, False),
+                                                  (report, True, True, False), (report, False, False, False)):
+            envelope = {"content": [{"type": "text", "text": json.dumps({**value, "text": text})}], "isError": is_error}
+            output["call_id"] = "read" if matched else "unknown"
+            output["output"] = [{"type": "input_text", "text": "Sandbox execution\nOutput:\n"},
+                                {"type": "input_text", "text": json.dumps(envelope)}]
+            observed = observe(body)
+            self.assertIs(observed["original_read_on_wire"], expected)
+            self.assertNotIn(reference["archive_id"], json.dumps(observed))
+        output["call_id"] = "read"
+        for text in (report, json.dumps(report)):
+            output["output"] = "Sandbox execution\nOutput:\n" + text + "\n"
+            self.assertTrue(observe(body)["original_read_on_wire"])
+        output["output"] = "Sandbox execution\nOutput:\n" + report[:-1]
+        self.assertFalse(observe(body)["original_read_on_wire"])
+        body["input"] = [{"type": "function_call", "name": self.bench["NAMESPACE"] + "__" + read, "call_id": "read"},
+                         {"type": "function_call_output", "call_id": "read", "output": json.dumps(value)}]
+        self.assertTrue(observe(body)["original_read_on_wire"])
 
     def test_code_mode_fixture_uses_only_the_named_report_call(self):
         item = self.bench["fixture_call"]("read_archived_report", {"offset": 0}, 2, code_mode=True)

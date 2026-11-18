@@ -146,6 +146,16 @@ Tek MCP bağlantısında iki başarılı 5.926 baytlık okuma ve iki çapraz red
 
 Codex’in kısıtlı okuma profili iki kez komut başlamadan durdu. Unelevated backend bu profil için yükseltilmiş sandbox istedi. MXC bu çalıştırıcıda yoktu. Bu koşular dosya reddi olarak sayılmadı. Genel Codex profil sınırı uygun backend ile açık. Geri okuma dahil canlı maliyet ayrı kabulde kalır. [Motor ve izin kanıtı](../proofs/targeted-query-comparison.json) · [OpenAI Windows sandbox belgesi](https://learn.chatgpt.com/docs/windows/windows-sandbox)
 
+#### Zorunlu geri okumanın canlı kullanım kıyası
+
+Her iki kol da aynı 48 kayıtlık sentetik raporu, aynı soruyu ve kesin JSON yanıt şemasını kullanır. Kontrol tam arşiv okuması yapar. Aday hedefli sorgudan sonra aynı arşivi tam okur. Codex kod kipinde, referans alındıktan sonraki araç çağrıları tek kod çalıştırmasında sırayla tamamlanır. Kabul, bir hatasız tam okumanın CLI’de görülmesini, aynı özgün 5.926 baytın sağlayıcıya ulaşmasını ve iki kesin son yanıtı gerektirir.
+
+Önce pinli CLI ve motorla yerel çift sınanır. Canlı koşu mevcut izole ChatGPT Free profiliyle tek çift kullanır. İki kolda model ve efor eşleşir, ilk isabet sıfırdır, kol başına dört ve toplam sekiz sağlayıcı isteği geçilebilir. Başarılı tüm isteklerin giriş, çıkış ve cache okuma sayaçları tam eşleşmelidir. Sonuç yalnız eşleşen tek görevin sağlayıcı token farkını verir. Gerçek dolar tutarı için istek bazında ücret kanıtı gerekir.
+
+Canlı çiftte dört ve dört istek eşleşti. İki JSON cevap doğru ve iki CLI geri okuması birebir. Kontrolün özgün raporu sağlayıcı isteğinde doğrulandı. Adayın sağlayıcıya giden çıktısında tam bayt eşitliği saptanamadı. İki motor normal kapandı ve CCR arşivleri boştu. Kaydedilen sayaçlar ve araç olayları adayın hangi biçimde iletildiğini belirlemeye yetmedi. Geçerli kıyas veya fatura tutarı çıkmadı.
+
+Yerel test, önceki denetleyicide birebir düz metin ve JSON dizesi biçimlerinin gözden kaçtığını gösterdi. Denetleyici şimdi bu iki biçimi de tam raporla karşılaştırıyor. Kesilmiş içerik, araç hatası ve eşleşmeyen çağrı geçersiz kalıyor. Son yerel adayda 22 odaklı test ve altı eşleşen motor isteği geçti. Canlı sonuç denetleyici değişikliğinden önce kaydedildi. [Kanıt](../proofs/targeted-query-comparison.json)
+
 ### H041-e: deneysel kurallar
 
 16 Kasım 2026 kullanıcı kararı: ModHarness-RL'den esinlenen kural deneyi **isteğe bağlı ve varsayılan kapalıdır**. Ana ajan kapsam, ölçüm ve izin sözleşmesini üstlenir; bu kayıt yalnız plandır. Amaç, büyük araç çıktılarında gereken bilgiyi seçmek ve doğrulanmış hata döngülerini Learn içinde öneri olarak göstermek. [Makale v1](https://arxiv.org/abs/2611.18533v1) yöntem kaynağıdır; buradaki kabul koşulları ürünümüze aittir. Model eğitimi, kendiliğinden kod üretip çalıştırma ve bütün sohbetleri yeniden özetleme kapsam dışıdır.

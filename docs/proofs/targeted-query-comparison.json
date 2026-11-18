@@ -900,5 +900,152 @@
         "sha256_of_sorted_input_hashes": "a97afaf1840c707790668c90855f05e6133c1be6393350ebdb464cc5b34bfcd5"
       }
     }
+  },
+  "required_live_readback": {
+    "date": "2026-11-18",
+    "entry_point": "bench/context_tools/targeted_query_compare.py --require-readback",
+    "cli": "codex-cli 0.169.0-alpha.11.1",
+    "engine": "0.44.0",
+    "os": "Windows-10-10.0.19045-SP0",
+    "report_bytes": 5926,
+    "report_rows": 48,
+    "report_sha256": "d9a7ea509ff676ba9051e1f52237dabbf424f4a1ee78b3e3ae4b2c5193459318",
+    "prompt_sha256": "60a78c10caa21c9fed4c7fd5b08e917cd67ef6b7d7f1736972352268aa5e4c68",
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "limits": {
+      "requests_per_arm": 4,
+      "requests_per_pair": 8
+    },
+    "focused_tests": {
+      "count": 22,
+      "input_fingerprints": {
+        "count": 30,
+        "matched_during_run": true,
+        "sha256_of_sorted_input_hashes": "9c9326ed654077a29533d29c2d9f3a8b0ae5d59379076fbe7bd2a276fc9b99e2",
+        "inputs_changed_after_run": []
+      }
+    },
+    "loopback": {
+      "run": "6aa6af93a25d4b3f81af8ce0897c07ba",
+      "passed": true,
+      "engine_requests": 6,
+      "provider_requests": 0,
+      "arms": {
+        "full_read": {
+          "requests": 3,
+          "usage_records": 3,
+          "exact_answer": true,
+          "cli_read_exact": true,
+          "read_calls": 1,
+          "query_calls": 0,
+          "original_read_on_wire": true,
+          "first_request_cached_input": 0,
+          "owned_engine_closed": true,
+          "input_fingerprints": {
+            "count": 44,
+            "matched_during_run": true,
+            "sha256_of_sorted_input_hashes": "6a4998d7a62ce1533c28181ebb29d900a0941132ef248da67358ac79653bb6f4",
+            "inputs_changed_after_run": []
+          }
+        },
+        "targeted": {
+          "requests": 3,
+          "usage_records": 3,
+          "exact_answer": true,
+          "cli_read_exact": true,
+          "read_calls": 1,
+          "query_calls": 1,
+          "original_read_on_wire": true,
+          "first_request_cached_input": 0,
+          "owned_engine_closed": true,
+          "input_fingerprints": {
+            "count": 44,
+            "matched_during_run": true,
+            "sha256_of_sorted_input_hashes": "f8e3290b2f955a33054775df52fdb0a998ed522683d33eb1bb4cc718da320d3a",
+            "inputs_changed_after_run": []
+          }
+        }
+      }
+    },
+    "live": {
+      "run": "32564921bd8c49c1a250e1fbefd1f756",
+      "account_scope": "existing isolated ChatGPT Free profile",
+      "status": "targeted_wire_read_unverified",
+      "comparison_accepted": false,
+      "provider_requests": 8,
+      "arms": {
+        "full_read": {
+          "requests": 4,
+          "usage_records": 4,
+          "exact_answer": true,
+          "cli_read_exact": true,
+          "read_calls": 1,
+          "query_calls": 0,
+          "original_read_on_wire": true,
+          "first_request_cached_input": 0,
+          "provider_usage": {
+            "total_input_tokens": 44973,
+            "output_tokens": 331,
+            "total_tokens": 45304,
+            "cache_read_input_tokens": 19968,
+            "cache_creation_input_tokens": 0
+          },
+          "owned_engine_closed": true,
+          "input_fingerprints": {
+            "count": 44,
+            "matched_during_run": true,
+            "sha256_of_sorted_input_hashes": "9ce55b8ccee43baa0366deaadc5de373d1b247e081eb63ae5de6c3b55e58c037",
+            "inputs_changed_after_run": [
+              "bench/context_tools/targeted_query_compare.py"
+            ]
+          }
+        },
+        "targeted": {
+          "requests": 4,
+          "usage_records": 4,
+          "exact_answer": true,
+          "cli_read_exact": true,
+          "read_calls": 1,
+          "query_calls": 1,
+          "original_read_on_wire": false,
+          "first_request_cached_input": 0,
+          "provider_usage": {
+            "total_input_tokens": 45339,
+            "output_tokens": 298,
+            "total_tokens": 45637,
+            "cache_read_input_tokens": 30464,
+            "cache_creation_input_tokens": 0
+          },
+          "owned_engine_closed": true,
+          "input_fingerprints": {
+            "count": 44,
+            "matched_during_run": true,
+            "sha256_of_sorted_input_hashes": "c378d7c7aec68699f7b209650a18fc02147cf8449b053e7ef518be47ba59e69a",
+            "inputs_changed_after_run": [
+              "bench/context_tools/targeted_query_compare.py"
+            ]
+          }
+        }
+      },
+      "ccr_entries": {
+        "full_read": 0,
+        "targeted": 0
+      },
+      "provider_token_delta": null,
+      "dollar_cost_measured": false
+    },
+    "observer_update": {
+      "local_test_evidence": "An exact direct text or JSON string was previously not recognized.",
+      "checks_current": [
+        "MCP content",
+        "exact plain text",
+        "exact JSON string",
+        "reject truncated content",
+        "reject error and unmatched call"
+      ],
+      "targeted_live_wire_format": "unknown",
+      "live_retried_after_update": false
+    }
   }
 }
