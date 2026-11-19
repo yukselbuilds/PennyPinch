@@ -622,6 +622,7 @@ flowchart TD
 - **Dosyalar:** `src-tauri/src/runtime/ingress.rs`, `src-tauri/src/runtime/ingress_relay.rs`, `src-tauri/src/runtime/manager.rs` ve testleri, `src-tauri/src/main.rs`, `docs/decisions/003-connection-ingress.md`, `docs/proofs/connection-ingress.md`, `work/proofs/connection-ingress/`. Pinned engine/manifest/controller değiştirilmedi.
 
 ### H041 — Cache, bütünlük ve gecikme/fayda regresyonu
+- **19 Kasım kullanıcı kararı.** H041’in 6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü açık. Kullanıcı sıradaki yapılabilir göreve geçmeyi seçti. H042’nin güncel yerel paket doğrulaması tamamlandı. [Açık kabuller](docs/validation/optimization-benefit.md#h041-açık-kabulleri).
 
 - **18 Kasım kapanış görünümü.** Gerçek Codex MCP okumasından seçici korumaya ve izinli native dosya okumasından birebir geri alıma giden yerel yollar doğrulandı. Kısıtlı Codex dosya profili uygun sandbox ortamı bekliyor. Zorunlu geri okumalı canlı kıyas tam bayt eşitliğiyle tamamlandı. Sorgu ve tam okuma 34.750 yerine 45.579 token kullandı. ChatGPT Responses WebSocket canlı kaydı ve gerçek yerel modelin Chat Completions SSE kullanımı eşleşti. Ücret, uzak sağlayıcı ve API-key kabulleri ile Windows 11 ve yeni macOS ARM64 pini açık. Serena’nın Rust ve TypeScript pilotu tamamlandı. Learn’in ilk canlı kıyası tamamlandı. Geniş Learn kabulü ve dondurulan kurallar açık. [Güncel devir](docs/IMPLEMENTATION_STATUS.md#sıradaki-yerel-dilim)
 - **Durum:** 10 Kasım, yerel Windows 10 kabulü geçti. Canlı API-key ve Windows 11 kabulü açık. Ana ajan ölçüm semantiği ve motor değişikliğini üstlendi. Kontrol ve Headroom kolları, fixture’lar ve eşikler koşudan önce tanımlandı. [Plan](docs/decisions/027-optimization-regression.md), [güncel kanıt](docs/proofs/optimization-local-acceptance.json).
@@ -709,6 +710,7 @@ flowchart TD
 - **Dosyalar:** `bench/optimization/`, `tests/fixtures/optimization/`, `docs/validation/optimization-benefit.md`, `docs/USER_GUIDE.md` (planlanan).
 
 ### H042 — İmzalı uygulama güncellemesi ve kurtarma
+- [x] **19 Kasım güncel 0.44.0 yerel QA paketi.** 6702b64 kaynağıyla Windows 10 release exe’si, imzalı NSIS paketi ve çıkarılan uygulama doğrulandı. Yanlış sürüm, kimlik ve anahtar reddedildi. Windows 11 x64 ve üretim teslimi açık. [Kanıt](docs/proofs/windows-update-044-qa.json).
 - **Durum:** 10 Kasım, H042’nin Windows 10 yerel imza, indirme, kurulum, geri dönüş ve belirtilen hata kabulü tamamlandı. Ana ajan imza, sürüm, kaynak, motor ve kayıt güvenini üstlendi. Ana H042, Windows 11 ve üretim yayını kabulü için açık. [Güven sözleşmesi](docs/decisions/028-update-trust.md).
 - [ ] Güncelleme denetimi, indirme doğrulama, uygun zamanda uygulama ve son çalışan sürüme dönüş gerçek ürün akışına bağlanır.
 - [x] **H042-a yerel imza ve bütünlük.** İmzalı manifest, SemVer, kararlı/deneme kanalı, uygulama/hedef ve sabit motor pini birlikte doğrulanır. Kurucunun boyutu ve SHA-256 değeri akışta kontrol edilir. Dört gerçek Tauri fixture imzası ve sekiz odaklı Rust testiyle geçti. [Doğrulama](docs/validation/windows-update.md), [kanıt](docs/proofs/windows-update-trust.json).

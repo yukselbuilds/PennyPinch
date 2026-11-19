@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "task": "H042 current local package verification",
+  "date": "2026-11-19",
+  "status": "passed",
+  "main_status": "open",
+  "scope": "separately_identified_windows_10_qa_release_mode_signed_manifest_and_extraction",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "build_source": "6702b64a85affffaf4f7ca6e583f9cb6cdfe8de8",
+  "previous_qa_engine_pin": "0.41.0",
+  "qa_verified_manifest": {
+    "schema_version": 2,
+    "target": "windows-x86_64",
+    "version": "0.1.1",
+    "engine": {
+      "version": "0.44.0",
+      "runtime_manifest_sha256": "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe"
+    }
+  },
+  "release_profile": {
+    "lto": false,
+    "codegen_units": 16,
+    "strip": true
+  },
+  "toolchain": {
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "node": "v25.2.1",
+    "pnpm.cmd": "11.25.0"
+  },
+  "matched_build_inputs": 364,
+  "python_package_tests": 7,
+  "previous_source_gate_reused": {
+    "matching_inputs": 304,
+    "frontend_tests": 225,
+    "rust_tests": 478
+  },
+  "verified_application": {
+    "path": "work/proofs/update/release-preparation/application-6b8dd4e0/headroom-desktop.exe",
+    "size_bytes": 10731520,
+    "sha256": "c299afada22bb9f16f9133a55e14c9d9cd1ab8e4e6fb0860f4ecab4375e631bc"
+  },
+  "verified_release_receipt": {
+    "path": "work/proofs/update/release-preparation/application-6b8dd4e0/prepared/release-receipt.json",
+    "sha256": "0ac1b9dc12d8037efb10a07d41f49dedfd7b67a1b1d93a6676db2fe43811b967"
+  },
+  "verified_installer": {
+    "name": "Headroom_0.1.1_x64-update.exe",
+    "bytes": 3429755,
+    "sha256": "e3b7777b12b437457d50f465e2ca680946965362ec48853f09ae3361056b0419"
+  },
+  "fixture_private_key_removed": true,
+  "created_qa_app_state": false,
+  "checks": [
+    {
+      "name": "update_package_python_tests",
+      "passed": true,
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "name": "temporary-fixture-key",
+      "passed": true,
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "name": "actual-headroom-release-build",
+      "passed": true,
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "name": "actual-application-probe",
+      "passed": true,
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "name": "prepare-real-headroom-package",
+      "passed": true,
+      "exit_code": 0,
+      "expected_exit_code": 0
+    },
+    {
+      "name": "wrong-version-native-probe",
+      "passed": true,
+      "exit_code": 2,
+      "expected_exit_code": 2
+    },
+    {
+      "name": "wrong-version-preparation-refused",
+      "passed": true,
+      "exit_code": 1,
+      "expected_exit_code": 1
+    },
+    {
+      "name": "wrong-identifier-native-probe",
+      "passed": true,
+      "exit_code": 2,
+      "expected_exit_code": 2
+    },
+    {
+      "name": "wrong-identifier-preparation-refused",
+      "passed": true,
+      "exit_code": 1,
+      "expected_exit_code": 1
+    },
+    {
+      "name": "wrong-embedded-key-refused",
+      "passed": true,
+      "exit_code": 1,
+      "expected_exit_code": 1
+    }
+  ],
+  "published": false,
+  "new_ci_dispatches": 0,
+  "open": [
+    "native Windows 11 x64 update and rollback",
+    "authorized production HTTPS source and signing key"
+  ],
+  "local_detail": {
+    "path": "work/proofs/update/release-preparation/application-6b8dd4e0/application.json",
+    "sha256": "fb28eb9769a7b60b27f21bd5d603376821417089152a8911dcdf8ab9947e29ac"
+  }
+}

@@ -1,6 +1,10 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 19 Kasım — H042 güncel 0.44.0 yerel QA paketi
+
+Kullanıcının kararıyla H041 dokuz açık kabulüyle beklemede. Ana ajan imza, sürüm ve motor pini doğruluğunu üstlendi. Güncel Windows 10 release exe’si yerel test anahtarıyla paketlendi. Gerçek Rust doğrulayıcı imza ve özetleri kabul etti. Çıkarılan exe kimlik ve sürüm kontrolünü geçti. Yanlış kimlik, sürüm ve anahtar reddedildi. Yedi Python testi ve 364 eşleşen build girdisi kayıtlı. Windows 11 x64 güncelleme ve üretim teslimi açık. **45/54 ana görev tamamlandı.** [Kanıt](proofs/windows-update-044-qa.json) · [Görev listesi](../TASKS.md)
+
 ## 19 Kasım — H041 kapanış koşulları
 
 Ana ajan güncel 6531cc4 adayının macOS 0.44.0 iş akışı ön kontrolünü doğruladı. 230 girdi eşleşti. GitHub CLI erişimi doğrulandı. Kullanıcı kalan kotayı 0,10 USD olarak teyit etti. 0.41.0 ile önceki gerçek paket/trafik işi 5 dakika 39 saniye sürdü. 15 dakikalık yeni iş ücretsiz kota bekliyor. CircleCI Free Apple Silicon, özel depo erişimine ayrı yetki gerektiren aday yol. **H041’de 6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü açık. 45/54 ana görev tamamlandı.** Sıradaki çalıştırılabilir adım, ücretsiz Mac ortamı teyit edilince paket ve native trafiği doğrulamak. [Koşullar](validation/optimization-benefit.md#19-kasım--kalan-kabullerin-başlatma-koşulları) · [Görev listesi](../TASKS.md)
