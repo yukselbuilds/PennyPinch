@@ -198,12 +198,12 @@ pub(crate) fn show(app: &tauri::AppHandle) {
         let _ = window.show();
         let _ = window.set_focus();
     }
+    notify(app);
 }
 pub(crate) fn request_exit(app: &tauri::AppHandle) {
     app.state::<Lifecycle>()
         .request(&Uuid::new_v4().to_string());
     show(app);
-    notify(app);
 }
 
 #[cfg(test)]

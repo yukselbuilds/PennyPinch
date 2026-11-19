@@ -1,22 +1,44 @@
 import { useEffect, useRef, useState } from "react";
+import { invoke, isTauri } from "@tauri-apps/api/core";
 import { createNativeMetricsClient, type MetricPeriod, type OverviewConnection } from "../../lib/metrics";
 import { createOverviewSession, type OverviewReadState } from "../../lib/metricsSession";
 import { discoverySession, type ClientKind } from "../../lib/integrations";
 import { connectionActionClient } from "../../lib/connectionActions";
+import { listenForDesktopChanges } from "../../lib/desktop-events";
 
 export function useOverviewMetrics(period: MetricPeriod, active: boolean, showRecommendations: boolean) {
   const [state, setState] = useState<OverviewReadState>({ period, metrics: { kind: "loading" } });
+  const [visible, setVisible] = useState(() => !isTauri());
   const session = useRef<ReturnType<typeof createOverviewSession> | null>(null);
   if (!session.current) session.current = createOverviewSession(createNativeMetricsClient().read, setState);
   useEffect(() => {
-    session.current!.target(period, active, showRecommendations);
-    if (!active) return;
+    if (!isTauri()) return;
+    let disposed = false;
+    let request = 0;
+    let unlisten: (() => void) | null = null;
+    const readVisibility = async () => {
+      const stamp = ++request;
+      // WebView2 can report document.visibilityState as visible while the window is in the tray.
+      const value = await invoke<unknown>("plugin:window|is_visible", { label: "main" }).catch(() => null);
+      if (!disposed && stamp === request && typeof value === "boolean") setVisible(value);
+    };
+    void listenForDesktopChanges(() => void readVisibility()).then(remove => {
+      if (disposed) { remove?.(); return; }
+      unlisten = remove;
+      void readVisibility();
+    }, () => { if (!disposed) void readVisibility(); });
+    return () => { disposed = true; unlisten?.(); };
+  }, []);
+  const polling = active && visible;
+  useEffect(() => {
+    session.current!.target(period, polling, showRecommendations);
+    if (!polling) return;
     const timer = window.setInterval(() => session.current!.refresh(), 5000);
     return () => {
       window.clearInterval(timer);
       session.current!.target(period, false, showRecommendations);
     };
-  }, [period, active, showRecommendations]);
+  }, [period, polling, showRecommendations]);
   return {
     metrics: state.period === period ? state.metrics : { kind: "loading" as const },
     refresh: () => session.current!.refresh(),

@@ -115,6 +115,7 @@ export async function invoke(command:string,args:any){
  if(command==='get_preferences')return preferences(id);
  if(command==='save_preferences'){language=args.language;theme=args.theme;if(typeof args.showRecommendations==='boolean')showRecommendations=args.showRecommendations;revision++;for(const cb of callbacks)cb();return preferences(id);}
  if(command==='get_desktop_state')return desktop(id);
+ if(command==='plugin:window|is_visible')return args.label==='main';
  if(command==='request_desktop_exit'||command==='cancel_desktop_exit'){exit=command==='request_desktop_exit'?'confirmation_required':'idle';return desktop(id);}
  if(command==='get_operating_snapshot')return {schema_version:1,request_id:id,status:'snapshot',autostart:{status:'disabled',fingerprint:null},runtime:{status:'inactive',runtime_generation:null,protected_tools:null,local_stats_enabled:null,beacon_enabled:null,mode:null,savings_profile:null,ccr_ttl_seconds:null}};
  if(command==='get_discovery_snapshot'||command==='scan_discovery')return {schema_version:1,request_id:id,status:'partial',scan_generation:command==='scan_discovery'?++generation:generation,installations:scenario==='empty'?[]:installations,warnings:['scope_partial','absence_is_not_unsupported']};

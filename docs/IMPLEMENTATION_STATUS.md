@@ -1,6 +1,10 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 19 Kasım — Tepside Genel Bakış yenilemesi
+
+Ana ajan native pencere yaşam döngüsü, panel sorgusu ve motor ölçümünü birlikte doğruladı. Windows 10’da yaklaşık 12 saniye tepside 0 otomatik panel sorgusu, açılışta tek sorgu ve gizliyken yeni motor ölçümü gözlendi. Son yerel kapıda 225 ön yüz ve 478 Rust testiyle derlemeler geçti. **Astra incelemesindeki üç ekran takip maddesi tamamlandı. 45/54 ana görev tamamlandı. H041’de 6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü açık.** [Kanıt](proofs/tray-lifecycle.md#19-kasım-2026--tepside-genel-bakış-yenilemesi) · [Açık H041 kabulleri](validation/optimization-benefit.md#h041-açık-kabulleri)
+
 ## 19 Kasım — Uzun oturum grafiği
 
 Ana ajan toplam, zaman aralığı ve SQLite okuma doğruluğunu birlikte doğruladı. 90 günlük saklamada 65 ölçüm günü 64 grafik noktasına sığdı. Kesirli oranı olan geçerli kaydın JSON okuması düzeltildi. Windows 10 yerel kapısında 225 ön yüz ve 478 Rust testi, biçim kontrolü ve iki derleme geçti. 24 opt-in Rust testi atlandı. Edge’de tarih aralığı iki dilde doğrulandı. **45/54 ana görev tamamlandı. H041’de 6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü açık.** Astra incelemesindeki açık ekran maddesi tepside panel yenilemesi. [Kanıt](proofs/metrics-store.md#19-kasım-2026--uzun-oturum-grafiği) · [Görev listesi](../TASKS.md)

@@ -34,3 +34,15 @@ Otomatik koşular tamamlandı ve geçici state geri yüklendi. Son kullanıcı m
 `closeout.json` ile güncel kaynak/binary/dist, aynı araç zinciri, Windows build ve doğrulayıcı Python ortamı önceki PASS ile eşleşti. Ürün kodu değişmedi;146 frontend/356 Rust ve derleme kontrolleri tekrar çalıştırılmadı. Son kabul ve belge kapanışı ana ajan tarafından yapıldı; yeni devir veya geliştirme tasarruf ölçümü yok.
 
 H030 kapatıldı; H031 başlamadı. Ana görev sonunda duruldu.
+
+## 19 Kasım 2026 — Tepside Genel Bakış yenilemesi
+
+Windows 10 22H2 x64 üzerinde aynı UI ve native pencere akışıyla düzeltme öncesi ve sonrası gözlendi. Ana ajan pencere yaşam döngüsü ve ölçüm toplayıcısı kabulünü birlikte üstlendi. Düzeltme öncesinde Windows pencereyi gizlediği halde WebView2 `document.visibilityState` değerini `visible` tutuyordu. Yaklaşık 12 saniyede 2 otomatik `get_overview_snapshot` isteği gönderildi.
+
+Headroom’un masaüstü bildiriminden sonra ana pencerenin native görünürlüğü okunuyor. Pencere gizlendiğinde Genel Bakış oturumu ve beş saniyelik yenileme duruyor. Tepsiden Aç eylemi ilk yenilemeyi hemen başlatıyor ve normal aralık geri geliyor. Bu testte 12013 ms gizliyken 0 otomatik sorgu ve açılıştan sonraki ilk 2,4 saniyede 1 sorgu görüldü. Sonraki düzenli sorgu da geçti.
+
+Test, X için gerçek pencere kapatma iletisini ve açmak için sahipli tepsi menüsünün Aç komutunu kullandı. Windows pencere görünürlüğü doğrudan ölçüldü. İzole Headroom 0.44.0 motoru yerel olarak hazırdı. Pencere hâlâ gizliyken bir tanı sorgusu son ölçüm zamanının gizlenme anından sonra ilerlediğini doğruladı. Tanı sorgusunun kimliği otomatik panel sayımından çıkarıldı. Sahipli geliştirme penceresi çıkış kodu 0 ile kapandı. İlk motorlu deneme doğrulayıcı süre sınırına ulaştı. İkinci denemede tepsi simgesinin sol tıklama iletisi açma adımına ulaşmadı. Son koşu native Aç menü komutuyla tamamlandı.
+
+Son yerel kapıda 225 ön yüz ve 478 Rust testi, biçim kontrolü ve iki derleme geçti. 24 opt-in Rust testi atlandı. Aynı ön yüz derlemesi eşleşen kaynak ve dist parmak iziyle kullanıldı. Beş ekranın izole Edge testinde 60 erişilebilirlik kontrolü geçti ve 0 ihlal bulundu. 304 kaynak, test ve yapılandırma girdisi eşleşti.
+
+[Önceki gözlem](../../work/proofs/panel-visibility/native-12be617fb1/baseline-result.json) · [Son native gözlem](../../work/proofs/panel-visibility/native-12be617fb1/candidate-observation-872f98b0/result.json) · [Yerel kapı](../../work/proofs/panel-visibility/gate-1dcb0800-aeba-4132-b477-e35091a51d82.json) · [Ekran koşusu](../../work/proofs/accessibility/ui-eb4d3baf-c1bb-499b-8e35-135f7219026d/result.json). Yerel kapı SHA-256 `11b279528f8ed2014739238ce5494038fc4fb41e590c2a5296e7337b081cedfb`.
