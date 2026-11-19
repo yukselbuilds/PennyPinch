@@ -1,13 +1,14 @@
 use super::normalize::*;
 use super::query::AggregateStatus;
 use super::store::*;
+use crate::state::store::{OperatingPreferences, PreferenceStore, PreferencesReply};
 use chrono::{
     DateTime, Duration, FixedOffset, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, TimeZone,
     Utc,
 };
 use rusqlite::Connection;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use uuid::Uuid;
 
 fn fixture_root() -> PathBuf {
@@ -56,10 +57,7 @@ fn insert(store: &MetricsStore, values: &[Observation]) -> Result<IngestResult, 
     )
 }
 
-#[test]
-fn operating_retention_is_shared_by_ingest_overview_activity_and_reopen() {
-    use crate::state::store::{OperatingPreferences, PreferenceStore, PreferencesReply};
-    let path = fixture_root();
+fn fixture_preferences(path: &Path) -> PreferenceStore {
     let project =
         fs::canonicalize(PathBuf::from(env!("CARGO_MANIFEST_DIR")).parent().unwrap()).unwrap();
     let relative = fs::canonicalize(path.parent().unwrap())
@@ -67,29 +65,37 @@ fn operating_retention_is_shared_by_ingest_overview_activity_and_reopen() {
         .strip_prefix(&project)
         .unwrap()
         .join("preferences");
-    let prefs = PreferenceStore::for_test(project, relative).unwrap();
-    let save = |days| {
-        let PreferencesReply::Snapshot(current) = prefs.get_preferences(Uuid::new_v4().to_string())
-        else {
-            panic!("preference read")
-        };
-        assert!(matches!(
-            prefs.save_with_operating(
-                Uuid::new_v4().to_string(),
-                "tr".into(),
-                "system".into(),
-                Some(OperatingPreferences {
-                    retention_days: days,
-                    ..Default::default()
-                }),
-                None,
-                None,
-                current.revision,
-                current.state_fingerprint
-            ),
-            PreferencesReply::Snapshot(_)
-        ));
+    PreferenceStore::for_test(project, relative).unwrap()
+}
+
+fn save_retention(prefs: &PreferenceStore, days: u16) {
+    let PreferencesReply::Snapshot(current) = prefs.get_preferences(Uuid::new_v4().to_string())
+    else {
+        panic!("preference read")
     };
+    assert!(matches!(
+        prefs.save_with_operating(
+            Uuid::new_v4().to_string(),
+            "tr".into(),
+            "system".into(),
+            Some(OperatingPreferences {
+                retention_days: days,
+                ..Default::default()
+            }),
+            None,
+            None,
+            current.revision,
+            current.state_fingerprint
+        ),
+        PreferencesReply::Snapshot(_)
+    ));
+}
+
+#[test]
+fn operating_retention_is_shared_by_ingest_overview_activity_and_reopen() {
+    let path = fixture_root();
+    let prefs = fixture_preferences(&path);
+    let save = |days| save_retention(&prefs, days);
     save(90);
     let store = MetricsStore::in_directory(&path).with_preferences(prefs.clone());
     let values = [
@@ -132,6 +138,83 @@ fn operating_retention_is_shared_by_ingest_overview_activity_and_reopen() {
         insert(&store, &values[..1]).unwrap().inserted,
         0,
         "pruned origins must not be reimported"
+    );
+}
+
+#[test]
+fn metrics_store_long_session_reads_fractional_percent_from_disk() {
+    let store = MetricsStore::in_directory(&fixture_root());
+    let mut event = observation("fractional-percent", "2026-11-04T08:00:00Z");
+    event.before.tokens = Some(119);
+    assert_eq!(insert(&store, &[event]).unwrap().inserted, 1);
+    let result = store.query_at(Period::Session, now()).unwrap();
+    assert_eq!(result.totals.saved_tokens, Some(69));
+    assert_eq!(result.totals.saved_percent, Some(6900.0 / 119.0));
+}
+
+#[test]
+fn metrics_store_long_session_groups_chart_without_losing_totals() {
+    let path = fixture_root();
+    let prefs = fixture_preferences(&path);
+    save_retention(&prefs, 90);
+    let store = MetricsStore::in_directory(&path).with_preferences(prefs);
+    let observations: Vec<_> = (0..65)
+        .map(|index| {
+            let stamp = (now() - Duration::days(64 - index)).to_rfc3339();
+            let mut item = observation(&format!("day-{index}"), &stamp);
+            if index == 0 {
+                item.after.tokens = Some(200);
+            } else if index == 1 {
+                item.before.tokens = Some(200);
+                item.after.tokens = Some(150);
+            }
+            item
+        })
+        .collect();
+    assert_eq!(insert(&store, &observations[..64]).unwrap().inserted, 64);
+    let at_limit = store.query_at(Period::Session, now()).unwrap();
+    assert_eq!(at_limit.series.len(), 64);
+    assert_eq!(at_limit.series[0].totals.comparable_events, 1);
+
+    assert_eq!(insert(&store, &observations[64..]).unwrap().inserted, 1);
+    let snapshot = store.query_at(Period::Session, now()).unwrap();
+    assert_eq!(snapshot.retention_days, 90);
+    assert_eq!(snapshot.coverage.events, 65);
+    assert_eq!(snapshot.totals.comparable_events, 65);
+    assert_eq!(snapshot.totals.before_tokens, Some(6_600));
+    assert_eq!(snapshot.totals.after_tokens, Some(3_500));
+    assert_eq!(snapshot.totals.saved_tokens, Some(3_100));
+    assert_eq!(snapshot.series.len(), 64);
+
+    let first = &snapshot.series[0];
+    assert_eq!(first.at_utc, "2026-08-31T21:00:00Z");
+    let first_json = serde_json::to_value(first).unwrap();
+    assert_eq!(first_json["through_utc"], "2026-09-01T21:00:00Z");
+    assert_eq!(first.totals.comparable_events, 2);
+    assert_eq!(first.totals.saved_tokens, Some(-50));
+    assert_eq!(first.totals.saved_percent, Some(-5000.0 / 300.0));
+    let last = snapshot.series.last().unwrap();
+    assert_eq!(last.at_utc, "2026-11-03T21:00:00Z");
+    assert_eq!(last.totals.comparable_events, 1);
+    assert!(serde_json::to_value(last)
+        .unwrap()
+        .get("through_utc")
+        .is_none());
+
+    let mut chart_count = 0;
+    let mut chart_before = 0;
+    let mut chart_after = 0;
+    let mut chart_saved = 0;
+    for point in &snapshot.series {
+        chart_count += point.totals.comparable_events;
+        chart_before += point.totals.before_tokens.unwrap();
+        chart_after += point.totals.after_tokens.unwrap();
+        chart_saved += point.totals.saved_tokens.unwrap();
+    }
+    assert_eq!(chart_count, 65);
+    assert_eq!(
+        (chart_before, chart_after, chart_saved),
+        (6_600, 3_500, 3_100)
     );
 }
 

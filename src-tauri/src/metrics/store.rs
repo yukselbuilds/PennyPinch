@@ -20,6 +20,7 @@ const APPLICATION_ID: i64 = 0x48524d31;
 const MAX_DB_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_EVENTS: i64 = 100_000;
 const MAX_EVENT_BYTES: usize = 4096;
+const MAX_SERIES_POINTS: usize = 64;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -86,6 +87,8 @@ pub struct PeriodMetrics {
 #[derive(Debug, Serialize)]
 pub struct MetricBucket {
     pub at_utc: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub through_utc: Option<String>,
     pub totals: PeriodTotals,
 }
 
@@ -620,16 +623,24 @@ fn build_series<Tz: TimeZone>(
         };
         buckets.entry(at).or_default().push(event);
     }
-    if buckets.len() > 64 {
-        return Err(MetricsError::Capacity);
-    }
-    Ok(buckets
-        .into_iter()
-        .map(|(at, events)| MetricBucket {
+    let mut buckets = buckets.into_iter();
+    let mut series = Vec::with_capacity(buckets.len().min(MAX_SERIES_POINTS));
+    while let Some((at, mut events)) = buckets.next() {
+        // Merge earlier points only while the ungrouped days exceed the remaining budget.
+        let remaining_points = MAX_SERIES_POINTS - series.len();
+        let group_size = (buckets.len() + 1).div_ceil(remaining_points);
+        let mut through = None;
+        for (next_at, mut next_events) in buckets.by_ref().take(group_size - 1) {
+            events.append(&mut next_events);
+            through = Some(next_at);
+        }
+        series.push(MetricBucket {
             at_utc: utc_string(at),
+            through_utc: through.map(utc_string),
             totals: aggregate_event_refs(events),
-        })
-        .collect())
+        });
+    }
+    Ok(series)
 }
 
 fn event_time(value: &NormalizedEvent) -> Result<Option<DateTime<Utc>>, MetricsError> {

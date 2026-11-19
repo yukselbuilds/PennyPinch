@@ -36,7 +36,7 @@ Bu geliştirme işleri ürün görev sayımına eklenmez. DEV001/DEV002, H028–
 
 **18 Kasım Astra incelemesinin takip maddeleri** (ana görev sayısına eklenmez). Sürüm geri dönüşü ve SSE sayaçları H041 altında ele alınır. Aşağıdaki mevcut ekran regresyonları ayrı sırayla doğrulanır.
 - [x] **H024/H025/H027 · Yerel gün başlangıcı.** Genel Bakış ve Etkinlik atlanan gece yarısında ilk geçerli yerel anı kullanıyor. Santiago geçişini temsil eden SQLite fixture’ı Bugün, Son 7 gün ve günlük grafiği doğruladı. 30 dakika 1 saniyelik geçiş ve tüm günün atlanması da geçti. [Kanıt](docs/proofs/metrics-store.md#19-kasım-2026--atlanan-yerel-gece-yarısı).
-- [ ] **H024/H025 · Uzun oturum grafiği.** Aynı oturumda 90 günlük saklama ve 65 ayrı günde karşılaştırılabilir ölçüm varsa grafik sınırı tüm özeti düşürebiliyor. Kaynak koşulu doğrulandı. Yerel fixture ile dönem toplamını koru ve grafiği en fazla 64 noktaya grupla.
+- [x] **H024/H025 · Uzun oturum grafiği.** 90 günlük saklama ayarıyla 65 ölçüm günü 64 grafik noktasına sığdı. Genel Bakış tüm kayıtları toplamda gösteriyor. Birleşen günlerin aralığı Türkçe ve İngilizce grafikte doğrulandı. [Kanıt](docs/proofs/metrics-store.md#19-kasım-2026--uzun-oturum-grafiği).
 - [ ] **H025/H030 · Tepside panel sorgusu.** Ön yüz zamanlayıcısı pencere görünürlüğünü denetlemiyor. Gerçek gizleme/açma sırasında sorgu sayısını ölç, gizliyken panel yenilemesini durdur ve görünür olunca bir kez güncelle. Arka plan ölçüm toplayıcısı çalışmayı sürdürür.
 
 ## Çalışma kuralları

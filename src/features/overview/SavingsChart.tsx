@@ -54,8 +54,12 @@ export function SavingsChart({
 }: SavingsChartProps) {
   const points = buckets.flatMap((bucket) => {
     const value = bucket.totals.status === "measured" ? bucket.totals.saved_tokens : null;
+    if (value === null) return [];
     const time = timestamp(bucket.at_utc);
-    return value === null ? [] : [{ at: bucket.at_utc, time, value }];
+    const label = bucket.through_utc === undefined
+      ? fullTimeLabel(bucket.at_utc, language)
+      : `${timeLabel(bucket.at_utc, language)} – ${timeLabel(bucket.through_utc, language)}`;
+    return [{ at: bucket.at_utc, time, value, label }];
   });
   if (points.length === 0) {
     return <div className="overview__chart-empty">{emptyLabel}</div>;
@@ -113,7 +117,7 @@ export function SavingsChart({
               rx="2"
               className={point.value < 0 ? "is-increase" : "is-saved"}
             >
-              <title>{`${fullTimeLabel(point.at, language)} · ${formatValue(point.value)}`}</title>
+              <title>{`${point.label} · ${formatValue(point.value)}`}</title>
             </rect>
           );
         })}
@@ -121,7 +125,7 @@ export function SavingsChart({
       <div className="overview__chart-axis" aria-hidden="true"><span>{startLabel}</span><span>{endLabel}</span></div>
       <ol className="overview__chart-sr-list" aria-label={language === "tr" ? "Ölçüm değerleri" : "Measurement values"}>
         {points.map((point, index) => (
-          <li key={`${point.at}-${index}`}>{`${fullTimeLabel(point.at, language)}: ${formatValue(point.value)}`}</li>
+          <li key={`${point.at}-${index}`}>{`${point.label}: ${formatValue(point.value)}`}</li>
         ))}
       </ol>
     </div>

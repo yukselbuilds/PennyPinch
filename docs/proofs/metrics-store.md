@@ -42,3 +42,15 @@ Windows 10 22H2 x64 üzerinde gerçek SQLite deposuna sentetik kayıtlar yazıld
 Son yerel kapıda `test:app`, frontend derlemesi, `cargo fmt --check`, 476 Rust testi ve `custom-protocol` derlemesi geçti. 24 opt-in Rust testi atlandı. Doğrulama sırasında 259 kaynak, test ve yapılandırma girdisi eşleşti. Aday girdilerinin SHA-256 özeti `e27622a184702a6ead40e97df356580acbd27eb0cf92b9c2905b2bbdd6e5f4ca`.
 
 Programatik kayıtlar `work/proofs/metrics-local-calendar/` altında `red-0f8caa6a-8b57-4646-bb6d-0425c36241be.json`, `focused-dfba4cda-20af-4cfa-a97f-e3bbf29ba685.json` ve `gate-c071872a-e0ae-4a72-aa2c-ac4efabca450.json` dosyalarında tutulur. Son raporun SHA-256 değeri `92341974f131cf367ab6677e256898b0fdb716f186a936f31bfe98d8381ff99f`. [Dönem sözleşmesi](../decisions/012-metrics-store.md).
+
+## 19 Kasım 2026 — Uzun oturum grafiği
+
+Windows 10 22H2 x64 üzerinde 90 gün saklama ayarıyla gerçek SQLite deposuna sentetik ölçümler yazıldı. 64 gün kendi noktalarında göründü. 65. gün eklendiğinde grafik 64 noktada kaldı. En eski iki gün birleştirildi. Dönem ve grafik değerleri 65 kayıt, 6.600 giriş, 3.500 optimize giriş ve 3.100 fark için eşleşti. İlk noktanın −50 farkı ve ağırlıklı oranı doğrulandı.
+
+Ayrı bir test 119 → 50 kaydını yazıp yeniden okudu. Sabit serde_json 1.0.154, önceki ayrıştırma yolunda kaydedilen oranın son bitini farklı okuyordu. SQLite doğrulaması bu kaydı reddediyordu. `float_roundtrip` ile geçerli kayıt tam oranıyla okunuyor. Grafik ve kesirli oran testleri düzeltme öncesinde sırasıyla `Capacity` ve `Corrupt` verdi. Düzeltme sonrasında ikisi ve tarih aralığı çözücü testi geçti.
+
+İzole Edge koşusunda gerçek React grafiği 64 çubuk gösterdi. Birleşen tarih aralığı Türkçe ve İngilizce grafik açıklamasında ve ekran okuyucu listesinde doğrulandı. Son günlük nokta tek tarih gösterdi. Arayüz koşusu sentetik grafik verisiyle yapıldı.
+
+Son yerel kapıda 225 ön yüz ve 478 Rust testi, biçim kontrolü, frontend ve `custom-protocol` derlemeleri geçti. 24 opt-in Rust testi atlandı. 259 kaynak/test/config girdisinin önce ve sonra özeti `8c949f63569d334936e8db3809b7b5ff59ac905ac16f49eaa72122a739bb974b` olarak eşleşti.
+
+Programatik kanıtlar `work/proofs/metrics-long-session/` altında bulunur. Test öncesi `red-fde16b58-26c0-45d3-a360-97808dc42115.json`, odaklı `focused-9230138e-512d-4692-91d8-970e79afc8b4.json`, kesirli oran `roundtrip-e9795755-f04f-4e6c-b6cb-cadc93772eb2/result.json`, arayüz `ui-d2a7dcfe-bcfe-40f4-b0b0-7da459f594ad/result.json` ve tam kapı `gate-41100360-1907-4f99-b3dc-43053b9ff53e.json`. Son kapı raporunun SHA-256 değeri `7fe7559a0cb2a633c64fb2d13def915466d3e3e351d936feabae82bd9d1de6ba`. [Grafik sözleşmesi](../contracts.md).

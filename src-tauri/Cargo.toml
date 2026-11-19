@@ -16,7 +16,8 @@ update-fixture = []
 [dependencies]
 tauri = { version = "=2.12.4", features = ["tray-icon"] }
 serde = { version = "1", features = ["derive"] }
-serde_json = "=1.0.154"
+# Stored metrics validate the parsed percentage against the original counters.
+serde_json = { version = "=1.0.154", features = ["float_roundtrip"] }
 jsonc-parser = { version = "=0.34.0", features = ["serde_json"] }
 sha2 = "=0.10.9"
 base64 = "=0.23.1"

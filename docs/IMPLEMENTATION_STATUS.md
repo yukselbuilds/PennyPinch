@@ -1,6 +1,10 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 19 Kasım — Uzun oturum grafiği
+
+Ana ajan toplam, zaman aralığı ve SQLite okuma doğruluğunu birlikte doğruladı. 90 günlük saklamada 65 ölçüm günü 64 grafik noktasına sığdı. Kesirli oranı olan geçerli kaydın JSON okuması düzeltildi. Windows 10 yerel kapısında 225 ön yüz ve 478 Rust testi, biçim kontrolü ve iki derleme geçti. 24 opt-in Rust testi atlandı. Edge’de tarih aralığı iki dilde doğrulandı. **45/54 ana görev tamamlandı. H041’de 6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü açık.** Astra incelemesindeki açık ekran maddesi tepside panel yenilemesi. [Kanıt](proofs/metrics-store.md#19-kasım-2026--uzun-oturum-grafiği) · [Görev listesi](../TASKS.md)
+
 ## 19 Kasım — Genel Bakış ve Etkinlik yerel gün başlangıcı
 
 Ana ajan, saat geçişinde dönem toplamı ve günlük grafiğin ortak zaman sınırını düzeltti. Üç regresyon SQLite deposunda önce başarısız oldu, sonra geçti. Son Windows 10 yerel kapısında 476 Rust testi, `test:app`, biçim kontrolü ve iki derleme geçti. 24 opt-in Rust testi atlandı. **45/54 ana görev tamamlandı. H041’de 6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü açık.** Astra incelemesinden ayrı iki ekran maddesi kaldı. Sıradaki yerel takip uzun oturum grafiği. [Kanıt](proofs/metrics-store.md#19-kasım-2026--atlanan-yerel-gece-yarısı) · [Görev listesi](../TASKS.md)

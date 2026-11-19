@@ -22,6 +22,7 @@ export interface MetricTotals {
 
 export interface MetricBucket {
   at_utc: string;
+  through_utc?: string;
   totals: MetricTotals;
 }
 
@@ -298,10 +299,18 @@ function snapshot(value: Record<string, unknown>, expectedPeriod: MetricPeriod):
     if (!record(raw) || !utc(raw.at_utc)) return null;
     const at = Date.parse(raw.at_utc), part = totals(raw.totals);
     if (at < start || at > end || at <= previous || !part || part.status !== "measured") return null;
+    const bucket: MetricBucket = { at_utc: raw.at_utc, totals: part };
     previous = at;
+    if (raw.through_utc !== undefined) {
+      if (!utc(raw.through_utc)) return null;
+      const through = Date.parse(raw.through_utc);
+      if (through <= at || through > end) return null;
+      bucket.through_utc = raw.through_utc;
+      previous = through;
+    }
     before += part.before_tokens!; after += part.after_tokens!; saved += part.saved_tokens!; measured += part.comparable_events;
     if (!token(before) || !token(after) || !signedToken(saved) || !count(measured)) return null;
-    series.push({ at_utc: raw.at_utc, totals: part });
+    series.push(bucket);
   }
   if (main.status === "measured" ? before !== main.before_tokens || after !== main.after_tokens || saved !== main.saved_tokens || measured !== main.comparable_events : series.length !== 0) return null;
   return { schema_version: 1, request_id: value.request_id as string, status: "ok", observed_at_utc: value.observed_at_utc,

@@ -143,6 +143,28 @@ test("native read sends a correlated period request and returns a fresh UI snaps
   }
 });
 
+test("grouped session chart keeps the date range and rejects overlapping or invalid points", async () => {
+  const start = "2026-09-01T00:00:00Z";
+  const through = "2026-09-02T00:00:00Z";
+  const grouped = bucket(start, totals({
+    comparable_events: 2, before_tokens: 200, after_tokens: 100, saved_tokens: 100,
+  }));
+  const read = (throughUtc) => client({ reply: snapshot({
+    period: "session",
+    values: totals({ comparable_events: 3, before_tokens: 300, after_tokens: 150, saved_tokens: 150 }),
+    series: [{ ...grouped, through_utc: throughUtc }, bucket(observedAt)],
+    data: { from_utc: null, retention_days: 90 },
+  }) }).metrics.read("session");
+
+  const result = await read(through);
+  assert.equal(result.kind, "snapshot");
+  assert.equal(result.snapshot.data.series[0].through_utc, through);
+  assert.equal(result.snapshot.data.series[1].through_utc, undefined);
+  for (const invalid of [null, "not-a-date", start, observedAt, "2026-11-05T00:00:00Z"]) {
+    assert.deepEqual(await read(invalid), { kind: "invalid_response" });
+  }
+});
+
 test("browser mode is unavailable without invoking the desktop bridge", async () => {
   let invokes = 0;
   const { metrics, calls } = client({
