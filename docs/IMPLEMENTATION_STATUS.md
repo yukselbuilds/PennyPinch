@@ -1,5 +1,13 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
+## 19 Kasım — CircleCI, Windows 10 kurulum ve güncelleme bildirimi
+
+Ana ajan, kurulum ve güncelleme imzası ile platform testlerini üstlendi. CircleCI Free’de macOS 0.44.0 motor ve paket adımı geçti. Gerçek pencere otomasyonu −1712 zaman aşımında kaldı. Ubuntu x64 derleme ve Xvfb pencere açılışı geçti. Rust sonucu 220 başarılı, 81 başarısız, 2 atlanan test. H049, Linux istemci yapılandırması ve motor portuyla devam eder. Windows 11 ayrı doğrulanacak. [Platform testleri](validation/desktop-platforms.md)
+
+Windows 10 x64’te güncel NSIS kuruldu. 0.44.0 motor yerel isteği yanıtladı. Kurulum kaynakları ve temizlik eşleşti. Son kapıda 227 frontend ve 478 Rust testi geçti. İmzalı yerel sürüm bildirimi gerçek WebView’da göründü ve yalnız manifest ile imza okundu. Tek açık GitHub deposu hedefi ve kaynak Apache-2.0 lisansı hazırlandı. Üretim güncelleme kaynağı ve yayın öncesi geçmiş incelemesi açık. **45/54 ana görev tamamlandı.** [Görevler](../TASKS.md) · [Güncellemeler](validation/windows-update.md#19-kasım-2026--açılış-bildirimi-ve-tek-depodan-dağıtım)
+
+17 Kasım 2026 · **45/54 ana görev tamamlandı. Etkin yerel görev H042.** Bu belge bakımında ana ve alt görev kutuları mevcut kabul kayıtlarıyla karşılaştırıldı. Ana ajan, izin ve ölçüm sınırlarını özgün kayıtlardan kontrol etti. [Görev sayımı ve dokuz açık iş](../TASKS.md) · [17 Kasım öncelik kararı](research/optimization-roi-review-2026-11-17.md)
+
 
 ## 19 Kasım — H042 güncel 0.44.0 yerel QA paketi
 

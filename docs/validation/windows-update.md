@@ -111,3 +111,11 @@ H042-d komutu, 9.915.392 baytlık uygulamayı NSIS ile paketledi. İmza, motor p
 Önceki gerçek uygulama hazırlığı 0.41.0’a aitti. 6702b64 kaynağı ve 0.44.0 piniyle gerçek Headroom release exe’si yeni bir test uygulama kimliğinde derlendi. Yerel NSIS güncelleme paketi sürüm 0.1.1 için üretildi. Manifest imzası, motor pini ve iki dosya özeti üretimdeki Rust doğrulayıcıda geçti. Çıkarılan exe kaynakla birebir eşleşti ve kimlik, sürüm ve durum biçimi kontrolünü geçti. Yanlış kimlik, sürüm ve açık anahtar reddedildi. Geçici özel test anahtarı iş sonunda kaldırıldı. [Kanıt](../proofs/windows-update-044-qa.json).
 
 Yedi odaklı Python testi geçti. 364 build girdisi ve araç sürümleri önce/sonra eşleşti. Önceki kaynak kapısının 304 girdisi ve gömülü ön yüz dosyaları eşleşti. Yerel kabul imzalı paket hazırlama ve çıkarma kapsamındadır. Windows 11 x64 kurulu geçiş ve üretim HTTPS kaynağı/anahtarı açık.
+
+### 19 Kasım 2026 — Açılış bildirimi ve tek depodan dağıtım
+
+Açılışta güncelleyici boşta ve yapılandırılmışsa bir kez kurulu sürümün kanalı kontrol edilir. SemVer ön sürümleri deneme kanalında, kararlı sürümler kararlı kanalda aranır. İmzası geçerli yeni sürüm bulununca uygulama sürümü gösterir ve Ayarlar’ı açar. İndirme kullanıcının eylemiyle başlar.
+
+Windows 10’da gerçek WebView ve yerel imzalı 0.1.1 manifesti kullanıldı. Bildirim Ayarlar açılmadan görüldü. Ayarlar’da indirme düğmesi hazırdı. Sunucu yalnız manifest ve imza için iki GET gördü. Normal çıkış ve girdi eşleşmesi geçti. [Native kanıt](../../work/u42/ad38ae49/result.json)
+
+Tek açık GitHub deposu kaynak kodu ve Releases kurulum dosyalarını barındırabilir. Uygulamanın imzalı güncelleme akışı için aynı deponun GitHub Pages sitesinde sabit HTTPS adresi kullanılır. Yayın derlemesine `HEADROOM_DESKTOP_UPDATE_BASE_URL` ve açık imza anahtarı `HEADROOM_DESKTOP_UPDATE_PUBLIC_KEY` verilir. Kaynak, kanal altındaki `manifest.json`, `manifest.json.sig` ve manifestteki güncelleme paketine yönlendirmesiz erişim sağlamalıdır. Üretim anahtarı, Pages yayını ve gerçek HTTPS uçtan uca testi açık. [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
