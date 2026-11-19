@@ -179,3 +179,14 @@ Windows 10’da sabit Headroom 0.44.0 motoru ve llama.cpp b12359, yerel SmolLM2-
 | SSE | 11 | 33 | Bilinmiyor | 15 |
 
 İki istek aynı yerel sunucuda sırayla çalıştı. 33 token yerel sağlayıcının bildirdiği önbellek okumasıdır. Önbellek yazma alanı eksik olduğu için tam giriş ve toplam kullanım bilinmiyor kaldı. Üç ayrıştırma ve yedi istek sınırı kontrolü geçti. Yerel motor ve model sunucusu kapandı. Canlı Anthropic hesabı ve fatura karşılaştırması açık. [Programatik kanıt](../proofs/desktop-anthropic-usage.json).
+
+### 19 Kasım — Gerçek yerel modelde eşlenmiş Chat Completions kıyası
+
+Windows 10’da Headroom 0.44.0’ın varsayılan coding/cache profili ile doğrudan istek karşılaştırıldı. Aynı llama.cpp b12359 ve SmolLM2-135M, dört 24 satırlık sentetik logdan aynı sonucu okudu. Prompt cache kapalıydı. İki yanıt da doğru ve tamamlanmıştı. Sayılar model sunucusunun SSE kullanım sayaçlarıdır.
+
+| Rota | Girdi | Çıktı | Toplam |
+| --- | ---: | ---: | ---: |
+| Doğrudan | 6.647 | 10 | 6.657 |
+| Headroom üzerinden | 6.647 | 10 | 6.657 |
+
+İki kolda da 12.013 baytlık araç çıktısı iletildi. %0 girdi tasarrufu ölçüldü. Headroom kullanım kaydı ilgili tek model isteğiyle eşleşti. 67 girdi ve araç dosyası eşleşti. Motor, yerel model ve sahipli portlar kapandı. Bulut modeli çağrısı 0. Sonuç bu iş yükündeki bir çifti kapsar. [Koşucu](../../bench/optimization/chat_local_savings.py) · [Yerel kanıt](../../work/proofs/optimization/chat-real-inference/pairs/cdbbc80e8eba4368b4db81e640194218/result.json)

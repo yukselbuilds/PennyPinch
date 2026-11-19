@@ -1,5 +1,10 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
+## 19 Kasım — H041 gerçek yerel modelde eşlenmiş log kıyası
+
+Ana ajan token sayacı eşlemesi ve ölçüm sınırını üstlendi. Windows 10’da doğrudan ve Headroom 0.44.0 üzerinden aynı dört log aynı yerel modele gönderildi. İki doğru yanıtın sağlayıcı sayaçları eşit kaldı. Her kolda 6.647 girdi ve 10 çıktı, sıfır cache okuması. 67 girdi eşleşti ve sahipli süreçler kapandı. İş yükü başına kabul ve gerçek fatura karşılaştırması açık. **45/54 ana görev tamamlandı.** [Kıyas](validation/optimization-benefit.md#19-kasım--gerçek-yerel-modelde-eşlenmiş-chat-completions-kıyası) · [Görev listesi](../TASKS.md)
+
+
 ## 19 Kasım — CircleCI, Windows 10 kurulum ve güncelleme bildirimi
 
 Ana ajan, kurulum ve güncelleme imzası ile platform testlerini üstlendi. CircleCI Free’de macOS 0.44.0 motor ve paket adımı geçti. Gerçek pencere otomasyonu −1712 zaman aşımında kaldı. Ubuntu x64 derleme ve Xvfb pencere açılışı geçti. Rust sonucu 220 başarılı, 81 başarısız, 2 atlanan test. H049, Linux istemci yapılandırması ve motor portuyla devam eder. Windows 11 ayrı doğrulanacak. [Platform testleri](validation/desktop-platforms.md)
