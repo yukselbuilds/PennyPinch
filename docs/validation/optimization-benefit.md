@@ -128,12 +128,28 @@ Aşağıdaki sayılar, her örneğin 75 ölçüm isteğinde aynı `o200k_base` k
 
 ## H041 açık kabulleri
 
-| Kabul | Devam koşulu |
+19 Kasım 2026’da **6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü** açık. Ana görev sayımı **45/54**.
+
+| Kabul | Tamamlanması için gereken |
 | --- | --- |
-| Kısıtlı Codex native Windows dosya profili | Windows 10 legacy arka uçlarında dar profil başlatılamadı. WSL2 aynı dosya sınırını doğruladı. Native Windows kabulü için bunu destekleyen sandbox gerekiyor. [Dosya ve arşiv kanıtı](../proofs/targeted-query-comparison.json) |
-| Canlı kullanım ve fatura | Anthropic Messages ve OpenAI API-key için yetkili erişim. Gerçek fatura farkı için karşılaştırılabilir fatura ölçümü. Uzak Chat Completions sayaç kaydı 19 Kasım’da doğrulandı. [Kullanım planı](../decisions/027-optimization-regression.md#h041-d-responses-httpsse-kullanım-ölçümü) |
-| Windows 11 ve yeni macOS ARM64 pini | Windows 11 x64 ve macOS ARM64 üzerinde kendi çalışma, kapanış ve trafik kanıtı. [0.44.0 paket geçişi](../proofs/headroom-044-upgrade.json) |
-| İsteğe bağlı Learn ve deneysel kurallar | Learn’in tek canlı çiftinden sonra geniş fayda kabulü açık. E3 kalite ve net fayda eşiği donduruldu. E4, e3 kabulüne bağlı. [Learn ölçümü](../proofs/learn-merit-pilot.json) · [Ar-Ge kararı](../research/optimization-roi-review-2026-11-17.md) |
+| Kısıtlı Codex native Windows dosya profili | Uygun native sandbox ile izinli okuma ve açık erişim reddi. Windows 10 üzerinde kullanılan eski sandbox profili başlatmadı. WSL2 aynı dosya sınırını doğruladı. [Dosya ve arşiv kanıtı](../proofs/targeted-query-comparison.json) |
+| Windows 11 x64 | Gerçek Windows 11 x64 ortamında 0.44.0 paketli çalışma, kapanış ve trafik. Standart GitHub Windows 11 imajı ARM64. CircleCI, Windows Server imajları sunuyor. [GitHub standart runner’ları](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-private-repositories) · [CircleCI Windows imajları](https://circleci.com/docs/guides/execute/using-windows/) |
+| macOS ARM64 | Doğrulanmış ücretsiz kapasiteyle 0.44.0 paketli açılış, sahipli kapanış, trafik ve ölçüm. GitHub işi 15 dakikayla sınırlı. [Başlatma koşulları](#19-kasım--kalan-kabullerin-başlatma-koşulları) |
+| Canlı Anthropic Messages | Yetkili hesapla gerçek Messages yanıtının kullanım sayaçlarını ilgili Headroom isteğine bağla. [Yerel kullanım kanıtı](../proofs/desktop-anthropic-usage.json) |
+| Canlı OpenAI API-key | API-key rotasına yetkili erişim. H008’den devreden kapsamın kendi kullanım kanıtı. [H041-d planı](../decisions/027-optimization-regression.md#h041-d-responses-httpsse-kullanım-ölçümü) |
+| Gerçek fatura farkı | Eşlenmiş koşuların karşılaştırılabilir fatura verisi. Token kıyası kaydedildi. [Canlı kıyas](../proofs/targeted-query-comparison.json) |
+| Learn geniş fayda kabulü | Somut tekrar örüntüsüyle aynı model ve eforda eşlenmiş görevler. İlk canlı çift fayda göstermedi. [Learn ölçümü](../proofs/learn-merit-pilot.json) |
+| Deneysel kurallar e3 | Donduruldu. Yeniden başlatmak için yeni aday ve önceden belirlenmiş kalite/net fayda kapsamı gerekiyor. [Ar-Ge kararı](../research/optimization-roi-review-2026-11-17.md) |
+| Deneysel kurallar e4 | e3 geçince kapsamlı etkinleştirme, kapatma ve geri alma kabulü. [Deneysel kurallar planı](../decisions/027-optimization-regression.md#h041-e-deneysel-kurallar) |
+
+### 19 Kasım — Kalan kabullerin başlatma koşulları
+
+- **GitHub macOS.** 6531cc4 adayında `macos-package.yml` elle başlatılan `macos-15` işini seçiyor. Yerel ön kontrolde workflow, iki Bash adımı, üç Bash scripti ve altı Python kaynağı okundu. 230 girdinin önce/sonra özeti eşleşti. 0.44.0 pini doğrulandı. İş, ücretsiz kota ve sıfır harcama sınırı teyit edilince `verify_desktop_traffic=true` ile başlatılabilir. [Yerel ön kontrol](../../work/proofs/macos/h041-package-preflight-3f48e53e19.json) · [Akış](../../.github/workflows/macos-package.yml).
+- **Kota ve süre.** 15 dakikalık iş limitinin güncel hesaplama karşılığı 0,93 USD dahil kota. Daha önce belirtilen 0,10 USD yaklaşık bir tam Mac dakikası sağlar. Güncel kota kullanım ekranından doğrulanamadı. CLI kimliği geçersiz. Açık tarayıcı bağlantısı hesap özetinden önce kesildi ve uygulama içi tarayıcıda giriş yoktu. GitHub kotası hesap dönemi başında yenilenir. Kuyruk ve sonuç incelemesi iş süresine eklenir. [GitHub tarife](https://docs.github.com/en/billing/reference/actions-runner-pricing) · [Kota yenilemesi](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
+- **CircleCI macOS seçeneği.** Free plan özel depolar için ayda 30.000 kredi sağlıyor. Apple Silicon `m4pro.medium` dakikada 200 kredi. 15 dakikanın işlem karşılığı 3.000 kredi. Bu yol özel deponun CircleCI’ye açılması için ayrı yetki, hesap kotası ve native GUI ön kontrolü gerektirir. [Plan](https://circleci.com/pricing/) · [Tarife](https://circleci.com/pricing/price-list/) · [Apple Silicon imajları](https://circleci.com/docs/guides/execute/using-macos/).
+- **Native Codex profili.** Aktif Codex sürecinin CLI sürümü 0.169.0-alpha.11.1 ve bu bilgisayar Windows 10 x64 build 19045. MXC için uygun güncel Windows 11 ortamı gerekiyor. Önceden hazırlanmış legacy elevated testi, `:root` okuma şartı nedeniyle komutu başlatmadı. [OpenAI sandbox uyumluluğu](https://learn.chatgpt.com/docs/windows/windows-sandbox#mxc-compatibility) · [Önceki koşu](../proofs/targeted-query-comparison.json).
+
+Yerel ön kontrol raporu SHA-256 `38ce4294dd93fadb20762023699e96f197c362f61b73e3eb5908770d1dff4b63`. Native macOS kabulü erişim ve gerçek koşu bekliyor. Bu tarihte H041’in bütün kabullerine ortak bitiş tarihi verilemiyor.
 
 ### 18 Kasım erişim kontrolü
 

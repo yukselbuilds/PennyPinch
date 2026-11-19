@@ -1,6 +1,10 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 19 Kasım — H041 kapanış koşulları
+
+Ana ajan güncel 6531cc4 adayının macOS 0.44.0 iş akışı ön kontrolünü doğruladı. 230 girdi eşleşti. GitHub işi 15 dakikayla sınırlı ve güncel ücretsiz kotayı bekliyor. CircleCI Free Apple Silicon, özel depo erişimine ayrı yetki gerektiren aday yol. **H041’de 6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü açık. 45/54 ana görev tamamlandı.** Sıradaki çalıştırılabilir adım, ücretsiz Mac ortamı teyit edilince paket ve native trafiği doğrulamak. [Koşullar](validation/optimization-benefit.md#19-kasım--kalan-kabullerin-başlatma-koşulları) · [Görev listesi](../TASKS.md)
+
 ## 19 Kasım — Tepside Genel Bakış yenilemesi
 
 Ana ajan native pencere yaşam döngüsü, panel sorgusu ve motor ölçümünü birlikte doğruladı. Windows 10’da yaklaşık 12 saniye tepside 0 otomatik panel sorgusu, açılışta tek sorgu ve gizliyken yeni motor ölçümü gözlendi. Son yerel kapıda 225 ön yüz ve 478 Rust testiyle derlemeler geçti. **Astra incelemesindeki üç ekran takip maddesi tamamlandı. 45/54 ana görev tamamlandı. H041’de 6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü açık.** [Kanıt](proofs/tray-lifecycle.md#19-kasım-2026--tepside-genel-bakış-yenilemesi) · [Açık H041 kabulleri](validation/optimization-benefit.md#h041-açık-kabulleri)
