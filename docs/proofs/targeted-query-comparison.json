@@ -1307,5 +1307,79 @@
         "sha256_of_sorted_input_hashes": "47f9e628bf79250687b7d7a90b89fe0add079d75174c54bc2e7ea568965ded06"
       }
     }
+  },
+  "named_file_scope_followup": {
+    "date": "2026-11-19",
+    "task": "H041",
+    "name": "headroom-file-scope",
+    "cli": "codex-cli 0.169.0-alpha.11.1",
+    "wsl2": {
+      "passed": true,
+      "host": "Windows-10-10.0.19045-SP0",
+      "kernel": "Linux 6.18.58.1-microsoft-standard-WSL2 x86_64 GNU/Linux",
+      "python": "Python 3.12.3",
+      "python_sha256": "1643dacd9feaedc58f3cc581e4d22577dfe25c09b10282936186ccf0f2e61118",
+      "bubblewrap": "bubblewrap 0.9.0",
+      "bubblewrap_package": {
+        "version": "0.9.0-1ubuntu0.3",
+        "source": "https://archive.ubuntu.com/ubuntu/pool/main/b/bubblewrap/bubblewrap_0.9.0-1ubuntu0.3_amd64.deb",
+        "sha256": "2461f1beee9cb04c8942739fe1a2b37e7b7c2a3d518f0779dc75f9245baa3094",
+        "bytes": 50436
+      },
+      "policy": "root deny, readable synthetic run and CLI binary, one exact file denial",
+      "observations": {
+        "control": {
+          "exit_code": 0,
+          "status": "boundary_unverified",
+          "command_started": true,
+          "inside_exact": true,
+          "outside_denied": false,
+          "outside": "opened"
+        },
+        "restricted": {
+          "exit_code": 0,
+          "status": "boundary_verified",
+          "command_started": true,
+          "inside_exact": true,
+          "outside_denied": true,
+          "outside": "access_denied"
+        },
+        "control_after": {
+          "exit_code": 0,
+          "status": "boundary_unverified",
+          "command_started": true,
+          "inside_exact": true,
+          "outside_denied": false,
+          "outside": "opened"
+        }
+      },
+      "accepted_archive": {
+        "record_exact": true,
+        "original_exact": true,
+        "bytes": 5926,
+        "record_count": 48
+      },
+      "matched_inputs": 17,
+      "same_environment": true,
+      "model_calls": 0
+    },
+    "windows_10_elevated": {
+      "command_started": false,
+      "status": "refused_before_command",
+      "required_root_read_for_legacy_elevated": true,
+      "pinned_policy_source": "https://github.com/openai/codex/blob/226fa88979b1a9d76dc36f339ee9c5fbdb2c8e7f/codex-rs/windows-sandbox-rs/src/resolved_permissions.rs#L114",
+      "same_test_inputs": 18,
+      "raw_evidence": {
+        "path": "work/proofs/optimization/targeted-query-comparison/file-agent-scope/native-elevated-65dc89c7e8be461b95c27312ab754770/result.json",
+        "sha256": "5853476ebcb5d5f7bb9859150ca11286ded7e0a89764651b643abe4dafd6ab09"
+      }
+    },
+    "wsl2_evidence": {
+      "path": "work/proofs/optimization/targeted-query-comparison/file-agent-scope/wsl2-files-dc7b573e332d470d99f3f49879790186/result.json",
+      "sha256": "6fda3ded7b05a4a477ae8408f9d66e4fda0dcdd73193347196f98e30830f1c2e"
+    },
+    "runner": "bench/context_tools/targeted_query_wsl_files.py",
+    "command": "pinned-python -I -B bench/context_tools/targeted_query_wsl_files.py --run",
+    "windows_native_acceptance": "open"
   }
 }

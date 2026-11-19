@@ -1,11 +1,19 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 19 Kasım — Kısıtlı Codex dosya profili WSL2’de geçti
+
+Ana ajan sandbox ve dosya sahipliğini doğruladı. Windows 10’da önceden hazırlanmış elevated sandbox dar profili komut başlamadan reddetti. Sabit Codex CLI, mevcut Ubuntu WSL2’de aynı adlandırılmış profille izinli dosyayı okudu ve dışlanan dosyaya erişimi reddetti. İki kontrol koşusunda dışlanan dosya açıldı. 5.926 özgün bayt, 48 kayıt ve 17 test girdisinin parmak izi eşleşti. **45/54 ana görev tamamlandı. H041 açık.** [Kanıt](proofs/targeted-query-comparison.json) · [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+Kısıtlı dosya profili için uygun native Windows sandbox gerekiyor. H041’in diğer doğrulamaları Windows 11 x64, macOS ARM64 için teyitli ücretsiz CI kotası, canlı Anthropic ve OpenAI API-key erişimi ve karşılaştırılabilir fatura ölçümünü bekliyor. Altı doğrulama ve üç Ar-Ge kabulü açık. [Açık kabuller](validation/optimization-benefit.md#h041-açık-kabulleri)
+
 ## 19 Kasım — Uzak Chat Completions sayaç doğrulaması
 
 Ana ajan rota güvenliğini ve kullanım eşlemesini doğruladı. Windows 10’da Headroom 0.44.0 üzerinden ücretsiz anonim AI Horde’a giden JSON ve SSE istekleri normal sonlandı. Her istekte sağlayıcının 49 giriş ve 2 çıkış tokenı aynı motor kaydıyla eşleşti. Önbellek ayrıntıları bilinmiyor. SSE’nin tek hane çıktısı birebir eşleşti. JSON yanıtı tek hane biçimine uymadı. **45/54 ana görev tamamlandı. H041 açık.** [Kanıt](proofs/chat-completions-usage.json) · [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### Bu doğrulama sonrasındaki açık kabuller
 
 Altı doğrulama açık. Kısıtlı Codex dosya profili uygun sandbox, macOS ARM64 ücretsiz kota, Windows 11 x64 ayrı ortam, canlı Anthropic ve OpenAI API-key yetkili erişim, fatura kıyası karşılaştırılabilir fatura ölçümü bekliyor. Learn geniş canlı kabulü ve dondurulmuş e3 ile ona bağlı e4 kendi Ar-Ge adımlarında açık. [Açık kabuller](validation/optimization-benefit.md#h041-açık-kabulleri)
 

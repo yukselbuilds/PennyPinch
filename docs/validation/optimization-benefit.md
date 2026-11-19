@@ -130,7 +130,7 @@ Aşağıdaki sayılar, her örneğin 75 ölçüm isteğinde aynı `o200k_base` k
 
 | Kabul | Devam koşulu |
 | --- | --- |
-| Kısıtlı Codex native dosya profili | İzinli ve izin dışı dosyanın aynı adlandırılmış test profilinde çalıştığı uygun sandbox ortamı. [Dosya ve arşiv kanıtı](../proofs/targeted-query-comparison.json) |
+| Kısıtlı Codex native Windows dosya profili | Windows 10 legacy arka uçlarında dar profil başlatılamadı. WSL2 aynı dosya sınırını doğruladı. Native Windows kabulü için bunu destekleyen sandbox gerekiyor. [Dosya ve arşiv kanıtı](../proofs/targeted-query-comparison.json) |
 | Canlı kullanım ve fatura | Anthropic Messages ve OpenAI API-key için yetkili erişim. Gerçek fatura farkı için karşılaştırılabilir fatura ölçümü. Uzak Chat Completions sayaç kaydı 19 Kasım’da doğrulandı. [Kullanım planı](../decisions/027-optimization-regression.md#h041-d-responses-httpsse-kullanım-ölçümü) |
 | Windows 11 ve yeni macOS ARM64 pini | Windows 11 x64 ve macOS ARM64 üzerinde kendi çalışma, kapanış ve trafik kanıtı. [0.44.0 paket geçişi](../proofs/headroom-044-upgrade.json) |
 | İsteğe bağlı Learn ve deneysel kurallar | Learn’in tek canlı çiftinden sonra geniş fayda kabulü açık. E3 kalite ve net fayda eşiği donduruldu. E4, e3 kabulüne bağlı. [Learn ölçümü](../proofs/learn-merit-pilot.json) · [Ar-Ge kararı](../research/optimization-roi-review-2026-11-17.md) |
@@ -146,3 +146,9 @@ Aşağıdaki sayılar, her örneğin 75 ölçüm isteğinde aynı `o200k_base` k
 AI Horde’un belgelenmiş anonim API’si üzerinden her taşıma için tek gönderim kullanıldı. Projeye ait izole Headroom 0.44.0 motoru yalnız sabit HTTPS hedefine sentetik aritmetik soruları gönderdi. İki HTTP 200 yanıtında istek kimliği, bitiş durumu ve sağlayıcının kullanım değerleri motorun ilgili gönderim kaydıyla eşleşti. İki isteğin her birinde 49 giriş ve 2 çıkış tokenı vardı. Sağlayıcı sayaçları tahmini olarak işaretlemedi. Önbellek okuma ve yazma değerleri bilinmiyor. SSE’de son kullanım çerçevesi ve `[DONE]` görüldü. [AI Horde kullanım sözleşmesi](https://haidra-org.github.io/AI-Horde/reference/chat_front/#reasoning-and-usage) · [Ölçüm](../proofs/chat-completions-usage.json).
 
 SSE’nin beklenen tek hanesi birebir eşleşti. JSON yanıtı normal sonlandı ve sayaçları korudu. JSON’un model çıktısı tek hane biçim kontrolünü geçmedi. Önceki şemalı 404 ile bitiş ve biçim aşamalarında duran koşular ayrı kaydedildi. Bu doğrulama canlı sayaç aktarımını kapsar. Fatura farkı ve tasarruf oranı ölçülmedi.
+
+### 19 Kasım — Kısıtlı Codex dosya profili
+
+Hazır ve daha önce yalnız yerel fixture trafik kullanmış Windows test profiliyle `elevated` arka ucu denendi. CLI 0.169.0-alpha.11.1, `:root` okuma izni gerektiren denetimde komut başlamadan durdu. Bu sonuç dosyaya erişim reddi olarak sayılmadı. [Sabit Codex kaynak kodu](https://github.com/openai/codex/blob/226fa88979b1a9d76dc36f339ee9c5fbdb2c8e7f/codex-rs/windows-sandbox-rs/src/resolved_permissions.rs#L114).
+
+Aynı CLI sürümünün resmî Linux ikilisi ve Ubuntu paketinden proje içine çıkarılan Bubblewrap 0.9.0 ile mevcut WSL2 ortamı sınandı. `headroom-file-scope` profili kökü kapattı, yalnız test kapsamını ve gerekli çalışma yollarını okudu. İlk ve son kontrolde iki sentetik dosya açıldı. Aradaki koşuda izinli dosya birebir okundu ve hedef dosya erişim reddi verdi. İzinli dosyadan arşiv sorgusu ve tam geri okuma 48 kayıt ile 5.926 özgün baytı doğruladı. On yedi girdi eşleşti. Koşu WSL2 içindeki Codex CLI dosya sınırını kapsar. Model çağrısı yapılmadı. [Codex sandbox belgesi](https://learn.chatgpt.com/docs/sandboxing) · [Programatik kanıt](../proofs/targeted-query-comparison.json).
