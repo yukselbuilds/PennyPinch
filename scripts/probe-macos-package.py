@@ -84,9 +84,11 @@ def find_engine(app, runtime):
 
 
 def run_ui(action, *arguments):
+    command = ["/usr/bin/osascript", str(ROOT / "scripts/macos-package-input.applescript"), action, *arguments]
+    if os.environ.get("CIRCLECI") == "true":
+        command = ["/bin/launchctl", "asuser", str(os.getuid()), *command]
     result = subprocess.run(
-        ["/usr/bin/osascript", str(ROOT / "scripts/macos-package-input.applescript"), action, *arguments],
-        capture_output=True, text=True, timeout=75,
+        command, capture_output=True, text=True, timeout=75,
     )
     for line in result.stderr.splitlines():
         if line.startswith("headroom-package-ui="):

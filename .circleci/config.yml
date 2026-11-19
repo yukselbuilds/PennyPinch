@@ -87,9 +87,16 @@ jobs:
             pnpm install --frozen-lockfile
             build_root="$(mktemp -d "$GITHUB_WORKSPACE/work/macos-package.XXXXXX")"
             bash scripts/build-macos.sh "$build_root"
-            "$python" -I -B scripts/probe-macos-package.py "$build_root"
             test "$(git rev-parse HEAD)" = "$CIRCLE_SHA1"
             git diff --quiet HEAD --
+            printf 'export HEADROOM_MACOS_BUILD_ROOT=%q HEADROOM_MACOS_RUNTIME_ROOT=%q HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256=%q\n' \
+              "$build_root" "$HEADROOM_MACOS_RUNTIME_ROOT" "$HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256" >> "$BASH_ENV"
+      - run:
+          name: Exercise the installed macOS window and motor lifecycle
+          command: |
+            set -euo pipefail
+            python="$HEADROOM_MACOS_RUNTIME_ROOT/payload/python/bin/python3.13"
+            "$python" -I -B scripts/probe-macos-package.py "$HEADROOM_MACOS_BUILD_ROOT"
 
   linux-build:
     machine:
@@ -121,13 +128,14 @@ jobs:
             pnpm build
             cargo_log=work/linux-cargo.log
             trap 'rm -f "$cargo_log"' EXIT
+            test_failed=0
             if ! cargo test --locked --manifest-path src-tauri/Cargo.toml --features custom-protocol \
                 --color never -- --test-threads=1 > "$cargo_log" 2>&1; then
-              awk '/^error(\[[A-Z][0-9]+\])?: / || /^---- .* stdout ----$|^test result: / \
+              awk '/^error(\[[A-Z][0-9]+\])?: / || /^---- .* stdout ----$/ \
                 { if (++count <= 12) print substr($0, 1, 220) }' "$cargo_log"
-              exit 1
+              test_failed=1
             fi
-            grep '^test result:' "$cargo_log"
+            grep '^test result:' "$cargo_log" || :
             if ! cargo build --locked --manifest-path src-tauri/Cargo.toml --features custom-protocol \
                 --color never > "$cargo_log" 2>&1; then
               awk '/^error(\[[A-Z][0-9]+\])?: / { if (++count <= 8) print substr($0, 1, 220) }' "$cargo_log"
@@ -145,6 +153,7 @@ jobs:
             SH
             test "$(git rev-parse HEAD)" = "$CIRCLE_SHA1"
             git diff --quiet HEAD --
+            exit "$test_failed"
 
 workflows:
   macos-validation:
