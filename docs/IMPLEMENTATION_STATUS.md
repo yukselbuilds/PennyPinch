@@ -1,11 +1,19 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 19 Kasım — Anthropic Messages yerel gerçek model sayaçları
+
+Ana ajan gerçek inference ve kullanım eşlemesini doğruladı. Headroom 0.44.0 ve yerel llama.cpp ile JSON ve SSE isteklerinin her biri tek gönderimde doğru sonucu verdi. JSON 44 önbellek dışı giriş, 0 okuma ve 15 çıktı bildirdi. SSE 11 önbellek dışı giriş, 33 okuma ve 15 çıktı bildirdi. Önbellek yazma alanı iki yanıtta da eksikti. Toplam kullanım bilinmiyor kaldı. 70 girdi eşleşti ve iki sahipli süreç kapandı. **45/54 ana görev tamamlandı. H041 açık.** [Ölçüm](proofs/desktop-anthropic-usage.json) · [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+H041’in canlı Anthropic ve OpenAI API-key doğrulamaları yetkili erişim bekliyor. Native Windows dosya profili, Windows 11 x64, macOS ARM64 ve fatura ölçümü için ayrı koşullar kayıtlı. Altı doğrulama ve üç Ar-Ge kabulü açık. [Açık kabuller](validation/optimization-benefit.md#h041-açık-kabulleri)
+
 ## 19 Kasım — Kısıtlı Codex dosya profili WSL2’de geçti
 
 Ana ajan sandbox ve dosya sahipliğini doğruladı. Windows 10’da önceden hazırlanmış elevated sandbox dar profili komut başlamadan reddetti. Sabit Codex CLI, mevcut Ubuntu WSL2’de aynı adlandırılmış profille izinli dosyayı okudu ve dışlanan dosyaya erişimi reddetti. İki kontrol koşusunda dışlanan dosya açıldı. 5.926 özgün bayt, 48 kayıt ve 17 test girdisinin parmak izi eşleşti. **45/54 ana görev tamamlandı. H041 açık.** [Kanıt](proofs/targeted-query-comparison.json) · [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### Bu doğrulama sonrasındaki durum
 
 Kısıtlı dosya profili için uygun native Windows sandbox gerekiyor. H041’in diğer doğrulamaları Windows 11 x64, macOS ARM64 için teyitli ücretsiz CI kotası, canlı Anthropic ve OpenAI API-key erişimi ve karşılaştırılabilir fatura ölçümünü bekliyor. Altı doğrulama ve üç Ar-Ge kabulü açık. [Açık kabuller](validation/optimization-benefit.md#h041-açık-kabulleri)
 

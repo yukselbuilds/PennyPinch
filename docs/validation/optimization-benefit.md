@@ -152,3 +152,14 @@ SSE’nin beklenen tek hanesi birebir eşleşti. JSON yanıtı normal sonlandı 
 Hazır ve daha önce yalnız yerel fixture trafik kullanmış Windows test profiliyle `elevated` arka ucu denendi. CLI 0.169.0-alpha.11.1, `:root` okuma izni gerektiren denetimde komut başlamadan durdu. Bu sonuç dosyaya erişim reddi olarak sayılmadı. [Sabit Codex kaynak kodu](https://github.com/openai/codex/blob/226fa88979b1a9d76dc36f339ee9c5fbdb2c8e7f/codex-rs/windows-sandbox-rs/src/resolved_permissions.rs#L114).
 
 Aynı CLI sürümünün resmî Linux ikilisi ve Ubuntu paketinden proje içine çıkarılan Bubblewrap 0.9.0 ile mevcut WSL2 ortamı sınandı. `headroom-file-scope` profili kökü kapattı, yalnız test kapsamını ve gerekli çalışma yollarını okudu. İlk ve son kontrolde iki sentetik dosya açıldı. Aradaki koşuda izinli dosya birebir okundu ve hedef dosya erişim reddi verdi. İzinli dosyadan arşiv sorgusu ve tam geri okuma 48 kayıt ile 5.926 özgün baytı doğruladı. On yedi girdi eşleşti. Koşu WSL2 içindeki Codex CLI dosya sınırını kapsar. Model çağrısı yapılmadı. [Codex sandbox belgesi](https://learn.chatgpt.com/docs/sandboxing) · [Programatik kanıt](../proofs/targeted-query-comparison.json).
+
+### 19 Kasım — Anthropic Messages gerçek yerel inference
+
+Windows 10’da sabit Headroom 0.44.0 motoru ve llama.cpp b12359, yerel SmolLM2-135M ile iki sentetik isteği tamamladı. JSON ve SSE’de şemaya uygun doğru cevap, normal bitiş ve motorun istek kimliğiyle eşleşen tek sağlayıcı gönderimi doğrulandı. SSE’nin son kullanım değerleri birikimli olarak okundu. [llama.cpp Messages ucu](https://github.com/ggml-org/llama.cpp/blob/b12359/tools/server/README.md#anthropic-compatible-api-endpoints) · [Anthropic akış sözleşmesi](https://platform.claude.com/docs/en/build-with-claude/streaming).
+
+| Yanıt | Önbellek dışı giriş | Önbellekten okuma | Önbelleğe yazma | Çıkış |
+| --- | ---: | ---: | --- | ---: |
+| JSON | 44 | 0 | Bilinmiyor | 15 |
+| SSE | 11 | 33 | Bilinmiyor | 15 |
+
+İki istek aynı yerel sunucuda sırayla çalıştı. 33 token yerel sağlayıcının bildirdiği önbellek okumasıdır. Önbellek yazma alanı eksik olduğu için tam giriş ve toplam kullanım bilinmiyor kaldı. Üç ayrıştırma ve yedi istek sınırı kontrolü geçti. Yerel motor ve model sunucusu kapandı. Canlı Anthropic hesabı ve fatura karşılaştırması açık. [Programatik kanıt](../proofs/desktop-anthropic-usage.json).

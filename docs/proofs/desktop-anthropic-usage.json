@@ -143,5 +143,123 @@
     "live_provider_usage",
     "other_protocols",
     "windows_11"
-  ]
+  ],
+  "real_local_inference": {
+    "os": "Windows-10-10.0.19045-SP0",
+    "engine": "0.44.0",
+    "provider": "llama.cpp b12359",
+    "model": "smollm2-135m-local-messages",
+    "transports": [
+      "json",
+      "sse"
+    ],
+    "request_limit": 2,
+    "output_token_limit": 24,
+    "results": {
+      "json": {
+        "status": 200,
+        "usage": {
+          "input_tokens": 44,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": null,
+          "output_tokens": 15
+        },
+        "finish": "end_turn",
+        "answer_exact": true,
+        "usage_record": {
+          "attempts": [
+            {
+              "status": 200,
+              "usage": {
+                "cache_creation_input_tokens": null,
+                "cache_read_input_tokens": 0,
+                "input_tokens": 44,
+                "output_tokens": 15
+              }
+            }
+          ],
+          "client_status": 200,
+          "surface": "anthropic_messages",
+          "truncated": false,
+          "usage": {
+            "cache_creation_input_tokens": null,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 44,
+            "output_tokens": 15,
+            "total_input_tokens": null,
+            "total_tokens": null
+          }
+        }
+      },
+      "sse": {
+        "status": 200,
+        "usage": {
+          "input_tokens": 11,
+          "cache_read_input_tokens": 33,
+          "cache_creation_input_tokens": null,
+          "output_tokens": 15
+        },
+        "finish": "end_turn",
+        "answer_exact": true,
+        "usage_record": {
+          "attempts": [
+            {
+              "status": 200,
+              "usage": {
+                "cache_creation_input_tokens": null,
+                "cache_read_input_tokens": 33,
+                "input_tokens": 11,
+                "output_tokens": 15
+              }
+            }
+          ],
+          "client_status": 200,
+          "surface": "anthropic_messages",
+          "truncated": false,
+          "usage": {
+            "cache_creation_input_tokens": null,
+            "cache_read_input_tokens": 33,
+            "input_tokens": 11,
+            "output_tokens": 15,
+            "total_input_tokens": null,
+            "total_tokens": null
+          }
+        }
+      }
+    },
+    "upstream": {
+      "json": 1,
+      "sse": 1
+    },
+    "provider_closed": true,
+    "engine_stop": {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    },
+    "matched_inputs": 70,
+    "date": "2026-11-19",
+    "status": "passed_loopback_real_inference",
+    "measurement": "Client response usage fields match the owned motor record for each JSON and SSE request. The provider omitted cache creation counts.",
+    "cloud_provider_requests": 0,
+    "savings_measured": false,
+    "billing_measured": false,
+    "entry_point": "bench/optimization/anthropic_real_inference.py",
+    "run_command": "pinned-python -I -B bench/optimization/anthropic_real_inference.py --run",
+    "evidence": {
+      "path": "work/proofs/optimization/anthropic-real-inference/b577f87440ac4ede9e442e95f3e46854/result.json",
+      "sha256": "280cf7e5e25bc6840699bb541225549a2f6c0af87f54fc6eceaab1e9b1e8e07f"
+    },
+    "focused_preflight": {
+      "parser_checks": 3,
+      "allowed_mock": 2,
+      "blocked_mock": 5,
+      "matched_inputs": 5,
+      "evidence": {
+        "path": "work/proofs/optimization/anthropic-real-inference/preflight-74ba27dc4151433b8b10781082dc7440/result.json",
+        "sha256": "0db11c42408d49e40a2e5bc478d2464839e0783616c43c6647cab8e57765d475"
+      }
+    }
+  }
 }
