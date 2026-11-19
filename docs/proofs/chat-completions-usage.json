@@ -316,5 +316,143 @@
       "provider_sends": 0
     },
     "remote_chat_completions": "not_tested_authorized_free_access_unverified"
+  },
+  "real_remote_usage": {
+    "os": "Windows-10-10.0.19045-SP0",
+    "engine": "0.44.0",
+    "provider": "AI Horde",
+    "mode": "anonymous_free",
+    "model": "koboldcpp/Llama-3.2-1B-Instruct",
+    "maximum_requests": 2,
+    "maximum_completion_tokens": 32,
+    "provider_json_schema_requested": false,
+    "transports": [
+      "json",
+      "sse"
+    ],
+    "transport_results": {
+      "json": {
+        "client_status": 200,
+        "finish_reasons": [
+          "stop"
+        ],
+        "answer_exact": false,
+        "request_id": "hr_1795079861_000001",
+        "provider_usage_estimated": false,
+        "usage_record": {
+          "client_status": 200,
+          "attempts": 1,
+          "upstream_statuses": [
+            200
+          ],
+          "usage": {
+            "input_tokens": 49,
+            "cache_read_input_tokens": null,
+            "cache_creation_input_tokens": null,
+            "output_tokens": 2,
+            "total_input_tokens": 49,
+            "total_tokens": 51
+          },
+          "original_retrieved": false
+        }
+      },
+      "sse": {
+        "client_status": 200,
+        "finish_reasons": [
+          "stop"
+        ],
+        "answer_exact": true,
+        "request_id": "hr_1795079864_000002",
+        "provider_usage_estimated": false,
+        "usage_record": {
+          "client_status": 200,
+          "attempts": 1,
+          "upstream_statuses": [
+            200
+          ],
+          "usage": {
+            "input_tokens": 49,
+            "cache_read_input_tokens": null,
+            "cache_creation_input_tokens": null,
+            "output_tokens": 2,
+            "total_input_tokens": 49,
+            "total_tokens": 51
+          },
+          "original_retrieved": false
+        }
+      }
+    },
+    "remote_attempts": {
+      "json": 1,
+      "sse": 1
+    },
+    "engine_stop": {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    },
+    "date": "2026-11-19",
+    "status": "passed_provider_counter_delivery",
+    "scope": "Standard remote Chat Completions JSON and SSE through the pinned Windows 10 engine. Content fixtures used only synthetic arithmetic. Strict answer formatting is noted separately.",
+    "benchmark": "bench/optimization/chat_remote_usage.py",
+    "command": "pinned-python -I -B bench/optimization/chat_remote_usage.py --live",
+    "provider_doc": "https://haidra-org.github.io/AI-Horde/reference/chat_front/#reasoning-and-usage",
+    "provider_access": "anonymous service documented at https://github.com/Haidra-Org/AI-Horde#openai-compatible-chat-completions",
+    "measurement": "Unchanged reported usage in the client response and the joined engine attempt. Missing cache counters remain unknown.",
+    "matched_inputs": 39,
+    "engine_model_requests_all_attempts": 6,
+    "live_evidence": {
+      "path": "work/proofs/optimization/chat-remote-usage/8e2c15c382bc4452ab98703bf336a80c/result.json",
+      "sha256": "3759bb18114eea2942a15187ba259e6a73cccfb99495758acabd6ff511e1e700"
+    },
+    "local_preflight": {
+      "allowed_mock_requests": 2,
+      "guard_rejections": 7,
+      "response_checks": 5,
+      "external_requests": 0,
+      "evidence": {
+        "path": "work/proofs/optimization/chat-remote-usage/preflight-b6179da72268451b8141170ee61c4bf3/result.json",
+        "sha256": "89a9f7989fe6c8a94ba2e56a91de2a65804e28bebbae2d6dc3dd4e0d040382bd"
+      }
+    },
+    "earlier_attempts": [
+      {
+        "evidence": {
+          "path": "work/proofs/optimization/chat-remote-usage/1a667b2581204d809ef505dd4cf9227f/result.json",
+          "sha256": "0d429bd2537a7a3a2ae4bceb3c4e53b9e9d89e3e88e4e05f374b6f0435d7288c"
+        },
+        "failure": "live_route_response",
+        "upstream_statuses": {
+          "json": 404
+        },
+        "requests": 1
+      },
+      {
+        "evidence": {
+          "path": "work/proofs/optimization/chat-remote-usage/e071529e2eba49bd9e0e80ecbfc341a5/result.json",
+          "sha256": "c7d0c07c0a0b9d5ce8d8ec37609a5fa1167825c051d1a7657a85108981b2d1ae"
+        },
+        "failure": "answer_not_completed",
+        "upstream_statuses": {
+          "json": 200
+        },
+        "requests": 1
+      },
+      {
+        "evidence": {
+          "path": "work/proofs/optimization/chat-remote-usage/3332a533ed0348e1b881cd845876c709/result.json",
+          "sha256": "fe0d27337c1edf7a050d21f1958272a7b311e5c492638503255097c56d8e17ed"
+        },
+        "failure": "JSONDecodeError",
+        "upstream_statuses": {
+          "json": 200,
+          "sse": 200
+        },
+        "requests": 2
+      }
+    ],
+    "savings_measured": false,
+    "billing_measured": false
   }
 }

@@ -1,11 +1,19 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 19 Kasım — Uzak Chat Completions sayaç doğrulaması
+
+Ana ajan rota güvenliğini ve kullanım eşlemesini doğruladı. Windows 10’da Headroom 0.44.0 üzerinden ücretsiz anonim AI Horde’a giden JSON ve SSE istekleri normal sonlandı. Her istekte sağlayıcının 49 giriş ve 2 çıkış tokenı aynı motor kaydıyla eşleşti. Önbellek ayrıntıları bilinmiyor. SSE’nin tek hane çıktısı birebir eşleşti. JSON yanıtı tek hane biçimine uymadı. **45/54 ana görev tamamlandı. H041 açık.** [Kanıt](proofs/chat-completions-usage.json) · [Görev listesi](../TASKS.md)
+
+### Sıradaki yerel dilim
+
+Altı doğrulama açık. Kısıtlı Codex dosya profili uygun sandbox, macOS ARM64 ücretsiz kota, Windows 11 x64 ayrı ortam, canlı Anthropic ve OpenAI API-key yetkili erişim, fatura kıyası karşılaştırılabilir fatura ölçümü bekliyor. Learn geniş canlı kabulü ve dondurulmuş e3 ile ona bağlı e4 kendi Ar-Ge adımlarında açık. [Açık kabuller](validation/optimization-benefit.md#h041-açık-kabulleri)
+
 ## 18 Kasım — Headroom 0.44.0 süreli yük kabulü
 
 Ana ajan güncel motor pinini ve performans eşiklerini doğruladı. Önceki 0.41.0 ölçümünün planı 0.44.0 üzerinde 300 saniye çalıştı. Dört yerel yüzeyde 300 çift, 600 ölçüm isteği ve 249 birebir CCR geri alımı tamamlandı. Ek p95 46,14 ms, ısınma sonrası bellek artışı 22,96 MiB. 688 girdi eşleşti ve motor normal kapandı. **45/54 ana görev tamamlandı. H041 açık.** [Ölçüm ve açık kabuller](validation/optimization-benefit.md#headroom-0440-ile-süreli-yük) · [Görev listesi](../TASKS.md)
 
-### Sıradaki yerel dilim
+### 18 Kasım erişim kontrolü
 
 18 Kasım erişim kontrolü. Kurulu Codex ve Windows sürümleri önceki kısıtlı dosya testiyle aynı. Dosya kabulü uygun MXC veya yönetici tarafından hazırlanmış elevated sandbox bekliyor. GitHub CLI oturumu geçersiz ve tarayıcıdan dahil kota ile sıfır ücret sınırı doğrulanamadı. Uzak sağlayıcı testleri yetkili API erişimi bekliyor. H041 açık. [Erişim kaydı](validation/optimization-benefit.md#18-kasım-erişim-kontrolü).
 
