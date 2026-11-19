@@ -13,6 +13,10 @@ commands:
         type: string
       node_sha:
         type: string
+      rust_target:
+        type: string
+      rust_sha:
+        type: string
     steps:
       - run:
           name: Verify checkout and prepare pinned build tools
@@ -31,10 +35,19 @@ commands:
             export PATH="$PWD/work/ci-tools/bin:$PATH"
             npm install --prefix work/ci-tools --no-save --ignore-scripts --no-audit --no-fund pnpm@11.25.0
             export PATH="$PWD/work/ci-tools/node_modules/.bin:$PATH"
-            rustup toolchain install 1.92.0 --profile minimal
-            printf 'export PATH=%q:"$PATH"\n' "$PWD/work/ci-tools/bin:$PWD/work/ci-tools/node_modules/.bin" >> "$BASH_ENV"
-            printf 'export CARGO_HOME=%q CARGO_TARGET_DIR=%q RUSTUP_TOOLCHAIN=1.92.0\n' \
-              "$PWD/work/caches/cargo-home" "$PWD/work/caches/cargo-target" >> "$BASH_ENV"
+            export CARGO_HOME="$PWD/work/caches/cargo-home" RUSTUP_HOME="$PWD/work/caches/rustup"
+            rustup_init=work/ci-tools/rustup-init
+            curl --proto '=https' --fail --silent --show-error --max-time 120 \
+              'https://static.rust-lang.org/rustup/archive/1.28.2/<< parameters.rust_target >>/rustup-init' \
+              -o "$rustup_init"
+            printf '%s  %s\n' '<< parameters.rust_sha >>' "$rustup_init" | shasum -a 256 -c -
+            chmod 700 "$rustup_init"
+            "$rustup_init" -y --no-modify-path --profile minimal --default-toolchain 1.92.0
+            export PATH="$CARGO_HOME/bin:$PATH"
+            printf 'export PATH=%q:"$PATH"\n' \
+              "$CARGO_HOME/bin:$PWD/work/ci-tools/bin:$PWD/work/ci-tools/node_modules/.bin" >> "$BASH_ENV"
+            printf 'export CARGO_HOME=%q RUSTUP_HOME=%q CARGO_TARGET_DIR=%q RUSTUP_TOOLCHAIN=1.92.0\n' \
+              "$CARGO_HOME" "$RUSTUP_HOME" "$PWD/work/caches/cargo-target" >> "$BASH_ENV"
             test "$(node --version)" = "v$version"
             test "$(pnpm --version)" = '11.25.0'
             rustc +1.92.0 --version
@@ -54,6 +67,8 @@ jobs:
       - prepare_toolchain:
           node_target: darwin-arm64
           node_sha: be87e21bd235a451fad02c89e5bf7cb17e206e4cd89dd5664f20d19e7dfde6f9
+          rust_target: aarch64-apple-darwin
+          rust_sha: 20ef5516c31b1ac2290084199ba77dbbcaa1406c45c1d978ca68558ef5964ef5
       - run:
           name: Exercise and package the native 0.44.0 engine
           no_output_timeout: 18m
@@ -87,6 +102,8 @@ jobs:
       - prepare_toolchain:
           node_target: linux-x64
           node_sha: 2094ecdc844ea11e9777cac42672b0d89cd63d27204193a587dc5a2d276bb940
+          rust_target: x86_64-unknown-linux-gnu
+          rust_sha: 20a06e644b0d9bd2fbdbfd52d42540bdde820ea7df86e92e533c073da0cdd43c
       - run:
           name: Build Linux desktop and exercise the native test suite
           no_output_timeout: 18m
@@ -119,7 +136,7 @@ jobs:
             file "$CARGO_TARGET_DIR/debug/headroom-desktop"
             export XDG_DATA_HOME="$PWD/work/linux-smoke/data" XDG_CONFIG_HOME="$PWD/work/linux-smoke/config"
             mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME"
-            timeout 45s xvfb-run -a bash -euo pipefail <<'SH'
+            timeout 45s xvfb-run -a bash -euo pipefail \<<'SH'
             "$CARGO_TARGET_DIR/debug/headroom-desktop" > work/linux-smoke/application.log 2>&1 &
             app=$!
             trap 'kill "$app" 2>/dev/null || :; wait "$app" || :; rm -f work/linux-smoke/application.log' EXIT
