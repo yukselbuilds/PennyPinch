@@ -1,0 +1,142 @@
+version: 2.1
+
+parameters:
+  platform:
+    type: enum
+    enum: [none, macos, linux]
+    default: none
+
+commands:
+  prepare_toolchain:
+    parameters:
+      node_target:
+        type: string
+      node_sha:
+        type: string
+    steps:
+      - run:
+          name: Verify checkout and prepare pinned build tools
+          command: |
+            set -euo pipefail
+            test "$(git rev-parse HEAD)" = "$CIRCLE_SHA1"
+            git diff --quiet HEAD --
+            umask 077
+            mkdir -p work/ci-tools work/caches
+            version="$(cat .node-version)"
+            archive="node-v${version}-<< parameters.node_target >>.tar.gz"
+            curl --proto '=https' --fail --silent --show-error --max-time 120 \
+              "https://nodejs.org/dist/v${version}/${archive}" -o "work/ci-tools/$archive"
+            printf '%s  %s\n' '<< parameters.node_sha >>' "work/ci-tools/$archive" | shasum -a 256 -c -
+            tar -xzf "work/ci-tools/$archive" -C work/ci-tools --strip-components=1
+            export PATH="$PWD/work/ci-tools/bin:$PATH"
+            npm install --prefix work/ci-tools --no-save --ignore-scripts --no-audit --no-fund pnpm@11.25.0
+            export PATH="$PWD/work/ci-tools/node_modules/.bin:$PATH"
+            rustup toolchain install 1.92.0 --profile minimal
+            printf 'export PATH=%q:"$PATH"\n' "$PWD/work/ci-tools/bin:$PWD/work/ci-tools/node_modules/.bin" >> "$BASH_ENV"
+            printf 'export CARGO_HOME=%q CARGO_TARGET_DIR=%q RUSTUP_TOOLCHAIN=1.92.0\n' \
+              "$PWD/work/caches/cargo-home" "$PWD/work/caches/cargo-target" >> "$BASH_ENV"
+            test "$(node --version)" = "v$version"
+            test "$(pnpm --version)" = '11.25.0'
+            rustc +1.92.0 --version
+            printf 'Commit: %s\n' "$CIRCLE_SHA1"
+
+jobs:
+  macos-package:
+    macos:
+      xcode: 16.4.0
+    resource_class: m4pro.medium
+    environment:
+      CARGO_BUILD_JOBS: '3'
+      CARGO_PROFILE_RELEASE_LTO: 'false'
+      CARGO_PROFILE_RELEASE_CODEGEN_UNITS: '16'
+    steps:
+      - checkout
+      - prepare_toolchain:
+          node_target: darwin-arm64
+          node_sha: be87e21bd235a451fad02c89e5bf7cb17e206e4cd89dd5664f20d19e7dfde6f9
+      - run:
+          name: Exercise and package the native 0.44.0 engine
+          no_output_timeout: 18m
+          command: |
+            set -euo pipefail
+            umask 077
+            test "$(uname -m)" = arm64
+            sw_vers -productVersion
+            export GITHUB_WORKSPACE="$(pwd -P)" GITHUB_ENV="$BASH_ENV"
+            bash scripts/prepare-macos-ci-runtime.sh
+            . "$BASH_ENV"
+            export HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256 HEADROOM_MACOS_RUNTIME_ROOT HEADROOM_MACOS_PROOF_ROOT
+            python="$HEADROOM_MACOS_RUNTIME_ROOT/payload/python/bin/python3.13"
+            "$python" -I -B scripts/probe-macos-engine.py \
+              "$HEADROOM_MACOS_RUNTIME_ROOT/payload/site-packages" "$HEADROOM_MACOS_PROOF_ROOT"
+            pnpm install --frozen-lockfile
+            build_root="$(mktemp -d "$GITHUB_WORKSPACE/work/macos-package.XXXXXX")"
+            bash scripts/build-macos.sh "$build_root"
+            "$python" -I -B scripts/probe-macos-package.py "$build_root"
+            test "$(git rev-parse HEAD)" = "$CIRCLE_SHA1"
+            git diff --quiet HEAD --
+
+  linux-build:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: medium
+    environment:
+      CARGO_BUILD_JOBS: '2'
+    steps:
+      - checkout
+      - prepare_toolchain:
+          node_target: linux-x64
+          node_sha: 2094ecdc844ea11e9777cac42672b0d89cd63d27204193a587dc5a2d276bb940
+      - run:
+          name: Build Linux desktop and exercise the native test suite
+          no_output_timeout: 18m
+          command: |
+            set -euo pipefail
+            umask 077
+            test "$(uname -sm)" = 'Linux x86_64'
+            . /etc/os-release
+            printf '%s\n' "$PRETTY_NAME"
+            sudo apt-get -qq update
+            sudo apt-get -qq install --no-install-recommends -y \
+              build-essential pkg-config libwebkit2gtk-4.1-dev libgtk-3-dev \
+              libayatana-appindicator3-dev librsvg2-dev libxdo-dev xvfb xauth xdotool
+            pnpm install --frozen-lockfile
+            pnpm build
+            cargo_log=work/linux-cargo.log
+            trap 'rm -f "$cargo_log"' EXIT
+            if ! cargo test --locked --manifest-path src-tauri/Cargo.toml --features custom-protocol \
+                --color never -- --test-threads=1 > "$cargo_log" 2>&1; then
+              awk '/^error(\[[A-Z][0-9]+\])?: / || /^---- .* stdout ----$|^test result: / \
+                { if (++count <= 12) print substr($0, 1, 220) }' "$cargo_log"
+              exit 1
+            fi
+            grep '^test result:' "$cargo_log"
+            if ! cargo build --locked --manifest-path src-tauri/Cargo.toml --features custom-protocol \
+                --color never > "$cargo_log" 2>&1; then
+              awk '/^error(\[[A-Z][0-9]+\])?: / { if (++count <= 8) print substr($0, 1, 220) }' "$cargo_log"
+              exit 1
+            fi
+            file "$CARGO_TARGET_DIR/debug/headroom-desktop"
+            export XDG_DATA_HOME="$PWD/work/linux-smoke/data" XDG_CONFIG_HOME="$PWD/work/linux-smoke/config"
+            mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME"
+            timeout 45s xvfb-run -a bash -euo pipefail <<'SH'
+            "$CARGO_TARGET_DIR/debug/headroom-desktop" > work/linux-smoke/application.log 2>&1 &
+            app=$!
+            trap 'kill "$app" 2>/dev/null || :; wait "$app" || :; rm -f work/linux-smoke/application.log' EXIT
+            timeout 30s xdotool search --sync --onlyvisible --pid "$app" --name Headroom >/dev/null
+            echo 'Linux native window visible under Xvfb'
+            SH
+            test "$(git rev-parse HEAD)" = "$CIRCLE_SHA1"
+            git diff --quiet HEAD --
+
+workflows:
+  macos-validation:
+    when:
+      equal: [macos, << pipeline.parameters.platform >>]
+    jobs:
+      - macos-package
+  linux-validation:
+    when:
+      equal: [linux, << pipeline.parameters.platform >>]
+    jobs:
+      - linux-build

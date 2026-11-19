@@ -195,7 +195,8 @@ def exercise_reports(root):
 
 
 def probe(root):
-    require(sys.platform == "darwin" and os.environ.get("GITHUB_ACTIONS") == "true", "ci_macos_required")
+    ci_run = os.environ.get("GITHUB_ACTIONS") == "true" or os.environ.get("CIRCLECI") == "true"
+    require(sys.platform == "darwin" and ci_run, "ci_macos_required")
     require(root.is_absolute() and root.resolve(strict=True) == root
             and root.parent == (ROOT / "work").resolve(strict=True)
             and root.name.startswith("macos-package."), "invalid_proof_root")
