@@ -83,6 +83,7 @@ h1 { color: var(--text); margin-bottom: 8px; font-size: clamp(28px, 2.9vw, 38px)
 .header-status .ui-icon { width: 15px; height: 15px; }
 .pulse-dot { width: 6px; height: 6px; }
 .notice { min-height: 38px; margin: -12px 0 19px; padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--warning) 25%, var(--border)); border-radius: 8px; background: color-mix(in srgb, var(--warning) 6%, var(--surface)); color: var(--muted); display: flex; align-items: center; justify-content: space-between; gap: 14px; font-size: 11px; }
+.update-notice { border-color: var(--border); background: var(--surface); }
 .text-button { border: 0; background: transparent; color: var(--accent); padding: 3px; cursor: pointer; font-size: 11px; font-weight: 600; }
 .status-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; margin-bottom: 17px; }
 .status-card { min-height: 103px; background: var(--surface); border: 1px solid var(--border); border-radius: 11px; padding: 16px 17px; box-shadow: var(--shadow); }

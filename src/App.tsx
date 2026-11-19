@@ -37,6 +37,7 @@ import { DesktopLifecycle } from "./components/DesktopLifecycle";
 import { Settings } from "./features/settings/Settings";
 import { Learn } from "./features/settings/Learn";
 import { Updates } from "./features/settings/Updates";
+import { updateClient } from "./lib/updates";
 
 type Screen = "overview" | "sessions" | "applications" | "activity" | "settings";
 type LifecycleAction = RuntimeAction;
@@ -180,6 +181,14 @@ function SnapshotNotice({
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("overview");
+  const [newVersion, setNewVersion] = useState<string | null>();
+  useEffect(() => {
+    let active = true;
+    void updateClient.checkOnStartup().then(version => {
+      if (active) setNewVersion(version);
+    });
+    return () => { active = false; };
+  }, []);
   const [period, setPeriod] = useState<MetricPeriod>("session");
   const [requestedClient, setRequestedClient] = useState<ClientKind | null>(null);
   const [applicationsBusy, setApplicationsBusy] = useState(false);
@@ -437,7 +446,7 @@ export default function App() {
     persistedPreferences.current,
     (operating) => changePreferences({ operating }),
     onApplicationsBusy,
-    `${snapshot?.runtime_generation ?? "none"}:${snapshot?.engine.status ?? "unknown"}`,
+    `${snapshot?.runtime_generation ?? "none"}:${snapshot?.engine.status ?? "unknown"}:${newVersion === undefined ? "checking" : "checked"}`,
   );
 
   return <div className="app-shell">
@@ -465,6 +474,11 @@ export default function App() {
         <div className="header-status" aria-live="polite"><Icon name="shield" />{loading ? labels.loading : snapshot ? labels.nativeSnapshot : (language === "tr" ? "Yerel durum" : "Local state")}</div>
       </header>
       <SnapshotNotice readIssue={readIssue} commandError={commandError} engineError={snapshot?.engine.error_code ?? null} onRetry={retrySnapshot} labels={labels} />
+      {newVersion && screen !== "settings" && <div className="notice update-notice">
+        <span role="status">{language === "tr" ? "Yeni sürüm var" : "New version available"} · {newVersion}</span>
+        <button type="button" className="text-button" disabled={applicationsBusy || pending !== null}
+          onClick={() => navigate("settings")}>{language === "tr" ? "Ayarları aç" : "Open settings"}</button>
+      </div>}
       {content}
       {(screen === "overview" || screen === "applications") && <ProblemNotice
         language={language} disabled={applicationsBusy || pending !== null}

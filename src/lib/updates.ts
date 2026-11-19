@@ -85,6 +85,8 @@ export function createUpdateClient(options: {
   requestId: () => string | null;
   invoke: (command: string, args: Record<string, unknown>) => Promise<unknown>;
 }) {
+  let startupCheck: Promise<string | null> | undefined;
+
   async function request(action: UpdateAction): Promise<UpdateResult> {
     if (!options.isNative()) return { kind: "error", code: "unavailable" };
     const id = options.requestId();
@@ -102,7 +104,22 @@ export function createUpdateClient(options: {
       return { kind: "error", code: "request_failed" };
     }
   }
-  return { request };
+  async function checkInstalledChannel(): Promise<string | null> {
+    const current = await request({ kind: "snapshot" });
+    if (current.kind === "error" || current.snapshot.status !== "idle") return null;
+    const release = current.snapshot.installed_version.split("+", 1)[0];
+    const channel = release.includes("-") ? "preview" : "stable";
+    const result = await request({ kind: "check", channel });
+    return result.kind === "snapshot" && result.snapshot.status === "available"
+      ? result.snapshot.candidate?.version ?? null
+      : null;
+  }
+
+  function checkOnStartup() {
+    return startupCheck ??= checkInstalledChannel();
+  }
+
+  return { request, checkOnStartup };
 }
 
 export const updateClient = createUpdateClient({

@@ -87,3 +87,39 @@ test("apply and restore acknowledge the actual exit transition", async () => {
   assert.equal((await client.request({ kind: "apply", candidate_id: candidateId })).snapshot.status, "exiting");
   assert.equal((await client.request({ kind: "rollback", recovery_id: candidateId })).snapshot.status, "exiting");
 });
+
+test("checks once at startup using the installed release channel and never downloads", async () => {
+  for (const [installedVersion, channel] of [["0.1.0+win-10", "stable"], ["0.1.0-beta.1", "preview"]]) {
+    const calls = [];
+    const client = createUpdateClient({
+      isNative: () => true,
+      requestId: () => requestId,
+      invoke: async (_command, { request: { action } }) => {
+        calls.push(action);
+        return action.kind === "snapshot"
+          ? reply({ installed_version: installedVersion, status: "idle", channel: null, candidate: null })
+          : reply({ installed_version: installedVersion, status: "available", channel });
+      },
+    });
+    assert.deepEqual(await Promise.all([client.checkOnStartup(), client.checkOnStartup()]), ["0.1.1", "0.1.1"]);
+    assert.deepEqual(calls, [{ kind: "snapshot" }, { kind: "check", channel }]);
+  }
+});
+
+test("stays quiet without a trusted source or a verified newer release", async () => {
+  for (const [initial, check, expectedCalls] of [
+    ["unavailable", null, 1], ["idle", "current", 2], ["idle", "error", 2],
+  ]) {
+    let calls = 0;
+    const client = createUpdateClient({
+      isNative: () => true,
+      requestId: () => requestId,
+      invoke: async () => reply(++calls === 1
+        ? { status: initial, channel: null, candidate: null }
+        : { status: check, channel: check === "current" ? "stable" : null, candidate: null,
+          error: check === "error" ? "invalid_release" : null }),
+    });
+    assert.equal(await client.checkOnStartup(), null);
+    assert.equal(calls, expectedCalls);
+  }
+});
