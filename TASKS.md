@@ -35,7 +35,7 @@ Bu geliştirme işleri ürün görev sayımına eklenmez. DEV001/DEV002, H028–
 - **Durum:** Tamamlandı; [denetim raporu](docs/reviews/ponytail-baseline.md). Bir düşük öncelikli belge bulgusu DEV002-D01, H022’ye bağlandı. İncelenen öncelikli akışlarda kesin yeni ürün hatası doğrulanmadı; kapsam dışı alanlar raporda. Ürün kodu değiştirilmedi.
 
 **18 Kasım Astra incelemesinin takip maddeleri** (ana görev sayısına eklenmez). Sürüm geri dönüşü ve SSE sayaçları H041 altında ele alınır. Aşağıdaki mevcut ekran regresyonları ayrı sırayla doğrulanır.
-- [ ] **H024/H025/H027 · Yerel gün başlangıcı.** Genel Bakış ve Etkinlik, gece yarısının atlandığı günlerde dönemi ve grafiği yerel günün ilk geçerli anından hesaplamalı. Santiago 8 Eylül 2024 günü için yerel zaman boşluğu doğrulandı. Bugün, Son 7 gün ve günlük grafik ayrı sınanır.
+- [x] **H024/H025/H027 · Yerel gün başlangıcı.** Genel Bakış ve Etkinlik atlanan gece yarısında ilk geçerli yerel anı kullanıyor. Santiago geçişini temsil eden SQLite fixture’ı Bugün, Son 7 gün ve günlük grafiği doğruladı. 30 dakika 1 saniyelik geçiş ve tüm günün atlanması da geçti. [Kanıt](docs/proofs/metrics-store.md#19-kasım-2026--atlanan-yerel-gece-yarısı).
 - [ ] **H024/H025 · Uzun oturum grafiği.** Aynı oturumda 90 günlük saklama ve 65 ayrı günde karşılaştırılabilir ölçüm varsa grafik sınırı tüm özeti düşürebiliyor. Kaynak koşulu doğrulandı. Yerel fixture ile dönem toplamını koru ve grafiği en fazla 64 noktaya grupla.
 - [ ] **H025/H030 · Tepside panel sorgusu.** Ön yüz zamanlayıcısı pencere görünürlüğünü denetlemiyor. Gerçek gizleme/açma sırasında sorgu sayısını ölç, gizliyken panel yenilemesini durdur ve görünür olunca bir kez güncelle. Arka plan ölçüm toplayıcısı çalışmayı sürdürür.
 

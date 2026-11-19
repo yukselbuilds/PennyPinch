@@ -1,6 +1,10 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
 
+## 19 Kasım — Genel Bakış ve Etkinlik yerel gün başlangıcı
+
+Ana ajan, saat geçişinde dönem toplamı ve günlük grafiğin ortak zaman sınırını düzeltti. Üç regresyon SQLite deposunda önce başarısız oldu, sonra geçti. Son Windows 10 yerel kapısında 476 Rust testi, `test:app`, biçim kontrolü ve iki derleme geçti. 24 opt-in Rust testi atlandı. **45/54 ana görev tamamlandı. H041’de 6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü açık.** Astra incelemesinden ayrı iki ekran maddesi kaldı. Sıradaki yerel takip uzun oturum grafiği. [Kanıt](proofs/metrics-store.md#19-kasım-2026--atlanan-yerel-gece-yarısı) · [Görev listesi](../TASKS.md)
+
 ## 19 Kasım — Anthropic Messages yerel gerçek model sayaçları
 
 Ana ajan gerçek inference ve kullanım eşlemesini doğruladı. Headroom 0.44.0 ve yerel llama.cpp ile JSON ve SSE isteklerinin her biri tek gönderimde doğru sonucu verdi. JSON 44 önbellek dışı giriş, 0 okuma ve 15 çıktı bildirdi. SSE 11 önbellek dışı giriş, 33 okuma ve 15 çıktı bildirdi. Önbellek yazma alanı iki yanıtta da eksikti. Toplam kullanım bilinmiyor kaldı. 70 girdi eşleşti ve iki sahipli süreç kapandı. **45/54 ana görev tamamlandı. H041 açık.** [Ölçüm](proofs/desktop-anthropic-usage.json) · [Görev listesi](../TASKS.md)

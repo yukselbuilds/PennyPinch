@@ -1,7 +1,10 @@
 use super::normalize::*;
 use super::query::AggregateStatus;
 use super::store::*;
-use chrono::{DateTime, FixedOffset, Utc};
+use chrono::{
+    DateTime, Duration, FixedOffset, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, TimeZone,
+    Utc,
+};
 use rusqlite::Connection;
 use std::fs;
 use std::path::PathBuf;
@@ -241,6 +244,131 @@ fn metrics_store_local_calendar_boundaries_exclude_future_and_survive_zone_chang
         .query_at(Period::Today, now().with_timezone(&Utc))
         .unwrap();
     assert_eq!(utc_day.coverage.events, 1);
+}
+
+#[derive(Clone, Copy)]
+struct MidnightJump<const SECONDS: i32>;
+
+impl<const SECONDS: i32> MidnightJump<SECONDS> {
+    fn midnight() -> NaiveDateTime {
+        NaiveDate::from_ymd_opt(2024, 9, 8)
+            .unwrap()
+            .and_time(NaiveTime::MIN)
+    }
+
+    fn before() -> FixedOffset {
+        FixedOffset::west_opt(4 * 3600).unwrap()
+    }
+
+    fn after() -> FixedOffset {
+        FixedOffset::east_opt(SECONDS - 4 * 3600).unwrap()
+    }
+}
+
+impl<const SECONDS: i32> TimeZone for MidnightJump<SECONDS> {
+    type Offset = FixedOffset;
+
+    fn from_offset(_: &FixedOffset) -> Self {
+        Self
+    }
+
+    fn offset_from_local_date(&self, date: &NaiveDate) -> LocalResult<FixedOffset> {
+        self.offset_from_local_datetime(&date.and_time(NaiveTime::MIN))
+    }
+
+    fn offset_from_local_datetime(&self, local: &NaiveDateTime) -> LocalResult<FixedOffset> {
+        let midnight = Self::midnight();
+        if *local < midnight {
+            LocalResult::Single(Self::before())
+        } else if *local < midnight + Duration::seconds(i64::from(SECONDS)) {
+            LocalResult::None
+        } else {
+            LocalResult::Single(Self::after())
+        }
+    }
+
+    fn offset_from_utc_date(&self, date: &NaiveDate) -> FixedOffset {
+        self.offset_from_utc_datetime(&date.and_time(NaiveTime::MIN))
+    }
+
+    fn offset_from_utc_datetime(&self, utc: &NaiveDateTime) -> FixedOffset {
+        let transition = Self::midnight() + Duration::hours(4);
+        if *utc < transition {
+            Self::before()
+        } else {
+            Self::after()
+        }
+    }
+}
+
+fn skipped_day_store() -> MetricsStore {
+    let store = MetricsStore::in_directory(&fixture_root());
+    let events = [
+        observation("previous-date", "2024-09-08T03:59:59Z"),
+        observation("at-transition", "2024-09-08T04:00:00Z"),
+        observation("same-date", "2024-09-08T04:40:00Z"),
+    ];
+    store
+        .ingest_batch(
+            &normalize(&events).unwrap(),
+            CaptureFlags::default(),
+            "2024-09-08T05:00:00Z".parse::<DateTime<Utc>>().unwrap(),
+        )
+        .unwrap();
+    store
+}
+
+#[test]
+fn metrics_store_skipped_midnight_aligns_overview_activity_and_chart() {
+    // America/Santiago moved from UTC-4 to UTC-3 at this transition.
+    let store = skipped_day_store();
+    for (period, stamp) in [
+        (Period::Today, "2024-09-08T05:00:00Z"),
+        (Period::SevenDays, "2024-09-14T15:00:00Z"),
+    ] {
+        let now = stamp
+            .parse::<DateTime<Utc>>()
+            .unwrap()
+            .with_timezone(&MidnightJump::<3600>);
+        let overview = store.query_at(period, now).unwrap();
+        let activity = store.activity_at(period, &Default::default(), now).unwrap();
+        assert_eq!(overview.from_utc.as_deref(), Some("2024-09-08T04:00:00Z"));
+        assert_eq!(activity.from_utc, overview.from_utc);
+        assert_eq!(activity.matched_requests, 2);
+        assert_eq!(overview.totals.comparable_events, 2);
+        assert_eq!(overview.series.len(), 1);
+        assert_eq!(overview.series[0].at_utc, "2024-09-08T04:00:00Z");
+        assert_eq!(overview.series[0].totals.comparable_events, 2);
+    }
+}
+
+#[test]
+fn metrics_store_skipped_midnight_inside_the_week_keeps_the_daily_chart() {
+    let store = skipped_day_store();
+    let now = "2024-09-13T15:00:00Z"
+        .parse::<DateTime<Utc>>()
+        .unwrap()
+        .with_timezone(&MidnightJump::<1801>);
+    let overview = store.query_at(Period::SevenDays, now).unwrap();
+    assert_eq!(overview.totals.comparable_events, 3);
+    assert_eq!(overview.series.len(), 2);
+    assert_eq!(overview.series[0].at_utc, "2024-09-07T04:00:00Z");
+    assert_eq!(overview.series[1].at_utc, "2024-09-08T04:00:00Z");
+    assert_eq!(overview.series[1].totals.comparable_events, 2);
+}
+
+#[test]
+fn metrics_store_skipped_midnight_can_skip_the_entire_first_date() {
+    let store = skipped_day_store();
+    let now = "2024-09-14T02:00:00Z"
+        .parse::<DateTime<Utc>>()
+        .unwrap()
+        .with_timezone(&MidnightJump::<86400>);
+    let overview = store.query_at(Period::SevenDays, now).unwrap();
+    assert_eq!(overview.from_utc.as_deref(), Some("2024-09-08T04:00:00Z"));
+    assert_eq!(overview.totals.comparable_events, 2);
+    assert_eq!(overview.series.len(), 1);
+    assert_eq!(overview.series[0].at_utc, "2024-09-08T04:00:00Z");
 }
 
 #[test]

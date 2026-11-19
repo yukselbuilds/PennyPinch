@@ -5,10 +5,12 @@ use super::normalize::{
 use super::query::{aggregate_event_refs, aggregate_unique_events, AggregateStatus, PeriodTotals};
 use crate::integrations::config_io::{pin_existing_directory_chain, PinnedDirectoryChain};
 use crate::state::store::PreferenceStore;
-use chrono::{DateTime, Days, Duration, Local, SecondsFormat, TimeZone, Timelike, Utc};
+use chrono::{
+    DateTime, Days, Duration, Local, NaiveDate, NaiveTime, SecondsFormat, TimeZone, Timelike, Utc,
+};
 use rusqlite::{params, Connection, ErrorCode, OpenFlags, OptionalExtension, TransactionBehavior};
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{btree_map::Entry, BTreeMap, BTreeSet};
 use std::fs::{self, File, OpenOptions};
 use std::path::{Path, PathBuf};
 use std::time::Duration as StdDuration;
@@ -260,16 +262,7 @@ impl MetricsStore {
                     .date_naive()
                     .checked_sub_days(Days::new(if period == Period::SevenDays { 6 } else { 0 }))
                     .ok_or(MetricsError::InvalidLocalTime)?;
-                let midnight = date
-                    .and_hms_opt(0, 0, 0)
-                    .ok_or(MetricsError::InvalidLocalTime)?;
-                Some(
-                    now.timezone()
-                        .from_local_datetime(&midnight)
-                        .earliest()
-                        .ok_or(MetricsError::InvalidLocalTime)?
-                        .with_timezone(&Utc),
-                )
+                Some(local_day_start(&now.timezone(), date)?)
             }
         };
         let now = now.with_timezone(&Utc);
@@ -551,6 +544,43 @@ fn utc_string(value: DateTime<Utc>) -> String {
     value.to_rfc3339_opts(SecondsFormat::AutoSi, true)
 }
 
+fn local_day_start<Tz: TimeZone>(
+    zone: &Tz,
+    date: NaiveDate,
+) -> Result<DateTime<Utc>, MetricsError> {
+    let midnight = date.and_time(NaiveTime::MIN);
+    let resolve = |seconds| {
+        midnight
+            .checked_add_signed(Duration::seconds(seconds))
+            .and_then(|local| zone.from_local_datetime(&local).earliest())
+            .map(|stamp| stamp.with_timezone(&Utc))
+    };
+    if let Some(start) = resolve(0) {
+        return Ok(start);
+    }
+
+    // A forward offset change can skip midnight or the entire date. Chrono
+    // offsets are less than 24 hours in either direction, which bounds the gap.
+    let mut last_missing = 0;
+    for hour in 1..=48 {
+        let mut first_valid = hour * 3600;
+        if let Some(mut start) = resolve(first_valid) {
+            while first_valid - last_missing > 1 {
+                let middle = last_missing + (first_valid - last_missing) / 2;
+                if let Some(candidate) = resolve(middle) {
+                    first_valid = middle;
+                    start = candidate;
+                } else {
+                    last_missing = middle;
+                }
+            }
+            return Ok(start);
+        }
+        last_missing = first_valid;
+    }
+    Err(MetricsError::InvalidLocalTime)
+}
+
 fn build_series<Tz: TimeZone>(
     events: &[NormalizedEvent],
     period: Period,
@@ -577,19 +607,16 @@ fn build_series<Tz: TimeZone>(
             .and_utc(),
     );
     let mut buckets: BTreeMap<DateTime<Utc>, Vec<&NormalizedEvent>> = BTreeMap::new();
+    let mut day_starts = BTreeMap::new();
     for (event, stamp) in timed {
         let at = if hourly {
             anchor + Duration::hours(stamp.signed_duration_since(anchor).num_hours())
         } else {
-            let date = stamp
-                .with_timezone(zone)
-                .date_naive()
-                .and_hms_opt(0, 0, 0)
-                .ok_or(MetricsError::InvalidLocalTime)?;
-            zone.from_local_datetime(&date)
-                .earliest()
-                .ok_or(MetricsError::InvalidLocalTime)?
-                .with_timezone(&Utc)
+            let date = stamp.with_timezone(zone).date_naive();
+            match day_starts.entry(date) {
+                Entry::Occupied(entry) => *entry.get(),
+                Entry::Vacant(entry) => *entry.insert(local_day_start(zone, date)?),
+            }
         };
         buckets.entry(at).or_default().push(event);
     }

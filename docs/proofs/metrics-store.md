@@ -32,3 +32,13 @@ Yeni built Headroom iki kez ayrı WebView profili ve sahipli Job ile açıldı. 
 Kanıtlar `work/proofs/metrics-store/` altında `focused4.json`, `final.json`, `native-query.json`, süreç fixture'larının UUID dizinleri ve son `acceptance.json` içindedir. Kaynak/artefakt/ortam fingerprint'leri aynı doğrulama adımlarında programatik kaydedildi. Ham auth, konuşma veya hata dökümü yoktur.
 
 H024 backend kabulü tamamlandı. H025 owned runtime metadata toplayıcısı, polling/gap ve gerçek ekran bağlantısını ayrıca yapacak; bu kabul canlı tasarruf dashboard'u veya güvenilir0.41.0 tokenizer provenance'ı oluşturmaz. Native kontrolde boş depo sorgulandı; dolu geçmişin ayrı süreç kanıtı yukarıdaki üretim depo koduyla ve açıkça sentetik fixture'la sağlandı. Windows11/macOS/Linux, installer, güç kesintisi ve uzun süre/yük ölçümü yapılmadı. [Ana ajan incelemesi](../reviews/H024.md).
+
+## 19 Kasım 2026 — Atlanan yerel gece yarısı
+
+Ana ajan, Genel Bakış ve Etkinlik’in paylaştığı dönem sorgusunda ve günlük grafikte aynı gün başlangıcını kullandı. Saat ileri alındığında başlangıç ilk geçerli yerel saniyeye taşınıyor. Grafik her tarih için sınırı bir kez çözüyor.
+
+Windows 10 22H2 x64 üzerinde gerçek SQLite deposuna sentetik kayıtlar yazıldı. Santiago’nun 8 Eylül 2024 saat geçişini temsil eden test Bugün ve Son 7 gün için UTC 04.00 başlangıcını, sınırın iki yanındaki kayıtları ve Etkinlik eşleşmesini doğruladı. Diğer iki test haftanın içindeki 30 dakika 1 saniyelik geçişi ve ilk tarihin tamamen atlanmasını kapsadı. Üçü düzeltme öncesi `InvalidLocalTime` ile durdu. Düzeltmeden sonra üçü geçti. Saat dilimi geçişleri testte enjekte edildi.
+
+Son yerel kapıda `test:app`, frontend derlemesi, `cargo fmt --check`, 476 Rust testi ve `custom-protocol` derlemesi geçti. 24 opt-in Rust testi atlandı. Doğrulama sırasında 259 kaynak, test ve yapılandırma girdisi eşleşti. Aday girdilerinin SHA-256 özeti `e27622a184702a6ead40e97df356580acbd27eb0cf92b9c2905b2bbdd6e5f4ca`.
+
+Programatik kayıtlar `work/proofs/metrics-local-calendar/` altında `red-0f8caa6a-8b57-4646-bb6d-0425c36241be.json`, `focused-dfba4cda-20af-4cfa-a97f-e3bbf29ba685.json` ve `gate-c071872a-e0ae-4a72-aa2c-ac4efabca450.json` dosyalarında tutulur. Son raporun SHA-256 değeri `92341974f131cf367ab6677e256898b0fdb716f186a936f31bfe98d8381ff99f`. [Dönem sözleşmesi](../decisions/012-metrics-store.md).
