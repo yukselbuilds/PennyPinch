@@ -77,7 +77,7 @@ fn windows_bundle_real_staged_payload_starts_and_stops_without_development_layou
     }
     let project =
         fs::canonicalize(PathBuf::from(env!("CARGO_MANIFEST_DIR")).parent().unwrap()).unwrap();
-    let resources = project.join("work/build/windows/resources");
+    let resources = project.join("work/build/windows/pennypinch");
     let state = project
         .join("work/proofs/windows-install/bundle-native")
         .join(Uuid::new_v4().to_string())

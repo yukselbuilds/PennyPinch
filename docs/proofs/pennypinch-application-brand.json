@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "task": "H042",
+  "slice": "pennypinch_application_brand",
+  "platform": "Windows 10 22H2 x64 build 19045",
+  "date": "2026-11-20",
+  "status": "pass",
+  "public_application_name": "PennyPinch",
+  "app_identifier": "dev.headroom.desktop",
+  "engine": "Headroom 0.44.0",
+  "windows_preview": {
+    "path": "work/caches/cargo-target/release/bundle/nsis/PennyPinch_0.1.0_x64-setup.exe",
+    "size_bytes": 123576322,
+    "sha256": "3b9e4bf0654d566a9ec8a01b909d844d8c3a4d6827b1e161b2633d1ff6c4e2a0",
+    "authenticode": "unsigned build",
+    "package_resources": 19484,
+    "headroom_license_and_notice_packaged": true
+  },
+  "application_sha256": "a762a6ec1a62740a978dad31b3960827c22b1d50de20714b7783e19405fc039a",
+  "windows_product_metadata": {
+    "application_product": "PennyPinch",
+    "publisher": "PennyPinch",
+    "installer_product": "PennyPinch"
+  },
+  "windows_registry": {
+    "compiled_template_key_preprocessed": true,
+    "existing_registration_rust_test": true,
+    "live_profile_upgrade_tested": false
+  },
+  "checks": {
+    "frontend_tests": 227,
+    "rust_tests": 480,
+    "windows_packaging_tests": 22,
+    "localized_accessibility_targeted_test_passed": true,
+    "localized_accessibility_audits": 60,
+    "accessibility_violations": 0,
+    "branded_runtime_resources_matched": 19484,
+    "macos_source_syntax": "pass",
+    "macos_native_build": "not_tested"
+  },
+  "fingerprints": {
+    "product_source_gate_sha256": "e101ae1a36538d5a0ac7e873022791efd221e63cfaca48eff83f05cf9f0bbe95",
+    "installer_inputs_sha256": "5f89e0cb753508f93971ee8cab4af8219316300573611855e1d0352dd786fadb",
+    "installer_input_count": 368,
+    "final_staging_sha256": "74ee1503c81ec22c4269a6f3a29cfaf8c6b8ed0412634318fd365fb85bd8b097",
+    "earlier_headroom_artifact_preserved": true,
+    "ui_proof_sha256": "606cb886aaa30c4d55fa1c514b3c1b968d0cd552b91bb114fa0ef29f7fc6d21d"
+  },
+  "local_evidence_directory": "work/proofs/branding/pennypinch",
+  "public_release": "pending"
+}

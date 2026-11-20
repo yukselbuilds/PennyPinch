@@ -1,10 +1,10 @@
-# Headroom Desktop — Ürün ve Özellik Spesifikasyonu
+# PennyPinch — Ürün ve Özellik Spesifikasyonu
 
 **Tarih:** 11 Kasım 2026\
 **Belge sürümü:** 0.6\
 **Durum:** Geliştirme kapsamı; uygulanmış özelliklerin kanıtlı durumu `TASKS.md` içindedir.  
 **Proje kökü:** `D:\Projeler\Headroom`  
-**Çalışma adı:** Headroom Desktop. Bu, Headroom motorunu kullanan bağımsız masaüstü yönetici projesinin geçici adıdır.
+**Ürün adı:** PennyPinch. Bağlam sıkıştırması için Headroom motorunu kullanan bağımsız masaüstü uygulaması.
 
 ## 1. Ürün fikri
 
@@ -201,7 +201,7 @@ Genel bakış yerleşimi:
 
 ```text
 ┌──────────────────────────────────────────────────────────┐
-│ Headroom Desktop                 Durum     [Başlat]      │
+│ PennyPinch                 Durum     [Başlat]      │
 ├───────────────┬──────────────────────────────────────────┤
 │ Genel bakış   │ Girdi token azalması       [Bugün ▾]     │
 │ Uygulamalar   │ değer / veri bekleniyor    ölçüm zamanı  │

@@ -74,7 +74,7 @@ const copy = {
       unavailable: "Bilgi kullanılamıyor",
     } satisfies Record<SessionScope["reason"] & string, string>,
     error: {
-      desktop_unavailable: "Bu görünüm yalnız Headroom masaüstü uygulamasında kullanılabilir.",
+      desktop_unavailable: "Bu görünüm yalnız PennyPinch masaüstü uygulamasında kullanılabilir.",
       invalid_response: "Oturum yanıtı doğrulanamadı. Durumu yeniden okuyun.",
       validation_failed: "Oturum isteği doğrulanamadı.",
       busy: "Başka bir oturum işlemi sürüyor. Biraz sonra yeniden deneyin.",
@@ -142,7 +142,7 @@ const copy = {
       unavailable: "Information unavailable",
     } satisfies Record<SessionScope["reason"] & string, string>,
     error: {
-      desktop_unavailable: "This view is available only in the Headroom desktop app.",
+      desktop_unavailable: "This view is available only in the PennyPinch desktop app.",
       invalid_response: "The session response could not be verified. Read status again.",
       validation_failed: "The session request could not be validated.",
       busy: "Another session operation is running. Try again shortly.",

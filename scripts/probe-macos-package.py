@@ -204,7 +204,7 @@ def probe(root):
             and root.name.startswith("macos-package."), "invalid_proof_root")
     require(root.stat().st_uid == os.geteuid() and stat.S_IMODE(root.stat().st_mode) == 0o700,
             "invalid_proof_owner")
-    bundle = root / "Headroom.app"
+    bundle = root / "PennyPinch.app"
     with (bundle / "Contents/Info.plist").open("rb") as stream:
         info = plistlib.load(stream)
     require(info["CFBundleIdentifier"] == "dev.headroom.desktop.h048c5", "invalid_qa_bundle")

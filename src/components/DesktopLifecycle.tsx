@@ -18,13 +18,13 @@ const copy = {
     trayUnavailable: "Tepsi kullanılamıyor; pencere kapanışı çıkış onayı ister.",
     confirmOnClose: "Pencereyi kapatırken çıkış onayı sorulur.",
     trayUnknown: "Tepsi durumu bilinmiyor.",
-    exit: "Headroom’dan çık",
-    title: "Headroom’dan çıkılsın mı?",
+    exit: "PennyPinch’ten çık",
+    title: "PennyPinch’ten çıkılsın mı?",
     engine: "Bu işlem motoru ve tepsi simgesini kapatır.",
     routing: "Kayıtlı yönlendirmeler otomatik geri alınmaz.",
     clients: "Bağlı uygulamalar hata alabilir.",
     streams: "Süren yanıtlar kesilebilir.",
-    closeWindow: "Tepsi kullanılabiliyorsa pencereyi kapatmak Headroom’u tepside tutar.",
+    closeWindow: "Tepsi kullanılabiliyorsa pencereyi kapatmak PennyPinch’i tepside tutar.",
     blocked: "Devam eden işlemin bitmesini bekle.",
     cancel: "Vazgeç",
     confirm: "Çıkışı onayla",
@@ -42,17 +42,17 @@ const copy = {
     },
   },
   en: {
-    trayAvailable: "Closing the window keeps Headroom running in the tray.",
+    trayAvailable: "Closing the window keeps PennyPinch running in the tray.",
     trayUnavailable: "The tray is unavailable; closing the window asks before exiting.",
     confirmOnClose: "Closing the window asks before exiting.",
     trayUnknown: "Tray status is unknown.",
-    exit: "Exit Headroom",
-    title: "Exit Headroom?",
+    exit: "Exit PennyPinch",
+    title: "Exit PennyPinch?",
     engine: "This closes the engine and tray icon.",
     routing: "Saved routing entries will not be reverted automatically.",
     clients: "Connected apps may receive errors.",
     streams: "In-flight responses may be interrupted.",
-    closeWindow: "Closing the window keeps Headroom in the tray when tray support is available.",
+    closeWindow: "Closing the window keeps PennyPinch in the tray when tray support is available.",
     blocked: "Wait for the current operation to finish.",
     cancel: "Cancel",
     confirm: "Confirm exit",
@@ -252,7 +252,7 @@ export function DesktopLifecycle({ language, blocked }: { language: PreferenceLa
         if (!confirming && tokenUsable) void mutate("cancel");
       }}>
       <div className="desktop-exit-dialog__content">
-        <span className="desktop-exit-dialog__eyebrow">Headroom</span>
+        <span className="desktop-exit-dialog__eyebrow">PennyPinch</span>
         <h2 id="desktop-exit-title">{text.title}</h2>
         <div id="desktop-exit-explanation" className="desktop-exit-dialog__copy">
           <p>{text.engine}</p><p>{text.routing}</p><p>{text.clients}</p><p>{text.streams}</p><p>{snapshot?.tray_available && snapshot.close_to_tray ? text.closeWindow : text.confirmOnClose}</p>

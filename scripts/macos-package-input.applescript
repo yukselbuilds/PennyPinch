@@ -16,7 +16,7 @@ on run arguments
                 my waitControl(pickerApp, "Motoru durdur", {"AXButton"}, true)
                 my waitControl(pickerApp, "Başlat", {"AXButton"}, false)
             else if actionName is "exit" then
-                my waitControl(pickerApp, "Headroom’dan çık", {"AXButton"}, true)
+                my waitControl(pickerApp, "PennyPinch’ten çık", {"AXButton"}, true)
                 my waitControl(pickerApp, "Çıkışı onayla", {"AXButton"}, true)
             else if actionName starts with "export_" then
                 my waitControl(pickerApp, "Dışa aktar", {"AXButton", "AXDisclosureTriangle"}, true)
@@ -54,10 +54,10 @@ on waitControl(pickerApp, labelText, acceptedRoles, activateControl)
     tell application "System Events"
         repeat 120 times
             if not (exists pickerApp) then error number 1802
-            if exists window "Headroom" of pickerApp then
+            if exists window "PennyPinch" of pickerApp then
                 set targetControl to missing value
                 try
-                    set allControls to entire contents of window "Headroom" of pickerApp
+                    set allControls to entire contents of window "PennyPinch" of pickerApp
                     set observedControls to count of allControls
                     if (count of allControls) > 1200 then error number 1803
                     repeat with controlRef in allControls

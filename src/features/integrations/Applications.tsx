@@ -67,7 +67,7 @@ type Copy = {
 
 const copy: Record<PreferenceLanguage, Copy> = {
   tr: {
-    intro: "Headroom yalnızca sınırlı yerel konumları tarar. Bulunmaması, istemcinin desteklenmediği anlamına gelmez.",
+    intro: "PennyPinch yalnızca sınırlı yerel konumları tarar. Bulunmaması, istemcinin desteklenmediği anlamına gelmez.",
     scan: "Taramayı başlat", scanning: "Taranıyor…", scanAgain: "Yeniden tara", loading: "Yerel kurulumlar kontrol ediliyor…",
     desktopRequired: "İstemci keşfi masaüstü uygulamasında kullanılabilir.",
     unavailableTitle: "Masaüstü bağlantısı gerekli", unavailableBody: "Bu önizleme yerel kurulumları taramaz ve istemci sonucu göstermez.",
@@ -84,7 +84,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
     fileGuide: "Kabul edilen dosya adları: {files}. Yerel sabit diskten bir dosya seç.",
     notScanned: "Tarama henüz tamamlanmadı.", noResult: "Sonuç alınamadı", detected: "Kurulum bulundu",
     notFound: "Bilinen konumlarda bulunamadı", found: "Bulunan kurulumlar", installationSummary: "{count} kurulum", unknownVersion: "Sürüm bilinmiyor",
-    recordLabel: "Headroom ayar kaydı",
+    recordLabel: "PennyPinch ayar kaydı",
     trafficUnknown: "Kayıt, çalışan ayarın kullanıldığını göstermez; trafik doğrulanmadı.",
     recordStates: { loading: "Okunuyor…", active: "Etkin kayıt", released: "Geri alınmış", none: "Etkin kayıt yok", unknown: "Durum bilinmiyor" },
     refreshRecords: "Kayıtları yenile", refreshingRecords: "Kayıtlar okunuyor…", advanced: "Gelişmiş ayrıntılar",
@@ -98,7 +98,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
     },
   },
   en: {
-    intro: "Headroom scans a limited set of local locations. An installation not found here does not mean the client is unsupported.",
+    intro: "PennyPinch scans a limited set of local locations. An installation not found here does not mean the client is unsupported.",
     scan: "Scan for clients", scanning: "Scanning…", scanAgain: "Scan again", loading: "Checking local installations…",
     desktopRequired: "Client discovery is available in the desktop app.",
     unavailableTitle: "Desktop app required", unavailableBody: "This preview does not scan local installations or show client results.",
@@ -115,7 +115,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
     fileGuide: "Accepted file names: {files}. Choose a file on a local fixed drive.",
     notScanned: "The scan has not completed yet.", noResult: "No result available", detected: "Installation found",
     notFound: "Not found in known locations", found: "Detected installations", installationSummary: "{count} installations", unknownVersion: "Version unknown",
-    recordLabel: "Headroom settings record",
+    recordLabel: "PennyPinch settings record",
     trafficUnknown: "The record does not show that a running setting is in use; traffic is not verified.",
     recordStates: { loading: "Reading…", active: "Active record", released: "Undone", none: "No active record", unknown: "Status unknown" },
     refreshRecords: "Refresh records", refreshingRecords: "Reading records…", advanced: "Advanced details",

@@ -90,3 +90,9 @@ Kullanıcının bildirdiği 0,10 USD kalan dahil kullanım, yayımlanan 0,010 US
 Ücretsiz bir Windows 11 x64 masaüstü ortamı erişilebilir olunca SHA-256 değeri kaydedilmiş yerel adayla doğrudan kurulum testi yapılabilir. İşletim sistemi sürümü ve işlemci mimarisi kaydedilir. Geliştirme araçları bulunmayan ortamda kur → başlat → hazır → durdur akışı H006'ya, istemci bağlantısı, yerel trafik, tepsi ve kurulum ayrıntıları H037'ye yazılır. Kota yenilendiğinde standart Windows runner, ihtiyaç varsa Server CI kontrolü için kullanılabilir.
 
 macOS/Linux port/native Actions görevleri H048/H049'dadır. Bu Windows görevi onların başarı veya hazır workflow kanıtı değildir.
+
+## 20 Kasım — PennyPinch Windows 10 önizlemesi
+
+PennyPinch, uygulamanın görünen ürün adı ve Windows kurucu adıdır. Headroom 0.44.0 sıkıştırma motoru olarak kaynak ve lisans bildirimlerinde belirtilir. Windows kurucu ve güncelleyici, önceki kurulumları aynı kayıt üzerinden bulur. Kısayol adının geçirilmesi mevcut uygulama dosyasını hedefleyen kısayollarla sınırlıdır.
+
+`PennyPinch_0.1.0_x64-setup.exe` Windows 10 x64 üzerinde derlendi. Uygulama ve kurucunun Windows ürün bilgisi doğrulandı. 19.484 kaynak, 22 Windows paketleme testi, 480 Rust testi ve 227 ön yüz testi geçti. Türkçe ve İngilizce hedefli tarayıcı koşusu 60 erişilebilirlik denetiminde ihlal görmedi. Bu kanıt derleme ve kurulum kimliği kontrollerini kapsar. Mevcut kullanıcı profili üzerinde yerinde yükseltme ayrı doğrulamadır. [PennyPinch kanıtı](../proofs/pennypinch-application-brand.json).

@@ -1,36 +1,36 @@
-# Headroom Desktop — kısa kullanım kılavuzu
+# PennyPinch — kısa kullanım kılavuzu
 
 Bu, yerel geliştirme sürümünün kılavuzudur; yayımlanmış veya yeni bilgisayara hazır bir sürüm değildir.
 
 ## İlk bağlantı
 
-Headroom’u açmak istemciyi bağlamaz. Genel bakış’taki Başlat yalnızca Headroom motorunu çalıştırır; istemci ayarlarını değiştirmez. Uygulamalar ekranında kurulumları tara. Tarama bilinen yerel konumlarla sınırlıdır; bir kurulumun bulunmaması istemcinin desteklenmediği anlamına gelmez. Dosyadan ekle yalnızca kurulum keşfeder. Kurulum tercihi ancak açıkça kaydedildiğinde veya Bağlan seçildiğinde hatırlanır.
+PennyPinch’i açmak istemciyi bağlamaz. Genel bakış’taki Başlat yalnızca Headroom motorunu çalıştırır; istemci ayarlarını değiştirmez. Uygulamalar ekranında kurulumları tara. Tarama bilinen yerel konumlarla sınırlıdır; bir kurulumun bulunmaması istemcinin desteklenmediği anlamına gelmez. Dosyadan ekle yalnızca kurulum keşfeder. Kurulum tercihi ancak açıkça kaydedildiğinde veya Bağlan seçildiğinde hatırlanır.
 
-Bağlan’ı seçip doğru istemci yüzeyini/kurulumunu doğrula. Bu açık işlem seçimi kaydeder, gerekirse yalnız Headroom’a ait motoru başlatır, güncel yapılandırmayı denetler ve uygunsa bağlantı ayarını yazar. Plan engellenirse gösterilen nedeni düzeltmeden devam etme. Headroom için ayrı bir hesap oluşturulmaz; sağlayıcı hesabına istemcinde giriş yaparsın. Model, reasoning ve kimlik doğrulama yöntemi istemcinin ayarlarında kalır.
+Bağlan’ı seçip doğru istemci yüzeyini/kurulumunu doğrula. Bu açık işlem seçimi kaydeder, gerekirse yalnız PennyPinch’e ait motoru başlatır, güncel yapılandırmayı denetler ve uygunsa bağlantı ayarını yazar. Plan engellenirse gösterilen nedeni düzeltmeden devam etme. PennyPinch için ayrı bir hesap oluşturulmaz; sağlayıcı hesabına istemcinde giriş yaparsın. Model, reasoning ve kimlik doğrulama yöntemi istemcinin ayarlarında kalır.
 
 Bağlantı ayarının kaydedilmesi açık oturumun bunu kullandığını kanıtlamaz. Yeni bir CLI süreci başlat; masaüstü istemcisinde uygulamayı tamamen kapatıp yeniden aç. Açık sohbet, eski doğrudan rotayı kullanmaya devam edebilir. Trafik doğrulanmadıysa bağlantı kaydını gerçek istek kanıtı sayma.
 
 ## Hesaplar
 
-Uygulamalar → Hesaplar, desteklenen istemcinin seçilen CLI profilindeki yerel giriş kaydını gösterir. Bulunan kurulum otomatik seçilir; birden çok kurulum varsa değiştirebilirsin. “Yerel giriş kaydı var”, hesabın sağlayıcıya erişiminin veya Headroom üzerinden trafik geçtiğinin doğrulandığı anlamına gelmez. Desktop uygulaması ve diğer sohbetlerin hesabı farklı olabilir.
+Uygulamalar → Hesaplar, desteklenen istemcinin seçilen CLI profilindeki yerel giriş kaydını gösterir. Bulunan kurulum otomatik seçilir; birden çok kurulum varsa değiştirebilirsin. “Yerel giriş kaydı var”, hesabın sağlayıcıya erişiminin veya PennyPinch üzerinden trafik geçtiğinin doğrulandığı anlamına gelmez. Desktop uygulaması ve diğer sohbetlerin hesabı farklı olabilir.
 
-“Resmî girişi aç” önce hangi CLI profilinin etkileneceğini gösterir. Codex ChatGPT, Claude Code Claude hesabını açar; OpenCode sağlayıcı/yöntemi kendi ekranında seçtirir. Mevcut istemci oturumu veya API-key kaydı değişebilir; iptal önceki kaydı geri getirmeyebilir. Parola veya kodu yalnız resmî istemci ekranında gir. Headroom'daki “Durdur” kendi açtığı giriş sürecini durdurur. Başka ekrana geçmek veya tepsiye almak girişi iptal etmez; tam çıkış durdurur.
+“Resmî girişi aç” önce hangi CLI profilinin etkileneceğini gösterir. Codex ChatGPT, Claude Code Claude hesabını açar; OpenCode sağlayıcı/yöntemi kendi ekranında seçtirir. Mevcut istemci oturumu veya API-key kaydı değişebilir; iptal önceki kaydı geri getirmeyebilir. Parola veya kodu yalnız resmî istemci ekranında gir. PennyPinch'teki “Durdur” kendi açtığı giriş sürecini durdurur. Başka ekrana geçmek veya tepsiye almak girişi iptal etmez; tam çıkış durdurur.
 
 Güvenilir okuma sağlanamayan sürüm/yüzey “bilinmiyor” gösterilir. Claude Code'un desteklenen sürümünde otomatik durum komutu ayar yazabildiği için çalıştırılmaz. Hesap durumu bilinmiyor olması, istemcinin veya modelinin tasarruf için desteklenmediği anlamına gelmez.
 
 ## Kapsam ve ölçümler
 
-Yalnız Headroom yerel endpoint’ine giden istekler motordan geçer. Aynı endpoint’i kullanan ana ve alt ajan istekleri bu rotayı izleyebilir; ayrı endpoint veya sağlayıcı kullanan trafik bu bağlantının kapsamında değildir. Kayıtlı ayar tüm modelleri, araçları veya oturumları doğrulamaz.
+Yalnız PennyPinch yerel endpoint’ine giden istekler motordan geçer. Aynı endpoint’i kullanan ana ve alt ajan istekleri bu rotayı izleyebilir; ayrı endpoint veya sağlayıcı kullanan trafik bu bağlantının kapsamında değildir. Kayıtlı ayar tüm modelleri, araçları veya oturumları doğrulamaz.
 
-Genel bakış’taki önce/sonra girdileri Headroom’un yerel kayıtlarından hesaplanan input-token ölçümüdür; sohbet geçmişi değildir. Bu tahmin sağlayıcının token kullanımı, faturası veya maliyet hesabı değildir. Yüzde ve miktar yalnız karşılaştırılabilir ölçümlerde gösterilir; veri yoksa ya da temeller farklıysa toplam uydurulmaz.
+Genel bakış’taki önce/sonra girdileri PennyPinch’in yerel kayıtlarından hesaplanan input-token ölçümüdür; sohbet geçmişi değildir. Bu tahmin sağlayıcının token kullanımı, faturası veya maliyet hesabı değildir. Yüzde ve miktar yalnız karşılaştırılabilir ölçümlerde gösterilir; veri yoksa ya da temeller farklıysa toplam uydurulmaz.
 
 Ölçüm uygunsa yüzde `(önce − sonra) / önce × 100` ile hesaplanır. Sonra değeri daha büyükse girdi artışı gösterilir; önce değeri sıfırsa yüzde hesaplanmaz. Oturum, Bugün ve 7 gün dönemlerini Genel bakış’tan seçebilirsin. Etkinlik ekranında istemci ve model adıyla filtreleyip kayıtları inceleyebilirsin; bilinmeyen model veya ajan bilgisi tahminle doldurulmaz.
 
 ## Duraklatma, durdurma ve tepsi
 
-Duraklat yeni isteklerin sıkıştırılmasını durdurur; sürmekte olan yanıtlar ve önceki içerik erişimi devam eder. Devam et yeni istekler için sıkıştırmayı açar. Motoru durdurmak bağlantı ayarını geri almaz; bağlı istemciler bağlantı hatası görebilir. Geri almak için Bağlantıyı yönet bölümünden yalnız Headroom’un eklediği yönlendirme kaydını kaldır. Diğer istemci ayarları ve motor durumu korunur; açık istemcinin ayarı alması için yeniden açılması gerekebilir.
+Duraklat yeni isteklerin sıkıştırılmasını durdurur; sürmekte olan yanıtlar ve önceki içerik erişimi devam eder. Devam et yeni istekler için sıkıştırmayı açar. Motoru durdurmak bağlantı ayarını geri almaz; bağlı istemciler bağlantı hatası görebilir. Geri almak için Bağlantıyı yönet bölümünden yalnız PennyPinch’in eklediği yönlendirme kaydını kaldır. Diğer istemci ayarları ve motor durumu korunur; açık istemcinin ayarı alması için yeniden açılması gerekebilir.
 
-Tepsi tercihi açıksa pencerenin X’i Headroom’u tepsiye gizler ve motor çalışmaya devam eder. Headroom’dan çık seçeneği motoru ve tepsi simgesini kapatır; yönlendirme kayıtlarını otomatik kaldırmaz, bağlı istemciler hata alabilir ve süren yanıtlar kesilebilir. Windows başlangıcı açıksa oturum açınca pencere açılır; motor kendiliğinden başlamaz.
+Tepsi tercihi açıksa pencerenin X’i PennyPinch’i tepsiye gizler ve motor çalışmaya devam eder. PennyPinch’ten çık seçeneği motoru ve tepsi simgesini kapatır; yönlendirme kayıtlarını otomatik kaldırmaz, bağlı istemciler hata alabilir ve süren yanıtlar kesilebilir. Windows başlangıcı açıksa oturum açınca pencere açılır; motor kendiliğinden başlamaz.
 
 ## Tercihler ve güncellemeler
 

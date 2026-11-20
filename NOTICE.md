@@ -1,4 +1,4 @@
-# Headroom Desktop development package
+# PennyPinch development package
 
 This is an unsigned development preview. It is not a signed production release.
 
@@ -9,7 +9,7 @@ The pinned CPython 3.13.13 distribution's license is preserved at
 `runtime/payload/LICENSE.txt`. Python dependency metadata, license files and
 notices remain in their original `.dist-info` and package directories.
 
-The payload is copied without modifying vendor source. Headroom Desktop's own
+The payload is copied without modifying vendor source. PennyPinch's own
 controller, hidden helper, cache-control shim and optimization-control overlay
 are separate files under `runtime/`; the overlay verifies its upstream source
 hashes in `runtime/optimization-sources.json`. They are not vendor replacements.

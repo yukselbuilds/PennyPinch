@@ -160,7 +160,7 @@ def stage(project, output):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output', type=Path, default=ROOT / 'work/build/windows/resources')
+    parser.add_argument('--output', type=Path, default=ROOT / 'work/build/windows/pennypinch')
     args = parser.parse_args()
     try:
         result = stage(ROOT, args.output)

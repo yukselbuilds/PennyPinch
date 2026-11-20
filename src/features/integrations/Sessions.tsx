@@ -117,7 +117,7 @@ export function Sessions({ language, onBusyChange, onDiscoveryChange }: {
         onClick={() => setTab("accounts")}>{tr ? "Hesaplar" : "Accounts"}</button>
     </div>
     {tab === "chats" ? <>
-      {opened && <p className="sessions__notice" role="status">{tr ? "Resmî Codex istemcisi açıldı. Sohbet seçimini orada yapabilirsin; Headroom kapanınca istemci açık kalır." : "The official Codex client opened. Choose a chat there; the client stays open when Headroom exits."}</p>}
+      {opened && <p className="sessions__notice" role="status">{tr ? "Resmî Codex istemcisi açıldı. Sohbet seçimini orada yapabilirsin; PennyPinch kapanınca istemci açık kalır." : "The official Codex client opened. Choose a chat there; the client stays open when PennyPinch exits."}</p>}
       <SessionList language={language} snapshot={snapshot} pending={pending} error={actionError ?? error} stale={stale}
         opening={opening} onRefresh={() => { setOpened(false); setActionError(null); setRevision(v => v + 1); }}
         onOpenCodex={() => { if (snapshot?.can_open_codex && !pending && !stale) setConfirm(snapshot.snapshot_id); }} />
@@ -136,7 +136,7 @@ export function Sessions({ language, onBusyChange, onDiscoveryChange }: {
       <div className="accounts-dialog__body">
         <h2 id="session-open-title">{tr ? "Codex sohbet merkezini aç?" : "Open the Codex chat center?"}</h2>
         <p id="session-open-body">{tr ? "Geçerli CLI profiline bağlı resmî istemci yeni pencerede açılır. Sohbeti orada sen seçersin. Bu eylem mesaj göndermez; bir sohbetin model, sağlayıcı veya akıl yürütme ayarını değiştirmez." : "The official client for the current CLI profile opens in a new window. Choose the chat there. This action sends no message and does not change a chat's model, provider or reasoning settings."}</p>
-        <p>{tr ? "Yeni görev açarsan çalışma klasörünü Codex içinde seç. Bu pencere Headroom'dan çıktıktan sonra da açık kalır." : "If you create a new task, choose its working directory in Codex. This window remains open after Headroom exits."}</p>
+        <p>{tr ? "Yeni görev açarsan çalışma klasörünü Codex içinde seç. Bu pencere PennyPinch'ten çıktıktan sonra da açık kalır." : "If you create a new task, choose its working directory in Codex. This window remains open after PennyPinch exits."}</p>
         <div className="accounts-dialog__actions">
           <button ref={cancel} className="button" disabled={opening} onClick={() => setConfirm(null)}>{tr ? "Vazgeç" : "Cancel"}</button>
           <button className="button button-primary" disabled={opening} onClick={() => void openCenter()}>{opening ? (tr ? "Açılıyor…" : "Opening…") : (tr ? "Codex'i aç" : "Open Codex")}</button>

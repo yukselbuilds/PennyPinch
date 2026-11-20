@@ -10,6 +10,8 @@ const copy = {
   tr: {
     title: "Çalışma tercihleri",
     intro: "Uygulama ve Windows davranışı",
+    aboutTitle: "PennyPinch hakkında",
+    aboutEngine: "PennyPinch, bağlam sıkıştırması için Apache-2.0 lisanslı Headroom motorunu kullanır. Headroom katkıcılarına teşekkür ederiz.",
     closeTitle: "Pencereyi kapatınca",
     closeTray: "Tepside çalışmayı sürdür",
     closeTrayHelp: "Kapatma düğmesi pencereyi gizler; motor çalışmaya devam eder.",
@@ -33,7 +35,7 @@ const copy = {
     preferencesLoading: "Tercihler yükleniyor…",
     preferencesError: "Önce kayıtlı tercihleri yeniden oku.",
     startupTitle: "Windows başlangıcı",
-    startupHelp: "Oturum açınca Headroom penceresi açılır. Motoru sen başlatırsın; Windows’un başlangıç tercihleri geçerlidir.",
+    startupHelp: "Oturum açınca PennyPinch penceresi açılır. Motoru sen başlatırsın; Windows’un başlangıç tercihleri geçerlidir.",
     startupRegistered: "Başlangıç kaydı etkin.",
     startupDisabled: "Başlangıç kaydı kapalı.",
     startupConflict: "Başlangıç kaydı beklenenden farklı; değiştirilmedi.",
@@ -74,6 +76,8 @@ const copy = {
   },
   en: {
     title: "Operating preferences",
+    aboutTitle: "About PennyPinch",
+    aboutEngine: "PennyPinch uses the Apache-2.0 licensed Headroom engine for context compression. Thanks to the Headroom contributors.",
     intro: "Application and Windows behavior",
     closeTitle: "When closing the window",
     closeTray: "Keep running in the tray",
@@ -98,7 +102,7 @@ const copy = {
     preferencesLoading: "Loading preferences…",
     preferencesError: "Reload the saved preferences before editing.",
     startupTitle: "Windows startup",
-    startupHelp: "Opens Headroom when you sign in. Start the engine when you need it. Windows startup preferences still apply.",
+    startupHelp: "Opens PennyPinch when you sign in. Start the engine when you need it. Windows startup preferences still apply.",
     startupRegistered: "Startup entry is enabled.",
     startupDisabled: "Startup entry is off.",
     startupConflict: "The startup entry differs from the expected value; it was not changed.",
@@ -399,6 +403,10 @@ export function Settings({ language, preferences, status, onSave, onBusyChange }
         {toolMismatch && <p className="operating-settings__warning-note" role="status">{text.runtimeMismatch}</p>}
         {!toolMismatch && <p className="operating-settings__help">{text.runtimeMatch}</p>}
       </>}
+    </div>
+    <div className="operating-settings__section">
+      <h4>{text.aboutTitle}</h4>
+      <p className="operating-settings__help">{text.aboutEngine}</p>
     </div>
   </section>;
 }

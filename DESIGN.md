@@ -1,4 +1,4 @@
-# Headroom — görsel dil
+# PennyPinch — görsel dil
 
 5 Kasım2026 başladı,6 Kasım yerel kabul tamamlandı. Kullanıcı mevcut tasarımı reddetti; UX001 ile Graphite/mint ailesi yeniden kuruldu. Eski kutu düzeni ve hiyerarşi tasarım referansı değildir. [Görsel kabul](docs/proofs/ui-taste.md); H029 başlamadı.
 

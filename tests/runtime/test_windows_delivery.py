@@ -101,3 +101,20 @@ class WindowsDeliveryTests(unittest.TestCase):
         with zipfile.ZipFile(output) as archive:
             self.assertEqual(archive.read('Headroom_0.1.0_x64-setup.exe'), b'isolated installer fixture')
             self.assertEqual(archive.read('LICENSES/LICENSE.txt'), b'isolated notice fixture')
+
+    def test_new_product_name_is_used_for_the_verified_delivery(self):
+        self.write_notices()
+        candidate = json.loads((self.proofs / 'windows-installer.json').read_bytes())
+        notices = json.loads((self.proofs / 'windows-installer-notices.json').read_bytes())
+        self.write_json('pennypinch.json', {**candidate, **notices, 'app_name': 'PennyPinch'})
+        name = 'PennyPinch_0.1.0_x64-setup.exe'
+        installer = self.project / 'work/caches/cargo-target/release/bundle/nsis'
+        (installer / name).write_bytes((installer / 'Headroom_0.1.0_x64-setup.exe').read_bytes())
+
+        result = delivery.package(self.project, Path('docs/proofs/pennypinch.json'))
+
+        output = self.project / result['output']
+        self.assertEqual(output.name, f'PennyPinch_0.1.0_Windows_x64_preview_{self.installer_sha[:12]}.zip')
+        with zipfile.ZipFile(output) as archive:
+            self.assertEqual(archive.read(name), b'isolated installer fixture')
+            self.assertIn('PennyPinch 0.1.0', archive.read('README.txt').decode('utf-8-sig'))

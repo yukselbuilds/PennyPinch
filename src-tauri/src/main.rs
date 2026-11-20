@@ -1006,7 +1006,7 @@ fn main() {
             verify_codex_connection
         ])
         .build(context)
-        .expect("failed to build Headroom desktop");
+        .expect("failed to build PennyPinch");
 
     app.run(|app_handle, event| {
         if let tauri::RunEvent::WindowEvent {

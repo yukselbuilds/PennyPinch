@@ -31,7 +31,7 @@ import { useOverviewConnections, useOverviewMetrics } from "./features/overview/
 import type { MetricPeriod } from "./lib/metrics";
 import type { RuntimeAction } from "./lib/optimization";
 import { windowZoomClient, type WindowScale } from "./lib/windowZoom";
-import { HeadroomMark, Icon } from "./components/Icon";
+import { PennyPinchMark, Icon } from "./components/Icon";
 import { ProblemNotice } from "./components/ProblemNotice";
 import { DesktopLifecycle } from "./components/DesktopLifecycle";
 import { Settings } from "./features/settings/Settings";
@@ -49,7 +49,7 @@ const copy = {
     nav: ["Genel bakış", "Oturumlar", "Uygulamalar", "Etkinlik", "Ayarlar"],
     eyebrow: "YEREL KONTROL ALANI",
     headline: ["Genel bakış", "Oturumlar", "Uygulamalar", "Etkinlik", "Ayarlar"],
-    subtitle: ["Daha az bağlam. Daha fazla alan.", "Hesapların ve yerel sohbetlerin tek yerde.", "Kodlama araçlarını Headroom’a bağla.", "İsteklerini ve ölçümlerini takip et.", "Headroom’u kendine göre ayarla."],
+    subtitle: ["Yerel token kullanımı ve tasarruf.", "Hesapların ve yerel sohbetlerin tek yerde.", "Kodlama araçlarını PennyPinch’e bağla.", "İsteklerini ve ölçümlerini takip et.", "PennyPinch’i kendine göre ayarla."],
     engine: "Motor", connection: "Bağlantı", compression: "Sıkıştırma kontrolü",
     noConnection: "Doğrulanmadı", compressionOff: "Uygulanmadı",
     engineUnavailable: "Kullanılamıyor", engineUnknown: "Durum bilinmiyor", engineStopped: "Durduruldu",
@@ -61,7 +61,7 @@ const copy = {
     hintStopped: "Motor durduruldu. Başlatma bu masaüstü oturumunda kullanılabilir.", hintStarting: "Motor başlatılıyor.",
     hintStopping: "Motor durduruluyor.", hintFailed: "Motor bir hata bildirdi; aşağıdaki iletiye bakın.",
     hintUnknown: "Motor durumu henüz doğrulanmadı.", hintUnavailableEngine: "Motor bu ortamda kullanılamıyor.",
-    overviewTitle: "Henüz ölçüm yok", overviewBody: "Headroom yerel durumunu gösteriyor. Tasarruf değerleri, ölçüm kaynağı hazır olduğunda görünür.",
+    overviewTitle: "Henüz ölçüm yok", overviewBody: "PennyPinch yerel durumunu gösteriyor. Tasarruf değerleri, ölçüm kaynağı hazır olduğunda görünür.",
     clientsTitle: "Tarama yapılmadı", clientsBody: "Bu ekranda bulunan istemciler gösterilir. Henüz hiçbir kurulum incelenmedi.",
     settingsTitle: "Görünüm", settingsBody: "Dil ve tema tercihleri.", theme: "Tema", language: "Dil", system: "Sistem", dark: "Koyu", light: "Açık", turkish: "Türkçe", english: "English",
     sessionOnly: "Bu seçimler yalnızca bu masaüstü oturumunda geçerli.",
@@ -76,7 +76,7 @@ const copy = {
     loading: "Yerel durum okunuyor", systemTheme: "Sistem tercihini izle veya sabit görünüm seç.", interfaceLanguage: "Arayüz dili.",
     commandErrors: {
       validation_failed: "Komut isteği doğrulanamadı.", unsupported_protocol: "Motor denetim protokolü desteklenmiyor.",
-      environment_blocked: "Headroom'un temel paketini, disk alanını ve yazma izinlerini kontrol et. Ardından motoru başlatıp uygulamayı yeniden açmayı dene; bu ileti kesin nedeni belirtmez.", busy: "Motor başka bir işlem yürütüyor. Biraz sonra yeniden dene.",
+      environment_blocked: "PennyPinch'in temel paketini, disk alanını ve yazma izinlerini kontrol et. Ardından motoru başlatıp uygulamayı yeniden açmayı dene; bu ileti kesin nedeni belirtmez.", busy: "Motor başka bir işlem yürütüyor. Biraz sonra yeniden dene.",
       port_conflict: "Motorun yerel bağlantı noktası kullanılamıyor. Biraz sonra yeniden dene.",
       engine_not_ready: "Motor hazır duruma geçmedi. Durumu yenileyip yeniden dene.", ownership_lost: "Motor sürecinin sahipliği doğrulanamadı.",
       timeout: "Motor denetimi zaman aşımına uğradı. Durumu yenileyip yeniden dene.", cleanup_failed: "Normal kapanış doğrulanamadı. Güncel motor durumunu kontrol et.",
@@ -87,7 +87,7 @@ const copy = {
     nav: ["Overview", "Sessions", "Applications", "Activity", "Settings"],
     eyebrow: "LOCAL CONTROL SURFACE",
     headline: ["Overview", "Sessions", "Applications", "Activity", "Preferences"],
-    subtitle: ["Less context. More headroom.", "Your accounts and local chats, together.", "Connect your coding tools to Headroom.", "Keep track of requests and measurements.", "Make Headroom feel like home."],
+    subtitle: ["Local token usage and savings.", "Your accounts and local chats, together.", "Connect your coding tools to PennyPinch.", "Keep track of requests and measurements.", "Configure PennyPinch."],
     engine: "Engine", connection: "Connection", compression: "Compression control",
     noConnection: "Not verified", compressionOff: "Not implemented",
     engineUnavailable: "Unavailable", engineUnknown: "Status unknown", engineStopped: "Stopped",
@@ -99,7 +99,7 @@ const copy = {
     hintStopped: "The engine is stopped. Start is available in this desktop session.", hintStarting: "The engine is starting.",
     hintStopping: "The engine is stopping.", hintFailed: "The engine reported an error; see the message below.",
     hintUnknown: "The engine state has not been verified yet.", hintUnavailableEngine: "The engine is unavailable in this environment.",
-    overviewTitle: "No measurements yet", overviewBody: "Headroom is showing local state. Savings will appear when a measurement source is ready.",
+    overviewTitle: "No measurements yet", overviewBody: "PennyPinch is showing local state. Savings will appear when a measurement source is ready.",
     clientsTitle: "No scan performed", clientsBody: "Detected clients will appear here. No installation has been inspected yet.",
     settingsTitle: "Appearance", settingsBody: "Language and appearance preferences.", theme: "Theme", language: "Language", system: "System", dark: "Dark", light: "Light", turkish: "Türkçe", english: "English",
     sessionOnly: "These choices apply only to this desktop session.",
@@ -114,7 +114,7 @@ const copy = {
     loading: "Reading local state", systemTheme: "Follow system preference or choose an appearance.", interfaceLanguage: "Interface language.",
     commandErrors: {
       validation_failed: "The engine command could not be validated.", unsupported_protocol: "The engine control protocol is unsupported.",
-      environment_blocked: "Check Headroom's core package, available disk space, and write permission. Then try starting the engine or reopening the app; this message does not identify a specific cause.", busy: "The engine is handling another operation. Try again shortly.",
+      environment_blocked: "Check PennyPinch's core package, available disk space, and write permission. Then try starting the engine or reopening the app; this message does not identify a specific cause.", busy: "The engine is handling another operation. Try again shortly.",
       port_conflict: "The engine loopback port is unavailable. Try again shortly.",
       engine_not_ready: "The engine did not become ready. Refresh its state and try again.", ownership_lost: "Ownership of the engine process could not be verified.",
       timeout: "Engine control timed out. Refresh its state and try again.", cleanup_failed: "Engine shutdown was not verified. Check the current engine state.",
@@ -452,9 +452,9 @@ export default function App() {
   return <div className="app-shell">
     <a className="skip-navigation" href="#main-content" onClick={() => document.getElementById("main-content")?.focus()}>{language === "tr" ? "Ana içeriğe geç" : "Skip to main content"}</a>
     <aside className="sidebar">
-      <a className="brand" href="#overview" aria-disabled={applicationsBusy || pending !== null} onClick={(event) => { event.preventDefault(); navigate("overview"); }} aria-label={language === "tr" ? "Headroom genel bakış" : "Headroom overview"}>
-        <HeadroomMark />
-        <span>headroom<span className="brand-period">.</span></span>
+      <a className="brand" href="#overview" aria-disabled={applicationsBusy || pending !== null} onClick={(event) => { event.preventDefault(); navigate("overview"); }} aria-label={language === "tr" ? "PennyPinch genel bakış" : "PennyPinch overview"}>
+        <PennyPinchMark />
+        <span>PennyPinch<span className="brand-period">.</span></span>
       </a>
       <nav className="primary-nav" aria-label={language === "tr" ? "Ana gezinme" : "Primary navigation"}>
         {screenKey.map((key, index) => <button key={key} data-screen={key} disabled={applicationsBusy || pending !== null} className={`nav-item ${screen === key ? "is-active" : ""}`} onClick={() => navigate(key)} aria-current={screen === key ? "page" : undefined}>

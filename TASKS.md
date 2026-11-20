@@ -1,4 +1,4 @@
-# Headroom Desktop — Görev Listesi
+# PennyPinch — Görev Listesi
 
 **19 Kasım güncel öncelik** Windows 10 22H2 x64 yerel kurulum adayı doğrulandı. CircleCI Free ile macOS motor/paket ve Ubuntu pencere derlemesi çalıştırıldı. Windows 11 doğrulaması ertelendi. H049 yeniden başlatıldı. İmzalı güncelleme bildirimi Windows 10’da doğrulandı. İlk yayında tek açık GitHub deposu hedefleniyor. [Platform testleri](docs/validation/desktop-platforms.md) · [Güncellemeler](docs/validation/windows-update.md#19-kasım-2026--açılış-bildirimi-ve-tek-depodan-dağıtım)
 
@@ -730,6 +730,7 @@ flowchart TD
 - [x] **H042-g Windows 10 teslim paketi ve lisans bildirimleri.** Doğrulanmış 0.44.0 kurucusuna 674 bildirim girdisi bağlandı. ZIP’ten çıkan 677 dosya ve listelenen 676 SHA-256 değeri eşleşti. Sekiz kaynak arşivi ve 19 paketleme testi doğrulandı. Üretim yayını ve Windows 11 ayrı kabul bekliyor. [Kanıt](docs/proofs/windows-installer-044-delivery.json).
 - [x] **H042-h derlemenin HTTPS güncelleme kaynağı.** Yayın hazırlığı, derlemeye gömülen HTTPS adresini ve açık anahtarı imzadan önce ve paketten çıkan EXE’de kontrol eder. Windows 10’da doğru adresle imzalı paket, yanlış adres/HTTP/anahtar reddi ve 478 Rust testi doğrulandı. Geçici test anahtarı silindi. Gerçek Pages teslimi açık. [Kanıt](docs/proofs/windows-update-release-source.json).
 - [x] **H042-i yalnız EXE güncellemesinin motor kaynaklarıyla uyumu.** Üretim manifesti v3, sekiz Windows kaynak girdisinin özetini bağlar. Windows 10’da aynı kaynaklarla imzalı paket geçti. Headroom 0.44.0 pini aynı kalan imzalı örnekte yalnız yardımcı dosya özeti farklıyken aday reddedildi. Yerel v1/v2 ve geri alma yolları korundu. 479 Rust testi ve paketleme kapısı geçti. [Kanıt](docs/proofs/windows-update-runtime-resources.json).
+- [x] **H042-j PennyPinch ürün adı.** Arayüz, tepsi, Windows kurucusu ve kılavuz yeni adı kullanır. Headroom motor atfı Hakkında, README ve lisans paketinde görünür. Windows 10’da eski kurulum anahtarının eşleşmesi, 227 ön yüz, 480 Rust ve 22 paketleme testi, 60 tarayıcı erişilebilirlik denetimi ve gerçek NSIS derlemesi doğrulandı. [Kanıt](docs/proofs/pennypinch-application-brand.json).
 - **Kabul:** İmza/hash uyuşmazlığında kurulum yok; kararlı/deneme kanalı açık seçimdir. Floating motor güncellemesi, aktif stream'i zorla kesme veya kullanıcı config/state'ini eski yedekle ezme yok. Kaynak doğrulanır; diagnostic dışa aktarımıyla secret taşınmaz.
 - **Doğrulama:** Yerel imzalı fixture artefaktları ve yanlış anahtar/hash; kesilen indirme/boş disk/migration fixture'ları; gerçek installer update/rollback için ayrı Windows10/11 kayıtları. Fixture imza production dağıtım anahtarı sayılmaz.
 - **Bağımlılık / boyut:** H036, H037, H038 / M; a/b/c ayrı1–5 dosyalık dilimler. H039 öncesi.

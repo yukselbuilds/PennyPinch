@@ -1,5 +1,24 @@
 use super::*;
 
+#[test]
+fn branded_application_finds_the_existing_windows_registration() {
+    let mut config: tauri::Config =
+        serde_json::from_str(include_str!("../../tauri.conf.json")).unwrap();
+    config.product_name = Some("PennyPinch".to_owned());
+    let installation = Installation::new(&config, Version::new(0, 1, 0)).unwrap();
+    assert_eq!(
+        installation.registry_key,
+        wide(r"Software\Microsoft\Windows\CurrentVersion\Uninstall\Headroom")
+    );
+
+    config.identifier.push_str(".qa");
+    let isolated = Installation::new(&config, Version::new(0, 1, 0)).unwrap();
+    assert_eq!(
+        isolated.registry_key,
+        wide(r"Software\Microsoft\Windows\CurrentVersion\Uninstall\PennyPinch")
+    );
+}
+
 fn root() -> PathBuf {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

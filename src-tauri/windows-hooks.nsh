@@ -14,16 +14,16 @@ LangString HeadroomPathTooLong 1055 "Kurulum klasörü çok uzun. Daha kısa bir
   ${EndIf}
 !macroend
 
-LangString HeadroomDeleteData 1033 "Delete Headroom history and preferences"
-LangString HeadroomDeleteData 1055 "Headroom geçmişini ve tercihlerini sil"
-LangString HeadroomRemovalBusy 1033 "Quit Headroom from the system tray and close connected OpenCode sessions, then try uninstalling again."
-LangString HeadroomRemovalBusy 1055 "Headroom'u sistem tepsisinden kapatın ve bağlı OpenCode oturumlarını kapatıp kaldırmayı yeniden deneyin."
-LangString HeadroomRemovalConnections 1033 "A Headroom connection could not be removed. Close programs using its settings file, then use Disconnect in Headroom and retry. The installation was kept."
-LangString HeadroomRemovalConnections 1055 "Bir Headroom bağlantısı kaldırılamadı. Ayar dosyasını kullanan programları kapatın, Headroom'da bağlantıyı kaldırıp yeniden deneyin. Kurulum korundu."
-LangString HeadroomRemovalState 1033 "Headroom could not finish removing its local data or startup entry. Close programs using those files and try again. The installation was kept."
-LangString HeadroomRemovalState 1055 "Headroom yerel verilerini veya başlangıç kaydını kaldıramadı. Bu dosyaları kullanan programları kapatıp yeniden deneyin. Kurulum korundu."
-LangString HeadroomRemovalUnavailable 1033 "Headroom could not check its installation data. Repair this installation and try again."
-LangString HeadroomRemovalUnavailable 1055 "Headroom kurulum verilerini kontrol edemedi. Bu kurulumu onarıp yeniden deneyin."
+LangString HeadroomDeleteData 1033 "Delete PennyPinch history and preferences"
+LangString HeadroomDeleteData 1055 "PennyPinch geçmişini ve tercihlerini sil"
+LangString HeadroomRemovalBusy 1033 "Quit PennyPinch from the system tray and close connected OpenCode sessions, then try uninstalling again."
+LangString HeadroomRemovalBusy 1055 "PennyPinch'i sistem tepsisinden kapatın ve bağlı OpenCode oturumlarını kapatıp kaldırmayı yeniden deneyin."
+LangString HeadroomRemovalConnections 1033 "A PennyPinch connection could not be removed. Close programs using its settings file, then use Disconnect in PennyPinch and retry. The installation was kept."
+LangString HeadroomRemovalConnections 1055 "Bir PennyPinch bağlantısı kaldırılamadı. Ayar dosyasını kullanan programları kapatın, PennyPinch'te bağlantıyı kaldırıp yeniden deneyin. Kurulum korundu."
+LangString HeadroomRemovalState 1033 "PennyPinch could not finish removing its local data or startup entry. Close programs using those files and try again. The installation was kept."
+LangString HeadroomRemovalState 1055 "PennyPinch yerel verilerini veya başlangıç kaydını kaldıramadı. Bu dosyaları kullanan programları kapatıp yeniden deneyin. Kurulum korundu."
+LangString HeadroomRemovalUnavailable 1033 "PennyPinch could not check its installation data. Repair this installation and try again."
+LangString HeadroomRemovalUnavailable 1055 "PennyPinch kurulum verilerini kontrol edemedi. Bu kurulumu onarıp yeniden deneyin."
 
 !macro HeadroomAbortRemoval message
   DetailPrint "${message}"

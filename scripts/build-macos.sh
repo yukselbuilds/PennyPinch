@@ -49,8 +49,8 @@ if ! pnpm tauri build --ci --bundles app --target aarch64-apple-darwin \
   exit 1
 fi
 
-source_app="$CARGO_TARGET_DIR/aarch64-apple-darwin/release/bundle/macos/Headroom.app"
-bundle="$build_root/Headroom.app"
+source_app="$CARGO_TARGET_DIR/aarch64-apple-darwin/release/bundle/macos/PennyPinch.app"
+bundle="$build_root/PennyPinch.app"
 test -d "$source_app"
 test ! -e "$bundle"
 /usr/bin/ditto "$source_app" "$bundle"

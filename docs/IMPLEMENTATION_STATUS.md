@@ -1,5 +1,9 @@
-# Headroom Desktop — güncel devir
+# PennyPinch — güncel devir
 17 Kasım 2026.
+## 20 Kasım — PennyPinch ürün adı
+
+Kullanıcı uygulama için PennyPinch’i seçti. Ana ajan görünen adı, Headroom motor atfını ve Windows kurulum kaydı uyumunu birlikte uyguladı. Gerçek Windows 10 x64 NSIS kurucusu PennyPinch ürün bilgisini taşıyor. 227 ön yüz, 480 Rust, 22 paketleme testi ve hedefli 60 tarayıcı denetimi geçti. **45/54 ana görev tamamlandı.** H042 üretim anahtarı ve canlı teslimi açık. Windows 11 ayrı bekliyor. [Kanıt](proofs/pennypinch-application-brand.json) · [Görev listesi](../TASKS.md)
+
 ## 20 Kasım — H042 yalnız EXE güncellemesinde motor kaynakları
 
 Ana ajan imzalı güncelleme ve kaynak uyumunu üstlendi. Windows 10’da Headroom 0.44.0’lı gerçek QA EXE’siyle aynı kaynakların v3 paketi geçti. Aynı motor pini ve geçerli imzayla değişen yardımcı dosya özeti reddedildi. 479 Rust testi, paketleme testleri ve custom-protocol derlemesi geçti. **45/54 ana görev tamamlandı.** Üretim anahtarı ve canlı GitHub Pages teslimi açık. Kullanıcının isteğiyle Windows 11 ayrı açık kalıyor. [Kanıt](proofs/windows-update-runtime-resources.json) · [Görev listesi](../TASKS.md)

@@ -19,7 +19,7 @@ test.beforeAll(async()=>{
   lib:{entry:path.join(root,'tests/fixtures/desktop.tsx'),name:'DesktopFixture',formats:['iife'],fileName:()=> 'fixture.js',cssFileName:'fixture'}}});
 });
 async function setup(page:Page,language='tr',theme='dark',scenario='data'){
- await page.route('http://127.0.0.1:54328/',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html><head><title>Headroom isolated accessibility fixture</title></head><body><div id="root"></div></body></html>'}));
+ await page.route('http://127.0.0.1:54328/',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html><head><title>PennyPinch isolated accessibility fixture</title></head><body><div id="root"></div></body></html>'}));
  await page.goto('http://127.0.0.1:54328/');await page.addStyleTag({path:path.join(bundle,'fixture.css')});await page.addScriptTag({path:path.join(bundle,'fixture.js')});
  await page.addScriptTag({path:path.join(root,'node_modules/axe-core/axe.min.js')});
  await page.evaluate(v=>(window as any).DesktopFixture.mount(v.language,v.theme,v.scenario),{language,theme,scenario});
@@ -37,11 +37,17 @@ async function audit(page:Page,label:string){
 test('five screens: names, contrast, empty/error/data and responsive actions',async({page})=>{
  for(const language of ['tr','en'])for(const theme of ['dark','light'])for(const scenario of ['data','empty','error']){
   await setup(page,language,theme,scenario);
+  await expect(page.getByRole('link',{name:language==='tr'?'PennyPinch genel bakış':'PennyPinch overview',exact:true})).toBeVisible();
   for(const screen of ['overview','sessions','applications','activity','settings']){
    await page.evaluate(()=>{(window as any).__navPaint=null;document.querySelector('.primary-nav')!.addEventListener('click',()=>{const start=performance.now();requestAnimationFrame(()=>requestAnimationFrame(()=>{(window as any).__navPaint=performance.now()-start;}));},{once:true,capture:true});});
    const navItem=page.locator(`.primary-nav [data-screen="${screen}"]`);
    await navItem.click();
    await expect(navItem).toHaveAttribute('aria-current','page');
+   if(screen==='settings'){
+    const about=page.getByRole('heading',{name:language==='tr'?'PennyPinch hakkında':'About PennyPinch',exact:true});
+    await expect(about).toBeVisible();
+    await expect(about.locator('..')).toContainText(/Headroom/);
+   }
    await expect.poll(()=>page.evaluate(()=>(window as any).__navPaint)).not.toBeNull();timings.push(await page.evaluate(()=>(window as any).__navPaint));
    // Give fixture effects one frame; every IPC stays inside the explicit transport.
    await page.waitForTimeout(40);await audit(page,`${language}-${theme}-${scenario}-${screen}`);

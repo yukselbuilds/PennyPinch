@@ -43,7 +43,7 @@ export function Compatibility({language,contextKey,disabled}:{language:Preferenc
    {!pending&&issue&&<p role="status" className="compatibility__notice">{issue.kind==="desktop_unavailable"?text.unavailable:text.failed}</p>}
    {current&&<>
     {changed&&<p role="status" className="compatibility__notice">{text.changed}</p>}
-    <div className="compatibility__release"><strong>Headroom {snapshot.app_version}</strong><span>{text.development}</span><span>{text.engine} {snapshot.engine.pinned_version}</span><span>{text.active}: {snapshot.engine.engine_status==="ready"?snapshot.engine.active_version??text.inactive:text.inactive}</span></div>
+    <div className="compatibility__release"><strong>PennyPinch {snapshot.app_version}</strong><span>{text.development}</span><span>{text.engine} {snapshot.engine.pinned_version}</span><span>{text.active}: {snapshot.engine.engine_status==="ready"?snapshot.engine.active_version??text.inactive:text.inactive}</span></div>
     <p className="compatibility__pin">{text.pin}</p>
     <h3>{text.installed}</h3>
     {snapshot.scan_generation===null?<p>{text.notScanned}</p>:!snapshot.installations.length?<p>{text.none}</p>:<ul className="compatibility__installations">{snapshot.installations.map(i=><li key={i.installation_id}>

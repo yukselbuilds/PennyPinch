@@ -57,9 +57,9 @@ fn project(value: &Value, english: bool, busy: bool) -> View {
     };
     let mut action = Action::Open;
     let mut label = if english {
-        "Open Headroom"
+        "Open PennyPinch"
     } else {
-        "Headroom’u aç"
+        "PennyPinch’i aç"
     };
     if matches!(engine, "stopped" | "failed") && value["capabilities"]["start"] == true {
         action = Action::Start;
@@ -113,19 +113,19 @@ pub(crate) struct TrayController(Arc<Inner>);
 impl TrayController {
     pub(crate) fn install(app: &tauri::AppHandle, language: &str) -> Self {
         let built = (|| -> tauri::Result<Items> {
-            let open = MenuItem::with_id(app, OPEN, "Headroom", true, None::<&str>)?;
+            let open = MenuItem::with_id(app, OPEN, "PennyPinch", true, None::<&str>)?;
             let status = MenuItem::with_id(app, "headroom-status", "Motor", false, None::<&str>)?;
-            let primary = MenuItem::with_id(app, PRIMARY, "Headroom", false, None::<&str>)?;
-            let exit = MenuItem::with_id(app, EXIT, "Headroom", true, None::<&str>)?;
+            let primary = MenuItem::with_id(app, PRIMARY, "PennyPinch", false, None::<&str>)?;
+            let exit = MenuItem::with_id(app, EXIT, "PennyPinch", true, None::<&str>)?;
             let separator = PredefinedMenuItem::separator(app)?;
             let menu = Menu::with_items(app, &[&open, &status, &primary, &separator, &exit])?;
             let icon = app
                 .default_window_icon()
                 .cloned()
-                .ok_or_else(|| std::io::Error::other("Headroom icon unavailable"))?;
+                .ok_or_else(|| std::io::Error::other("PennyPinch icon unavailable"))?;
             TrayIconBuilder::with_id(ID)
                 .icon(icon)
-                .tooltip("Headroom")
+                .tooltip("PennyPinch")
                 .menu(&menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
@@ -221,9 +221,9 @@ impl TrayController {
         }
         if let Some(items) = &self.0.items {
             let _ = items.open.set_text(if english {
-                "Open Headroom"
+                "Open PennyPinch"
             } else {
-                "Headroom’u aç"
+                "PennyPinch’i aç"
             });
             let _ = items.exit.set_text(if english {
                 "Quit…"
@@ -235,7 +235,7 @@ impl TrayController {
             let _ = items.primary.set_enabled(view.enabled);
             *self.0.shown.lock().unwrap_or_else(|e| e.into_inner()) = view.action;
             if let Some(icon) = app.tray_by_id(ID) {
-                let _ = icon.set_tooltip(Some(format!("Headroom — {}", view.status)));
+                let _ = icon.set_tooltip(Some(format!("PennyPinch — {}", view.status)));
             }
         }
     }

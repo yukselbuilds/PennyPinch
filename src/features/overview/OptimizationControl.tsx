@@ -17,7 +17,7 @@ const copy = {
       unknown: "Bilinmiyor",
     },
     description: {
-      enabled: "Yeni istekler sıkıştırılır. Yalnız Headroom’a yönlendirilen trafik işlenir.",
+      enabled: "Yeni istekler sıkıştırılır. Yalnız PennyPinch’e yönlendirilen trafik işlenir.",
       paused: "Yeni sıkıştırma duraklatıldı. Süren yanıtlar ve önceki içeriğe erişim devam eder.",
       ready: "Motor hazır; bu, tüm istemcilerin bağlı veya tasarrufun ölçülmüş olduğunu göstermez.",
       stopped: "Başlatarak sıkıştırmayı etkinleştir. Bağlantı ayarların korunur.",
@@ -57,7 +57,7 @@ const copy = {
       unknown: "Unknown",
     },
     description: {
-      enabled: "New requests are compressed. Only traffic routed through Headroom is processed.",
+      enabled: "New requests are compressed. Only traffic routed through PennyPinch is processed.",
       paused: "New compression is paused. Current responses and access to earlier content continue.",
       ready: "The engine is ready; this does not show that all clients are connected or savings are measured.",
       stopped: "Start the engine to enable compression. Your connection settings stay in place.",

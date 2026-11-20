@@ -66,9 +66,17 @@ ${StrLoc}
 !define WEBVIEW2BOOTSTRAPPERPATH "{{webview2_bootstrapper_path}}"
 !define WEBVIEW2INSTALLERPATH "{{webview2_installer_path}}"
 !define MINIMUMWEBVIEW2VERSION "{{minimum_webview2_version}}"
-!define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}"
-!define MANUKEY "Software\${MANUFACTURER}"
-!define MANUPRODUCTKEY "${MANUKEY}\${PRODUCTNAME}"
+; Match the updater's stable registration for previously installed versions.
+!if "${BUNDLEID}" == "dev.headroom.desktop"
+  !define REGISTRYPRODUCT "Headroom"
+  !define REGISTRYPUBLISHER "headroom"
+!else
+  !define REGISTRYPRODUCT "${PRODUCTNAME}"
+  !define REGISTRYPUBLISHER "${MANUFACTURER}"
+!endif
+!define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${REGISTRYPRODUCT}"
+!define MANUKEY "Software\${REGISTRYPUBLISHER}"
+!define MANUPRODUCTKEY "${MANUKEY}\${REGISTRYPRODUCT}"
 !define UNINSTALLERSIGNCOMMAND "{{uninstaller_sign_cmd}}"
 !define ESTIMATEDSIZE "{{estimated_size}}"
 !define STARTMENUFOLDER "{{start_menu_folder}}"
@@ -78,6 +86,19 @@ Var UpdateMode
 Var NoShortcutMode
 Var WixMode
 Var OldMainBinaryName
+
+!macro RenameOwnedLegacyShortcut directory
+  !if "${PRODUCTNAME}" != "${REGISTRYPRODUCT}"
+    ${If} ${FileExists} "${directory}\${REGISTRYPRODUCT}.lnk"
+    ${AndIfNot} ${FileExists} "${directory}\${PRODUCTNAME}.lnk"
+      !insertmacro IsShortcutTarget "${directory}\${REGISTRYPRODUCT}.lnk" "$INSTDIR\${MAINBINARYNAME}.exe"
+      Pop $0
+      ${If} $0 = 1
+        Rename "${directory}\${REGISTRYPRODUCT}.lnk" "${directory}\${PRODUCTNAME}.lnk"
+      ${EndIf}
+    ${EndIf}
+  !endif
+!macroend
 
 Name "${PRODUCTNAME}"
 BrandingText "${COPYRIGHT}"
@@ -738,8 +759,12 @@ Section Install
 
   ; Create start menu shortcut
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+    !insertmacro RenameOwnedLegacyShortcut "$SMPROGRAMS\$AppStartMenuFolder"
+    !insertmacro RenameOwnedLegacyShortcut "$SMPROGRAMS"
     Call CreateOrUpdateStartMenuShortcut
   !insertmacro MUI_STARTMENU_WRITE_END
+
+  !insertmacro RenameOwnedLegacyShortcut "$DESKTOP"
 
   ; Create desktop shortcut for silent and passive installers
   ; because finish page will be skipped

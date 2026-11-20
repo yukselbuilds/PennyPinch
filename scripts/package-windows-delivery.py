@@ -86,16 +86,18 @@ def package(project, receipt=None):
     candidate = json.loads(records[candidate_path])
     notices = candidate if receipt is not None else json.loads(records[notices_path])
     version = candidate['app_version']
+    app_name = candidate.get('app_name', 'Headroom')
     installer_sha = candidate['artifacts']['installer_sha256']
     if (not re.fullmatch(r'\d+\.\d+\.\d+', version) or candidate['local_installed_slice'] != 'pass'
+            or app_name not in ('Headroom', 'PennyPinch')
             or not re.fullmatch(r'[0-9a-f]{64}', installer_sha)):
         raise ValueError('unverified_installer_candidate')
-    installer_name = f'Headroom_{version}_x64-setup.exe'
+    installer_name = f'{app_name}_{version}_x64-setup.exe'
     installer = staging.inside(work / 'caches/cargo-target/release/bundle/nsis' / installer_name, work)
     companion = notices['companion_archive']
     archive = staging.inside(project / companion['path'], work)
     suffix = f'_{installer_sha[:12]}' if receipt is not None else ''
-    output = staging.inside(work / f'build/windows/delivery/Headroom_{version}_Windows_x64_preview{suffix}.zip', work)
+    output = staging.inside(work / f'build/windows/delivery/{app_name}_{version}_Windows_x64_preview{suffix}.zip', work)
     if output.exists():
         raise FileExistsError('delivery_exists')
 
@@ -109,8 +111,9 @@ def package(project, receipt=None):
         raise ValueError('notice_archive_mismatch')
 
     files = read_notices(archive, companion['verified_entries'], installer_sha)
+    title = 'Headroom Desktop' if app_name == 'Headroom' else app_name
     files['README.txt'] = (
-        f'Headroom Desktop {version} · Windows x64\n\n'
+        f'{title} {version} · Windows x64\n\n'
         'İmzasız geliştirme önizlemesi\n'
         'ZIP dosyasının tamamını bir klasöre çıkarın.\n'
         f'{installer_name} dosyasını açın.\n'

@@ -45,12 +45,12 @@ const copy = {
     notObserved: "Gözlenmedi",
     absent: "Yok",
     unknown: "Bilinmiyor",
-    headroom: "Headroom endpoint'i",
+    headroom: "PennyPinch endpoint'i",
     otherRoute: "Başka yönlendirme (gizli)",
     hookPresent: "Var; değiştirilmeden kalır",
     aggregate: "Gözlenen dosyalardaki bildirimler",
     runtime: "Çalışma anında etkin ayar bilinmiyor. Uzak/registry managed policy ve diğer oturumlar da bilinmiyor.",
-    processEnv: "Headroom sürecinin ortamı; tüm oturumların ortamı değildir.",
+    processEnv: "PennyPinch sürecinin ortamı; tüm oturumların ortamı değildir.",
   },
   en: {
     title: "Claude settings scope",
@@ -79,12 +79,12 @@ const copy = {
     notObserved: "Not observed",
     absent: "Absent",
     unknown: "Unknown",
-    headroom: "Headroom endpoint",
+    headroom: "PennyPinch endpoint",
     otherRoute: "Another route (redacted)",
     hookPresent: "Present; unchanged",
     aggregate: "Declarations in observed files",
     runtime: "Effective runtime settings are unknown. Remote or registry managed policy and other sessions are also unknown.",
-    processEnv: "Headroom process environment; this does not describe every session.",
+    processEnv: "PennyPinch process environment; this does not describe every session.",
   },
 } as const;
 
@@ -101,14 +101,14 @@ function layerSource(layer: ClaudeLayerSummary, language: PreferenceLanguage): s
       shared_project_settings: "Proje settings.json",
       local_project_settings: "Proje settings.local.json",
       local_managed_settings: "Yerelde gözlenen managed settings dosyası",
-      process_environment: "Headroom process environment",
+      process_environment: "PennyPinch process environment",
     },
     en: {
       user_settings: "User settings.json",
       shared_project_settings: "Project settings.json",
       local_project_settings: "Project settings.local.json",
       local_managed_settings: "Locally observed managed settings file",
-      process_environment: "Headroom process environment",
+      process_environment: "PennyPinch process environment",
     },
   };
   return labels[language][layer.source];

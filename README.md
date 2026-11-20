@@ -1,6 +1,8 @@
-# Headroom Desktop
+# PennyPinch
 
-Headroom Desktop is a local-first desktop application for managing a pinned Headroom engine and supported coding-client connections. The project is still under development; its current evidence is local development evidence, not a published or clean-install release.
+PennyPinch is a desktop app for local context optimization and token tracking across coding agents. The project is still under development; its current evidence is local development evidence, not a published or clean-install release.
+
+PennyPinch uses the Apache-2.0 licensed Headroom engine for context compression. Thanks to the Headroom contributors. [Headroom project](https://github.com/headroomlabs-ai/headroom) · [Third-party notices](NOTICE.md)
 
 ## Current state
 

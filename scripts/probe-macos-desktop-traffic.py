@@ -1,4 +1,4 @@
-"""A real disposable Codex GUI turn through the packaged Headroom application."""
+"""A real disposable Codex GUI turn through the packaged PennyPinch application."""
 
 import hashlib
 import importlib.util
@@ -125,7 +125,7 @@ def run(package, vendor):
                  and package.name.startswith("macos-package."), "invalid_package_root")
     core.require(package.stat().st_uid == os.geteuid() and package.stat().st_mode & 0o777 == 0o700,
                  "unsafe_package_root")
-    bundle = package / "Headroom.app"
+    bundle = package / "PennyPinch.app"
     with (bundle / "Contents/Info.plist").open("rb") as stream:
         core.require(plistlib.load(stream)["CFBundleIdentifier"] == "dev.headroom.desktop.h048c5", "invalid_qa_bundle")
     executable = (bundle / "Contents/MacOS/headroom-desktop").resolve(strict=True)

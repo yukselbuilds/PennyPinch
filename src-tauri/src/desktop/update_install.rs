@@ -96,6 +96,12 @@ impl Installation {
             return None;
         }
         let identifier = config.identifier.clone();
+        // Match the stable NSIS registration used by existing installs of this app ID.
+        let name = if identifier == "dev.headroom.desktop" {
+            "Headroom"
+        } else {
+            name
+        };
         let app_data = app_local_data(&identifier)?;
         Some(Self {
             identifier,
@@ -704,7 +710,7 @@ fn message(text: &str, flags: u32) -> i32 {
         MessageBoxW(
             std::ptr::null_mut(),
             wide(text).as_ptr(),
-            wide("Headroom").as_ptr(),
+            wide("PennyPinch").as_ptr(),
             flags,
         )
     }
@@ -774,7 +780,7 @@ pub(crate) fn enter(config: &tauri::Config, version: &Version) {
         }
     })();
     if result.is_err() {
-        message("Headroom could not complete the update or recovery.\nGüncelleme veya kurtarma tamamlanamadı.", MB_OK | MB_ICONERROR);
+        message("PennyPinch could not complete the update or recovery.\nGüncelleme veya kurtarma tamamlanamadı.", MB_OK | MB_ICONERROR);
     }
     std::process::exit(if result.is_ok() { 0 } else { 2 });
 }

@@ -6,7 +6,7 @@
     "useLocalToolsDir": true,
     "icon": ["icons/icon.ico"],
     "resources": {
-      "../work/build/windows/resources/": ""
+      "../work/build/windows/pennypinch/": ""
     },
     "windows": {
       "allowDowngrades": false,
