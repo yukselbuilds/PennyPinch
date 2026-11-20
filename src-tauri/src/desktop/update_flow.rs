@@ -421,6 +421,11 @@ mod source;
 #[cfg(windows)]
 use source::ReleaseSource;
 
+#[cfg(all(windows, any(test, not(debug_assertions))))]
+pub(super) fn matches_configured_release(base: &str, public_key: &str) -> bool {
+    ReleaseSource::configured().is_some_and(|source| source.matches_release(base, public_key))
+}
+
 #[cfg(not(windows))]
 struct ReleaseSource;
 

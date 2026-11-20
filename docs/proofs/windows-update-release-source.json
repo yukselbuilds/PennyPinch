@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "task": "H042",
+  "slice": "bound_https_release_source_verification",
+  "date": "2026-11-20",
+  "status": "pass",
+  "platform": "Windows 10 22H2 x64 build 19045",
+  "scope": "Separate release-mode QA application and test signing key",
+  "source_revision_before_patch_commit": "c2a8b504d4508390feb8a34e8a2ce4ba553dbb5a",
+  "engine": "0.44.0",
+  "release_profile": {
+    "lto": false,
+    "codegen_units": 16,
+    "strip": true
+  },
+  "release_base_url": "https://protocol272.github.io/headroom-desktop/updates/",
+  "public_manifest_observed_http_status": 404,
+  "checks": [
+    {
+      "check": "temporary_test_key",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "seconds": 0.28
+    },
+    {
+      "check": "release_executable_build",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "seconds": 62.222
+    },
+    {
+      "check": "legacy_identity_probe",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "seconds": 0.064
+    },
+    {
+      "check": "https_source_and_key_match",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "seconds": 0.017
+    },
+    {
+      "check": "wrong_https_path_rejected",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "seconds": 0.015
+    },
+    {
+      "check": "http_source_rejected",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "seconds": 0.017
+    },
+    {
+      "check": "wrong_public_key_rejected",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "seconds": 0.017
+    },
+    {
+      "check": "wrong_source_package_refused",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "seconds": 2.382
+    },
+    {
+      "check": "matched_source_package_signed_and_extracted",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "seconds": 35.218
+    }
+  ],
+  "packaged_update": {
+    "version": "0.1.1",
+    "size_bytes": 3428006,
+    "probe_and_signature_verified": true,
+    "files": {
+      "Headroom_0.1.1_x64-update.exe": "ad7653b3ad0b6c97dc1e3d9f0c2b8941c8bf226092bff79ffb9b336cbec54b12",
+      "manifest.json": "8761069fc7e3f52737dee53655f031c73d878080ca5fce14f2ea2ee266652631",
+      "manifest.json.sig": "7da36fb5bd964eee6b8e79408abf9bcb6438b894dfe0c50d9b04ece11ffb5a32"
+    },
+    "receipt": {
+      "path": "work/proofs/update/release-source/qa-b38e26fb/prepared/release-receipt.json",
+      "sha256": "e3ca3898e6bf1179a6542a353f2faa169211705e0604f05b5ea008f3a526b2f9"
+    }
+  },
+  "preserved_preview_installer_sha256": "9725ecfd72005185542119684558f4fd27733a90acd746d7d05e291219cd64eb",
+  "preserved_previous_executable_sha256": "2f116d141b587fc53a559e44e3bcc2558741c3fe2bf6f0e2d34c5872c56f9b64",
+  "matching_runtime_source_inputs": 8,
+  "quality_gate": {
+    "rust_passed": 478,
+    "rust_ignored": 24,
+    "custom_protocol_build": "pass",
+    "windows_packaging_tests": "pass",
+    "frontend_tests_reused": 227,
+    "frontend_dist_assets_matched": 3,
+    "format_check": "passed_before_gate"
+  },
+  "fingerprints": {
+    "release_run": {
+      "inputs": 367,
+      "before_sha256": "79b8326f782ba18a6b1629fb92a779e3ed75e0a583873444416b91557b363579",
+      "after_sha256": "79b8326f782ba18a6b1629fb92a779e3ed75e0a583873444416b91557b363579"
+    },
+    "native_gate": {
+      "inputs": 358,
+      "before_sha256": "088815f0e4c345252f26ebba5f7c9210fd123474a766071eaf4af9fdd3960049",
+      "after_sha256": "088815f0e4c345252f26ebba5f7c9210fd123474a766071eaf4af9fdd3960049"
+    },
+    "release_preparation_matched_inputs": 241
+  },
+  "temporary_private_key_removed": true,
+  "qa_application_state_created": false,
+  "publication": "pending",
+  "windows_11": "not_tested",
+  "local_evidence_directory": "work/proofs/update/release-source/qa-b38e26fb"
+}

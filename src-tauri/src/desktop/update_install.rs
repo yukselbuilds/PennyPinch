@@ -4,7 +4,7 @@ use super::update::{
     UPDATE_STATE_FORMAT,
 };
 use super::update_commit::{copy_verified, create_bytes, read_owned, read_small, FileDigest, Swap};
-use super::update_flow::Recovery;
+use super::update_flow::{matches_configured_release, Recovery};
 use crate::integrations::config_io::{pin_existing_directory_chain, PinnedDirectoryChain};
 use semver::Version;
 use serde::{Deserialize, Serialize};
@@ -721,7 +721,15 @@ pub(crate) fn enter(config: &tauri::Config, version: &Version) {
             OsString::from(version.to_string()),
             OsString::from(UPDATE_STATE_FORMAT.to_string()),
         ];
-        std::process::exit(if args[1..] == expected { 0 } else { 2 });
+        let valid = match args[1..].strip_prefix(expected.as_slice()) {
+            Some([]) => true,
+            Some([base, key]) => base
+                .to_str()
+                .zip(key.to_str())
+                .is_some_and(|(base, key)| matches_configured_release(base, key)),
+            _ => false,
+        };
+        std::process::exit(if valid { 0 } else { 2 });
     }
     let worker = std::env::current_exe()
         .ok()

@@ -91,8 +91,11 @@ Bu komut geliştiricinin yayın hazırlığı içindir; uygulamayı kullanan ki�
   --public-key .\work\releases\keys\release.key.pub `
   --private-key .\work\releases\keys\release.key `
   --notes .\work\releases\inputs\notes.md `
-  --channel stable --from-version 0.1.0
+  --channel stable --from-version 0.1.0 `
+  --release-base-url 'https://protocol272.github.io/headroom-desktop/updates/'
 ```
+
+Yayın hazırlığında `--release-base-url`, derlemeye verilen `HEADROOM_DESKTOP_UPDATE_BASE_URL` ile aynı HTTPS tabanını alır. Betik, uygulamanın beklenen güncelleme adresini ve açık anahtarı gerçekten kullandığını EXE üzerinden doğrular. Kontrol imzadan önce ve güncelleme paketinden çıkarılan EXE üzerinde çalışır. Yerel QA komutları mevcut kimlik, sürüm ve durum biçimi kontrolüyle kullanılabilir.
 
 Çıktı proje `work` kökü içindedir ve mevcut dizinin üzerine yazılmaz. `stable` veya `preview` kanalında yalnız `manifest.json`, `manifest.json.sig` ve `Headroom_<sürüm>_x64-update.exe` bulunur. Bir üstteki `release-receipt.json`, dosya/kaynak/araç özetlerini ve `published: false` bilgisini tutar. JSON ve imza ham baytları teslimde korunmalıdır. Kanal dizinine fazladan dosya karışması veya girdi değişimi hazırlamayı iptal eder. Çakışan çıktı korunur; sahipli yarım dizin temizlenir.
 
@@ -119,3 +122,9 @@ Açılışta güncelleyici boşta ve yapılandırılmışsa bir kez kurulu sür�
 Windows 10’da gerçek WebView ve yerel imzalı 0.1.1 manifesti kullanıldı. Bildirim Ayarlar açılmadan görüldü. Ayarlar’da indirme düğmesi hazırdı. Sunucu yalnız manifest ve imza için iki GET gördü. Normal çıkış ve girdi eşleşmesi geçti. [Native kanıt](../../work/u42/ad38ae49/result.json)
 
 Tek açık GitHub deposu kaynak kodu ve Releases kurulum dosyalarını barındırabilir. Uygulamanın imzalı güncelleme akışı için aynı deponun GitHub Pages sitesinde sabit HTTPS adresi kullanılır. Yayın derlemesine `HEADROOM_DESKTOP_UPDATE_BASE_URL` ve açık imza anahtarı `HEADROOM_DESKTOP_UPDATE_PUBLIC_KEY` verilir. Kaynak, kanal altındaki `manifest.json`, `manifest.json.sig` ve manifestteki güncelleme paketine yönlendirmesiz erişim sağlamalıdır. Üretim anahtarı, Pages yayını ve gerçek HTTPS uçtan uca testi açık. [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
+
+### 20 Kasım 2026 — Derlemeye bağlı HTTPS güncelleme kaynağı
+
+Windows 10 x64’te ayrı QA uygulama kimliği ve geçici anahtar kullanıldı. Gerçek release-mode EXE, beklenen HTTPS adresi ve açık anahtarla imzalı 0.1.1 paket hazırlığını geçti. Yanlış HTTPS yolu, HTTP ve farklı anahtar probe tarafından reddedildi. Yanlış yayın adresinde hazır paket oluşmadı. Üç parametreli mevcut kurtarma probe’u da geçti. [Programatik kanıt](../proofs/windows-update-release-source.json).
+
+478 Rust testi, Windows paketleme testleri ve custom-protocol derlemesi geçti. 24 opt-in Rust testi atlandı. Ön yüzün 227 testi ile üç üretim varlığının kanıtı eşleşen girdilerle yeniden kullanıldı. Mevcut Windows 10 kurucusunun SHA-256 değeri korundu ve geçici özel anahtar silindi. Planlanan Pages adresinden yapılan ön kontrolde manifest 404 döndü. Üretim imzası ve gerçek HTTPS teslimi açık.

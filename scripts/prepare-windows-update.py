@@ -43,7 +43,7 @@ def fingerprints(project, paths):
 
 
 def prepare(project, application, output, config, public_key, private_key, notes_file,
-            channel, from_version):
+            channel, from_version, release_base_url=None):
     project = project.resolve(strict=True)
     staging.no_links(project)
     output = staging.inside(output, project / 'work')
@@ -82,6 +82,9 @@ def prepare(project, application, output, config, public_key, private_key, notes
     executable = application.read_bytes()
     if key not in executable:
         raise ValueError('application_trust_key_mismatch')
+    probe = ['--headroom-update-probe', identifier, version, '1']
+    if release_base_url is not None:
+        probe.extend([release_base_url, key.decode('ascii')])
     if len(executable) < 64 or executable[:2] != b'MZ':
         raise ValueError('application_not_windows_x64')
     header = struct.unpack_from('<I', executable, 0x3C)[0]
@@ -134,7 +137,7 @@ def prepare(project, application, output, config, public_key, private_key, notes
         public.mkdir()
         copied_application = temporary / 'input-application.exe'
         copied_application.write_bytes(executable)
-        execute([str(copied_application), '--headroom-update-probe', identifier, version, '1'], environment, project)
+        execute([str(copied_application), *probe], environment, project)
         installer = public / f'Headroom_{version}_x64-update.exe'
         execute([str(nsis), '/V2', '/NOCD', f'/DAPPLICATION={copied_application}',
                  f'/DOUTPUT={installer}', str(template)], environment, project)
@@ -172,7 +175,7 @@ def prepare(project, application, output, config, public_key, private_key, notes
         extracted = regular(public / 'application.exe', project, 128 * 1024 * 1024)
         if staging.sha(extracted) != expected[copied_application.name]:
             raise ValueError('extracted_application_mismatch')
-        execute([str(extracted), '--headroom-update-probe', identifier, version, '1'], environment, project)
+        execute([str(extracted), *probe], environment, project)
         extracted.unlink()
         copied_application.unlink()
         verification.unlink()
@@ -192,6 +195,8 @@ def prepare(project, application, output, config, public_key, private_key, notes
                    'tools_before': tools_before, 'tools_after': tools_after,
                    'verification': 'signature_manifest_package_extraction_and_application_probe',
                    'published': False}
+        if release_base_url is not None:
+            receipt['release_base_url'] = release_base_url
         (temporary / 'release-receipt.json').write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8')
         # Windows rename refuses an output directory created by another process.
         temporary.rename(output)
@@ -209,10 +214,11 @@ def main():
     parser.add_argument('--config', type=Path, default=ROOT / 'src-tauri/tauri.conf.json')
     parser.add_argument('--channel', choices=('stable', 'preview'), required=True)
     parser.add_argument('--from-version', required=True)
+    parser.add_argument('--release-base-url', help='verify the exact embedded HTTPS update source')
     args = parser.parse_args()
     try:
         receipt = prepare(ROOT, args.application, args.output, args.config, args.public_key,
-                          args.private_key, args.notes, args.channel, args.from_version)
+                          args.private_key, args.notes, args.channel, args.from_version, args.release_base_url)
     except (ValueError, OSError, KeyError, TypeError) as error:
         code = str(error) if isinstance(error, ValueError) and re.fullmatch(r'[a-z_]+', str(error)) else 'release_preparation_failed'
         print(json.dumps({'status': 'failed', 'reason': code}))

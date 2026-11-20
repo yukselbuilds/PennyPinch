@@ -80,6 +80,13 @@ impl ReleaseSource {
         self.public_key
     }
 
+    #[cfg(any(test, not(debug_assertions)))]
+    pub(super) fn matches_release(&self, base: &str, public_key: &str) -> bool {
+        !self.local_fixture
+            && Url::parse(base).is_ok_and(|expected| expected == self.base)
+            && self.public_key.trim() == public_key
+    }
+
     fn client(&self) -> Result<Client, Failure> {
         Client::builder()
             .https_only(!self.local_fixture)

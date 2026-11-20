@@ -93,6 +93,30 @@ class UpdatePackageTests(unittest.TestCase):
             if 'signer' not in command:
                 self.assertNotIn('TAURI_SIGNING_PRIVATE_KEY_PASSWORD', environment)
 
+    def test_release_probe_checks_the_expected_source_before_and_after_packing(self):
+        base = 'https://updates.example.com/headroom/'
+        result = self.prepare(release_base_url=base)
+        probes = [command for command, _ in self.calls if '--headroom-update-probe' in command]
+        expected = ['--headroom-update-probe', 'dev.headroom.desktop', '0.1.1', '1',
+                    base, self.public.read_text().strip()]
+        self.assertEqual([command[1:] for command in probes], [expected, expected])
+        self.assertEqual(result['release_base_url'], base)
+
+    def test_release_probe_rejection_prevents_packing_and_signing(self):
+        def reject(command, environment, project):
+            self.calls.append((command, environment))
+            raise ValueError('release_tool_failed')
+
+        with patch.object(package, 'execute', side_effect=reject):
+            with self.assertRaisesRegex(ValueError, 'release_tool_failed'):
+                package.prepare(self.root, self.application, self.output, self.config, self.public,
+                                self.private, self.notes, 'stable', '0.1.0',
+                                release_base_url='https://wrong.example.com/headroom/')
+        self.assertEqual(len(self.calls), 1)
+        self.assertIn('--headroom-update-probe', self.calls[0][0])
+        self.assertFalse(self.output.exists())
+        self.assertFalse(list((self.root / 'work').glob('*.partial-*')))
+
     def test_rejects_wrong_channel_and_an_application_without_the_trusted_key(self):
         with self.assertRaises(ValueError):
             self.prepare(channel='preview')
