@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 21 November — English desktop behavior and settings decisions
+## 21 November — English design, uninstall, accounts and sessions decisions
 
-H042-k2e is complete. The seven English decision records cover the tray and explicit exit, startup and retention, theme and language, content-free export, recovery, accessibility and compatibility. The records preserve their historical evidence, limits and links. [Evidence](proofs/pennypinch-desktop-decisions-english.json) · [Task list](../TASKS.md)
+H042-k2f is complete. The four English decisions preserve the historical Graphite direction, the Windows uninstall data choices, and the account and session privacy, ownership and verification boundaries. [Evidence](proofs/pennypinch-design-lifecycle-decisions-english.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue H042-k2 with the remaining visual direction, uninstall, account and session decisions. The longer optimization regression record and detailed task entries remain in the documentation migration. Production signing and hosted delivery, clean-host installation and Windows 11 verification have separate acceptance. H041 remains deferred.
+Continue H042-k2 with the optimization and latency regression decision. Detailed task entries remain in the documentation migration. Production signing and hosted delivery, clean-host installation and Windows 11 verification have separate acceptance. H041 remains deferred.
+
+## 21 November — English desktop behavior and settings decisions
+
+H042-k2e is complete. The seven English decision records cover the tray and explicit exit, startup and retention, theme and language, content-free export, recovery, accessibility and compatibility. The records preserve their historical evidence, limits and links. [Evidence](proofs/pennypinch-desktop-decisions-english.json) · [Task list](../TASKS.md)
 
 ## 20 November — English measurement and savings decisions
 

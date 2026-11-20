@@ -1,0 +1,67 @@
+{
+  "task": "H042-k2f",
+  "status": "pass",
+  "base_commit": "7478f4bd52352128066029f5cc5f20d609cee3b9",
+  "checked": {
+    "documents": 4,
+    "headings": 13,
+    "legacy_heading_aliases": 13,
+    "inbound_heading_references": 0,
+    "link_destinations_preserved": 10,
+    "tracked_local_targets": 2,
+    "inline_code_spans_preserved": 48
+  },
+  "documents": {
+    "docs/decisions/001-ui-direction.md": {
+      "original_sha256": "72e32fda8cd077c82b2aebfcffa1c241a4d97b860b96efd46aaebe768f2305e6",
+      "translated_sha256": "1603a169b0b8ff742f43eeea8ab76d9607039d538ca172b6fa2e96a3d3dbdf46",
+      "candidate_sha256": "26ea536bc72fdc2d04fa94246637d395a642261844e95397876eb3fec951de52"
+    },
+    "docs/decisions/026-windows-uninstall.md": {
+      "original_sha256": "bd21a3cc83727b9b4e291829de01090042e87580f86a1ca7fd1a36780f507e29",
+      "translated_sha256": "917ee38a5c05506c218c389e62ebf4d37cc1266a7075e5767717da5158a13aea",
+      "candidate_sha256": "8aa1539c317304b864a5a286c137363a4bf37e2193e7088620a5a3150eaaa325"
+    },
+    "docs/decisions/030-account-connections.md": {
+      "original_sha256": "9cd33b905ccb143f069558e9a2e02bbcbdb21c2efda55bfa5188bc39f570028d",
+      "translated_sha256": "c240859e7428c607374d61f83300778658eb1b93e86116cf7d8d35d857f7ce79",
+      "candidate_sha256": "d7e77ca3faffe90e8bd61e23cf7d460029e283c57c6b67b378eddbe27607eb6e"
+    },
+    "docs/decisions/031-session-metadata.md": {
+      "original_sha256": "882c6903a801d5130e47e7840a947b4ed48e5e537a392fff378f4631843c03e6",
+      "translated_sha256": "c91f72dcc85c0dc73d3124bc7197bf5c1319d1a8c097ce0fae8d8c244485bdff",
+      "candidate_sha256": "9bf1685951efbb7156399ddb65138f0e6e6bf47ec9e197e88fab8e8763a5f9d1"
+    }
+  },
+  "source_references_sha256": {},
+  "date": "2026-11-21",
+  "scope": "English design, uninstall, account and session decision records",
+  "implementation": "Single GPT-6 Luna xhigh worker, with technical review and final document edits by the lead agent",
+  "review": "Lead agent, technical contract review and local Markdown validation",
+  "technical_sources": {
+    "DESIGN.md": "a7bf3c4699d9e33c192005383824ad1875475836470db3bab218cbcb0561355d",
+    "docs/proofs/uninstall.json": "7eb3211dbe209e0d8799b81dfd9a5a372c834b5211594a2acdf8770763a05dee",
+    "docs/proofs/accounts.md": "490c4080ac97dee5b705c8f8cf5de1296bd667709e86e0fc3c3d28f34d9616ec",
+    "docs/proofs/sessions.md": "c8e1bdd54d2619e4b0a6ba32bfd9d3b2b8992e798cd5600def3ddd60c42df29e",
+    "src-tauri/windows-installer.nsi": "8522965677170d93384d54c1a91562624467c9156015cd02e682e3444f1a239c",
+    "src-tauri/windows-hooks.nsh": "3e13a6ecb2a852c6013d10a43e5ae46bc8b8b28c4d35d4b8eceb3f6810a38ad1",
+    "src-tauri/src/main.rs": "2e49de4d6ba7eabbc860a1e7a25a1887225e698ad9f229c74d18380060c91cb5",
+    "src-tauri/src/desktop/uninstall.rs": "381a56edade5b00078f8115718fa89af9a42d450bab233dc0dd039eb978c016d",
+    "src-tauri/src/integrations/connection_actions.rs": "935bac043c368064921c78941a33af01ef83edb75445b7d16010bbe686af8385",
+    "src-tauri/src/integrations/accounts.rs": "4e175135686d8138d764d7c27ac2d8b74466768ade2aa49d63cfb93f01629363",
+    "src-tauri/src/integrations/accounts_windows.rs": "be84242e3e9c30df4113c6ea8d33b21c62eeb70064f32868bcf92fe07841038d",
+    "src-tauri/src/integrations/accounts_opencode.rs": "48de962999929f1385fbf80330d0147e31d802b3f76f10c19fc6a11f22414423",
+    "src-tauri/src/integrations/sessions.rs": "ee27426840ec28c92ba8daf69e4d5a5189aafee5526d8ee68a9cc22875d5c45f",
+    "src-tauri/src/integrations/sessions_protocol.rs": "eddf42dc314668fdd9924c1606eefe33b9637bf9b4c418e4db2d6d61825c6e63",
+    "src-tauri/src/integrations/sessions_windows.rs": "f549f905b56d300cabb30e29a1868327185d24dfe2959176758d38e471e6ddd1",
+    "src/features/integrations/Sessions.tsx": "25028e9835cb563e5d0b8604f0ee403ae01941ed3f1824ea62b74aca3df89380"
+  },
+  "toolchain": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0"
+  },
+  "main_tasks": {
+    "completed": 45,
+    "total": 54
+  }
+}

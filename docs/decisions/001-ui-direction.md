@@ -1,23 +1,29 @@
-# 001 — Seçilen görsel yön: Graphite
+<a name="001--seçilen-görsel-yön-graphite"></a>
 
-**Tarih:** 19 Ekim 2026  
-**Durum:** Kullanıcı tarafından seçildi.
+# 001 — Graphite visual direction
 
-Kullanıcı asenkron konsept sorusuna **Graphite — koyu grafit ve mint** yanıtını verdi. Üretim arayüzü Graphite düzenini esas alır; açık/koyu renk temaları aynı gezinme ve bileşen yapısını paylaşır.
+**Date:** 19 October 2026<br>
+**Status:** Selected by the user.
 
-## Uygulama yaklaşımı
+The user answered the asynchronous concept question with **Graphite — dark graphite and mint**. The production UI uses the Graphite layout. Light and dark color themes share the same navigation and component structure.
 
-- Dört ekran: Genel bakış, Uygulamalar, Etkinlik, Ayarlar. Solda etiketli gezinme; motor, bağlantı ve sıkıştırma durumları ayrı.
-- Koyu ve açık renkler semantik CSS token'larıyla uygulanır; sistem teması varsayılandır. Mevcut konsept HTML'i üretim entegrasyonu sayılmaz.
-- Segoe UI Variable/Segoe UI sistem fontu; metriklerde tabular rakamlar. Renkler tek durum göstergesi değildir; görünür klavye odağı korunur.
-- Ana zemin/panel/metin/vurgu: koyu `#111315` / `#1A1D21` / `#F0F2F4` / `#47C7A5`; açık `#F7F8FA` / `#FFFFFF` / `#1C2027` / `#147D68`. Alt metin ve etkileşim durumlarının kontrastı üretim uygulamasında ayrıca doğrulanır.
-- Gerçek ölçüm yoksa boş durum gösterilir; konseptteki demo sayıları taşınmaz.
-- Windows 10'da temel arayüz için Windows 11'e özel efekt gerekmez. Başlat/duraklat eylemi gerçek yönetici sonucuna bağlı olur.
+<a name="uygulama-yaklaşımı"></a>
 
-Ivory ve Signal, karşılaştırılabilir tasarım alternatifleri olarak `outputs/ui-concepts/` içinde korunur. Üç farklı gezinme düzenini tek uygulamada tema adı altında desteklemek ilk sürüm kapsamını gereksiz büyütür; renk teması ile düzen konsepti ayrı kararlardır.
+## Implementation approach
 
-Kaynaklar: `HEADROOM_DESKTOP_SPEC.md` bölüm 8, `UI_CONCEPTS.md`, `outputs/ui-concepts/graphite.html`.
+- The four screens are Overview, Applications, Activity, and Settings. Use labeled navigation on the left. Engine, connection, and compression each have their own status.
+- Apply dark and light colors with semantic CSS tokens. System theme is the default. The existing concept HTML serves as a prototype.
+- Use Segoe UI Variable/Segoe UI system fonts and tabular figures for metrics. Color is not the only status indicator. Preserve visible keyboard focus.
+- Main background/panel/text/accent colors are dark `#111315` / `#1A1D21` / `#F0F2F4` / `#47C7A5` and light `#F7F8FA` / `#FFFFFF` / `#1C2027` / `#147D68`. Validate secondary-text and interaction-state contrast separately in the production app.
+- Show an empty state when there is no real measurement. Do not carry over demo values from the concept.
+- Windows 10 does not require Windows 11-only effects for the basic interface. Start/pause actions depend on the actual manager result.
 
-## 5 Kasım2026 — kullanıcının istediği tasarım yenilemesi
+Keep Ivory and Signal in `outputs/ui-concepts/` as comparable design alternatives. Supporting three different navigation layouts in one app under the name of themes would unnecessarily expand first-release scope. Color theme and layout concept are separate decisions.
 
-Kullanıcı eski görünümü reddetti. Graphite/mint ailesi korunarak hiyerarşi, boşluk, tipografi, ikonlar ve dört ekranın sunumu yeniden kurulur; yukarıdaki eski palette/layout değerleri tarihsel kalır. Güncel görsel sözleşme [DESIGN.md](../../DESIGN.md) ve proje içi Emil design engineering rehberidir. UX001 mevcut işlevi görsel olarak yeniler; yeni hesap/sohbet özelliği veya H029 kabulü üretmez.
+The decision draws on section 8 of `HEADROOM_DESKTOP_SPEC.md`, `UI_CONCEPTS.md`, and `outputs/ui-concepts/graphite.html`.
+
+<a name="5-kasım2026--kullanıcının-istediği-tasarım-yenilemesi"></a>
+
+## 5 November 2026 — User-requested design refresh
+
+The user rejected the old appearance. Preserve the Graphite/mint family while rebuilding hierarchy, spacing, typography, icons, and presentation of the four screens. The palette/layout values above remain historical. The current visual contract is [DESIGN.md](../../DESIGN.md) and the project's Emil design engineering guide. UX001 refreshes existing functionality visually. It does not add an account/chat feature or produce H029 acceptance.

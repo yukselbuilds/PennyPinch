@@ -1,30 +1,38 @@
-# H050 — Hesap durumu ve resmî giriş
+<a name="h050--hesap-durumu-ve-resmî-giriş"></a>
 
-13 Kasım 2026. Uygulama ve auth/süreç kararlarının sahibi ana ajandır. Aynı tek Luna yalnız sabit Claude/OpenCode komut sözleşmelerini salt okunur inceler. H049 kullanıcı kararıyla ertelenmiştir; CI kullanılmaz.
+# H050 — Account status and official sign-in
 
-## Sözleşme
+13 November 2026. The lead agent owns implementation and auth/process decisions. The same single Luna worker performs only a read-only review of fixed Claude/OpenCode command contracts. H049 was deferred by user decision. CI is not used.
 
-- Kurulum, yerel giriş bilgisi, Headroom yönlendirmesi ve ölçülen trafik ayrı durumlardır. Hesap okuması model/reasoning/provider seçmez ve model isteği göndermez. Yerel credential kaydı uzaktaki geçerli hesap/abonelik kanıtı değildir.
-- Yalnız taze keşif seçimi ve yeniden pin'lenen güvenilir gerçek CLI çalıştırılır. İstemci path'i, argv veya URL webview'den alınmaz. Desktop/diğer OS veya bilinmeyen sürüm sözleşmesi desteklenmiyorsa durum bilinmiyor kalır.
-- Codex resmî status komutu 10 saniye/akış başına 64 KiB sınırları ve yalnız kendi süreç ağacıyla çalışır. Claude Code 2.1.158 status komutu izole deneyde ayar/yedek yazdığı için pasif okuma olarak kullanılmaz: durum bilinmiyor, neden `read_not_passive`. OpenCode 1.19.3 `auth list` global DB/WAL/SHM oluşturduğu için kullanılmaz; sabit V1 şemasındaki yerel provider metadata'sı salt okunur, sınırlı ve dosya kimliği denetlenerek okunur.
-- Raw stdout/stderr, key parçaları, email, token veya auth dosyası Headroom state/loglarına kopyalanmaz. OpenCode değerleri akış sırasında yalnız var/yok bilgisine indirgenir; bilinmeyen provider adları `other` olur. UI'ya yalnız sabit kategori/durumlar geçer. Şifre, API-key veya OAuth sırrı Headroom'da girilmez.
-- Resmî giriş yalnız açık kullanıcı eylemidir. Etkilenen CLI profili ve resmî istemcinin mevcut oturumu değiştirebileceği gösterilir. İptal, yalnız başlatılan CLI sürecini durdurur; tarayıcıya, başka oturumlara veya auth deposuna geri alma uygulanmaz. İptal edilmiş girişten başarı çıkarılmaz; durum yeniden okunur.
-- Hesap durumu, geçmiş kurulum kaydı veya süreç varlığıyla tahmin edilmez. Yeniden açılışta taze metadata okunur; canlı hesap erişimi doğrulanmadığı açık kalır. Kullanıcının önceki Claude giriş yapmama tercihi korunur.
-- Giriş ayrı görünür resmî CLI konsolunda açılır; Headroom yalnız kendi başlattığı kök süreç handle'ını yönetir. Tarayıcı kill-on-close job'a alınmaz. Normal tam çıkış ve 600 saniyelik süre sınırı kendi CLI kökünü durdurur. Ani süreç çökmesinde girişin otomatik sonlanacağı iddia edilmez. Kapanış doğrulanamazsa sahiplik korunur, yeni işlem engellenir ve durdurma tekrar denenebilir. Ekran değişikliği/tepsiye alma akışı iptal etmez; IPC yanıtı kaybolursa yenileme mevcut akışı bulur.
-- Codex giriş eylemi ChatGPT, Claude Code giriş eylemi Claude hesabını açar; OpenCode sağlayıcı/yöntemi kendi ekranında seçtirir. Mevcut API-key yönteminin değişebileceği onay ekranında açıkça yazılır. Başarı kodu bile uzaktaki geçerli oturum kanıtı sayılmaz; yerel kayıt yeniden okunur.
+<a name="sözleşme"></a>
 
-## Kaynak ve kritik sınır
+## Contract
 
-[OpenAI kimlik doğrulama](https://learn.chatgpt.com/docs/auth), [CLI login/status](https://learn.chatgpt.com/docs/developer-commands?surface=cli) ve [resmî CLI login kaynağı](https://github.com/openai/codex/blob/rust-v0.163.0/codex-rs/cli/src/login.rs) incelendi. Status credential varlığını bildirir; API-key biçimlenmiş parçalarını da yazabilir, bu parçalar tutulmaz. Login mevcut auth'u akış tamamlanmadan temizleyebilir; iptal eski auth'un korunduğu anlamına gelmez. İncelenen sürüm kaynakları ve hash'leri görev kanıtında sabitlenir.
+- Installation, local sign-in record, Headroom routing, and measured traffic are separate states. Reading account status does not select a model/reasoning/provider or send a model request. A local credential record does not prove a valid remote account/subscription.
+- Require a fresh discovery selection and repin the trusted CLI executable before running it. Never take a client path, argv, or URL from the WebView. Report unknown for unsupported Desktop, OS, or version contracts.
+- Run the official Codex status command with 10-second and 64 KiB per-stream limits, using only its own process tree. Do not use the Claude Code 2.1.158 status command for passive reads because an isolated experiment showed it writing settings/backups. Report unknown with reason `read_not_passive`. Do not use OpenCode 1.19.3 `auth list` because it creates a global DB/WAL/SHM. Read only local provider metadata from the pinned V1 schema, with bounded parsing and file-identity checks.
+- Do not copy raw stdout/stderr, key fragments, email, tokens, or auth files into Headroom state/logs. Reduce OpenCode values during streaming to presence/absence only. Unknown provider names become `other`. The UI receives only fixed categories/states. Passwords, API keys, or OAuth secrets are not entered in Headroom.
+- Official sign-in requires an explicit user action. Show the affected CLI profile and explain that the official client may change its current session. Cancel stops only the launched CLI process. It does not cancel the browser, affect other sessions, or roll back the auth store. Do not infer success from a canceled sign-in. Read status again.
+- Do not infer account status from an old installation record or process presence. Read fresh metadata after reopen and make clear that live account access was not verified. Preserve the user's prior choice not to sign in to Claude.
+- Open sign-in in a separate visible official CLI console. Headroom manages only the root process handle it started. Do not put the browser in a kill-on-close job. Normal full quit and the 600-second timeout stop the CLI root process. Do not claim sign-in will end automatically if the process crashes abruptly. If closure cannot be verified, preserve ownership, block new operations, and allow stop to be retried. Screen changes/tray hiding do not cancel the flow. If the IPC reply is lost, refresh finds the existing flow.
+- The Codex sign-in action opens ChatGPT. Claude Code sign-in opens a Claude account. OpenCode lets the user choose provider/method in its own screen. State clearly in the confirmation screen that the existing API-key method may change. Even a successful exit code does not prove a valid remote session. Read the local record again.
 
-Güncel [OpenCode belgeleri](https://opencode.ai/docs/cli/providers/) V2 davranışını mevcut V1 1.19.3'e aktarmayız. [Sabit V1 auth şeması](https://github.com/anomalyco/opencode/blob/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/opencode/src/auth/index.ts), global data kökü ve xdg-basedir 5.1.0 kaynakları incelendi. `OPENCODE_AUTH_CONTENT` veya güvenli olmayan/bilinmeyen depo varsa durum bilinmiyor kalır. Claude komut sözleşmesi sabit kurulu istemcinin resmî help çıktısıyla incelendi; kullanıcı hesabında komut çalıştırılmadı.
+<a name="kaynak-ve-kritik-sınır"></a>
 
-Windows CLI auth kabiliyetleri Codex `0.163.0-alpha.11.1`, `0.163.0-alpha.11.2`, `0.167.0-alpha.4.1`; Claude Code `2.1.158`; OpenCode `1.19.3` ile sınırlandırılmıştır. Bunlar model/alt ajan desteğinin sınırı değildir. Gerçek `.exe`, sürüm/digest veya imza doğrulaması ve pinlenen üst dizinler zorunludur; wrapper'lar, Desktop hesapları ve başka OS için güvenilir adapter yoksa durum bilinmiyor kalır.
+## Sources and critical limits
 
-## Kabul ve doğrulama
+Reviewed [OpenAI authentication](https://learn.chatgpt.com/docs/auth), [CLI login/status](https://learn.chatgpt.com/docs/developer-commands?surface=cli), and the [official CLI login source](https://github.com/openai/codex/blob/rust-v0.163.0/codex-rs/cli/src/login.rs). Status reports credential presence and may also print API-key-formatted fragments. Do not retain those fragments. Login may clear existing auth before the flow completes. Cancel does not mean the old auth was preserved. Pin the reviewed version sources and hashes in task evidence.
 
-1. Taze kurulum seçimi → durum oku → yalnız allowlist metadata; var/yok/bilinmiyor ve Desktop/unsupported ayrımı. Bozuk, aşırı uzun, başarısız/timeout çıktı bağlantı başarısına dönüşmez.
-2. Kullanıcı kapsamı görür → resmî giriş açılır → iptal/çıkış/yeniden durum okuma. Stale seçim, değiştirilmiş executable ve rakip login reddedilir. Başka süreç/tarayıcı kapatılmaz.
-3. Accounts UI gerçek IPC yolunu kullanır; TR/EN, boş/unknown/hata, klavye ve son native render kontrolü yapılır. Fixture ve gerçek istemci kanıtı ayrı tutulur; canlı giriş yapılmadığında açıkça belirtilir.
+Do not project V2 behavior in the current [OpenCode documentation](https://opencode.ai/docs/cli/providers/) onto V1 1.19.3. Reviewed the [pinned V1 auth schema](https://github.com/anomalyco/opencode/blob/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/opencode/src/auth/index.ts), global data root, and xdg-basedir 5.1.0 sources. If `OPENCODE_AUTH_CONTENT` is set or the store is unsafe/unknown, keep status unknown. Reviewed the Claude command contract using help output from the pinned installed client. No command was run against a user's account.
 
-Odaklı Rust `integrations::accounts` ve pin regresyonları, frontend accounts sözleşmesi ve etkileşimi, son adayda WORKFLOW.md tam yerel kapısı bir kez. Yerel kanıt Windows 10'dur; Windows 11, yeni macOS özelliği veya Linux'a aktarılmaz. Başarılı eski testler yalnız ilgili fingerprint eşleşiyorsa kullanılır.
+Windows CLI auth capability is limited to Codex `0.163.0-alpha.11.1`, `0.163.0-alpha.11.2`, `0.167.0-alpha.4.1`, Claude Code `2.1.158`, and OpenCode `1.19.3`. These are not limits on model/subagent support. Require the real `.exe`, version/digest or signature verification, and pinned parent directories. If there is no trusted adapter for wrappers, Desktop accounts, or another OS, keep status unknown.
+
+<a name="kabul-ve-doğrulama"></a>
+
+## Acceptance and verification
+
+1. Fresh installation selection → read status → allowlisted metadata only. Distinguish present/absent/unknown and Desktop/unsupported. Malformed, oversized, failed, or timed-out output does not become connection success.
+2. Show the user the scope → open official sign-in → cancel/exit/read status again. Reject stale selection, modified executable, and competing login. Do not close another process/browser.
+3. Accounts UI uses the real IPC path. Check TR/EN, empty/unknown/error, keyboard, and final native rendering. Keep fixture and real-client evidence separate. Clearly state when no live sign-in was performed.
+
+Run focused Rust `integrations::accounts` and pin-regression tests, frontend accounts contract/interaction tests, and the final candidate's full local WORKFLOW.md gate once. Local evidence is from Windows 10. Do not project it onto Windows 11, a new macOS feature, or Linux. Reuse previous passing tests only when their relevant fingerprints match.
