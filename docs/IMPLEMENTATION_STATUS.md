@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 20 November — English measurement and savings decisions
+## 21 November — English desktop behavior and settings decisions
 
-H042-k2d is complete. The six English decision records retain their dated evidence, comparison bases, formulas, attribution rules and local signal thresholds. The lead agent matched the wording to the source contracts and preserved existing links to the decision headings. [Evidence](proofs/pennypinch-metric-decisions-english.json) · [Task list](../TASKS.md)
+H042-k2e is complete. The seven English decision records cover the tray and explicit exit, startup and retention, theme and language, content-free export, recovery, accessibility and compatibility. The records preserve their historical evidence, limits and links. [Evidence](proofs/pennypinch-desktop-decisions-english.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue H042-k2 with the desktop behavior and settings decisions. The longer optimization regression record and detailed task entries remain in the documentation migration. Production signing and hosted delivery, clean-host installation and Windows 11 verification have separate acceptance. H041 remains deferred.
+Continue H042-k2 with the remaining visual direction, uninstall, account and session decisions. The longer optimization regression record and detailed task entries remain in the documentation migration. Production signing and hosted delivery, clean-host installation and Windows 11 verification have separate acceptance. H041 remains deferred.
+
+## 20 November — English measurement and savings decisions
+
+H042-k2d is complete. The six English decision records retain their dated evidence, comparison bases, formulas, attribution rules and local signal thresholds. The lead agent matched the wording to the source contracts and preserved existing links to the decision headings. [Evidence](proofs/pennypinch-metric-decisions-english.json) · [Task list](../TASKS.md)
 
 ## 20 November — English runtime and connection decisions
 

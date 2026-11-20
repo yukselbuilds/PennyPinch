@@ -1,0 +1,75 @@
+{
+  "task": "H042-k2e",
+  "status": "pass",
+  "base_commit": "a6842f1eb0669aca0a465defd513361594c1c735",
+  "checked": {
+    "documents": 7,
+    "headings": 27,
+    "legacy_heading_aliases": 27,
+    "inbound_heading_references": 0,
+    "link_destinations_preserved": 10,
+    "tracked_local_targets": 9,
+    "inline_code_spans_preserved": 74
+  },
+  "documents": {
+    "docs/decisions/018-tray-lifecycle.md": {
+      "original_sha256": "0a2aa3384d96ea39ccbc740a6410741c7c970892d582f501b7e5e06bdf7d1bc3",
+      "translated_sha256": "f1a9148eec2998b03d63c28d5f70660ca99894f0257212c1b29ba4f96d328f7c",
+      "candidate_sha256": "4126f6d67ec7c870dc9ef0231557c06de9f29c8d0589c3f6c6cc90dd5efa2e67"
+    },
+    "docs/decisions/019-operating-preferences.md": {
+      "original_sha256": "c8782e94aa7c208ff44e64f162a0453bbbca85abb963b907611730a82af62e33",
+      "translated_sha256": "ae36b9f15dc2a237429d18be8ce617440d21f9f665f3308702c538b4e49f2ef8",
+      "candidate_sha256": "8ca6a3fca4cd5857a0e0c4fb60bb8243944bc85b5501b4fc12485ed81193e089"
+    },
+    "docs/decisions/020-theme-language.md": {
+      "original_sha256": "35b04189e85c40fbc5681e110527ee84f167f7aa0c6915b8f1daf7ab0278932e",
+      "translated_sha256": "a90dc47dffbe1eda1e78e7dcd2bce2c834dee296816b63ea66e585ebd42ede5e",
+      "candidate_sha256": "3ad57a282a4976f1c64c9927f5219f05993aebbb43330e19f60af17ab244e0a7"
+    },
+    "docs/decisions/021-export.md": {
+      "original_sha256": "02efe08332d4b925f83371d9f8d3e8a1a56b75729e25445f6767a8f71b44ff12",
+      "translated_sha256": "735bec0a1452c5d6749502945b28f44334fca1719ce29ea168f6d65852fda140",
+      "candidate_sha256": "8867e25622e1e85b27f7e066a1566565eb4ba760f9f5be16dcfb8976485f04f2"
+    },
+    "docs/decisions/022-recovery.md": {
+      "original_sha256": "fa91982ff546dbe659650e9f98821e62edd98f6aa0fea615a146f974aacb93ec",
+      "translated_sha256": "06754468c93ceaba474c1a679017f2288d416f0113878dcee429767836589eb9",
+      "candidate_sha256": "626f189efd56898181642d18cddd61340f97db996b8354ae1d7e0d955a5ed35c"
+    },
+    "docs/decisions/023-accessibility-performance.md": {
+      "original_sha256": "a8f61ebfe9d806761cd4aa65cf2c7626c4388090dc7b6310e7d450bd664bc5d8",
+      "translated_sha256": "dbe7ea37504abc39ad80f8f353114f188aa80617c50346182ab2466fd8aaae8f",
+      "candidate_sha256": "c8d28a02614e98c9704c46d5013c732336f907bf34fcb91a0117f544ebef9fd5"
+    },
+    "docs/decisions/024-compatibility-catalog.md": {
+      "original_sha256": "4656a739d4f97c4bcb425e18aa30a5911159a41c444d11c19bb70a953d727e1a",
+      "translated_sha256": "373c793f3fd7ee60cb1db42b9fcdf2c61e662f581d4e8a2a07c85cf4070662e1",
+      "candidate_sha256": "b262628bd7b53a12c2fd9145d46c46900858294b359cb99d501c5112064ab298"
+    }
+  },
+  "source_references_sha256": {
+    "docs/validation/performance.md": "60bab96f1de6335618f73f401c51a9e1f029845da9666057340e2128bd63db50"
+  },
+  "date": "2026-11-21",
+  "scope": "English desktop behavior and settings decision records",
+  "implementation": "Single GPT-6 Luna xhigh worker, with technical and editorial verification by the lead agent",
+  "review": "Lead agent, technical contract review and local Markdown validation",
+  "technical_sources": {
+    "src-tauri/src/desktop/tray.rs": "cfddc7e6fd15fe0410bf8bfe29386ec003d284b8b10c649599afef7ef39e9184",
+    "src-tauri/src/state/store.rs": "48d80165a5a87e0652a3906e9088f856d575f43b13bb9c16626d72f8eb1910b2",
+    "src/lib/preferences.ts": "2e6e230a538d0eaa6befac6f34b8b9ab7dbd218f9fc5415dfda139ae187e7ccd",
+    "src-tauri/src/export/report.rs": "a4adf537fa595d5353c1ff467477ce4440f253b77cab3e4025544362a10a4baf",
+    "src-tauri/src/runtime/recovery.rs": "bb4358aeb61e5fd157c40585777c257423d132d782b09c762b74c7b0609aef5c",
+    "tests/e2e/accessibility.spec.ts": "b1bff1a47af6f7f7429fca3665eda1b83e69731a485b43c4204986dbaed2998f",
+    "src-tauri/src/compatibility/catalog.rs": "c1782063f8beed5e52cead3c5518b32d01bdb1c6e509c47ca497705c58c6915f"
+  },
+  "toolchain": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0"
+  },
+  "main_tasks": {
+    "completed": 45,
+    "total": 54
+  }
+}
