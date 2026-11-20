@@ -1,5 +1,9 @@
 # PennyPinch implementation status
 
+## 20 November — Settings guidance and troubleshooting
+
+UX002 is complete. The lead agent implemented and verified this connected UI slice. Savings tips stay visible. Learn opens on demand and explains its local review with an example. Experimental trials show their own file-based result in bytes, and protected tool guidance describes matching names and application timing. Applications retains the tested versions and connections disclosure for troubleshooting. 227 frontend and 480 Rust tests passed. The real App with isolated IPC passed 5 browser cases and 104 accessibility audits in Turkish and English. The Windows preview was rebuilt without packaging a new installer. H042 remains open. [Evidence](proofs/settings-guidance.json) · [Task list](../TASKS.md)
+
 ## 20 November — PennyPinch artwork and display identity
 
 The user supplied the artwork. The lead agent integrated it in the App, About screen, README and native Windows icons, and aligned product wording and export filenames. The original PNG was preserved byte-for-byte. Windows 10 built the actual unsigned x64 NSIS package. The application and setup executable contain the matching icon and PennyPinch metadata. 227 frontend tests, 480 Rust tests and 60 focused browser accessibility audits passed. H042-l is complete. H042-k2a translated the Windows packaging and update trust decisions. The overall English migration and production update delivery remain open. [Logo evidence](proofs/pennypinch-logo.json) · [Task list](../TASKS.md)

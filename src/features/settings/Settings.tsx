@@ -23,11 +23,12 @@ const copy = {
     days: "gün",
     retentionWarning: "Daha kısa süre kaydedildiğinde sonraki ölçüm okuması eski kayıtları kalıcı olarak temizleyebilir. Süreyi uzatmak silinen kayıtları geri getirmez.",
     retentionConfirm: "Bu kalıcı temizleme uyarısını anladım",
-    toolsTitle: "Korunan araç adları",
-    toolsHelp: "Liste sonraki elle motor Başlat'ta uygulanır; otomatik yeniden başlatma olmaz. Aynı motor rotasını kullanan desteklenen istemciler ve ajanlar etkilenebilir. Rota dışı trafik ve araç adı taşımayan çağrılar için garanti yoktur.",
-    toolsPlaceholder: "Örnek biçim: tool_name\nanother-tool",
+    toolsTitle: "Korunacak araç adları",
+    toolsHelp: "Araç çıktısı, asistanın dosya okuma veya komut çalıştırma gibi işlemlerden aldığı sonuçtur. Tam çıktısını görmek istediğin araçları, istemcideki adıyla her satıra bir tane yaz. PennyPinch, üzerinden geçen ve adı eşleşen çıktıları sıkıştırmadan iletir.",
+    toolsApply: "Listeyi kaydettikten sonra motoru elle başlattığında koruma devreye girer. Bu seçim, söz konusu çıktılardaki tasarrufu azaltabilir.",
+    toolsPlaceholder: "exec_command\nread_file",
     toolsInvalid: "En fazla 32 benzersiz araç adı gir. Adlar 1–96 ASCII harf, rakam, nokta, alt çizgi, iki nokta, eğik çizgi veya tire içerebilir.",
-    advanced: "Gelişmiş araç koruma ayarları",
+    advanced: "Araç çıktısı koruması",
     save: "Tercihleri kaydet",
     saving: "Kaydediliyor…",
     saved: "Tercihler kaydedildi.",
@@ -90,11 +91,12 @@ const copy = {
     days: "days",
     retentionWarning: "After saving a shorter period, a later measurement read may permanently remove older records. Extending retention cannot restore deleted records.",
     retentionConfirm: "I understand this permanent cleanup warning",
-    toolsTitle: "Protected tool names",
-    toolsHelp: "The list is applied on the next manual engine start; there is no automatic restart. Supported clients and agents using the same engine route may be affected. No guarantee applies to traffic outside that route or calls without a tool name.",
-    toolsPlaceholder: "Name format: tool_name\nanother-tool",
+    toolsTitle: "Tool names to protect",
+    toolsHelp: "Tool output is what your assistant receives from actions like reading a file or running a command. Enter one exact tool name per line for outputs you want to keep in full. PennyPinch forwards matching output on its route without compression.",
+    toolsApply: "Save the list. Protection takes effect the next time you start the engine manually and may reduce savings on the selected outputs.",
+    toolsPlaceholder: "exec_command\nread_file",
     toolsInvalid: "Enter up to 32 unique tool names. Names may contain 1–96 ASCII letters, digits, periods, underscores, colons, slashes, or hyphens.",
-    advanced: "Advanced tool protection",
+    advanced: "Tool output protection",
     save: "Save preferences",
     saving: "Saving…",
     saved: "Preferences saved.",
@@ -349,12 +351,15 @@ export function Settings({ language, preferences, status, onSave, onBusyChange }
     <details className="operating-settings__advanced">
       <summary>{text.advanced}</summary>
       <div className="operating-settings__advanced-body">
-        <label className="operating-settings__tools" htmlFor="protected-tools">
-          <span><strong>{text.toolsTitle}</strong><small>{text.toolsHelp}</small></span>
+        <div className="operating-settings__tools">
+          <label htmlFor="protected-tools"><strong>{text.toolsTitle}</strong></label>
+          <p id="protected-tools-help" className="operating-settings__help">{text.toolsHelp}</p>
+          <p id="protected-tools-apply" className="operating-settings__help">{text.toolsApply}</p>
           <textarea id="protected-tools" rows={4} maxLength={4096} value={toolText} disabled={!preferenceReady || savePending || startupPending}
             placeholder={text.toolsPlaceholder} aria-invalid={parsedTools.error}
+            aria-describedby="protected-tools-help protected-tools-apply"
             onChange={event => updateToolText(event.target.value)} />
-        </label>
+        </div>
         {parsedTools.error && <p className="operating-settings__field-error" role="alert">{text.toolsInvalid}</p>}
       </div>
     </details>

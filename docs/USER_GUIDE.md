@@ -40,15 +40,25 @@ If the close-to-tray preference is enabled, the window close button hides PennyP
 
 Activity and usage exports describe observed requests using metadata such as the client, model and token counts. Diagnostic exports use selected fields and leave out credential values and raw request content. The engine can temporarily keep original compressed content in its local retrieval store so the client can recover it. See the [local application trust boundaries](SECURITY_BOUNDARIES.md).
 
+## Explore savings options
+
+Enable **Savings tips** in **Settings** to show suggestions in **Overview** when enough local evidence is available. A tip might flag growing input, slower compression, fewer recorded cache hits or an installation that needs another scan. Each tip includes its observation time and scope. You decide what to change.
+
+In **Settings → Learn from a session**, choose one Codex or Claude Code session file (.jsonl) saved on your device. Learn reviews repeated failures locally. For example, it can suggest checking the working directory before retrying the same file operation. You choose how to use the advice.
+
+Enable **Rule trials (experimental)** inside Learn to choose a recording and try shortening repeated log lines. PennyPinch compares the output size in bytes and checks that it can restore the original exactly. The trial applies to the selected recording.
+
+Open **Tool output protection** under **Operating preferences** to keep selected results in full. Enter one exact client tool name per line. For example, enter `exec_command` to protect its matching output when that is the name your client sends. Matching results on the PennyPinch route pass through without compression, which can reduce savings. Save the list and start the engine manually for the change to take effect.
+
 ## Preferences and updates
 
-Enable **Local recommendations** in **Settings**. When enough data is available, PennyPinch can flag input growth, high local compression time, a drop in recorded cache hits or a stale installation scan. Each recommendation shows the observation time and the scope of its data.
-
-Reducing the retention period can permanently delete older measurement records. Increasing it applies to the retained and future data. Changes to the advanced list of protected tools take effect the next time you start the engine manually.
+Reducing the retention period can permanently delete older measurement records. Increasing it applies to the retained and future data.
 
 **Updates** shows signed releases when this build has a trusted update source. Choose **Check for updates** to check your channel. The app shows the verified version and lets you start the download. Local Windows 10 update and rollback tests passed. Production hosting, signing and delivery are tracked in the [Windows update validation](validation/windows-update.md).
 
 ## Verified coverage
+
+Use **Applications → Tested versions and connections** to compare past tests by application version and sign-in method when troubleshooting. Check the application card for your current connection status.
 
 - Windows 10 22H2 x64 is the first release target. Windows 11 verification is pending. See the [platform validation matrix](validation/desktop-platforms.md) for the scope of the macOS and Linux checks.
 - Selected Windows 10 Codex CLI and Desktop routes were verified with ChatGPT sign-in. Live Codex API-key verification is still open.

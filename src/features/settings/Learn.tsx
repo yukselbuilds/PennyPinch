@@ -4,21 +4,24 @@ import type { PreferenceLanguage } from "../../lib/preferences";
 
 const copy = {
   tr: {
-    body: "Bir Codex veya Claude Code oturum dosyası (.jsonl) seç. Learn, tekrar eden hataları cihazında inceleyip öneri gösterir.",
+    title: "Oturumdan öğren (Learn)",
+    body: "Codex veya Claude Code’un cihazına kaydettiği bir oturum dosyasını (.jsonl) seç. Learn, aynı araç çağrısı art arda başarısız olduğunda bir sonraki denemede neyi kontrol edebileceğini önerir.",
+    example: "Örneğin dosya yolu hatası tekrarlanırsa önce çalışma klasörünü ve dosya yolunu doğrulamanı önerir. İnceleme cihazında yapılır. Öneriyi nasıl kullanacağına sen karar verirsin.",
     action: "Oturum dosyası seç",
-    experimentalTitle: "Deneysel kurallar",
-    experimentalBody: "Seçtiğin oturumdan yerel kural adaylarını incele.",
-    experimentalAction: "Kural adaylarını önizle",
-    experimentalReady: "Kural adayları hazır. Kaynak değişiklikleriyle birlikte değerlendir.",
+    experimentalTitle: "Kural denemeleri (deneysel)",
+    experimentalBody: "Tekrar eden günlük satırlarını kısaltmayı ve özgün çıktıyı geri açmayı dene. Deneme seçtiğin kayıtla sınırlıdır ve sonucu bayt cinsinden gösterir.",
+    experimentalAction: "Deneme için oturum seç",
+    experimentalReady: "Oturum hazır. Aşağıdan kayıtlı çıktıda bir deneme başlatabilirsin.",
+    experimentalEmpty: "Bu oturum için bir deneme kaydı hazırlanamadı.",
     trialTitle: "Yinelenen günlük satırları",
-    trialBody: "Özgün dosyaya bu ekranda 15 dakika erişebilirsin. Deneme sonuçları birebir geri açılarak doğrulanır.",
-    trialAction: "Yerelde dene",
+    trialBody: "Deneme kaydı bu ekranda 15 dakika kullanılabilir. PennyPinch özgün çıktının birebir geri açılabildiğini kontrol eder.",
+    trialAction: "Kayıtlı çıktıda dene",
     trialBusy: "Yerel deneme sürüyor…",
     trialExact: "Özgün çıktı birebir geri alındı.",
-    trialBytes: "Denenen stdout",
+    trialBytes: "Araç çıktısı boyutu",
     trialCounts: (eligible: string, compacted: string, protectedCount: string) => `${eligible} uygun çıktı · ${compacted} küçültüldü · ${protectedCount} korundu`,
     trialUnknown: (count: string) => `${count} çıktının çağrı veya oturum kapsamı için yeterli kanıt yok.`,
-    trialEmpty: "Bu dosyada denemeye uygun, stdout ve çıkış durumu açık bir günlük kaydı bulunamadı.",
+    trialEmpty: "Bu kayıtta denemeye uygun bir günlük çıktısı bulunamadı.",
     busy: "Dosya seçimi veya inceleme sürüyor…",
     ready: "Learn önerileri hazır.",
     empty: "Bu dosyada aynı çağrının art arda en az üç kez başarısız olduğu bir durum bulunamadı.",
@@ -42,21 +45,24 @@ const copy = {
     },
   },
   en: {
-    body: "Choose a Codex or Claude Code session file (.jsonl). Learn looks for repeated failures on your device and shows suggestions.",
+    title: "Learn from a session",
+    body: "Choose a Codex or Claude Code session file (.jsonl) saved on your device. Learn looks for repeated failures of the same tool call and suggests what to check next.",
+    example: "For example, repeated file path errors can produce a tip to check the working directory and file path first. The review runs on this device. You choose how to use the advice.",
     action: "Choose session file",
-    experimentalTitle: "Experimental rules",
-    experimentalBody: "Review local rule candidates from a session you choose.",
-    experimentalAction: "Preview rule candidates",
-    experimentalReady: "Rule candidates are ready. Review them alongside source changes.",
+    experimentalTitle: "Rule trials (experimental)",
+    experimentalBody: "Try shortening repeated log lines and restoring the original output. The trial works only on the recording you choose and measures the result in bytes.",
+    experimentalAction: "Choose a session to test",
+    experimentalReady: "The session is ready. You can run a trial on its saved output below.",
+    experimentalEmpty: "A trial recording could not be prepared for this session.",
     trialTitle: "Repeated log lines",
-    trialBody: "The original file is available on this screen for 15 minutes. Trial results are decoded to verify exact recovery.",
-    trialAction: "Try locally",
+    trialBody: "The recording is available for trials on this screen for 15 minutes. PennyPinch checks that the original output can be restored exactly.",
+    trialAction: "Try on saved output",
     trialBusy: "Running the local trial…",
     trialExact: "The original output was recovered exactly.",
-    trialBytes: "Tested stdout",
+    trialBytes: "Tool output size",
     trialCounts: (eligible: string, compacted: string, protectedCount: string) => `${eligible} eligible outputs · ${compacted} compacted · ${protectedCount} protected`,
     trialUnknown: (count: string) => `The call or session scope of ${count} outputs has insufficient evidence.`,
-    trialEmpty: "This file has no eligible log with explicit stdout and exit status.",
+    trialEmpty: "This recording contains no log output suitable for the trial.",
     busy: "Waiting for file selection or analysis…",
     ready: "Learn suggestions are ready.",
     empty: "This file has no call that failed at least three times in a row.",
@@ -179,9 +185,11 @@ function Preview({ language, experimental = false, enabled = true }: {
     }
   }
 
+  const readyStatus = experimental ? (replayId ? text.experimentalReady : text.experimentalEmpty)
+    : result?.status === "ready" && result.suggestions.length > 0 ? text.ready : text.empty;
   const status = busy || result?.status === "busy" ? text.busy
     : !available ? text.errors.unavailable
-    : result?.status === "ready" ? (result.suggestions.length === 0 ? text.empty : experimental ? text.experimentalReady : text.ready)
+    : result?.status === "ready" ? readyStatus
     : result && result.status !== "cancelled" ? text.errors[result.status]
     : "";
   return <div className="operating-settings__section operating-settings__section--status">
@@ -189,7 +197,7 @@ function Preview({ language, experimental = false, enabled = true }: {
         {experimental ? text.experimentalAction : text.action}
       </button>
       <div className="operating-settings__status-line" role="status">{status}</div>
-      {!busy && result?.status === "ready" && result.suggestions.length > 0 && <>
+      {!experimental && !busy && result?.status === "ready" && result.suggestions.length > 0 && <>
         <h4>{result.source === "codex" ? "Codex" : "Claude Code"}</h4>
         <ul className="learn-suggestions">
           {result.suggestions.map(({ kind, failures, recoveries, first_line }) => <li key={kind}>
@@ -211,16 +219,21 @@ export function Learn({ language, experimental, preferencesReady, onExperimental
   onExperimentalChange: (enabled: boolean) => void;
 }) {
   const text = copy[language];
-  return <section className="operating-settings" aria-labelledby="learn-title">
-    <div className="operating-settings__heading"><h3 id="learn-title">Learn</h3><p>{text.body}</p></div>
+  return <details className="operating-settings__advanced learn-settings">
+    <summary>{text.title}</summary>
+    <div className="learn-settings__intro">
+      <p className="operating-settings__help">{text.body}</p>
+      <p className="operating-settings__help">{text.example}</p>
+    </div>
     <Preview language={language} />
     <section aria-labelledby="experimental-rules-title">
       <label className="setting-row">
-        <span><strong id="experimental-rules-title">{text.experimentalTitle}</strong><small>{text.experimentalBody}</small></span>
-        <input type="checkbox" aria-label={text.experimentalTitle} checked={experimental} disabled={!preferencesReady}
+        <span><strong id="experimental-rules-title">{text.experimentalTitle}</strong><small id="rule-trials-help">{text.experimentalBody}</small></span>
+        <input type="checkbox" aria-labelledby="experimental-rules-title" aria-describedby="rule-trials-help"
+          checked={experimental} disabled={!preferencesReady}
           onChange={event => onExperimentalChange(event.target.checked)} />
       </label>
       {experimental && <Preview language={language} experimental enabled={preferencesReady} />}
     </section>
-  </section>;
+  </details>;
 }

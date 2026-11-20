@@ -21,6 +21,12 @@
 
 Bu geliştirme işleri ürün görev sayımına eklenmez. DEV001/DEV002, H028–H036 ve H038 kabul edildi. Ortak H011 güvenlik ön koşulu kapandı. H037’nin dış kabulü açık.
 
+### UX002 — Settings guidance and troubleshooting
+- [x] Make savings tips, Learn, rule trials, tool output protection and tested-version records understandable in Turkish and English.
+- **Acceptance.** Everyday settings stay visible. Optional file review and advanced tool settings open on demand. A local rule trial with no repeated failures still offers its own result. Compatibility records load through the application troubleshooting disclosure. Preserve saved preferences, local-only analysis, the current engine route and evidence scope.
+- **Verification.** Check both languages and themes, keyboard access, narrow layouts, the real App with isolated IPC and the local custom-protocol build.
+- **Result.** 227 frontend tests, 480 Rust tests, 5 browser cases and 104 accessibility audits passed. The Windows preview was built from the verified inputs. [Evidence](docs/proofs/settings-guidance.json)
+
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
 - [x] Ponytail kodlama/audit/review becerileri yalnız projeye, sabit kaynak ve lisans/hash kaydıyla kurulmuş.

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "UX002 settings guidance and troubleshooting presentation",
+  "languages": [
+    "tr",
+    "en"
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "settings": {
+    "savings_tips": "Existing opt-in, local Overview tips and retained setting",
+    "learn": "Collapsed at entry, repeat failure example, existing local session file action",
+    "rule_trials": "Existing opt-in and file capture, separate ready status with empty suggestions and a usable replay, byte-based result",
+    "tool_output_protection": "Existing advanced disclosure, exact-name help linked to the input, next manual engine start",
+    "compatibility": "Applications troubleshooting disclosure, historical test scope and lazy refresh"
+  },
+  "checks": {
+    "frontend_tests": 227,
+    "rust_tests": 480,
+    "rust_opt_in_ignored": 24,
+    "browser_tests": 5,
+    "audit_count": 104,
+    "audit_violations": 0,
+    "browser_transport": "Actual App with isolated IPC fixture",
+    "native_preview_visible": true
+  },
+  "toolchain": {
+    "node": "v25.2.1",
+    "pnpm": "11.25.0",
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "windows": "10.0.19045",
+    "python": "3.14.0",
+    "architecture": "AMD64"
+  },
+  "source_inputs": 342,
+  "source_fingerprint_sha256": "82f8b8c6acb790bca9267357cf20ac597f8065cc97112e40d6fb2a688095cd64",
+  "fixture_update_after_native_build": "Compatibility fixtures now require the historical record's engine pin to match, as the application already does.",
+  "native_preview": {
+    "preview": "work/caches/cargo-target/release/headroom-desktop.exe",
+    "sha256": "c3946d5e919913a08aacb92a31c82d078adafbc156b5e307af0744ac3f97097f",
+    "runtime_manifest_sha256": "d4a02eec3185efd42c4d4f0122e35e859406dfe8af770f0c6729ba37dd4d8249",
+    "unsigned": true,
+    "installer_packaged": false
+  },
+  "preview_screenshot": "work/proofs/accessibility/ui-4fcc8192-8c67-43bd-b68c-141d87c6e18c/settings-guidance-tr-light.png"
+}

@@ -2,9 +2,11 @@
 import {runtimeSnapshot} from './runtime.mjs';
 import {activityList,activityDetail} from './activity.mjs';
 import {compatibilitySnapshot} from './compatibility.mjs';
-export type Scenario = 'data'|'empty'|'error'|'recommendations';
+export type Scenario = 'data'|'empty'|'error'|'recommendations'|'settings-guidance';
 let language='tr',theme='dark',scenario:Scenario='data',revision=1,exit='idle',generation=1;
 let showRecommendations=false,recommendationsResolved=false;
+let experimentalRules=false,ruleCapture=false;
+const ruleCaptureId='63b3217e-b756-4e55-8fc8-6adb85ce7df1';
 export function resolveRecommendations(){recommendationsResolved=true;}
 const callbacks=new Set<()=>void>();
 let compatibilityRevision=0;
@@ -52,7 +54,7 @@ export const installations=['codex','claude_code','opencode'].map((client_kind,i
 const reference={engine_version:'0.44.0',manifest_sha256:'e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe',mode:'cache',savings_profile:'coding',ccr_ttl_seconds:7200};
 const operating={close_to_tray:true,retention_days:30,protected_tools:[]};
 const at='2026-11-08T12:00:00Z';
-function preferences(id:string){return {schema_version:1,request_id:id,status:'ok',revision,state_fingerprint:'ab'.repeat(32),preferences:{language,theme,operating,...(showRecommendations?{show_recommendations:true}:{})},runtime_manifest:reference};}
+function preferences(id:string){return {schema_version:1,request_id:id,status:'ok',revision,state_fingerprint:'ab'.repeat(32),preferences:{language,theme,operating,...(showRecommendations?{show_recommendations:true}:{}),...(experimentalRules?{experimental_rules:true}:{})},runtime_manifest:reference};}
 function desktop(id:string){return {schema_version:1,request_id:id,status:'snapshot',tray_available:true,close_to_tray:true,exit_state:exit,exit_token:exit==='confirmation_required'?'4aa54830-c0af-4b4c-8b28-6343270eb55c':null};}
 function overview(period:string,id:string,includeRecommendations:boolean){
  const hasAdvice=scenario==='recommendations'&&!recommendationsResolved;
@@ -75,7 +77,7 @@ function overview(period:string,id:string,includeRecommendations:boolean){
  from_utc:period==='session'?null:'2026-11-08T00:00:00Z',to_utc:at,retention_days:30,last_event_utc:events?at:null,totals,coverage,attribution,
  series:events?[{at_utc:at,totals}]:[]},collection:{status:'recording',interval_seconds:5,last_capture_utc:at,runtime_generation:'7132bced3ce04c1b8f48d93d7b96f7ce',last_error:null,sampling_interrupted_since_start:false},recommendations};
 }
-export function reset(nextLanguage:string,nextTheme:string,nextScenario:Scenario){releaseCompatibility();releaseDiscoveryScan();releaseSessionReads();language=nextLanguage;theme=nextTheme;scenario=nextScenario;revision=1;exit='idle';generation=1;compatibilityRevision=0;showRecommendations=false;recommendationsResolved=false;sessionMode=nextScenario==='empty'?'empty':nextScenario==='error'?'error':'data';sessionCalls=[];sessionOpenCount=0;failSessionLaunch=false;activeSessionReads=0;maxSessionReads=0;}
+export function reset(nextLanguage:string,nextTheme:string,nextScenario:Scenario){releaseCompatibility();releaseDiscoveryScan();releaseSessionReads();language=nextLanguage;theme=nextTheme;scenario=nextScenario;revision=1;exit='idle';generation=1;compatibilityRevision=0;showRecommendations=false;recommendationsResolved=false;experimentalRules=false;ruleCapture=false;sessionMode=nextScenario==='empty'?'empty':nextScenario==='error'?'error':'data';sessionCalls=[];sessionOpenCount=0;failSessionLaunch=false;activeSessionReads=0;maxSessionReads=0;}
 export function isTauri(){return true;}
 export function getCurrentWebview(){return {setZoom:async()=>{}};}
 export async function listen(_event:string,callback:()=>void){callbacks.add(callback);return()=>callbacks.delete(callback);}
@@ -108,12 +110,34 @@ export async function invoke(command:string,args:any){
   if(scenario==='error')throw Error('isolated_catalog_read_failure');
   const result=compatibilitySnapshot(id);result.scan_generation=generation;result.context_fingerprint=(compatibilityRevision?'e':'d').repeat(64);
   result.installations=scenario==='empty'?[]:installations.map(i=>({installation_id:i.installation_id,client_kind:i.client_kind,surface:i.surface,version:i.version,
-   freshness:'current',config_supported:true,config_state:'not_owned',historical_evidence_ids:result.records.filter(r=>r.client_kind===i.client_kind&&r.surface===i.surface&&r.tested_versions.includes(i.version)).map(r=>r.id)}));
+   freshness:'current',config_supported:true,config_state:'not_owned',historical_evidence_ids:result.records.filter(r=>
+    r.client_kind===i.client_kind&&(r.surface===i.surface||r.surface==='cli_desktop')
+    &&r.engine_version===result.engine.pinned_version&&r.tested_versions.includes(i.version)).map(r=>r.id)}));
   return result;
  }
  if(command==='get_runtime_snapshot')return {...runtimeSnapshot(),request_id:id};
  if(command==='get_preferences')return preferences(id);
- if(command==='save_preferences'){language=args.language;theme=args.theme;if(typeof args.showRecommendations==='boolean')showRecommendations=args.showRecommendations;revision++;for(const cb of callbacks)cb();return preferences(id);}
+ if(command==='save_preferences'){
+  language=args.language;theme=args.theme;
+  if(typeof args.showRecommendations==='boolean')showRecommendations=args.showRecommendations;
+  if(typeof args.experimentalRules==='boolean')experimentalRules=args.experimentalRules;
+  revision++;for(const cb of callbacks)cb();return preferences(id);
+ }
+ if(scenario==='settings-guidance'&&command==='preview_learn'){
+  if(!args.experimentalRules)return {status:'ready',source:'codex',suggestions:[{kind:'path',failures:3,recoveries:0,first_line:12}]};
+  if(!experimentalRules)return {status:'unavailable'};
+  ruleCapture=true;
+  return {status:'ready',source:'codex',suggestions:[],replay_id:ruleCaptureId};
+ }
+ if(scenario==='settings-guidance'&&command==='replay_rules'){
+  if(!experimentalRules||!ruleCapture||args.replayId!==ruleCaptureId)return {status:'expired'};
+  return {status:'trial_ready',report:{rule:'repeated_log_lines_v1',checked:1,eligible:1,protected:0,ambiguous:0,
+    compacted:1,before_bytes:300,after_bytes:120,round_trip_exact:true}};
+ }
+ if(scenario==='settings-guidance'&&command==='release_rule_preview'&&args.replayId===ruleCaptureId){
+  ruleCapture=false;
+  return;
+ }
  if(command==='get_desktop_state')return desktop(id);
  if(command==='plugin:window|is_visible')return args.label==='main';
  if(command==='request_desktop_exit'||command==='cancel_desktop_exit'){exit=command==='request_desktop_exit'?'confirmation_required':'idle';return desktop(id);}

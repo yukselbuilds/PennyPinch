@@ -98,12 +98,16 @@ test('compatibility: scoped records, responsive details, stale replies and conte
   for(const scenario of ['data','empty','error']){
    await setup(page,language,theme,scenario);await page.setViewportSize({width:1024,height:720});
    await page.locator('.primary-nav [data-screen="applications"]').click();await expect(page.locator('.applications-footer')).not.toContainText(/Checking local|kontrol ediliyor/);
-   await page.locator('.compatibility > summary').click();
-   const panel=page.locator('.compatibility');await expect(panel.locator('button')).toBeEnabled();
+   const panel=page.locator('.compatibility');
+   await expect(panel.locator('.compatibility__records')).toHaveCount(0);
+   const summary=panel.locator(':scope > summary');
+   await expect(summary).toHaveText(language==='tr'?'Test edilen sürümler ve bağlantılar':'Tested versions and connections');
+   await summary.press('Enter');
+   await expect(panel.locator('button')).toBeEnabled();
    if(scenario==='error')await expect(panel.locator('.compatibility__notice')).toContainText(/could not|okunamadı/);
    else{
     await expect(panel.locator('.compatibility__records > li')).toHaveCount(catalogSize);
-    await expect(panel).toContainText(/does not verify|doğrulandığı anlamına gelmez/);
+    await expect(panel).toContainText(/current connection|güncel bağlantı/);
     if(scenario==='empty')await expect(panel).toContainText(/No installations|kurulum yok/);
     if(scenario==='data'){
      await panel.locator('.compatibility__records details > summary').first().click();await audit(page,`${language}-${theme}-catalog-detail`);
@@ -137,9 +141,9 @@ test('compatibility: scoped records, responsive details, stale replies and conte
  expect(violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>({label:v.label,id:v.id}))).toEqual([]);
 });
 
-test('local recommendations respect the preference and fresh observations', async ({page})=>{
+test('savings tips respect the preference and fresh observations', async ({page})=>{
  for(const language of ['tr','en'])for(const theme of ['dark','light']){
-  const title=language==='tr'?'Yerel öneriler':'Local recommendations';
+  const title=language==='tr'?'Tasarruf ipuçları':'Savings tips';
   const nav=(screen:string)=>page.locator(`.primary-nav [data-screen="${screen}"]`);
   await page.setViewportSize({width:683,height:720});
   await setup(page,language,theme,'recommendations');
@@ -177,8 +181,66 @@ test('local recommendations respect the preference and fresh observations', asyn
  expect(violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>({label:v.label,id:v.id}))).toEqual([]);
 });
 
+test('settings guidance keeps optional tools collapsed and separates local trials from advice', async ({page})=>{
+ await page.addInitScript(()=>{
+  // Exercise the Windows-only file controls with the isolated IPC fixture on every host.
+  Object.defineProperty(navigator,'userAgent',{get:()=> 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'});
+ });
+ for(const language of ['tr','en'])for(const theme of ['dark','light']){
+  const tr=language==='tr';
+  const nav=(screen:string)=>page.locator(`.primary-nav [data-screen="${screen}"]`);
+  await page.setViewportSize({width:683,height:720});
+  await setup(page,language,theme,'settings-guidance');
+  await nav('settings').click();
+  const learn=page.locator('.learn-settings');
+  const learnSummary=learn.locator(':scope > summary');
+  const choose=learn.getByRole('button',{name:tr?'Oturum dosyası seç':'Choose session file',exact:true});
+  const trials=learn.getByRole('checkbox',{name:tr?'Kural denemeleri (deneysel)':'Rule trials (experimental)',exact:true});
+  const chooseTrial=learn.getByRole('button',{name:tr?'Deneme için oturum seç':'Choose a session to test',exact:true});
+  await expect(learnSummary).toHaveText(tr?'Oturumdan öğren (Learn)':'Learn from a session');
+  await expect(choose).toBeHidden();
+  await learnSummary.press('Enter');
+  await expect(learn).toContainText(tr?'dosya yolu':'file path');
+  await expect(trials).not.toBeChecked();
+  await expect(chooseTrial).toHaveCount(0);
+  if(tr&&theme==='light'){
+   await learnSummary.evaluate(element=>element.scrollIntoView({block:'start'}));
+   await page.screenshot({path:path.join(run,'settings-guidance-tr-light.png')});
+  }
+  await choose.click();
+  await expect(learn).toContainText(tr?'3 başarısız çağrı':'3 failed calls');
+  await trials.check();
+  await chooseTrial.click();
+  await expect(learn).toContainText(tr?'Oturum hazır.':'The session is ready.');
+  await expect(learn).not.toContainText(tr?'art arda en az üç kez başarısız':'failed at least three times in a row');
+  await learn.getByRole('button',{name:tr?'Kayıtlı çıktıda dene':'Try on saved output',exact:true}).click();
+  await expect(learn).toContainText(tr?'300 → 120 bayt':'300 → 120 bytes');
+  await learnSummary.press('Enter');
+  await expect(trials).toBeHidden();
+  await learnSummary.press('Enter');
+  await expect(trials).toBeChecked();
+  await expect(learn).toContainText(tr?'300 → 120 bayt':'300 → 120 bytes');
+
+  const protection=page.locator('details').filter({has:page.locator('#protected-tools')});
+  const tools=page.getByRole('textbox',{name:tr?'Korunacak araç adları':'Tool names to protect',exact:true});
+  await expect(tools).toBeHidden();
+  await protection.locator(':scope > summary').press('Enter');
+  await expect(tools).toBeVisible();
+  await expect(tools).toHaveAccessibleDescription(/sıkıştırmadan|without compression/);
+  await expect(tools).toHaveAccessibleDescription(/elle|manually/);
+  await audit(page,`${language}-${theme}-settings-guidance`);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)).toBe(false);
+  await nav('overview').click();await nav('settings').click();
+  await learnSummary.press('Enter');
+  await expect(trials).toBeChecked();
+  await trials.uncheck();
+  await expect(chooseTrial).toHaveCount(0);
+ }
+ expect(violations.filter(v=>['critical','serious'].includes(v.impact))).toEqual([]);
+});
+
 test.afterAll(async()=>{
  const after=fingerprint();const sorted=[...timings].sort((a,b)=>a-b),p95=sorted[Math.max(0,Math.ceil(sorted.length*.95)-1)]??null;
- fs.writeFileSync(path.join(run,'result.json'),JSON.stringify({passed:outcomes.length===4&&checks.length===100&&outcomes.every(v=>v.status===v.expected)&&violations.every(v=>!['critical','serious'].includes(v.impact))&&JSON.stringify(before)===JSON.stringify(after),outcomes,checks,violations,timing:{samples:timings.length,p95_ms:p95,threshold_ms:250,scope:'browser click event to second animation frame; excludes test-driver waiting'},before,after,environment:{node:process.version,platform:process.platform,scope:'real App, isolated transport; viewport equivalents are not real OS DPI'}},null,2)+'\n');
+ fs.writeFileSync(path.join(run,'result.json'),JSON.stringify({passed:outcomes.length===5&&checks.length===104&&outcomes.every(v=>v.status===v.expected)&&violations.every(v=>!['critical','serious'].includes(v.impact))&&JSON.stringify(before)===JSON.stringify(after),outcomes,checks,violations,timing:{samples:timings.length,p95_ms:p95,threshold_ms:250,scope:'browser click event to second animation frame; excludes test-driver waiting'},before,after,environment:{node:process.version,platform:process.platform,scope:'real App, isolated transport; viewport equivalents are not real OS DPI'}},null,2)+'\n');
  console.log(JSON.stringify({run:path.relative(root,run),audits:checks.length,violations:violations.length,navigation_p95_ms:p95}));
 });

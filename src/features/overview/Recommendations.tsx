@@ -19,7 +19,7 @@ type Props = {
 
 const copy = {
   tr: {
-    heading: "Yerel öneriler",
+    heading: "Tasarruf ipuçları",
     introduction: "Son ölçümlerde dikkat çeken noktalar.",
     periods: { session: "Bu oturum", today: "Bugün", seven_days: "Son 7 gün" },
     observedAt: "Gözlem zamanı",
@@ -46,7 +46,7 @@ const copy = {
     applications: "Uygulamaları denetle",
   },
   en: {
-    heading: "Local recommendations",
+    heading: "Savings tips",
     introduction: "Signals observed in recent measurements.",
     periods: { session: "This session", today: "Today", seven_days: "Last 7 days" },
     observedAt: "Observed",

@@ -508,6 +508,7 @@ function renderSettings(
 ) {
   const preferencesBusy = preferencesStatus === "loading" || preferencesStatus === "saving";
   const preferencesUnavailable = preferencesBusy || preferencesStatus === "error";
+  const tipsTitle = language === "tr" ? "Tasarruf ipuçları" : "Savings tips";
   return <section className="settings-card">
     <div className="settings-intro"><span className="settings-icon"><Icon name="settings" /></span><div><h2>{labels.settingsTitle}</h2><p>{labels.settingsBody}</p></div></div>
     <label className="setting-row"><span><strong>{labels.theme}</strong><small>{labels.systemTheme}</small></span>
@@ -523,9 +524,11 @@ function renderSettings(
       </select>
     </label>
     <label className="setting-row">
-      <span><strong>{language === "tr" ? "Yerel öneriler" : "Local recommendations"}</strong>
-        <small>{language === "tr" ? "Yeterli yerel ölçüm olduğunda Genel bakış’ta göster." : "Show on Overview when local measurements support a recommendation."}</small></span>
-      <input type="checkbox" aria-label={language === "tr" ? "Yerel öneriler" : "Local recommendations"}
+      <span><strong>{tipsTitle}</strong>
+        <small id="savings-tips-help">{language === "tr"
+          ? "Girdiler arttığında veya sıkıştırma yavaşladığında Genel bakış’ta yerel ölçümlere dayalı ipuçları gösterir. Ayar değişikliklerini sen yaparsın."
+          : "Show tips in Overview when local measurements flag things like more input tokens or slower compression. You choose what to change."}</small></span>
+      <input type="checkbox" aria-label={tipsTitle} aria-describedby="savings-tips-help"
         checked={preferences.show_recommendations} disabled={preferencesUnavailable || preferencesStatus === "session_only"}
         onChange={event => onPreferencesChange({ show_recommendations: event.target.checked })} />
     </label>
@@ -535,10 +538,10 @@ function renderSettings(
       <span>{preferencesErrorMessage ?? labels.preferencesLoadFailed}</span>
       <button className="text-button" disabled={preferencesBusy} onClick={onPreferencesRetry}>{labels.preferencesRetry}</button>
     </div>}
-    <Settings language={language} preferences={preferences.operating} status={preferencesStatus} onSave={onOperatingSave} onBusyChange={onOperatingBusy} />
     <Learn language={language} experimental={preferences.experimental_rules}
       preferencesReady={preferencesStatus === "loaded" || preferencesStatus === "saved"}
       onExperimentalChange={enabled => onPreferencesChange({ experimental_rules: enabled })} />
+    <Settings language={language} preferences={preferences.operating} status={preferencesStatus} onSave={onOperatingSave} onBusyChange={onOperatingBusy} />
     <Updates language={language} runtimeKey={runtimeKey} />
   </section>;
 }
