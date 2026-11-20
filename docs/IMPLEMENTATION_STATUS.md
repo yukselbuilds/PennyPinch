@@ -1,5 +1,9 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
+## 20 Kasım — H042 yayın öncesi Git geçmişi incelemesi
+
+Ana ajan yayın ve kaynak güveni nedeniyle incelemeyi üstlendi. GitHub ana dalıyla eşleşen `fadf83a` üzerinde 266 commit ve 28 Gitleaks eşleşmesi incelendi. Özetler ilgili Git içeriğine ve sabit tokenizer kaynaklarına bağlandı. Test değerleri ve açık imza anahtarı kimliği doğrulandı. Açık eşleşme 0. **45/54 ana görev tamamlandı.** Güncel Windows kurulum adayına eşlenen üçüncü taraf bildirim paketi, üretim imza anahtarı ve GitHub Pages teslimi açık. [Kanıt](proofs/repository-history-review.json) · [Görev listesi](../TASKS.md)
+
 ## 19 Kasım — H041 gerçek yerel modelde eşlenmiş log kıyası
 
 Ana ajan token sayacı eşlemesi ve ölçüm sınırını üstlendi. Windows 10’da doğrudan ve Headroom 0.44.0 üzerinden aynı dört log aynı yerel modele gönderildi. İki doğru yanıtın sağlayıcı sayaçları eşit kaldı. Her kolda 6.647 girdi ve 10 çıktı, sıfır cache okuması. 67 girdi eşleşti ve sahipli süreçler kapandı. İş yükü başına kabul ve gerçek fatura karşılaştırması açık. **45/54 ana görev tamamlandı.** [Kıyas](validation/optimization-benefit.md#19-kasım--gerçek-yerel-modelde-eşlenmiş-chat-completions-kıyası) · [Görev listesi](../TASKS.md)

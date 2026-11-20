@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "task": "H042-f",
+  "date": "2026-11-20",
+  "result": "all_scanner_findings_classified",
+  "scope": "stored history reachable from local Git refs and the verified origin/main revision",
+  "head_revision": "fadf83acd59a9c1f109a68fde0d1416a1c152c8e",
+  "commits_scanned": 266,
+  "refs_before": [
+    "refs/codex/turn-diffs/captures/1795165011192/4b73e289-f331-43d4-a07d-2bed7e07efa2/base 9f71305b547cbe9541e55dca05055c4dbc5413d4",
+    "refs/codex/turn-diffs/checkpoints/0bcba8374d416dd23a48d12ff0bce27b/7db0594ce0de8e3e0a8b0386695cc907/1794987955967/f132bcd3-2ac4-4e41-9d91-c7ffc7c52009 9ead66c32a54e115b812de4cb4aaa184dac7ac40",
+    "refs/codex/turn-diffs/checkpoints/917f0694b16eac5967afd54b30bb1ac3/f51c6014d2e4cf41dd7e88eb76c09184/1794909365556/2c2f111c-f40f-4d37-a61e-4ae7fc62480c b09f924fee0baa1ae5b0d9085aa53a6bfdce537f",
+    "refs/codex/turn-diffs/checkpoints/f25b07fa58c78feb00fd3177457ae93c/ca4ed496ab9c2085dfc310657ad01086/1795113116682/748fe8db-9f2a-40bd-80ab-a1cc0f3cc5e3 9f71305b547cbe9541e55dca05055c4dbc5413d4",
+    "refs/codex/turn-diffs/checkpoints/fce23da4ba67c1f23fb298658298f9f6/062d73695b6217c9c577b23c341294e7/1795027016198/ce294a1c-3426-4e7a-9dfb-8cb7ee56d0db 1970dfd5ad9cfae9712e92dc5e7ab0fbe60850b5",
+    "refs/heads/main fadf83acd59a9c1f109a68fde0d1416a1c152c8e",
+    "refs/remotes/origin/HEAD fadf83acd59a9c1f109a68fde0d1416a1c152c8e",
+    "refs/remotes/origin/main fadf83acd59a9c1f109a68fde0d1416a1c152c8e"
+  ],
+  "refs_after": [
+    "refs/codex/turn-diffs/captures/1795165011192/4b73e289-f331-43d4-a07d-2bed7e07efa2/base 9f71305b547cbe9541e55dca05055c4dbc5413d4",
+    "refs/codex/turn-diffs/checkpoints/0bcba8374d416dd23a48d12ff0bce27b/7db0594ce0de8e3e0a8b0386695cc907/1794987955967/f132bcd3-2ac4-4e41-9d91-c7ffc7c52009 9ead66c32a54e115b812de4cb4aaa184dac7ac40",
+    "refs/codex/turn-diffs/checkpoints/917f0694b16eac5967afd54b30bb1ac3/f51c6014d2e4cf41dd7e88eb76c09184/1794909365556/2c2f111c-f40f-4d37-a61e-4ae7fc62480c b09f924fee0baa1ae5b0d9085aa53a6bfdce537f",
+    "refs/codex/turn-diffs/checkpoints/f25b07fa58c78feb00fd3177457ae93c/ca4ed496ab9c2085dfc310657ad01086/1795113116682/748fe8db-9f2a-40bd-80ab-a1cc0f3cc5e3 9f71305b547cbe9541e55dca05055c4dbc5413d4",
+    "refs/codex/turn-diffs/checkpoints/fce23da4ba67c1f23fb298658298f9f6/062d73695b6217c9c577b23c341294e7/1795027016198/ce294a1c-3426-4e7a-9dfb-8cb7ee56d0db 1970dfd5ad9cfae9712e92dc5e7ab0fbe60850b5",
+    "refs/heads/main fadf83acd59a9c1f109a68fde0d1416a1c152c8e",
+    "refs/remotes/origin/HEAD fadf83acd59a9c1f109a68fde0d1416a1c152c8e",
+    "refs/remotes/origin/main fadf83acd59a9c1f109a68fde0d1416a1c152c8e"
+  ],
+  "scanner": {
+    "name": "Gitleaks",
+    "version": "8.30.1",
+    "sha256": "17157e2ee8b76fc8b1d8bee607a250e34b8a8023c8bc81822d4b5ee4d78fcb7c",
+    "exit_code": 8
+  },
+  "fingerprints_matched": true,
+  "findings": 28,
+  "counts": {
+    "fixture_public_signing_key_id": 1,
+    "recorded_source_sha256": 19,
+    "retrieval_fixture_id": 1,
+    "macos_fixture_control_value": 1,
+    "desktop_exit_fixture_uuid": 1,
+    "desktop_request_fixture_uuid": 1,
+    "public_tokenizer_sha256": 4
+  },
+  "unresolved": 0,
+  "source_checks": [
+    "Proof script digests were recomputed from historical Git blobs.",
+    "Tokenizer digests matched the pinned public tokenizer source.",
+    "The test signing key identifier was decoded from the historical Minisign public key.",
+    "Synthetic retrieval, control and desktop UUIDs matched their historical test declarations."
+  ],
+  "raw_values_retained": false,
+  "local_evidence_path": "work/release-preflight/history-review-final-fadf83a.json"
+}
