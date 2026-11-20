@@ -31,7 +31,6 @@ import { useOverviewConnections, useOverviewMetrics } from "./features/overview/
 import type { MetricPeriod } from "./lib/metrics";
 import type { RuntimeAction } from "./lib/optimization";
 import { windowZoomClient, type WindowScale } from "./lib/windowZoom";
-import brandIcon from "../src-tauri/icons/icon.png";
 import { Icon } from "./components/Icon";
 import { ProblemNotice } from "./components/ProblemNotice";
 import { DesktopLifecycle } from "./components/DesktopLifecycle";
@@ -454,7 +453,7 @@ export default function App() {
     <a className="skip-navigation" href="#main-content" onClick={() => document.getElementById("main-content")?.focus()}>{language === "tr" ? "Ana içeriğe geç" : "Skip to main content"}</a>
     <aside className="sidebar">
       <a className="brand" href="#overview" aria-disabled={applicationsBusy || pending !== null} onClick={(event) => { event.preventDefault(); navigate("overview"); }} aria-label={language === "tr" ? "PennyPinch genel bakış" : "PennyPinch overview"}>
-        <img className="brand-mark" src={brandIcon} width={32} height={32} alt="" />
+        <span className="brand-mark" aria-hidden="true" />
         <span>PennyPinch</span>
       </a>
       <nav className="primary-nav" aria-label={language === "tr" ? "Ana gezinme" : "Primary navigation"}>

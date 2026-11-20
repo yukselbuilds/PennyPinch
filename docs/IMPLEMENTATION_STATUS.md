@@ -1,5 +1,9 @@
 # PennyPinch implementation status
 
+## 20 November — PennyPinch brand kit
+
+UX003 is complete. The lead agent integrated the supplied kit into the sidebar, favicon, native Windows icons and README. About keeps the original artwork. The full kit is available locally under `work/branding/`. The Windows 10 debug build includes all six icon sizes. The browser checks verified both themes with isolated IPC. Installer packaging remains part of the release work on H042. [Evidence](proofs/pennypinch-brand-kit.json) · [Task list](../TASKS.md)
+
 ## 20 November — Settings guidance and troubleshooting
 
 UX002 is complete. The lead agent implemented and verified this connected UI slice. Savings tips stay visible. Learn opens on demand and explains its local review with an example. Experimental trials show their own file-based result in bytes, and protected tool guidance describes matching names and application timing. Applications retains the tested versions and connections disclosure for troubleshooting. 227 frontend and 480 Rust tests passed. The real App with isolated IPC passed 5 browser cases and 104 accessibility audits in Turkish and English. The Windows preview was rebuilt without packaging a new installer. H042 remains open. [Evidence](proofs/settings-guidance.json) · [Task list](../TASKS.md)

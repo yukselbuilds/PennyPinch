@@ -39,7 +39,10 @@ test('five screens: names, contrast, empty/error/data and responsive actions',as
   await setup(page,language,theme,scenario);
   const brand=page.getByRole('link',{name:language==='tr'?'PennyPinch genel bakış':'PennyPinch overview',exact:true});
   await expect(brand).toBeVisible();
-  await expect(brand.locator('img')).toHaveJSProperty('naturalWidth',512);
+  const image = await brand.locator('.brand-mark').evaluate(mark => getComputedStyle(mark).backgroundImage);
+  const encoded = image.match(/^url\("data:image\/png;base64,([^"]+)"\)$/)?.[1];
+  const applied = encoded ? crypto.createHash('sha256').update(Buffer.from(encoded, 'base64')).digest('hex') : null;
+  expect(applied).toBe(before[`src/assets/pennypinch-symbol-${theme}.png`]);
   for(const screen of ['overview','sessions','applications','activity','settings']){
    await page.evaluate(()=>{(window as any).__navPaint=null;document.querySelector('.primary-nav')!.addEventListener('click',()=>{const start=performance.now();requestAnimationFrame(()=>requestAnimationFrame(()=>{(window as any).__navPaint=performance.now()-start;}));},{once:true,capture:true});});
    const navItem=page.locator(`.primary-nav [data-screen="${screen}"]`);

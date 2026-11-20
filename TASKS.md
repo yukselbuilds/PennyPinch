@@ -27,6 +27,11 @@ Bu geliştirme işleri ürün görev sayımına eklenmez. DEV001/DEV002, H028–
 - **Verification.** Check both languages and themes, keyboard access, narrow layouts, the real App with isolated IPC and the local custom-protocol build.
 - **Result.** 227 frontend tests, 480 Rust tests, 5 browser cases and 104 accessibility audits passed. The Windows preview was built from the verified inputs. [Evidence](docs/proofs/settings-guidance.json)
 
+### UX003 — PennyPinch brand kit
+- [x] Keep a local copy of the supplied kit and apply its assets to the sidebar in both themes, favicon, Windows icons and README.
+- **Acceptance.** Use the correct asset for each surface, retain the original About artwork and verify the new icons in the Windows executable.
+- **Result.** Windows 10 build, 227 frontend tests, 480 Rust tests and 104 browser accessibility audits passed. [Evidence](docs/proofs/pennypinch-brand-kit.json)
+
 ### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
 - [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
 - [x] Ponytail kodlama/audit/review becerileri yalnız projeye, sabit kaynak ve lisans/hash kaydıyla kurulmuş.

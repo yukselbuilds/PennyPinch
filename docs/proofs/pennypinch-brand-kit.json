@@ -1,0 +1,55 @@
+{
+  "task": "UX003",
+  "status": "pass",
+  "archive": {
+    "filename": "PennyPinch-Exact-Corporate-Brand-Kit.zip",
+    "sha256": "226fc55b62e43c58472b490b03e4480e2fabefa07a4a3b498df19db77dda5027",
+    "files": 40
+  },
+  "selected_assets": {
+    "src/assets/pennypinch-symbol-dark.png": "792c1d181f2cce6381daf33ba8fcd23bb0a7a86cef815389089caf0947f90dad",
+    "src/assets/pennypinch-symbol-light.png": "9ec7b452ff1425e5f190ac1d5aefcab58d341380d8945559dfba12e76c1bf48c",
+    "src/assets/pennypinch-favicon.png": "00d8e0c3ab813a48a8de8b9c56fc234690435cf2d2a97d650017d90aef852d9e",
+    "docs/branding/pennypinch-horizontal-dark.png": "6f394b516c9f2a0a4039658cd5633489e2079f578cfb54447e8d81ff971d4a6c",
+    "docs/branding/pennypinch-horizontal-light.png": "4f7454240d00bb66758e0f6dbacbd0babc2eb6d7f8da063dd9a0846291490292",
+    "src-tauri/icons/icon.png": "03fd49bd5a1ee40315ebb7b3ccc2d8a77b3cffb2cc473032ce2abe6c333cf302",
+    "src-tauri/icons/icon.ico": "e9b4a6375daeee26ce1fe87403f900144ec191a6a4c38606d23fe3f97448413b"
+  },
+  "original_about_artwork_sha256": "0337e1de88728b1db7bef3357e8abee9953e9964d7c4403175d2c63ccab8901f",
+  "checks": {
+    "frontend_tests": 227,
+    "rust_tests": 480,
+    "rust_opt_in_ignored": 24,
+    "browser_cases": 5,
+    "accessibility_audits": 104,
+    "audit_violations": 0,
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "languages": [
+      "tr",
+      "en"
+    ],
+    "favicon_and_readme_assets": "verified",
+    "windows_executable_icon_sizes_px": [
+      16,
+      32,
+      48,
+      64,
+      128,
+      256
+    ]
+  },
+  "scope": "Windows 10 x64 development build. The actual App was rendered with isolated IPC. Fresh installer and release acceptance stay open.",
+  "toolchain": {
+    "node": "v25.2.1",
+    "pnpm": "11.25.0",
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "windows": "10.0.19045",
+    "python": "3.14.0",
+    "architecture": "AMD64"
+  },
+  "test_and_build_input_fingerprint_sha256": "21ddee2daf253201ad435df96809fb033125ef2edba4fc78a5002908dcf482ed"
+}

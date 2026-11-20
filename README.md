@@ -1,6 +1,9 @@
 # PennyPinch
 
-<img src="src/assets/pennypinch-logo.png" alt="PennyPinch logo" width="176" height="176">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/branding/pennypinch-horizontal-dark.png">
+  <img src="docs/branding/pennypinch-horizontal-light.png" alt="PennyPinch logo" width="320">
+</picture>
 
 PennyPinch is a desktop app for local context optimization and token tracking across coding agents. The project is still under development; its current evidence is local development evidence, not a published or clean-install release.
 

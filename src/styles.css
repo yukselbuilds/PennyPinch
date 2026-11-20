@@ -56,7 +56,8 @@ button:disabled { cursor: not-allowed; }
 .app-shell { min-height: 100vh; display: grid; grid-template-columns: 200px minmax(0, 1fr); background: var(--canvas); }
 .sidebar { background: var(--sidebar); border-right: 1px solid var(--border); padding: 28px 14px 25px; display: flex; flex-direction: column; min-height: 100vh; }
 .brand { display: flex; align-items: center; gap: 10px; margin: 0 0 43px 7px; color: var(--text); text-decoration: none; font-size: 23px; font-weight: 600; letter-spacing: -.9px; }
-.brand-mark { display: block; width: 32px; height: 32px; flex: 0 0 auto; }
+.brand-mark { display: block; width: 32px; height: 32px; flex: 0 0 auto; background: url("./assets/pennypinch-symbol-dark.png") center / contain no-repeat; }
+:root[data-theme="light"] .brand-mark { background-image: url("./assets/pennypinch-symbol-light.png"); }
 .ui-icon { display: inline-block; flex: 0 0 auto; vertical-align: middle; }
 .sidebar-label, .eyebrow, .panel-kicker, .build-label, .local-mark { font-size: 12px; font-weight: 500; letter-spacing: 0; }
 .primary-nav { display: grid; gap: 6px; }
