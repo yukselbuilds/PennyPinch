@@ -1,0 +1,71 @@
+{
+  "task": "H042-k2d",
+  "status": "pass",
+  "base_commit": "6b6bc36aa322c9fb2d039860558717e66fbc77da",
+  "checked": {
+    "documents": 6,
+    "headings": 23,
+    "legacy_heading_aliases": 23,
+    "inbound_heading_references": 0,
+    "link_destinations_preserved": 6,
+    "tracked_local_targets": 4,
+    "inline_code_spans_preserved": 29
+  },
+  "documents": {
+    "docs/decisions/010-metrics-normalization.md": {
+      "original_sha256": "7ec7dcb699f90a7235b30a876025df94b59abbe681f1bbb021d17d930ead575d",
+      "translated_sha256": "20d1fab28b0e9dbddeb5463fd11acb46eb53859929547be87c79bfe21124770b",
+      "candidate_sha256": "bb71f8a14a3b4b0f09c64c2b457012a741a4599627cdc78a6aac16d881c408e5"
+    },
+    "docs/decisions/012-metrics-store.md": {
+      "original_sha256": "3af59638ed381c77f743b022ba4059eaf21f2c0866acfc59bfd8de63b038b280",
+      "translated_sha256": "053e5485ddc48cfcf2ba1fa3e94889d80b253eb738e58cfac14a14654a9b4e15",
+      "candidate_sha256": "e2d1562ba27e4861c014c8e45900c05ecdcd2d25b5dcc7041bd5540db1a1942e"
+    },
+    "docs/decisions/013-live-overview.md": {
+      "original_sha256": "e66b9ec883a888ac4ad810f2860f0f1bd01502455f6fe2db38510db1179011ea",
+      "translated_sha256": "7082dbe3eca97cdddd85b5af28a61dbb6534c3d8ab59cf5e63a8e803217b1993",
+      "candidate_sha256": "c8338ed2430e1907c52b8e29a90b030d781191b47f15cef260022fef02a2ad06"
+    },
+    "docs/decisions/014-attribution.md": {
+      "original_sha256": "880cecdbbd19af7d060ad6456e443df61513fd2aef5974261c656db49666dfc5",
+      "translated_sha256": "a5e6722cbd3273e34ad29a3e3c33d63dfe5825e677869489450cdce0b6594bb9",
+      "candidate_sha256": "34495af6ba516d4c55a8b1f4d700321cc6f848400e921aef36609315c5290fa6"
+    },
+    "docs/decisions/015-activity.md": {
+      "original_sha256": "14c48a0faea09a2c944cba75de16b1ac0e4660531c682a0379b51718d04d2db6",
+      "translated_sha256": "623d580faaaf3fb4d8901fe7f4c684b2b170fbb7b5ee4b422c601023c2ef54fd",
+      "candidate_sha256": "aa381fc3d126d64ee424858e9d0f12129c5227b076b667e6fd174110abba8367"
+    },
+    "docs/decisions/029-local-recommendations.md": {
+      "original_sha256": "21c8bf7993c1c11d081a2615dfb3a873e4814d11bbc328da3bac05b376c7b10c",
+      "translated_sha256": "a5091138b359c7e856e369562b42ee8c169f68bb9ffeeec36fd4d819b138dda9",
+      "candidate_sha256": "4a14bec18c1157b722e71c4be3218c3fb93fb6148a7f691d12b4336a86ad997e"
+    }
+  },
+  "source_references_sha256": {
+    "docs/proofs/tray-lifecycle.md": "ee107a7617e8b83378cf89de29846bdb997a85b6439231812774068528cfc777"
+  },
+  "date": "2026-11-20",
+  "scope": "English measurement, attribution and savings decision records",
+  "implementation": "Single GPT-6 Luna xhigh worker, with technical and editorial verification by the lead agent",
+  "review": "Lead agent, technical contract review and local Markdown validation",
+  "technical_sources": {
+    "src-tauri/src/metrics/normalize.rs": "3a5eb6c3326539a484ecd4a7fb816bd9c217e6c187e8eec52f1e850c68229012",
+    "src-tauri/src/metrics/store.rs": "13a49d4c95c17c48e33632f5d4fd2561dc0e27b4b0e161b89c00a9799e30ba52",
+    "src-tauri/src/metrics/query.rs": "4f52f62aae700284405f1594585423a69e8904f646ad79789ec8971e6c360422",
+    "src-tauri/src/metrics/collector.rs": "a33229912a6a3fefd2ea4fe225e443ab6f57ab31da592c5bea684561d7e62b0a",
+    "src-tauri/src/metrics/attribution.rs": "9a8b06192f7e307d883312148344818c762d3e94a80f0d1f76ee6966820e1890",
+    "src-tauri/src/metrics/activity.rs": "c630c17372fc65b19e57226c799db4279f4e4fd9e9a6aa0faec7f3df82555364",
+    "src-tauri/src/insights/rules.rs": "369f163bfab590b0f6faaeb7d7cabf27bedd8617744d49d93b531be81b52b0bc",
+    "src/features/overview/Recommendations.tsx": "a6254d32e37365b8c5bcc404ddb6cf05e351216222cb3a3dec715b27435280f4"
+  },
+  "toolchain": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0"
+  },
+  "main_tasks": {
+    "completed": 45,
+    "total": 54
+  }
+}

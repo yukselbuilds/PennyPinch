@@ -1,27 +1,35 @@
-# 010 — İçeriksiz sayaç normalizasyonu
+<a name="010--içeriksiz-sayaç-normalizasyonu"></a>
 
-3 Kasım 2026. H023 uygulayıcısı ana ajan; token ölçümünün anlamı ve köken güveni uygulama kararlarıdır. Temel: H012-a, `docs/contracts.md` ve hash'leri eşleşen pinned 0.41.0 kaynak incelemesi. H012'nin diğer ürün kabiliyetleri bu kararla tamamlanmaz.
+# 010 — Content-free counter normalization
 
-## Sözleşme
+3 November 2026. The lead agent implements H023 and owns decisions about token-measurement meaning and provenance trust. The basis is H012-a, `docs/contracts.md`, and review of pinned 0.41.0 sources whose hashes match. This decision does not complete H012's other product capabilities.
 
-- Normalleştirici saf ve sınırlıdır; dosya/HTTP/model isteği veya kalıcı state yönetmez. H024 depolama ve dönemler, H025 ekran bağlantısı, H026 model/ajan atamasıdır. Bu görev mevcut uygulamanın/diğer sohbetlerin süreç veya rotalarını değiştirmez.
-- Önce/sonra sayısı ayrı `Reading` içinde nullable token, sayaç türü, tokenizer kimliği ve kapsanan bileşeni taşır. Kimlikli aynı temel ve aynı bileşen olmadan fark/yüzde türetilmez. Kanıtlı çiftte `S=B−A`; `B>0` için `100×S/B`, aksi halde yüzde null. Gerçek sıfır, eksik sayı ve negatif fark ayrı kalır.
-- Başlıca girdi metriğine yalnız Headroom'un mesaj veya bütün girdi çiftleri adaydır. Tool schema, novel, RTK, cache ve output ayrı kalır; sağlayıcı usage alanları girdi çiftine eklenmez. Bütün girdiyi ölçmeyen mesaj çifti bütün girdi diye etiketlenmez. Normalleştirici farklı temelleri bir toplamda birleştirmez; ağırlıklı dönem toplamı H024'ündür.
-- Proxy köken anahtarı runtime nesli ve istek kimliğinden oluşturulur. Kimlikler düz metin tutulmaz, SHA-256 anahtara çevrilir. `origin_id` aynı isteğin ölçümlerini bağlar; `event_id` optimizer/bileşen slotunu da taşır, açık sabit etiketler kullanır. Mesaj/bütün girdi slotu ortaktır; örtüşen çiftler birlikte eklenmek yerine çatışır. MCP ancak güvenilir toplayıcının açık proxy köken eşlemesiyle aynı event'e bağlanabilir; aynı model veya benzer ID eşleme sayılmaz. Tam aynı tekrar bir event, çelişen tekrar bilinmeyen/conflict olur; belirsiz temeli/zamanı korunmaz. Başka runtime neslindeki aynı ID başka event'tir. Yeniden polling/kalıcı upsert H024'te bu anahtarları kullanır.
-- UTC zaman doğrulanır. Yanlış kimlik/sayı/zaman sabit hata üretir; payload hata metnine kopyalanmaz. Token sayıları JSON/JS güvenli tamsayı aralığında, batch en çok10.000 kayıt, ham snapshot en çok2MiB'dir. Eksik zamanlı event dönem metriğine aday olmaz.
+<a name="sözleşme"></a>
 
-## 0.41.0 adaptörü
+## Contract
 
-Motorun `recent_requests` alanı varsa onu, yoksa `request_logs` alanını projekte eder; ikisini birlikte saymaz. Yalnız istek ID/zaman ve açık sayısal alanlar alınır. İçerik, raw ID, auth, modelden ajan çıkarımı, URL/path, serbest tags, dönüşüm detayı ve lifetime toplamı taşınmaz. Snapshot toplamları event toplamına eklenmez.
+- The normalizer is pure and bounded. It does not manage files, HTTP/model requests, or persistent state. H024 covers storage and periods, H025 screen integration, and H026 model/agent attribution. This task does not change processes or routes for the current app or other chats.
+- Before/after values are carried in separate `Reading` records with nullable tokens, counter kind, tokenizer identity, and covered component. A difference/percentage is not derived without the same identified basis and component. For a supported pair, `S=B−A`. When `B>0`, the percentage is `100×S/B`, otherwise it is null. Measured zero, missing values, and negative differences remain distinct.
+- Only Headroom message-input or whole-input pairs are candidates for the primary input metric. Tool schema, novel, RTK, cache, and output remain separate. Provider usage fields are not added to input pairs. A message pair that does not measure whole input is not labeled as whole input. The normalizer does not combine different bases into one total. H024 owns weighted period totals.
+- A proxy-provenance key is derived from runtime generation and request identity. Identities are not kept in plaintext and are hashed with SHA-256. `origin_id` links measurements for the same request. `event_id` also carries the optimizer/component slot using explicit fixed labels. The message/whole-input slot is shared. Overlapping pairs conflict instead of being added together. MCP may be linked to the same event only through an explicit proxy-origin mapping from a trusted collector. Matching model names or similar IDs do not count as a mapping. An exact duplicate is one event. A conflicting duplicate becomes unknown/conflict, and ambiguous basis/time is not retained. The same ID in another runtime generation is a different event. H024 uses these keys for repolling/persistent upsert.
+- UTC timestamps are validated. Invalid identities/values/times produce a fixed error. Payload content is not copied into the error message. Token counts are bounded to the JSON/JS safe-integer range, batches to 10,000 records, and raw snapshots to 2MiB. Events without a timestamp are not candidates for period metrics.
 
-Bu eski satırlar tokenizer kimliği veya güvenilir bileşen/provenance bilgisi taşımaz. Dolayısıyla `before/after` ham gözlem olarak korunur ama temel/bileşen bilinmiyor kalır; `has_exact_tokens`, motorun saved/% alanları veya tags bu güveni yükseltmez. H021'in `2306/12, saved0/%0` ve `12/12` satırlarından masaüstü tasarrufu türetilmez. Kanıtlı yeni bir toplayıcı daha sonra aynı saf API'ye açık temelli ölçüm sağlayabilir; bu görev motora yeniden token sayımı eklemez.
+<a name="0410-adaptörü"></a>
 
-Recent pencere, geçmişin tamlığı veya bütün trafik sayılmaz; aggregate-only ve kimliksiz satırlar görünür metadata'dır. Kaynak reset/restart yeni nesil ve ayrı sayı olarak kalır; snapshot farkı ek kazanç değildir. Buffer boşluğu/eksik kapsamın depoda dönemlere taşınması H024'tedir. Eski lifetime51 istek/4471 saved bugünkü veriymiş gibi içeri alınmaz.
+## 0.41.0 adapter
 
-## Kabul
+If the engine provides `recent_requests`, project that field. Otherwise project `request_logs`. Never count both. Read only request ID/time and explicitly numeric fields. Do not carry content, raw IDs, auth, agent inferred from model, URL/path, free-form tags, transformation details, or lifetime totals. Snapshot aggregates are not added to event totals.
 
-1. Açık aynı temelli120.000→75.000 ölçüm45.000/%37,5 verir; sıfır, sıfır taban, eksik ve artış korunur.
-2. Farklı/bilinmeyen temel, H021 gerçek satırlarının sayı biçimi ve içerik canary fixture'ı uydurma yüzde veya içerik sızdırmaz.
-3. Kökeni kanıtlı proxy/MCP tekrarı, çelişki ve iki runtime nesli doğru ayrılır; katman/aggregate sayaçları ana girdiyi şişirmez.
+These legacy rows do not carry tokenizer identity or trusted component/provenance information. Preserve `before/after` as raw observations, but leave basis/component unknown. `has_exact_tokens`, engine saved/% fields, or tags do not raise that trust. Do not infer desktop savings from H021 rows `2306/12, saved0/%0` and `12/12`. A newly evidenced collector may later provide measurements with an explicit basis to the same pure API. This task does not add token recounting to the engine.
 
-Odaklı Rust testleri → ana ajan incelemesi → değişen kaynakta son yerel kapı. Değişmeyen frontend kanıtı ancak kaynak/config/araç fingerprint'i eşleşirse yeniden kullanılır. Fixture sonucu canlı sağlayıcı/model/subagent veya performans kanıtı değildir.
+The recent window is not complete history or all traffic. Aggregate-only and unidentified rows are visible metadata. A source reset/restart remains a new generation and separate count. A snapshot difference is not additional savings. H024 owns carrying buffer gaps/partial coverage into stored periods. Legacy lifetime values of 51 requests/4471 saved are not imported as current data.
+
+<a name="kabul"></a>
+
+## Acceptance
+
+1. A same-basis measurement from 120,000 to 75,000 input tokens yields 45,000 saved tokens and 37.5% savings. Measured zero, a zero denominator, missing values and increases remain distinct.
+2. Different/unknown bases, H021's actual row number formats, and the content-canary fixture do not produce invented percentages or leak content.
+3. Provenance-verified proxy/MCP duplicates, conflicts, and two runtime generations are distinguished correctly. Layer/aggregate counters do not inflate primary input.
+
+Focused Rust tests → lead-agent review → final local gate on changed source. Unchanged frontend evidence is reused only when source/config/tool fingerprints match. A fixture result is not live-provider/model/subagent or performance evidence.

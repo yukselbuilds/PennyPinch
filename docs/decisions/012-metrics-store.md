@@ -1,35 +1,45 @@
-# 012 — Yerel metrik deposu ve dönem sorgusu
+<a name="012--yerel-metrik-deposu-ve-dönem-sorgusu"></a>
 
-7 Kasım H031 eki: varsayılan30 korunarak7/30/90 kullanıcı tercihi eklendi. SQLite schema2, ölçümler korunarak schema1'den taşınır; tek cutoff eski tarihli replay'in süre uzatılınca dönmesini önler. Aşağıdaki ilk H024 kabulü tarihseldir; güncel karar [019](019-operating-preferences.md).
+# 012 — Local metrics store and period query
 
-4 Kasım 2026. H024 uygulayıcısı ana ajan; kalıcı kayıt ve ölçüm semantiğinin sahibi ana ajandır. Tek Luna xhigh çalışanı yalnız sabitlenmiş ağırlıklı toplam sözleşmesinin birim testlerini yazar.
+The H031 addendum dated 7 November records a user preference of 7/30/90 days while retaining the default of 30. SQLite schema 2 migrates schema 1 while preserving measurements. One cutoff prevents old dated replays from returning when retention is extended. The initial H024 acceptance below is historical. The current decision is [019](019-operating-preferences.md).
 
-## Kapsam ve sınırlar
+4 November 2026. The lead agent implements H024 and owns persistent storage and measurement semantics. The single Luna xhigh worker writes only unit tests for the fixed weighted-total contract.
 
-- H023 schema1 normalize event'leri yerelde saklanır; salt okunur native sorgu H025 ekranı için dönem toplamlarını döndürür. Canlı collector/polling, gerçek model isteği, ekran, model/ajan ataması ve hesap/sohbet listesi bu göreve dahil değildir. Kaynak metadata'sındaki temel belirsizliği yükseltilmez.
-- SQLite transaction/upsert kullanılır. Tüm geçmişi her polling'de yeniden yazan JSON deposu yerine event_id anahtarı ve zaman indeksi seçilir. `rusqlite=0.41.1`, bundled SQLite ve mevcut kilitteki `chrono=0.4.45` doğrudan sabitlenir; sistem SQLite kurulumu gerekmez. [rusqlite](https://docs.rs/rusqlite/0.41.1/rusqlite/) ve [paket metadata'sı](https://crates.io/crates/rusqlite/0.41.1) 4 Kasım'da kontrol edildi; MSRV1.89 mevcut Rust1.92 ile uyumludur. Cargo.lock indirilen paket checksum'larını tutar.
-- Kayıt sadece H023'ün sınırlı numeric/köken metadata'sını içerir. Prompt, yanıt, auth, dosya yolu, URL ve serbest motor tags alanı alınmaz. UI'ya event yazma/import komutu verilmez; kalıcı yazım crate içindeki normalizasyon/toplayıcı sınırındadır.
-- Uygulamaya ait metrik dizini kullanılır; constructor ve boş sorgu dosya yaratmaz. Var olan reparse/link/çoklu hardlink dosyaları, yabancı/veri tabanı şeması ve bozuk kayıtlar sabit hata verir; sessiz sıfırlama/üzerine yazma yoktur. Dizin pin'leri mevcut no-delete korumasını kullanır. SQLite transaction yarım yazımı geri alır; başka uygulamanın dosyası sahiplenilmez.
+<a name="kapsam-ve-sınırlar"></a>
 
-## Kimlik, dönem ve saklama
+## Scope and limits
 
-- `event_id` upsert anahtarı; aynı `origin_id` isteğin katmanlarını bağlar. H023'ün tekrar/çatışma birleştirmesi depo ile ortaklaştırılır. Kaynak kaynaklı aynı ölçüm bir kez kalır; çelişki bilinmeyen olur ve sonraki iyi replay ile tekrar ölçülmüşe dönmez.
-- Oturum, bu uygulama sürecinin **izleme oturumudur**; istemcinin sohbeti veya hesap oturumu değildir. İlk kaydın izleme oturumu replay/reopen ile değiştirilmez. Motor nesli event'te kalır; farklı nesilde aynı istek yeni event'tir. Uygulama yeniden açılınca yeni izleme oturumu, korunmuş bugün/7 gün geçmişi vardır.
-- Bugün, işletim sistemi yerel takvimindeki bugünün başlangıcından şimdiye kadardır. Son 7 gün, bugünü ve önceki altı yerel takvim gününü kapsar. Kayıtlar UTC saklanır. Dönem sınırı ve günlük grafik sorguda aynı yerel gün başlangıcını kullanır. İki karşılığı olan gece yarısında erken an seçilir. Gece yarısı veya bütün gün atlandıysa ilk geçerli yerel an kullanılır. Saat dilimi sınırı çözülemezse sorgu hata verir. Gelecek zamanlı kayıtlar dönem toplamına eklenmez.
-- Varsayılan saklama **30 gün**; UTC yaşına göre eski metadata işlem içinde temizlenir. Zamanı olmayan kayıt için ilk görülme zamanı kullanılır. Saklama süresi sorgu yanıtında görünür; ayar ekranı H025/sonraki ayarlar işidir. Otomatik disk kurtarma veya güvenli adli silme iddiası yoktur.
-- Depo sınırları açıktır: en çok100.000 event,128MiB SQLite dosyası ve H023 batch sınırı. Kapasite/izin/bozuk şema hatasında işlem geri alınır; kısmi başarı veya eksik veri tam trafikmiş gibi dönmez. Yük/uzun süre performans kabulü H035/H041'dedir.
+- H023 schema 1 normalized events are stored locally. A read-only native query returns period totals for the H025 screen. A live collector/polling, real model request, UI, model/agent attribution, and account/chat list are outside this task. Uncertainty about the basis in source metadata is not upgraded.
+- SQLite transactions/upserts are used. The store uses an event_id key and time index instead of a JSON store that rewrites all history on every poll. `rusqlite=0.41.1`, bundled SQLite, and `chrono=0.4.45` already in the lockfile are pinned directly. A system SQLite installation is not required. [rusqlite](https://docs.rs/rusqlite/0.41.1/rusqlite/) and [package metadata](https://crates.io/crates/rusqlite/0.41.1) were checked on 4 November. MSRV 1.89 is compatible with the current Rust 1.92. Cargo.lock records checksums for downloaded packages.
+- Records contain only H023's bounded numeric/provenance metadata. Prompt, response, auth, file path, URL, and free-form engine tags are not read. The UI receives no event-write/import command. Persistent writes remain within the crate's normalization/collector boundary.
+- Use an app-owned metrics directory. The constructor and empty query do not create files. Existing reparse/link/multi-hardlink files, foreign/database schemas, and malformed records produce a fixed error. There is no silent reset/overwrite. Directory pins use the existing no-delete protection. SQLite transactions roll back partial writes. Files owned by another app are not claimed.
 
-## Toplam ve kapsam
+<a name="kimlik-dönem-ve-saklama"></a>
 
-- Yalnız main_metric_eligible Headroom girdi çiftleri; aynı sayaç türü, tokenizer kimliği ve bileşen içinde toplanır. Birden çok temel/bileşen ayrı grup olarak kalır; birleşik ana sayı bilinmiyor olur. Provider usage, RTK/cache/output ana girdiye eklenmez.
-- Grup ayrıntısı en çok64 satırdır; kalan sayı `omitted_basis_groups` alanında görünür. Farklı temeller, taşma kontrolü yapmak için bile tek sayıda toplanmaz; mixed_bases önceliği korunur. Grup içi JS sınırı taşması ayrı counter_overflow'dur.
-- Ağırlıklı oran `100 × (ΣB − ΣA) / ΣB`; istek yüzdeleri ortalanmaz. `B=0`, boş veya karşılaştırılamayan veride yüzde null; gerçek sıfır ve negatif değer korunur. JS güvenli tamsayı sınırını aşan toplam bilinmeyen/overflow olur.
-- Saklanan/karşılaştırılabilir/dışlanan/zamanı yerleştirilemeyen event adetleri ve rolling/aggregate/kimliksiz kaynak uyarıları ayrı döner. Ölçülebilen alt toplam tüm trafik değildir; trafik tamlığı kanıtı yokken `complete_traffic=false` kalır. Raw lifetime/snapshot aggregate tasarrufu ek event yapılmaz.
+## Identity, periods, and retention
 
-## Kabul ve doğrulama
+- `event_id` is the upsert key. The same `origin_id` links layers for a request. H023's duplicate/conflict merge is shared with the store. Identical source measurements remain once. A conflict becomes unknown and is not restored to measured by a later good replay.
+- A session here is this app process's **measurement session**, not the client's chat or account session. Replay/reopen does not change the session of the first record. Engine generation remains on the event. The same request in another generation is a new event. Reopening the app starts a new measurement session while preserving today's/7 days' history.
+- Today runs from the start of today in the operating system's local calendar through now. The last 7 days include today and the previous six local calendar days. Records are stored in UTC. Period boundaries and daily chart queries use the same local day start. For an ambiguous midnight, choose the earlier instant. If midnight or a full day is skipped, use the first valid local instant. If the timezone boundary cannot be resolved, the query returns an error. Future-dated records are not included in period totals.
+- Default retention is **30 days**. Old metadata is removed in-transaction based on UTC age. For records without a timestamp, use the first-seen time. Retention duration is visible in query responses. The settings screen is part of H025/later settings work. No automatic disk recovery or secure forensic deletion is claimed.
+- Store limits are explicit. The store accepts at most 100,000 events, a 128MiB SQLite file, and the H023 batch limit. Capacity/permission/malformed-schema errors roll back the transaction. Partial success or incomplete data is not returned as if it were all traffic. Load/long-duration performance acceptance belongs to H035/H041.
 
-1. Yeni kayıt → aynı proxy/MCP replay → gerçek dosyadan yeniden açma: tek event ve korunmuş dönem toplamı; yeni izleme oturumuna eski event taşınmaz.
-2. Yerel gece yarısı/7 takvim günü sınırı ve kısmi veri → `%14` ağırlıklı örnek, boş/sıfır/negatif/karışık temel/taşma ayrımı; kayıtsız veya belirsiz zaman tam kapsama sayılmaz.
-3. Retention, çelişen replay, yabancı şema, DB kilidi/yarım işlem ve güvensiz dosya → sabit hata veya doğru kapsam; mevcut veri bozulmaz.
+<a name="toplam-ve-kapsam"></a>
 
-Önce odaklı Rust RED/GREEN; ana ajan fark/bağlı akış incelemesi; son adayda tek yerel Rust fmt/test/embedded build kapısı. Değişmeyen frontend test/build kanıtı yalnız ilgili kaynak/araç fingerprint'i eşleşirse tekrar kullanılır. Yeni native sorgu gerçek uygulama IPC yolunda model çağrısı olmadan kontrol edilir. Fixture metrikleri gerçek kullanıcı tasarrufu sayılmaz.
+## Totals and coverage
+
+- Only main_metric_eligible Headroom input pairs are summed, and only within the same counter kind, tokenizer identity, and component. Multiple bases/components remain separate groups. The combined primary number is unknown. Provider usage, RTK/cache/output are not added to primary input.
+- At most 64 group details are returned. The remaining count appears in `omitted_basis_groups`. Different bases are never summed into one number, even to check for overflow. Mixed_bases has precedence. JS safe-integer overflow within one group is a separate counter_overflow.
+- The weighted rate is `100 × (ΣB − ΣA) / ΣB`. Request percentages are not averaged. Percentage is null for `B=0`, empty, or incomparable data. Measured zero and negative values are preserved. A total beyond the JS safe-integer limit becomes unknown/overflow.
+- Stored/comparable/excluded/unplaced-in-time event counts and rolling/aggregate/unidentified-source warnings are returned separately. A measurable subset is not all traffic. Without completeness evidence, `complete_traffic=false`. Raw lifetime/snapshot aggregates do not become additional savings events.
+
+<a name="kabul-ve-doğrulama"></a>
+
+## Acceptance and verification
+
+1. New record → same proxy/MCP replay → reopen from the actual file, yielding one event and preserved period total. No old event is moved into the new measurement session.
+2. Local-midnight/7-day calendar boundary and partial data → weighted 14% example, with empty/zero/negative/mixed-basis/overflow distinguished. Missing or ambiguous time is not treated as complete coverage.
+3. Retention, conflicting replay, foreign schema, DB lock/partial transaction, and unsafe file → fixed error or correct coverage. Existing data is not corrupted.
+
+First run focused Rust RED/GREEN tests, then lead-agent diff/connected-flow review, and one local Rust fmt/test/embedded-build gate on the final candidate. Unchanged frontend test/build evidence is reused only when the relevant source/tool fingerprints match. The new native query is checked through the real app IPC path without a model call. Fixture metrics are not real user savings.
