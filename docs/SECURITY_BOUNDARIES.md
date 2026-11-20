@@ -1,18 +1,18 @@
-# Yerel uygulama güven sınırları
+# Local Application Security Boundaries
 
-19 Ekim 2026 — H005 öncesi inceleme temeli. Kontroller ilgili dilimlerde sınanır; bu belge uygulanmış güvenlik kanıtı değildir.
+Baseline review dated 19 October 2026, before H005. Controls are tested in the relevant implementation slices; this document is not evidence that security has been implemented.
 
-| Sınır / varlık | Somut kötüye kullanım | Gereken kontrol ve kanıt |
+| Boundary / asset | Concrete abuse case | Required control and evidence |
 | --- | --- | --- |
-| Masaüstü UI → Rust yönetici | UI'dan keyfi komut, dosya yolu veya uzak URL gönderilmesi | Tipli dar komutlar; yönetici tarafından belirlenen yollar/argümanlar; uzaktan içerik çalıştırmayan CSP; genel shell izni yok. |
-| Yönetici → motor listener | Aynı porttaki başka HTTP servisinin Headroom sanılması veya kapatılması | Çocuk süreç handle/PID, loopback sahiplik kontrolü, beklenen readiness gövdesi; port meşgulse hata/başka port; yalnız sahip olunan süreci kapatma. H005. |
-| İstemci ayarı → adaptör | Kurulumdan sonra kullanıcının yaptığı değişikliğin kaldırma sırasında silinmesi | Önerilen değişikliği önce hesapla; atomik yazım; değiştirilen alanların sahipliği ve fingerprint'i; çatışmada bütün dosyayı eski yedekle ezme. H017–H018. |
-| Mevcut giriş → proxy → sağlayıcı | Auth bilgisinin log, state, UI veya yanlış upstream'e sızması | Mevcut auth akışını koru; sabit ve izinli sağlayıcı hedefleri; keyfi yönlendirme yok; yalnız gereken başlıkların iletimi; içeriksiz rapor. H008–H010. |
-| Motor → ölçüm/depolama | Prompt/tool çıktısının etkinlik kaydına veya dışa aktarmaya karışması | İzinli metadata alanları; içerik ve auth filtreleme; boyut/süre sınırı; bilinmeyen alanları UI/log'a dökme. H023–H027, H033. |
-| CCR özgün içeriği | Süreç kapanışı veya duraklatmada özgün içeriğin beklenmeden kaybolması | TTL ve sahiplik; pause sırasında aynı retrieval deposu ve aktif stream'in korunması; açık silme/kapanış semantiği. H007, H011, H028. |
-| Paket kaynağı → kurulum | Yanlış paket, değiştirilmiş motor veya beklenmeyen bağımlılık | `headroom-ai` sabit sürümü, lock/hash, resmî kaynak; yalnız gereken extras; paket lisansları; temiz ortam çalıştırma. H005–H006, H037. |
-| Program çıkışı → açık istemci | Proxy'ye yönlenmiş açık oturumun sessizce bağlantısız kalması | Tepsiye küçültme; etkin bağlantı/stream bilgisi; sahip olunan ayarları güvenle kaldırma veya çıkış etkisini açık gösterme. H029–H030, H038. |
+| Desktop UI → Rust manager | The UI submits an arbitrary command, file path, or remote URL | Narrow typed commands; paths and arguments chosen by the manager; a CSP that does not execute remote content; no general shell permission. |
+| Manager → engine listener | Another HTTP service on the same port is mistaken for Headroom or terminated | Child-process handle/PID, loopback ownership check, expected readiness body; fail or choose another port if occupied; stop only the process we own. H005. |
+| Client settings → adapter | A user change made after setup is deleted during disconnect | Calculate the proposed change first; atomic write; ownership and fingerprint for changed fields; on conflict, do not overwrite the whole file with an old backup. H017–H018. |
+| Existing credentials → proxy → provider | Credentials leak into logs, state, UI, or the wrong upstream | Preserve the existing authentication flow; fixed, allowed provider targets; no arbitrary routing; forward only required headers; content-free reporting. H008–H010. |
+| Engine → metrics/storage | Prompt or tool output enters activity records or exports | Allowlisted metadata fields; filter content and credentials; bound size and duration; never pass unknown fields to UI/logs. H023–H027, H033. |
+| Original CCR content | Original content disappears unexpectedly when the process closes or compression is paused | TTL and ownership; preserve the same retrieval store and active streams while paused; explicit deletion and shutdown semantics. H007, H011, H028. |
+| Package source → installation | Wrong package, modified engine, or unexpected dependency | Pin `headroom-ai`; lock/hash and official source; only required extras; package licenses; run in a clean environment. H005–H006, H037. |
+| Application exit → open client | An open session routed through the proxy is silently disconnected | Minimize to the tray; show active connection/stream information; safely remove owned settings or clearly explain the effect of exiting. H029–H030, H038. |
 
-İlk teknik deney mevcut kullanıcı istemci ayarlarını değiştirmez ve gerçek sağlayıcı çağrısı gerektirmez. Gizli değerler okunarak teşhis çıktısına kopyalanmaz. Başarısız testin ham günlüğü kalıcı kanıt olarak saklanmaz.
+The first technical experiment does not change existing client settings or require a real provider request. Hidden values are not read and copied into diagnostic output. Raw logs from failed tests are not retained as evidence.
 
-Tauri sidecar ve Windows paketleme mekanizmaları aday yaklaşımı destekler; Headroom'un taşınabilirliği ayrıca kanıtlanmalıdır. Kaynaklar: [Tauri sidecar](https://v2.tauri.app/develop/sidecar/), [Windows installer](https://v2.tauri.app/distribute/windows-installer/). Son kontrol: 19 Ekim 2026.
+Tauri sidecars and Windows packaging mechanisms are candidate approaches; Headroom's portability must be proven separately. Sources: [Tauri sidecars](https://v2.tauri.app/develop/sidecar/), [Windows installer](https://v2.tauri.app/distribute/windows-installer/). Last reviewed: 19 October 2026.

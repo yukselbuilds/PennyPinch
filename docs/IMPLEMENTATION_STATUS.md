@@ -1,4 +1,11 @@
-# PennyPinch — güncel devir
+# PennyPinch implementation status
+
+## 20 November — English release documentation and GitHub account
+
+The repository owner is now yukselbuilds. SSH access at the new URL resolved to the same main commit, and the local origin now uses that URL. The public update documentation uses the planned HTTPS base at `https://yukselbuilds.github.io/headroom-desktop/updates/`. The repository is private and Pages is pending.
+
+H042-k1 is complete. The lead agent translated the user guide, Windows release and update instructions, and development workflow. Six focused benchmark-reference and instruction-leak guard checks passed with five matching inputs and zero provider requests. The local bulk translation pilot changed the meaning of technical statements, so the applied translations were written and reviewed against the originals. H042-k2 and H042-k3 remain open for the rest of the roadmap, decisions and historical records. [Task list](../TASKS.md) · [User guide](USER_GUIDE.md) · [Windows updates](validation/windows-update.md)
+
 17 Kasım 2026.
 ## 20 Kasım — PennyPinch ürün adı
 

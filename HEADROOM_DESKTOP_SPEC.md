@@ -1,363 +1,361 @@
-# PennyPinch — Ürün ve Özellik Spesifikasyonu
+# PennyPinch — Product and Feature Specification
 
-**Tarih:** 11 Kasım 2026\
-**Belge sürümü:** 0.6\
-**Durum:** Geliştirme kapsamı; uygulanmış özelliklerin kanıtlı durumu `TASKS.md` içindedir.  
-**Proje kökü:** `D:\Projeler\Headroom`  
-**Ürün adı:** PennyPinch. Bağlam sıkıştırması için Headroom motorunu kullanan bağımsız masaüstü uygulaması.
+**Date:** 11 November 2026\
+**Document version:** 0.6\
+**Status:** Development scope. See `TASKS.md` for evidence on implemented features.\
+**Project root:** `D:\Projeler\Headroom`\
+**Product name:** PennyPinch. An independent desktop app that uses the Headroom engine for context compression.
 
-## 1. Ürün fikri
+## 1. Product idea
 
-Codex, Claude Code ve OpenCode kullanan bir kişi, terminal komutları ve yapılandırma dosyalarıyla uğraşmadan Headroom üzerinden bağlantı kurabilmeli, sıkıştırmayı başlatıp duraklatabilmeli ve elde edilen girdi token azalmasını tek bir masaüstü panelinden görebilmeli.
+A person using Codex, Claude Code, or OpenCode should be able to connect through Headroom without handling terminal commands or configuration files, start and pause compression, and see the resulting input-token reduction in one desktop panel.
 
-Ürünün verdiği temel söz: **“Kullandığın kodlama asistanını bağla, mevcut modelinle çalışmaya devam et, tasarrufu gör.”**
+The product's core promise: **“Connect the coding assistant you already use, keep working with your current model, and see the savings.”**
 
-Masaüstü uygulaması bağlantıyı, Headroom motorunun yaşam döngüsünü, geri alınabilir istemci ayarlarını ve ölçümleri yönetir. Sıkıştırma algoritmalarını yeniden geliştirmek başlangıç kapsamına dahil değildir. Headroom zaten bağımsız proxy ve yerel izleme yüzeyleri sunar. [Headroom proxy belgesi](https://docs.headroomlabs.ai/docs/proxy).
+The desktop app manages the connection, Headroom engine lifecycle, reversible client settings, and metrics. Reimplementing the compression algorithms is outside the initial scope. Headroom already provides standalone proxy and local monitoring surfaces. [Headroom proxy documentation](https://docs.headroomlabs.ai/docs/proxy).
 
-Başarı, ekranda büyük bir tasarruf yüzdesi göstermekten önce; kolay kurulum, çalışan streaming ve araç çağrıları, gerektiğinde özgün içeriğe erişim ve kullanıcının seçtiği model davranışının korunmasıdır.
+Success means more than displaying a large savings percentage: it means easy setup, working streaming and tool calls, access to original content when needed, and preserving the model behavior chosen by the user.
 
-## 2. İlk ürün kararları ve varsayımlar
+## 2. Initial product decisions and assumptions
 
-| Konu | Başlangıç kararı |
+| Topic | Initial decision |
 | --- | --- |
-| Platform | Windows 10 22H2 x64 ve Windows 11 x64 birlikte ilk sürüm kapsamındadır; macOS ve Linux sonraki dağıtım aşamalarında. |
-| Kullanıcı | Bir veya daha fazla AI kodlama istemcisi kullanan geliştirici. |
-| Dil | Türkçe ve İngilizce; metinler baştan çeviri anahtarlarıyla tutulur. |
-| İşleyiş | Yerel masaüstü arayüzü + yerel yönetim katmanı + Headroom motoru. |
-| Hesap | Uygulamanın kullanımı için yeni hesap açmak gerekmez. Mevcut istemci girişi kullanılır. |
-| İlk istemciler | Codex, Claude Code ve OpenCode; arayüz varyantları ayrı doğrulanır. |
-| Bağlantı | Desteklenen istemci ayarları veya süreç kapsamındaki başlatma seçenekleri. |
-| Varsayılan optimizasyon | `coding` yaklaşımı, cache kararlılığı, retrieval erişimi ve dosya okuma korumaları. |
-| Model ve efor | Kullanıcının seçimini koru; otomatik model veya reasoning effort düşürme. |
-| Gizlilik | İstatistikler yerelde; ham konuşmalar ve kod içerikleri varsayılan olarak kaydedilmez. |
-| İsim ve marka | Çalışma adı kullanılabilir; upstream proje ile resmî ortaklık iddia edilmez. |
+| Platform | Windows 10 22H2 x64 and Windows 11 x64 are both in the first-release scope; macOS and Linux belong to later distribution phases. |
+| User | A developer who uses one or more AI coding clients. |
+| Language | Turkish and English; translation keys are used from the start. |
+| Operation | Local desktop UI + local management layer + Headroom engine. |
+| Account | No new account is required to use the app. The existing client sign-in is used. |
+| Initial clients | Codex, Claude Code, and OpenCode; UI variants are validated separately. |
+| Connection | Supported client settings or process-scoped launch options. |
+| Default optimization | The coding approach, cache stability, retrieval access, and file-reading protections. |
+| Model and effort | Preserve the user's choice; never automatically downgrade the model or reasoning effort. |
+| Privacy | Metrics stay local; raw conversations and code content are not saved by default. |
+| Name and brand | A working name may be used; no official partnership with an upstream project is claimed. |
 
-“Herkes için kolay” hedefi, desteklenen sürüm ve giriş yöntemlerinde çalışır bir kurulum akışı anlamına gelir. Her istemcinin her sürümü, eklentisi ve hesap türü için aynı davranış vaat edilmez.
+“Easy for everyone” means a working setup flow for supported versions and sign-in methods. It does not promise identical behavior across every version, extension, and account type of every client.
 
-Windows 10 desteği sonraki sürüme ertelenmez. Windows 10 22H2 ilk doğrulama tabanıdır; daha eski Windows 10 sürümleri ve ARM/32-bit desteği ayrıca doğrulanmadan desteklenmiş sayılmaz. İstemcilerin kendi işletim sistemi gereksinimleri, masaüstü yöneticisinin gereksinimlerinden ayrı izlenir.
+Windows 10 support is not deferred to a later release. Windows 10 22H2 is the initial validation baseline; older Windows 10 releases and ARM/32-bit support are not considered supported until separately validated. Each client's operating-system requirements are tracked separately from those of the desktop manager.
 
-## 3. Kullanıcı açısından temel akış
+## 3. Core user flow
 
-1. **Aç:** Uygulama desteklenen istemcileri, sürümlerini ve önceki bağlantı tercihlerini otomatik bulur.
-2. **Bir kez bağla ve başlat:** Bulunan uygulamalar sade bir listede gösterilir. Kullanıcı bağlanacak uygulamaları ve kısa etki özetini görüp **Bağla ve başlat** eylemini seçer; gerekli hazırlık, motor başlatma, ayar ve geri alma kaydı aynı akışta yapılır. Gereken istemci yeniden açılışı açıkça belirtilir; uygulamaların kısmi başarısı ayrı gösterilir.
-3. **Sonraki kullanımlarda Başlat:** Önceki bağlantılar korunur; kullanıcı **Başlat** ile çalışmasına devam eder. Kurulum, CLI/Desktop veya model seçimini yeniden yapmaz; isteğe bağlı otomatik başlatma ayrıca sunulur. Henüz bağlanmamış bir istemciyi motoru başlatmak tek başına yönlendirmez.
-4. **İzle:** Yeni gerçek istekler üzerinden bağlantı arka planda doğrulanır ve tasarruf gösterilir. Önceden bağlanmış bir istemci için her açılışta kurulum veya ücretli doğrulama isteği tekrarlanmaz.
+1. **Open:** The app automatically finds supported clients, their versions, and previous connection preferences.
+2. **Connect and start once:** Found applications appear in a simple list. The user sees which applications will be connected and a short impact summary, then selects **Connect and start**. Required preparation, engine startup, settings changes, and ownership recording happen in the same flow. Any required client restart is stated clearly; partial success across applications is shown separately.
+3. **Start on later use:** Previous connections are retained; the user resumes with **Start**. Setup, CLI/Desktop, and model choices are not repeated; optional auto-start is offered separately. Starting the engine alone does not route a client that has not been connected.
+4. **Monitor:** The connection is verified in the background through new real requests, and savings are shown. A previously connected client is not asked for setup or a paid verification request every time the app opens.
 
-Otomatik tarama, bilinen kurulum/yapılandırma konumları ve erişilebilen istemci sürüm bilgileriyle sınırlıdır. Bulunan bütün istemciler kendiliğinden bağlanmaz. Kullanıcının bir defalık seçimi, hangi programların ayarlarının değişebileceğini belirler. Sonradan kurulan yeni bir istemci de kullanıcı seçmeden bağlanmaz.
+Automatic scanning is limited to known installation/configuration locations and accessible client version information. Found clients are not connected automatically. The user's one-time selection determines which programs may have their settings changed. A newly installed client is not connected until the user selects it.
 
-Kullanıcıdan terminal komutu, manuel port ayarı, config düzenleme veya sırf bu ürün için yeni API anahtarı oluşturması beklenmez. Desteklenen mevcut giriş yöntemi korunur. Otomatik algılama başarısızsa **Uygulamayı seç** alternatifi sunulur. Mevcut giriş yöntemi adaptörce desteklenmiyorsa farklı ve ücretli bir sağlayıcıya sessiz geçiş yapılmaz.
+Users are not expected to enter terminal commands, set ports manually, edit config files, or create a new API key solely for this product. The existing supported sign-in method is preserved. If automatic detection fails, **Choose application** is available. If the adapter does not support the existing sign-in method, it does not silently switch to a different paid provider.
 
-**Tek mantıksal bağlantı:** Aynı etkin ayar kapsamını ve desteklenen yönlendirmeyi kullandığı doğrulanan CLI/Desktop kurulumları normal akışta tek uygulama bağlantısı olarak gösterilir; ikili dosya ve sürüm ayrıntıları Gelişmiş'tedir. Farklı profil/proje/rota, eski veya kayıp kurulum ve ayar çatışmasında anlamlı seçim/kurtarma korunur; yalnız sürüme bakarak otomatik ikili seçilmez. Bir yüzeyin trafik doğrulaması diğer yüzeyin kanıtı sayılmaz. [3 Kasım UI/UX değerlendirmesi](docs/reviews/UX-2026-11-03.md) bu hedefin mevcut uygulamadan farkını ve ilgili görevleri açıklar; hedef akış henüz tamamlanmış sayılmaz.
+**One logical connection:** CLI/Desktop installations verified to use the same active settings scope and supported route are shown as one application connection in the normal flow; binary and version details are under Advanced. Meaningful selection/recovery remains available for different profiles/projects/routes, stale or missing installations, and settings conflicts. A binary is never selected automatically based only on version. Traffic verification for one surface is not evidence for another. The [3 November UI/UX review](docs/reviews/UX-2026-11-03.md) explains how this goal differs from the current implementation and identifies related tasks; the target flow is not yet considered complete.
 
-**Bağlantıyı doğrula** ayrıca sorun giderme eylemi olarak bulunur. Kullanıcı hemen test etmek isterse küçük bir gerçek doğrulama isteği başlatabilir; bunun hesap kullanımına dahil olabileceği eylemde belirtilir. Normal çalışmada zaten geçen isteklerin kullanılması tercih edilir.
+**Verify connection** is also available as a troubleshooting action. If the user wants to test immediately, they can start a small real verification request; the action states that it may count toward account usage. In normal operation, existing requests are preferred for verification.
 
-**İlk kurulum ile günlük kullanım ayrılır.** İlk kurulumda istemciyi yeniden açmak gerekebilir. Bir defa bağlanan ve arka plan motoru hazır olan istemcilerde günlük kullanım açma, duraklatma ve izleme düzeyinde kalır. Açık bir sürecin önceden kurulmuş bağlantılarını otomatik yakaladığımız varsayılmaz.
+**First-time setup and daily use are distinct.** The client may need to be reopened during setup. For clients connected once with the background engine ready, daily use stays at opening, pausing, and monitoring. The app does not assume it can automatically capture connections already established by an open process.
 
-## 4. Çekirdek özellikler — ilk kullanılabilir sürüm
+## 4. Core features — first usable release
 
-| Kimlik | Özellik | Kullanıcıya sağladığı sonuç |
+| ID | Feature | User outcome |
 | --- | --- | --- |
-| F01 | Otomatik istemci algılama | Kurulu program, sürüm ve bağlantı uygunluğu görülür; bulunamazsa dosya seçimi sunulur. |
-| F02 | Yönlendirmeli kurulum | Kullanıcı komut yazmadan desteklenen bağlantıyı kurar. |
-| F03 | Geri alınabilir bağlantı | Uygulamanın yaptığı değişiklikler, sonraki kullanıcı ayarları korunarak kaldırılır. |
-| F04 | Headroom motor yönetimi | Başlatma, sağlık kontrolü, port seçimi ve kontrollü toparlama tek yerden yürür. |
-| F05 | Başlat / Duraklat | Sıkıştırma kontrolü model bağlantısını gereksiz yere kesmez. |
-| F06 | Tasarruf görünümü | Girdi azalması, dönem toplamları, veri kaynağı ve son güncelleme zamanı görülür. |
-| F07 | Özgün içeriğe erişim | CCR ile sıkıştırılan verinin gerektiğinde geri alınabilmesi doğrulanır. |
-| F08 | Sistem tepsisi | Pencere kapatıldığında bağlantı sürer; durum ve temel eylemler tepsiden erişilir. |
-| F09 | Uyum ve bağlantı doğrulaması | “Bulundu”, “yapılandırıldı” ve “gerçek trafik doğrulandı” farklı durumlar olarak gösterilir. |
-| F10 | Model ayarlarını koruma | Ana model, alt ajan modeli, reasoning, izinler ve mevcut giriş yöntemi sessizce değiştirilmez. |
-| F11 | Sorun giderme | Kullanıcıya ham stack trace yerine hata nedeni ve uygulanabilir sonraki adım gösterilir. |
-| F12 | Dışa aktarma | İçeriksiz istatistik özeti JSON/CSV olarak alınabilir; tanı raporu kişisel yolları ve sırları ayıklar. |
+| F01 | Automatic client detection | Installed program, version, and connection eligibility are visible; file selection is offered if no client is found. |
+| F02 | Guided setup | Establish a supported connection without asking the user to enter commands. |
+| F03 | Reversible connection | Remove changes made by the app while preserving later user changes. |
+| F04 | Headroom engine management | Start, health checks, port selection, and controlled recovery are managed in one place. |
+| F05 | Start / Pause | Compression controls do not unnecessarily interrupt the model connection. |
+| F06 | Savings view | Show input reduction, period totals, data source, and last-update time. |
+| F07 | Access to original content | Verify that content compressed through CCR can be retrieved when needed. |
+| F08 | System tray | The connection continues when the window closes; status and basic actions remain available from the tray. |
+| F09 | Compatibility and connection verification | Show “found,” “configured,” and “real traffic verified” as distinct states. |
+| F10 | Preserve model settings | Do not silently change the main model, subagent model, reasoning, permissions, or existing sign-in method. |
+| F11 | Troubleshooting | Show the reason and an actionable next step instead of a raw stack trace. |
+| F12 | Export | Export a content-free statistics summary as JSON/CSV; remove personal paths and secrets from diagnostic reports. |
 
-Headroom'un `compress`, retrieval ve istatistik araçları mevcut motor yetenekleridir. Bunların eklenmesi tek başına bütün model trafiğinin otomatik sıkıştırıldığını kanıtlamaz. [MCP araçları](https://docs.headroomlabs.ai/docs/mcp).
+Headroom's compress, retrieval, and statistics tools are existing engine capabilities. Their presence alone does not prove that all model traffic is compressed automatically. [MCP tools](https://docs.headroomlabs.ai/docs/mcp).
+## 5. Client integrations and support policy
 
-## 5. İstemci entegrasyonları ve destek politikası
-
-| İstemci / yüzey | Ürün hedefi | Doğrulamada özellikle bakılacak konu |
+| Client / surface | Product target | Particular validation focus |
 | --- | --- | --- |
-| Codex CLI | İlk sürüm adaptörü | Süreç/kullanıcı yönlendirmesi, Responses streaming, WebSocket, araç çağrıları ve mevcut auth. |
-| Codex masaüstü uygulaması | Birinci öncelikli gerçek kullanım hedefi | Ayarın gerçekten uygulandığı yer, ilk yeniden başlatma, ana ajan ve alt ajan trafiği. |
-| Claude Code CLI | İlk sürüm adaptörü | Anthropic protokolü, streaming, retrieval ve giriş yönteminin korunması. |
-| OpenCode CLI / TUI | İlk sürüm adaptörü | Etkin sağlayıcı/model, JSON/JSONC ayarları ve OpenAI/Anthropic yolları. |
-| VS Code / JetBrains eklentileri ve diğer masaüstü varyantları | Her biri ayrı uyumluluk girişi | CLI desteği bu yüzeylere otomatik taşınmış sayılmaz. |
-| Cursor, Copilot ve diğer uyumlu araçlar | Sonraki adaptörler | Sürüm ve protokol bazında eklenir; ilk sürümde evrensel destek rozeti verilmez. |
+| Codex CLI | First-release adapter | Process/user routing, Responses streaming, WebSocket, tool calls, and existing auth. |
+| Codex desktop app | First-priority real-use target | Where the setting actually takes effect, first restart, and main/subagent traffic. |
+| Claude Code CLI | First-release adapter | Anthropic protocol, streaming, retrieval, and preserving the sign-in method. |
+| OpenCode CLI / TUI | First-release adapter | Active provider/model, JSON/JSONC settings, and OpenAI/Anthropic routes. |
+| VS Code / JetBrains extensions and other desktop variants | Separate compatibility entries | CLI support does not automatically extend to these surfaces. |
+| Cursor, Copilot, and other compatible tools | Later adapters | Add by version and protocol; do not give a universal support badge in the first release. |
 
-Her adaptör; istemci sürümü, işletim sistemi, arayüz türü, giriş yöntemi, protokol ve son başarılı doğrulama tarihinden oluşan bir uyumluluk kaydı tutar. Durumlar **Doğrulandı**, **Deneysel**, **Desteklenmiyor** şeklindedir. Bir dosya yolunun mevcut olması destek kanıtı değildir.
+Each adapter keeps a compatibility record containing client version, operating system, UI surface, sign-in method, protocol, and date of last successful verification. States are **Verified**, **Experimental**, and **Unsupported**. The existence of a file path is not support evidence.
 
-Doğrulanmış yayıncı imzası veya güvenilir kaynaktan sabitlenen hash dosyanın kökenini; gerçek config/protokol/özellik deneyi davranış uyumluluğunu doğrular. Salt sürüm numarası değişimi genel uyumsuzluk iddiası üretmez; bilinen kırılmalar ve güvenlik sınırları korunur; güncelleme sonrası önceki davranış kanıtı stale olur ve kontrollü yeniden doğrulama gerekebilir. Normal akışta binary seçimi kullanıcıya yüklenmez.
+A verified publisher signature or hash pinned from a trusted source verifies file provenance; a real config/protocol/feature test verifies behavioral compatibility. A version-number change alone does not establish general incompatibility. Preserve known breakages and security limits; after an update, previous behavior evidence becomes stale and controlled revalidation may be needed. The normal flow does not make users choose a binary.
 
-### Alt ajan kapsamı
+### Subagent coverage
 
-**Kullanıcı kararı — varsayılan kapsam:** Kullanıcı istemciyi bağladığında o bağlantının desteklenen bütün modelleri, ana ajanı ve bütün alt ajanları birlikte kapsanır. Model veya alt ajan başına ayrı seçim/kurulum gerekmez. Bu bir ürün kabul koşuludur; henüz bütün istemci/auth/ajan kombinasyonlarının doğrulandığı anlamına gelmez.
+**User decision — default scope:** When the user connects a client, the connection covers all supported models, the main agent, and all subagents together. No separate setup is required per model or subagent. This is a product acceptance condition; it does not mean that every client/auth/agent combination has already been validated.
 
-Hedef, bağlı istemcinin ana ajanı ile aynı yönlendirmeyi kullanan alt ajanlarını birlikte kapsamaktır. Her alt ajan için kullanıcıya ayrı bir **Bağlan** işlemi yaptırılmaz. Alt ajan hangi modeli kullanırsa kullansın, desteklenen aynı sağlayıcı/proxy yolundan geçen uygun istekler optimizasyona dahil edilir.
+The goal is to include subagents that use the same route as the connected client's main agent. Users are not asked to perform a separate **Connect** action for each subagent. Regardless of the model used by a subagent, eligible requests that pass through the same supported provider/proxy route are included in optimization.
 
-Ayrı süreç, ayrı sağlayıcı veya bulut ortamında çalışan bir alt ajanın kapsandığı varsayılmaz. Bu yol ayrıca bağlanıp doğrulanmadıkça arayüz tam kapsama iddiası taşımaz. Ana/alt ajan kimliği ölçülemiyorsa yalnız doğrulanmış toplam trafik gösterilir; model adından ajan kimliği uydurulmaz. Uygulama alt ajan oluşturmaz, çalışan sayısını veya model/efor ayarını değiştirmez.
+Do not assume coverage for a subagent running in a separate process, through a separate provider, or in a cloud environment. Until that route is separately connected and verified, the UI must not claim full coverage. If subagent identity cannot be measured, show only verified aggregate traffic; do not infer agent identity from the model name. The app does not create subagents or change their count, model, or effort settings.
 
-Bağlantı planı bilinen alt ajan/sağlayıcı rota farklarını hesaba katar; mümkün olan desteklenmiş yollar aynı tek kurulum planında hazırlanır. Proxy'yi atlayan yerel veya bulut yolu kendiliğinden kapsanmış sayılmaz; arayüz ana/alt ajan kapsamını doğrulandı, kısmi veya bilinmiyor olarak gösterir. Yeni açılan alt ajan aynı doğrulanmış rotayı kullanıyorsa ayrı bağlantı gerektirmez. Bütün trafik için ajan ataması yoksa “tüm alt ajanlar doğrulandı” yazılmaz.
+The connection plan accounts for known subagent/provider route differences; supported routes are prepared in the same setup plan when possible. A local or cloud route that bypasses the proxy is not covered automatically. The UI shows main/subagent coverage as verified, partial, or unknown. A newly started subagent using the same verified route does not need a separate connection. If agent attribution is unavailable for all traffic, do not say “all subagents verified.”
 
-### Model kapsamı
+### Model coverage
 
-Ürün belirli birkaç model adına sabitlenmez. Bağlı istemci ve desteklenen sağlayıcı protokolü üzerinden geçen modelleri kapsaması hedeflenir. Kullanıcının istemci içinde model değiştirmesi tek başına yeniden bağlantı kurulmasını gerektirmez; değişen upstream veya giriş yolu ise yeni doğrulama gerektirebilir.
+The product is not pinned to a short list of model names. It aims to cover models used through the connected client and supported provider protocol. Changing models inside the client alone should not require reconnecting; a different upstream or sign-in route may require new verification.
 
-Kullanıcının temel seçimi **hangi istemci/bağlantı kapsamının bağlanacağıdır**. Modeli kendi Codex/Claude Code/OpenCode arayüzünde seçmeye devam eder; Headroom'da her modeli ayrıca açması gerekmez. Bağlı yoldaki aynı model veya farklı modellerle çalışan alt ajanlar varsayılan dışlama listesine alınmaz. Yeni model adı tek başına mevcut protokol desteğini bozmuş veya o modelin bütün yeni özellikleri doğrulanmış sayılmaz.
+The user's primary choice is **which client/connection scope to connect**. They continue to choose models in their own Codex/Claude Code/OpenCode interface and do not need to enable each model separately in Headroom. Subagents using the same model or different models on the connected route are not excluded by default. A new model name alone neither invalidates existing protocol support nor proves that every new feature of that model is verified.
 
-Kapsam ölçütü model markası değil; istek protokolü, giriş yöntemi ve motorun ilgili içerikte güvenle uygulayabildiği dönüşümlerdir. Her modelin her özelliğinin sıkıştırılabildiği söylenmez. Şifreli reasoning veya motorun desteklemediği bloklar değiştirilmeden korunur; bu bloklarda tasarruf gösterilmez. Yeni/bilinmeyen model yeterince desteklenmiyorsa model değiştirmek yerine desteklenen ham iletim yolu kullanılır ve optimizasyon sınırı gösterilir. Ham iletim de doğrulanamıyorsa uyumsuzluk açıkça bildirilir.
+The scope criterion is the request protocol, sign-in method, and transformations the engine can safely apply to that content—not the model brand. Do not claim every feature of every model can be compressed. Preserve encrypted reasoning or blocks the engine does not support without modification; report no savings for those blocks. If a new/unknown model is not sufficiently supported, use the supported raw pass-through path rather than changing models, and show the optimization boundary. If raw pass-through cannot be verified either, report incompatibility clearly.
 
-Sabit model listesi, zorunlu düşük efor veya otomatik ucuz model seçimi bağlantının koşulu değildir. Model adı, reasoning düzeyi ve alt ajan seçimi kullanıcıya aittir. Her modelde aynı tasarruf oranı beklenmez.
+A fixed model list, mandatory low effort, or automatic low-cost model selection is not a connection requirement. The model name, reasoning level, and subagent selection belong to the user. Savings rates are not expected to be the same for every model.
 
-### Codex için bağlayıcı karar
+### Binding decision for Codex
 
-Codex'in güncel belgeleri, proje `.codex/config.toml` dosyasındaki sağlayıcı ve base URL ayarlarının yok sayıldığını söylüyor. Bu nedenle Codex adaptörü böyle bir proje ayarını çalışan bağlantı olarak sunamaz; desteklenen kullanıcı veya süreç kapsamını açıkça kullanır. [Resmî Codex yapılandırması](https://learn.chatgpt.com/docs/config-file/config-advanced#project-config-files-codexconfigtoml).
+Current Codex documentation says provider and base URL settings in a project .codex/config.toml file are ignored. Therefore, the Codex adapter must not present such a project setting as a working connection; it must use a supported user or process scope. [Official Codex configuration](https://learn.chatgpt.com/docs/config-file/config-advanced#project-config-files-codexconfigtoml).
 
-Kullanıcı ana ajanına ve her alt ajanına istediği farklı modeli ve reasoning düzeyini atayabilir; başka sohbetlerde bunları değiştirebilir. Uygulama ajan sayısı veya modeli belirlemez ve model/ajan başına yeniden bağlantı istemez. Bu projeyi geliştiren çalışanın model tercihi ürünün destek koşulu değildir. Ana ve alt ajan isteklerinin aynı yolu kullandığı ayrı doğrulanır; yalnız model adından ajan kimliği çıkarılmaz.
+Users may assign a different model and reasoning level to their main agent and each subagent and change them in other conversations. The app does not choose agent count or model and does not require reconnecting per model/agent. The model preference of the worker developing this project is not a product support condition. Verify separately that main and subagent requests use the same route; do not infer agent identity from a model name alone.
 
-Model kapsamı kabulünde farklı ana/alt ajan modelleri, bağlı istemcide model değişimi ve aynı protokolde yeni model adının korunması sınanır. Model adına dayanan sabit izin listesi bağlantı koşulu olamaz. Protokol veya özellik uyumsuzluğu model değiştirilerek gizlenmez; ölçülen kapsam gösterilir. Temsili testler bütün modellerin bütün özelliklerinin doğrulandığı şeklinde sunulmaz.
+Model-scope acceptance tests different models for main/subagents, model changes in a connected client, and preservation of a new model name using the same protocol. A fixed allowlist based on model names cannot be a connection condition. Do not hide protocol or feature incompatibility by changing models; show measured scope. Representative tests must not be presented as validation of every model's every feature.
 
-### Claude Code için bağlayıcı karar
+### Binding decision for Claude Code
 
-Claude Code kullanıcı, proje ve yerel proje ayarlarını farklı kapsamlarda okur. Adaptör etkin ayar kaynağını bulmalı ve mümkün olan en dar desteklenen kapsamı sunmalıdır. [Resmî ayar kapsamları](https://code.claude.com/docs/en/settings).
+Claude Code reads user, project, and local project settings from different scopes. The adapter must find the active settings source and offer the narrowest supported scope. [Official settings scopes](https://code.claude.com/docs/en/settings).
 
-Eklenti ve masaüstü varyantlarında tool-search içeriklerinin görüntülenmesi gibi ayrı sorunlar bulunabilir. Bu yüzeyler CLI ile aynı destek satırına konulmaz. [Headroom'un eklenti uyumluluk notu](https://docs.headroomlabs.ai/docs/persistent-installs#claude-code-vscode-extension-caveat).
+Plugin and desktop variants may have distinct issues, such as displaying tool-search content. Do not place these surfaces in the same support entry as the CLI. [Headroom's plugin compatibility note](https://docs.headroomlabs.ai/docs/persistent-installs#claude-code-vscode-extension-caveat).
 
-### OpenCode için bağlayıcı karar
+### Binding decision for OpenCode
 
-Headroom'un OpenCode belgesi, oluşturulan sağlayıcıda varsayılan bir model seçimi tanımlıyor. Ürün adaptörü wrapper'ı körlemesine çalıştırıp kullanıcının modelini değiştiremez. Kurulumdan önce ve sonra etkin upstream model eşitliği doğrulanır; gerekli sağlayıcı takma adı değişikliği ayrıca kaydedilir. [Headroom OpenCode entegrasyonu](https://docs.headroomlabs.ai/docs/opencode).
+Headroom's OpenCode documentation defines a default model for the provider it creates. The product adapter must not blindly run a wrapper and change the user's model. Verify that the active upstream model is equal before and after setup; record any required provider-alias change separately. [Headroom OpenCode integration](https://docs.headroomlabs.ai/docs/opencode).
 
-OpenCode'un JSON ve JSONC biçimleri desteklenir. Yorumlar ve kullanıcıya ait alanlar korunur; tüm dosyayı eski bir yedekle ezmek normal kaldırma yöntemi olamaz. [Resmî OpenCode yapılandırması](https://opencode.ai/docs/config/).
+OpenCode supports JSON and JSONC. Preserve comments and user-owned fields; overwriting the entire file with an old backup cannot be the normal disconnect method. [Official OpenCode configuration](https://opencode.ai/docs/config/).
 
-## 6. Başlatma, duraklatma ve kapanış davranışı
+## 6. Start, pause, and shutdown behavior
 
-Kullanıcının gördüğü eylemler:
+User-visible actions:
 
-- **Başlat:** Proxy hazırsa yeni istekler için desteklenen sıkıştırmayı etkinleştirir.
-- **Duraklat:** Devam eden istekleri bölmeden yeni sıkıştırmayı durdurur; bağlantı ve retrieval hizmeti korunur.
-- **Bağlantıyı kaldır:** Uygulamanın yönlendirmesini geri alır; mevcut süreç için yeniden başlatma gerekiyorsa açıklar.
-- **Pencereyi kapat:** Sistem tepsisine küçültür; motoru sonlandırmaz.
-- **Tamamen çık:** Bağlı istemci ve etkin istek varsa etkisini gösterir; çalışan süreci sessizce kesmez.
+- **Start:** If the proxy is ready, enable supported compression for new requests.
+- **Pause:** Stop compression for new requests without interrupting requests already in progress; preserve the connection and retrieval service.
+- **Disconnect:** Undo Headroom's routing and explain if the current process must be restarted.
+- **Close window:** Minimize to the system tray; do not terminate the engine.
+- **Exit completely:** Explain the effect if a client is connected or a request is active; do not silently cut off a running process.
 
-Duraklatma uygulaması, doğrudan `--no-optimize` açıp kapatmakla tamamlanmış sayılmaz. Önceden gönderilmiş sıkıştırılmış geçmişin prefix'i, CCR kayıtları ve devam eden stream'ler korunmalıdır. Motorun buna uygun davranışı teknik prototipte kanıtlanır.
+Implementing pause by simply toggling the --no-optimize option is insufficient. Preserve the prefix of previously compressed history, CCR records, and in-progress streams. Prove the engine's appropriate behavior in a technical prototype.
 
-Kalıcı olarak proxy'ye yönlendirilmiş bir istemci, motor kapalıyken bağlantı kuramayabilir. Arka planda çalışma ve isteğe bağlı Windows başlangıcı bu nedenle ayrı, anlaşılır ayarlardır. Yeni kurulum bu tercihi açıkça gösterir. Beklenmeyen motor çökmesinde sınırlı yeniden başlatma denenir; başarısızlık gizlenmez. Kesintisiz otomatik doğrudan bağlantıya dönüş, ayrıca kanıtlanmadan ürün sözü değildir.
+A client permanently routed through the proxy may be unable to connect while the engine is off. Background operation and optional Windows startup are therefore separate, clear settings. Show this preference explicitly during setup. On an unexpected engine crash, attempt a bounded restart; do not hide failure. Automatic fallback to a direct connection is not a product promise until separately proven.
 
-Headroom'un kalıcı çalışma seçenekleri vardır; masaüstü ürünün bunları nasıl sahiplenip geri alacağı ayrı yönetilir. [Kalıcı çalışma seçenekleri](https://docs.headroomlabs.ai/docs/persistent-installs).
+Headroom has persistent operation options; how the desktop product owns and reverses them is managed separately. [Persistent operation options](https://docs.headroomlabs.ai/docs/persistent-installs).
 
-## 7. Bağlantı durumları
+## 7. Connection states
 
-Bağlantı, motor ve sıkıştırma durumları ayrı tutulur. Arayüzde tek “aktif” etiketiyle hepsi temsil edilmez.
+Connection, engine, and compression states are separate. Do not represent them all with a single “active” label in the UI.
 
-| Görünen durum | Anlamı | Ana eylem |
+| Visible state | Meaning | Primary action |
 | --- | --- | --- |
-| Bulunamadı | İstemci otomatik bulunamadı. | Uygulamayı seç |
-| Bağlı değil | İstemci bulundu; yönlendirme kurulmadı. | Bağlan |
-| Hazırlanıyor | Motor veya istemci ayarı hazırlanıyor. | İlerlemeyi gör |
-| Yeniden başlatma gerekiyor | Ayar yazıldı; açık süreç henüz yenilenmedi. | Nasıl devam edeceğini gör |
-| Doğrulama bekleniyor | Yapılandırma hazır; gerçek istek kanıtı yok. | Bağlantıyı doğrula |
-| Sıkıştırma açık | Doğrulanmış yol üzerinde yeni sıkıştırma etkin. | Duraklat |
-| Duraklatıldı | Bağlantı sürüyor; yeni sıkıştırma kapalı. | Başlat |
-| Sorun var | Motor, kimlik doğrulama veya protokol hatası var. | Sorunu çöz |
-| Veri bekleniyor | Bağlantı sağlıklı; seçili dönemde ölçülebilir trafik yok. | Normal çalışmaya devam et |
+| Not found | The client was not detected automatically. | Choose application |
+| Not connected | The client was found; routing is not configured. | Connect |
+| Preparing | The engine or client settings are being prepared. | View progress |
+| Restart required | Settings were written; the open process has not refreshed them. | See how to continue |
+| Waiting for verification | Configuration is ready; there is no real-request evidence. | Verify connection |
+| Compression on | New compression is enabled on a verified route. | Pause |
+| Paused | The connection continues; new compression is off. | Start |
+| Problem | An engine, authentication, or protocol error occurred. | Resolve issue |
+| Waiting for data | The connection is healthy; there is no measurable traffic in the selected period. | Continue normal use |
 
-“Son doğrulama” ve “son istek” zamanları gösterilir. Yapılandırma veya sürüm değişirse eski doğrulama güncelmiş gibi kullanılmaz. Sessiz bir oturum hata sayılmaz.
+Show the times of **last verification** and **last request**. If configuration or version changes, do not treat old verification as current. A quiet session is not an error.
 
-## 8. Modern ve minimal arayüz yönü
+## 8. Modern, minimal UI direction
 
-**Tasarım karakteri:** Sakin, teknik ama erişilebilir bir geliştirici masaüstü aracı. Geniş boşluk, güçlü tipografik hiyerarşi, az sayıda renk ve anlaşılır durumlar.
+**Design character:** A calm, technical but accessible desktop tool for developers. Spacious layout, strong typographic hierarchy, few colors, and clear states.
 
-Üç karşılaştırılabilir görsel yön ve etkileşimli önizlemeler [UI_CONCEPTS.md](UI_CONCEPTS.md) dosyasındadır. Kullanıcı **Graphite** yönünü seçti; aynı düzenin açık/koyu temaları geliştirilir. Karar: [001 — UI yönü](docs/decisions/001-ui-direction.md).
+Three comparable visual directions and interactive previews are in [UI_CONCEPTS.md](UI_CONCEPTS.md). The user selected **Graphite**; develop light and dark themes within the same layout. Decision: [001 — UI direction](docs/decisions/001-ui-direction.md).
 
-### Görsel temel
+### Visual foundation
 
-- Koyu ve açık tema; varsayılan sistem temasını izler.
-- Koyu tema: grafit zemin `#111315`, panel `#1A1D21`, ana metin `#F0F2F4`, ikincil metin `#A2AAB6`, vurgu `#47C7A5`.
-- Açık tema: zemin `#F7F8FA`, panel `#FFFFFF`, ana metin `#1C2027`, vurgu `#147D68`.
-- Windows'ta Segoe UI Variable / Segoe UI; metriklerde tabular rakamlar. Font lisansı veya indirmesi gerektiren seçim başlangıç şartı değildir.
-- Windows 11'e özgü pencere efektleri temel işlevler için zorunlu olmaz. Windows 10'da aynı düzen, okunabilirlik ve eylemler desteklenen görsel alternatiflerle korunur.
-- İnce ayırıcılar, ölçülü 8–12 px köşe yarıçapı; yoğun gölge veya sürekli parlayan dekorasyon kullanılmaz.
-- 120–180 ms işlevsel geçişler; azaltılmış hareket tercihine uyum.
-- Klavye erişimi, görünür odak, en az WCAG AA metin kontrastı hedefi; durumlar yalnız renkle anlatılmaz.
+- Light and dark themes; follow the system theme by default.
+- Dark theme: graphite background #111315, panel #1A1D21, primary text #F0F2F4, secondary text #A2AAB6, accent #47C7A5.
+- Light theme: background #F7F8FA, panel #FFFFFF, primary text #1C2027, accent #147D68.
+- Segoe UI Variable / Segoe UI on Windows; tabular numerals for metrics. Do not require a font license or download.
+- Windows 11-specific window effects are not required for core functionality. Preserve the same layout, readability, and actions on Windows 10 through supported visual alternatives.
+- Fine dividers and restrained 8–12px corner radii; no heavy shadows or persistent glow decorations.
+- Functional transitions of 120–180ms; respect reduced-motion preferences.
+- Keyboard access, visible focus, and a WCAG AA text-contrast target; never communicate states by color alone.
 
-### Dört ana ekran
+### Four main screens
 
-1. **Genel bakış:** Bağlantı durumu, tek ana Başlat/Duraklat eylemi, seçili dönemin girdi azalması, tek zaman grafiği ve kısa uygulama listesi.
-2. **Uygulamalar:** Codex, Claude Code, OpenCode bağlantıları; sürüm, kapsam, son doğrulama ve bağlan/kaldır eylemleri.
-3. **Etkinlik:** İçerik göstermeyen istek listesi; model, istemci, süre, sıkıştırma sonucu ve hata. Filtreler ve ayrıntı paneli.
-4. **Ayarlar:** Tema, dil, arka planda çalışma, veri saklama ve sade sıkıştırma tercihleri. Gelişmiş ayrıntılar isteğe bağlı açılır.
+1. **Overview:** Connection state, one primary Start/Pause action, selected-period input reduction, one time-series chart, and a short application list.
+2. **Applications:** Codex, Claude Code, and OpenCode connections; version, scope, last verification, and connect/disconnect actions.
+3. **Activity:** A request list that does not show content; model, client, duration, compression result, and errors. Filters and a details panel.
+4. **Settings:** Theme, language, background operation, data retention, and simple compression preferences. Advanced details expand on demand.
 
-### 24 Ekim kullanıcı yönü — sade kullanım ve oturumlar
+### 24 October user direction — simple use and sessions
 
-Bu bölüm hedef davranıştır; uygulanmış durum TASKS.md ile sınırlıdır. Ana deneyim iki soruyu cevaplar: **Hangi platform/modelde ne kadar kullandım ve tasarruf ettim? Hangi hesaplarım bağlı ve hangi sohbetlerim açık/çalışıyor?** Graphite görsel yönü korunur.
+This section describes target behavior; implementation status is limited to TASKS.md. The primary experience answers two questions: **How much did I use and save by platform/model? Which accounts are connected, and which chats are open or working?** Preserve the Graphite visual direction.
 
-- Genel bakış, platform → model kırılımında kullanılan token, tasarruf edilen token ve aynı temelden tasarruf yüzdesini gösterir. Maliyet resmî kullanım/fatura verisine dayanıyorsa ölçülen, sürümlü fiyat hesabına dayanıyorsa tahmini olarak etiketlenir; abonelik kotası token maliyetine çevrilmez. Veri yokluğu sıfır sayılmaz.
-- Bağlantının normal görünümü kapsam, kısa etki özeti ve Bağlan/Geri al eylemidir. Ayar katmanları, protokol/sahiplik metadata ve tanı bilgisi Gelişmiş altında isteğe bağlı açılır; değişecek hedef ve kritik çatışmalar işlemden önce anlaşılır kalır.
-- Oturumlar iki ayrı grup içerir: hesap bağlantıları/giriş durumu ve açık sohbetler/çalışan görevler. Birinin açık olması diğerinin açık olduğu anlamına gelmez. Giriş, desteklenen istemcinin resmî akışıyla açılır; Headroom şifre/kod istemez, mevcut auth sırlarını kopyalamaz. Yeni hesap/abonelik zorunluluğu yoktur.
-- Sohbet listesi yalnız gereken metadata ile çalışır. Açık, çalışıyor, son trafik gözlendi, sona erdi ve bilinmiyor durumları birbirine dönüştürülmez. Süreç bulunması, dosyanın varlığı veya uzun süre trafik olmaması tek başına etkin sohbet kanıtı değildir. Desteklenen resmî aç/resume yolu varsa kullanıcı eylemiyle kullanılır; içerik toplama veya gizli provider/model değişimi yapılmaz.
-- Ayrı model ve alt ajanlar rota/kimlik kanıtı varsa aynı platform altında görünür; model başına kurulum/seçim zorunluluğu yoktur. Atanamayan kullanım görünür kalır. Proxy'den geçmeyen trafik bütün kullanım olarak sunulmaz.
+- Overview shows tokens used, tokens saved, and the percentage from the same basis, broken down by platform → model. Label cost as measured only when based on official usage/billing data; label it estimated when based on a versioned price calculation. Do not convert subscription quotas to token cost. Missing data is not zero.
+- The normal connection view shows scope, a short impact summary, and Connect/Undo actions. Settings layers, protocol/ownership metadata, and diagnostics are optional under Advanced; the target of a change and critical conflicts remain clear before the action.
+- Sessions has two distinct groups: account connection/sign-in status and open chats/working tasks. One does not imply the other. Sign-in opens through the supported client's official flow; Headroom does not ask for passwords/codes or copy existing credentials. No new account/subscription is required.
+- The chat list uses only required metadata. Open, working, last traffic observed, ended, and unknown states are not conflated. A process, file, or long period without traffic alone does not prove an active chat. Use an officially supported open/resume path only by user action; do not collect content or change provider/model settings silently.
+- Show separate models and subagents under a platform only when route/identity evidence exists; do not require setup per model. Keep unassigned usage visible. Do not present traffic that bypasses the proxy as total usage.
 
-Uygulama sırası: H022 sade bağlantı, H023–H026 gerçek ölçümler/kırılımlar, H050 hesap bağlantıları ve H051 sohbet metadata/açma akışı. Mevcut H020 teknik kabul ekranı son kullanıcı deneyiminin tamamlanmış hâli değildir.
+Implementation order: H022 simple connections, H023–H026 real metrics/breakdowns, H050 account connections, and H051 session metadata/open flow. The existing H020 technical acceptance screen is not the completed end-user experience.
 
-Genel bakış yerleşimi:
+Overview layout:
 
-```text
+~~~text
 ┌──────────────────────────────────────────────────────────┐
-│ PennyPinch                 Durum     [Başlat]      │
+│ PennyPinch                 Status   [Start]              │
 ├───────────────┬──────────────────────────────────────────┤
-│ Genel bakış   │ Girdi token azalması       [Bugün ▾]     │
-│ Uygulamalar   │ değer / veri bekleniyor    ölçüm zamanı  │
-│ Etkinlik      │                                          │
-│ Ayarlar       │ Tek zaman grafiği                        │
+│ Overview      │ Input token reduction      [Today ▾]    │
+│ Applications  │ value / waiting for data   measured at   │
+│ Activity      │                                          │
+│ Settings      │ One time-series chart                    │
 │               │                                          │
-│               │ Bağlı uygulamalar ve son trafik          │
+│               │ Connected apps and last traffic          │
 │               │                                          │
-│ Motor durumu  │ Gerektiğinde tek, açıklayıcı durum mesajı│
+│ Engine status │ One clear status message when needed     │
 └───────────────┴──────────────────────────────────────────┘
-```
+~~~
 
-İlk açılışta sahte grafik veya örnek tasarruf gerçek veri gibi gösterilmez. “Henüz istek geçmedi” boş durumu kullanılır. İlk kullanım, yükleme, duraklatma, hata ve bağlantı kaldırma durumları tasarımın parçasıdır. Hedef çalışma alanı 1280×800; 1024×720 ve Windows %125/%150 ölçeklerinde temel kontroller erişilebilir kalır.
+Do not show a fake chart or sample savings as real data on first launch. Use a “No requests yet” empty state. First use, loading, pause, errors, and disconnect are part of the design. Target workspace: 1280×800; core controls remain accessible at 1024×720 and Windows 125%/150% scaling.
 
-## 9. Tasarruf ve kullanım ölçümü
+## 9. Savings and usage measurement
 
-Ana metrik **Headroom'un hesapladığı girdi token azalmasıdır**. Gerçek sağlayıcı faturasındaki net kazanç veya abonelik kullanım hakkı ile eşitlenmez.
+The primary metric is **input-token reduction calculated by Headroom**. It is not the net savings on a provider bill or a subscription quota.
 
-```text
-B = aynı kapsamda sıkıştırma öncesi girdi tokenları
-A = aynı kapsamda sıkıştırma sonrası girdi tokenları
+~~~text
+B = input tokens before compression, in the same scope
+A = input tokens after compression, in the same scope
 S = B - A
-Oran = 100 × S / B  (yalnız B > 0 ve iki değer de biliniyorsa)
-```
+Rate = 100 × S / B  (only when B > 0 and both values are known)
+~~~
 
-**Kullanıcı talebi — yüzdelik görünüm:** Genel bakışta tasarruf edilen token sayısı ve yüzdesi birlikte görünür. Örnek gösterim `%37,5 · 45.000 token` için öncesi `120.000`, sonrası `75.000` olur; bu yalnız açıklayıcı örnektir. Seçilen dönem değiştiğinde iki değer aynı kapsamdan birlikte güncellenir. Öncesi/sonrası değerleri, veri kaynağı ve ölçülebilen kapsam ayrıntıda görülür; JSON/CSV de aynı yüzdeyi içerir. Veri yoksa `— / Veri bekleniyor`, ölçülebilir gerçek sıfırda `%0`, negatif farkta “token artışı” gösterilir. Yüzde TR/EN yerelleştirmesine uygun biçimlenir.
+**User request — percentage display:** Overview shows both the number of tokens saved and the percentage. For example, 37.5% · 45,000 tokens means 120,000 before and 75,000 after; this is an illustrative example only. When the selected period changes, both values update together from the same scope. Before/after values, data source, and measurable scope appear in details; JSON/CSV uses the same percentage. If data is missing, show — / Waiting for data; for a measurable zero, show 0%; for a negative difference, show “token increase.” Format the percentage according to the TR/EN locale.
 
-- Dönem yüzdeleri toplam B ve A üzerinden hesaplanır; istek yüzdelerinin ortalaması alınmaz.
-- Token sayacının kaynağı ve hassasiyeti korunur: sağlayıcı tokenizer'ı, yerel tahmin veya bilinmiyor.
-- Eksik veri sıfıra çevrilmez. Negatif fark varsa artış olarak gösterilir; sessizce silinmez.
-- Tahmini dolar karşılığında model, fiyat kaynağı, fiyat tarihi ve cache varsayımı görünür olur. Bilinmeyen fiyat için uydurma tutar gösterilmez.
-- Sağlayıcının bildirdiği input/output/cached tokenlar, varsa ayrı alanlardır. Bunlar yerel sıkıştırma sayaçlarına eklenmez.
-- Retrieval ve tekrar denemelerinin ek kullanım oluşturabileceği gösterilir. Yalnız çıkarılan içerik üzerinden net maliyet iddiası kurulmaz.
-- Oturum, bugün, 7 gün ve eldeki kayıt süresi kadar geçmiş görünür. Daha uzun dönem için uygulamanın kendi yerel saklama katmanı gerekir.
+- Calculate period percentages from total B and A; do not average per-request percentages.
+- Preserve the source and precision of each token counter: provider tokenizer, local estimate, or unknown.
+- Do not turn missing data into zero. Show a negative difference as an increase; do not silently discard it.
+- For estimated dollar equivalents, show the model, price source/date, and cache assumption. Do not invent an amount for an unknown price.
+- Provider-reported input/output/cached tokens, if available, are separate fields. Do not add them to local compression counters.
+- Show that retrieval and retries may add usage. Do not claim net cost savings based only on removed content.
+- Show session, today, seven days, and as much history as is available. Longer periods require the app's own local retention layer.
 
-Headroom'un kalıcı event kaydı, anlık `/stats` ve MCP snapshot'ları farklı kaynaklardır. Uygulama kayıt türlerini normalize etmeli; proxy, MCP ve subagent toplamlarını körlemesine birleştirmemelidir. [Tasarruf kayıtlarının yapısı](https://docs.headroomlabs.ai/docs/savings), [izleme uçları](https://docs.headroomlabs.ai/docs/metrics).
+Headroom's persistent event records, live /stats, and MCP snapshots are different sources. The app must normalize record types; do not blindly combine proxy, MCP, and subagent totals. [Savings record structure](https://docs.headroomlabs.ai/docs/savings), [metrics endpoints](https://docs.headroomlabs.ai/docs/metrics).
 
-İsteğe bağlı terminal filtresi/proxy gibi ek katmanlar Headroom motor ölçümüne eklenerek tek bir yüzde yapılmaz. Komut çıktısı baytları, RTK’nın bytes/4 tahmini, aynı temelde karşılaştırılabilen toplam girdi tokenları, sağlayıcı cache/output sayaçları ve fatura kullanımı ayrı tutulur. Katmanlar yalnız aynı istek/iş yükü bağı ve karşılaştırılabilir temel kanıtlanırsa yan yana kıyaslanır; kanıt yoksa bilinmiyor kalır.
+Optional layers such as terminal filters/proxies are not added to engine measurements to produce one percentage. Command-output bytes, RTK's bytes/4 estimate, comparable same-basis total input tokens, provider cache/output counters, and billing usage remain separate. Compare layers side by side only when the same request/workload relation and comparable basis are proven; otherwise mark them unknown.
 
-İstemci/model kırılımı kanıt varsa gösterilir. Proje, sohbet, ana ajan ve subagent kırılımı yalnız güvenilir metadata veya uygulamanın yönettiği başlatma eşlemesi varsa gösterilir. Aksi halde “Atanamayan trafik” ya da “Proxy toplamı” kullanılır. Aynı model iki farklı ajan tarafından kullanılabilir.
+Show client/model breakdowns when evidence exists. Show project, chat, main-agent, and subagent breakdowns only when trusted metadata or an app-managed launch mapping exists. Otherwise use “Unassigned traffic” or “Proxy total.” The same model may be used by two different agents.
 
-Panel istatistikleri doğrudan yerel kayıtlardan okur; rapor hazırlamak için LLM çağrısı yapmaz. GPT'nin her son mesajına tasarruf satırı ekletmek ilk sürümün gereği değildir. Sonradan istenirse kısa, koşullu ve snapshot zamanını belirten bir entegrasyon olabilir.
+The panel reads statistics directly from local records; it does not call an LLM to prepare a report. Adding a savings line to every GPT final response is not a first-release requirement. If requested later, it may be a short, conditional statement that identifies snapshot time.
+## 10. Differentiating features
 
-## 10. Ürünü farklılaştıran özellikler
+### In the first release
 
-### İlk sürümde
+- **Real connection state:** Do not say “working” because a settings file exists; show the last real request and verification.
+- **Continue with your chosen model:** Compare the model and effort before/after setup; report incompatibility clearly.
+- **Undo in one place:** Disconnect and preserve user changes.
+- **Cache view:** Show cache usage beside token reduction when data exists; do not invent a rate when it does not.
+- **Quiet system tray:** Do not produce constant notifications during healthy operation; notify only about meaningful state changes.
 
-- **Gerçek bağlantı durumu:** Ayar dosyası bulunduğu için “çalışıyor” demez; son gerçek isteği ve doğrulamayı gösterir.
-- **Seçtiğin modelle devam:** Kurulum öncesi/sonrası model ve efor karşılaştırması; açık uyumsuzluk bildirimi.
-- **Tek yerden geri dönüş:** Bağlantıyı kaldırma ve kullanıcı değişikliklerini koruma.
-- **Cache görünümü:** Veri varsa cache kullanımını token azalmasıyla yan yana gösterir; veri yoksa oran uydurmaz.
-- **Sessiz sistem tepsisi:** Sağlıklı çalışmada sürekli bildirim üretmez; yalnız anlamlı durum değişiklikleri bildirir.
+### In later small releases
 
-### Sonraki küçük sürümlerde
+- **View by content type:** Show where gains came from in JSON, logs, search, and other types when metadata is sufficient.
+- **Local sample experiment:** Preview compression for a user-selected file without sending a provider request. Do not present it as a response-quality or billing-savings test.
+- **Project preferences:** Recommendations based on client and verified project mapping. Do not create conflicts between global settings for a shared proxy.
+- **Exportable diagnostics:** A content-free report of version, connection test, and settings differences.
+- **Compatibility checks:** After a client update, report when revalidation is needed; do not force an engine change while it is running.
+- **Optional terminal filter:** An additional layer within H043/H044 scope, for validated clients and shell commands. It does not change the connected model, reasoning, auth, or agent settings; do not assume it captures local/built-in tool calls automatically.
 
-- **İçerik türüne göre görünüm:** JSON, log, arama ve diğer türlerde nereden kazanç geldiği; metadata yeterliyse.
-- **Yerel örnek deneyi:** Kullanıcı seçtiği bir dosyada sağlayıcıya istek göndermeden sıkıştırma önizlemesi yapar. Bu, cevap kalitesi veya fatura kazancı testi olarak sunulmaz.
-- **Proje tercihleri:** İstemci ve doğrulanmış proje eşlemesine göre öneriler. Aynı proxy'nin global ayarlarını projeler arasında çakıştırmaz.
-- **Dışa aktarılabilir tanı:** Sürüm, bağlantı testi ve ayar farklarının içeriksiz raporu.
-- **Uyum denetimi:** İstemci güncellendikten sonra yeniden doğrulama ihtiyacını bildirir; çalışırken motoru zorla değiştirmez.
-- **İsteğe bağlı terminal filtresi:** H043/H044 sınırları içinde, doğrulanmış istemci ve shell komutlarına ek bir katmandır. Bağlantıdaki model, reasoning, auth veya ajan ayarını değiştirmez; yerel/yerleşik araç çağrılarını otomatik yakaladığı varsayılmaz.
+Rewriting long history in Claude Code, Codex, and other clients may reduce cache gains. The initial strategy favors cache preservation and working on new content; do not assume “more aggressive is always better.” [Cache behavior](https://docs.headroomlabs.ai/docs/cache-optimization).
 
-Claude Code, Codex ve diğer istemcilerde büyük geçmişin yeniden yazılması cache kazancını azaltabilir. Cache koruması ve yeni içerik üzerinde çalışma başlangıç stratejisidir; “daha agresif her zaman daha iyi” varsayılmaz. [Cache davranışı](https://docs.headroomlabs.ai/docs/cache-optimization).
+## 11. Compression and original-content policy
 
-## 11. Sıkıştırma ve özgün içerik politikası
+- Initial configuration: coding profile and cache mode; verify active settings against the engine version.
+- Prioritize protection for edited source files, full identifiers, and exact numeric decision data.
+- Advanced settings may let users choose tool names whose output must be preserved. Use the active engine's supported tool-result protection; show selected names and which connection/engine group the change affects. Preserve numeric data through a verified file-reading/tool policy; do not guarantee automatic detection of all numeric content. numeric_report in experiments is a synthetic tool name, not a production default.
+- Test that original content stored through CCR is accessible through the retrieval tool; producing a marker alone is not sufficient.
+- Initial TTL target is 7200 seconds. Verify that the active value took effect; do not hide that expired records cannot be restored.
+- Pause and window close do not automatically clear existing retrieval records.
+- Output shaper, automatic effort reduction, model switching, continuous learning, and automatic instruction-file writes are off initially.
+- Offer simple preferences: recommended coding settings and advanced details. Do not expose raw environment variables in the primary user flow.
 
-- Başlangıç: `coding` profili ve `cache` modu; etkin ayarlar motor sürümünden doğrulanır.
-- Düzenlenen kaynak dosyaları, tam kimlikler ve kesin sayısal karar verileri için koruma önceliklidir.
-- Gelişmiş ayarlarda çıktısı korunacak araç adları seçilebilir. Etkin motorun desteklediği tool-result koruması kullanılır; seçilen adlar ve değişikliğin hangi bağlantı/motor grubunu etkilediği gösterilir. Sayısal verinin korunması doğrulanmış dosya okuma/araç politikasıyla sağlanır; bütün sayısal içerikleri otomatik tanıma garantisi verilmez. Deneydeki `numeric_report` yalnız sentetik araç adıdır, üretim varsayılanı değildir.
-- CCR ile saklanan özgün içeriğin retrieval aracıyla erişilebilir olduğu test edilir; yalnız marker üretmek yeterli değildir.
-- Başlangıç TTL hedefi 7200 saniyedir. Etkin değerin uygulandığı doğrulanır; dolan kayıtların geri getirilemeyeceği gizlenmez.
-- Duraklatma ve pencereyi kapatma mevcut retrieval kayıtlarını kendiliğinden temizlemez.
-- Output shaper, otomatik efor azaltma, model değiştirme, sürekli öğrenme ve otomatik talimat dosyası yazma başlangıçta kapalıdır.
-- Kullanıcıya sade tercih sunulur: önerilen kodlama ayarı ve gelişmiş ayrıntılar. Ham env değişkenleri ana kullanıcı akışına taşınmaz.
+CCR allows original content to be fetched later; it does not guarantee that every detail is present in the compressed view or that a model will always request every omitted detail. [CCR and retention](https://docs.headroomlabs.ai/docs/ccr).
 
-CCR, saklanan özgün içeriğin sonradan alınmasını sağlar; sıkıştırılmış görünümün bütün ayrıntıları taşıdığı veya modelin her eksik ayrıntıyı mutlaka geri isteyeceği garantisi değildir. [CCR ve retention](https://docs.headroomlabs.ai/docs/ccr).
+## 12. Proposed technical architecture
 
-## 12. Teknik mimari önerisi
+**Suggested starting point.** Tauri 2 desktop shell, Rust management layer, React and TypeScript UI, a pinned Headroom side engine and a local SQLite metadata store. Confirm the dependency list through technical verification.
 
-**Önerilen başlangıç:** Tauri 2 masaüstü kabuğu, Rust yönetim katmanı, React + TypeScript arayüz, sürümü sabitlenmiş Headroom yan motoru ve yerel SQLite metadata deposu. Bu bir öneridir; teknik doğrulama öncesinde kesinleştirilmiş bağımlılık listesi değildir.
+Tauri supports packaging external executables as sidecars. That capability alone does not prove that Headroom and optional ML dependencies package cleanly on Windows; a clean-machine test is required. [Tauri sidecar documentation](https://v2.tauri.app/develop/sidecar/).
 
-Tauri, haricî yürütülebilir dosyaların sidecar olarak paketlenmesini destekler. Bu imkân, Headroom ve isteğe bağlı ML bağımlılıklarının Windows'ta gerçekten sorunsuz paketlendiğini tek başına kanıtlamaz; temiz makine deneyi gerekir. [Tauri sidecar belgesi](https://v2.tauri.app/develop/sidecar/).
-
-```mermaid
+~~~mermaid
 flowchart LR
-    C[Codex] --> R[Yerel yönlendirme]
+    C[Codex] --> R[Local routing]
     A[Claude Code] --> R
     O[OpenCode] --> R
-    R --> H[Headroom motoru]
-    H --> P[Model sağlayıcısı]
-    U[Masaüstü arayüzü] <--> M[Yerel yönetici]
+    R --> H[Headroom engine]
+    H --> P[Model provider]
+    U[Desktop UI] <--> M[Local manager]
     M --> H
-    M --> D[İstatistik ve bağlantı kayıtları]
-    M --> I[İstemci adaptörleri]
-```
+    M --> D[Metrics and connection records]
+    M --> I[Client adapters]
+~~~
 
-### Bileşen sorumlulukları
+### Component responsibilities
 
-- **Arayüz:** Durumu gösterir ve tanımlı eylemleri çağırır. Dosya yollarından serbest shell komutu üretmez.
-- **Yerel yönetici:** Motor sahipliği, portlar, sağlık, kontrollü kapanış, config işlemleri ve metrik normalizasyonu.
-- **İstemci adaptörleri:** Algılama → değişiklik planı → uygulama → gerçek doğrulama → geri alma. İstemciye özgü farkları saklamaz.
-- **Headroom motoru:** Desteklenen protokol yönlendirmesi, sıkıştırma ve retrieval. Upstream sürümüne bağlı davranış kaydedilir.
-- **Yerel kayıt:** Bağlantı manifesti, sürümler, metrik olayları ve son doğrulamalar. Ham prompt/response deposu değildir.
+- **UI:** Shows state and calls defined actions. Does not generate free-form shell commands from file paths.
+- **Local manager:** Engine ownership, ports, health, controlled shutdown, config operations, and metric normalization.
+- **Client adapters:** Detect → plan changes → apply → verify real behavior → undo. Keep client-specific differences encapsulated.
+- **Headroom engine:** Supported protocol routing, compression, and retrieval. Record behavior that depends on the upstream version.
+- **Local records:** Connection manifest, versions, metric events, and last verifications. Not a raw prompt/response store.
 
-Çakışan upstream, profil veya giriş ayarı tek ortak proxy'ye son yazan kazanır biçiminde uygulanmaz. Başlangıçta aynı güvenilir ayarlar paylaşılır; ayrışma gerekiyorsa ayrı, uygulamaya ait motor grubu açılır. Aktif oturumun ayarı başka bir bağlantı yüzünden değiştirilmez.
+Do not handle conflicting upstream, profile, or sign-in settings with a shared proxy where the last writer wins. Start with shared trusted settings; if separation is needed, create a separate app-owned engine group. Do not change an active session's settings because of another connection.
 
-### Dağıtım hedefi
+### Distribution target
 
-Son kullanıcıya Python, Node.js, Rust veya terminal kurdurmayan bir Windows installer hedeflenir. WebView2/runtime gibi ön koşullar installer tarafından anlaşılır biçimde yönetilir. Geliştirme sırasında uv kullanılabilir; bu, son kullanıcı için kalıcı bir zorunluluk olarak bırakılmaz.
+Target a Windows installer that does not require end users to install Python, Node.js, Rust, or a terminal. The installer manages prerequisites such as WebView2/runtime clearly. uv may be used during development, but it must not remain a permanent end-user requirement.
 
-Installer Windows 11'i zorunlu alt sınır yapmaz. Windows 10 22H2 ve Windows 11'de WebView2 varlığı denetlenir; eksik runtime için desteklenen kurulum akışı sunulur. Uygulama kabuğunun desteği yeterli kabul edilmez: Headroom, paketlenmiş Python/native bağımlılıklar, sistem tepsisi ve güncelleme yolu da iki işletim sisteminde ayrı sınanır. [Tauri sistem ön koşulları](https://v2.tauri.app/start/prerequisites/), [Windows installer ve WebView2 dağıtımı](https://v2.tauri.app/distribute/windows-installer/).
+Do not make Windows 11 the installer's minimum version. Check for WebView2 on Windows 10 22H2 and Windows 11; provide a supported installation flow if the runtime is missing. Shell support is not enough: separately test Headroom, packaged Python/native dependencies, system tray, and update path on both operating systems. [Tauri system prerequisites](https://v2.tauri.app/start/prerequisites/), [Windows installer and WebView2 distribution](https://v2.tauri.app/distribute/windows-installer/).
 
-19 Ekim 2026 tarihinde PyPI üzerinden görülen Headroom sürümü `0.41.0`, Python alt sınırı `3.10` idi. Prototipte seçilen sürüm kilitlenir; yayın öncesi güncel uyumluluk ayrıca doğrulanır. [Paket kaydı](https://pypi.org/project/headroom-ai/0.41.0/).
+On 19 October 2026, PyPI listed Headroom `0.41.0` and a minimum Python version of `3.10`. Pin the prototype version and verify current compatibility before release. [Package listing](https://pypi.org/project/headroom-ai/0.41.0/).
 
-## 13. Yapılandırma, veri ve uygulama sınırları
+## 13. Configuration, data, and application boundaries
 
-- Yerel bağlantılar loopback üzerinde tutulur. Yönetim eylemleri yalnız uygulamanın yetkili yerel kanalından kabul edilir.
-- Giriş tokenları ve API anahtarları UI loglarına veya istatistik deposuna yazılmaz. Mevcut istemci auth dosyalarının kopyalanması normal kurulum yöntemi değildir.
-- **11 Kasım kullanıcı kapsamı:** H052–H054 ile bize ait özel Cloudflare Workers/D1 rapor API'si ve yetkili panel, kullanıcının önizleyerek gönderdiği geri bildirim ve isteğe bağlı günlük tasarruf özetleri planlanır. İlk açılışta gösterilen veriye ilişkin açık seçimden sonra gönderim otomatikleşir; kapatma ve bekleyen raporu temizleme mümkündür. Yerel ölçüm paylaşım tercihiyle karıştırılmaz. Günlük kurulum özetleri 30 gün tutulur; daha eski istatistikler kurulum kimliği/günlük ayrıntıdan arındırılarak toplulaştırılır. Kod/konuşma, proje yolu, auth sırları ve hesap/sohbet kimliği uzak özete girmez. Katılım ve ölçüm temeli görünür tutulur; farklı temeller birleştirilmez. Ücretsiz kota, veri bölgesi, erişim, silme ve saklama gerçek dağıtımın kabulüdür. [Görevler](TASKS.md#geri-bildirim-ve-isteğe-bağlı-kullanım-paylaşımı--11-kasım-kullanıcı-kararı).
-- Yerel istatistikler açık, upstream anonim kullanım beacon'u kapalı başlangıç tercihidir: desteklenen sürümde `HEADROOM_TELEMETRY=on` ve `HEADROOM_BEACON=off` birlikte doğrulanır. Bu iki özellik aynı şey değildir. [Headroom telemetry açıklaması](https://docs.headroomlabs.ai/docs/proxy#starting-the-proxy).
-- Motor, seçili model sağlayıcısına istek gönderir; gerektiğinde paket/model indirmeleri ayrı gösterilir. “Uygulama hiçbir zaman internete çıkmaz” sözü verilmez.
-- Kullanıcı verileri kurulum klasörüne yazılmaz. Önerilen kök `%LOCALAPPDATA%\HeadroomDesktop` altında config, state, engine ve diagnostics alt dizinleridir.
-- Uygulamanın sahip olduğu süreçler ve dosyalar manifestle izlenir. Bilinmeyen port dinleyicileri sonlandırılmaz; başka Headroom kurulumları sahiplenilmez.
-- Config düzenlemeleri atomik ve doğrulanmış olur. Uygulamanın değiştirdiği alanların öncesi/sonrası ve fingerprint'i kaydedilir.
-- Geri alma, uygulamanın sahip olduğu alanları kaldırır. Kullanıcının arada yaptığı değişiklik çakışıyorsa sessizce ezmek yerine anlaşılır fark gösterilir.
-- Motor ve uygulama güncellemeleri ayrı izlenir. Upstream lisans/NOTICE dosyaları dağıtım hazırlığında kontrol edilir; upstream dosyalar elle değiştirilmez.
+- Local connections stay on loopback. Management actions are accepted only through the app's authorized local channel.
+- Sign-in tokens and API keys are not written to UI logs or the metrics store. Copying existing client auth files is not the normal setup method.
+- **User scope as of 11 November:** H052–H054 plan a dedicated Cloudflare Workers/D1 report API and authorized panel, user-previewed feedback submission, and optional daily savings summaries. After explicit selection of the data shown at first launch, submission becomes automatic; users can opt out and clear pending reports. This is separate from the local metrics-sharing preference. Daily installation summaries are retained for 30 days; older statistics are aggregated without installation IDs/daily detail. Code/conversations, project paths, auth secrets, and account/chat IDs are excluded from remote summaries. Participation and measurement basis remain visible; different bases are not combined. Free-tier quotas, data region, access, deletion, and retention must be accepted against the real deployment. [Feedback and sharing tasks](TASKS.md#geri-bildirim-ve-isteğe-bağlı-kullanım-paylaşımı--11-kasım-kullanıcı-kararı).
+- Local statistics are on and the upstream anonymous usage beacon is off by default: on supported versions, verify HEADROOM_TELEMETRY=on and HEADROOM_BEACON=off together. These are distinct features. [Headroom telemetry description](https://docs.headroomlabs.ai/docs/proxy#starting-the-proxy).
+- The engine sends requests to the selected model provider; package/model downloads, when needed, are shown separately. Do not promise “the app never accesses the internet.”
+- User data is not written to the installation folder. The suggested root is %LOCALAPPDATA%\HeadroomDesktop, with config, state, engine, and diagnostics subdirectories.
+- Track app-owned processes and files in a manifest. Do not terminate unknown port listeners or claim other Headroom installations.
+- Config edits are atomic and validated. Record before/after values and fingerprints for fields changed by the app.
+- Undo removes app-owned fields. If a later user change conflicts, show a clear diff instead of silently overwriting it with an old backup.
+- Track engine and application updates separately. Check upstream licenses/NOTICE files when preparing distribution; do not manually change upstream files.
 
-Gizlilik ve yerel kontrol yüzeylerinin gerçek davranışı seçilen motor sürümünün güvenlik belgesiyle karşılaştırılır. [Headroom güvenlik modeli](https://docs.headroomlabs.ai/docs/security-model).
+Compare the real privacy and local-control behavior with the selected engine version's security documentation. [Headroom security model](https://docs.headroomlabs.ai/docs/security-model).
 
-## 14. Önerilen proje yapısı ve kod sözleşmesi
+## 14. Proposed project layout and code contract
 
-Henüz oluşturulmamış uygulama için önerilen yapı:
+The following layout is the initial application structure proposal.
 
-```text
-HEADROOM_DESKTOP_SPEC.md       Ürün kapsamı ve kabul ölçütleri
-src/                          React + TypeScript arayüz
+~~~text
+HEADROOM_DESKTOP_SPEC.md       Product scope and acceptance criteria
+src/                          React + TypeScript UI
   features/                   overview, integrations, activity, settings
-  components/                 Ortak erişilebilir UI parçaları
-  i18n/                       Türkçe / İngilizce metinler
-  lib/                        Tipler ve yerel API istemcisi
-src-tauri/                    Rust masaüstü ve yönetim katmanı
-  src/integrations/           Codex / Claude Code / OpenCode adaptörleri
-  src/runtime/                Motor süreçleri ve sağlık
-  src/metrics/                Sayaç normalizasyonu ve yerel kayıt
-tests/fixtures/               Ayar dosyaları ve protokol örnekleri
-tests/e2e/                    Kurulum, bağlantı ve UI akışları
-scripts/                      Paketleme ve sürüm yardımcıları
-docs/                         Teknik kararlar ve kısa kullanım rehberi
-work/                         Geçici çalışma; kaynak veya kullanıcı kaydı değil
-```
+  components/                 Shared accessible UI components
+  i18n/                       Turkish / English text
+  lib/                        Types and local API client
+src-tauri/                    Rust desktop and management layer
+  src/integrations/           Codex / Claude Code / OpenCode adapters
+  src/runtime/                Engine processes and health
+  src/metrics/                Counter normalization and local records
+tests/fixtures/               Config files and protocol examples
+tests/e2e/                    Setup, connection, and UI flows
+scripts/                      Packaging and release helpers
+docs/                         Technical decisions and short user guide
+work/                         Temporary workspace; not source or user records
+~~~
 
-TypeScript strict mod; istemci/motor çıktıları güvenilmeyen dış veri olarak doğrulanır. Rust tarafında serbest komut metni yerine tipli eylemler kullanılır. UI metinleri kod içine dağıtılmaz. Sayaç belirsizliği veri tipinde korunur.
+TypeScript strict mode is used; client/engine output is validated as untrusted external data. Use typed actions in Rust instead of free-form command strings. Keep UI copy out of code. Preserve counter uncertainty in the data type.
 
-Örnek uygulama içi sözleşme; Headroom'un hazır response şeması olduğu iddia edilmez:
+Example in-app contract; this does not claim that Headroom has a ready-made response schema:
 
-```ts
+~~~ts
 type SavingsSnapshot = {
   scopeId: string;
   observedAt: string;
@@ -369,120 +367,119 @@ type SavingsSnapshot = {
   modelId: string | null;
   agentKind: "main" | "subagent" | "unknown";
 };
-```
+~~~
 
-Adaptör yalnız istek/yanıt biçimini değil, hata, auth, model kimliği ve ölçüm semantiğini de korur. Ham veri ile UI sözleşmesi arasındaki eşleme seçilen motor sürümüne göre test edilir.
+An adapter preserves not only request/response format but also error behavior, auth, model identity, and metric semantics. Test the mapping between raw data and the UI contract against the selected engine version.
+## 15. Development commands in the initial plan
 
-## 15. Geliştirme komutları — planlanan sözleşme
+**The commands are planned entry points.** Pin Node, pnpm and Rust when scaffolding and package scripts are available.
 
-**Bu komutlar mevcut çalışan proje komutları değildir.** Scaffold ve paket script'leri oluşturulduğunda sağlanması hedeflenen arayüzdür. Node/pnpm/Rust sürümleri o aşamada kilitlenir.
-
-| Amaç | Planlanan komut |
+| Purpose | Planned command |
 | --- | --- |
-| Bağımlılıkları yükle | `pnpm install --frozen-lockfile` — yalnız lockfile oluşturulduktan sonra |
-| Arayüz geliştirme | `pnpm dev` |
-| Masaüstü geliştirme | `pnpm tauri dev` |
-| Statik kontrol | `pnpm lint` |
-| TypeScript kontrolü | `pnpm typecheck` |
-| Birim ve sözleşme testleri | `pnpm test -- --run` |
-| Arayüz uçtan uca testleri | `pnpm test:e2e` |
-| Rust testleri | `cargo test --manifest-path src-tauri/Cargo.toml` |
-| Windows paketi | `pnpm tauri build` |
+| Install dependencies | `pnpm install --frozen-lockfile` after creating the lockfile |
+| UI development | `pnpm dev` |
+| Desktop development | `pnpm tauri dev` |
+| Static checks | `pnpm lint` |
+| TypeScript checking | `pnpm typecheck` |
+| Unit and contract tests | `pnpm test -- --run` |
+| UI end-to-end tests | `pnpm test:e2e` |
+| Rust tests | `cargo test --manifest-path src-tauri/Cargo.toml` |
+| Windows package | `pnpm tauri build` |
 
-## 16. Doğrulama stratejisi ve kabul ölçütleri
+## 16. Validation strategy and acceptance criteria
 
-Araç önerisi: frontend birimleri için Vitest, web arayüz akışları için Playwright, Rust için yerel testler. Web UI testi native installer/tray doğrulamasının yerine geçmez. Windows 10 22H2 x64 ve Windows 11 x64 için ayrı temiz kullanıcı/makine testleri gerekir.
+Suggested tools include Vitest for frontend units, Playwright for web UI flows and native tests for Rust. Verify the installer and tray in a native run. Run separate clean-user or clean-machine tests for Windows 10 22H2 x64 and Windows 11 x64.
 
-### İlk teknik doğrulama
+### Initial technical validation
 
-- [ ] Paketlenmiş Headroom motoru hem Windows 10 22H2 x64 hem Windows 11 x64 temiz ortamında başlar; bağımlılık ve indirme ihtiyaçları kayıtlıdır.
-- [ ] Codex masaüstünden küçük gerçek bir isteğin yönlendirildiği gösterilir; model adı ve streaming korunur.
-- [ ] Bir ana ajan ve bir alt ajan kullanılan örnekte her ikisinin yolu ayrı doğrulanır; alt ajanın modeli ve eforu korunur.
-- [ ] Claude Code CLI ve OpenCode CLI için aynı küçük model/stream/araç doğrulaması yapılır.
-- [ ] Kayıtlı bir örnekte sıkıştırma oluşur ve özgün içerik aynı kurulumdan geri alınır.
-- [ ] Duraklatma mevcut geçmişi ve retrieval'ı bozmadan çalışır.
+- [ ] The packaged Headroom engine starts in clean Windows 10 22H2 x64 and Windows 11 x64 environments; dependency and download requirements are recorded.
+- [ ] Show a small real request routed from the Codex desktop app; preserve model name and streaming.
+- [ ] In a sample using a main agent and a subagent, verify both routes separately and preserve the subagent's model and effort.
+- [ ] Run the same small model/stream/tool validation for Claude Code CLI and OpenCode CLI.
+- [ ] Compression occurs in a recorded example, and the original content is retrieved from the same installation.
+- [ ] Pause works without breaking existing history or retrieval.
 
-Gerçek model kontrolleri küçük ve ayrı yürütülür; otomatik test paketi her çalıştığında ücretli API çağrısı yapmaz. Doğrulanamayan kombinasyon kullanıcıya desteklenmiş gibi gösterilmez.
+Real model checks are small and run separately; the automated test suite does not make paid API calls on every run. Do not present an unverified combination as supported.
 
-### İlk kullanılabilir sürüm
+### First usable release
 
-- [ ] Hem Windows 10 22H2 x64 hem Windows 11 x64 temiz ortamında kullanıcı terminal açmadan kurup bağlanabilir.
-- [ ] Kullanıcı ayarlarını koruma, çakışma ve geri alma testleri Codex TOML, Claude JSON ve OpenCode JSONC fixture'larıyla geçer.
-- [ ] Yanlış port/süreç, bozuk config, auth hatası, motor çökmesi ve güncelleme sonrası durumlar anlaşılırdır.
-- [ ] Desteklenen istemciler otomatik bulunur; kullanıcı bir defa bağladıktan sonra sonraki açılışta aynı seçim hatırlanır. Yeni bulunan istemciler kendiliğinden değiştirilmez.
-- [ ] Aynı yönlendirme kapsamındaki alt ajanlar için ayrı manuel kurulum gerekmez; ayrı sağlayıcı/bulut yolu kapsanmıyorsa durum doğru gösterilir.
-- [ ] Desteklenen yol içinde model değişimi yeniden kurulum istemez; bilinmeyen model ve desteklenmeyen içerik model/efor değiştirilmeden doğru ele alınır.
-- [ ] Boş, eksik ve negatif sayaç örnekleri doğru gösterilir; çift sayım ve bilinmeyeni sıfır sayma yoktur.
-- [ ] Geçerli veri olmadığında sahte tasarruf/bağlantı rozeti gösterilmez.
-- [ ] Streaming, araç çağrıları, hata yanıtı ve CCR retrieval protokol sözleşmeleri korunur.
-- [ ] Koyu/açık tema, iki dil, klavye, odak, yüksek DPI ve azaltılmış hareket kontrol edilir.
-- [ ] Pencere kapanışı ve sistem tepsisi motorun gereksiz sonlandırılmasına yol açmaz.
-- [ ] Installer kaldırması, kullanıcıya ait yeni ayarları ve istemci kurulumlarını silmez.
-- [ ] Windows 10 ve Windows 11'de kurulum, açılış, bağlantı, streaming, retrieval, duraklatma, tepsi, yüksek DPI ve kaldırma sonuçları ayrı kaydedilir; bir sistemdeki PASS diğeri için kanıt sayılmaz.
+- [ ] Users can install and connect without opening a terminal in clean Windows 10 22H2 x64 and Windows 11 x64 environments.
+- [ ] Preservation of user settings, conflict behavior, and undo pass against Codex TOML, Claude JSON, and OpenCode JSONC fixtures.
+- [ ] Wrong ports/processes, malformed config, auth errors, engine crashes, and post-update states are understandable.
+- [ ] Supported clients are detected automatically; after a one-time user connection, the same choice is remembered on the next launch. Newly detected clients are not changed automatically.
+- [ ] Subagents on the same routed scope do not require separate manual setup; show status accurately when a separate provider/cloud route is not covered.
+- [ ] Model changes within a supported route do not require setup again; handle unknown models and unsupported content without changing the model/effort.
+- [ ] Empty, missing, and negative counters display correctly; no double-counting or treating unknown as zero.
+- [ ] Do not show fake savings/connection badges when there is no valid data.
+- [ ] Preserve streaming, tool calls, error responses, and CCR retrieval protocol contracts.
+- [ ] Check dark/light themes, both languages, keyboard, focus, high DPI, and reduced motion.
+- [ ] Closing the window and using the system tray do not unnecessarily terminate the engine.
+- [ ] Uninstalling does not delete user-owned new settings or client installations.
+- [ ] Record installation, startup, connection, streaming, retrieval, pause, tray, high-DPI, and uninstall results separately on Windows 10 and Windows 11; a PASS on one system is not evidence for the other.
 
-Performans hedefleri yayımlanmış benchmark değildir: referans Windows makinesinde görünür pencerenin sıcak açılışı ≤2 saniye; odaktaki panelde metrik güncelliği ≤2 saniye; boşta UI CPU ortalaması <%1. UI belleği ve motor belleği ayrı ölçülür; isteğe bağlı ML yüklemesi saklanmaz. Hedefler teknik prototipte referans donanımla netleştirilir.
+Performance targets are not published benchmarks: on the reference Windows machine, warm visible-window startup ≤2 seconds; metric freshness in the focused panel ≤2 seconds; average idle UI CPU <1%. Measure UI memory separately from engine memory; do not retain optional ML downloads. Refine targets against reference hardware in a technical prototype.
 
-Uygulama sırasında odaklı kontroller kullanılır. İnceleme ve düzeltmeler sonrasında son adayın tam yerel kalite kapısı bir kez çalıştırılır. Deterministik PASS ancak ilgili kaynak/config, ortam ve araç zinciri fingerprint'leri eşleşiyorsa tekrar kullanılabilir; canlı bağlantılar ilgili aşamada tazelenir.
+Use focused checks during implementation. After review and fixes, run the final candidate's full local quality gate once. Reuse a deterministic PASS only when the relevant source/config, environment, and toolchain fingerprints match; refresh live connections at the appropriate stage.
 
-## 17. Kapsam sınırları
+## 17. Scope boundaries
 
-**Her zaman:** Mevcut kullanıcı ayarlarını koru; doğru kapsamı göster; geri alma sağla; sırları ayıkla; ölçümün kaynağını belirt; model/efor değişimini algıla; gerçek bağlantıyı kanıtla.
+**Always:** Preserve existing user settings; show the correct scope; provide undo; redact secrets; identify metric sources; detect model/effort changes; prove real connections.
 
-**Yeni ürün kararı gerektirir:** Bulut hesabı veya bulut senkronizasyonu, otomatik model yönlendirme, istemci auth yönetimini devralma, gerçek trafikle kapsamlı ücretli A/B testi, kurumsal çok kullanıcılı yönetim, upstream motor fork'u. Bu kapsam değişiklikleri önce spesifikasyona işlenir.
+**Requires a new product decision:** Cloud accounts or cloud sync, automatic model routing, taking over client auth management, broad paid A/B testing on real traffic, enterprise multi-user management, or an upstream engine fork. Record a scope change in this specification first.
 
-**Yapılmayacak:** Sıkıştırma yüzdesini kredi tasarrufu diye sunmak; kullanıcının modelini sessizce değiştirmek; bir eklentiyi CLI kanıtıyla desteklenmiş saymak; bütün bilgisayarın trafiğini yakalama iddiası; istemci sertifika güvenini değiştirerek genel HTTPS interception kurmak; ham konuşmaları varsayılan kaydetmek; kullanıcının sonraki config değişikliklerini eski yedekle ezmek.
+**Will not do:** Present a compression percentage as credit savings; silently change the user's model; treat extension support as proven by CLI evidence; claim to capture all computer traffic; install general HTTPS interception by changing client certificate trust; save raw conversations by default; overwrite later client config changes with an old backup.
 
-Ses, görüntü, bulut Codex oturumları, AI bellek senkronizasyonu ve otomatik talimat öğrenme ilk sürümün şartları değildir. Kullanıcı isterse yetenek matrisiyle sonraki sürümlere eklenir.
+Audio, images, cloud Codex sessions, AI memory sync, and automatic instruction learning are not first-release requirements. Add them in later releases only if requested and with a capability matrix.
 
-## 18. Ürün aşamaları
+## 18. Product phases
 
-1. **Teknik uygulanabilirlik:** Codex masaüstü, Claude Code ve OpenCode yolları; auth, model, streaming, subagent, retrieval, duraklatma ve paketleme kanıtı.
-2. **İlk günlük kullanım:** Kurulum sihirbazı, bağlantı adaptörleri, yerel motor yönetimi, sade dashboard, sistem tepsisi ve geri alma.
-3. **Yayın kalitesi:** Ayrı Windows 10/11 temiz ortam testleri, installer, uyumluluk kataloğu, yerelleştirme, erişilebilirlik ve sürüm yönetimi.
-4. **Ölçüme dayalı genişleme:** İçerik türleri, yerel önizleme, doğrulanabilir proje kırılımları ve yeni istemciler.
+1. **Technical feasibility:** Codex desktop, Claude Code, and OpenCode routes; evidence for auth, model, streaming, subagents, retrieval, pause, and packaging.
+2. **First daily use:** Setup wizard, connection adapters, local engine management, simple dashboard, system tray, and undo.
+3. **Release quality:** Separate clean-environment tests for Windows 10/11, installer, compatibility catalog, localization, accessibility, and version management.
+4. **Evidence-based expansion:** Content types, local preview, verifiable project breakdowns, and new clients.
 
-Bunlar ürün sıralamasıdır; henüz onaylanmış dosya bazlı uygulama görev listesi veya süre tahmini değildir.
+The stages define product order. Track file-level implementation tasks and timing separately.
 
-Bu aşamaların bağımlılık, kabul ölçütü ve doğrulama içeren görev karşılığı [TASKS.md](TASKS.md) dosyasında tutulur. Uygulama görevlerinin tamamlanma durumu oradaki kanıtlara göre güncellenir.
+[TASKS.md](TASKS.md) holds the tasks, dependencies, acceptance criteria and verification for each stage. Update completion status from the evidence recorded there.
 
-## 19. Açık kararlar
+## 19. Open decisions
 
-- Kalıcı ürün adı ve görsel kimlik; başlangıç çalışma adı yeterlidir.
-- Tauri + paketlenmiş motor seçiminin hem Windows 10 hem Windows 11 temiz ortam doğrulamasından sonra kesinleşmesi.
-- Runtime boyutu, ilk indirmeler ve çevrimdışı başlangıç davranışı.
-- Windows başlangıcında arka plan motorunun varsayılan tercihi; bağlantı sürekliliğiyle birlikte tasarlanmalı.
-- Codex masaüstü/CLI ve her giriş yöntemi için doğrulanmış ilk sürüm kombinasyonları.
-- İlk sürüm yerel geçmiş saklama süresi; token metrikleri ile ham içerik retention'ı farklı ele alınmalı.
-- macOS/Linux ve ilave editör eklentilerinin yayın sırası.
+- Permanent product name and visual identity. The initial working name is sufficient at this stage.
+- Finalize Tauri and the bundled engine after checks in clean Windows 10 and Windows 11 environments.
+- Runtime size, initial downloads and offline startup behavior.
+- Default background-engine startup preference at Windows sign-in, taking connection continuity into account.
+- Verified first-release combinations for Codex Desktop and CLI and each sign-in method.
+- First-release local history retention. Treat token metrics and raw-content retention separately.
+- Release order for macOS, Linux and additional editor integrations.
 
-Bu kararlar ilk özellik belgesinin hazırlanmasını engellemez. Sınanan varsayımlar ve değişen kararlar uygulama başlamadan ilgili bölüme işlenir.
+The first feature specification can proceed while these decisions remain open. Record tested assumptions and changed decisions in the relevant section before implementation.
 
-## 20. Diğer masaüstü uygulamasından alınan ürün gereksinimleri
+## 20. Product requirements drawn from another desktop app
 
-20 Ekim2026 tarihli [kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md), `gglucass/headroom-desktop` reposunun sabit `49a6161` commit'ini inceler. Kaynakta bulunan özellikler bizim uygulanmış kabiliyetimiz değildir. Mevcut39 görev korunarak H040–H045 eklendi; hiçbir yeni özellik bu belgeyle tamamlanmış sayılmaz.
+The [source comparison dated 20 October 2026](docs/research/desktop-comparison-2026-10-20.md) reviews commit 49a6161 of the gglucass/headroom-desktop repository. Features found in that source are not capabilities implemented by us. Preserve the existing 39 tasks and add H040–H045; this document does not complete any new feature.
 
-İlk sürüme eklenen gereksinimler:
+Requirements added to the first release:
 
-- **Kararlı bağlantı adresi:** Motor yeniden başlarken istemciyi eski geçici porta bırakmamak. H040; kalıcı giriş noktası ve alternatiflerinin sahiplik, performans ve kapanış kanıtını çıkarır, seçilen yaklaşımı uygular. Global6767 portu veya iki proxy mimarisi peşinen zorunlu değildir. H017 config planı bu kabulden sonra yapılır.
-- **Doğrulanmış arıza yolu:** Düz iletim ancak aynı auth/model/reasoning/upstream ve protokol için kanıtlıysa sunulur. Upstream'e gönderilmiş isteğe kör retry veya stream ortasında ikinci POST yok. Bilinmeyen yol hata verir; başka sağlayıcıya yönlendirilmez. Pause, disconnect ve arıza durumlarının CCR/prefix etkisi ayrılır.
-- **Fayda ve bütünlük testi:** H041; kaynak/sayısal içerik, araç kimlikleri, CCR, cache prefix'i, soğuk/sıcak oturum ve istek gecikmesini birlikte değerlendirir. Yanıt kalitesi garantisi, byte-exact retrieval testinden türetilmez. Kalite için gerçek model deneyi yoksa bu açık kalır; benchmark otomatik ücretli model çağrısı başlatmaz.
-- **İmzalı güncelleme:** H042; app ve motor manifesti, kararlı/deneme kanalı, imza/hash kontrolü, stream sonrası uygulanma ve son çalışan sürüme dönüşü kapsar. İstemci güncellemeleri kullanıcı yerine yapılmaz; motor sürümü floating pip bağımlılığıyla sessizce değişmez.
+- **Stable connection endpoint:** Do not leave a client on an old temporary port when the engine restarts. H040 identifies ownership, performance, and shutdown evidence for a persistent entry point and alternatives, then implements the selected approach. A global port 6767 or two-proxy architecture is not mandatory in advance. H017 config planning follows this acceptance.
+- **Verified failure path:** Offer direct pass-through only when proven for the same auth/model/reasoning/upstream and protocol. Never blindly retry a request already sent upstream or send a second POST in the middle of a stream. An unknown route fails; it is not redirected to another provider. Separate the CCR/prefix effects of pause, disconnect, and failure.
+- **Benefit and integrity tests:** H041 evaluates source/numeric content, tool identifiers, CCR, cache prefix, cold/warm sessions, and request latency together. Do not infer response quality from byte-exact retrieval. If there is no real model experiment for quality, keep it open; a benchmark does not automatically start paid model requests.
+- **Signed updates:** H042 covers app/engine manifests, stable/preview channels, signature/hash checks, application after stream completion, and rollback to the last working version. Do not update clients on the user's behalf or silently change the engine version through a floating pip dependency.
 
-İlk kullanılabilir sürümden sonraki isteğe bağlı kapsam:
+Optional scope after the first usable release:
 
-- **RTK:** H043'te istemciye özel teknik kanıt, H044'te yönetilen kurulum ve açık etkinleştirme. Model/auth/reasoning veya ajan sayısı değişmez. Kaynak, kesin sayısal çıktı ve test/hata bilgisi korunur. RTK ile Headroom tasarrufu eşdeğer kapsam ve bağlantı kanıtı yoksa ayrı gösterilir. Otomatik global hook/shell değişikliği yapılmaz.
-  RTK-OSS Apache-2.0 terminal filtreleri isteğe bağlı adaydır; RTK engine ve ayrı proxy BUSL-1.1 bu kapsamla otomatik dahil veya dağıtılmış sayılmaz. Belgelenen rtk claude kullanımı Codex/OpenCode, PowerShell veya yerel araç kapsamını kanıtlamaz. [Kaynak/hedef eşlemesi](docs/research/optimization-targets-2026-11-04.md).
-- **Yerel öneriler** (H045), içeriksiz ölçüm verisinden sağlık ve optimizasyon önerileri üretir. Ek model çağrısı yapmaz ve öneri kendi başına profil, model veya config değiştirmez. Bilinmeyen trafik veya tasarruf tahmin edilmez.
-- **Learn önizlemesi** Windows’ta Ayarlar’dan bir Codex veya Claude Code JSONL dosyası seçildiğinde çalışır. Tek bir dosyadan art arda başarısız çağrı örüntüleri, ilk örneğin satırı ve sonraki eşdeğer çağrının başarısı gösterilir. Analiz cihazda yapılır ve sonuç bu ekranın ömrüyle sınırlıdır. Motorun arka plan öğrenmesi ve bellek araçları varsayılan kapalıdır. [Karar](docs/decisions/027-optimization-regression.md#learn-önizlemesi).
+- **RTK:** H043 gathers client-specific technical evidence; H044 covers managed installation and explicit enablement. Do not change model/auth/reasoning or agent count. Preserve source, exact numeric output, and test/error data. Show RTK and Headroom savings separately unless equivalent scope and connection evidence exist. Do not modify global hooks/shell settings automatically.
+  RTK-OSS Apache-2.0 terminal filters are an optional candidate; RTK engine and the separate proxy are BUSL-1.1 and are not included or distributed automatically in this scope. Documented rtk claude usage does not prove coverage for Codex/OpenCode, PowerShell, or local tools. [Source-to-target mapping](docs/research/optimization-targets-2026-11-04.md).
+- **Local recommendations** (H045) produce health and optimization recommendations from content-free metrics. They make no additional model call and do not themselves change profile, model, or config. Do not estimate unknown traffic or savings.
+- **Learn preview** runs on Windows when a user selects a Codex or Claude Code JSONL file in Settings. It shows a repeated failed-call pattern from one file, the first occurrence's line, and the result of the next equivalent call. Analysis stays on the device and the result lasts only as long as this screen. Engine background learning and memory tools are off by default. [Decision](docs/decisions/027-optimization-regression.md#learn-önizlemesi).
 
-- **Deneysel kurallar** Ayarlar → Learn altında ayrı, **varsayılan kapalı** bir özelliktir. Windows yerel önizlemesi, kullanıcı seçimiyle tek Codex veya Claude Code JSONL dosyasından kural adaylarını gösterir. Ayrı tercih kaydedilir ve açılışta geri yüklenir. Learn dosyası seçmek veya motoru başlatmak bu tercihi açmaz. Dosya iptali önceki sonucu korur. Önizleme sırasında tercih kapatılırsa sonuç kabul edilmez. **Yerelde dene**, aynı dosyanın bellekte tutulan özgün baytlarında yinelenen log satırları kuralını sınar; ters dönüşümün birebir eşitliğini ve denenen stdout baytlarını gösterir. Tek kayıt 16 MiB ile sınırlıdır, erişimi 15 dakika geçerlidir ve ekran kapanınca bırakılır. Hata/kanal bilgisi belirsiz çıktılar, stderr ve tam kaynak okumaları korunur. Bu yerel deney canlı trafiği değiştirmez. Gerçek görevde kalite/kullanım kabulü ve sürümlü etkinleştirme H041-e3–e4 kapsamındadır. Bu adımlarda model/reasoning/auth/ajan sayısı, kaynak/sayısal tam okuma ve istemci izinleri korunur. Etkinleştirme desteklenen bağlantı/proje kapsamıyla yeni oturuma uygulanır. Kapatma aktif stream ve önceki özgün/CCR erişimini korur. [Kapsam, sıra ve kabul](docs/decisions/027-optimization-regression.md#h041-e-deneysel-kurallar).
+- **Experimental rules** are a separate, **off by default** feature under Settings → Learn. The Windows local preview shows rule candidates from one user-selected Codex or Claude Code JSONL file. A separate preference is saved and restored on startup. Selecting a Learn file or starting the engine does not enable the preference. Canceling file selection preserves the prior result. If the preference is turned off during preview, the result is not accepted. **Try locally** tests the duplicate-log-line rule against the same file's original bytes held in memory; it shows exact round-trip equality and the stdout bytes tested. One record is limited to 16 MiB, access lasts 15 minutes, and it is released when the screen closes. Ambiguous error/channel outputs, stderr, and full source reads are preserved. This local experiment does not change live traffic. Quality/usage acceptance and versioned enablement in the real task remain in H041-e3–e4. Those steps preserve model/reasoning/auth/agent count, full source/numeric reads, and client permissions. Enablement applies to a new session in the supported connection/project scope. Turning it off preserves active streams and prior original/CCR access. [Scope, order, and acceptance](docs/decisions/027-optimization-regression.md#h041-e-deneysel-kurallar).
 
-Ürün ilkeleri:
+Product principles:
 
-- Codex'in mevcut sohbet veritabanı topluca yeniden etiketlenmez. Olası migration ayrı kapsam/önizleme/geri alma gerektirir; var olan oturumların bulunması izin değildir.
-- Kaynakta görülen yaklaşık%50 tasarruf veya kota2x iddiası bizim ürün vaadimiz olarak alınmaz. Ana girdi token azalması, cache etkisi, output tahmini ve para karşılığı ayrı kalır; negatif fark ve bilinmeyen ölçüm korunur.
-- Kurulum ekranı değiştirilecek bütün istemci/hook/shell alanlarını ve temel motor/isteğe bağlı bileşen boyutlarını gösterir. Ağır ML/MCP araçları temel kurulumda zorunlu değildir.
-- Yerel çekirdeğe bu karşılaştırma nedeniyle hesap/abonelik veya uzak telemetry eklenmez. macOS/Linux/Grok ve diğer ek araçlar ilk Windows10/11 kapsamını genişletmez.
-- Lisanslı kaynak aktarımı olursa sabit kaynak ve bildirimler bileşen/NOTICE kaydına girer; özel servis bağımlılığı eklenmez. İncelenen uygulamanın kendi testleri bizim test sonucumuz sayılmaz.
+- Do not bulk-retag Codex's existing chat database. Any migration needs separate scope, preview, and undo; the existence of current sessions is not permission.
+- Do not adopt the approximately 50% savings or 2x quota claims found in comparison sources as our product promise. Main input-token reduction, cache effects, output estimates, and monetary equivalents remain separate; preserve negative differences and unknown metrics.
+- The setup screen shows every client/hook/shell area that will change and the size of the core engine/optional components. Heavy ML/MCP tools are not required in the core installation.
+- Do not add account/subscription requirements or remote telemetry to the local core because of this comparison. macOS/Linux/Grok and other extra tools do not expand the initial Windows 10/11 scope.
+- If licensed source is redistributed, record its pinned source and notices in the component/NOTICE inventory; do not add a dependency on a proprietary service. Tests from the reviewed app are not our test results.
 
-Yeni kimlikler önceki kayıtları korumak için sona eklenmiştir; iş sırası bağımlılıklardan okunur. Her ana görevin sonunda durup kullanıcının devam mesajını bekleme kuralı sürer.
+New task IDs were appended to preserve previous records; read task order from dependencies. The rule to stop at the end of each main task and wait for the user's continuation remains in force.

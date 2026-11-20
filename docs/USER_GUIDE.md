@@ -1,45 +1,56 @@
-# PennyPinch — kısa kullanım kılavuzu
+# PennyPinch user guide
 
-Bu, yerel geliştirme sürümünün kılavuzudur; yayımlanmış veya yeni bilgisayara hazır bir sürüm değildir.
+This guide covers the local development preview. The [platform validation matrix](validation/desktop-platforms.md) records the tested platforms and the remaining release checks.
 
-## İlk bağlantı
+## Connect a coding agent
 
-PennyPinch’i açmak istemciyi bağlamaz. Genel bakış’taki Başlat yalnızca Headroom motorunu çalıştırır; istemci ayarlarını değiştirmez. Uygulamalar ekranında kurulumları tara. Tarama bilinen yerel konumlarla sınırlıdır; bir kurulumun bulunmaması istemcinin desteklenmediği anlamına gelmez. Dosyadan ekle yalnızca kurulum keşfeder. Kurulum tercihi ancak açıkça kaydedildiğinde veya Bağlan seçildiğinde hatırlanır.
+1. Open PennyPinch and go to **Applications**. Choose **Scan for clients** to look in known local installation locations. Use **Add from file** if PennyPinch cannot find your installation. The selected file is only recorded permanently when you save the installation choice or connect.
+2. Open **Manage connection** for the client. Confirm the installation and surface, such as Codex CLI or Codex Desktop, and review the proposed settings change. **Connect** saves your choice, starts PennyPinch's engine if needed and applies the proposed route when the configuration can be changed safely. The dialog explains any conflict that blocks the change.
+3. Start a new CLI process or fully quit and reopen the desktop client. Existing chats can continue to use their previous route. Check **Activity** after sending a request. A saved connection and observed traffic are separate states.
 
-Bağlan’ı seçip doğru istemci yüzeyini/kurulumunu doğrula. Bu açık işlem seçimi kaydeder, gerekirse yalnız PennyPinch’e ait motoru başlatır, güncel yapılandırmayı denetler ve uygunsa bağlantı ayarını yazar. Plan engellenirse gösterilen nedeni düzeltmeden devam etme. PennyPinch için ayrı bir hesap oluşturulmaz; sağlayıcı hesabına istemcinde giriş yaparsın. Model, reasoning ve kimlik doğrulama yöntemi istemcinin ayarlarında kalır.
+**Start** in **Overview** runs the local Headroom engine. Use **Manage connection** to set up a client route. Sign in to your provider through the client. The client controls your model, reasoning level and authentication method.
 
-Bağlantı ayarının kaydedilmesi açık oturumun bunu kullandığını kanıtlamaz. Yeni bir CLI süreci başlat; masaüstü istemcisinde uygulamayı tamamen kapatıp yeniden aç. Açık sohbet, eski doğrudan rotayı kullanmaya devam edebilir. Trafik doğrulanmadıysa bağlantı kaydını gerçek istek kanıtı sayma.
+## Accounts and sessions
 
-## Hesaplar
+**Sessions → Accounts** shows the local sign-in record for a supported client and selected CLI profile. Choose another installation if needed. A local record reflects the state saved by that client. Provider access, observed PennyPinch traffic and the account in another profile or desktop session are verified separately.
 
-Uygulamalar → Hesaplar, desteklenen istemcinin seçilen CLI profilindeki yerel giriş kaydını gösterir. Bulunan kurulum otomatik seçilir; birden çok kurulum varsa değiştirebilirsin. “Yerel giriş kaydı var”, hesabın sağlayıcıya erişiminin veya PennyPinch üzerinden trafik geçtiğinin doğrulandığı anlamına gelmez. Desktop uygulaması ve diğer sohbetlerin hesabı farklı olabilir.
+**Open official sign-in** first shows the CLI profile it will affect. Codex opens ChatGPT sign-in, Claude Code opens Claude sign-in, and OpenCode lets you choose the provider and method. Enter passwords and codes in the official client flow. Sign-in can replace an existing session or API-key record. Canceling the flow may leave that record changed. **Stop** ends the sign-in process started by PennyPinch. Signing in can continue while you switch screens or minimize to the tray. Quitting PennyPinch stops that process.
 
-“Resmî girişi aç” önce hangi CLI profilinin etkileneceğini gösterir. Codex ChatGPT, Claude Code Claude hesabını açar; OpenCode sağlayıcı/yöntemi kendi ekranında seçtirir. Mevcut istemci oturumu veya API-key kaydı değişebilir; iptal önceki kaydı geri getirmeyebilir. Parola veya kodu yalnız resmî istemci ekranında gir. PennyPinch'teki “Durdur” kendi açtığı giriş sürecini durdurur. Başka ekrana geçmek veya tepsiye almak girişi iptal etmez; tam çıkış durdurur.
+An account appears as **Unknown** when its local sign-in state cannot be read reliably. For the tested Claude Code version, the account-status command can write settings, so PennyPinch skips it.
 
-Güvenilir okuma sağlanamayan sürüm/yüzey “bilinmiyor” gösterilir. Claude Code'un desteklenen sürümünde otomatik durum komutu ayar yazabildiği için çalıştırılmaz. Hesap durumu bilinmiyor olması, istemcinin veya modelinin tasarruf için desteklenmediği anlamına gelmez.
+**Sessions** can list supported Codex conversation metadata. When you confirm opening a conversation, the official Codex chat center opens for you to select it. Traffic and token savings are reported for observed requests through the local endpoint.
 
-## Kapsam ve ölçümler
+## Read token savings
 
-Yalnız PennyPinch yerel endpoint’ine giden istekler motordan geçer. Aynı endpoint’i kullanan ana ve alt ajan istekleri bu rotayı izleyebilir; ayrı endpoint veya sağlayıcı kullanan trafik bu bağlantının kapsamında değildir. Kayıtlı ayar tüm modelleri, araçları veya oturumları doğrulamaz.
+PennyPinch measures requests sent through its local endpoint. Main agents and subagents that use this endpoint can follow the same route. When an agent uses a separate endpoint or provider, that traffic follows its own connection. Route evidence has a specific client, surface, authentication method and version. See the [compatibility records](../compatibility/clients.json).
 
-Genel bakış’taki önce/sonra girdileri PennyPinch’in yerel kayıtlarından hesaplanan input-token ölçümüdür; sohbet geçmişi değildir. Bu tahmin sağlayıcının token kullanımı, faturası veya maliyet hesabı değildir. Yüzde ve miktar yalnız karşılaştırılabilir ölçümlerde gösterilir; veri yoksa ya da temeller farklıysa toplam uydurulmaz.
+**Overview** compares the input tokens before and after local optimization. When both values use a comparable basis and the original input is greater than zero, savings are `(before − after) / before × 100`. An increase appears as added input. The panel shows unavailable or non-comparable measurements as such. These are local input-token measurements. Your provider reports its own usage and billing.
 
-Ölçüm uygunsa yüzde `(önce − sonra) / önce × 100` ile hesaplanır. Sonra değeri daha büyükse girdi artışı gösterilir; önce değeri sıfırsa yüzde hesaplanmaz. Oturum, Bugün ve 7 gün dönemlerini Genel bakış’tan seçebilirsin. Etkinlik ekranında istemci ve model adıyla filtreleyip kayıtları inceleyebilirsin; bilinmeyen model veya ajan bilgisi tahminle doldurulmaz.
+Choose **Session**, **Today** or **7 days** in **Overview**. In **Activity**, filter observations by client or model. Unidentified models and agents remain **Unknown**.
 
-## Duraklatma, durdurma ve tepsi
+## Pause, stop and use the tray
 
-Duraklat yeni isteklerin sıkıştırılmasını durdurur; sürmekte olan yanıtlar ve önceki içerik erişimi devam eder. Devam et yeni istekler için sıkıştırmayı açar. Motoru durdurmak bağlantı ayarını geri almaz; bağlı istemciler bağlantı hatası görebilir. Geri almak için Bağlantıyı yönet bölümünden yalnız PennyPinch’in eklediği yönlendirme kaydını kaldır. Diğer istemci ayarları ve motor durumu korunur; açık istemcinin ayarı alması için yeniden açılması gerekebilir.
+**Pause** stops compression for incoming requests while active responses and access to previously stored content continue. **Resume** enables compression for new requests. **Stop** shuts down the engine. Connected clients can report a connection error until the engine is running or the route is removed.
 
-Tepsi tercihi açıksa pencerenin X’i PennyPinch’i tepsiye gizler ve motor çalışmaya devam eder. PennyPinch’ten çık seçeneği motoru ve tepsi simgesini kapatır; yönlendirme kayıtlarını otomatik kaldırmaz, bağlı istemciler hata alabilir ve süren yanıtlar kesilebilir. Windows başlangıcı açıksa oturum açınca pencere açılır; motor kendiliğinden başlamaz.
+Open **Manage connection** to remove the route added by PennyPinch. The operation preserves unrelated client settings and the engine state. Reopen the client process to pick up the configuration change if required.
 
-## Tercihler ve güncellemeler
+If the close-to-tray preference is enabled, the window close button hides PennyPinch while the engine keeps running. **Quit PennyPinch** closes the engine and removes the tray icon. A client with a saved route can report connection errors and responses in progress can be interrupted. When launch at Windows sign-in is enabled, PennyPinch opens its window. Start the engine from the app when needed.
 
-**Yerel öneriler** Ayarlar’dan açılır. Genel bakış, yeterli kayıt olduğunda girdi artışını, yüksek yerel sıkıştırma süresini, kaydedilen cache isabetindeki düşüşü veya yeniden taranması gereken kurulumu gösterir. Her öneride ölçüm kapsamı ve gözlem zamanı görünür. Önerileri aynı ayardan kapatabilirsin.
+## Local data and diagnostics
 
-Ölçüm saklama süresi kısaltıldığında eski kayıtlar kalıcı olarak silinebilir; süreyi uzatmak silinen geçmişi geri getirmez. Gelişmiş korunan araç listesi yalnız sonraki elle motor başlatmasında uygulanır, otomatik yeniden başlatma yapmaz.
+Activity and usage exports describe observed requests using metadata such as the client, model and token counts. Diagnostic exports use selected fields and leave out credential values and raw request content. The engine can temporarily keep original compressed content in its local retrieval store so the client can recover it. See the [local application trust boundaries](SECURITY_BOUNDARIES.md).
 
-Güncellemeler ekranı yalnız bu derlemede güvenilir kaynak yapılandırılmışsa imzalı güncelleme gösterebilir. Kaynak kullanılamıyor mesajı varsa bu derleme için hazır bir üretim güncellemesi yoktur. Windows 10’da yerel güncelleme ve geri dönüş kabulü geçti; üretim yayın kaynağı/anahtarı ve Windows 11 doğrulanmadı.
+## Preferences and updates
 
-## Doğrulama sınırları
+Enable **Local recommendations** in **Settings**. When enough data is available, PennyPinch can flag input growth, high local compression time, a drop in recorded cache hits or a stale installation scan. Each recommendation shows the observation time and the scope of its data.
 
-Yerel kanıt Windows 10 22H2 içindir. Yerel optimizasyon testleri geçti; bu, sağlayıcı token/fatura tasarrufunu doğrulamaz. Windows 11 test edilmedi; macOS ve Linux için yerel uygulama henüz taşınmadı. Codex CLI ve Desktop için ChatGPT oturumu belirli Windows 10 akışlarında doğrulandı; Codex’in gerçek API-key sağlayıcı yolu henüz doğrulanmadı. Claude Code ve OpenCode bağlantıları sentetik kimlik bilgileri ve yerel test sağlayıcısıyla denendi; gerçek hesap/sağlayıcı doğrulaması değildir. Modellerin veya alt ajanların tamamı için garanti vermez. Ayrıntılar için [uyumluluk kayıtlarına](../compatibility/clients.json) bak.
+Reducing the retention period can permanently delete older measurement records. Increasing it applies to the retained and future data. Changes to the advanced list of protected tools take effect the next time you start the engine manually.
+
+**Updates** shows signed releases when this build has a trusted update source. Choose **Check for updates** to check your channel. The app shows the verified version and lets you start the download. Local Windows 10 update and rollback tests passed. Production hosting, signing and delivery are tracked in the [Windows update validation](validation/windows-update.md).
+
+## Verified coverage
+
+- Windows 10 22H2 x64 is the first release target. Windows 11 verification is pending. See the [platform validation matrix](validation/desktop-platforms.md) for the scope of the macOS and Linux checks.
+- Selected Windows 10 Codex CLI and Desktop routes were verified with ChatGPT sign-in. Live Codex API-key verification is still open.
+- Claude Code and OpenCode connection tests used synthetic credentials and local providers. The [compatibility records](../compatibility/clients.json) bind evidence to specific client versions and surfaces.
+- Token comparisons are specific to the recorded requests and optimization settings. See the [optimization validation](validation/optimization-benefit.md) for the workloads and results.

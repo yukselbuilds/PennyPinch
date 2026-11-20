@@ -148,9 +148,9 @@ def main():
     require(len(labels) == 2, "learn_path_label_changed")
     advice = {language: {"text": label, "tokens_o200k_base": len(tokenizer.encode(label, disallowed_special=()))}
               for language, label in zip(("tr", "en"), labels, strict=True)}
-    policies = {"workspace": policy_line(guidance, "Kanonik çalışma kökü"),
-                "changed_inputs": policy_line(guidance, "Girdi değişmişse PASS"),
-                "workflow": policy_line(workflow, "Yeni kod kabulünde son aday üzerinde, repo kökünden")}
+    policies = {"workspace": policy_line(guidance, "The canonical workspace is"),
+                "changed_inputs": policy_line(guidance, "If inputs changed, the PASS is evidence"),
+                "workflow": policy_line(workflow, "For new code acceptance, run the final candidate gate")}
     environment = {"SystemRoot": os.environ["SystemRoot"]}
     run = ROOT / "work/proofs/optimization/learn-merit" / uuid.uuid4().hex
     run.mkdir(parents=True)

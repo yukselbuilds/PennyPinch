@@ -1,19 +1,21 @@
-# 19 Kasım 2026 — Masaüstü platform testleri
+# Desktop platform validation, 19 November 2026
 
-Ürün adayı 10f32e3. İlk kullanım önceliği Windows 10 22H2 x64. macOS ve Linux için CircleCI Free kullanıldı. Windows 11 x64 doğrulaması daha sonra yapılacak.
+These checks used candidate commit 10f32e3. Windows 10 22H2 x64 is the first release target. The macOS and Linux checks used CircleCI Free. Windows 11 x64 verification is pending.
 
-| Ortam | Doğrulanan kapsam | Açık kabul |
+| Environment | Verified coverage | Open acceptance criteria |
 | --- | --- | --- |
-| Windows 10 22H2 x64, build 19045 | Güncel NSIS paketi kuruldu. 19.484 kaynak ve makbuz eşleşti. Native pencere açıldı, 0.44.0 motoru bir yerel HTTP isteğini yanıtladı. Uygulama normal kapandı ve test kurulumu temizlendi. | WebView2 bulunmayan temiz bir Windows kurulumu, kurulu güncel adayla gerçek istemci trafiği ve yayın adresinden indirme ayrı doğrulanır. |
-| macOS 15 ARM64, CircleCI M4 Pro | 0.44.0 motoru yerel trafik testini geçti. ARM64 uygulama paketi üretildi, ad hoc imza ve paket envanteri doğrulandı. | Uygulama süreci başladı. AppleScript, pencereyi inceleme adımında iki koşuda −1712 zaman aşımına uğradı. Native pencere ve motor yaşam döngüsü kabulü açık. [Koşu 5](https://app.circleci.com/pipelines/circleci/KoDRDU6JmR6wiWsrCamPDH/b460f300-344a-4d50-8849-edc9e66c82b8/5/details) |
-| Ubuntu 24.04 x64, CircleCI | TypeScript/Vite ve Rust derlemeleri geçti. ELF uygulaması Xvfb üzerinde görünür pencere açtı. Rust testlerinde 220 başarılı, 81 başarısız ve 2 atlanan test var. | İstemci yapılandırması, dosya sahipliği ve motor portu H049’da ele alınır. Installer ve motor yaşam döngüsü doğrulaması açık. [Koşu 6](https://app.circleci.com/pipelines/circleci/KoDRDU6JmR6wiWsrCamPDH/b460f300-344a-4d50-8849-edc9e66c82b8/6/details) |
+| Windows 10 22H2 x64, build 19045 | The current NSIS package installed. All 19,484 resources matched the receipt. The native window opened, and the 0.44.0 engine answered a local HTTP request. The app exited normally and the test installation was removed. | A clean Windows environment without WebView2, real client traffic against the installed candidate and download from the release URL require further verification. |
+| macOS 15 ARM64, CircleCI M4 Pro | The 0.44.0 engine passed a local traffic test. The ARM64 application bundle was built and its ad hoc signature and contents were verified. | The application process started. AppleScript timed out with −1712 on two attempts to inspect the window. The native window and engine lifecycle checks remain open. [Run 5](https://app.circleci.com/pipelines/circleci/KoDRDU6JmR6wiWsrCamPDH/b460f300-344a-4d50-8849-edc9e66c82b8/5/details) |
+| Ubuntu 24.04 x64, CircleCI | TypeScript/Vite and Rust builds passed. The ELF application opened a visible window under Xvfb. The Rust suite recorded 220 passes, 81 failures and 2 skipped tests. | H049 covers client configuration, file ownership and engine ports. Installer and engine lifecycle checks remain open. [Run 6](https://app.circleci.com/pipelines/circleci/KoDRDU6JmR6wiWsrCamPDH/b460f300-344a-4d50-8849-edc9e66c82b8/6/details) |
 
-## Windows 10 kurulumu
+<a name="windows-10-kurulumu"></a>
 
-Güncel kaynak 234 Windows build girdisiyle doğrulandı. Önceki staging makbuzu eski overlay dosyalarına aitti. Payload’a sonradan eklenen iki Python bytecode dosyası arşivlendi ve sabit envanterle yeniden sahnelendi. 100 UTF-16 birimini aşan hedef reddedildi. Ayrı, geçerli hedefte kurulum ve normal çıkış geçti.
+## Windows 10 installation
 
-Kurulum dosyası 123.653.119 bayt. SHA-256 değeri 9725ecfd72005185542119684558f4fd27733a90acd746d7d05e291219cd64eb. 299 eşleşen girdiyle 227 frontend ve 478 Rust testi geçti. 24 opt-in Rust testi atlandı. [Derleme makbuzu](../../work/proofs/windows-install/runs/10dc9e1a-1db8-4450-9326-305c5d3a8181/recovered-build.json) · [Yerel kalite kapısı](../../work/proofs/windows-install/runs/10dc9e1a-1db8-4450-9326-305c5d3a8181/quality-gate.json) · [Kurulum sonucu](../../work/proofs/windows-install/runs/9bf2f318-01b9-4348-b810-b9c084d32453/result.json) · [Temizlik](../../work/proofs/windows-install/runs/9bf2f318-01b9-4348-b810-b9c084d32453/cleanup.json)
+Verification covered the current source and 234 Windows build inputs. The prior staging receipt described older overlay files. Two Python bytecode files that had been added to the payload were archived, and the payload was staged again from the pinned inventory. The installer rejected a destination longer than 100 UTF-16 units. Installation to a separate valid destination and normal exit passed.
+
+The installer is 123,653,119 bytes. Its SHA-256 is 9725ecfd72005185542119684558f4fd27733a90acd746d7d05e291219cd64eb. The gate recorded 227 frontend and 478 Rust passes with 299 matching inputs. It skipped 24 opt-in Rust tests. [Build receipt](../../work/proofs/windows-install/runs/10dc9e1a-1db8-4450-9326-305c5d3a8181/recovered-build.json) · [Local quality gate](../../work/proofs/windows-install/runs/10dc9e1a-1db8-4450-9326-305c5d3a8181/quality-gate.json) · [Installation result](../../work/proofs/windows-install/runs/9bf2f318-01b9-4348-b810-b9c084d32453/result.json) · [Cleanup](../../work/proofs/windows-install/runs/9bf2f318-01b9-4348-b810-b9c084d32453/cleanup.json)
 
 ## CircleCI
 
-GitHub App yalnızca Protocol272/headroom-desktop özel deposuna kuruldu. Başlangıçta Free plan 30.000 kullanılabilir kredi gösterdi. Pipeline elle tetiklenir. Oluşturulan tag tetikleyicisi kaldırıldı ve varsayılan platform değeri iş başlatmaz. İlk hatalar macOS’ta eksik Rust aracı ve Linux’ta şablon ayrıştırmasıydı. Sabit araçla ve düzeltilen ayrıştırmayla iki ortam da ürün adımlarına ulaştı. [Pipeline yapılandırması](../../.circleci/config.yml)
+The GitHub App was installed only on the private repository at its then-current name, Protocol272/headroom-desktop. The Free plan initially showed 30,000 available credits. The pipeline runs on manual dispatch. Its temporary tag trigger was removed and the default platform parameter leaves jobs idle. The first failures were a missing Rust tool on macOS and a configuration parsing error on Linux. Pinning the tool and fixing the parser let both environments reach the application checks. [Pipeline configuration](../../.circleci/config.yml)

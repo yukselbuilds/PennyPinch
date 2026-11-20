@@ -1,43 +1,43 @@
-# H039 — Yerel son aday doğrulaması
+# H039 — Local release candidate validation
 
-10 Kasım 2026. Kullanıcı ücretli Windows 11 ortamını kullanmadan devamı seçti. H041/H042’nin dış kabulleri açık tutularak H039’un yerel incelemesine geçildi. Windows 11 x64 `not_tested`; Windows 10 sonucu onun yerine geçmez. Kamuya yayın, üretim anahtarı ve CI çalıştırması bu görev diliminde yapılmaz.
+10 November 2026. The user chose to continue without a paid Windows 11 environment. H039 started while the external H041 and H042 criteria remained open. The Windows 11 x64 result is `not_tested`. The scope of this slice was local validation. Public release, the production key and CI were tracked separately.
 
-## Kapsam ve sahiplik
+## Scope and ownership
 
-Ana ajan son kaynak/paket/süreç/ölçüm güvenini, gerçek native akışı ve kabulü üstlenir. Aynı tek Luna xhigh çalışanı yalnız kılavuz/README iddialarını dar inceler ve `USER_GUIDE.md` taslağını yazar. Model ve sağlayıcı ayarları değiştirilmez. İnceleme, son değişiklik ve bağlı akışlar üzerindedir; yeni bir bütün depo denetimi değildir.
+The lead agent owns the source, package, process and measurement checks, the real native flow and acceptance. The existing single Luna xhigh worker reviews guide and README claims in scope and drafts `USER_GUIDE.md`. Keep model and provider settings intact. Review the final change and related paths within this scope.
 
-Son aday, güncel kaynak ve sabit payload ile ayrı QA kimliğinde gerçek current-user NSIS paketidir. Debug discovery trace kapalıdır. Varsayılan release derleme ayarları ve NSIS sıkıştırması kullanılır; üretim kaynağı/anahtarı tanımlanmaz. Kurulum, test dosyaları ve kanıtlar `work/rc39/` içindedir; yalnız QA uygulamasına ait state/registry/installer yönetilir. Diğer uygulama ve hesapların ayarları korunur.
+The final candidate is a real current-user NSIS build from current source and the pinned payload, using an isolated QA identifier. Discovery debug tracing is disabled. It uses default release settings and NSIS compression without a production source or key. Installation files, fixtures and evidence live in `work/rc39/`. Manage only QA-owned state, registry entries and the installer. Preserve the settings of other apps and accounts.
 
-## Kabul senaryoları
+## Acceptance scenarios
 
-1. **Normal:** Son paket ayrı dizine kurulur. Uygulamalar → OpenCode / Dosyadan ekle ile çalıştırılmayan boş `opencode.cmd` seçilir. Art arda üç yeniden tarama ve başka ekrana gidip dönme sonrasında Dosyadan eklenen / Selected file satırı görünür kalır. Bu, uygulama oturumu kapsamındaki keşiftir; açıkça kaydetmeden yeniden başlatmada kalıcı tercih iddiası kurulmaz.
-2. **Hata/iptal:** Dosya seçimini iptal etmek önceki satırı korur. Kaynak/UI incelemesinde picker ve scan yarışları, stale sonuç koruması, ayar/ölçüm semantiği ve kullanıcıya sunulan iddialar incelenir. Somut kritik hata bulunursa bu görev içinde sınırlı düzeltme ve odaklı regresyon yapılır; kabul gevşetilmez.
-3. **Sınır/teslim:** Manuel aday gerçek native paket ve debug trace kapalı koşuda gözlenir. Kaynak/test/config/araç ve paket/kurulu dosya özetleri aynı kabul adımında bağlanır. Son adayın gerçek yerel kalite kapısı tamamlanır; değişmeyen PASS yalnız ilgili fingerprint/araç eşleşmesiyle yeniden kullanılır. QA kurulum ve süreçleri sonunda kendi sahiplik sınırında temizlenir.
+1. **Normal.** Install the final package into a separate directory. In **Applications → OpenCode → Add from file**, select the empty, unexecuted `opencode.cmd` fixture. **Selected file** remains after three consecutive scans and after leaving and returning to the screen. This covers discovery during the current app session. Restart persistence requires an explicit save.
+2. **Failure or cancellation.** Canceling the picker preserves the previous row. Review the picker and scan races, stale-result protection, settings and measurement behavior, and user-facing claims. Fix any concrete critical defect in this task with a focused regression check. Keep the acceptance conditions.
+3. **Boundary and delivery.** Exercise the manual scenario in the real native package with debug tracing disabled. Bind source, test, configuration, tool, package and installed-file hashes in the same acceptance step. Complete the actual local quality gate on the final candidate. Reuse valid evidence only when the corresponding fingerprints and tools match. Clean up QA-owned installation and processes afterward.
 
-## Doğrulama yolları
+## Verification paths
 
-- Mevcut kapı: `docs/development/WORKFLOW.md` içindeki `test:app`, frontend build, fmt, offline Rust test ve custom-protocol build komutları. Tek son adayda, inceleme ve düzeltmelerden sonra. Frontend kaynak/araçları değişmediyse 179 test ve build kanıtı korunur; yeni Rust verifier testinin eklendiği girdi değişimi nedeniyle Rust kapısı yenilenir.
-- Paket: pinned Python ile `scripts/package-windows.py`, Tauri CLI 2.12.3 ve mevcut NSIS cache’i. Yeni QA config’i, kaynak değişiklikleri olmadan derleme/paket sürecine verilir. Doğrulanmış motor dosyaları tam envanterle bağlanır.
-- Native UI: Computer Use üzerinden gerçek pencere, dosya seçici, yeniden tarama ve gezinme. Mock, CDP fixture veya debug trace bu native kabulün yerine geçmez.
-- Destek tablosu Windows 10 yerel / Windows 11 denenmedi / macOS-Linux portu açık / gerçek API-key ve üretim yayını açık ayrımını korur. Geliştirme token tasarrufu ölçülmezse oran yazılmaz.
+- **Local gate.** Use `test:app`, the frontend build, formatting, offline Rust tests and the custom-protocol build from `docs/development/WORKFLOW.md`. Run the gate on the single final candidate after review and fixes. Reuse the 179 frontend test and build results if frontend source and tools match. Adding the Rust verifier test changed the Rust inputs and required a fresh gate.
+- **Package.** Use the pinned Python with `scripts/package-windows.py`, Tauri CLI 2.12.3 and the existing NSIS cache. Pass the new QA config without modifying source. Verify engine files against the full inventory.
+- **Native UI.** Use Computer Use for the real window, file picker, repeat scans and navigation. Record native acceptance from the actual app. Mock, CDP fixture and debug-trace results cover their own scenarios.
+- **Support matrix.** Record Windows 10 local acceptance, Windows 11 `not_tested`, open macOS and Linux port work, and open live API-key and production release checks independently. Report development token savings only when measured.
 
-## Sonuç — yerel kabul geçti
+## Local acceptance passed
 
-10 Kasım, Windows 10 x64 build 19045. [Toplu kanıt](../proofs/release-candidate.json), [inceleme](../reviews/H039.md), [kullanıcı kılavuzu](../USER_GUIDE.md).
+10 November, Windows 10 x64 build 19045. [Combined evidence](../proofs/release-candidate.json) · [Review](../reviews/H039.md) · [User guide](../USER_GUIDE.md)
 
-- Release exe’sindeki konsol türü hatası gerçek PE kontrolüyle bulundu. Test önce başarısız oldu; Windows GUI niteliğinden sonra subsystem=2 kontrolü geçti. Paketleme komutu aynı guard’ı içerir. İlk kesilmiş aday ve koşucu hatası PASS sayılmadı.
-- NSIS/LZMA paketi varsayılan LTO açık/codegen 1/strip/panic abort profiliyle ayrı QA kimliğine kuruldu. 22.333 resource dosyası doğrulandı. Tauri’nin tek NSIS paket türü işareti dönüşümünden sonra exe’nin tüm baytları beklenenle eşleşti; başka fark kabul edilmedi.
-- Kullanıcı yalnız hazır yolun Open onayını yaptı. Ana ajan üç taramayı tamamladı, Etkinlik’e gidip döndü ve manuel kaynağın kaldığını native erişilebilirlik ağacından okudu. Hata/stale bandı yoktu. Çıkıştan vazgeçme satırı korudu; gerçek onaydan sonra süreç kod 0 ile kapandı. Discovery trace yoktu. Native dosya seçici iptali yeniden denenmedi; iptal/yarış testleri kaynak kapısındadır.
-- Son kapı: 18 Python ve 413 Rust testi, fmt ve custom-protocol derlemesi geçti. 15 opt-in Rust testi ignored. Değişmeyen 179 frontend testi/build, 112 girdi ve aynı araç sürümleriyle korundu. 232 kaynak girdisi önce/sonra eşleşti; tekrar ürün testi çalıştırılmadı.
-- Kaldırıcı kod 0 verdi. QA registry kaydı, exe, state ve sidecar lock kalmadı. Kesilmiş ilk kurulum yalnız proje içindeki başarısız artefakt alanında korunur. İstemci ayarlarına yönlendirme uygulanmadı; sağlayıcı isteği 0. Public yayın ve CI çalıştırması yok.
+- A real PE check found the console subsystem in the release executable. The regression first failed. After setting the Windows GUI attribute, subsystem=2 passed. The packaging command uses the same guard. The interrupted first candidate and test-driver failure were excluded from acceptance.
+- The NSIS/LZMA package used default LTO enabled, 1 codegen unit, stripping and panic abort, with an isolated QA identifier. Verification checked 22,333 resource files. After accounting for Tauri's single NSIS bundle-type marker, the executable matched all expected bytes. The verifier accepts that exact marker difference.
+- The user confirmed the prefilled path by clicking **Open**. The lead agent completed three scans, visited **Activity** and returned, and read the retained manual source from the native accessibility tree. No error or stale banner appeared. Canceling exit preserved the row. Confirming exit then returned process code 0. Discovery tracing was off. Native file-picker cancellation was outside the repeat run, with cancellation and race coverage in the source tests.
+- The final gate passed 18 Python tests, 413 Rust tests, formatting and the custom-protocol build. It skipped 15 opt-in Rust tests. The 179 frontend tests and build were reused with 112 matching inputs and tool versions. The check recorded 232 matching source inputs and ran the product gate once.
+- The uninstaller returned 0. The QA registry entry, executable, state and sidecar lock were removed. The interrupted first installation was retained in the project-local failed-artifact area. The run applied zero client routes, made zero provider requests and started no CI or public release.
 
-| Ortam / kapsam | Sonuç |
+| Environment or scope | Result |
 | --- | --- |
-| Bu Windows 10 x64 hostunda release/NSIS/native akış | Geçti; temiz OS kabulü değildir |
-| Windows 11 x64 | `not_tested`; kullanıcı ücretli ortamı seçmedi |
-| macOS / Linux | Port ve native kabul açık |
-| Canlı Codex API-key | H041’de açık |
-| Üretim update feed/key/HTTPS teslimi | H042’de açık |
-| Temiz Windows / WebView2 bulunmayan ortam | H037’de açık |
+| Release, NSIS and native flow on this Windows 10 x64 host | Passed. Clean OS acceptance is separate. |
+| Windows 11 x64 | `not_tested`. The user deferred a paid environment. |
+| macOS and Linux | Port and native acceptance were open at this checkpoint. |
+| Live Codex API-key route | Open in H041. |
+| Production update feed, key and HTTPS delivery | Open in H042. |
+| Clean Windows and a host without WebView2 | Open in H037. |
 
-Bazı arka plan görüntüleri öndeki Codex penceresini gösterdi; bunlar kullanılmadı. Native sonuçlar hedef Headroom erişilebilirlik ağacı, gerçek kurulum ve sahipli süreç çıkış kaydıyla sınırlıdır. H039 yerel kabulü; kamuya sürüm, temiz kurulum veya ek platform desteği değildir.
+Some background captures showed the foreground Codex window and were excluded. The native results use the target Headroom accessibility tree, real installation and the exit record of the owned process. This is local H039 acceptance. Public release, clean installation and other platforms have separate evidence.

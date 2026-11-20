@@ -1,82 +1,82 @@
-# Headroom Desktop — Üç UI Konsepti
+# Headroom Desktop — Three UI Concepts
 
-**Tarih:** 19 Ekim 2026  
-**Kapsam:** Görsel yön ve etkileşim önizlemesi. Bütün sayaçlar örnek veridir; istemci ayarı veya gerçek model trafiği değiştirilmez.  
-**İlgili görev:** [H003 / H004](TASKS.md). Üretim tasarımı henüz seçilmedi.
+**Date:** 19 October 2026
+**Scope:** Visual direction and interaction previews. All counters are sample data; no client settings or real model traffic are changed.
+**Related tasks:** [H003 / H004](TASKS.md). A production design had not yet been selected.
 
-[Üç konsepti birlikte aç](outputs/ui-concepts/index.html)
+[Open all three concepts together](outputs/ui-concepts/index.html)
 
 ## 01 — Graphite
 
-**Önerilen başlangıç yönü.** Koyu grafit yüzeyler, yumuşak mint vurgu, metinli sol menü. Girdi azalması geniş bir alanda; grafik ve uygulamalar dengeli iki sütunda. Gün boyu açık kalan geliştirici aracı için sakin ve okunaklı.
+**Recommended starting direction.** Dark graphite surfaces, soft mint accents, and a labeled left navigation. Input reduction gets a wide area; the chart and applications balance in two columns. Calm and readable for a developer tool that stays open all day.
 
-- Düzen: kalıcı sol gezinme; geniş özet, grafik ve bağlantı sütunu.
-- Karakter: sade, yerel masaüstü hissi; düşük görsel gürültü.
-- Gücü: ana eylem ve durum kolay bulunur; dört ekran için genişlemeye uygundur.
-- Dikkat: üst özetin baskınlığı küçük pencerede dengelenmeli.
+- Layout: persistent left navigation; spacious summary, chart, and connection columns.
+- Character: simple, native-desktop feel; low visual noise.
+- Strength: primary action and status are easy to find; room to grow across four screens.
+- Watch item: balance the prominence of the top summary in a small window.
 
-[Etkileşimli Graphite](outputs/ui-concepts/graphite.html) · [Ekran görüntüsü](outputs/ui-concepts/graphite.png)
+[Interactive Graphite](outputs/ui-concepts/graphite.html) · [Screenshot](outputs/ui-concepts/graphite.png)
 
 ## 02 — Ivory
 
-Sıcak açık zemin, orman yeşili, büyük serif rakamlar. Üst gezinme ekranı yatay açar; kazanç ve grafik bir sütunda, bağlı uygulamalar ayrı sakin bir yüzeyde kalır.
+Warm light background, forest green, and large serif numerals. Top navigation opens the screen horizontally; savings and chart sit in one column, while connected applications use a separate, quiet surface.
 
-- Düzen: yatay üst menü; asimetrik içerik ve uygulama alanı.
-- Karakter: ferah, editoryal, daha az teknik yoğunluk.
-- Gücü: rakamlar ve temel eylemler öne çıkar; açık tema güçlüdür.
-- Dikkat: ileri düzey filtreler büyüdüğünde üst gezinme kalabalıklaşmamalı; koyu eşinin tasarımı ayrıca yapılmalı.
+- Layout: horizontal top navigation; asymmetric content and application area.
+- Character: airy, editorial, and less technically dense.
+- Strength: numerals and primary actions stand out; the light theme is strong.
+- Watch item: keep top navigation from becoming crowded as advanced filters grow; design its dark counterpart separately.
 
-[Etkileşimli Ivory](outputs/ui-concepts/ivory.html) · [Ekran görüntüsü](outputs/ui-concepts/ivory.png)
+[Interactive Ivory](outputs/ui-concepts/ivory.html) · [Screenshot](outputs/ui-concepts/ivory.png)
 
 ## 03 — Signal
 
-Gece mavisi yüzey, buz mavisi vurgu ve dar ikon menüsü. Özet ile grafik solda, uygulama bağlantıları kalıcı sağ sütunda. Daha kompakt bir izleme aracı hissi verir.
+Midnight blue surfaces, ice-blue accents, and a narrow icon rail. Summary and chart sit on the left, with application connections in a persistent right column. It feels like a more compact monitoring tool.
 
-- Düzen: dar gezinme şeridi; çalışma alanı ve bağlantı rail'i.
-- Karakter: teknik, kontrollü, biraz daha yoğun.
-- Gücü: bağlantı durumu sürekli göz önünde; geniş pencerede alanı iyi kullanır.
-- Dikkat: ikonların anlamı erişilebilir adlarla ve son üründe tooltip ile desteklenmeli; dar pencerede yerleşim sadeleşir.
+- Layout: narrow navigation rail; workspace and connection rail.
+- Character: technical, controlled, somewhat denser.
+- Strength: connection status stays in view; uses wide windows well.
+- Watch item: accessible names and, in the final product, tooltips must support icon meaning; simplify the layout in narrow windows.
 
-[Etkileşimli Signal](outputs/ui-concepts/signal.html) · [Ekran görüntüsü](outputs/ui-concepts/signal.png)
+[Interactive Signal](outputs/ui-concepts/signal.html) · [Screenshot](outputs/ui-concepts/signal.png)
 
-## Karşılaştırma
+## Comparison
 
-| Karar | Graphite | Ivory | Signal |
+| Decision | Graphite | Ivory | Signal |
 | --- | --- | --- | --- |
-| Önizleme teması | Koyu / mint | Açık / yeşil | Koyu / mavi |
-| Gezinme | Etiketli sol menü | Yatay üst menü | Dar ikon menüsü |
-| Bilgi yoğunluğu | Dengeli | Düşük | Orta |
-| Kullanım odağı | Günlük kontrol | Sadelik ve kazanç | Trafik ve bağlantılar |
-| Seçim önerisi | İlk aday | Açık/ferah yaklaşım isteyenler | Teknik izleme isteyenler |
+| Preview theme | Dark / mint | Light / green | Dark / blue |
+| Navigation | Labeled left rail | Horizontal top navigation | Narrow icon rail |
+| Information density | Balanced | Low | Medium |
+| Usage focus | Daily control | Simplicity and savings | Traffic and connections |
+| Suggested fit | First candidate | Users wanting a light/open approach | Users wanting technical monitoring |
 
-Bu üçü yalnız renk varyasyonu değildir. Yerleşim, rakam hiyerarşisi ve gezinme değişir. Seçilen **tek** yön, son üründe hem açık hem koyu temayla geliştirilecek; üç ayrı uygulama sürdürülmeyecek. İstenirse Graphite düzeni ile Ivory'nin açık paleti birleştirilebilir.
+These are not merely color variations: layout, numeral hierarchy, and navigation differ. The single selected direction will be developed with both light and dark themes in the final product; the three concepts will not be maintained as separate app versions. The Graphite layout could be combined with Ivory's light palette if desired.
 
-## Önizlemede denenebilenler
+## What the preview supports
 
-1. Üç konsept arasında üst çubuktan geçiş.
-2. Genel bakış, Uygulamalar, Etkinlik ve Ayarlar gezinmesi.
-3. **Örnek oturum / İlk açılış / Bağlantı sorunu** durumları.
-4. Başlat/duraklat ve örnek hata toparlama.
-5. Bir defalık bağlantı diyaloğu, bekleyen doğrulama ve bağlantıyı kaldırma.
-6. Bugün / Son 7 gün filtresi; ana ajan / Luna örnek etkinlik filtresi.
-7. İstek ayrıntısı, yerel tercihler ve örnek CSV indirme.
+1. Switch between the three concepts from the top bar.
+2. Navigate Overview, Applications, Activity, and Settings.
+3. **Sample session / First launch / Connection issue** states.
+4. Start/pause and sample error recovery.
+5. One-time connection dialog, pending verification, and disconnect.
+6. Today / Last 7 days filters; sample activity filters for main agent / Luna.
+7. Request details, local preferences, and sample CSV download.
 
-Önizleme saf HTML/CSS/JavaScript'tir; kurulum gerektirmez. `index.html` veya konsept dosyaları tarayıcıda doğrudan açılabilir. Çalışan yerel önizleme sunucusu varsa aynı dosyalar HTTP üzerinden de kullanılabilir. Üretim teknolojisi, gerçek entegrasyon testleri ve Windows installer bu tasarım çıktısının kapsamında değildir.
+The preview is plain HTML/CSS/JavaScript and requires no installation. Open `index.html` or a concept file directly in a browser. If a local preview server is already running, the same files can also be viewed over HTTP. Production technology, real integration tests, and the Windows installer are outside the scope of this design artifact.
 
-## Yapılan önizleme doğrulaması
+## Preview verification performed
 
-- Üç konsept × dört ekran × beş genişlik: 1440, 1024, 768, 390 ve 320 px; toplam 60 ekran/boyut kontrolünde sayfa düzeyinde yatay taşma yok.
-- Başlat/duraklat, dönem filtresi, bağlantı ekleme/kaldırma, etkinlik filtresi/ayrıntısı, klavye ile switch, örnek CSV indirme ve hata toparlama akışları geçti.
-- İlk açılışta bağlantı eklemek veri üretmiyor; istek olmadan grafik ve kazanç değeri oluşturulmuyor.
-- Tarayıcı JavaScript hatası ve önizleme dışına giden ağ isteği görülmedi. Ekran görüntüleri görsel olarak incelendi.
-- Görev listesinde 39 tekil kimlik, döngüsüz bağımlılıklar ve geçerli yerel belge bağlantıları doğrulandı.
+- Three concepts × four screens × five widths: 1440, 1024, 768, 390, and 320px; no page-level horizontal overflow in 60 screen/size checks.
+- Start/pause, period filter, add/remove connection, activity filter/details, keyboard switching, sample CSV download, and error recovery flows passed.
+- Adding a connection at first launch does not generate data; no chart or savings value appears without a request.
+- No browser JavaScript errors or network requests outside the preview were observed. Screenshots were visually reviewed.
+- The task list's 39 unique IDs, acyclic dependencies, and valid local document links were checked.
 
-Bu kontroller yerel Edge tarayıcısındaki tasarım önizlemesine aittir; Windows 10/11 native uygulama, motor veya gerçek istemci uyumluluk testlerinin yerine geçmez.
+These checks apply to the design preview in the local Edge browser; they do not replace Windows 10/11 native app, engine, or real client compatibility tests.
 
-## Karar kaydı
+## Decision record
 
-- [x] Kullanıcı **Graphite — koyu grafit ve mint** yönünü seçti.
-- [x] Aynı Graphite düzeninde koyu/açık semantik tema ve dengeli yoğunluk yaklaşımı netleştirildi.
-- [x] Seçim spesifikasyona ve [H004 karar dosyasına](docs/decisions/001-ui-direction.md) işlendi.
+- [x] The user selected **Graphite — dark graphite and mint**.
+- [x] A balanced-density approach with light/dark semantic themes in the same Graphite layout was established.
+- [x] The selection was recorded in the spec and [H004 decision file](docs/decisions/001-ui-direction.md).
 
-Seçilen üretim yönü **Graphite**. Ivory ve Signal karşılaştırma önizlemeleri olarak korunur; demo rakamları üretim uygulamasına taşınmaz.
+The selected production direction is **Graphite**. Ivory and Signal remain comparison previews; demo figures are not carried into the production app.

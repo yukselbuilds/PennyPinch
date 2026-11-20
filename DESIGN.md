@@ -1,24 +1,24 @@
-# PennyPinch — görsel dil
+# PennyPinch — Visual Language
 
-5 Kasım2026 başladı,6 Kasım yerel kabul tamamlandı. Kullanıcı mevcut tasarımı reddetti; UX001 ile Graphite/mint ailesi yeniden kuruldu. Eski kutu düzeni ve hiyerarşi tasarım referansı değildir. [Görsel kabul](docs/proofs/ui-taste.md); H029 başlamadı.
+The redesign started on 5 November 2026 and passed local acceptance on 6 November. After the user rejected the previous design, UX001 rebuilt the visual hierarchy and layout around Graphite and mint. Use UX001 as the visual reference. H029 had yet to start. [Visual acceptance](docs/proofs/ui-taste.md)
 
-## Ürün ve yön
+## Product and direction
 
-Headroom günlük kullanılan yerel bir masaüstü aracıdır. Kullanıcı önce ne kadar girdi azaldığını, sonra motor durumunu ve uygulama bağlantılarını anlamalıdır. Yüzde ve miktar aynı gerçek dönemden gelir. Hesap/sohbet envanteri, canlı sağlayıcı veya model desteği bu görsel işle eklenmez.
+Headroom is a local desktop tool for everyday use. Users should understand input reduction first, then engine status and application connections. The percentage and amount must come from the same real period. Account/session inventory, live provider support, and model support do not belong in this visual treatment.
 
-Emil Kowalski'nin [design engineering](.agents/skills/emil-design-eng/SKILL.md) rehberi esas alınır; MIT lisansı ve sabit kaynak `UPSTREAM.json` içindedir. İncelenen diğer kaynaklar: [Taste](https://github.com/Leonxlnx/taste-skill), [Impeccable](https://github.com/pbakaus/impeccable), [Hallmark](https://github.com/Nutlope/hallmark). Dört ayrı tasarım sistemi üst üste kurulmaz. Yeni kurulum yalnız proje içindedir.
+The [design engineering](.agents/skills/emil-design-eng/SKILL.md) guide by Emil Kowalski is the primary reference; its MIT license and pinned source are in `UPSTREAM.json`. Other references reviewed: [Taste](https://github.com/Leonxlnx/taste-skill), [Impeccable](https://github.com/pbakaus/impeccable), and [Hallmark](https://github.com/Nutlope/hallmark). Do not layer four separate design systems. Install any new material in the project only.
 
-- Yön: sakin ve keskin bir çalışma aracı. Daha ince gezinme, geniş nefes alan ana tuval, tek güçlü tasarruf alanı, altında gerçek grafik ve uygulamalar. Pazarlama sayfası/hero animasyonu değil.
-- Tipografi: Windows Segoe UI Variable/Segoe UI; native fallback korunur.14px gövde,12px yardımcı metin,36px ekran başlığı,72px ölçüm. Tabular rakamlar, az sayıda ağırlık, izli büyük harf etiketleri yok.
-- Renk: koyuda sıcak grafit ve yumuşak mint; açıkta kırık beyaz ve koyu yeşil. Renkler semantik CSS token'larından gelir; durum yalnız renkle açıklanmaz. Yerel düşük kontrastlı border, primary/ölçümde vurgu, ciddi hatada görünür uyarı.
-- Biçim: tek hero yüzeyi, ince ayırıcılar ve8–16px köşe yarıçapı. Eşit ağırlıklı kart yığını, neon parıltı, cam efekti ve dekoratif gradient yok. Veri yoğun tabloda satır ve boşluk hiyerarşisi.
-- İkonlar: tek stroke dili, gerçek SVG; Unicode sembol karışımı yok. İşlevi belli olmayan buton yok. İkon tek başınaysa erişilebilir ad zorunlu.
-- Hareket: sık kullanılan gezinme ve sayısal ölçüm anında değişir. Butonun pointer basışı kısa geri bildirim alır; klavye eylemi animasyon beklemez. Reduced-motion ve hover/pointer ayrımı korunur; yeni motion bağımlılığı yok.
-- Boş durum: sahte grafik/yüzde/hesap/ajan sayısı yok. Veri bekleme ve okuma hatası farklıdır. Eksik ölçümde anlamlı metin ve mevcut bağlantı ekranına gerçek eylem; ölçülmüş0 kaybolmaz.
-- Güven: unknown, scope/ölçüm sınırı, pending, çatışma ve kalıcı ayar uyarıları okunabilir kalır. Daha sade metin, daha güçlü gerçeklik iddiası yapmaz. Başlat/Pause/Resume yalnız gerçek motor ack'iyle değişir.
+- Direction: a calm, crisp work tool. Slim navigation, a spacious main canvas, one strong savings area, with a real chart and applications below. This is not a marketing page or hero animation.
+- Typography: Windows Segoe UI Variable/Segoe UI, retaining native fallbacks. 14px body, 12px helper text, 36px screen title, 72px metric. Use tabular numerals, few weights, and no tracked all-caps labels.
+- Color: warm graphite and soft mint in dark mode; off-white and dark green in light mode. Use semantic CSS tokens. Never communicate a state by color alone. Use subtle local borders, emphasis for primary actions/metrics, and visible warnings for serious errors.
+- Shape: one hero surface, fine dividers, and 8–16px corner radii. No stacks of equally weighted cards, neon glow, glass effects, or decorative gradients. Use row and spacing hierarchy in data-dense tables.
+- Icons: one stroke style and real SVG; no mixture of Unicode symbols. Every button must have a clear function. An icon-only control requires an accessible name.
+- Motion: frequent navigation and numeric updates happen immediately. Pointer press gets brief feedback; keyboard actions do not wait for animation. Respect reduced motion and distinguish hover from pointer behavior. Add no motion dependency.
+- Empty states: no fake chart, percentage, account, or agent count. Waiting for data and read errors are distinct. Missing metrics get meaningful text and a real action to the existing connection screen; a measured zero remains visible.
+- Trust: `unknown`, scope/measurement limits, pending work, conflicts, and persistent-setting warnings remain legible. Simpler wording must not make stronger claims about reality. Start/Pause/Resume changes only after a real engine acknowledgement.
 
-## UX001 kabulü
+## UX001 acceptance
 
-1. Native uygulamada Genel bakış, Uygulamalar, Etkinlik ve Ayarlar aynı görsel dili kullanır. Gerçek Start/Pause/Resume/Stop, gezinme, dialog ve tercih kontrolleri çalışır.
-2. Gerçek boş/unknown/hata ile açıkça izole örnek veri,0/negatif/mixed/stale durumları ayrılır. TR/EN, açık/koyu,1280/1024 ve gerçek125/150 WebView ölçeğinde temel kontrol ve metinler taşmaz; focus/klavye ve reduced-motion gözlenir.
-3. Son render gözle incelenir; önce/sonra karşılaştırması ve kaynak/ortam fingerprint'i kaydedilir. Son aday yerel kalite kapısı, TASKS/checkpoint ve commit/push ile kapanır. Motor/auth/ölçüm semantiği değişmez. Geliştirme token tasarrufu ölçülmedikçe oran verilmez.
+1. In the native app, Overview, Applications, Activity, and Settings share the same visual language. Real Start/Pause/Resume/Stop, navigation, dialogs, and preference controls work.
+2. Real empty/unknown/error states are distinct from explicitly isolated sample data, zero/negative/mixed/stale states. At TR/EN, light/dark, 1280/1024, and actual 125/150 WebView scale, core controls and text do not overflow; focus/keyboard and reduced motion are observed.
+3. Inspect the final render visually; record before/after comparison and source/environment fingerprints. Close the final candidate with the local quality gate, TASKS/checkpoint, and commit/push. Do not change engine/auth/measurement semantics. Do not report a development token-savings percentage unless measured.

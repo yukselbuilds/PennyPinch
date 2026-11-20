@@ -1,25 +1,25 @@
-# Proje içi Ponytail
+# Project Ponytail
 
-26 Ekim 2026. Yalnız Headroom geliştirme süreci için üç talimat becerisi kullanılır:
+26 October 2026. Three instruction skills support development in this repository.
 
-| Beceri | Kullanım |
+| Skill | Usage |
 | --- | --- |
-| `.agents/skills/ponytail/SKILL.md` | Kodlama ve düzeltmede `full`: görevi bütünüyle çözen küçük değişiklik. |
-| `.agents/skills/ponytail-review/SKILL.md` | Değişen kod, bağlı çağıranlar ve testler üzerinden kabul incelemesi. |
-| `.agents/skills/ponytail-audit/SKILL.md` | İstenen kapsamda mevcut kodu denetleyen, kod değiştirmeyen rapor. |
+| `.agents/skills/ponytail/SKILL.md` | Use `full` for implementation and fixes. Make the smallest change that fully solves the task. |
+| `.agents/skills/ponytail-review/SKILL.md` | Review the changed code, relevant callers and tests before acceptance. |
+| `.agents/skills/ponytail-audit/SKILL.md` | Produce a read-only audit of existing code in the requested scope. |
 
-Kaynak `DietrichGebert/ponytail`, sabit commit `09c434ab73ca43761c5d8b0c5d341926c2fba710`. Upstream metinleri ve MIT lisansı korunur; dosya hash'leri [kaynak manifestinde](ponytail-source.json), lisans [buradadır](ponytail-LICENSE.txt). Kurulumun yerel doğrulaması `work/proofs/dev-tools/` altında tutulur. Paket yöneticisi, ürün runtime'ı veya otomatik ağ servisi eklenmez.
+The source is `DietrichGebert/ponytail` at pinned commit `09c434ab73ca43761c5d8b0c5d341926c2fba710`. The repository preserves the upstream text and MIT license. See the [source manifest](ponytail-source.json) for hashes and the [license](ponytail-LICENSE.txt) for the terms. Local installation evidence lives under `work/proofs/dev-tools/`. The setup consists of instruction files.
 
-## Projede uygulanışı
+## Using the skills in this repository
 
-Ana ajan ve tek çalışan aynı dosyaları kullanır. Proje `AGENTS.md` kuralları skill metniyle birlikte uygulanır: `full` seviyesi, Türkçe rapor, mevcut model/çalışan düzeni, kapsam ve gerçek kanıt. Skill içindeki İngilizce rapor kalıpları Türkçe karşılanır. `Ship` ifadesi yayın/push eylemi için yetki değildir. Kurallar gerektiğinde skill dosyasından okunabilir; otomatik keşif tek başına doğru davranışın kanıtı sayılmaz.
+The lead agent and the single worker use the same files. Apply `AGENTS.md` together with the skills. Use the `full` level, preserve the selected model and worker settings, and base acceptance on actual evidence. Write repository reports in English and communicate with the repository owner in Turkish. Treat a `Ship` verdict as a review outcome. Publishing and pushing use the user's existing authorization. Read the skill when needed even when discovery has already found it.
 
-Yeni kodlama işi normal skill seçimiyle `ponytail` kullanabilir. Görev kabulünde `ponytail-review`, ayrıca istenen eski kod denetiminde `ponytail-audit` açıkça seçilir. Günlük her küçük değişiklik bütün repo denetimi başlatmaz. Gerekli doğrulamalar, veri kaybını önleyen hata yönetimi, güvenlik, erişilebilirlik ve geri alma kontrolleri korunur.
+Use `ponytail` for new coding work, `ponytail-review` for change acceptance and `ponytail-audit` for a requested historical code audit. Keep reviews focused on the changed or requested area. Preserve required verification, data-loss prevention, security, accessibility and rollback checks.
 
-Claude Code'a özgü hook, global aç/kapat ayarı, `gain` raporu veya model yönlendirmesi kurulmaz. Kullanım ölçümü yokken tasarruf yüzdesi verilmez. Ortak görev akışı ve kabul koşulları [WORKFLOW.md](WORKFLOW.md) içindedir.
+The repository uses project-local instructions. Report savings percentages only from actual token measurements. See [WORKFLOW.md](WORKFLOW.md) for the shared workflow and acceptance criteria.
 
-## Keşif ve doğrulama sınırı
+## Discovery and verification
 
-OpenAI'nin yerel skill belgesi repo içindeki `.agents/skills` yolunu ve otomatik keşfi tanımlar. Kurulum; doğru konum, geçerli metadata, sabit kaynakla hash eşleşmesi ve dosyaların okunabilmesiyle kontrol edilir. Bu mevcut konuşmada yeni skill kataloğu yüklenmediyse dosyalar doğrudan okunarak kullanılabilir; sonraki turda skill keşfi beklenir. Sırf keşif testi için model/sağlayıcı isteği veya başka sohbeti yeniden başlatma gerekmez.
+OpenAI's local skill documentation describes the `.agents/skills` path and automatic discovery. Verify installation by checking the path, metadata, pinned source hash and file readability. Read the files directly when the current chat has an older skill catalog and use discovery once the catalog reloads. The installation check requires no model or provider request or restart of another chat.
 
-Kaynaklar: [OpenAI yerel skill belgesi](https://learn.chatgpt.com/docs/build-skills), [sabitlenen Ponytail kaynağı](https://github.com/DietrichGebert/ponytail/tree/09c434ab73ca43761c5d8b0c5d341926c2fba710).
+[OpenAI local skills documentation](https://learn.chatgpt.com/docs/build-skills) · [Pinned Ponytail source](https://github.com/DietrichGebert/ponytail/tree/09c434ab73ca43761c5d8b0c5d341926c2fba710)

@@ -1,72 +1,76 @@
-# Geliştirme akışı ve görev kabulü
+# Development workflow and task acceptance
 
-3 Kasım 2026. Bu sözleşme `TASKS.md` içindeki görevleri ve geliştirme araçları işlerini yönetir. Ürün kapsamı spesifikasyonda, değişmez sınırlar `AGENTS.md` içindedir. Buradaki kurallar sonraki kabullere uygulanır; tarihsel kanıtın kapsamını genişletmez. Yönerge bakımı ürün görevi başlatmaz veya tamamlamaz.
+3 November 2026. This workflow governs tasks and development tooling in `TASKS.md`. The product specification defines scope and `AGENTS.md` sets fixed boundaries. Apply this workflow to future acceptance and preserve the scope of historical evidence. Instruction maintenance leaves product-task status unchanged.
 
-## Araç seçimi
+## Tool selection
 
-| İhtiyaç | Kullanım |
+| Need | Tool |
 | --- | --- |
-| Bilinen dosya veya sembol | Önce `rg` ve gereken satırlar. |
-| Çağıranlar, bağımlılıklar, değişiklik etkisi | CodeGraph; tek soru, başlangıçta `maxFiles: 1`, gerekirse 2–3. Sonucu kaynakla doğrula. |
-| Kod yazma veya düzeltme | Projedeki `ponytail`, `full` seviyesi. Mevcut yapıyı ve gerekli kontrolleri koruyan en küçük tamamlanmış değişiklik. |
-| Değişiklik kabulü | Ana ajan `ponytail-review` ile farkı, ilgili çağıranları ve testleri tek incelemede değerlendirir. Mevcut kalite incelemesiyle birleştirir. |
-| Geçmiş kodu değerlendirme | `ponytail-audit`; belirlenmiş kapsamda bir defalık rapor. Her görevde bütün depo yeniden taranmaz. |
-| Sıkıştırılmış veya eksik araç çıktısı | İnceleme için gereken özgün bölümü `headroom_retrieve` ile getir. Özet veya CCR işareti, okunmuş kaynak ya da PASS değildir. |
+| Known file or symbol | Start with `rg` and read the necessary lines. |
+| Callers, dependencies or change impact | Ask CodeGraph one focused question. Start with `maxFiles: 1` and extend to two or three when needed. Verify results against the source. |
+| Implementation or fixes | Use the project `ponytail` skill at `full` level. Make the smallest complete change that preserves existing structure and required checks. |
+| Accepting a change | The lead agent uses `ponytail-review` to inspect the diff, affected callers and tests in the regular quality review. |
+| Auditing historical code | Use `ponytail-audit` for a one-time report on the defined scope. Avoid repeating a repository-wide audit for individual tasks. |
+| Compressed or missing tool output | Retrieve the necessary original excerpt through `headroom_retrieve`. Use the original source and test results as evidence. |
 
-CodeGraph'ın indeksi kaynak veya dışlama ayarı değiştiğinde güncellenir; aynı anda tek güncelleyen olur. MCP araç listesinde görünmüyorsa `scripts/codegraph.ps1` kullanılır. Graf keşif sağlar; Tauri IPC, gerçek sağlayıcı trafiği ve ajan kimliği ayrıca kanıtlanır. [Kurulum ve komutlar](codegraph.md).
+Update the CodeGraph index when source or exclusion settings change, with one updater at a time. Use `scripts/codegraph.ps1` if the MCP tool is unavailable. Use the graph for discovery and verify Tauri IPC, real provider traffic and agent identity independently. [Installation and commands](codegraph.md)
 
-Ponytail kuralları ana ajan ve mevcut tek çalışan için geçerlidir. Rapor dili Türkçe, varsayılan seviye `full`dür. Skill yalnız talimat sağlar; CI veya test çalıştırıcısı değildir. Güvenlik, sahiplik, atomik yazım, çatışmayı koruyan geri alma, hata yönetimi ve gerekli testler sadeleştirme uğruna kaldırılmaz. [Sabitlenen kaynak ve kullanım](ponytail.md).
+Ponytail applies to the lead agent and single worker. Write repository reports in English and communicate with the repository owner in Turkish. The default level is `full`. The skill provides development guidance. Preserve security, ownership, atomic writes, conflict-safe rollback, error handling and required tests when simplifying. [Pinned source and usage](ponytail.md)
 
-## Göreve giriş
+## Starting a task
 
-1. `TASKS.md` ve kısa checkpoint'ten aktif kimliği, son kanıtı ve sıradaki eksik davranışı bul. Bağlamdaki güncel kaynak/belgeyi tekrar okuma; değişim, eksik bağlam veya somut belirsizlik varsa ilgili kısmı yenile.
-2. Mevcut plan/spec bölümünde amaç/kapsam dışını, korunacak sözleşmeleri, kritik varsayımları ve doğrulama yollarını kontrol et; yalnız eksik/çelişen kararı güncelle. Normal/hata/sınır davranışını en fazla üç gözlenebilir senaryoyla tarif et: başlangıç → eylem → beklenen sonuç. Yeni plan dosyası her görevde zorunlu değildir.
-3. Uygulayıcıyı kısa gerekçeyle seç. Kritik auth/rota/sahiplik, ölçüm veya kurtarma kararı ve belirsiz performans kök nedenini ana ajan üstlenir. Davranışı/doğrulaması net ve devir maliyetini karşılayan işleri tek Luna xhigh çalışanına ver; küçük işi sırf devir için bölme.
-4. Dilimi tek davranış ve birlikte doğrulanabilir kabulle sınırla; 1–5 dosya yaklaşık devir rehberidir, zorunlu bölme eşiği değildir. Luna seçildiyse aşağıdaki kısa devri ver. Aynı alanda tek ajan yazar; ana ajan devralmadan çalışanı durdurur ve durduğunu doğrular.
+1. Find the active task ID, last evidence and next missing behavior in `TASKS.md` and the short checkpoint. Reuse current sources and documents already in context. Refresh the relevant parts when inputs change, context is missing or an uncertainty needs resolving.
+2. Check the plan or specification for the goal and exclusions, contracts to preserve, critical assumptions and verification path. Update only missing or conflicting decisions. Describe normal, error and boundary behavior in up to three observable scenarios with a starting state, action and expected result. Use a separate plan file when the task needs one.
+3. Select the implementer and briefly explain why. The lead agent owns critical authentication, route, ownership, measurement and recovery decisions and unresolved performance causes. Delegate clear, verifiable work that justifies a handoff to the single Luna xhigh worker. Keep small tasks together.
+4. Keep each slice to one behavior and acceptance scenarios that can be verified together. Roughly one to five files is a handoff guide. Use the short handoff below for Luna. Assign one writer to each area. The lead agent stops the worker and confirms it has stopped before taking over.
 
 ```text
-Kimlik / amaç:
-Uygulayıcı / kısa gerekçe:
-Başlangıç ve beklenen davranış:
-Dosya sahipliği / kapsam dışı / korunacak sözleşmeler:
-Kabul senaryoları:
-Kritik varsayımlar / ilgili kaynaklar:
-Mevcut doğrulama komutları / yeniden kullanılacak kanıt:
-Dönüş: değişiklik, sonuç/fingerprint, bilinmeyen, sonraki adım.
+Task ID and goal
+Implementer and brief rationale
+Starting state and expected behavior
+File ownership, exclusions and contracts to preserve
+Acceptance scenarios
+Critical assumptions and relevant sources
+Existing verification commands and reusable evidence
+Report changes, results and fingerprints, unknowns, and the next action.
 ```
 
-Uygulayıcı kodlamadan etkilenen gerçek arayüz/kayıt/ölçüm ve UI → yönetici → motor/istemci sözleşmesini kontrol eder. Önce mevcut yardımcı/standart yapı kullanılır. Yeni bağımlılık, soyutlama veya ayar ancak görevin somut ihtiyacını karşılıyorsa eklenir. Kod düzeltmesi ve geniş temizlik aynı dilimde birleştirilmez.
+Before implementing, check the affected interfaces, storage, measurement and the contract from UI to manager to engine or client. Start with existing helpers and standard structures. Add a dependency, abstraction or setting when the task has a concrete need for it. Keep fixes and broad cleanup in separate slices.
 
-Çalışan çelişen sözleşme, yeni kanıt üretmeyen tekrar veya kabulü zayıflatma gereğinde gözlem/denenen yaklaşım/gereken kararı ana ajana taşır ve karara bağlı yazmayı durdurur. Ana ajan tek düzeltme paketi verir; engel sürerse devralır veya kabulü koruyarak işi yeniden sınırlar. Timeout yeni çalışan veya model değişikliği gerekçesi değildir; gerçek oturum sonu/handle kaybında checkpoint'ten tek yeni Luna açılabilir. İnceleme çalışan özetine dayanmaz; ana ajan farkı ve kritik bağlı akışı okur. Kozmetik tercihler yeni tur üretmez.
+The worker stops decision-dependent edits and reports the observation, attempted approach and decision required when a contract conflicts, a retry produces no new evidence or acceptance would need to be weakened. The lead agent sends one set of corrections. If the problem persists, take over or narrow the work while preserving acceptance. Reopen a worker from the checkpoint only when the original session ends or the handle is lost. Keep the worker and model through timeouts. Review the actual diff and connected path alongside the worker's summary. Cosmetic preferences do not warrant another review cycle.
 
-## Bir görevin bitiş kabulü
+<a name="bir-görevin-bitiş-kabulü"></a>
 
-Aşağıdakilerin hepsi sağlanmadan ana görev `[x]` olmaz:
+## Task completion criteria
 
-1. **Davranış:** Görevin bütün kabul senaryolarında beklenen sonuç gösterilmiş; kullanıcı arayüzü değişiyorsa ilgili UI → yönetici → motor/istemci yolu incelenmiş. Mock yalnız test kapsamını kanıtlar.
-2. **Hata ve kapsam:** Değişikliğin etkilediği iptal, hata, çatışma veya yeniden açılış senaryoları doğrulanmış. Değişmeyen yollar için gereksiz yeni test üretilmez. Model, auth, proje ve süreç sahipliği sınırları korunmuş.
-3. **İnceleme:** Ana ajan değişikliği ve ilgili çağıranları incelemiş. Kabulü bozan somut bulgular giderilmiş. İsteğe bağlı temizlik, kanıtlı hata gibi sunulmamış.
-4. **Doğrulama:** Plandaki mevcut komut; plan yoksa TASKS kabulü ve aşağıdaki yerel kapı kullanılmış, komutun varlığı doğrulanmış. Odaklı kontroller geçmiş. Ürün kodunda, inceleme düzeltmeleri bittikten sonra ana görevin son adayının tam yerel kapısı bir kez geçmiş; her ara dilimde tekrarlanmamış. Belge/skill/araç ayarı işinde ilgili kurulum, yapılandırma ve bağlantı kontrolleri yeterli; yalnız yönerge bakımında ürün testleri tekrar çalıştırılmaz. Beklenen kritik dış ortam kanıtı eksikse görev kısmi kalır.
-5. **Kayıt ve durma:** TASKS/checkpoint'te durum, kanıt, sınırlar ve sonraki adım tutarlı. Ana görev tamamlandı kullanıcıya açıkça söylenir ve çalışma durur. Alt dilim bittiğinde ana görev tamamlandı denmez.
+Mark a main task `[x]` when all five conditions hold:
 
-Kanıt satırı kısa tutulur: **senaryo | beklenen | gözlenen | kanıt yolu | kaynak/config + araç/ortam fingerprint'i | sınır**. Sonuç ve ilgili önce/sonra fingerprint'leri aynı doğrulama adımında programatik kaydedilir; hash elle kopyalanmaz, ölçüm altyapısı yoksa sınır yazılır. Ham prompt, auth, HTTP gövdesi veya hata dökümü kalıcılaştırılmaz.
+1. **Behavior.** The expected result was demonstrated in all acceptance scenarios. For a UI change, review the path from the UI through the manager to the engine or client. Mock evidence applies to the scenario exercised by the mock.
+2. **Errors and scope.** Verify affected cancellation, failure, conflict and restart scenarios. Reuse evidence for unchanged paths when it remains valid. Respect model, authentication, project and process ownership boundaries.
+3. **Review.** The lead agent reviewed the change and relevant callers. Concrete findings that would break acceptance have been fixed. Record optional cleanup separately from verified defects.
+4. **Verification.** Confirm and run the existing plan command, or use TASKS criteria and the local gate below. Focused checks passed. For product code, run the full local gate once on the final candidate after review and fixes. For docs, skills or tool configuration, verify the affected setup, configuration and connection as needed. Instruction-only maintenance calls for checks of the affected instructions. A task remains partial while critical external evidence is missing.
+5. **Record and stop.** Keep the task list and checkpoint consistent about status, evidence, limits and the next action. Tell the user when the main task is complete, stop and wait. Report acceptance of an individual slice at its own scope.
 
-PASS ancak çalışma alanı, ilgili kaynak/test/config, bağımlılık/araç zinciri, komut ve ortam eşleşiyorsa yeniden kullanılır. Aynı başarılı kontrolü yinelemek için önce somut değişim nedeni yazılır. Compact, yeni gün veya kredi kesintisi geçersizleşme nedeni değildir. Yeni düzeltme ilgili kanıtı geçersiz kılar; etkilenmeyen kanıt korunur. Canlı bağlantı/CI/dağıtım/migration/veritabanı/üretim kontrolü kendi aşamasında yenilenir. Kısa koşu uzun süreli kararlılık sayılmaz; performans verisi, çalışma durumu, yük, süre ve eşik önceden belirlenir. Başarısızlığı gizlemek için kabul gevşetilmez.
+Keep the evidence record short and include the scenario, expected and observed results, evidence path, source and configuration plus tool and environment fingerprints, and limits. Capture results and before-and-after fingerprints programmatically in the same step. State a limit when the tooling cannot capture it. Keep raw prompts, authentication data, HTTP bodies and error dumps out of persistent evidence.
 
-## Durumların anlamı
+Reuse a PASS only when the workspace, relevant source, tests, configuration, dependencies, toolchain, command and environment match. Name the concrete change before repeating a previously successful check. Compaction, a new day or interrupted credits carry forward valid evidence. Fixes invalidate related evidence. Refresh live connection, CI, deployment, migration, database and production checks at their stage. Define performance inputs, operating state, load, duration and thresholds before running. Long-term reliability needs corresponding evidence. Keep the acceptance threshold when a check fails.
 
-| Durum | Kural |
+## Task status
+
+| Status | Meaning |
 | --- | --- |
-| Planlı | Henüz uygulama başlamadı; kutu açık. |
-| Aktif | Tek ana görev veya kabul edilmekte olan geliştirme işi. |
-| Kısmi / dış kanıt bekliyor | Tamamlanan yerel dilim yazılır; eksik kabul açık kalır. Bağımsız ilerleme sürer. |
-| Tamamlandı | Bütün görev kapsamı ve ortak bitiş kabulü karşılandı. |
+| Planned | Implementation has yet to start. Keep the box open. |
+| Active | The current main task or development tooling work undergoing acceptance. |
+| Partial or awaiting external evidence | Record completed local work and leave the missing evidence open. Continue independent work. |
+| Complete | The task meets its scope and all shared completion criteria. |
 
-Hesap eksikliği veya ikinci işletim sisteminin yokluğu destek durumu olarak kaydedilir. `not_tested` veya bilinmiyor, çalışmıyor/uyumsuz demek değildir. Yerel başarı, sağlayıcı doğrulaması, Windows 11/macOS/Linux başarısı ve yayın adayı birbirinin yerine kullanılmaz. Denetim salt okunurdur; düzeltme ayrı sınırlı iştir ve kritik doğruluk/veri kaybı bulgusu kapanmadan bağımlı işe geçilmez. Başlamamış özellik hata sayılmaz. Her bulgu yeni ana görev olmaz: ilgili açık göreve bağlanır; bağımsız somut hata gerekiyorsa küçük düzeltme maddesi açılır.
+Record an unavailable account or second OS in the support matrix. Use `not_tested` or unknown for an unverified case. Record local success, provider verification, Windows 11, macOS and Linux success and release-candidate readiness individually. Audit read-only and scope repairs separately. Resolve critical correctness or data-loss findings before dependent work. Planned features and optional suggestions are separate from defects. Track findings on the relevant open task or create a small fix item for an independent concrete defect.
 
-## Bugün çalışabilen yerel ürün kapısı
+<a name="bugün-çalışabilen-yerel-ürün-kapısı"></a>
 
-Bu komutlar mevcut `package.json` ve son H021 kanıtıyla eşleşir. Yeni kod kabulünde son aday üzerinde, repo kökünden çalıştırılır:
+## Available local product gate
+
+These commands match the existing `package.json` and the H021 evidence. For new code acceptance, run the final candidate gate from the repository root.
 
 ```text
 pnpm.cmd test:app
@@ -76,20 +80,20 @@ cargo test --offline --manifest-path src-tauri/Cargo.toml -- --test-threads=1
 cargo build --offline --manifest-path src-tauri/Cargo.toml --features custom-protocol
 ```
 
-Cargo çağrılarında süreç ortamı `CARGO_HOME=<repo>/work/caches/cargo-home` ve `CARGO_TARGET_DIR=<repo>/work/caches/cargo-target` olur. Kaydedilmiş araç zinciri ve mevcut offline cache kullanılır. `build` TypeScript kontrolünü de içerdiği için aynı adayda ayrıca aynı typecheck tekrarlanmaz.
+Set process-scoped `CARGO_HOME=<repo>/work/caches/cargo-home` and `CARGO_TARGET_DIR=<repo>/work/caches/cargo-target` for Cargo. Use the recorded toolchain and existing offline cache. The build includes TypeScript checking, so one pass covers it for the candidate.
 
-Şu anda `lint`, `test`, `test:e2e` adlı pnpm scriptleri yoktur. Planlanan bir komut başarılı kontrol diye işaretlenmez; eklendiği görevde bu tablo güncellenir. UI davranışı gereken görevlerde ilgili native kullanıcı akışı ayrıca doğrulanır. Bu kapı debug embedded ürünü doğrular; H038/H039 installer, güncelleme ve yayın kabulünün yerine geçmez. CI, push ve yayın kendi aşamasında ele alınır; mevcut ücretsiz kullanım sınırı geçerlidir.
+The current pnpm scripts include the checks above. Add `lint`, `test` or `test:e2e` to the gate when the corresponding script exists. Verify the native user flow separately for UI behavior. This gate covers the debug embedded product. Installer, update and release acceptance have separate gates in H038 and H039. CI, push and release are handled in their own stages under the free-use limit.
 
-H035/H036 ek kapıları: `pnpm.cmd test:a11y` gerçek App'i izole transport ile Edge/headless üzerinde denetler; browser kurulumu ayrı ortam ön koşuludur. Viewport karşılığı gerçek OS DPI kanıtı değildir. `pnpm.cmd test:compatibility` strict katalog istemcisini ve keşif fixture sözleşmesini odaklı çalıştırır; aynı testler `test:app` listesinde de vardır. Bu komutlar var olmayan `test:e2e` ile karıştırılmaz. Native ürün kabulü ayrıca yapılır.
+H035 and H036 have additional checks. `pnpm.cmd test:a11y` runs the real App with isolated transport in headless Edge and requires the browser in the test environment. Real OS display scaling has its own verification. `pnpm.cmd test:compatibility` focuses on the strict catalogue client and discovery fixture contract, with the same tests included in `test:app`. Verify the native product separately.
 
-`pnpm.cmd build:windows` mevcut pinned payload'ı tam envanterle `work/build/windows/pennypinch` içine doğrular ve current-user NSIS önizlemesini üretir. Proje içindeki sabitlenmiş Python ve motor payload'ı gerekir. Odaklı paket testleri aynı Python ile `-I -B -m unittest discover -s tests/runtime -p 'test_windows_*.py'` komutuyla çalışır. Teslim ZIP’i aynı Python ile `-I -B scripts/package-windows-delivery.py --receipt docs/proofs/windows-installer-044-notices.json` komutuyla doğrulanmış 0.44.0 makbuzuna bağlanır. `windows_bundle_real_staged_payload_starts_and_stops_without_development_layout` opt-in Rust testi gerçek staging kaynaklarını kullanır. Kurulum, kaynak eşitliği, native motor ve normal kapanış ayrıca gözlenir. Temiz Windows 10, Windows 11 ve WebView2 yokluğu ayrı kaydedilir. Testler izole istemci ayarlarını kullanır. [Windows doğrulaması](../validation/windows-install.md).
+`pnpm.cmd build:windows` verifies the pinned payload against the full inventory under `work/build/windows/pennypinch` and builds a current-user NSIS preview. It requires the pinned project Python and engine payload. Run the focused packaging tests with that Python and `-I -B -m unittest discover -s tests/runtime -p 'test_windows_*.py'`. Create the delivery ZIP bound to the verified 0.44.0 receipt with `-I -B scripts/package-windows-delivery.py --receipt docs/proofs/windows-installer-044-notices.json`. The opt-in Rust test `windows_bundle_real_staged_payload_starts_and_stops_without_development_layout` uses actual staging resources. Observe installation, resource parity, native engine operation and normal exit separately. Record clean Windows 10, Windows 11 and a host without WebView2 individually. Tests use isolated client settings. [Windows validation](../validation/windows-install.md)
 
-H038 kaldırma kabulü, Windows 10’da gerçek NSIS ve ayrı uygulama kimliğiyle yapıldı. Yerel kapıdan sonra ürün girdileri aynıysa testler yeniden çalıştırılmaz. Kaldırıcıyla ilgili değişiklikte açık uygulama, config kilidi/çatışması ve yerel veriyi saklama/silme yeniden gözlenir. Etkileşimsiz kaldırma veriyi saklar. Güncelleme yolu ayrı kabul edilir. [Kaldırma doğrulaması](../validation/uninstall.md).
+H038 verified uninstall on Windows 10 with real NSIS and an isolated application identifier. Reuse existing product-gate results when inputs match. For an uninstaller change, observe a running app, a locked or conflicting config, and the retain and delete choices for local data. Unattended uninstall retains data. Update has its own acceptance. [Uninstall validation](../validation/uninstall.md)
 
-H039 Windows release kontrolü: `build-windows.ps1`, paketleme sonrası `HEADROOM_RELEASE_EXE_CANDIDATE` değişkenini sahipli release exe’sine ayarlayıp `test_windows_release_executable.py` çalıştırır ve önceki süreç ortamını geri yükler. Test gerçek dosyanın PE/x64/PE32+/GUI subsystem=2 alanlarını okur; kaynakta nitelik metni aramak değildir. Doğrudan testte bu ortam değişkeni verilmezse kontrol açıkça skipped olur ve release kabulü sayılmaz. [Son aday kanıtı](../validation/release-candidate.md).
+For the H039 Windows release check, `build-windows.ps1` points `HEADROOM_RELEASE_EXE_CANDIDATE` at the owned release executable after packaging, runs `test_windows_release_executable.py` and restores the previous process environment. The test reads the actual file's PE, x64, PE32+ and GUI subsystem=2 fields. A direct run without that environment variable explicitly skips the check and leaves release acceptance open. [Release candidate evidence](../validation/release-candidate.md)
 
-## Geçmiş kod denetiminin sınırı
+## Historical code audit scope
 
-DEV002'nin ilk raporu config Apply/Undo ve sahiplik → runtime/proxy → UI bağlantı yollarını önceliklendirir. CodeGraph ilişkileri keşfeder; raporlayacak ajan ilgili gerçek kaynağı okur. Her bulgu dosya/satır, oluşma koşulu, kullanıcı etkisi ve en küçük düzeltmeyle desteklenir. Kontrol edilmeyen alanlar yazılır. Rapor üretmek, bütün düzeltmeleri uygulamak veya ana görevleri kapatmak değildir.
+The initial DEV002 report prioritizes configuration Apply and Undo, ownership, runtime and proxy, and UI connection paths. Use CodeGraph to find relationships and read the relevant source. Each finding includes the file and line, conditions, user impact and smallest fix. State what the audit covered. The audit records findings and leaves fixes and task acceptance to their own work.
 
-Geliştirme token tasarrufu ancak aynı kapsama ait gerçek ölçüm varsa raporlanır. Ponytail benchmarkları, CodeGraph kullanım adedi ve silinen satır sayısı tasarruf yüzdesine dönüştürülmez.
+Report development token savings only when actual measurements use the same scope. Ponytail benchmarks, CodeGraph call counts and deleted lines measure different things.

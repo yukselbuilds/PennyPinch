@@ -418,7 +418,9 @@ def run_arm(pilot, cli, supervisor, engine, directory, model, effort, fixture, c
         assert all(body.get("text", {}).get("format", {}).get("schema") == schema
                    and body["text"]["format"].get("type") == "json_schema" for body in fixture.requests), "answer_schema_wire_mismatch"
         row["provider_answer_schema_exact"] = True
-        assert all("# Headroom Desktop çalışma kuralları" not in json.dumps(body, ensure_ascii=False)
+        policy_heading = (ROOT / "AGENTS.md").read_text(encoding="utf-8").splitlines()[0]
+        assert policy_heading.startswith("# "), "repository_instructions_heading_missing"
+        assert all(policy_heading not in json.dumps(body, ensure_ascii=False)
                    for body in fixture.requests), "repository_instructions_leaked"
         matches = pilot["inspect_tool_output"](engine, fixture.requests[1], case, directory.name, usage)
         forced = getattr(fixture, "force_recovery_hash", None) is not None
