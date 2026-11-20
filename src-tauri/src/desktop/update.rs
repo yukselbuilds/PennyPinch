@@ -44,6 +44,7 @@ pub(crate) enum UpdateError {
     WrongChannel,
     VersionNotNewer,
     EnginePinMismatch,
+    RuntimeResourcesMismatch,
     StateFormatMismatch,
     InstallerRead,
     InstallerSizeMismatch,
@@ -61,7 +62,7 @@ struct Manifest {
     notes: String,
     engine: EnginePin,
     installer: Artifact,
-    #[serde(default, deserialize_with = "present_application")]
+    #[serde(default, deserialize_with = "present")]
     application: Option<Application>,
 }
 
@@ -85,12 +86,38 @@ struct Application {
     state_format: u32,
     size_bytes: u64,
     sha256: String,
+    #[serde(default, deserialize_with = "present")]
+    runtime_resources_sha256: Option<String>,
 }
 
-fn present_application<'de, D: serde::Deserializer<'de>>(
+fn present<'de, T: Deserialize<'de>, D: serde::Deserializer<'de>>(
     deserializer: D,
-) -> Result<Option<Application>, D::Error> {
-    Application::deserialize(deserializer).map(Some)
+) -> Result<Option<T>, D::Error> {
+    T::deserialize(deserializer).map(Some)
+}
+
+pub(super) fn windows_runtime_resources_sha256() -> String {
+    macro_rules! runtime_file {
+        ($name:literal) => {
+            include_bytes!(concat!("../../../runtime/", $name))
+        };
+    }
+    // Keep this order aligned with the Windows staging overlays and pinned manifests.
+    let inputs: [&[u8]; 8] = [
+        runtime_file!("desktop_controller.py"),
+        runtime_file!("desktop_helper.py"),
+        runtime_file!("cache_control_shim.py"),
+        runtime_file!("optimization_control.py"),
+        runtime_file!("optimization-sources.json"),
+        runtime_file!("retrieval_bridge.py"),
+        runtime_file!("manifest.windows.json"),
+        runtime_file!("windows-payload.json"),
+    ];
+    let mut digest = Sha256::new();
+    for input in inputs {
+        digest.update(Sha256::digest(input));
+    }
+    format!("{:x}", digest.finalize())
 }
 
 #[derive(Debug)]
@@ -100,6 +127,8 @@ pub(crate) struct VerifiedUpdate {
     notes: String,
     installer: Artifact,
     application: Option<Artifact>,
+    #[cfg(any(windows, test))]
+    runtime_resources_bound: bool,
     #[cfg(all(windows, any(test, not(debug_assertions))))]
     signed: Option<(Vec<u8>, String)>,
 }
@@ -137,6 +166,11 @@ impl VerifiedUpdate {
     #[cfg(any(windows, test))]
     pub(super) fn application_size(&self) -> Option<u64> {
         self.application.as_ref().map(|file| file.size_bytes)
+    }
+
+    #[cfg(any(windows, test))]
+    pub(super) fn allows_release_download(&self) -> bool {
+        self.application.is_none() || self.runtime_resources_bound
     }
 
     #[cfg(windows)]
@@ -222,7 +256,16 @@ fn parse_manifest(bytes: &[u8], policy: &UpdatePolicy<'_>) -> Result<VerifiedUpd
         serde_json::from_slice(bytes).map_err(|_| UpdateError::InvalidManifest)?;
     let application = match (manifest.schema_version, manifest.application) {
         (1, None) => None,
-        (2, Some(application)) => {
+        (2 | 3, Some(application)) => {
+            match (
+                manifest.schema_version,
+                application.runtime_resources_sha256.as_deref(),
+            ) {
+                (2, None) => {}
+                (3, Some(pin)) if pin == windows_runtime_resources_sha256() => {}
+                (3, Some(_)) => return Err(UpdateError::RuntimeResourcesMismatch),
+                _ => return Err(UpdateError::InvalidManifest),
+            }
             if application.state_format != UPDATE_STATE_FORMAT {
                 return Err(UpdateError::StateFormatMismatch);
             }
@@ -235,7 +278,7 @@ fn parse_manifest(bytes: &[u8], policy: &UpdatePolicy<'_>) -> Result<VerifiedUpd
             }
             Some(artifact)
         }
-        (1 | 2, _) => return Err(UpdateError::InvalidManifest),
+        (1..=3, _) => return Err(UpdateError::InvalidManifest),
         _ => return Err(UpdateError::UnsupportedSchema),
     };
     if manifest.app_identifier != policy.app_identifier || manifest.target != WINDOWS_TARGET {
@@ -275,6 +318,8 @@ fn parse_manifest(bytes: &[u8], policy: &UpdatePolicy<'_>) -> Result<VerifiedUpd
         notes: manifest.notes,
         installer: manifest.installer,
         application,
+        #[cfg(any(windows, test))]
+        runtime_resources_bound: manifest.schema_version == 3,
         #[cfg(all(windows, any(test, not(debug_assertions))))]
         signed: None,
     })

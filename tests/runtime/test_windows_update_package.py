@@ -1,6 +1,7 @@
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 import base64
+import hashlib
 import json
 import struct
 import tempfile
@@ -31,6 +32,8 @@ class UpdatePackageTests(unittest.TestCase):
         (self.root / 'runtime/manifest.windows.json').write_text(json.dumps({'engine': {
             'version': '0.41.0', 'runtime_manifest_sha256': 'a' * 64,
         }}))
+        for name in (*package.staging.OVERLAYS, 'windows-payload.json'):
+            (self.root / 'runtime' / name).write_bytes(('fixture ' + name).encode())
         self.public = self.root / 'release.pub'
         self.public.write_bytes(base64.b64encode(b'untrusted comment: fixture public key\nRWR-fixture-key\n') + b'\n')
         self.private = self.root / 'release.key'
@@ -93,14 +96,21 @@ class UpdatePackageTests(unittest.TestCase):
             if 'signer' not in command:
                 self.assertNotIn('TAURI_SIGNING_PRIVATE_KEY_PASSWORD', environment)
 
-    def test_release_probe_checks_the_expected_source_before_and_after_packing(self):
+    def test_release_probe_and_signature_bind_source_and_runtime_resources(self):
         base = 'https://updates.example.com/headroom/'
+        names = (*package.staging.OVERLAYS, 'manifest.windows.json', 'windows-payload.json')
+        runtime = self.root / 'runtime'
+        pin = hashlib.sha256(b''.join(hashlib.sha256((runtime / name).read_bytes()).digest()
+                                     for name in names)).hexdigest()
         result = self.prepare(release_base_url=base)
         probes = [command for command, _ in self.calls if '--headroom-update-probe' in command]
         expected = ['--headroom-update-probe', 'dev.headroom.desktop', '0.1.1', '1',
-                    base, self.public.read_text().strip()]
+                    base, self.public.read_text().strip(), pin]
         self.assertEqual([command[1:] for command in probes], [expected, expected])
         self.assertEqual(result['release_base_url'], base)
+        manifest = json.loads((self.output / 'stable/manifest.json').read_bytes())
+        self.assertEqual(manifest['schema_version'], 3)
+        self.assertEqual(manifest['application']['runtime_resources_sha256'], pin)
 
     def test_release_probe_rejection_prevents_packing_and_signing(self):
         def reject(command, environment, project):

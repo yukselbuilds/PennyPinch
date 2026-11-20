@@ -158,7 +158,10 @@ impl ReleaseSource {
         )?;
         let signature = std::str::from_utf8(&signature).map_err(|_| Failure::InvalidRelease)?;
         match verify_manifest(&bytes, signature, policy) {
-            Ok(update) => Ok(Some(update)),
+            Ok(update) if self.local_fixture || update.allows_release_download() => {
+                Ok(Some(update))
+            }
+            Ok(_) => Err(Failure::InvalidRelease),
             Err(UpdateError::VersionNotNewer) => Ok(None),
             Err(_) => Err(Failure::InvalidRelease),
         }

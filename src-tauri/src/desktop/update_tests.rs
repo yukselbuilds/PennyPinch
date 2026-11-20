@@ -188,7 +188,8 @@ fn enforces_installed_identity_and_closes_the_manifest_schema() {
     let trusted = policy(&installed, UpdateChannel::Stable);
     let cases = [
         ("/schema_version", json!(2), UpdateError::InvalidManifest),
-        ("/schema_version", json!(3), UpdateError::UnsupportedSchema),
+        ("/schema_version", json!(3), UpdateError::InvalidManifest),
+        ("/schema_version", json!(4), UpdateError::UnsupportedSchema),
         (
             "/target",
             json!("windows-aarch64"),
@@ -285,6 +286,37 @@ fn verifies_application_bytes_only_for_the_same_state_format() {
             error
         );
     }
+}
+
+#[test]
+fn application_downloads_from_release_sources_require_the_same_runtime_resources() {
+    let installed = current_version();
+    let trusted = policy(&installed, UpdateChannel::Stable);
+    let mut manifest: Value = serde_json::from_slice(STABLE).unwrap();
+    let verify =
+        |manifest: &Value| parse_manifest(&serde_json::to_vec(manifest).unwrap(), &trusted);
+    assert!(verify(&manifest).unwrap().allows_release_download());
+
+    manifest["schema_version"] = json!(2);
+    manifest["application"] = json!({
+        "state_format": UPDATE_STATE_FORMAT,
+        "size_bytes": INSTALLER.len(),
+        "sha256": format!("{:x}", Sha256::digest(INSTALLER)),
+    });
+    assert!(!verify(&manifest).unwrap().allows_release_download());
+
+    manifest["schema_version"] = json!(3);
+    assert_eq!(verify(&manifest).unwrap_err(), UpdateError::InvalidManifest);
+    manifest["application"]["runtime_resources_sha256"] = Value::Null;
+    assert_eq!(verify(&manifest).unwrap_err(), UpdateError::InvalidManifest);
+
+    manifest["application"]["runtime_resources_sha256"] = json!("0".repeat(64));
+    assert_eq!(
+        verify(&manifest).unwrap_err(),
+        UpdateError::RuntimeResourcesMismatch
+    );
+    manifest["application"]["runtime_resources_sha256"] = json!(windows_runtime_resources_sha256());
+    assert!(verify(&manifest).unwrap().allows_release_download());
 }
 
 #[test]

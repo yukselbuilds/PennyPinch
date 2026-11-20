@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "task": "H042",
+  "slice": "require_compatible_application_update_runtime",
+  "date": "2026-11-20",
+  "status": "pass",
+  "platform": "Windows 10 22H2 x64 build 19045",
+  "source_revision_before_patch_commit": "2c4212b1d42545d4d9789177f035c48beae2707e",
+  "scope": "Release-mode QA build, standalone signed application update, temporary signing key",
+  "manifest_schema": 3,
+  "engine": {
+    "version": "0.44.0",
+    "runtime_manifest_sha256": "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe"
+  },
+  "runtime_source_inputs": [
+    "desktop_controller.py",
+    "desktop_helper.py",
+    "cache_control_shim.py",
+    "optimization_control.py",
+    "optimization-sources.json",
+    "retrieval_bridge.py",
+    "manifest.windows.json",
+    "windows-payload.json"
+  ],
+  "matching_resources_sha256": "d8ed8c817000506ee67158e0ac4dc87c4df5c1ac18785cdc89f31f99b3092f0b",
+  "changed_input": "desktop_helper.py",
+  "changed_resources_sha256": "84d21b9a61fcd4329b585b68412dd956c2e83fdb7dcf0594713d3ffd0706a708",
+  "matching_package": {
+    "version": "0.1.1",
+    "bytes": 3459883,
+    "files": {
+      "manifest.json": "723371c41302f9d7996a22cdd6d198882cf8d5d5ce9466a3d47b30e081b7bebf",
+      "manifest.json.sig": "466ce505762bad3ad47115870178ac5b2eae8261d27e59cd8c2635a96ea16798",
+      "Headroom_0.1.1_x64-update.exe": "14172ee15774108b0ff594c5f29234528bde8b5ae289d5d5b63b66f4a0ba461c"
+    },
+    "receipt": {
+      "path": "work/proofs/update/bound-resources/qa-508ca2e8/prepared/release-receipt.json",
+      "sha256": "801c891f3db6ae0bb23718b70896097c0d2b792176bf61255bb073485e352406"
+    }
+  },
+  "checks": [
+    {
+      "check": "temporary_test_key",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "seconds": 0.244
+    },
+    {
+      "check": "release_executable_build",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "seconds": 40.831
+    },
+    {
+      "check": "existing_recovery_probe",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "seconds": 0.406
+    },
+    {
+      "check": "resource_pin_match",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "seconds": 0.019
+    },
+    {
+      "check": "changed_resource_pin_refused",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "seconds": 0.017
+    },
+    {
+      "check": "matching_bundle_signed_and_verified",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "seconds": 8.466
+    },
+    {
+      "check": "independently_signed_changed_runtime_manifest",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "seconds": 0.198
+    },
+    {
+      "check": "signed_changed_runtime_rejected",
+      "exit_code": 101,
+      "expected_exit_code": 101,
+      "reason": "RuntimeResourcesMismatch"
+    }
+  ],
+  "preserved_preview_installer_sha256": "9725ecfd72005185542119684558f4fd27733a90acd746d7d05e291219cd64eb",
+  "quality_gate": {
+    "rust_passed": 479,
+    "rust_ignored": 24,
+    "windows_packaging_tests": "pass",
+    "custom_protocol_build": "pass",
+    "frontend_tests_reused": 227,
+    "matched_frontend_assets": 3
+  },
+  "fingerprints": {
+    "release_run": {
+      "inputs": 368,
+      "before_sha256": "6d212a86f789602e2ccabb57cb865f20dc6a65ef5c13d737fc72ab97bd12aed6",
+      "after_sha256": "6d212a86f789602e2ccabb57cb865f20dc6a65ef5c13d737fc72ab97bd12aed6"
+    },
+    "native_gate": {
+      "inputs": 358,
+      "before_sha256": "8d3c8a7fd19767d446841d1b039b2ba09e0025a7196244c75e7ca65a138d4cbb",
+      "after_sha256": "8d3c8a7fd19767d446841d1b039b2ba09e0025a7196244c75e7ca65a138d4cbb"
+    },
+    "release_preparation_matched_inputs": 248
+  },
+  "test_key_removed": true,
+  "qa_application_state_created": false,
+  "publication": "pending",
+  "windows_11": "deferred",
+  "local_evidence_directory": "work/proofs/update/bound-resources/qa-508ca2e8"
+}

@@ -1,7 +1,7 @@
 use super::uninstall::{app_local_data, open_update_gate};
 use super::update::{
-    verify_manifest, UpdateChannel, UpdatePolicy, VerifiedUpdate, MANIFEST_LIMIT, SIGNATURE_LIMIT,
-    UPDATE_STATE_FORMAT,
+    verify_manifest, windows_runtime_resources_sha256, UpdateChannel, UpdatePolicy, VerifiedUpdate,
+    MANIFEST_LIMIT, SIGNATURE_LIMIT, UPDATE_STATE_FORMAT,
 };
 use super::update_commit::{copy_verified, create_bytes, read_owned, read_small, FileDigest, Swap};
 use super::update_flow::{matches_configured_release, Recovery};
@@ -723,7 +723,8 @@ pub(crate) fn enter(config: &tauri::Config, version: &Version) {
         ];
         let valid = match args[1..].strip_prefix(expected.as_slice()) {
             Some([]) => true,
-            Some([base, key]) => base
+            Some([_, _, pin]) if pin != windows_runtime_resources_sha256().as_str() => false,
+            Some([base, key] | [base, key, _]) => base
                 .to_str()
                 .zip(key.to_str())
                 .is_some_and(|(base, key)| matches_configured_release(base, key)),

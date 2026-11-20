@@ -3,6 +3,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 import argparse
 import base64
+import hashlib
 import json
 import os
 import re
@@ -83,8 +84,6 @@ def prepare(project, application, output, config, public_key, private_key, notes
     if key not in executable:
         raise ValueError('application_trust_key_mismatch')
     probe = ['--headroom-update-probe', identifier, version, '1']
-    if release_base_url is not None:
-        probe.extend([release_base_url, key.decode('ascii')])
     if len(executable) < 64 or executable[:2] != b'MZ':
         raise ValueError('application_not_windows_x64')
     header = struct.unpack_from('<I', executable, 0x3C)[0]
@@ -94,11 +93,15 @@ def prepare(project, application, output, config, public_key, private_key, notes
         raise ValueError('application_not_windows_x64')
     runtime = regular(project / 'runtime/manifest.windows.json', project, 64 * 1024)
     engine = json.loads(runtime.read_bytes())['engine']
+    resource_inputs = []
+    if release_base_url is not None:
+        names = (*staging.OVERLAYS, 'manifest.windows.json', 'windows-payload.json')
+        resource_inputs = [regular(runtime.parent / name, project, 1024 * 1024) for name in names]
     template = regular(project / 'src-tauri/windows-update.nsi', project, 64 * 1024)
     nsis = regular(project / 'work/caches/cargo-target/.tauri/NSIS/makensis.exe', project, 32 * 1024 * 1024)
     tauri = regular((project / 'node_modules/@tauri-apps/cli/tauri.js').resolve(strict=True), project, 1024 * 1024)
     inputs = [application, config, public_key, notes_file, runtime, template, nsis, tauri,
-              Path(__file__).resolve(), Path(staging.__file__).resolve()]
+              Path(__file__).resolve(), Path(staging.__file__).resolve(), *resource_inputs]
     # Unit fixtures use a smaller project; actual receipts include the verifier and pinned tool inputs.
     inputs = [path for path in inputs if path.is_relative_to(project)]
     native_cli = (tauri.parent.parent / 'cli-win32-x64-msvc').resolve()
@@ -125,6 +128,11 @@ def prepare(project, application, output, config, public_key, private_key, notes
     tools['python'] = Path(sys.executable).resolve(strict=True)
     tools_before = {name: staging.sha(path) for name, path in tools.items()}
     before = fingerprints(project, inputs)
+    resource_pin = None
+    if resource_inputs:
+        hashes = b''.join(bytes.fromhex(before[path.relative_to(project).as_posix()]) for path in resource_inputs)
+        resource_pin = hashlib.sha256(hashes).hexdigest()
+        probe.extend([release_base_url, key.decode('ascii'), resource_pin])
     environment = {name: value for name, value in os.environ.items()
                    if not name.upper().startswith(('TAURI_SIGNING_', 'HEADROOM_DESKTOP_UPDATE_', 'HEADROOM_PREPARED_UPDATE_'))}
     environment.update(CARGO_HOME=str(project / 'work/caches/cargo-home'),
@@ -143,13 +151,16 @@ def prepare(project, application, output, config, public_key, private_key, notes
                  f'/DOUTPUT={installer}', str(template)], environment, project)
         regular(installer, project, 1024 * 1024 * 1024)
         manifest = public / 'manifest.json'
-        manifest.write_bytes((json.dumps({
-            'schema_version': 2, 'app_identifier': identifier, 'target': 'windows-x86_64',
+        metadata = {
+            'schema_version': 3 if resource_pin else 2, 'app_identifier': identifier, 'target': 'windows-x86_64',
             'channel': channel, 'version': version, 'notes': notes,
             'engine': {name: engine[name] for name in ('version', 'runtime_manifest_sha256')},
             'installer': {'size_bytes': installer.stat().st_size, 'sha256': staging.sha(installer)},
             'application': {'state_format': 1, 'size_bytes': len(executable), 'sha256': staging.sha(copied_application)},
-        }, ensure_ascii=False, indent=2) + '\n').encode('utf-8'))
+        }
+        if resource_pin is not None:
+            metadata['application']['runtime_resources_sha256'] = resource_pin
+        manifest.write_bytes((json.dumps(metadata, ensure_ascii=False, indent=2) + '\n').encode('utf-8'))
         signer_environment = {**environment, 'TAURI_SIGNING_PRIVATE_KEY_PASSWORD':
                               os.environ.get('TAURI_SIGNING_PRIVATE_KEY_PASSWORD', '')}
         execute([str(tools['node']), str(tauri), 'signer', 'sign', '--private-key-path', str(private_key),
@@ -197,6 +208,7 @@ def prepare(project, application, output, config, public_key, private_key, notes
                    'published': False}
         if release_base_url is not None:
             receipt['release_base_url'] = release_base_url
+            receipt['runtime_resources_sha256'] = resource_pin
         (temporary / 'release-receipt.json').write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8')
         # Windows rename refuses an output directory created by another process.
         temporary.rename(output)

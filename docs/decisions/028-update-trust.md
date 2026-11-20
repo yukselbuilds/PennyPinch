@@ -40,6 +40,8 @@ Yerel kabul için gerçek NSIS 3.13 paketi ve daha önce doğrulanmış QA exe�
 
 Sonraki dilim kurulu Windows uygulamasının sahipliğini doğrular. Motor ve bağlantı işlemleri güvenle kapandıktan sonra özel `.desktop-use` kilidini alır. Aynı diskteki tek uygulama dosyası atomik değiştirilir. Önceki çalışır exe ve kurulum sürüm bilgisi, mevcut kullanıcı verisine dokunmadan geri dönüşe bağlanır. Süreç kesintisi, disk dolu ve açılış uyumsuzluğu ayrı hata senaryolarıdır. İki masaüstü Windows kabulü açık kalır.
 
+20 Kasım 2026’da yayın manifesti v3, `application.runtime_resources_sha256` alanını imzaya bağladı. Özet, Windows paketindeki altı motor yardımcı dosyasının ve iki sabit Windows manifestinin sıralı SHA-256 değerlerinden üretilir. Kurulu exe, kendisine derleme sırasında bağlanan özeti indirilecek v3 adayının imzalı özetiyle karşılaştırır. Kaynaklar farklıysa yalnız uygulama exe’siyle güncelleme sunulmaz. Bu tür sürümler tam kurulum paketine ihtiyaç duyar. Geliştirme fixture’ları ve mevcut kurtarma kayıtları için v1/v2 ayrıştırma desteği korunur. Gerçek HTTPS kaynağından gelen yalnız-exe güncellemeleri v3 gerektirir.
+
 ## H042-c2 — Kurulu uygulama geçişi ve geri dönüş
 
 Ana ajan süreç, dosya ve kalıcı kurtarma kaydını üstlenir. Uygulama yalnız kendi HKCU NSIS kaydı, geçerli kurulum dizini ve o dizinden çalışan exe ile kurulum eylemi sunar. Geliştirme derlemesinde bu eylem kapalıdır. İlk geçiş aynı kaynak paketini ve veri biçimi 1’i taşıyan uygulama sürümleri içindir.

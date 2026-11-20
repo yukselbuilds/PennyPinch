@@ -1,5 +1,9 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
+## 20 Kasım — H042 yalnız EXE güncellemesinde motor kaynakları
+
+Ana ajan imzalı güncelleme ve kaynak uyumunu üstlendi. Windows 10’da Headroom 0.44.0’lı gerçek QA EXE’siyle aynı kaynakların v3 paketi geçti. Aynı motor pini ve geçerli imzayla değişen yardımcı dosya özeti reddedildi. 479 Rust testi, paketleme testleri ve custom-protocol derlemesi geçti. **45/54 ana görev tamamlandı.** Üretim anahtarı ve canlı GitHub Pages teslimi açık. Kullanıcının isteğiyle Windows 11 ayrı açık kalıyor. [Kanıt](proofs/windows-update-runtime-resources.json) · [Görev listesi](../TASKS.md)
+
 ## 20 Kasım — H042 HTTPS güncelleme kaynağı
 
 Ana ajan güncelleme kaynağı ve paket güvenini üstlendi. Windows 10’da gerçek Headroom 0.44.0 QA exe’si, beklenen HTTPS adresini ve geçici açık anahtarı imzadan önce ve çıkarılan pakette doğruladı. Yanlış adres, HTTP ve farklı anahtar reddedildi. 478 Rust testi, Windows paketleme testleri ve custom-protocol derlemesi geçti. Geçici özel anahtar kaldırıldı. **45/54 ana görev tamamlandı.** Üretim imzası, canlı Pages teslimi ve Windows 11 güncelleme/geri dönüş kabulü açık. [Kanıt](proofs/windows-update-release-source.json) · [Görev listesi](../TASKS.md)
