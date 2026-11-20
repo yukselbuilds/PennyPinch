@@ -1,5 +1,9 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
+## 20 Kasım — H041 upstream benchmark tekrarı
+
+Ana ajan ölçüm ve karşılaştırma kapsamını doğruladı. Windows 10’da paketli Headroom 0.44.0, 33 upstream SDK senaryosunu tamamladı. Ana altı SDK örneği %56,28 azaldı. Aynı tam istek sayımında SDK %43,64 ve yönetilen proxy %43,60 azalma verdi. 181 HTML sayfasında F1 0,9168. Kod ve üç hata alanı korundu. Bulut model çağrısı 0. H041’in ana kabulü açık. **45/54 ana görev tamamlandı.** [Ölçüm](proofs/upstream-benchmarks-044.json) · [Görev listesi](../TASKS.md)
+
 ## 20 Kasım — H042 yayın öncesi Git geçmişi incelemesi
 
 Ana ajan yayın ve kaynak güveni nedeniyle incelemeyi üstlendi. GitHub ana dalıyla eşleşen `fadf83a` üzerinde 266 commit ve 28 Gitleaks eşleşmesi incelendi. Özetler ilgili Git içeriğine ve sabit tokenizer kaynaklarına bağlandı. Test değerleri ve açık imza anahtarı kimliği doğrulandı. Açık eşleşme 0. **45/54 ana görev tamamlandı.** Güncel Windows kurulum adayına eşlenen üçüncü taraf bildirim paketi, üretim imza anahtarı ve GitHub Pages teslimi açık. [Kanıt](proofs/repository-history-review.json) · [Görev listesi](../TASKS.md)
