@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 21 November — English optimization and latency comparison
+## 21 November — English roadmap and product documentation
 
-H042-k2g is complete. The English optimization decision keeps the measurement bases, test scope, failed trials, token and ROI outcomes, and historical heading links. [Evidence](proofs/pennypinch-optimization-decision-english.json) · [Task list](../TASKS.md)
+H042-k2h is complete. The detailed roadmap records are in English. All 54 main task states, including 45 completed tasks, retain their recorded scope and evidence. The specification, contributor instructions, design guide, and 31 decision records complete H042-k2. [Evidence](proofs/pennypinch-task-records-english.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue the English migration with the detailed task records in TASKS.md. Historical validation prose and repository coverage are still pending. Production signing and hosted delivery, clean-host installation and Windows 11 verification have separate acceptance. H041 remains deferred.
+Continue H042-k3 with historical validation and evidence prose and the repository coverage review. Production signing and hosted delivery, clean-host installation and Windows 11 verification have separate acceptance. H041 remains deferred.
+
+## 21 November — English optimization and latency comparison
+
+H042-k2g is complete. The English optimization decision keeps the measurement bases, test scope, failed trials, token and ROI outcomes, and historical heading links. [Evidence](proofs/pennypinch-optimization-decision-english.json) · [Task list](../TASKS.md)
 
 ## 21 November — English design, uninstall, accounts and sessions decisions
 

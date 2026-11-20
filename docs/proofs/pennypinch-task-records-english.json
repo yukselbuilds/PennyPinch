@@ -1,0 +1,59 @@
+{
+  "task": "H042-k2h",
+  "status": "pass",
+  "base_commit": "94d88aa0d867a13f81ed45b88698ce2a88430314",
+  "checked": {
+    "main_tasks": 54,
+    "completed_main_tasks": 45,
+    "source_lines": 968,
+    "translated_sections": 8,
+    "legacy_heading_aliases": 64,
+    "verified_inbound_heading_links": 5,
+    "tracked_outgoing_link_targets": 298,
+    "working_only_edits_preserved": 6,
+    "decision_records": 31
+  },
+  "reference_repairs": {
+    "section_links": {
+      "docs/validation/windows-install.md#a\u00e7\u0131k-kabul": "docs/validation/windows-install.md#open-acceptance-criteria",
+      "docs/validation/windows-install.md#bile\u015fenler-lisanslar-ve-kesilen-indirme": "docs/validation/windows-install.md#components-licenses-and-interrupted-download",
+      "docs/validation/windows-install.md#yerel-onar\u0131m-ve-webview2-\u00f6n-ko\u015fulu": "docs/validation/windows-install.md#local-repair-and-webview2-prerequisite"
+    },
+    "local_receipt_paths": [
+      "work/proofs/config-transaction/actions-c1.md",
+      "work/proofs/config-transaction/ownership-b2.md",
+      "work/proofs/config-transaction/typed-actions-c2.md",
+      "work/proofs/config-transaction/writer-a2.md",
+      "work/proofs/connection-plan/planner-b2.md"
+    ]
+  },
+  "preexisting_link_issues": [],
+  "source_sha256": {
+    "AGENTS.md": "2d15e74f0414507a67f208a76b1ece94c00fd630ae3d30da1f2847e92a80aa86",
+    "HEADROOM_DESKTOP_SPEC.md": "ea27bac072717f207dfa1ac4cdd5261568431ca39aec113739b4ee7c88c10b38",
+    "DESIGN.md": "a7bf3c4699d9e33c192005383824ad1875475836470db3bab218cbcb0561355d",
+    "docs/development/WORKFLOW.md": "ae6e3791370ada5d6f7983d4633d923857832b0d253175d3c9fbbe78bc0136b7"
+  },
+  "translated_sha256": {
+    "01-prep-and-runtime.md": "d97701e65b122db8f58f34081d3f014e23a7bf8a2b0517e9a44e7f267e7924e3",
+    "02-desktop-and-connections.md": "91634372082e4ebda8d3423e2d237ddee18efb592b78810c40dc15064e6381a0",
+    "03-metrics-and-everyday-use.md": "f268364a5241026b858e1e3586d252d4c3baab9d2f81d62d4cc949c9b54a76cb",
+    "04-release-candidate.md": "9d8704cbf9154715abb5800109c74fc298109b23336d4bca1779bccc15195a35",
+    "05-optimization.md": "861e389ff40edc4802e493cfeb2421bd928129ba03679732d8b97baf504a5bc6",
+    "06-optional-and-free-ci.md": "890e0f4d712ad38c312966b5a6c44a69708e4b70eef4e7430479399974d54e1c",
+    "07-native-ports.md": "72b4743be8f68cc951ddef2e3ab949c58cf8ec17bd540cb33bdddb01cb867741",
+    "08-accounts-and-feedback.md": "7db69a8144696e80f40df247a3ec59ed52c275efc6dc68b53a88bcdc6355dfba"
+  },
+  "candidate_sha256": {
+    "staged": "f26ba45280e255211e35c9d9d32850ec652c44df2a4e8b78dddf308fe389874f",
+    "working": "33910596ff2fcfb273665ae92d08be443e896e65116879a9ebe401fdb1ddfab5"
+  },
+  "date": "2026-11-21",
+  "scope": "English migration of the detailed roadmap and acceptance records",
+  "implementation": "A single GPT-6 Luna xhigh worker translated client, optional tools, account, and feedback records. The lead agent translated metrics, release, optimization, and native ports, then reviewed and assembled both roadmap variants.",
+  "review": "Lead agent, technical and editorial review plus structural and link verification",
+  "toolchain": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0"
+  }
+}
