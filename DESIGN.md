@@ -1,10 +1,10 @@
 # PennyPinch — Visual Language
 
-The redesign started on 5 November 2026 and passed local acceptance on 6 November. After the user rejected the previous design, UX001 rebuilt the visual hierarchy and layout around Graphite and mint. Use UX001 as the visual reference. H029 had yet to start. [Visual acceptance](docs/proofs/ui-taste.md)
+UX001 introduced the Graphite and mint visual design for the four original screens on 5–6 November 2026, before H029 began. H051 records Windows 10 acceptance for the Sessions screen. [UX001 visual acceptance](docs/proofs/ui-taste.md) · [H051 session acceptance](docs/proofs/sessions.md)
 
 ## Product and direction
 
-PennyPinch is a local desktop tool for everyday use. Users should understand input reduction first, then engine status and application connections. The percentage and amount must come from the same real period. Account/session inventory, live provider support, and model support do not belong in this visual treatment.
+PennyPinch is a local desktop tool for everyday use. Users should see input-token reduction first, then engine status and application connections. Calculate the token count and percentage from the same measured period. Show account connections and chat metadata in Sessions according to the evidence for each. [H050 account acceptance](docs/proofs/accounts.md) · [H051 session acceptance](docs/proofs/sessions.md)
 
 The [design engineering](.agents/skills/emil-design-eng/SKILL.md) guide by Emil Kowalski is the primary reference; its MIT license and pinned source are in `UPSTREAM.json`. Other references reviewed: [Taste](https://github.com/Leonxlnx/taste-skill), [Impeccable](https://github.com/pbakaus/impeccable), and [Hallmark](https://github.com/Nutlope/hallmark). Do not layer four separate design systems. Install any new material in the project only.
 

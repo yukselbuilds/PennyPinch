@@ -1,14 +1,15 @@
 # PennyPinch — Product and Feature Specification
 
-**Date:** 11 November 2026\
-**Document version:** 0.6\
-**Status:** Development scope. See `TASKS.md` for evidence on implemented features.\
-**Project root:** `D:\Projeler\Headroom`\
-**Product name:** PennyPinch. An independent desktop app that uses the Headroom engine for context compression.
+**Scope date** 11 November 2026\
+**Document version** 0.6\
+**Development workspace** `D:\Projeler\Headroom`\
+**Product name** PennyPinch, an independent desktop app that uses the Headroom engine for context compression.
+
+**Status reviewed on 20 November 2026.** The task list tracks acceptance and evidence for each build and platform. [Task list](TASKS.md) · [Current handoff](docs/IMPLEMENTATION_STATUS.md)
 
 ## 1. Product idea
 
-A person using Codex, Claude Code, or OpenCode should be able to connect through Headroom without handling terminal commands or configuration files, start and pause compression, and see the resulting input-token reduction in one desktop panel.
+Developers using Codex, Claude Code, or OpenCode should be able to connect through PennyPinch without handling terminal commands or configuration files. The desktop panel should let them start and pause compression and see the measured reduction in input tokens.
 
 The product's core promise: **“Connect the coding assistant you already use, keep working with your current model, and see the savings.”**
 
@@ -30,7 +31,7 @@ Success means more than displaying a large savings percentage: it means easy set
 | Default optimization | The coding approach, cache stability, retrieval access, and file-reading protections. |
 | Model and effort | Preserve the user's choice; never automatically downgrade the model or reasoning effort. |
 | Privacy | Metrics stay local; raw conversations and code content are not saved by default. |
-| Name and brand | A working name may be used; no official partnership with an upstream project is claimed. |
+| Name and brand | PennyPinch is the independent desktop app. Credit the Headroom project for the compression engine. |
 
 “Easy for everyone” means a working setup flow for supported versions and sign-in methods. It does not promise identical behavior across every version, extension, and account type of every client.
 
@@ -71,6 +72,7 @@ Users are not expected to enter terminal commands, set ports manually, edit conf
 | F12 | Export | Export a content-free statistics summary as JSON/CSV; remove personal paths and secrets from diagnostic reports. |
 
 Headroom's compress, retrieval, and statistics tools are existing engine capabilities. Their presence alone does not prove that all model traffic is compressed automatically. [MCP tools](https://docs.headroomlabs.ai/docs/mcp).
+
 ## 5. Client integrations and support policy
 
 | Client / surface | Product target | Particular validation focus |
@@ -100,7 +102,7 @@ The connection plan accounts for known subagent/provider route differences; supp
 
 The product is not pinned to a short list of model names. It aims to cover models used through the connected client and supported provider protocol. Changing models inside the client alone should not require reconnecting; a different upstream or sign-in route may require new verification.
 
-The user's primary choice is **which client/connection scope to connect**. They continue to choose models in their own Codex/Claude Code/OpenCode interface and do not need to enable each model separately in Headroom. Subagents using the same model or different models on the connected route are not excluded by default. A new model name alone neither invalidates existing protocol support nor proves that every new feature of that model is verified.
+The user selects **which client or connection scope to connect** in PennyPinch. They continue choosing models in Codex, Claude Code, or OpenCode. A supported connection includes the main agent and subagents using the same verified route, regardless of their model names. Verify new capabilities against the underlying protocol and route.
 
 The scope criterion is the request protocol, sign-in method, and transformations the engine can safely apply to that content—not the model brand. Do not claim every feature of every model can be compressed. Preserve encrypted reasoning or blocks the engine does not support without modification; report no savings for those blocks. If a new/unknown model is not sufficiently supported, use the supported raw pass-through path rather than changing models, and show the optimization boundary. If raw pass-through cannot be verified either, report incompatibility clearly.
 
@@ -132,7 +134,7 @@ User-visible actions:
 
 - **Start:** If the proxy is ready, enable supported compression for new requests.
 - **Pause:** Stop compression for new requests without interrupting requests already in progress; preserve the connection and retrieval service.
-- **Disconnect:** Undo Headroom's routing and explain if the current process must be restarted.
+- **Disconnect:** Undo PennyPinch's routing changes and explain when the current process needs a restart.
 - **Close window:** Minimize to the system tray; do not terminate the engine.
 - **Exit completely:** Explain the effect if a client is connected or a request is active; do not silently cut off a running process.
 
@@ -184,13 +186,15 @@ Three comparable visual directions and interactive previews are in [UI_CONCEPTS.
 3. **Activity:** A request list that does not show content; model, client, duration, compression result, and errors. Filters and a details panel.
 4. **Settings:** Theme, language, background operation, data retention, and simple compression preferences. Advanced details expand on demand.
 
+These four screens are in the UX001 visual-acceptance scope. The Windows 10 development release has a fifth **Sessions** screen combining Chats and Accounts views. [H050 account acceptance](docs/proofs/accounts.md) · [H051 session acceptance](docs/proofs/sessions.md)
+
 ### 24 October user direction — simple use and sessions
 
 This section describes target behavior; implementation status is limited to TASKS.md. The primary experience answers two questions: **How much did I use and save by platform/model? Which accounts are connected, and which chats are open or working?** Preserve the Graphite visual direction.
 
 - Overview shows tokens used, tokens saved, and the percentage from the same basis, broken down by platform → model. Label cost as measured only when based on official usage/billing data; label it estimated when based on a versioned price calculation. Do not convert subscription quotas to token cost. Missing data is not zero.
 - The normal connection view shows scope, a short impact summary, and Connect/Undo actions. Settings layers, protocol/ownership metadata, and diagnostics are optional under Advanced; the target of a change and critical conflicts remain clear before the action.
-- Sessions has two distinct groups: account connection/sign-in status and open chats/working tasks. One does not imply the other. Sign-in opens through the supported client's official flow; Headroom does not ask for passwords/codes or copy existing credentials. No new account/subscription is required.
+- Sessions shows account connection and sign-in status separately from open or working chats. PennyPinch opens the supported client's official sign-in flow for the user's existing account and subscription. The client handles passwords, codes and stored credentials.
 - The chat list uses only required metadata. Open, working, last traffic observed, ended, and unknown states are not conflated. A process, file, or long period without traffic alone does not prove an active chat. Use an officially supported open/resume path only by user action; do not collect content or change provider/model settings silently.
 - Show separate models and subagents under a platform only when route/identity evidence exists; do not require setup per model. Keep unassigned usage visible. Do not present traffic that bypasses the proxy as total usage.
 
@@ -243,6 +247,7 @@ Optional layers such as terminal filters/proxies are not added to engine measure
 Show client/model breakdowns when evidence exists. Show project, chat, main-agent, and subagent breakdowns only when trusted metadata or an app-managed launch mapping exists. Otherwise use “Unassigned traffic” or “Proxy total.” The same model may be used by two different agents.
 
 The panel reads statistics directly from local records; it does not call an LLM to prepare a report. Adding a savings line to every GPT final response is not a first-release requirement. If requested later, it may be a short, conditional statement that identifies snapshot time.
+
 ## 10. Differentiating features
 
 ### In the first release
@@ -279,7 +284,7 @@ CCR allows original content to be fetched later; it does not guarantee that ever
 
 ## 12. Proposed technical architecture
 
-**Suggested starting point.** Tauri 2 desktop shell, Rust management layer, React and TypeScript UI, a pinned Headroom side engine and a local SQLite metadata store. Confirm the dependency list through technical verification.
+H012 recorded the choice of a Tauri 2 desktop shell, Rust management layer, React + TypeScript UI, pinned Headroom engine, and local SQLite metrics store. Clean-install acceptance on both Windows targets is tracked under H006 and H037. [Architecture decision](docs/decisions/002-runtime.md) · [H012 acceptance](docs/proofs/architecture-acceptance.md)
 
 Tauri supports packaging external executables as sidecars. That capability alone does not prove that Headroom and optional ML dependencies package cleanly on Windows; a clean-machine test is required. [Tauri sidecar documentation](https://v2.tauri.app/develop/sidecar/).
 
@@ -312,7 +317,7 @@ Target a Windows installer that does not require end users to install Python, No
 
 Do not make Windows 11 the installer's minimum version. Check for WebView2 on Windows 10 22H2 and Windows 11; provide a supported installation flow if the runtime is missing. Shell support is not enough: separately test Headroom, packaged Python/native dependencies, system tray, and update path on both operating systems. [Tauri system prerequisites](https://v2.tauri.app/start/prerequisites/), [Windows installer and WebView2 distribution](https://v2.tauri.app/distribute/windows-installer/).
 
-On 19 October 2026, PyPI listed Headroom `0.41.0` and a minimum Python version of `3.10`. Pin the prototype version and verify current compatibility before release. [Package listing](https://pypi.org/project/headroom-ai/0.41.0/).
+The 19 October 2026 prototype used Headroom 0.41.0, which required Python 3.10 or later. On 16 November, the Windows development and package manifests pinned Headroom 0.44.0 and embedded CPython 3.13.13. The current branded Windows 10 x64 ZIP is a verified unsigned local preview. The earlier native macOS 15.8.2 ARM64 acceptance covers 0.41.0. CircleCI built the 0.44.0 ARM64 package and verified local engine traffic. Native window acceptance for that macOS version and clean Windows 10 and Windows 11 x64 verification remain open. [Initial package record](https://pypi.org/project/headroom-ai/0.41.0/) · [Windows manifest](runtime/manifest.windows.json) · [Pin transition](docs/proofs/headroom-044-upgrade.json) · [Windows 10 delivery](docs/proofs/pennypinch-windows10-delivery.json) · [Platform validation](docs/validation/desktop-platforms.md)
 
 ## 13. Configuration, data, and application boundaries
 
@@ -331,7 +336,7 @@ Compare the real privacy and local-control behavior with the selected engine ver
 
 ## 14. Proposed project layout and code contract
 
-The following layout is the initial application structure proposal.
+The tree below is the initial design proposal. Current source paths and implemented slices are tracked in the task list. [Task list](TASKS.md)
 
 ~~~text
 HEADROOM_DESKTOP_SPEC.md       Product scope and acceptance criteria
@@ -370,25 +375,23 @@ type SavingsSnapshot = {
 ~~~
 
 An adapter preserves not only request/response format but also error behavior, auth, model identity, and metric semantics. Test the mapping between raw data and the UI contract against the selected engine version.
-## 15. Development commands in the initial plan
 
-**The commands are planned entry points.** Pin Node, pnpm and Rust when scaffolding and package scripts are available.
+## 15. Development commands
 
-| Purpose | Planned command |
+The following entry points are used from the Windows workspace root. Node and pnpm versions are pinned in the repository. Project-local caches, offline Rust commands, and the final candidate's local quality gate are defined in the development workflow. [Node pin](.node-version) · [Package commands](package.json) · [Local quality gate](docs/development/WORKFLOW.md#bugün-çalışabilen-yerel-ürün-kapısı)
+
+| Purpose | Current command |
 | --- | --- |
-| Install dependencies | `pnpm install --frozen-lockfile` after creating the lockfile |
-| UI development | `pnpm dev` |
-| Desktop development | `pnpm tauri dev` |
-| Static checks | `pnpm lint` |
-| TypeScript checking | `pnpm typecheck` |
-| Unit and contract tests | `pnpm test -- --run` |
-| UI end-to-end tests | `pnpm test:e2e` |
-| Rust tests | `cargo test --manifest-path src-tauri/Cargo.toml` |
-| Windows package | `pnpm tauri build` |
+| Install locked dependencies | `pnpm.cmd --store-dir work/caches/pnpm install --frozen-lockfile` |
+| UI or desktop development | `pnpm.cmd dev` or `pnpm.cmd tauri:dev` |
+| TypeScript check and UI build | `pnpm.cmd build` |
+| Application contract tests | `pnpm.cmd test:app` |
+| Browser accessibility and UI checks | `pnpm.cmd test:a11y` |
+| Windows preview package with the prepared engine | `pnpm.cmd build:windows` |
 
 ## 16. Validation strategy and acceptance criteria
 
-Suggested tools include Vitest for frontend units, Playwright for web UI flows and native tests for Rust. Verify the installer and tray in a native run. Run separate clean-user or clean-machine tests for Windows 10 22H2 x64 and Windows 11 x64.
+Application contract tests use Node's built-in test runner, browser checks use Playwright, and Rust uses local tests. Installer and tray acceptance require native execution. Track the following product acceptance criteria separately for Windows 10 22H2 x64 and Windows 11 x64 in the task list. [Task list](TASKS.md)
 
 ### Initial technical validation
 
@@ -438,21 +441,15 @@ Audio, images, cloud Codex sessions, AI memory sync, and automatic instruction l
 3. **Release quality:** Separate clean-environment tests for Windows 10/11, installer, compatibility catalog, localization, accessibility, and version management.
 4. **Evidence-based expansion:** Content types, local preview, verifiable project breakdowns, and new clients.
 
-The stages define product order. Track file-level implementation tasks and timing separately.
-
-[TASKS.md](TASKS.md) holds the tasks, dependencies, acceptance criteria and verification for each stage. Update completion status from the evidence recorded there.
+The task list maintains phase order, dependencies, files, and acceptance evidence. [Task list](TASKS.md)
 
 ## 19. Open decisions
 
-- Permanent product name and visual identity. The initial working name is sufficient at this stage.
-- Finalize Tauri and the bundled engine after checks in clean Windows 10 and Windows 11 environments.
-- Runtime size, initial downloads and offline startup behavior.
-- Default background-engine startup preference at Windows sign-in, taking connection continuity into account.
-- Verified first-release combinations for Codex Desktop and CLI and each sign-in method.
-- First-release local history retention. Treat token metrics and raw-content retention separately.
-- Release order for macOS, Linux and additional editor integrations.
+- First-download, WebView2, and offline-start acceptance for the packaged engine on clean Windows 10 and Windows 11 x64. The current Windows engine's file count and total bytes are in the versioned inventory. [Package inventory](runtime/windows-payload.json)
+- First-release combinations verified for Codex desktop/CLI and each sign-in method.
+- Release order for macOS/Linux and additional editor extensions.
 
-The first feature specification can proceed while these decisions remain open. Record tested assumptions and changed decisions in the relevant section before implementation.
+H031 made Windows startup opt-in. Local metrics default to 30-day retention, with 7-, 30-, and 90-day options. CCR has a separate 7,200-second TTL. [Operation and retention preferences](docs/decisions/019-operating-preferences.md)
 
 ## 20. Product requirements drawn from another desktop app
 

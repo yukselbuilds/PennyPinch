@@ -1,25 +1,42 @@
 # PennyPinch task list
 
-**19 Kasım güncel öncelik** Windows 10 22H2 x64 yerel kurulum adayı doğrulandı. CircleCI Free ile macOS motor/paket ve Ubuntu pencere derlemesi çalıştırıldı. Windows 11 doğrulaması ertelendi. H049 yeniden başlatıldı. İmzalı güncelleme bildirimi Windows 10’da doğrulandı. İlk yayında tek açık GitHub deposu hedefleniyor. [Platform testleri](docs/validation/desktop-platforms.md) · [Güncellemeler](docs/validation/windows-update.md#19-kasım-2026--açılış-bildirimi-ve-tek-depodan-dağıtım)
+**Status date** 20 November 2026
 
-**Tarih:** 15 Kasım 2026
+**Scope** [Product specification 0.6](HEADROOM_DESKTOP_SPEC.md)\
+**Targets** Windows 10 22H2 x64 and Windows 11 x64 for Codex, Claude Code and OpenCode.
 
-**Kaynak:** [Ürün spesifikasyonu 0.6](HEADROOM_DESKTOP_SPEC.md)\
-**Hedef:** Windows 10 22H2 x64 ve Windows 11 x64; Codex, Claude Code, OpenCode.  
-**Durum:** H001–H005, H007–H012, H013–H036, H038–H040, H043 ve **H045–H048 ve H050–H051 tamamlandı: 45/54.** H043’te RTK-OSS 1.1.0 için uygun bir entegrasyon yolu çıkmadı. H044 yeni aday bekliyor. H042’nin Windows 10 yerel güncelleme/kurtarma ve hata kabulü geçti. Windows 11 ile üretim yayın kaynağı/anahtarı açık. H041’in yerel Windows 10 kabulü geçti, canlı API-key ve Windows 11 kanıtı bekliyor. H037’nin temiz Windows ve yayın kontrolleri açık. H048 macOS 15.8.2 Apple Silicon geliştirme kabulü tamamlandı; Intel, diğer macOS sürümleri, canlı hesap/sağlayıcı ve üretim yayını doğrulanmadı. H049 Linux, kullanıcının 13 Kasım kararıyla kalan yaklaşık $0.10 Actions kotası nedeniyle ertelendi; tamamlanmış sayılmaz. H050 hesap bağlantıları Windows 10 yerel geliştirme kapsamında tamamlandı; yeni gerçek giriş ve diğer OS hesap adapter’ları doğrulanmadı. H051 sohbet metadata/açma akışı Windows 10 yerel geliştirme kapsamında tamamlandı; H049 ertelenmiş durumda. Actions'ta elle Ubuntu kaynak kontrolü ile macOS ARM64 derleme, motor, gerçek paketli pencere ve kontrollü Desktop trafiği doğrulandı. Her yeni CI koşusu öncesi ücretsiz kota ve harcama sınırı kontrol edilir. Açık sohbetlerin yerel kabulü H051'de; geri bildirim ve isteğe bağlı kullanım paylaşımı H052–H054 Cloudflare hesabı hazır olana kadar ertelendi.\
+**First-use priority** Verify the current Windows 10 22H2 x64 installer with real Codex traffic. The current branded ZIP is an unsigned local preview. [Windows 10 delivery evidence](docs/proofs/pennypinch-windows10-delivery.json)
 
-**Tarihsel işaretleme denetimi (21 Ekim, önceki 45 görev/12 kabul anlık görüntüsü):** O listedeki görev adedi ve tamamlanan görev listesi güncel değildir; H018 daha sonra kabul edildi ve H046–H049 eklendi. Güncel yetkili toplam yukarıdaki durum satırında tutulur. Tamamlanan alt dilimler kendi satırlarında `[x]` işaretlidir; ana görevin ilk kutusu bütün kabul koşulları karşılanana kadar açık kalır. [Kaynak karşılaştırması](docs/research/desktop-comparison-2026-10-20.md) sonrası H040–H045 eklendi; H040–H042 ilk sürüm kapıları, H043–H045 ilk kullanılabilir sürüm sonrası isteğe bağlı kapsam. O tarihte H041–H045 başlamamıştı.
+**45 of 54 main tasks are complete.** H001–H005, H007–H036, H038–H040, H043, H045–H048 and H050–H051 are closed within their recorded acceptance scopes. **H042** is the active local release task.
 
-## Geliştirme araçları ve çalışma düzeni
+| Open work | Condition for proceeding |
+| --- | --- |
+| H041 · Windows 10 evidence | The team recorded a sustained 0.44.0 workload, retrieval of original content in chunks and an initial live Learn comparison. [Measurements and open acceptance criteria](docs/validation/optimization-benefit.md#headroom-0440-ile-süreli-yük) |
+| H041 · Additional acceptance | Other live protocols and API-key checks need authorized access. The 0.44.0 macOS ARM64 engine and package passed. Native window acceptance remains open. Windows 11 verification was deferred. The Serena pilot is complete. Broader Learn acceptance remains open. Experimental e3 is on hold, and e4 depends on e3 acceptance. [Platform tests](docs/validation/desktop-platforms.md) · [Open work items](#h041--cache-bütünlük-ve-gecikmefayda-regresyonu) |
+| H006, H037 and H042 · External environments and release | H006 needs clean Windows 10 and Windows 11 x64 environments. H037 also needs installation without WebView2 and download from the release URL. H042 needs Windows 11 update and rollback acceptance, a production signing key and a live update source. |
+| H044 · Waiting for an eligible candidate | RTK-OSS 1.1.0 fell short in H043, and 1.2.0 fell short in the next preflight. Installation requires a candidate that meets the existing integrity, rollback and benefit criteria. |
+| H049 · Resumed | The Ubuntu x64 build opened a window on CircleCI Free. The Rust suite recorded 220 passes, 81 failures and 2 skipped tests. Linux adaptation and package acceptance remain open. [Platform tests](docs/validation/desktop-platforms.md) |
+| H052, H053 and H054 · Deferred | The dedicated Workers/D1 service in H052 needs a Cloudflare account. The feedback form and daily sharing depend on the live service. The local prototype is also deferred. |
 
-**5–6 Kasım tarihsel öncelik değişikliği:** Kullanıcının isteğiyle UX001 tasarım yenilemesi tamamlandığında H029 henüz başlamamıştı. UX001 mevcut özelliklerin sunumunu yeniler, o tarihteki27/51 işlevsel kabul sayısını değiştirmez; güncel ürün sayısı üstteki satırdadır.
+Windows development and packaging use Headroom **0.44.0**. H048's native macOS 15.8.2 Apple Silicon acceptance covers **0.41.0**. H050 account connections and H051 chat metadata and navigation passed on Windows 10. Each additional operating system, new sign-in and production release requires its own evidence. [Engine transition](docs/proofs/headroom-044-upgrade.json) · [H048](docs/proofs/macos-acceptance.json) · [H050](docs/proofs/accounts.md) · [H051](docs/proofs/sessions.md)
 
-### UX001 — Headroom görsel dilinin yenilenmesi
-- [x] Projeye sabitlenmiş tasarım rehberi, ortak hiyerarşi ve dört native ekran yenilenmiş; gerçek kontrol/ölçüm/erişilebilirlik akışları korunmuş.
-- **Kabul:** [DESIGN.md](DESIGN.md) içindeki boş/gerçek/örnek veri ayrımı, tema/dil/ölçek/klavye, native render ve son yerel kalite kapısı. Ana ajan art direction/uygulama/inceleme sahibi; H029 başlamaz. Sahte tasarruf veya hesap/sohbet işlevi eklenmez.
-- **Durum:**6 Kasım tamamlandı. Emil design engineering yalnız projeye, immutable commit/MIT lisansıyla kuruldu; diğer üç kaynak incelendi.138 frontend/349 Rust PASS,6 opt-in ignored; aynı152 girdili derleme/test blokları ve gerçek native kontroller PASS. [Kanıt](docs/proofs/ui-taste.md), [inceleme](docs/reviews/UX001.md). Yerel Windows10; örnek veriler gerçek tasarruf değildir. Görev sonunda durulur.
+The 21 October audit covered an older list with 45 tasks and 12 completed tasks. H018 was accepted later, and the list grew through H054. H040–H042 became first-release gates after the 20 October comparison. H043–H045 remained optional additions. Counts in dated entries reflect their original scope. Use the first checkbox under each H task heading for the current total. Subtasks, DEV001, DEV002 and UX001 are outside that count. H039's acceptance covers the local Windows 10 candidate. [20 October comparison](docs/research/desktop-comparison-2026-10-20.md)
 
-Bu geliştirme işleri ürün görev sayımına eklenmez. DEV001/DEV002, H028–H036 ve H038 kabul edildi. Ortak H011 güvenlik ön koşulu kapandı. H037’nin dış kabulü açık.
+<a name="geliştirme-araçları-ve-çalışma-düzeni"></a>
+
+## Development tools and workflow
+
+The user prioritized UX001 on 5–6 November before H029 began. UX001 refreshed how the existing features were presented. At that point, 27 of 51 functional tasks had passed.
+
+<a name="ux001--headroom-görsel-dilinin-yenilenmesi"></a>
+
+### UX001 — Desktop visual refresh
+
+- [x] Update the project design guide, shared hierarchy and four native screens. Preserve working controls, measurement and accessibility.
+- **Acceptance.** Follow the design guide for empty, measured and sample data, themes, languages, scaling, keyboard access and native rendering. Pass the final local quality gate. The lead agent owns design direction, implementation and review. UX001 precedes H029 and covers presentation of existing features. [Design guide](DESIGN.md)
+- **6 November result.** The project pinned Emil design engineering to a commit under the MIT license and reviewed three other references. 138 frontend and 349 Rust tests passed, with six opt-in tests skipped. The build and test blocks had 152 matching inputs, and the Windows 10 native checks passed. Savings evidence comes from measured traffic. [Evidence](docs/proofs/ui-taste.md) · [Review](docs/reviews/UX001.md)
+
+These development tasks fall outside the product task count. DEV001, DEV002, H028–H036 and H038 were accepted, and the shared H011 safety prerequisite closed. H037's external checks remain open.
 
 ### UX002 — Settings guidance and troubleshooting
 - [x] Make savings tips, Learn, rule trials, tool output protection and tested-version records understandable in Turkish and English.
@@ -32,84 +49,96 @@ Bu geliştirme işleri ürün görev sayımına eklenmez. DEV001/DEV002, H028–
 - **Acceptance.** Use the correct asset for each surface, retain the original About artwork and verify the new icons in the Windows executable.
 - **Result.** Windows 10 build, 227 frontend tests, 480 Rust tests and 104 browser accessibility audits passed. [Evidence](docs/proofs/pennypinch-brand-kit.json)
 
-### DEV001 — CodeGraph, Ponytail ve açık kabul sözleşmesi
-- [x] CodeGraph'ın sabit runtime/MCP kaydı ve kapsamı kontrol edilmiş; yeni skill klasörü indeksten dışlanmış.
-- [x] Ponytail kodlama/audit/review becerileri yalnız projeye, sabit kaynak ve lisans/hash kaydıyla kurulmuş.
-- [x] Ana ajan/tek çalışan kullanımı, gerçek kontrol komutları ve görev bitiş kabulü belgelenmiş; kurulum ve belge incelemesi geçmiş.
-- **Kabul:** [Ortak akış](docs/development/WORKFLOW.md) ile yerel araçlar tutarlı; global ayar yazımı yok; ürün görev sayımı değişmez. Kurulu talimat, otomatik skill keşfi ve gerçek davranış doğrulaması ayrı belirtilir.
-- **Kanıt:** `work/proofs/dev-tools/`; kısa kalıcı özet `docs/proofs/dev-tools.md`. Yeni ürün gate'i gerektirmeyen araç/belge kapsamı.
-- **Durum:** Tamamlandı; [kabul kanıtı](docs/proofs/dev-tools.md). DEV002 ayrı denetim görevi olarak tamamlandı.
+<a name="dev001--codegraph-ponytail-ve-açık-kabul-sözleşmesi"></a>
 
-### DEV002 — Mevcut kodun ilk Ponytail denetimi
-- [x] Config/Apply/Undo ve sahiplik, runtime/proxy, UI bağlantı yolları önceliklendirilerek eski kod raporlanmış.
-- **Kabul:** Her gerçek bulgu koşul, dosya/satır, kullanıcı etkisi, en küçük çözüm ve doğrulama önerisi içerir. Bulgular ilgili açık göreve veya gerekli küçük düzeltmeye bağlanır; kapsam dışı alanlar yazılır. Rapor üretmek düzeltmelerin yapıldığı anlamına gelmez.
-- **Doğrulama:** CodeGraph ile keşfedilen yollar gerçek kaynakta okunur; mevcut kanıt fingerprint'leri değerlendirilir. Yeni koşul olmadan aynı başarılı ürün testleri tekrarlanmaz.
-- **Dosyalar:** `docs/reviews/ponytail-baseline.md`, gerekirse ilgili görev notları.
-- **Durum:** Tamamlandı; [denetim raporu](docs/reviews/ponytail-baseline.md). Bir düşük öncelikli belge bulgusu DEV002-D01, H022’ye bağlandı. İncelenen öncelikli akışlarda kesin yeni ürün hatası doğrulanmadı; kapsam dışı alanlar raporda. Ürün kodu değiştirilmedi.
+### DEV001 — CodeGraph, Ponytail and task acceptance
 
-**18 Kasım Astra incelemesinin takip maddeleri** (ana görev sayısına eklenmez). Sürüm geri dönüşü ve SSE sayaçları H041 altında ele alınır. Aşağıdaki mevcut ekran regresyonları ayrı sırayla doğrulanır.
-- [x] **H024/H025/H027 · Yerel gün başlangıcı.** Genel Bakış ve Etkinlik atlanan gece yarısında ilk geçerli yerel anı kullanıyor. Santiago geçişini temsil eden SQLite fixture’ı Bugün, Son 7 gün ve günlük grafiği doğruladı. 30 dakika 1 saniyelik geçiş ve tüm günün atlanması da geçti. [Kanıt](docs/proofs/metrics-store.md#19-kasım-2026--atlanan-yerel-gece-yarısı).
-- [x] **H024/H025 · Uzun oturum grafiği.** 90 günlük saklama ayarıyla 65 ölçüm günü 64 grafik noktasına sığdı. Genel Bakış tüm kayıtları toplamda gösteriyor. Birleşen günlerin aralığı Türkçe ve İngilizce grafikte doğrulandı. [Kanıt](docs/proofs/metrics-store.md#19-kasım-2026--uzun-oturum-grafiği).
-- [x] **H025/H030 · Tepside panel sorgusu.** Windows 10 testinde yaklaşık 12 saniyede otomatik Genel Bakış sorgusu 2’den 0’a indi. Tepsiden açılınca tek sorgu geldi ve düzenli yenileme döndü. Arka plan toplayıcısı pencere gizliyken yeni ölçüm aldı. [Kanıt](docs/proofs/tray-lifecycle.md#19-kasım-2026--tepside-genel-bakış-yenilemesi).
+- [x] Verify the pinned CodeGraph runtime, MCP registration and index scope. Keep the new skill directory outside the index.
+- [x] Install the Ponytail coding, audit and review skills for this repository. Record the pinned source, license and hashes.
+- [x] Document the lead-agent and single-worker workflow, available verification commands and task completion criteria. Review the installation and documentation.
+- **Acceptance.** Keep tool setup project-local and consistent with the development workflow. Record installation, automatic skill discovery and observed behavior individually. Keep this work outside the product task count. [Development workflow](docs/development/WORKFLOW.md)
+- **Evidence.** The local artifacts are in `work/proofs/dev-tools/`. The tracked evidence covers the development setup and its checks. [Dev tool evidence](docs/proofs/dev-tools.md)
+- **Status.** Complete. DEV002 covers the separate code audit. [Acceptance](docs/proofs/dev-tools.md)
 
-## Çalışma kuralları
+<a name="dev002--mevcut-kodun-ilk-ponytail-denetimi"></a>
 
-**Ortak bitiş kabulü:** Görevin kendi kabul maddeleri ile [WORKFLOW.md içindeki beş koşul](docs/development/WORKFLOW.md#bir-görevin-bitiş-kabulü) birlikte sağlanır. Davranış, ilgili hata/kapsam senaryoları, ana ajan incelemesi, geçerli son kanıt ve kayıt/durma adımı eksikse ana kutu açık kalır.
+### DEV002 — Initial Ponytail code audit
 
-**25 Ekim geliştirme aracı notu:** Kullanıcı isteğiyle CodeGraph 1.6.2 yalnız bu projeye kuruldu; CLI ve proje MCP sorgusu doğrulandı. Telemetry kapalı, global ayarlar değişmedi; sorgu ve süreç kapanışı PASS. [Kullanım/kanıt sınırları](docs/development/codegraph.md). Bu geliştirme aracı ana görevlere eklenmez; **18/51** ve sıradaki **H022** değişmedi.
+- [x] Review the existing code, prioritizing configuration, Apply and Undo ownership, runtime and proxy behavior, and the connections UI.
+- **Acceptance.** Each finding includes a condition, file and line, user impact, the smallest fix and a verification method. Link findings to open work or record a focused fix. List areas outside the audit scope. Use implementation evidence to close fixes.
+- **Verification.** Read the source paths found with CodeGraph and check existing evidence fingerprints. Repeat a successful product check when its inputs or environment change.
+- **Files.** `docs/reviews/ponytail-baseline.md` and relevant task records.
+- **Status.** Complete. The review identified DEV002-D01, a low-priority README and test coverage issue addressed under H022. H022 links the current summary to versioned evidence. The priority paths reviewed yielded zero confirmed new product defects. The report defines the scope of the audit. [Audit report](docs/reviews/ponytail-baseline.md)
 
-**20 Ekim geliştirme aracı notu:** Kullanıcı isteğiyle Open Computer Use ayrı Codex MCP/skill olarak kuruldu; Windows10'da Notepad ve Headroom gerçek screenshot/fare denemesi geçti. [Kurulum ve sınırlar](docs/research/computer-use-2026-10-20.md). Bu20 Ekim notu tarihseldir; araç kurulumu ürün kabulüne eklenmez. Güncel görev sayımı üstteki durum satırındadır.
+**18 November Astra review follow-up.** These checks fall outside the main task count. H041 covers version rollback and SSE usage counters. The existing UI regressions are verified individually.
 
-- `[x]` yalnız belirtilen çıktısı tamamlanan işi gösterir. Tasarım önizlemesi gerçek motor veya istemci doğrulamasının kanıtı değildir.
-- Görevler bağımlılık sırasıyla alınır. Her uygulama dilimi S/M boyutunda tek davranış ve birlikte doğrulanabilir kabul ölçütleriyle sınırlanır. Yaklaşık 1–5 dosya devir rehberidir; dosya sayısı zorunlu bölme eşiği değildir. Bağımsız amaçlar aynı ana görev altında sırayla ayrılır.
-- Kullanıcı tercihi: etkin ana görev tamamlanmadan sonraki ana göreve geçilmez; bu dosya ilerledikçe güncellenir. Her ana görev tamamlanınca kullanıcıya bildirilir ve çalışma durur; sonraki ana görev için kullanıcının devam mesajı beklenir. Alt dilim kabulü ayrıca belirtilir.
-- Her görevde kabul koşulu ve kanıt bulunur. Kanıtta komut, kaynak/config ve araç zinciri fingerprint'i ile sonuç birlikte kaydedilir; sırlar ve ham hata çıktıları kalıcı tutulmaz.
-- Uygulama sırasında odaklı kontroller kullanılır. İnceleme/düzeltme bitince son adayın tam kalite kapısı bir kez çalıştırılır. Geçerli PASS gerekçesiz tekrarlanmaz.
-- Gerçek model testleri normal otomatik test paketine karışmaz. Küçük ve ayrı yürütülür; mevcut doğal trafik mümkünse kullanılır.
-- Model, reasoning seviyesi, ajan sayısı, izin ve giriş yöntemi sessizce değiştirilmez. Bu ürün çalışan ajanları yönetmez; uygun model trafiğini yönlendirir.
-- Kullanıcı kararı: Bir istemci/bağlantı bağlanınca desteklenen bütün modeller, ana ajan ve aynı doğrulanmış yolları kullanan bütün alt ajanlar varsayılan kapsamdır; model/alt ajan başına tekrar seçim/kurulum yoktur. Ayrı provider/süreç/bulut yolunun kapsamı ayrıca kanıtlanır; arayüz tam kapsama uydurmaz.
-- Kontrol noktaları kanıt incelemesidir. Açık ürün kararını, eldeki yetkiyle çözülebilen rutin uygulama kararından ayır.
-- H013 scaffold'u ve kayıtlı `pnpm` scriptleri mevcut. Sonraki görevlerde anılan, henüz eklenmemiş scriptler planlanan sözleşmedir; başarılı çalışmış gibi raporlanmaz.
-- Kimlikler geçmiş kanıtları korur; uygulama sırası numaralardan değil bağımlılıklardan okunur. Windows ürün yolu H016 → H040 → H017 → H018 → H019'dur; bu planın GitHub hazırlığı H018 → H046 → H047 → H019 bağımlılığını ekler. H048/H049, H019 Windows ilk çalışan dilimi ve H047 ücretsiz kota incelemesine bağlıdır; H048 tamamlandı, H049 kullanıcı kararıyla ertelendi. H049'a bağlı olmayan H050 sıradaki adaydır; bu plan bakımı H050'yi başlatmaz. H041 ölçüm temeli H023'ten sonra, H042 installer/kaldırmadan sonra ve H039'dan önce. Opsiyonel H043–H045 ilk kullanılabilir sürümden sonradır.
+- [x] **H024/H025/H027 · Start of the local day.** Overview and Activity use the first valid local instant on days when midnight is skipped. The Santiago SQLite fixture verified Today, Last 7 days and the daily chart. A transition of 30 minutes and 1 second and a skipped calendar day also passed. [Evidence](docs/proofs/metrics-store.md#19-kasım-2026--atlanan-yerel-gece-yarısı)
+- [x] **H024/H025 · Long-session chart.** With 90-day retention, 65 days of measurements fit into 64 chart points. Overview totals include every record. The combined date interval was verified in Turkish and English. [Evidence](docs/proofs/metrics-store.md#19-kasım-2026--uzun-oturum-grafiği)
+- [x] **H025/H030 · Overview polling in the tray.** In approximately 12 seconds on Windows 10, automatic Overview queries fell from two to zero while hidden. Reopening from the tray triggered one query and restored regular refreshes. The background collector received new engine measurements while the window was hidden. [Evidence](docs/proofs/tray-lifecycle.md#19-kasım-2026--tepside-genel-bakış-yenilemesi)
 
-## Aşamalar ve bağımlılık sırası
+<a name="çalışma-kuralları"></a>
 
-| Aşama | Görevler | Çıktı |
+## Working rules
+
+A completed task meets its own acceptance criteria and all five shared requirements. Check the main box after verifying the behavior and relevant error and scope cases, reviewing the change and recording current evidence. Report completion and wait for the next task. [Development workflow](docs/development/WORKFLOW.md#bir-görevin-bitiş-kabulü)
+
+**25 October tool setup.** At the user's request, the team installed CodeGraph 1.6.2 for this project and verified CLI and project MCP queries. Telemetry was disabled. The queries and normal process exit passed. The product count was 18 of 51 and H022 was next. [Usage and evidence scope](docs/development/codegraph.md)
+
+**20 October tool setup.** At the user's request, the team installed Open Computer Use as a separate Codex MCP server and skill. Real screenshot and mouse checks passed for Notepad and the desktop app on Windows 10. The tool setup is a historical development check outside product acceptance. [Setup and scope](docs/research/computer-use-2026-10-20.md)
+
+- Use `[x]` when a task's specified outcome is complete. Use live engine and client evidence for integration claims.
+- Follow dependencies. Keep each small or medium implementation slice focused on one behavior with acceptance criteria that can be verified together. Use one to five files as a handoff guide and handle independent goals in sequence.
+- Finish the active main task before starting the next one. Keep the task list current, report completion and wait for the user's next instruction. Report accepted subtasks at their actual scope.
+- Record each task's acceptance criteria and evidence. Include the command, source and configuration inputs, toolchain fingerprints and outcome. Remove secrets and raw error output from permanent records.
+- Use focused checks during implementation. Run the full local quality gate once after reviewing the final candidate. Reuse a valid PASS while its inputs and environment match.
+- Run small live model checks separately from automated tests. Reuse naturally occurring traffic when possible.
+- Preserve the user's model, reasoning effort, agent count, permissions and sign-in method. Each client owns its agents, and the app routes eligible traffic.
+- A verified client connection covers supported models, the main agent and subagents using that route. Users choose models in their client without repeating setup for each model or agent. Verify separate provider, process or cloud routes independently and show the verified scope in the UI.
+- Use checkpoints to review evidence. Escalate open product decisions and make routine implementation decisions within existing authorization.
+- H013 provides the scaffold and registered `pnpm` scripts. Treat commands listed in later tasks as plans until they are implemented and verified.
+- Task IDs preserve historical evidence. Dependencies determine the implementation order. The Windows product path is H016 → H040 → H017 → H018 → H019. GitHub preparation adds H018 → H046 → H047 → H019. H048 and H049 depend on the H019 Windows slice and H047 quota review. H048 passed in its recorded scope. H049 resumed and still has open acceptance. H050 and H051 were completed for local Windows 10 development independently of H049. H041 follows H023. H042 follows installer and uninstall work and precedes H039. H043–H045 are optional additions after the first usable release.
+
+<a name="aşamalar-ve-bağımlılık-sırası"></a>
+
+## Milestones and dependencies
+
+| Milestone | Tasks | Outcome |
 | --- | --- | --- |
-| Hazırlık | H001–H004 | Kapsam, görev listesi, üç konsept, tasarım seçimi |
-| Teknik kanıt | H005–H012 | Paketleme ve üç istemci için doğrulanmış uygulanabilirlik |
-| İlk çalışan dilim | H013–H019 | Gerçek motor durumu ve Codex bağlantısı olan masaüstü uygulaması |
-| Kararlı istemci yolu | H040; H016 sonrası/H017 öncesi | Kalıcı endpoint, sahiplik ve kanıtlı arıza yolu |
-| İstemci ve ölçüm | H020–H026 | Claude/OpenCode, doğru metrikler ve gerçek dashboard |
-| Ölçüm ve fayda kapısı | H041; H023 sonrası | Cache, bütünlük ve gecikme regresyonu |
-| Günlük kullanım | H027–H033 | Etkinlik, güvenli duraklatma, tepsi, ayarlar ve dışa aktarma |
-| Yayın adayı | H034–H039 ve H042 | Erişilebilirlik, Windows testleri, paket, imzalı güncelleme ve son kalite kapısı |
-| Sonraki isteğe bağlı sürüm | H043–H045 | Kanıtlı RTK entegrasyonu ve içeriksiz yerel öneriler |
-| Hesaplar ve sohbetler | H050–H051 | Resmî hesap bağlantısı ve güvenilir açık/çalışan sohbet metadata görünümü |
-| Kaynak deposu ve ücretsiz CI hazırlığı | H046–H047 | Private, source-only GitHub importu; kota ve masraf durdurma kanıtı |
-| Ek platformlar | H048–H049 | macOS/Linux native port ve kabul; Windows ilk dilimi ve H047 sonrasında |
+| Preparation | H001–H004 | Scope, task list, three concepts and a design direction |
+| Technical validation | H005–H012 | Packaging and routing feasibility for three clients |
+| First working slice | H013–H019 | Desktop app with real engine state and a Codex connection |
+| Stable client route | H040, after H016 and before H017 | Persistent endpoint, process ownership and a verified failure path |
+| Clients and measurement | H020–H026 | Claude Code, OpenCode, accurate metrics and a dashboard backed by measurements |
+| Quality and benefit | H041, after H023 | Cache, preservation and latency regression checks |
+| Daily use | H027–H033 | Activity, safe pause, tray, settings and export |
+| Release candidate | H034–H039 and H042 | Accessibility, Windows checks, packaging, signed updates and the final quality gate |
+| Optional follow-up | H043–H045 | Verified RTK integration and local recommendations without content retention |
+| Accounts and chats | H050–H051 | Official sign-in and reliable metadata for open or working chats |
+| Repository and free CI | H046–H047 | Private source-only GitHub import, quota and spending safeguards |
+| Additional platforms | H048–H049 | Native macOS and Linux ports and acceptance after the first Windows slice and H047 |
+| Feedback and sharing | H052–H054 | Dedicated reporting service, feedback form and optional daily summaries |
 
 ```mermaid
 flowchart TD
-    A[H001–H003: Belgeler ve konseptler] --> B[H004: Görsel yön seçimi]
-    A --> C[H005–H012: Teknik kanıt]
-    B --> D[H013: Masaüstü iskeleti]
+    A[H001–H003 · Documents and concepts] --> B[H004 · Visual direction]
+    A --> C[H005–H012 · Technical validation]
+    B --> D[H013 · Desktop scaffold]
     C --> D
-    D --> E0[H014–H016: Motor, tercihler, keşif]
-    E0 --> I[H040: Kararlı istemci yolu]
-    I --> E[H017–H018: Config planı ve uygulama]
-    E --> N[H046: GitHub source-only hazırlığı]
-    N --> O[H047: Ücretsiz CI kota ve durdurma kapısı]
-    O --> E19[H019: Codex gerçek akış]
-    E19 --> F[H020–H026: Diğer istemciler ve ölçüm]
-    F --> G[H027–H033: Günlük kullanım]
-    F --> J[H041: Cache, bütünlük, gecikme]
-    G --> H[H034–H038: Yayın hazırlığı]
-    H --> K[H042: İmzalı güncelleme]
-    J --> L[H039: Son kalite kapısı]
+    D --> E0[H014–H016 · Engine, preferences and discovery]
+    E0 --> I[H040 · Stable client route]
+    I --> E[H017–H018 · Configuration plan and application]
+    E --> N[H046 · Source-only GitHub setup]
+    N --> O[H047 · Free CI quota and spending safeguards]
+    O --> E19[H019 · Real Codex flow]
+    E19 --> F[H020–H026 · Additional clients and measurement]
+    F --> G[H027–H033 · Daily use]
+    F --> J[H041 · Cache, preservation and latency]
+    G --> H[H034–H038 · Release preparation]
+    H --> K[H042 · Signed updates]
+    J --> L[H039 · Final quality gate]
     K --> L
-    L --> M[H043–H045: İsteğe bağlı ekler]
-    E19 --> P[H048/H049: macOS/Linux native; manuel]
+    L --> M[H043–H045 · Optional additions]
+    E19 --> P[H048/H049 · Native macOS and Linux, manual runs]
     O --> P
 ```
 
@@ -749,6 +778,7 @@ flowchart TD
   - [x] **H042-k1 Public documentation.** The README, user guide and release instructions explain installation, supported routes, measured savings, compatibility and privacy in English. [User guide](docs/USER_GUIDE.md) · [Windows update instructions](docs/validation/windows-update.md)
   - [ ] **H042-k2 Product and contributor documentation.** Translate the specification, roadmap, development rules, design and decisions. Preserve requirements, task IDs, checkbox state, examples and existing working changes.
   - [x] **H042-k2a Windows installer and update decisions.** The English documents preserve packaging and trust requirements, historical proof and local references. [Windows installer](docs/decisions/025-windows-installer.md) and [update trust](docs/decisions/028-update-trust.md).
+  - [x] **H042-k2b Core product and roadmap documentation.** Review the English specification and design guide against the current PennyPinch preview. Translate the roadmap summary, working rules, milestones and risks. Preserve task IDs, checkboxes, dependency edges and existing heading links. [Evidence](docs/proofs/pennypinch-product-documentation.json)
   - [ ] **H042-k3 Validation and repository coverage.** Translate historical narrative, check Markdown references, headings and technical tokens, and verify any tooling that reads translated prose. Record intentional Turkish localization and test data separately from untranslated prose.
 - [x] **H042-l Supplied PennyPinch artwork and display labels.** The original artwork appears in About and README. Its icon is used in the sidebar, favicon, Windows app, tray and installer. Report filenames use PennyPinch. The Windows 10 x64 application and NSIS installer contain the generated icon and PennyPinch product metadata. 227 frontend tests, 480 Rust tests and 60 browser accessibility audits passed. [Evidence](docs/proofs/pennypinch-logo.json)
 - [x] **H042-m Current Windows 10 preview.** The unsigned NSIS package includes the new branding. Extraction matched the release app with the expected NSIS marker and 19,484 resources. The app and installer contain all six icon sizes, and the staged Headroom 0.44.0 engine started and stopped. Hosted delivery and clean-host installation have separate acceptance. [Evidence](docs/proofs/pennypinch-windows10-preview.json)
@@ -902,26 +932,32 @@ Bu üç görev ilk sürümün zorunlu kurulumunu genişletmez; varsayılanları 
 - **Bağımlılık / boyut:** H052, H015, H024, H026 / M; paylaşım durumu ve güvenli kuyruk, ardından günlük collector ve native UI/API kabulü.
 - **Dosyalar:** Tercih/izin durumu, günlük collector/kuyruk, API istemcisi, Ayarlar önizleme/durum ve odaklı testler (planlanan).
 
-## İlk sürüm sonrasına bırakılanlar
+<a name="ilk-sürüm-sonrasına-bırakılanlar"></a>
 
-- İçerik türüne göre ayrıntılı kazanç görünümü ve sağlayıcıya gitmeyen yerel önizleme.
-- Güvenilir metadata varsa proje/sohbet kırılımları.
-- Cursor/Copilot ve ayrı IDE eklentisi adaptörleri.
-- macOS/Linux paketleri; ARM/32-bit ayrı kanıt gerektirir.
-- İsteğe bağlı çıktı yönlendirme veya bellek/öğrenme. Bunlar model kalitesini değiştirmeden otomatik açılmış kabul edilmez.
+## After the first release
 
-## Başlıca riskler
+- Detailed savings by content type and an on-device preview.
+- Project and chat breakdowns when trusted metadata is available.
+- Cursor, Copilot and separate IDE extension adapters.
+- Production packages for macOS and Linux. CircleCI Free verified the macOS ARM64 0.44.0 package. Native window acceptance remains open. H049 verified the Linux build and window startup. The installer and engine port remain open.
+- Optional output shaping, memory and learning. Verify output quality before considering default enablement.
 
-| Risk | İlk ele alındığı yer |
+<a name="başlıca-riskler"></a>
+
+## Key risks
+
+| Risk | First addressed in |
 | --- | --- |
-| Paketlenmiş Python/native motorun Windows farkları | H006 |
-| Açık masaüstü oturumunda yönlendirmenin uygulanmaması | H008 |
-| OpenCode wrapper'ının modeli değiştirmesi | H010 |
-| Duraklatmanın prefix/retrieval sürekliliğini bozması | H011 |
-| Kullanıcının sonraki config değişikliğinin ezilmesi | H018 |
-| Proxy/MCP/subagent kaynaklarında çift sayım | H023–H026 |
-| Motor kapalıyken bağlı istemcinin erişememesi | H014, H030, H034 |
+| Platform differences in bundled Python and native engine dependencies | H006 |
+| Routing changes fail to apply in an open desktop session | H008 |
+| The OpenCode wrapper changes the selected model | H010 |
+| Pausing breaks cache prefix or retrieval continuity | H011 |
+| Apply or Undo overwrites newer user configuration | H018 |
+| Duplicate counts from proxy, MCP or subagent sources | H023–H026 |
+| A connected client loses access when the engine stops | H014, H030, H034 |
 
-## Güncel devir
+<a name="güncel-devir"></a>
+
+## Current handoff
 
 H042 is the active local release task. [Current handoff](docs/IMPLEMENTATION_STATUS.md#next-h042-release-step)

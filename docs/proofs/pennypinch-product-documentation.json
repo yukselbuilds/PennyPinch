@@ -1,0 +1,60 @@
+{
+  "task": "H042-k2b",
+  "date": "2026-11-20",
+  "status": "pass",
+  "base_commit": "c8d28833589ef12a53d26ad45e78efee7cc2d048",
+  "scope": "English product specification, design guide and roadmap overview, workflow, milestones and risks",
+  "checks": {
+    "main_tasks": 54,
+    "completed_main_tasks": 45,
+    "prior_checkbox_states_preserved": true,
+    "specification_acceptance_checkboxes": 19,
+    "dependency_edges": 20,
+    "legacy_heading_aliases": 9,
+    "local_markdown_references": 61,
+    "verified_pnpm_scripts": [
+      "build",
+      "build:windows",
+      "dev",
+      "tauri:dev",
+      "test:a11y",
+      "test:app"
+    ]
+  },
+  "sources": {
+    "package.json": "7410af54ecc78827fbc155711de1bfa6225d64da41636dd0a92ba23be1379c75",
+    "runtime/manifest.windows.json": "d4a02eec3185efd42c4d4f0122e35e859406dfe8af770f0c6729ba37dd4d8249",
+    "docs/proofs/pennypinch-windows10-delivery.json": "d606b465a934601f81541ae461117e276001d0918c35f544b294a43d3f66026f",
+    "docs/validation/desktop-platforms.md": "84ac83d0f3ac98161d7602ca8e5d117ebf4629091f8b444430ec9566c1f6c32c",
+    "docs/validation/macos.md": "50c22012f8e5a09f601f12c19a6677ea797a3932d642d700e9abc1d486f7e4d4",
+    "docs/proofs/sessions.md": "c8e1bdd54d2619e4b0a6ba32bfd9d3b2b8992e798cd5600def3ddd60c42df29e",
+    "docs/proofs/accounts.md": "490c4080ac97dee5b705c8f8cf5de1296bd667709e86e0fc3c3d28f34d9616ec",
+    "docs/development/WORKFLOW.md": "ae6e3791370ada5d6f7983d4633d923857832b0d253175d3c9fbbe78bc0136b7",
+    "docs/decisions/027-optimization-regression.md": "ff94ebacbf9ae3b9e7edbc0fcb7ea6f648e6e15ee01c35cb8e36546727a253b9",
+    "docs/validation/optimization-benefit.md": "718966cd1a4c99bae71f749946b2fc7eb1781370efcdf2b1c67d2479c783d2c8",
+    "docs/proofs/metrics-store.md": "52581c74fd1187919ceb46a51972cab81aee13ea4bbf6d2e062815a3bb4f28dd",
+    "docs/proofs/tray-lifecycle.md": "ee107a7617e8b83378cf89de29846bdb997a85b6439231812774068528cfc777"
+  },
+  "document_sha256": {
+    "HEADROOM_DESKTOP_SPEC.md": {
+      "baseline": "ad30d041b1feb533949d765b7ce3d945c3b4618177ee25aae87da83bc9c8d911",
+      "published_candidate": "ea27bac072717f207dfa1ac4cdd5261568431ca39aec113739b4ee7c88c10b38"
+    },
+    "DESIGN.md": {
+      "baseline": "9f3802cec2e4521c902a8c9d633379f8de05cf8a4960a7655700dc7f77b237a0",
+      "published_candidate": "a7bf3c4699d9e33c192005383824ad1875475836470db3bab218cbcb0561355d"
+    },
+    "TASKS.md": {
+      "baseline": "b6660e4cef90cda47b45a44179cdc8e3167d94299d563058886590e71abad657",
+      "published_candidate": "7fc517e99d5fd886719c2f759b7857b6bf4e2d3cd1db20fb66525f162a1539ec"
+    },
+    "docs/IMPLEMENTATION_STATUS.md": {
+      "baseline": "d151c77d61b07c2bf109ff52f13b2704a757296075e44e2e2b1a7f79c3a76f3e",
+      "published_candidate": "ebea0992fe81fc4520c3c7716392809bccc2114b59c4caa4612e1b8a7a1c3651"
+    }
+  },
+  "toolchain": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0"
+  }
+}

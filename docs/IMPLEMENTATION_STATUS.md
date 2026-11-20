@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 20 November — Current PennyPinch Windows 10 distribution ZIP
+## 20 November — English product and roadmap documentation
 
-H042-n is complete. The lead agent bound 674 notice entries to the verified current PennyPinch installer, then built the ZIP with the local preview receipt. The Python payload, locked Windows Rust dependency graph and six frontend packages matched the existing source notices. Windows extracted 677 files and verified all 676 listed SHA-256 values. The 26 packaging tests passed. [Evidence](proofs/pennypinch-windows10-delivery.json)
+H042-k2b is complete. The lead agent reviewed the product specification and design guide against the PennyPinch preview, current commands and platform evidence. The roadmap summary, working rules, milestones and risks are in English. Validation retained the 45 of 54 task count, checkbox states, dependency graph and historical heading links. [Evidence](proofs/pennypinch-product-documentation.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue the English release-facing documentation in H042-k. Production signing and hosted delivery, clean-host installation and Windows 11 checks have separate acceptance. H041 remains deferred under the user's earlier decision.
+Continue the English migration with the detailed task entries and the runtime and client connection decisions in H042-k2. Production signing and hosted delivery, clean-host installation and Windows 11 checks have separate acceptance. H041 remains deferred.
+
+## 20 November — Current PennyPinch Windows 10 distribution ZIP
+
+H042-n is complete. The lead agent bound 674 notice entries to the verified current PennyPinch installer, then built the ZIP with the local preview receipt. The Python payload, locked Windows Rust dependency graph and six frontend packages matched the existing source notices. Windows extracted 677 files and verified all 676 listed SHA-256 values. The 26 packaging tests passed. [Evidence](proofs/pennypinch-windows10-delivery.json)
 
 ## 20 November — Current PennyPinch Windows 10 preview
 
