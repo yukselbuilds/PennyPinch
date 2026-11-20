@@ -1,4 +1,5 @@
 """Build a verified delivery ZIP around the existing Windows preview installer."""
+import argparse
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path, PurePosixPath
 import hashlib
@@ -73,32 +74,34 @@ def verify_delivery(path, expected):
                     raise ValueError('delivery_entry_mismatch')
 
 
-def package(project):
+def package(project, receipt=None):
     if os.name != 'nt':
         raise ValueError('windows_delivery_requires_windows')
     project = project.resolve(strict=True)
     work = project / 'work'
-    candidate_path = staging.inside(project / 'docs/proofs/windows-installer.json', project)
-    notices_path = staging.inside(project / 'docs/proofs/windows-installer-notices.json', project)
-    candidate_data = candidate_path.read_bytes()
-    notices_data = notices_path.read_bytes()
-    candidate = json.loads(candidate_data)
-    notices = json.loads(notices_data)
+    candidate_path = staging.inside(project / (receipt or 'docs/proofs/windows-installer.json'), project)
+    notices_path = candidate_path if receipt is not None else staging.inside(
+        project / 'docs/proofs/windows-installer-notices.json', project)
+    records = {path: path.read_bytes() for path in dict.fromkeys((candidate_path, notices_path))}
+    candidate = json.loads(records[candidate_path])
+    notices = candidate if receipt is not None else json.loads(records[notices_path])
     version = candidate['app_version']
-    if not re.fullmatch(r'\d+\.\d+\.\d+', version) or candidate['local_installed_slice'] != 'pass':
+    installer_sha = candidate['artifacts']['installer_sha256']
+    if (not re.fullmatch(r'\d+\.\d+\.\d+', version) or candidate['local_installed_slice'] != 'pass'
+            or not re.fullmatch(r'[0-9a-f]{64}', installer_sha)):
         raise ValueError('unverified_installer_candidate')
     installer_name = f'Headroom_{version}_x64-setup.exe'
     installer = staging.inside(work / 'caches/cargo-target/release/bundle/nsis' / installer_name, work)
     companion = notices['companion_archive']
     archive = staging.inside(project / companion['path'], work)
-    output = staging.inside(work / f'build/windows/delivery/Headroom_{version}_Windows_x64_preview.zip', work)
+    suffix = f'_{installer_sha[:12]}' if receipt is not None else ''
+    output = staging.inside(work / f'build/windows/delivery/Headroom_{version}_Windows_x64_preview{suffix}.zip', work)
     if output.exists():
         raise FileExistsError('delivery_exists')
 
-    before = {str(candidate_path): digest(candidate_data), str(notices_path): digest(notices_data)}
+    before = {str(path): digest(data) for path, data in records.items()}
     for path in (installer, archive, project / 'src-tauri/windows-hooks.nsh', Path(__file__), STAGER):
         before[str(path)] = fingerprint(path)
-    installer_sha = candidate['artifacts']['installer_sha256']
     if (before[str(installer)] != installer_sha or installer.stat().st_size != candidate['artifacts']['installer_bytes']
             or notices['installer_sha256'] != installer_sha):
         raise ValueError('installer_candidate_mismatch')
@@ -147,8 +150,11 @@ def package(project):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--receipt', type=Path, help='project-relative verified installer and notices receipt')
+    args = parser.parse_args()
     try:
-        result = package(ROOT)
+        result = package(ROOT, args.receipt)
     except (OSError, ValueError, KeyError, TypeError, zipfile.BadZipFile) as error:
         print(json.dumps({'passed': False, 'code': error.args[0] if isinstance(error, ValueError) else type(error).__name__}))
         return 1

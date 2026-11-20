@@ -1,0 +1,87 @@
+{
+  "task": "H042",
+  "date": "2026-11-20",
+  "app_version": "0.1.0",
+  "local_installed_slice": "pass",
+  "engine": "0.44.0",
+  "source_build": "10f32e32e6f31cdd71f5d98411520bf0472693df",
+  "resource_receipt_sha256": "64f842cd27dfa14e1e2be9a3640bc368962768945100ef32f3f5d8be0b87a4cc",
+  "artifacts": {
+    "installer_sha256": "9725ecfd72005185542119684558f4fd27733a90acd746d7d05e291219cd64eb",
+    "installer_bytes": 123653119
+  },
+  "installer_sha256": "9725ecfd72005185542119684558f4fd27733a90acd746d7d05e291219cd64eb",
+  "installer_signature": "NotSigned",
+  "companion_archive": {
+    "path": "work/proofs/windows-delivery/current-9725ecfd7200/Headroom_0.1.0_engine-0.44.0_third_party_notices.zip",
+    "sha256": "8567d05d4ee105b8c6c685eb71417106c1fdab0acea04355c4e0a2a81c35dc09",
+    "bytes": 1403656,
+    "verified_entries": 674
+  },
+  "components": {
+    "python": 99,
+    "rust": 258,
+    "frontend": 6
+  },
+  "exact_source_downloads": [
+    {
+      "family": "Python",
+      "component": "tqdm@4.70.1",
+      "url": "https://files.pythonhosted.org/packages/0d/ea/b2a5bd54b28a324dae8211928b2d730b6547500342c7e6c6dea08bd0a485/tqdm-4.70.1.tar.gz",
+      "sha256": "cefd0eca11b2a37a3aee776544d4f4ae913f02688135b5556b8788dfa474afc4",
+      "bytes": 171846
+    },
+    {
+      "family": "Python",
+      "component": "orjson@3.13.0",
+      "url": "https://files.pythonhosted.org/packages/f2/72/380b97dc45bd162d23afe5194721ef678d9eac7cfaa549fe2873f7f0a518/orjson-3.13.0.tar.gz",
+      "sha256": "d1de5eb04485110c5da4c657e49168995d55e076b1ce60f1a042e254f4186c4f",
+      "bytes": 2732604
+    },
+    {
+      "family": "Python",
+      "component": "certifi@2026.10.23",
+      "url": "https://files.pythonhosted.org/packages/fd/11/b524cbd9bbdaca58608e4cf4053fd463417549e1959fa8d3aa18319f9555/certifi-2026.10.23.tar.gz",
+      "sha256": "a9895e6e2758b371e0545e321a3a8fd1fcfd9829ada8824a936dfb16aaaf36cd",
+      "bytes": 136225
+    },
+    {
+      "family": "Rust",
+      "component": "option-ext@0.2.0",
+      "url": "https://static.crates.io/crates/option-ext/option-ext-0.2.0.crate",
+      "sha256": "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d",
+      "bytes": 7345
+    },
+    {
+      "family": "Rust",
+      "component": "cssparser@0.37.0",
+      "url": "https://static.crates.io/crates/cssparser/cssparser-0.37.0.crate",
+      "sha256": "8c9cdaae01d5ed7882b04d795e7f752f46ff52d2fa3b50a20d28c464510bba98",
+      "bytes": 56860
+    },
+    {
+      "family": "Rust",
+      "component": "cssparser-macros@0.7.1",
+      "url": "https://static.crates.io/crates/cssparser-macros/cssparser-macros-0.7.1.crate",
+      "sha256": "d045de693cb712d0b22c6a64be5b953f67b3ce00ab5ad3dd5d8b441886ab8e1a",
+      "bytes": 8197
+    },
+    {
+      "family": "Rust",
+      "component": "dtoa-short@0.3.5",
+      "url": "https://static.crates.io/crates/dtoa-short/dtoa-short-0.3.5.crate",
+      "sha256": "cd1511a7b6a56299bd043a9c167a6d2bfb37bf84a6dfceaba651168adfb43c87",
+      "bytes": 8287
+    },
+    {
+      "family": "Rust",
+      "component": "selectors@0.38.0",
+      "url": "https://static.crates.io/crates/selectors/selectors-0.38.0.crate",
+      "sha256": "8adfa1c298912827b8a28b223b3b874357397ae706e6190acd9bf28cee99114d",
+      "bytes": 69601
+    }
+  ],
+  "build_platform": "Windows 10 22H2 x64 build 19045",
+  "windows_11": "not_tested",
+  "publication": "pending"
+}

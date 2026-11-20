@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "task": "H042",
+  "slice": "windows_044_attribution_and_local_delivery",
+  "date": "2026-11-20",
+  "status": "pass",
+  "scope": "Local Windows 10 x64 unsigned NSIS installer and verified distribution ZIP",
+  "engine": "0.44.0",
+  "installer": {
+    "path": "work/caches/cargo-target/release/bundle/nsis/Headroom_0.1.0_x64-setup.exe",
+    "sha256": "9725ecfd72005185542119684558f4fd27733a90acd746d7d05e291219cd64eb",
+    "bytes": 123653119
+  },
+  "installer_source_commit": "10f32e32e6f31cdd71f5d98411520bf0472693df",
+  "bootstrapper_signature": "Valid",
+  "notice_receipt": {
+    "path": "docs/proofs/windows-installer-044-notices.json",
+    "sha256": "5a6ed92003d0cb70bc7a9de7d01b9a45a73a25ab786529da84d2ff88af2ba774"
+  },
+  "notice_archive": {
+    "path": "work/proofs/windows-delivery/current-9725ecfd7200/Headroom_0.1.0_engine-0.44.0_third_party_notices.zip",
+    "sha256": "8567d05d4ee105b8c6c685eb71417106c1fdab0acea04355c4e0a2a81c35dc09",
+    "bytes": 1403656,
+    "verified_entries": 674
+  },
+  "component_inventory": {
+    "python": 99,
+    "rust": 258,
+    "frontend": 6
+  },
+  "confirmed_source_downloads": 8,
+  "delivery_zip": {
+    "path": "work/build/windows/delivery/Headroom_0.1.0_Windows_x64_preview_9725ecfd7200.zip",
+    "bytes": 125090512,
+    "sha256": "f380391cccf308f2ba0cb821d83f653e638d7c99e9d5e1d7f3cc89864040a1b8",
+    "verified_entries": 677,
+    "matching_sha256_checks": 676
+  },
+  "checks": {
+    "legacy_archive_rejected_for_current_installer": true,
+    "existing_zip_preserved": true,
+    "expanded_to_unicode_path_with_spaces": true,
+    "temporary_extraction_removed": true
+  },
+  "windows_packaging_tests": {
+    "count": 19,
+    "command": [
+      "python",
+      "-I",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests/runtime",
+      "-p",
+      "test_windows_*.py"
+    ],
+    "python": "3.13.13",
+    "tested_actual_release_exe_sha256": "2f116d141b587fc53a559e44e3bcc2558741c3fe2bf6f0e2d34c5872c56f9b64"
+  },
+  "fingerprints": {
+    "inventory": {
+      "inputs": 695,
+      "before_sha256": "2256da609418c8caed7cff35f86d5ef81914817b0fbaac607969624dabc3c51d",
+      "after_sha256": "2256da609418c8caed7cff35f86d5ef81914817b0fbaac607969624dabc3c51d"
+    },
+    "assembly": {
+      "inputs": 711,
+      "before_sha256": "a5d5ea100d867a5698e15c1d49c565cf34309ad44f414751d830592827fda50c",
+      "after_sha256": "a5d5ea100d867a5698e15c1d49c565cf34309ad44f414751d830592827fda50c"
+    },
+    "delivery": {
+      "inputs": 6,
+      "before_sha256": "686848954043ffc938f5bdbb201c91a2554c57e5f126e9d52bfc3b442ca82f26",
+      "after_sha256": "686848954043ffc938f5bdbb201c91a2554c57e5f126e9d52bfc3b442ca82f26"
+    },
+    "windows_extraction": {
+      "inputs": 11,
+      "before_sha256": "c54b12deb7f3c2e696eb11795272c43969d6a292d36f53b055849445003653bc",
+      "after_sha256": "c54b12deb7f3c2e696eb11795272c43969d6a292d36f53b055849445003653bc"
+    },
+    "windows_packaging_tests": {
+      "inputs": 82,
+      "before_sha256": "0bd5c3cd21604c318102e0b9f2b1eee24f736064984c4ded6f39ad18d29b65a2",
+      "after_sha256": "0bd5c3cd21604c318102e0b9f2b1eee24f736064984c4ded6f39ad18d29b65a2"
+    }
+  },
+  "local_evidence_directory": "work/proofs/windows-delivery/current-9725ecfd7200",
+  "publication": "pending",
+  "windows_11": "not_tested"
+}

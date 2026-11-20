@@ -80,3 +80,24 @@ class WindowsDeliveryTests(unittest.TestCase):
         with self.assertRaises(FileExistsError):
             delivery.package(self.project)
         self.assertEqual(self.output.read_bytes(), b'previous delivery')
+
+    def test_explicit_receipt_builds_separate_verified_delivery(self):
+        self.write_notices()
+        candidate = json.loads((self.proofs / 'windows-installer.json').read_bytes())
+        notices = json.loads((self.proofs / 'windows-installer-notices.json').read_bytes())
+        receipt = self.proofs / 'verified-candidate.json'
+        self.write_json(receipt.name, {**candidate, **notices})
+        self.write_json('windows-installer-notices.json', {})
+        self.output.parent.mkdir(parents=True)
+        self.output.write_bytes(b'previous delivery')
+
+        result = delivery.package(self.project, receipt.relative_to(self.project))
+
+        output = self.project / result['output']
+        self.assertEqual(output.parent, self.output.parent)
+        self.assertEqual(output.name, f'Headroom_0.1.0_Windows_x64_preview_{self.installer_sha[:12]}.zip')
+        self.assertEqual(result['before'], result['after'])
+        self.assertEqual(self.output.read_bytes(), b'previous delivery')
+        with zipfile.ZipFile(output) as archive:
+            self.assertEqual(archive.read('Headroom_0.1.0_x64-setup.exe'), b'isolated installer fixture')
+            self.assertEqual(archive.read('LICENSES/LICENSE.txt'), b'isolated notice fixture')

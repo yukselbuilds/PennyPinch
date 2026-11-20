@@ -1,5 +1,9 @@
 # Headroom Desktop — güncel devir
 17 Kasım 2026.
+## 20 Kasım — H042 Windows 10 teslim paketi
+
+Ana ajan kurucu, lisans arşivi ve makbuz eşlemesini üstlendi. 0.44.0 Windows 10 kurucusuyla 674 bildirim girdisi paketlendi. ZIP Windows’ta çıkarıldı. 677 dosya, 676 SHA-256 değeri ve 19 paketleme testi doğrulandı. Eski bildirim arşivi reddedildi ve mevcut ZIP korundu. **45/54 ana görev tamamlandı.** H042’de gerçek imza anahtarı, GitHub Pages teslimi ve Windows 11 güncelleme/geri dönüş kabulü açık. [Kanıt](proofs/windows-installer-044-delivery.json) · [Görev listesi](../TASKS.md)
+
 ## 20 Kasım — H041 upstream benchmark tekrarı
 
 Ana ajan ölçüm ve karşılaştırma kapsamını doğruladı. Windows 10’da paketli Headroom 0.44.0, 33 upstream SDK senaryosunu tamamladı. Ana altı SDK örneği %56,28 azaldı. Aynı tam istek sayımında SDK %43,64 ve yönetilen proxy %43,60 azalma verdi. 181 HTML sayfasında F1 0,9168. Kod ve üç hata alanı korundu. Bulut model çağrısı 0. H041’in ana kabulü açık. **45/54 ana görev tamamlandı.** [Ölçüm](proofs/upstream-benchmarks-044.json) · [Görev listesi](../TASKS.md)

@@ -65,6 +65,18 @@ Proje içindeki sabitlenmiş CPython ile `-I -B scripts/package-windows-delivery
 
 Windows PowerShell 7.6.9 ile arşiv `Teslim çalışma` klasörüne çıkarıldı. 600 dosya ve listedeki 599 SHA-256 değeri doğrulandı. ZIP’ten çıkan EXE önceki kurulum ve tepsi testlerindeki imzasız EXE ile birebir eşleşti. On paketleme testi geçti. Ürün kapısının önceki 206 kaynak ve araç girdisi eşleşti. [Teslim kanıtı](../proofs/windows-installer-delivery.json).
 
+## 20 Kasım — Headroom 0.44.0 yerel teslim paketi
+
+Aday, 19 Kasım’da Windows 10’da gerçek kurulumu ve motor trafiği doğrulanan imzasız 0.1.0 NSIS dosyasıdır. Aynı kurucuya 99 Python dağıtımı, 258 Windows Rust crate’i ve 6 üretim ön yüz paketinin özgün bildirimleri bağlandı. Arşivde proje lisansı, CPython ve NSIS metinleri, WebView2 bootstrapper kaydı ve sekiz MPL kapsamındaki bileşenin doğrulanmış kaynak bağlantıları da bulunur. [Kurulum](desktop-platforms.md#windows-10-kurulumu) · [Lisans arşivi makbuzu](../proofs/windows-installer-044-notices.json) · [MPL 2.0](https://www.mozilla.org/en-US/MPL/2.0/) · [Microsoft WebView2 dağıtımı](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution).
+
+Proje içindeki sabitlenmiş CPython ile bu makbuz seçilir.
+
+```powershell
+& .\work\proofs\packaging\artifacts\headroom-engine-0.44.0\runtime\python.exe -I -B scripts/package-windows-delivery.py --receipt docs/proofs/windows-installer-044-notices.json
+```
+
+Makbuz, aynı sürümdeki eski paketle ad çakışmasını önlemek için kurucu hash’inin ilk 12 karakterini ZIP adına ekler. Windows çıkarımında 677 dosya ve listedeki 676 SHA-256 değeri eşleşti. Eski bildirim arşivi reddedildi, mevcut teslim dosyası korundu ve 19 Windows paketleme testi geçti. Yerel çıktı imzasız önizlemedir. GitHub Releases ve üretim güncelleme kaynağı ayrı teslim kabulü bekler. [Teslim kanıtı](../proofs/windows-installer-044-delivery.json).
+
 ## Açık kabul
 
 1. Temiz masaüstü Windows 10 ve Windows 11 x64. Kullanıcının mevcut erişimi GitHub Actions ile sınırlı. 15 Kasım 2026 kontrolünde özel deponun standart Windows x64 işleri Server 2022/2025, standart Windows 11 işi ARM64 kullanır. Windows 11 x64 masaüstü imajı GitHub Team veya Enterprise Cloud kapsamındaki larger runner seçeneğidir. Masaüstü test durumu `not_tested`. [Standart imajlar](https://github.com/actions/runner-images#available-images) · [Larger runner imajları](https://docs.github.com/en/actions/reference/runners/larger-runners#runner-images) · [Plan koşulu](https://docs.github.com/en/actions/how-tos/manage-runners/larger-runners/use-larger-runners).
