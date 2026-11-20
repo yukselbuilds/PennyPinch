@@ -1,0 +1,111 @@
+{
+  "task": "H042-m",
+  "date": "2026-11-20",
+  "status": "pass",
+  "scope": "Unsigned Windows 10 22H2 x64 preview with the current UI and supplied brand kit.",
+  "source_commit": "ab974e2ccd1c2dbc771cf581561539d839b02a02",
+  "build": {
+    "command": "scripts/build-windows.ps1",
+    "profile": {
+      "lto": false,
+      "codegen_units": 16
+    },
+    "toolchain": {
+      "node": "v25.2.1",
+      "pnpm": "11.25.0",
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "windows": "10.0.19045",
+      "python": "3.14.0",
+      "architecture": "AMD64"
+    },
+    "matched_input_hashes": 350,
+    "input_fingerprint_sha256": "9accea6c0c09baec6b6bfa64b83b112b4ece7f36fc3fbeb449b3a27576284725",
+    "working_notice_sha256": "2f39d2b9c461d904111ee2411bc547e194a841ce2964b804c87081c4580f5aaa",
+    "release_executable_gate": "pass"
+  },
+  "artifacts": {
+    "headroom-desktop.exe": {
+      "path": "work/r42p/ab974e2/preview/headroom-desktop.exe",
+      "sha256": "b1eaaa5d4bf24aeda45142cdcbfdce55715d56da1f493aa9e54353b79d15cd65",
+      "bytes": 12387328
+    },
+    "PennyPinch_0.1.0_x64-setup.exe": {
+      "path": "work/r42p/ab974e2/preview/PennyPinch_0.1.0_x64-setup.exe",
+      "sha256": "eec3bf272196dd449e96bc5830fc4a498065585927132ab4605d3d64aa144b10",
+      "bytes": 125212965
+    }
+  },
+  "authenticode": {
+    "bootstrapper": "Valid",
+    "setup": "NotSigned"
+  },
+  "nsis_extraction": {
+    "resource_files": 19484,
+    "app_sha256": "edbcb239342fe61064540263c9c47957c8326fe46389e253f9a6444ae925d4bd",
+    "bootstrapper_sha256": "cf2f2445fef0c5c14e372045f84998771eeb8bb01d59be4afd00692fa160082e",
+    "tauri_type_marker": "UNK -> NSS"
+  },
+  "icon_frames_px": {
+    "headroom-desktop.exe": [
+      16,
+      32,
+      48,
+      64,
+      128,
+      256
+    ],
+    "PennyPinch_0.1.0_x64-setup.exe": [
+      16,
+      32,
+      48,
+      64,
+      128,
+      256
+    ]
+  },
+  "executable_probe": {
+    "app_identifier": "dev.headroom.desktop",
+    "version": "0.1.0",
+    "correct_version": "pass",
+    "wrong_version": "rejected"
+  },
+  "engine_lifecycle": {
+    "version": "0.44.0",
+    "test": "windows_bundle_real_staged_payload_starts_and_stops_without_development_layout",
+    "status": "pass",
+    "seconds": 178.16
+  },
+  "reused_component_checks": {
+    "evidence": "docs/proofs/pennypinch-brand-kit.json",
+    "frontend_tests": 227,
+    "rust_tests": 480,
+    "rust_opt_in_ignored": 24,
+    "browser_cases": 5,
+    "accessibility_audits": 104,
+    "audit_violations": 0,
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "languages": [
+      "tr",
+      "en"
+    ],
+    "favicon_and_readme_assets": "verified",
+    "windows_executable_icon_sizes_px": [
+      16,
+      32,
+      48,
+      64,
+      128,
+      256
+    ]
+  },
+  "remaining": [
+    "release-bound third-party notices ZIP",
+    "clean-host installation",
+    "production update delivery",
+    "Windows 11 acceptance"
+  ]
+}

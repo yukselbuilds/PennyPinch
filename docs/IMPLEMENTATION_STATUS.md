@@ -1,5 +1,13 @@
 # PennyPinch implementation status
 
+## 20 November — Current PennyPinch Windows 10 preview
+
+H042-m is complete. The lead agent built the NSIS preview from the current app and verified the extracted application and 19,484 pinned resource files. The Windows executables contain all six brand-kit icon sizes. The bundled Headroom 0.44.0 lifecycle passed in its separate staging test. The development preview used the current working notice and matched all build input hashes. [Evidence](proofs/pennypinch-windows10-preview.json)
+
+### Next H042 release step
+
+Bind the third-party notices and delivery checks to the exact Windows 10 preview hash. The English documentation, production signed source, clean-host installation and Windows 11 checks have separate acceptance. H041 remains deferred under the user's earlier decision.
+
 ## 20 November — PennyPinch brand kit
 
 UX003 is complete. The lead agent integrated the supplied kit into the sidebar, favicon, native Windows icons and README. About keeps the original artwork. The full kit is available locally under `work/branding/`. The Windows 10 debug build includes all six icon sizes. The browser checks verified both themes with isolated IPC. Installer packaging remains part of the release work on H042. [Evidence](proofs/pennypinch-brand-kit.json) · [Task list](../TASKS.md)
