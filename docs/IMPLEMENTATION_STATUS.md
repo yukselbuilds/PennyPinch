@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 20 November — English product and roadmap documentation
+## 20 November — English runtime and connection decisions
 
-H042-k2b is complete. The lead agent reviewed the product specification and design guide against the PennyPinch preview, current commands and platform evidence. The roadmap summary, working rules, milestones and risks are in English. Validation retained the 45 of 54 task count, checkbox states, dependency graph and historical heading links. [Evidence](proofs/pennypinch-product-documentation.json) · [Task list](../TASKS.md)
+H042-k2c is complete. The single Luna worker drafted eight runtime and connection decision translations. The lead agent finished the edits after the worker reached its usage limit, reviewed the technical meaning, confirmed the local references and preserved the links to historical headings. The records retain the original platform, fixture and provider acceptance limits. [Evidence](proofs/pennypinch-runtime-decisions-english.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue the English migration with the detailed task entries and the runtime and client connection decisions in H042-k2. Production signing and hosted delivery, clean-host installation and Windows 11 checks have separate acceptance. H041 remains deferred.
+Continue H042-k2 with the measurements and savings decisions, then the remaining decision and task records. Production signing and hosted delivery, clean-host installation and Windows 11 verification have separate acceptance. H041 remains deferred.
+
+## 20 November — English product and roadmap documentation
+
+H042-k2b is complete. The lead agent reviewed the product specification and design guide against the PennyPinch preview, current commands and platform evidence. The roadmap summary, working rules, milestones and risks are in English. Validation retained the 45 of 54 task count, checkbox states, dependency graph and historical heading links. [Evidence](proofs/pennypinch-product-documentation.json) · [Task list](../TASKS.md)
 
 ## 20 November — Current PennyPinch Windows 10 distribution ZIP
 

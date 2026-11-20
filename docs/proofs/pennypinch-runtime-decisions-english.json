@@ -1,0 +1,97 @@
+{
+  "task": "H042-k2c",
+  "status": "pass",
+  "base_commit": "efff65fc663c181bb4cc0c6e589ee8ba1202117f",
+  "checked": {
+    "documents": 8,
+    "headings": 57,
+    "legacy_heading_aliases": 52,
+    "inbound_heading_references": 14,
+    "link_destinations_preserved": 70,
+    "tracked_local_targets": 37,
+    "inline_code_spans_preserved": 171
+  },
+  "documents": {
+    "docs/decisions/002-runtime.md": {
+      "original_sha256": "387f626a08c0ec907500de849097e567f19e49c52a6f3668ea024dae4edec913",
+      "translated_sha256": "ee4d93024da19f23896942aab8a09032fc22521d6aa2b5ae8615754f8b7cf09e",
+      "candidate_sha256": "a5934a6b27b608b6fd504d1e1a335e819abd3e72c43b89ca5a47dbb7fe1f67df"
+    },
+    "docs/decisions/003-connection-ingress.md": {
+      "original_sha256": "138f195fc13b24e6e3d4e69323129039389237cc433aa19b88ae83fb1100d303",
+      "translated_sha256": "c988434c70d0a02a59df688ff2f0180946183ea81dc90829f4adf5af2f08efc3",
+      "candidate_sha256": "ac3e4ebffeb98b0015c1f4b9ae5ec696ea7a220fa8d9dff3898bc92cec9afe2f"
+    },
+    "docs/decisions/004-connection-plan.md": {
+      "original_sha256": "b3742a6827ba5f3f12a2f7d1e7bf36bbf7563bb5d4b27455f5c87b0d518ade62",
+      "translated_sha256": "2a7ec3e0ec95e3989bf1e81adacae31fba81e68318c64cec0c8b059044ba39d2",
+      "candidate_sha256": "0cd6d581c0c7011fd50c73b92015715d1b53a96669ccd839e834bbda4aabbabb"
+    },
+    "docs/decisions/005-config-transaction.md": {
+      "original_sha256": "1fc2189439c44a71ec733d922a0480ed71b1cc8048916ecbad401fe28d67586b",
+      "translated_sha256": "72f12682ff18571b4124ba0a706bbf85792062b42023933278708c7be442271a",
+      "candidate_sha256": "98c0399fefcf50972b3b341657fa088e446178f4eeb735efa81e8705ee52f902"
+    },
+    "docs/decisions/009-opencode-provider-routes.md": {
+      "original_sha256": "a22c51b4279f4684ad44630dcd66a34635744f9851e87513b67e1f7b2784a2ee",
+      "translated_sha256": "ae7915f32be2fda6de66df9dda220a2c1c2ea907fa5292a00f155842ccd97dd7",
+      "candidate_sha256": "910dfd50f0cfb73c224318ab34a7c1f2d295b1519ed9186040133c1bfee08dc7"
+    },
+    "docs/decisions/011-current-codex.md": {
+      "original_sha256": "36228f732dc44ec6564cd8b7de35d45f218a9653f4f409fa59d318fd8cc5cc7b",
+      "translated_sha256": "7d7096975b28d70cc641023da9c85164eb5cde0bdaf42f0acdb77c231a6602b4",
+      "candidate_sha256": "dacbf72768f4579ee6352fba7a1bde8b566ccf8081f71480633e07be45d52011"
+    },
+    "docs/decisions/016-safe-pause.md": {
+      "original_sha256": "6341302e721e3d1e5d914180f744e5d5013fdd7aeabcdd27d048f5729fb62cad",
+      "translated_sha256": "5a15242a21bc046a833b624919a90b695a581fccfd39e5c515fd048a70977353",
+      "candidate_sha256": "bb6b8a3b817b5bc423bd5e80c278dee4095ca94514f552e92b9d067221e94865"
+    },
+    "docs/decisions/017-safe-disconnect.md": {
+      "original_sha256": "670eeef513ce18283e3f0adb0c310a06d7a4e6d3c14c6b9cf45bf9b1311876c3",
+      "translated_sha256": "e1f0ee7768d6fd3428df9669ec581df4c2528d2d3185f47658fb48cf8de10085",
+      "candidate_sha256": "75e09ce4722d167b18f645ba832a020d2d3f499e6efbd089e10db5d830658e52"
+    }
+  },
+  "source_references_sha256": {
+    "TASKS.md": "08d9f06a793f94a032ca96fb1016f2e1854944eb0b908c51eff1700a9ec19924",
+    "docs/IMPLEMENTATION_STATUS.md": "8c45c5b27430d5ecc38a6915453485feb56a462d7b5f3fb5ba9a2eea09537e32",
+    "docs/contracts.md": "ac7df4476c07e801537062505abe61934442a60027cdd2e5676cbc94d2c4d8ed",
+    "docs/proofs/windows-engine.md": "0534ac74012dc573dc45a8f270d8b807d056b538e09246bd8a9df4dba132833b",
+    "docs/proofs/opencode-subagents.md": "cf3b520b7141dfb99bcea44af30bad66ccbd403d0998e71a49d4d422a4c4a26f",
+    "docs/proofs/opencode-tui.md": "4f5143bce67585a63356bada165e40eb55d3de4b05f5b2be34701eed6acedb0a",
+    "docs/proofs/opencode-v2-binding.md": "3a19fc7fef7990951e50786cccc4ccbe35ba91aafcc9916715ce42f16ba891b2",
+    "docs/proofs/opencode-v2-desktop.md": "33e9c5ef3f1f49d4ff78b2588770413330068783e19611a4484399697fec00d2",
+    "docs/proofs/opencode-v2-discovery.md": "ea76f1d43206231fd944030dd39faf5e440da3a1f9d52f80858c9bedbdfab1ee",
+    "docs/proofs/opencode-v2-service.md": "ec97c18bd5ae659889ffd636e81c65dae5b56ccbd5d1fed4ba27f6aefe6bdac2",
+    "docs/proofs/opencode-v2-subagents.md": "00a0542656396f60f7d6fc548e76eda2914700180842f6102dc0da97ea33f7df",
+    "docs/proofs/opencode-v2.md": "41aa21e8755fec194399e9398e79570a8830f9fa14e6e8f6036dcd7b78463554",
+    "docs/proofs/windows-gui-crash.md": "4fb52b3f841e24ae8e7be89441e53386f080477a13c26539544f30ee7d38994e",
+    "docs/reviews/H012.md": "7c47ad0db6f1b0e2b004953545e48357db88cf24afe8def39e380d0253a9ab41"
+  },
+  "date": "2026-11-20",
+  "scope": "English runtime and client connection decision records",
+  "implementation": "GPT-6 Luna xhigh drafts with lead-agent completion after the worker reached its usage limit",
+  "review": "Lead agent, technical contract review and local Markdown validation",
+  "technical_sources": {
+    "src-tauri/src/runtime/manager.rs": "ca813da89118e24418b4e6e9ca4f4730c2149eb9019afd2c0e822f0be1e87521",
+    "src-tauri/src/runtime/ingress.rs": "9f91ea51045745290e25361593afc16353c27019275a714656ec4f3b303c7368",
+    "src-tauri/src/runtime/ingress_relay.rs": "0da0d89e0fc124b89016b9986eefd3ac72a14dd65f7a0e7b95eca50eb916e8fa",
+    "src-tauri/src/integrations/config_io.rs": "3fe8c8379f87e56d24a92286683d577a0ee40fe83bd8a1edd4ab3635b496b84f",
+    "src-tauri/src/integrations/config_io/macos.rs": "4be4901b5aae28e52ba1f439fef3f65d7db1386df71a0fb2f102648909d44170",
+    "src-tauri/src/integrations/codex_binary.rs": "3f2fefa34a4c6cea5da55079dba6ed5eb991bba68e0de97ca9bbbd276381f949",
+    "src-tauri/src/integrations/transaction.rs": "eb76cd44e56a8823be7bb805e4a3f52cd053358ead15b5bffdcaf726a7dcd3fb",
+    "src-tauri/src/integrations/connection_actions.rs": "935bac043c368064921c78941a33af01ef83edb75445b7d16010bbe686af8385",
+    "src-tauri/src/integrations/opencode_v2_routes.rs": "f4b7081b766675de76221adc2136f437583967bb66702f6231e00e3919377f56",
+    "src-tauri/src/integrations/disconnect.rs": "ae2bdf1fe6929df7a5319b16dfb9647eefd7b1cc5a404477c5772ce0f1482d73",
+    "runtime/optimization_control.py": "88b9fa18eca4b6176050c9f0879cb43fe524e3fa2f84704bb8dcd5a9f5c98dd7"
+  },
+  "toolchain": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0"
+  },
+  "main_tasks": {
+    "completed": 45,
+    "total": 54
+  }
+}
