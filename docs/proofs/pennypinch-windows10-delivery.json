@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "task": "H042-n",
+  "date": "2026-11-20",
+  "status": "pass",
+  "scope": "Unsigned PennyPinch Windows 10 22H2 x64 local distribution ZIP",
+  "installer": {
+    "path": "work/r42p/ab974e2/preview/PennyPinch_0.1.0_x64-setup.exe",
+    "sha256": "eec3bf272196dd449e96bc5830fc4a498065585927132ab4605d3d64aa144b10",
+    "bytes": 125212965
+  },
+  "engine": "0.44.0",
+  "notice_receipt": {
+    "path": "docs/proofs/pennypinch-windows10-notices.json",
+    "sha256": "7a01286504b3f06734760bafb19594714f1cbf7c85f320061429cad530908fa1"
+  },
+  "notice_archive": {
+    "path": "work/r42p/ab974e2/delivery/PennyPinch_0.1.0_third_party_notices_eec3bf272196.zip",
+    "sha256": "93542b5a928408587335b54d56637fd42bf974eb770f67b629182d0638d433ee",
+    "bytes": 1404728,
+    "verified_entries": 674
+  },
+  "component_inventory": {
+    "python": 99,
+    "rust": 258,
+    "frontend": 6
+  },
+  "delivery_zip": {
+    "archive": "work/build/windows/delivery/PennyPinch_0.1.0_Windows_x64_preview_eec3bf272196.zip",
+    "sha256": "b271e0391d40319c1cf6a248f73d162a57527e4e2e0538913720526ad5f97800",
+    "bytes": 126650036,
+    "extracted_files": 677,
+    "listed_checksums": 676
+  },
+  "checks": {
+    "windows_extraction_unicode_spaces": true,
+    "old_notices_rejected": true,
+    "existing_archives_preserved": true
+  },
+  "windows_packaging_tests": 26,
+  "frontend_assets_matched": 7,
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+  "source_preview": {
+    "path": "docs/proofs/pennypinch-windows10-preview.json",
+    "sha256": "9802493fcbaff87dfa02028dbb4f0572ad7871be13be59e762729a07a25617ab"
+  },
+  "fingerprints": {
+    "notice_assembly": {
+      "inputs": 32,
+      "sha256": "f0582e596f02547c1d2eec6041699d2a9aeb5ad88d79e629b04992114ba1d583"
+    },
+    "windows_extraction": {
+      "inputs": 15,
+      "sha256": "44c9ddf5ef37b57b42756bd92262a80d8154434be2a05e78a5b072b351d0d3f4"
+    },
+    "packaging_tests": {
+      "inputs": 79,
+      "sha256": "5aa6b2602e7fafaaaae235ec0f56aab21dad5fc11e5f015d023bbb78c3e73619"
+    }
+  },
+  "remaining": [
+    "clean-host installation",
+    "production-signed update source and hosted delivery",
+    "Windows 11 acceptance"
+  ]
+}

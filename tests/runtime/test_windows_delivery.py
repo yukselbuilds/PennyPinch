@@ -118,3 +118,58 @@ class WindowsDeliveryTests(unittest.TestCase):
         with zipfile.ZipFile(output) as archive:
             self.assertEqual(archive.read(name), b'isolated installer fixture')
             self.assertIn('PennyPinch 0.1.0', archive.read('README.txt').decode('utf-8-sig'))
+
+    def extracted_preview(self, installed='not_tested', evidence_sha=None):
+        self.write_notices()
+        candidate = json.loads((self.proofs / 'windows-installer.json').read_bytes())
+        notices = json.loads((self.proofs / 'windows-installer-notices.json').read_bytes())
+        name = 'PennyPinch_0.1.0_x64-setup.exe'
+        installer = self.project / 'work/verified-preview' / name
+        installer.parent.mkdir()
+        installer.write_bytes(b'isolated installer fixture')
+        evidence = self.proofs / 'extraction.json'
+        self.write_json(evidence.name, {
+            'status': 'pass', 'authenticode': {'setup': 'NotSigned'},
+            'nsis_extraction': {'resource_files': 1},
+            'executable_probe': {'version': '0.1.0', 'correct_version': 'pass'},
+            'artifacts': {name: {'path': installer.relative_to(self.project).as_posix(),
+                                 'sha256': evidence_sha or self.installer_sha, 'bytes': installer.stat().st_size}},
+        })
+        receipt = self.proofs / 'preview.json'
+        self.write_json(receipt.name, {**candidate, **notices, 'app_name': 'PennyPinch',
+                                       'local_installed_slice': installed,
+                                       'preview_evidence': {'path': evidence.relative_to(self.project).as_posix(),
+                                                            'sha256': delivery.fingerprint(evidence)}})
+        return receipt.relative_to(self.project), evidence, installer
+
+    def test_extracted_preview_uses_the_archived_installer(self):
+        receipt, evidence, installer = self.extracted_preview()
+
+        result = delivery.package(self.project, receipt)
+
+        self.assertIn(str(evidence), result['before'])
+        self.assertEqual(result['before'], result['after'])
+        with zipfile.ZipFile(self.project / result['output']) as archive:
+            self.assertEqual(archive.read(installer.name), installer.read_bytes())
+
+    def test_extracted_preview_rejects_a_changed_evidence_file(self):
+        receipt, evidence, _ = self.extracted_preview()
+        evidence.write_bytes(evidence.read_bytes() + b' ')
+
+        with self.assertRaisesRegex(ValueError, 'preview_evidence_mismatch'):
+            delivery.package(self.project, receipt)
+        self.assertFalse(self.output.parent.exists())
+
+    def test_extracted_preview_rejects_evidence_for_another_installer(self):
+        receipt, _, _ = self.extracted_preview(evidence_sha='a' * 64)
+
+        with self.assertRaisesRegex(ValueError, 'preview_evidence_mismatch'):
+            delivery.package(self.project, receipt)
+        self.assertFalse(self.output.parent.exists())
+
+    def test_extracted_preview_does_not_override_failed_installation(self):
+        receipt, _, _ = self.extracted_preview(installed='fail')
+
+        with self.assertRaisesRegex(ValueError, 'unverified_installer_candidate'):
+            delivery.package(self.project, receipt)
+        self.assertFalse(self.output.parent.exists())

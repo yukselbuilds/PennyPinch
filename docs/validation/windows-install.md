@@ -99,4 +99,14 @@ PennyPinch is the app's display name and Windows installer name. Source and lice
 
 ## 20 November — Current branded Windows 10 preview
 
-The installer built from `ab974e2` includes the new brand kit and settings guidance. The release application and NSIS wrapper have matching PennyPinch metadata and six icon sizes. The extracted application matched the built executable after the expected Tauri NSIS bundle marker was accounted for. All 19,484 expected resources matched the staging receipt. The extracted executable accepted the expected version probe and rejected a different version. The staged Headroom 0.44.0 engine reached ready and stopped. The installer was unsigned and its WebView2 prerequisite had a valid signature. Clean-host installation and release-bound notices remain open. [Evidence](../proofs/pennypinch-windows10-preview.json)
+The installer built from `ab974e2` includes the new brand kit and settings guidance. The release application and NSIS wrapper have matching PennyPinch metadata and six icon sizes. The extracted application matched the built executable after the expected Tauri NSIS bundle marker was accounted for. All 19,484 expected resources matched the staging receipt. The extracted executable accepted the expected version probe and rejected a different version. The staged Headroom 0.44.0 engine reached ready and stopped. The installer was unsigned and its WebView2 prerequisite had a valid signature. Clean-host installation remains open. [Evidence](../proofs/pennypinch-windows10-preview.json)
+
+## 20 November — PennyPinch Windows 10 delivery ZIP
+
+The unsigned local ZIP includes the exact branded installer, 674 entries under `LICENSES/`, bilingual `README.txt` and `SHA256SUMS.txt`. The notice index binds the license files to the installer SHA-256 and the 0.44.0 engine. The pinned runtime, 258 Windows Rust dependencies and six frontend packages matched the verified source notices. Windows extracted all 677 entries into a path with Unicode and spaces, and all 676 listed hashes matched. A notice archive for a different installer and an attempt to overwrite the ZIP were rejected. [Evidence](../proofs/pennypinch-windows10-delivery.json)
+
+To reproduce the ZIP from its verified local inputs, use the pinned build Python and the same receipt. The receipt pairs the archived installer with its extraction proof and matching notices. Clean-host and production delivery retain their own checks.
+
+```powershell
+& .\work\proofs\packaging\artifacts\headroom-engine-0.44.0\runtime\python.exe -I -B scripts/package-windows-delivery.py --receipt docs/proofs/pennypinch-windows10-notices.json
+```

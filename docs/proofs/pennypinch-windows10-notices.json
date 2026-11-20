@@ -1,0 +1,30 @@
+{
+  "task": "H042-n",
+  "app_name": "PennyPinch",
+  "app_version": "0.1.0",
+  "source_build": "ab974e2ccd1c2dbc771cf581561539d839b02a02",
+  "local_installed_slice": "not_tested",
+  "preview_evidence": {
+    "path": "docs/proofs/pennypinch-windows10-preview.json",
+    "sha256": "9802493fcbaff87dfa02028dbb4f0572ad7871be13be59e762729a07a25617ab"
+  },
+  "engine": "0.44.0",
+  "installer_signature": "NotSigned",
+  "artifacts": {
+    "installer_sha256": "eec3bf272196dd449e96bc5830fc4a498065585927132ab4605d3d64aa144b10",
+    "installer_bytes": 125212965
+  },
+  "installer_sha256": "eec3bf272196dd449e96bc5830fc4a498065585927132ab4605d3d64aa144b10",
+  "companion_archive": {
+    "path": "work/r42p/ab974e2/delivery/PennyPinch_0.1.0_third_party_notices_eec3bf272196.zip",
+    "sha256": "93542b5a928408587335b54d56637fd42bf974eb770f67b629182d0638d433ee",
+    "bytes": 1404728,
+    "verified_entries": 674
+  },
+  "components": {
+    "python": 99,
+    "rust": 258,
+    "frontend": 6
+  },
+  "third_party_source_evidence": "docs/proofs/windows-installer-044-notices.json"
+}

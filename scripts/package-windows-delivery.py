@@ -88,12 +88,34 @@ def package(project, receipt=None):
     version = candidate['app_version']
     app_name = candidate.get('app_name', 'Headroom')
     installer_sha = candidate['artifacts']['installer_sha256']
-    if (not re.fullmatch(r'\d+\.\d+\.\d+', version) or candidate['local_installed_slice'] != 'pass'
+    installer_size = candidate['artifacts']['installer_bytes']
+    if (not re.fullmatch(r'\d+\.\d+\.\d+', version)
             or app_name not in ('Headroom', 'PennyPinch')
             or not re.fullmatch(r'[0-9a-f]{64}', installer_sha)):
         raise ValueError('unverified_installer_candidate')
     installer_name = f'{app_name}_{version}_x64-setup.exe'
-    installer = staging.inside(work / 'caches/cargo-target/release/bundle/nsis' / installer_name, work)
+    if candidate['local_installed_slice'] == 'pass':
+        installer = staging.inside(work / 'caches/cargo-target/release/bundle/nsis' / installer_name, work)
+    elif receipt is not None and candidate['local_installed_slice'] == 'not_tested':
+        proof = candidate['preview_evidence']
+        proof_path = staging.inside(project / proof['path'], project)
+        proof_bytes = proof_path.read_bytes()
+        if digest(proof_bytes) != proof['sha256']:
+            raise ValueError('preview_evidence_mismatch')
+        evidence = json.loads(proof_bytes)
+        artifact = evidence['artifacts'][installer_name]
+        if (evidence['status'] != 'pass' or evidence['authenticode']['setup'] != 'NotSigned'
+                or evidence['executable_probe']['version'] != version
+                or evidence['executable_probe']['correct_version'] != 'pass'
+                or evidence['nsis_extraction']['resource_files'] <= 0
+                or artifact['sha256'] != installer_sha or artifact['bytes'] != installer_size):
+            raise ValueError('preview_evidence_mismatch')
+        installer = staging.inside(project / artifact['path'], work)
+        if installer.name != installer_name:
+            raise ValueError('preview_evidence_mismatch')
+        records[proof_path] = proof_bytes
+    else:
+        raise ValueError('unverified_installer_candidate')
     companion = notices['companion_archive']
     archive = staging.inside(project / companion['path'], work)
     suffix = f'_{installer_sha[:12]}' if receipt is not None else ''
@@ -104,7 +126,7 @@ def package(project, receipt=None):
     before = {str(path): digest(data) for path, data in records.items()}
     for path in (installer, archive, project / 'src-tauri/windows-hooks.nsh', Path(__file__), STAGER):
         before[str(path)] = fingerprint(path)
-    if (before[str(installer)] != installer_sha or installer.stat().st_size != candidate['artifacts']['installer_bytes']
+    if (before[str(installer)] != installer_sha or installer.stat().st_size != installer_size
             or notices['installer_sha256'] != installer_sha):
         raise ValueError('installer_candidate_mismatch')
     if before[str(archive)] != companion['sha256'] or archive.stat().st_size != companion['bytes']:

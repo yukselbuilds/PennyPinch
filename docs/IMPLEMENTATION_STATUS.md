@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 20 November — Current PennyPinch Windows 10 preview
+## 20 November — Current PennyPinch Windows 10 distribution ZIP
 
-H042-m is complete. The lead agent built the NSIS preview from the current app and verified the extracted application and 19,484 pinned resource files. The Windows executables contain all six brand-kit icon sizes. The bundled Headroom 0.44.0 lifecycle passed in its separate staging test. The development preview used the current working notice and matched all build input hashes. [Evidence](proofs/pennypinch-windows10-preview.json)
+H042-n is complete. The lead agent bound 674 notice entries to the verified current PennyPinch installer, then built the ZIP with the local preview receipt. The Python payload, locked Windows Rust dependency graph and six frontend packages matched the existing source notices. Windows extracted 677 files and verified all 676 listed SHA-256 values. The 26 packaging tests passed. [Evidence](proofs/pennypinch-windows10-delivery.json)
 
 ### Next H042 release step
 
-Bind the third-party notices and delivery checks to the exact Windows 10 preview hash. The English documentation, production signed source, clean-host installation and Windows 11 checks have separate acceptance. H041 remains deferred under the user's earlier decision.
+Continue the English release-facing documentation in H042-k. Production signing and hosted delivery, clean-host installation and Windows 11 checks have separate acceptance. H041 remains deferred under the user's earlier decision.
+
+## 20 November — Current PennyPinch Windows 10 preview
+
+H042-m is complete. The lead agent built the NSIS preview from the current app and verified the extracted application and 19,484 pinned resource files. The Windows executables contain all six brand-kit icon sizes. The bundled Headroom 0.44.0 lifecycle passed in its separate staging test. The development preview used the current working notice and matched all build input hashes. [Evidence](proofs/pennypinch-windows10-preview.json)
 
 ## 20 November — PennyPinch brand kit
 
