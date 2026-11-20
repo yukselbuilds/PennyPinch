@@ -1,0 +1,125 @@
+{
+  "task": "H042-k2g",
+  "status": "pass",
+  "base_commit": "31ecc5bf864146db7691bdf2ac2d79ac3e5d0bec",
+  "checked": {
+    "documents": 1,
+    "source_lines": 531,
+    "headings": 50,
+    "legacy_heading_aliases": 50,
+    "link_destinations_preserved": 88,
+    "inbound_heading_references": 28,
+    "tracked_local_targets": 48,
+    "inline_code_spans_preserved": 185,
+    "fenced_code_blocks_preserved": 4
+  },
+  "documents": {
+    "docs/decisions/027-optimization-regression.md": {
+      "original_sha256": "ff94ebacbf9ae3b9e7edbc0fcb7ea6f648e6e15ee01c35cb8e36546727a253b9",
+      "translated_sha256": "2a2e4a7327e3351789060f5be122606820c6e91da3d418467191ed6f0e9907b4",
+      "candidate_sha256": "45a085f40f0323600f36718cba6a71e0aef9d57350e8b90292224822fe56af5e"
+    }
+  },
+  "fragments": {
+    "01-net-savings.md": {
+      "start_line": 1,
+      "last_line": 164,
+      "owner": "lead",
+      "sha256": "a9848bbae246b3feae5c599d06df3d318de25b9c39489ebe1e592a7b6ce1449f",
+      "translated_sha256": "2cd227e1698ea8ed964af286cd8ccad65f6c4a633c05f35718d90af18a4a17bd"
+    },
+    "02-experimental-rules.md": {
+      "start_line": 165,
+      "last_line": 322,
+      "owner": "luna",
+      "sha256": "f8e3ffa313c8c9c6d2d57f9e7cf826573f1bea4f14540e3be8a49610d68bdfa3",
+      "translated_sha256": "36e1bb15719c4b0d093b26d0c4a08019f1a6c9f277f9a9d9ff5924f04d293683"
+    },
+    "03-provider-measurement.md": {
+      "start_line": 323,
+      "last_line": 386,
+      "owner": "lead",
+      "sha256": "3ae422880123d1a98e6de2a8af2f5191d48481516dbad5ba452a5578a52db8d0",
+      "translated_sha256": "70e92f0d6c70e89a9f17e59ebae149503f73ef0838a95f93a69d979cfc9efb10"
+    },
+    "04-tool-pilots-and-chat-completions.md": {
+      "start_line": 387,
+      "last_line": 461,
+      "owner": "lead",
+      "sha256": "95fa2d186bcc9af43504f4df8bf201b21eab18794ae2cf304b052ad5b3adfb0f",
+      "translated_sha256": "ef09dc97d53710f81fc9279ed42ff882225b61931d23b7b1c7b5e351fd51abf6"
+    },
+    "05-learn-and-measurement-plan.md": {
+      "start_line": 462,
+      "last_line": 531,
+      "owner": "luna",
+      "sha256": "37580f9e4dce75cf3822f60c4976359927f8af95c0c5bc9ef768e49e2a61fa4d",
+      "translated_sha256": "9a32a85956349f5ec26ca3d55d21319542815a4b1705cc9c2fcc8749a246c46e"
+    }
+  },
+  "source_references_sha256": {
+    "HEADROOM_DESKTOP_SPEC.md": "ea27bac072717f207dfa1ac4cdd5261568431ca39aec113739b4ee7c88c10b38",
+    "TASKS.md": "32226de80e4beedf8f6abc777c1a7b575e8fcc0fc22ebd2188a86a28d42e61b6",
+    "docs/IMPLEMENTATION_STATUS.md": "9f846995c8bcfc1f2f3ed816bdc9e4dfffba74ca2cd551d28f037b79cf46ecc8",
+    "docs/proofs/duplicate-tool-results.json": "1d544313cdd00f5ebed0acfcfd22dec4ff8feb5481fb976fd307c5f425317c2a",
+    "docs/proofs/responses-repeat-safety.json": "29840fa1127e02cfd556acf709300f96db69ac8a517310d45949c088f8a889b4",
+    "docs/proofs/anthropic-cache-markers.json": "11d399fc0778d6bb5256b7d116bfebd04b26f648020eab4e825a28184bceead4",
+    "bench/context_tools/README.md": "ec87dbb1ed5d6278caf4fd516729c7ed8e534bcfdca0e03c0f303d5fce1baa6f",
+    "docs/proofs/context-tools-pilot.md": "e2090cfc4df830e17c9af95fe6faab64f40cdaa59d9787fc75a91bfc99113c1d",
+    "docs/proofs/targeted-query-pilot.json": "0d66d924bd158f978c13234a60167ebc1ecf74f8a717478e7bcf3673c13d14d3",
+    "docs/proofs/targeted-query-client.json": "d4adfee7a4dbf5e2f537825c432857a82ab0e4da601448e9333ce0b8ac71bceb",
+    "docs/proofs/targeted-query-default-budget.json": "997662c6ebb052dbe685c61436d9225acfad563650c5a4ecc4aaf0224e126910",
+    "docs/proofs/targeted-query-comparison.json": "7ec330175f2a17dca8616920681df95941c84cb71a93a6a25252e4b5056807f6",
+    "docs/development/WORKFLOW.md": "ae6e3791370ada5d6f7983d4633d923857832b0d253175d3c9fbbe78bc0136b7",
+    "docs/proofs/experimental-rules-preview.json": "fbe4758b30a55b62c16d3532fffbb347733f6bcaa954df8de1597ffae68d9cea",
+    "docs/proofs/experimental-rules-replay.json": "96734bf3a3320a58f9834090f26b6b823714e4c943316ffef43379d0bba20cea",
+    "docs/proofs/rules-client-applicability.json": "fd16bded0f3bca58b7c5dfe2938e0267e914274be50325761aaf7ddc0c216934",
+    "bench/optimization/rules-producer-plan.json": "fe9cdd526663cdaf453ee8cdcd66a56acae7704a632871b8e50307a6ae7c3ea4",
+    "docs/proofs/rules-producer-comparison.json": "a2b2967a22b19ac62db5557f91ecf69882115ed04d395b53a8a60a7c524dd533",
+    "docs/proofs/responses-terminal-usage.json": "d446c489432aadc4748278c574e83d2c3f1e7ba5ebcdba38cfa1b70700c8d1b8",
+    "docs/proofs/rules-live-luna-pair.json": "5d9b2203f6dcb40aeada3f5ae6b61c69e05d554ef0e8d9b60416911483dabe82",
+    "docs/proofs/responses-optional-terminal-status.json": "257993d3175df5abbe1d873b7916276bb1ccbf9aadae005d4bc18f861d511f85",
+    "docs/proofs/responses-stream-content-type.json": "f54fb57931b9bc48b21e9927ecfb2ae446edaa9d8dc501aa1451e1ccf1d0a478",
+    "docs/proofs/rules-answer-contract.json": "0a44762c1b4973ec3fb8709308f5063fd040c0c4cb29a84a799228d7379e4e65",
+    "docs/proofs/rules-live-counted-pair.json": "05ed44d3e57bb8cd930f747886903f34502d9b3f9b39c3df41a6572aec95b3f2",
+    "docs/proofs/rules-recovery-delivery.json": "9d6e5c8494901f91cdda02b26d48ee29ed208760d8c07b003ce5899814a99afa",
+    "docs/proofs/rules-code-mode-recovery.json": "05363aaf81e3a1c0ac1da80f4174ff5b309510a84113462241c1a086fd0ef3e8",
+    "docs/proofs/rules-live-canonical-pair.json": "3ea47be27c3225e5c41288c978f46cf8496f0e4e7e7175fcfc1cf6f9e60663a5",
+    "docs/proofs/rules-live-programmatic-counts.json": "f38efaac3f46c9fb3066aeff77d881fadcd428d0ab6bf11e3abaf65c12e36151",
+    "docs/proofs/rules-live-pilot-acceptance.json": "3397768805bb14583e4725c922ab532fea1179339d135be08b11801dc7b0bc92",
+    "bench/optimization/rules-heldout-plan.json": "ff4b60b3e629837573b291897c95de519a80df629429459ab20a4e0b438ab9f0",
+    "docs/proofs/rules-heldout-runner.json": "a94b5bea0befe7670126631d77947010ff4f4235b5b63b3e5f9bd79e4936371b",
+    "docs/proofs/rules-heldout-first-live.json": "2b36bdb1c233f53fb623baeb1ce0db1cbc20e373292629cac2bd9ab43f424099",
+    "docs/proofs/rules-json-guard.json": "6ad3c46d99402252cffddb0ef4dde7f1e7c607082112d7509b4fc48f033b3b61",
+    "bench/optimization/rules-json-heldout-plan.json": "82a7e0a54615d1db158dc90716ddd77539db245f09b5bc56f4c35df86b9d2c4a",
+    "docs/proofs/rules-json-cli-adapter.json": "3575aaeec2f2e79380821869b286b676cac9ce16563299dc9d512147d2c97988",
+    "docs/research/optimization-roi-review-2026-11-17.md": "685759a2f821c975126387166d2b54b7332fa6a9191abe396b82a83f7d27bd6e",
+    "docs/proofs/rules-json-live-pilot.json": "c3730210b65d4c1dc23e0b960185048034eb14363c6820df4b5c8753cb8fb975",
+    "docs/proofs/anthropic-ccr-policy.json": "e1ce30848c5e046a99fe8cad9f91eee37665a0d6983653503cbd02ef0123c9f2",
+    "docs/proofs/anthropic-usage-coverage.json": "49a2732bff136c99660a9b6c88ffbc0b906b59420bd04fabf8c8e482f7ef5170",
+    "docs/proofs/desktop-anthropic-usage.json": "711ee7a86179926973d99f3ba32806dec58b115149ed41c0f27c8ea03e7a0916",
+    "docs/proofs/anthropic-usage-desktop-detail.json": "c7657b051dcec2fda5130344da7510b63279a1be2a955e2b498ef98b5276c028",
+    "docs/proofs/websocket-usage-desktop.json": "6eb1de8d6d57da84ce81cb6f0331ced5e83810674faca1a21cd3d131ad4199b9",
+    "docs/research/headroom-serena-2026-11-15.md": "50a849125993b81f35d865b514924ce50f33fc525636a632ecfee1909910cc66",
+    "docs/proofs/serena-codegraph-pilot.json": "18e72f887a0eb8eb3358ecfec83365fa0bd8aadcbf2d8c3cc6a73d9e8e23ee44",
+    "docs/proofs/headroom-044-candidate.json": "20f5a85da9e21ad49c1f06cee53a1675f812eeabe45b2e5743d6cb53e5a9d099",
+    "docs/proofs/headroom-044-upgrade.json": "e58f90024ad21077c1fcbd8aa32d35a4f7bb281781599b664274544674af74ad",
+    "docs/proofs/preferences-rollback.json": "f90b30d48b1de765cf19a8ad5d2fcb1d1a18533c5bb457a0cbc39b35105cf603",
+    "docs/proofs/chat-completions-usage.json": "0f85e098c9a8da1055b0d985b9e94a71004baf2281d8d989f7cdad986f6eb002",
+    "docs/proofs/sse-usage-event-limit.json": "bff3f0db6af67b0f917c49643552960cd4310155a1ff9ceddb5a905a7d284862",
+    "docs/proofs/learn-merit-pilot.json": "82b542d6c00751e4546e04472d79bbc760fd8c6f6d5b19c6915be216197a39bb",
+    "docs/validation/optimization-benefit.md": "718966cd1a4c99bae71f749946b2fc7eb1781370efcdf2b1c67d2479c783d2c8"
+  },
+  "date": "2026-11-21",
+  "scope": "English optimization and latency comparison record",
+  "implementation": "Lead agent translated deduplication, targeted queries, usage and tool pilots. The single GPT-6 Luna xhigh worker translated experimental rules, Learn and the measurement plan. The lead agent reviewed and assembled the decision.",
+  "review": "Lead agent, technical contract review and local Markdown validation",
+  "toolchain": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0"
+  },
+  "main_tasks": {
+    "completed": 45,
+    "total": 54
+  }
+}
