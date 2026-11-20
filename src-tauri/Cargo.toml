@@ -1,8 +1,8 @@
 [package]
 name = "headroom-desktop"
 version = "0.1.0"
-description = "Headroom local desktop control surface"
-authors = ["Headroom"]
+description = "PennyPinch local desktop control surface"
+authors = ["PennyPinch contributors"]
 edition = "2021"
 rust-version = "1.90"
 

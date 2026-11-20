@@ -25,9 +25,3 @@ export function Icon({name, className = "", style}: {name: keyof typeof paths; c
     <path d={paths[name]} />
   </svg>;
 }
-
-export function PennyPinchMark() {
-  return <svg className="brand-mark" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true" focusable="false">
-    <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H10v9H4V6.5Zm0 10.5h6v7H6.5A2.5 2.5 0 0 1 4 21.5V17Zm10-13h7.5A2.5 2.5 0 0 1 24 6.5V24h-6V10h-4V4Z" fill="currentColor" />
-  </svg>;
-}

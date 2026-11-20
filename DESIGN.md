@@ -4,7 +4,7 @@ The redesign started on 5 November 2026 and passed local acceptance on 6 Novembe
 
 ## Product and direction
 
-Headroom is a local desktop tool for everyday use. Users should understand input reduction first, then engine status and application connections. The percentage and amount must come from the same real period. Account/session inventory, live provider support, and model support do not belong in this visual treatment.
+PennyPinch is a local desktop tool for everyday use. Users should understand input reduction first, then engine status and application connections. The percentage and amount must come from the same real period. Account/session inventory, live provider support, and model support do not belong in this visual treatment.
 
 The [design engineering](.agents/skills/emil-design-eng/SKILL.md) guide by Emil Kowalski is the primary reference; its MIT license and pinned source are in `UPSTREAM.json`. Other references reviewed: [Taste](https://github.com/Leonxlnx/taste-skill), [Impeccable](https://github.com/pbakaus/impeccable), and [Hallmark](https://github.com/Nutlope/hallmark). Do not layer four separate design systems. Install any new material in the project only.
 
@@ -12,7 +12,7 @@ The [design engineering](.agents/skills/emil-design-eng/SKILL.md) guide by Emil 
 - Typography: Windows Segoe UI Variable/Segoe UI, retaining native fallbacks. 14px body, 12px helper text, 36px screen title, 72px metric. Use tabular numerals, few weights, and no tracked all-caps labels.
 - Color: warm graphite and soft mint in dark mode; off-white and dark green in light mode. Use semantic CSS tokens. Never communicate a state by color alone. Use subtle local borders, emphasis for primary actions/metrics, and visible warnings for serious errors.
 - Shape: one hero surface, fine dividers, and 8–16px corner radii. No stacks of equally weighted cards, neon glow, glass effects, or decorative gradients. Use row and spacing hierarchy in data-dense tables.
-- Icons: one stroke style and real SVG; no mixture of Unicode symbols. Every button must have a clear function. An icon-only control requires an accessible name.
+- Icons follow one SVG stroke style for interactive controls. The supplied PennyPinch artwork in `src/assets/pennypinch-logo.png` supplies the app mark, About artwork and README image. Every button must have a clear function. An icon-only control requires an accessible name.
 - Motion: frequent navigation and numeric updates happen immediately. Pointer press gets brief feedback; keyboard actions do not wait for animation. Respect reduced motion and distinguish hover from pointer behavior. Add no motion dependency.
 - Empty states: no fake chart, percentage, account, or agent count. Waiting for data and read errors are distinct. Missing metrics get meaningful text and a real action to the existing connection screen; a measured zero remains visible.
 - Trust: `unknown`, scope/measurement limits, pending work, conflicts, and persistent-setting warnings remain legible. Simpler wording must not make stronger claims about reality. Start/Pause/Resume changes only after a real engine acknowledgement.

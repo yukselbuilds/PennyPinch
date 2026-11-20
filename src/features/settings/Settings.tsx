@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import pennyPinchLogo from "../../assets/pennypinch-logo.png";
 import { operatingClient, type OperatingError, type OperatingSnapshot, type OperatingResult } from "../../lib/operatingSettings";
 import type { OperatingPreferences, PreferenceLanguage } from "../../lib/preferences";
 
@@ -404,9 +405,12 @@ export function Settings({ language, preferences, status, onSave, onBusyChange }
         {!toolMismatch && <p className="operating-settings__help">{text.runtimeMatch}</p>}
       </>}
     </div>
-    <div className="operating-settings__section">
-      <h4>{text.aboutTitle}</h4>
-      <p className="operating-settings__help">{text.aboutEngine}</p>
+    <div className="operating-settings__section operating-settings__about">
+      <img src={pennyPinchLogo} width={88} height={88} loading="lazy" alt="" />
+      <div>
+        <h4>{text.aboutTitle}</h4>
+        <p className="operating-settings__help">{text.aboutEngine}</p>
+      </div>
     </div>
   </section>;
 }

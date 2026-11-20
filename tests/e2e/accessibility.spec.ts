@@ -6,7 +6,7 @@ const catalogSize=JSON.parse(fs.readFileSync(path.join(root,'compatibility/clien
 const run=path.join(base,'ui-'+crypto.randomUUID());fs.mkdirSync(run,{recursive:true});
 const bundle=path.join(run,'bundle');
 const sourceFiles=[...['src','tests'].flatMap(d=>fs.readdirSync(d,{recursive:true}).map(p=>path.join(d,String(p))).filter(p=>fs.statSync(p).isFile())),
- 'package.json','pnpm-lock.yaml','compatibility/clients.json','runtime/manifest.json'];
+ 'src-tauri/icons/icon.png','package.json','pnpm-lock.yaml','compatibility/clients.json','runtime/manifest.json'];
 const fingerprint=()=>Object.fromEntries(sourceFiles.map(p=>[p.replaceAll('\\','/'),crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex')]));
 const before=fingerprint(),checks:any[]=[],violations:any[]=[],timings:number[]=[],outcomes:any[]=[];
 test.afterEach(async({},info)=>{outcomes.push({name:info.title,status:info.status,expected:info.expectedStatus});});
@@ -37,7 +37,9 @@ async function audit(page:Page,label:string){
 test('five screens: names, contrast, empty/error/data and responsive actions',async({page})=>{
  for(const language of ['tr','en'])for(const theme of ['dark','light'])for(const scenario of ['data','empty','error']){
   await setup(page,language,theme,scenario);
-  await expect(page.getByRole('link',{name:language==='tr'?'PennyPinch genel bakış':'PennyPinch overview',exact:true})).toBeVisible();
+  const brand=page.getByRole('link',{name:language==='tr'?'PennyPinch genel bakış':'PennyPinch overview',exact:true});
+  await expect(brand).toBeVisible();
+  await expect(brand.locator('img')).toHaveJSProperty('naturalWidth',512);
   for(const screen of ['overview','sessions','applications','activity','settings']){
    await page.evaluate(()=>{(window as any).__navPaint=null;document.querySelector('.primary-nav')!.addEventListener('click',()=>{const start=performance.now();requestAnimationFrame(()=>requestAnimationFrame(()=>{(window as any).__navPaint=performance.now()-start;}));},{once:true,capture:true});});
    const navItem=page.locator(`.primary-nav [data-screen="${screen}"]`);
@@ -47,6 +49,9 @@ test('five screens: names, contrast, empty/error/data and responsive actions',as
     const about=page.getByRole('heading',{name:language==='tr'?'PennyPinch hakkında':'About PennyPinch',exact:true});
     await expect(about).toBeVisible();
     await expect(about.locator('..')).toContainText(/Headroom/);
+    const artwork=page.locator('.operating-settings__about img');
+    await artwork.scrollIntoViewIfNeeded();
+    await expect(artwork).toHaveJSProperty('naturalWidth',1254);
    }
    await expect.poll(()=>page.evaluate(()=>(window as any).__navPaint)).not.toBeNull();timings.push(await page.evaluate(()=>(window as any).__navPaint));
    // Give fixture effects one frame; every IPC stays inside the explicit transport.

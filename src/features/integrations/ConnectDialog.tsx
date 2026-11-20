@@ -164,7 +164,7 @@ const copy: Record<PreferenceLanguage, Copy> = {
     choiceNotScanned: "Kurulum tercihi taramayla eşleşmedi; bir kurulum seç.", choiceSaved: "Kurulum tercihi kaydedildi.",
     choiceSaveFailed: "Kurulum tercihi kaydedilemedi. Bağlanırken yeniden doğrulanacak.",
     selectionChanged: "Kurulum veya kapsam değişti. Yeniden seçip tekrar dene; ayar uygulanmadı.",
-    runtimeNotReady: "Headroom motoru güvenli biçimde hazır olmadı. İstemci ayarı uygulanmadı; Genel Bakış'tan motoru başlatıp yeniden dene.",
+    runtimeNotReady: "Yerel motor hazır duruma gelmedi. İstemci ayarı uygulanmadı. Genel Bakış'tan motoru başlatıp yeniden dene.",
     connect: "Bağlan", connecting: "Bağlanıyor…", connectUnavailable: "Bağlanmak için kapsamı ve geçerli bir kurulumu seçin; sahiplik kaydı okunmuş olmalı.",
     claudeContextUnavailable: "Claude kapsamı veya ayar dosyası doğrulanamadı. Kapsamı ya da proje klasörünü yeniden seçip yenileyin.",
     versionUnknown: "Sürüm bilinmiyor", cli: "Komut satırı", desktop: "Masaüstü",

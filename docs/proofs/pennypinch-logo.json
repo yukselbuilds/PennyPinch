@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "scope": "H042-l supplied PennyPinch artwork and display labels on Windows 10 x64",
+  "artwork": {
+    "path": "src/assets/pennypinch-logo.png",
+    "width": 1254,
+    "height": 1254,
+    "sha256": "0337e1de88728b1db7bef3357e8abee9953e9964d7c4403175d2c63ccab8901f",
+    "original_bytes": true
+  },
+  "surfaces": [
+    "application navigation",
+    "About PennyPinch",
+    "favicon",
+    "Windows window and tray",
+    "Windows NSIS installer",
+    "GitHub README"
+  ],
+  "icons": {
+    "icon.png": {
+      "sha256": "6e8f816528c10ed45da970437f2413f7d348f76a892f25a9152193e66e06b0b3",
+      "width": 512,
+      "height": 512
+    },
+    "icon.ico": {
+      "sha256": "b83b9623a78e686a815015b434184d0d9a66fd2fc350eb853f3d6517592c072c",
+      "frames": [
+        16,
+        24,
+        32,
+        48,
+        64,
+        256
+      ]
+    }
+  },
+  "windows": {
+    "headroom-desktop.exe": {
+      "metadata": {
+        "product": "PennyPinch",
+        "description": "PennyPinch",
+        "publisher": "PennyPinch"
+      },
+      "icon_frames": [
+        16,
+        24,
+        32,
+        48,
+        64,
+        256
+      ],
+      "bytes": 12524032,
+      "sha256": "fcc72f73bd558ad0bc0373f734b6e332ba537f8375cd8a7650897ed835578055"
+    },
+    "PennyPinch_0.1.0_x64-setup.exe": {
+      "metadata": {
+        "product": "PennyPinch",
+        "description": "PennyPinch",
+        "publisher": ""
+      },
+      "icon_frames": [
+        16,
+        24,
+        32,
+        48,
+        64,
+        256
+      ],
+      "bytes": 125398613,
+      "sha256": "f16e4c9571dd09a820a85d3a9f21146986d9a00807ef835c5611b4fe8f241b15"
+    }
+  },
+  "build": {
+    "matching_input_count": 345,
+    "input_map_sha256": "5e141c561f8e629d9a6998417fcc42f0097b642f184e6b6e4bb6b39affedb3cb",
+    "toolchain": {
+      "pnpm": "11.25.0",
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "node": "v25.2.1",
+      "python": "3.14.0",
+      "windows": "10.0.19045",
+      "architecture": "AMD64"
+    },
+    "release_lto": false,
+    "release_codegen_units": 16,
+    "frontend_build": true,
+    "release_executable_verification": true,
+    "resources": 19484
+  },
+  "checks": {
+    "frontend_pass": 227,
+    "rust_pass": 480,
+    "rust_opt_in_ignored": 24,
+    "accessibility_audits": 60,
+    "accessibility_violations": 0,
+    "original_artwork_decoded_in_about": true,
+    "generated_icon_decoded_in_navigation": true,
+    "before_report_prefix_test_failed": true,
+    "after_report_prefix_test_passed": true
+  },
+  "bundle_identifier": "dev.headroom.desktop",
+  "preview": "work/proofs/branding/pennypinch-logo/preview/PennyPinch_0.1.0_x64-setup.exe",
+  "limits": "Unsigned development package on this Windows 10 host. Installed upgrade, native macOS/Linux and Windows 11 are outside this check."
+}

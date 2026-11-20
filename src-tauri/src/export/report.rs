@@ -371,7 +371,7 @@ impl Job {
         }
         Ok(Artifact {
             suggested_name: format!(
-                "headroom-{prefix}-{}.{}",
+                "pennypinch-{prefix}-{}.{}",
                 Utc::now().format("%Y-%m-%dT%H-%M-%SZ"),
                 extension
             ),

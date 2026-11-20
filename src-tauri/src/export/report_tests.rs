@@ -323,6 +323,6 @@ fn invalid_or_expired_statistics_never_fall_back_and_diagnostics_need_no_metrics
     assert!(diagnostic["statistics"].is_null());
     assert!(diagnostic["runtime"]["engine_status"].is_null());
     assert!(diagnostic.get("path").is_none());
-    assert!(value.suggested_name.starts_with("headroom-tani-"));
+    assert!(value.suggested_name.starts_with("pennypinch-tani-"));
     assert!(serde_json::from_value::<Request>(serde_json::json!({"request_id":SNAPSHOT,"kind":"statistics_json","language":"tr","snapshot_request_id":SNAPSHOT,"path":"C:/unsafe"})).is_err());
 }

@@ -1,5 +1,9 @@
 # PennyPinch implementation status
 
+## 20 November — PennyPinch artwork and display identity
+
+The user supplied the artwork. The lead agent integrated it in the App, About screen, README and native Windows icons, and aligned product wording and export filenames. The original PNG was preserved byte-for-byte. Windows 10 built the actual unsigned x64 NSIS package. The application and setup executable contain the matching icon and PennyPinch metadata. 227 frontend tests, 480 Rust tests and 60 focused browser accessibility audits passed. H042-l is complete. H042-k2a translated the Windows packaging and update trust decisions. The overall English migration and production update delivery remain open. [Logo evidence](proofs/pennypinch-logo.json) · [Task list](../TASKS.md)
+
 ## 20 November — English release documentation and GitHub account
 
 The repository owner is now yukselbuilds. SSH access at the new URL resolved to the same main commit, and the local origin now uses that URL. The public update documentation uses the planned HTTPS base at `https://yukselbuilds.github.io/headroom-desktop/updates/`. The repository is private and Pages is pending.
