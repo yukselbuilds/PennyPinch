@@ -1,0 +1,127 @@
+{
+  "task": "H042-k3w",
+  "status": "pass",
+  "base_commit": "7e64356429564fa5f87883d258d95a1ca0c283db",
+  "verified": {
+    "translated_records": 2,
+    "legacy_heading_aliases": 2,
+    "incoming_links": 6,
+    "incoming_heading_links": 0,
+    "outgoing_links": 4,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/reviews/H010-c.md": {
+      "original_sha256": "b4d89b5c4e5aef708249b71ed3012ae7cf8751223f236c17add970925700eace",
+      "draft_sha256": "b3139044eee4d2d82d84eb64bc75cf575e96a9fc05c7e1ac0d585a8763b314cf",
+      "candidate_sha256": "ca8db312df40ee09f9ad8660002a4c8ffdab18cc0e57757d52833be9900ef7fc"
+    },
+    "docs/reviews/H010-d.md": {
+      "original_sha256": "e51aa74c38a99275e42168c939ac8eb07ed04c4c728817db4bcccffe5eb1c782",
+      "draft_sha256": "eb2949707bc935cc751806bcf1557e063be36bff7ca4d12abee1774c7f128470",
+      "candidate_sha256": "3ff9e0d76595dcbbee913d85b99e3434621c95dbaddbe90715b272cece111a89"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "e4dbca3a4d2bc62252fe84f88ffe39b484803002d60061a71366cdbfe327f36d",
+    "docs/IMPLEMENTATION_STATUS.md": "7a58e12bd076ed21e126640623be6825eaa8f0bcd04000544911e7cbc0f15fc3",
+    "docs/proofs/opencode-subagents.md": "01dba1e7c1c26d0513bbac2d1d118b1c8325e11235b10924611a495e44450cfd",
+    "docs/proofs/opencode-tui.md": "d8f0c61094b5a0e2e5b7fbeed02c7623d5ee42d350a67e86422f6f0d2abee49d",
+    "docs/proofs/opencode-subagents.json": "7d8cafb4ee632906d5b269190b8bf2221e97f2ebdc48bc63d7c4d3a1eca7a92e",
+    "docs/proofs/opencode-tui.json": "896d561aae8ab6bf3772a293fdda090f2299b2310cc0fd30582c64619333784d"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H010-c.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H010-d.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "historical_evidence": {
+    "docs/proofs/opencode-subagents.json": {
+      "sha256": "7d8cafb4ee632906d5b269190b8bf2221e97f2ebdc48bc63d7c4d3a1eca7a92e"
+    },
+    "docs/proofs/opencode-subagents.md": {
+      "sha256": "01dba1e7c1c26d0513bbac2d1d118b1c8325e11235b10924611a495e44450cfd"
+    },
+    "docs/proofs/opencode-tui.json": {
+      "sha256": "896d561aae8ab6bf3772a293fdda090f2299b2310cc0fd30582c64619333784d"
+    },
+    "docs/proofs/opencode-tui.md": {
+      "sha256": "d8f0c61094b5a0e2e5b7fbeed02c7623d5ee42d350a67e86422f6f0d2abee49d"
+    }
+  },
+  "verifier_sha256": "ccd5d11c255fae579f9f935b293a4953355734f579abe6b991b5a327e89573db",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "ccdc4af11197a38038147368a73adc5d05a628c36b139ac64e660dc8ee943d7d",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 62,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 51
+      },
+      "flagged_prose_lines": 1656,
+      "approximate_source_words": 62284,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 60,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 49
+      },
+      "flagged_prose_lines": 1634,
+      "approximate_source_words": 61486,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 160,
+      "remaining_documents": 62,
+      "ready_percent": 72.1,
+      "remaining_percent": 27.9
+    },
+    "progress_after": {
+      "ready_documents": 162,
+      "remaining_documents": 60,
+      "ready_percent": 73.0,
+      "remaining_percent": 27.0
+    },
+    "other_documents": [
+      "bench/context_tools/README.md",
+      "docs/IMPLEMENTATION_STATUS.md",
+      "docs/design-config-actions.md",
+      "docs/testing-codex-manually.md"
+    ],
+    "after_input_sha256": "ecf4a03365af035a7bb5fab30faa698a0c7a042f20892db9d74a8f9dd4cd970e"
+  },
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted H010-c. The lead agent drafted H010-d and checked both against the original text and evidence.",
+  "programmatic_references": "The tracked code and configuration search found no direct reference to either review.",
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}
