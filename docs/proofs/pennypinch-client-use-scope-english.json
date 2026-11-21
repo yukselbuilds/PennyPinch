@@ -1,0 +1,101 @@
+{
+  "task": "H042-k3o",
+  "status": "pass",
+  "base_commit": "0d355296798f4521f779e2676af0827d6a3c6be5",
+  "verified": {
+    "translated_records": 4,
+    "legacy_heading_aliases": 7,
+    "incoming_heading_links": 0,
+    "outgoing_links": 11,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/proofs/live-use-2026-11-02.md": {
+      "original_sha256": "d4adf60955faadbe15be9952973e7b075c042b9189c611378a1905842fd416a9",
+      "draft_sha256": "dbb89b11ff85273c4bb159d0b8487985e01aaf131ac1141ceebf260e41c0c4ff",
+      "candidate_sha256": "a75a85117dff279a2fc711a18046f859a826692badd2fd78b9d4dbcb9a43f2ff"
+    },
+    "docs/proofs/macos-desktop.md": {
+      "original_sha256": "89e6d48f3b34d12d71dcb7da635e73f5ff98d301228aaef01c6fc0bdd8614871",
+      "draft_sha256": "a47d2b58f4ae5dfd6b5d4be93fdf0cbba1d5633ef2c53cbf2d19b300703f5b12",
+      "candidate_sha256": "e6278f4ed7c81edf096c490e1ddba453f953e2c3b81b924891c7c9d379f902b2"
+    },
+    "docs/proofs/model-agent-scope.md": {
+      "original_sha256": "19f75e8d8b9dfd8381b6f522d0b4d6886967fb86b2f143ed764139bb98f0fc51",
+      "draft_sha256": "f191cfef881efecab7ec71fc3c74a8bc0ffa4c56a19322d10d07a12df15fc84e",
+      "candidate_sha256": "3e49537dc4c4a46fb5dae79a077215c13e92f668d45f11738d36797738c940d2"
+    },
+    "docs/proofs/quick-local-check-2026-11-03.md": {
+      "original_sha256": "50839deb4e03cddc76b20b12fd85fcc662791925ef15cecf08834852390b21dd",
+      "draft_sha256": "29ba87839f24713959f50728ee891d0aef0c7cdfce86002ebb934dede07de922",
+      "candidate_sha256": "db9e73ac05d3bbc676d85f9fd83ff50050ffc49bf8e047ec04d10bc210441d28"
+    }
+  },
+  "references_sha256": {
+    "docs/proofs/macos-desktop-traffic.json": "58df9fb04bc2272b27dc3e6c762ab74f8c0cd4a4d047f39b5b9d8320d1bcb130",
+    "docs/validation/macos.md": "323e552cb645c0d7ef2860c12a814c842d06213165354cdb9a86b5592f4ed227",
+    "docs/proofs/macos-desktop-connection.json": "a9527319b07a0c16323ccb32fcb1f5e28ff4df2e6a09ae8e4471e75fad48d9c9",
+    "docs/proofs/macos-desktop-archive.json": "3dc549bd819d491d7382545898a98e8bbfdb8ea24e4224f7633d244db0c57477",
+    "docs/proofs/metrics-normalization.md": "4ca2045b9fd1c4909e79bb839eb741ee02388ef72b0dfb3bf826f4ce2b1fff88",
+    "TASKS.md": "e1bd9dcb7fc150efeeff4aa9f91f15e7b881e0378e3807c4b92ea066180fc10b"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/live-use-2026-11-02.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/macos-desktop.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/model-agent-scope.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/quick-local-check-2026-11-03.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the two historical client-use reports. The lead agent drafted the model and subagent scope and macOS Desktop reports and checked all four against the source.",
+  "compatibility_evidence_test": {
+    "command": [
+      "cargo.exe",
+      "test",
+      "--offline",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--bin",
+      "headroom-desktop",
+      "compatibility::catalog::tests::compatibility_catalog_embedded_records_have_scoped_existing_evidence",
+      "--",
+      "--exact",
+      "--test-threads=1"
+    ],
+    "result": "1 passed",
+    "evidence_references": 22,
+    "checked_files": 168,
+    "before_sha256": "7d32999ffaeed89819a230c5c7412f1b8ef74863bf9ee56839bfaad3def6b441",
+    "after_sha256": "7d32999ffaeed89819a230c5c7412f1b8ef74863bf9ee56839bfaad3def6b441",
+    "toolchain": {
+      "cargo.exe": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "rustc.exe": "rustc 1.92.0 (ded5c06cf 2025-12-08)"
+    },
+    "environment_paths": {
+      "CARGO_HOME": "work/caches/cargo-home",
+      "CARGO_TARGET_DIR": "work/caches/cargo-target"
+    }
+  },
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}
