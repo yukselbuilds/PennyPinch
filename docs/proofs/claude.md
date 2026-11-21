@@ -1,20 +1,28 @@
 # Claude Code local transport proof (H009-a)
 
-15 Kasım 2026 güncel ana kabulü: [H009 tamamlandı, yerel Windows 10 teknik kapsamı](claude-acceptance.md). Aşağıdaki H009-a ve H009-b sonuçları kendi tarihsel profilleriyle korunur. Canlı hesap/sağlayıcı, alt ajan ve eklenti desteği eklenmedi.
+Current main acceptance as of November 15, 2026: [H009 complete, local Windows 10 technical scope](claude-acceptance.md). Keep the H009-a and H009-b results below under their historical profiles. This does not add live account/provider, subagent or plugin support.
 
-**Result:** PASS for the local, tools-disabled API-fixture stream path on the Windows 10 22H2 x64 host (10.0.19045). This is a synthetic transport proof; it does not establish live Anthropic/model behavior or complete H009.
+**PASS** for the local API-fixture stream with tools off on the Windows 10 22H2 x64 host (10.0.19045). The test uses synthetic transport. Live Anthropic and model behavior remain outside this result. The main H009 acceptance remained open at this checkpoint.
 
-14 Kasım takip: Gerçek CLI ile açık tek MCP aracı ve CCR devam döngüsü ayrıca kabul edildi; aşağıdaki H009-a tarihsel tools-kapalı kapsamı değişmez. Yeni H009-b kapsamı belgenin sonundadır; canlı Anthropic/OAuth ve ana H009 açık kalır.
+November 14 update: Acceptance also covered one enabled MCP tool and the CCR continuation loop with the real CLI. The historical tools-disabled scope of H009-a below remains unchanged. The new H009-b scope is at the end of this document. Live Anthropic/OAuth and main H009 remain open.
 
 ## What was exercised
 
-Claude Code CLI 2.1.158 was started with a disposable profile and a synthetic API-key sentinel. Its `ANTHROPIC_BASE_URL` targeted the pinned Headroom 0.41.0 runtime on loopback; the engine forwarded to a loopback-only Anthropic SSE fixture. The packaged H006 runtime helper (`runtime/headroom_runtime.py`) started and owned the engine listener. No user credentials, settings, sessions, client configuration, or persistent state were copied or changed.
+The test started Claude Code CLI 2.1.158 with a disposable profile and a synthetic API-key sentinel. Its `ANTHROPIC_BASE_URL` targeted the pinned Headroom 0.41.0 runtime on loopback. The engine forwarded traffic to a loopback-only Anthropic SSE fixture. The packaged H006 runtime helper (`runtime/headroom_runtime.py`) started and owned the engine listener. The test left user credentials, settings, sessions, client configuration, and persistent state untouched and made no copies of them.
 
-The fixture observed exactly one `/v1/messages` request with the selected fixture label `claude-opus-4-6`, `effort=high`, streaming enabled, zero tools, the sentinel credential, and an Anthropic version header. The model label is a test input and does not describe the user's model. The request's `thinking` object was present; this proof does not claim that its value was preserved.
+The fixture observed exactly one `/v1/messages` request. The request used the selected fixture label `claude-opus-4-6` and `effort=high`. It used streaming, zero tools, the sentinel credential, and an Anthropic version header. The model label identifies the test input. The request included a `thinking` object. The test verified the object's presence. Preservation of its value remained outside scope.
 
-The fixture sent a partial text delta containing the marker, then held the terminal SSE events until the CLI emitted that marker in a `stream_event`. Only then did it send `message_stop`. The CLI reported a successful final result, exited 0, and exposed terminal usage of 12 input and 4 output tokens. The usage parser prefers the direct `usage` totals when the duplicate `modelUsage` breakdown is also present; the focused tests cover that case, breakdown-only results, missing usage, and the partial-stream gate.
+The fixture sent a partial text delta with the marker. It held the terminal SSE events until the CLI emitted that marker in a `stream_event`. The fixture then sent `message_stop`.
 
-Effective engine settings were cache mode, coding profile, cache/optimization enabled, CCR TTL 7200 seconds, output shaper explicitly off, model router off, local telemetry on, and anonymous beacon off. The engine PID and loopback listener PID both were 10444 during this run. Cleanup stopped the CLI and fixture, removed the isolated run directory, and confirmed the owned engine port closed. Graceful shutdown was not established: the consoleless controller reported `controller-console-missing`, used the owned-process force fallback, and observed engine exit code 1. This does not establish Tauri GUI lifecycle behavior; that remains for H014.
+The CLI returned success and exited with code 0. It reported terminal usage of 12 input and 4 output tokens.
+
+The usage parser uses the direct `usage` totals when it also receives the duplicate `modelUsage` breakdown. The focused tests cover that case, breakdown-only results, missing usage, and the partial-stream gate.
+
+The engine used cache mode and the coding profile. It enabled cache optimization and used a CCR TTL of 7200 seconds. It disabled the output shaper and model router. It enabled local telemetry and disabled the anonymous beacon.
+
+The engine PID and loopback listener PID both were 10444. Cleanup stopped the CLI and fixture, removed the isolated run directory, and confirmed closure of the owned engine port.
+
+The consoleless controller reported `controller-console-missing`. It used the owned-process force fallback and observed engine exit code 1. Graceful shutdown and the Tauri GUI lifecycle remained unverified here. H014 tracks Tauri GUI lifecycle verification.
 
 ## Reproduction
 
@@ -53,44 +61,64 @@ Both commands passed for the fingerprinted candidate below. No raw CLI or failur
 | Pinned `headroom/agent_savings.py` | `3d2c7c7035ff0c4765c04b873d6a22a7f75c79627ba0bf76b47718fd10a46502` |
 | Pinned `headroom/cache/compression_store.py` | `1f269d508abe7590f0634654832bd6fd45786dc8f3e569d983966648c87b1a73` |
 
-The runtime manifest identifies `headroom-ai[proxy]==0.41.0`, CPython 3.13.13 x64, 102 locked packages, and the package/source fingerprints above. The runtime tree is 22,225 files / 523,394,231 uncompressed bytes; that is the existing packaged runtime size, not a separate Claude bundle-size measurement.
+The runtime manifest identifies `headroom-ai[proxy]==0.41.0`, CPython 3.13.13 x64, 102 locked packages, and the package and source fingerprints above. The existing runtime tree contains 22,225 files and uses 523,394,231 uncompressed bytes. A separate Claude bundle-size measurement remains outside this result.
 
 ## Boundaries
 
-This proves only the local synthetic Anthropic API-fixture path on the recorded Windows 10 host. It does not prove a live Anthropic request, inference from the selected fixture model label, preservation of the `thinking` value, user OAuth/auth compatibility, Claude Desktop, enabled tools, hooks, plugins, MCP, subagents, a clean machine, Windows 11, or Tauri's consoleless lifecycle. Tools were deliberately disabled; no paid provider call was made. The fixture and temporary state were local, while any unrelated engine asset egress is outside this proof.
+This result applies to the local synthetic Anthropic API-fixture path on the recorded Windows 10 host. Live Anthropic requests, model inference, preservation of the `thinking` value, and user OAuth or authentication compatibility remain outside the scope. Claude Desktop, enabled tools, hooks, plugins, MCP, and subagents remain outside the scope. A clean machine, Windows 11, and the Tauri consoleless lifecycle remain untested.
+
+The run disabled tools and made no paid provider calls. The fixture and temporary state were local. Unrelated engine asset egress remains outside the proof.
 
 Claude's gateway/base URL configuration is described in [Anthropic's LLM gateway documentation](https://docs.anthropic.com/en/docs/claude-code/llm-gateway). Nonessential traffic suppression is described in [Claude Code data usage documentation](https://code.claude.com/docs/en/data-usage).
 
-## H009-b — Gerçek CLI araç ve CCR döngüsü
+<a name="h009-b--gerçek-cli-araç-ve-ccr-döngüsü"></a>
 
-14 Kasım 2026. Windows 10 build 19045 x64'te Claude Code **2.1.158**, aynı ölçülmüş executable hash'i ve pinned Headroom **0.41.0** ile yerel dilim kabul edildi. Gerçek model/hesap kullanılmadı; upstream, protokolü uygulayan sentetik loopback fixture'dır. Model etiketi `claude-opus-4-6` ve `high` test girdisidir; ürün başka modele/efora geçmez veya destek kapsamını bu etikete bağlamaz.
+## H009-b — Real CLI tool and CCR loop
 
-Gerçek CLI, yerleşik araçlar kapalı ve yalnız `mcp__headroom_fixture__inspect_logs` izinli olacak şekilde izole profilde başlatıldı. Stdio MCP sunucusunun tek aracı sabit sentetik log veya kısa tanık döndürür. CLI çıktısının motora girmeden önceki ve upstream'e ulaştıktan sonraki temsilleri ayrı gözlenir; raw gövdeler rapora yazılmaz.
+November 14, 2026. The local slice passed on Windows 10 build 19045 x64 with Claude Code **2.1.158**, the same measured executable hash and pinned Headroom **0.41.0**. It used no real model or account. The upstream was a synthetic loopback fixture that implements the protocol. Model label `claude-opus-4-6` and `high` were test inputs. The product does not switch to another model/effort or tie support to this label.
 
-| Aşama | Beklenen ve gözlenen |
+The test started the real CLI in an isolated profile. It disabled built-in tools and allowed only `mcp__headroom_fixture__inspect_logs`. The stdio MCP server's only tool returns a fixed synthetic log or short witness. The test separately observes the CLI output before it enters the engine and its representation after it reaches upstream. It does not write raw bodies to the report.
+
+| Stage | Expected and observed |
 | --- | --- |
-| İlk client araç çağrısı | Fragment'lı SSE tool_use gerçek CLI'de aynı kimlik/argümanla MCP tools/call oldu. |
-| Özgün sonuç | CLI → test ingress → motor yolunda 120 satır / 14.999 bayt özgün log birebir aynıydı. |
-| Sıkıştırma | Aynı tool_result kimliğiyle upstream'e 103 bayt ve 24 haneli CCR marker ulaştı; retrieval araç tanımı vardı. |
-| Geri alma | Upstream'in tek headroom_retrieve çağrısını motor işledi. JSON hash/original_content zarfındaki özgün içerik SHA-256 ve bayt düzeyinde eşleşti. |
-| Devam | CCR'den sonra ikinci gerçek MCP çağrısı/tanığı ve beklenen final tamamlandı; CCR ayrı client aracı olarak sızmadı. |
-| Kapanış | CLI exit0/stderr0; motor graceful exit0, sahip port kapalı ve force fallback yok. |
+| First client tool call | Fragmented SSE tool_use became MCP tools/call in the real CLI with the same ID and arguments. |
+| Original result | The original log was byte-identical through the CLI → test ingress → engine path: 120 lines / 14,999 bytes. |
+| Compression | Upstream received 103 bytes and a 24-character CCR marker with the same tool_result ID. The retrieval tool definition was present. |
+| Retrieval | The engine processed one upstream headroom_retrieve call. Original content in the JSON hash/original_content envelope matched by SHA-256 and bytes. |
+| Continuation | After CCR, the second real MCP call/witness and expected final response completed. CCR did not leak as a separate client tool. |
+| Shutdown | CLI exit0/stderr0. Engine graceful exit0, owned port closed and no force fallback. |
 
-Toplam **3 native Messages isteği / 4 upstream Messages mesajı** vardır. Sırasıyla upstream stream değerleri `true, false, false, true`: CCR için motorun buffered ve server-side continuation yolu kullanıldı; native istemci üç istekte de streaming istedi. Model/efor/thinking ve sentetik auth her upstream aşamada korundu. Bu deney ilk token gecikmesini veya gerçek model yanıt kalitesini ölçmez. Tek bloktaki byte azalması, bütün istek/token/fatura kazancı değildir; retrieval özgün içeriği tekrar taşır.
+The run made **3 native Messages requests / 4 upstream Messages messages**. Upstream stream values were `true, false, false, true` in order. The engine used its buffered and server-side continuation path for CCR.
 
-**İstemci tarafında önemli sınır:** İlk 75KB log koşularında Claude CLI sonucu kendi izole profilinde tool-results dosyasına taşıdı. Sağlayıcıya giden kısa referans özgün log değildi; bu koşular başarısız olarak korundu. Pozitif fixture 120 satırla istemcinin dosyaya taşıma sınırının altında kaldı; CLI cap'ine override verilmedi. Bu nedenle native dosyaya taşınmış büyük çıktıya Headroom token tasarrufu atanmaz. Daha sonra bir koşu fixture'ın CCR JSON zarfını yanlış varsayması nedeniyle başarısızdı; pinned `ccr/response_handler.py` sözleşmesine göre düzeltildi.
+The native client requested streaming in all three requests. The test preserved model/effort/thinking and synthetic auth at every upstream stage. It did not measure first-token latency or real model response quality.
 
-Nihai native kayıt `work/proofs/claude-tools/runs/0c5e4fe1-4cad-4d58-b0b5-24d878e9bed6/result.json`; eski başarısızlar ve inceleme öncesi PASS ayrı korunur. Kaynak, CLI, Python, motor `.py` ve tokenizer cache dosyaları koşunun önce/sonrasında eşittir. Dört yeni odaklı normal/hata/sınır kontrolü geçti. Üretimde kullanılan kaynak/test/config ve Node/pnpm/Rust araçları değişmediği için mevcut 441 Rust, 221 Node, fmt ve frontend/embedded build kanıtı ilgili fingerprint'lerle yeniden kullanıldı; aynı testler sebepsiz tekrarlanmadı. [Programatik kabul](claude-tools.json), [inceleme](../reviews/H009-b.md).
+Byte reduction in one block is not a total request/token/billing saving. Retrieval sends the original content again.
 
-Motor coding/cache, CCR TTL7200, yerel ölçüm açık, beacon kapalı; router/output shaper/memory/learn kapalı profilindeydi. H041 fixture overlay'i yalnız yerel ML cache kullanımı için HF/transformers offline ekler; bu sentetik testte protected-tool listesi boştur. Yerleşik Read/Bash/Edit kapalıdır; bu dilim gerçek kaynak/sayısal Read korumasını yeniden doğrulamaz. Loopback observer bir test aracıdır; gerçek Tauri UI/Rust ingress veya canlı auth kabulü değildir. Proxy/offline ayarları kaydedilmiştir, packet capture yapılmamıştır.
+**Important client-side limit:** In the first 75KB log runs, Claude CLI moved the result to a tool-results file in its isolated profile. The short reference sent to the provider was not the original log. Keep these runs as failures.
+
+The passing fixture used 120 lines, below the client's file-move limit. The test did not override the CLI cap. Do not attribute Headroom token savings to large output that the client moved to a native file. A later run failed because the fixture assumed the wrong CCR JSON envelope.
+
+The test corrected it to match pinned `ccr/response_handler.py`.
+
+The final native record is `work/proofs/claude-tools/runs/0c5e4fe1-4cad-4d58-b0b5-24d878e9bed6/result.json`. Earlier failures and the pre-review PASS remain separate. Source, CLI, Python, engine `.py` and tokenizer-cache files matched before and after the run.
+
+Four new focused normal/error/boundary checks passed. Production source/test/config and Node/pnpm/Rust tools did not change. The team reused existing 441 Rust, 221 Node, fmt and frontend/embedded build evidence with matching fingerprints.
+
+It did not repeat the same tests without cause. [Programmatic acceptance](claude-tools.json), [review](../reviews/H009-b.md).
+
+The engine used the coding/cache profile, CCR TTL 7200, local measurement on and beacon off. Router/output shaper/memory/learn were off.
+
+The H041 fixture overlay enables HF/transformers offline only for local ML cache use. The protected-tool list was empty in this synthetic test. Built-in Read/Bash/Edit were off. This slice did not reverify real source/numeric Read protection.
+
+The loopback observer is a test tool. It is not real Tauri UI/Rust ingress or live auth acceptance. The test recorded proxy/offline settings. It did not capture packets.
 
 ### Tekrarlama
 
-Mevcut pinned motor/Python/cache ve hash'i eşleşen CLI gerekir. Başarılı sonucu yalnız ilgili girdi değiştiğinde yenile. Komutlar repo kökünde, kullanıcı profiline müdahale etmeden ayrı UUID test ortamı üretir:
+Use the current pinned engine/Python/cache and a CLI with a matching hash. Refresh passing results only when relevant inputs change. The commands create a separate UUID test environment from the repository root without changing the user profile:
 
 ```powershell
 & work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B -m unittest discover -s tests/fixtures/claude -p test_tool_fixture.py
 & work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B bench/claude/roundtrip.py --run --claude-exe %USERPROFILE%/.local/bin/claude.exe
 ```
 
-Son komut başka binary hash'ini çalıştırmaz. Native CLI caps/ayarları, kullanıcı auth'u ve başka projelerin oturumları değiştirilmez. Canlı Anthropic/OAuth, genel araç/hook/plugin, alt ajan, Desktop ve başka OS kanıtı açık kalır; ana H009 ve toplam 42/54 bu yerel kabulle kapanmaz. Katalogdaki eski tools-kapalı profil bu farklı MCP profilinin kabulüymüş gibi yükseltilmedi.
+The last command does not run a different binary hash. It does not change native CLI caps/settings, user auth or sessions in other projects. Evidence for live Anthropic/OAuth, general tools/hooks/plugins, subagents, Desktop and other operating systems remains open. Main H009 and total 42/54 do not close with this local acceptance. Do not upgrade the old tools-disabled catalog profile as if it accepted this different MCP profile.

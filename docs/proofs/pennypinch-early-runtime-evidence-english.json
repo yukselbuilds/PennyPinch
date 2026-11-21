@@ -1,0 +1,100 @@
+{
+  "task": "H042-k3d",
+  "status": "pass",
+  "base_commit": "931053199d975a875e7c500700b837b8773c4a41",
+  "verified": {
+    "translated_records": 4,
+    "existing_english_records": 3,
+    "legacy_heading_aliases": 8,
+    "incoming_heading_links": 10,
+    "outgoing_links": 41,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/proofs/claude.md": {
+      "original_sha256": "00d2fc3f2673e83e20d29cbceeb6c5fc3036e8a3e6dcd5f096fb78b05d250656",
+      "draft_sha256": "2d7ee4a8801e621279a001e57f6e36c1afe582590a76270837d4a5540dc64aa7",
+      "candidate_sha256": "065a14ac7bf24ca1a86c610846db2f25e0bdac56f38cda43ab98f7f57d61aa0d"
+    },
+    "docs/proofs/opencode.md": {
+      "original_sha256": "bc9e9273d9db8e95fc34b62449237812d5a55d7b520a0a5c47384ea995ca4d16",
+      "draft_sha256": "ae5867b1a8e8ea7a91f7ec98c0264d25118ec6054ed2d66d9d1e7d7e209eac45",
+      "candidate_sha256": "515f3d9e5a5a8004206fba93b71ecfdef2639f8cde58a638540080b25b664bf8"
+    },
+    "docs/proofs/pause.md": {
+      "original_sha256": "4cd8037991b38f0c906d37bb7b1c2a297fdb04ac3e2c3dc82ac8465a7a6f0e0b",
+      "draft_sha256": "c95ee22c46c343fae84787638d50f474d13d38a5728b1155812582cc669f1c88",
+      "candidate_sha256": "b579175035a56a5ebfaac8edcb6ef79aa53d2d7cd9d643d1bb709f882667e7fa"
+    },
+    "docs/proofs/windows-engine.md": {
+      "original_sha256": "0534ac74012dc573dc45a8f270d8b807d056b538e09246bd8a9df4dba132833b",
+      "draft_sha256": "59a3019688b833a840cc48eb84c95d252d67b0e733c298092ffee003fd5085d1",
+      "candidate_sha256": "154f8028558fe464beadb742f1cc5821da72091cf2b962468788ab68e27ae23d"
+    }
+  },
+  "existing_english_sha256": {
+    "docs/proofs/engine.md": "b74033005eb44685d515e4412e333a9933d8062c4a665c0fede7e2f12e49c2b0",
+    "docs/proofs/protocol.md": "2584c75849bc2a44bee10a1c1452e365a91d780fc6bbba459ecd7e1126b1d65d",
+    "docs/proofs/codex.md": "4a50da5f20664282bfcf8241752adde14bff00e337b1b07537ca536c8b53d114"
+  },
+  "references_sha256": {
+    "TASKS.md": "37153035dae23a4b380a1e895b7b14e9b3bfdb75e19d9937701d0fbc785df97a",
+    "docs/IMPLEMENTATION_STATUS.md": "52612732cad0a9e7ca8c69f5c1bacc2288a7f450a749ed98fff7f23de8e5bacd",
+    "docs/decisions/002-runtime.md": "a5934a6b27b608b6fd504d1e1a335e819abd3e72c43b89ca5a47dbb7fe1f67df",
+    "docs/proofs/claude-acceptance.md": "353f99fc3a17f41344b808ef8e5108e801f3271677a253ab67be4ca2a2a52d2d",
+    "docs/proofs/claude-tools.json": "d8d26d72ea8c6ca9cb04cb10651ce70a317b55a37218e740ed48781a9640838e",
+    "docs/reviews/H009-b.md": "19a97349982f7ecd30c4093ef749d338c1593eda16664eb9ba85ee7ba52f8446",
+    "docs/proofs/opencode-acceptance.md": "295f3fb4d1eaf72b6fb9a840ebbf6e6b2edd94263f4fd95a34658e8bfccd9d38",
+    "docs/proofs/opencode-tools.json": "2eab6e82ed19d3c9484c10f67dc97812ff5945f03b205664da45660208aae881",
+    "docs/reviews/H010-b.md": "757e17f2a96b459418f7bac38c3d79c72b109494c43b60388825f45dcdcdc360",
+    "docs/proofs/opencode-retrieval.md": "6655063340f96b8c8c4a767c377716158e54273b3aa544516199dbade189a37d",
+    "docs/proofs/opencode-retrieval.json": "67c32859614791ddb80100ac60e6b772387dc179980252d8a3ecb9dc9b773f73",
+    "docs/reviews/H010-b3.md": "a783fa350fa58deb8ab9ada77885e6271d8e3751fed7b3302040b40c00cd9702",
+    "docs/proofs/opencode-subagents.md": "cf3b520b7141dfb99bcea44af30bad66ccbd403d0998e71a49d4d422a4c4a26f",
+    "docs/proofs/opencode-subagents.json": "7d8cafb4ee632906d5b269190b8bf2221e97f2ebdc48bc63d7c4d3a1eca7a92e",
+    "docs/proofs/opencode-tui.md": "4f5143bce67585a63356bada165e40eb55d3de4b05f5b2be34701eed6acedb0a",
+    "docs/proofs/opencode-tui.json": "896d561aae8ab6bf3772a293fdda090f2299b2310cc0fd30582c64619333784d",
+    "docs/proofs/safe-pause.md": "2fdf5900b4354d185e10c7f9d6f507d97c775a7d13a077b0abb101f9a4f5f9f2",
+    "docs/proofs/protocol.md": "2584c75849bc2a44bee10a1c1452e365a91d780fc6bbba459ecd7e1126b1d65d",
+    "docs/proofs/windows-engine-crash.json": "b656dcce34dccd7c0097f9e067c1690021aa35f3fedbfd2d3f93df18cae148e8",
+    "docs/reviews/H006-b.md": "42f2868a5bcb35340dccb9d444f76fd00bb377daa9f222369c6656e78bf8ea06",
+    "docs/validation/windows-install.md": "9282ddb5d014c081ae81edd1529754c569da19f9b2e2adf09b103b223da63379",
+    "docs/proofs/windows-gui-crash.md": "4fb52b3f841e24ae8e7be89441e53386f080477a13c26539544f30ee7d38994e",
+    "docs/proofs/windows-gui-crash.json": "9a8fc9476212d33fdce4bff7b3bd85dd2571e9c3c3c96a4b36caf420ccb0e5a6",
+    "docs/reviews/H006-c.md": "bf3b2aad587315cd0998461164d605e53b65a931a7af7ff8f29b8d49b9e72c80",
+    "docs/proofs/windows-engine-startup-crash.json": "34f5bb21445d545121e4af66f95a5d54ec42501d2f11b8dbbc37c8bde8bdce03",
+    "docs/reviews/H006-d.md": "8bb99957096e972355b8083ecb221af6cc121b27ff5d567237de2b9d1d31cc8d",
+    "docs/proofs/windows-engine-clean-test-package.json": "6cdf6448c6dc5b798f16af968fead7f1210d12dc62f9d1f7075cc81e42791304"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/claude.md": {
+        "hard": 0,
+        "advisory": 4
+      },
+      "docs/proofs/opencode.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/pause.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/windows-engine.md": {
+        "hard": 0,
+        "advisory": 7
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted Windows engine and Claude Code. The lead agent drafted OpenCode and pause, checked the related English records, and reviewed the final documents.",
+  "product_tests": "not_run_documentation_only"
+}

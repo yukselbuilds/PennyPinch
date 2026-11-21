@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 21 November — English macOS validation and reply style
+## 21 November — English early runtime and client evidence
 
-H042-k3c is complete. The English macOS validation report keeps the Apple Silicon, client, and test scope. It retains failure outcomes, measurements, and historical heading links. The project applies the same short-sentence rules to replies in Turkish. [Evidence](proofs/pennypinch-macos-validation-english.json) · [Task list](../TASKS.md)
+H042-k3d is complete. Four English records describe the early Windows engine, Claude Code, OpenCode, and pause evidence. The checks kept documented failures, measured results, and historical links. [Evidence](proofs/pennypinch-early-runtime-evidence-english.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue H042-k3 with early runtime and client evidence. Historical proof and review documents are still open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+Continue H042-k3 with product connection and actual client verification records. Historical proof and review documents are still open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
+## 21 November — English macOS validation and reply style
+
+H042-k3c is complete. The English macOS validation report keeps the Apple Silicon, client, and test scope. It retains failure outcomes, measurements, and historical heading links. The project applies the same short-sentence rules to replies in Turkish. [Evidence](proofs/pennypinch-macos-validation-english.json) · [Task list](../TASKS.md)
 
 ## 21 November — English optimization validation
 

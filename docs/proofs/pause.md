@@ -1,22 +1,26 @@
 # H011-a — Pause control source assessment
 
-**19 Ekim2026 tarihsel kaynak değerlendirmesi:** O tarihte `not_implemented/not_tested` idi.5 Kasım H011/H028 uygulama kontrolü ve yerel motor/native kabulü [güvenli duraklatma kanıtında](safe-pause.md) tamamlandı. Aşağıdaki metin ilk source assessment kaydıdır; güncel UI durumu veya canlı sağlayıcı desteği olarak okunmaz.
+**Historical source assessment, 19 October 2026.** Pause was `not_implemented/not_tested` at that checkpoint. On 5 November, the H011 and H028 implementation and local engine and native checks passed. See the [safe pause evidence](safe-pause.md). This record describes the first source assessment. Current UI and live provider support have separate evidence.
 
 ## What the pinned source provides
 
-`CompressionDecision.decide()` checks the inbound `x-headroom-bypass: true` or `x-headroom-mode: passthrough` header before the configured optimization flag. Either header makes that request pass through without compression. This is a request-level client signal; it does not provide a control operation that stops future compression for every connected client, and it cannot change a request already being streamed.
+`CompressionDecision.decide()` checks the inbound `x-headroom-bypass: true` or `x-headroom-mode: passthrough` header before the configured optimization flag. Either header directs that request to passthrough. The signal applies to one request. App-wide control for future requests needs a separate operation. The signal leaves an active stream on its existing path.
 
-The proxy also has a `config.optimize=False` kill switch. The CLI's `--no-optimize` and startup environment feed that configuration. However, the process's `/admin/runtime-env` endpoint only accepts names from the live runtime-knob registry. That registry currently contains output-shaper, verbosity, and Read-threshold controls; it does not contain `HEADROOM_OPTIMIZE`. Unknown keys are ignored. `/settings/apply` persists settings and restarts the proxy (or returns a manual/restart action for the deployment), so it is not an in-place pause operation.
+The proxy uses `config.optimize=False` to turn optimization off. The CLI's `--no-optimize` and startup environment feed that config. The process's `/admin/runtime-env` endpoint accepts only names in the live runtime setting registry. The registry contains output shaper, verbosity, and Read-threshold controls. `HEADROOM_OPTIMIZE` is absent. The endpoint ignores unknown keys.
 
-None of these source paths proves the product pause contract: finish current streams, prevent new compression decisions after acknowledgement, preserve earlier compressed-prefix bytes, retain the CCR store, and allow the original content to remain retrievable. H007 proves a separate local CCR retrieval path; it is not evidence that pausing preserves an active stream, prefix, or store.
+`/settings/apply` saves settings and restarts the proxy or returns a manual restart action for that deployment. An in-place pause needs its own operation.
+
+The product pause contract still needs evidence. Finish active streams. Stop new compression decisions after acknowledgement. Preserve earlier compressed-prefix bytes. Keep the CCR store and access to original content. H007 proves local CCR retrieval. Active streams, prefix preservation, and store access during pause require their own checks.
 
 ## Decision and next proof
 
-No pause or resume UI action may return a successful `paused` / `enabled` result on this evidence. The future control layer must be application-owned and generation-bound. H011/H028 should verify, through the actual client-to-proxy path, that pause acknowledgement follows the defined in-flight stream policy, later requests take the intended passthrough path, the pre-pause prefix remains byte-stable, and pre-existing CCR content remains retrievable. Resume must affect only subsequent requests and retain the selected model, reasoning, authentication route, and agent scope.
+Return a successful `paused` or `enabled` result only after verification of the pause contract. The control must belong to the app and bind to the engine generation. H011 and H028 must check the actual client-to-proxy path.
+
+Check acknowledgement against the policy for active streams. Check the later passthrough path. Check byte equality of the earlier prefix and retrieval of existing CCR content. Resume applies only to subsequent requests. It preserves the selected model, reasoning, auth route, and agent scope.
 
 ## Pinned source fingerprints
 
-Read-only source inspection on 2026-10-19 used the H006 packaged runtime copy, not a system Python install. No H005-H010 proof was rerun.
+On 2026-10-19, the read-only source review used the H006 packaged runtime copy. The assessment did not rerun H005-H010 proofs.
 
 | Source | SHA-256 |
 | --- | --- |
@@ -25,4 +29,4 @@ Read-only source inspection on 2026-10-19 used the H006 packaged runtime copy, n
 | `headroom/proxy/runtime_env.py` | `38454fa8331c81158fa7c8e34ccadc0ea0499980ab0d37e6eab44d4d98e95392` |
 | `headroom/proxy/server.py` | `e80fdf59cdede96bfd86541ec22ee4aa98f5d7a3cea8b34e316cd0628c01f8d2` |
 
-CCR engine retrieval evidence remains in [H007](protocol.md); engine ownership and GUI-like helper lifecycle remain in [H006-a](windows-engine.md). Neither closes the pause gap.
+[H007](protocol.md) records engine CCR retrieval. [H006-a](windows-engine.md) records engine ownership and helper lifecycle with a GUI-like owner. Pause requires separate evidence.

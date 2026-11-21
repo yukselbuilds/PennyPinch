@@ -1,43 +1,47 @@
 # H010-a — OpenCode V1 local fixture transport
 
-15 Kasım 2026. Ana H010'un güncel kabulü ve destek sınırları [kapanış kaydında](opencode-acceptance.md). Aşağıdaki H010-a/b notları kendi tarihsel kapsamını korur.
+15 November 2026. The [closeout record](opencode-acceptance.md) gives the current H010 acceptance and support limits at this checkpoint. The notes for H010-a/b below describe their historical scope.
 
-Status: **local proof PASS** on the attached Windows 10 host, 2026-10-19. This is one tools-disabled OpenCode CLI request through the pinned Headroom proxy to a local synthetic upstream. It is not a full H010 compatibility result.
+The attached Windows 10 host passed the **local proof** on 2026-10-19. One OpenCode CLI request with tools off passed through the pinned Headroom proxy to a synthetic loopback provider. H010 compatibility needs separate evidence.
 
-14 Kasım takip: Gerçek CLI araç/CCR testleri, ek yerel MCP köprüsü tanımlanmış izole profilde iki protokolde geçti. Endpoint-only varsayılan profillerde otomatik geri alma geçmedi. Aşağıdaki H010-a tarihsel tools-kapalı kapsamı değişmez; yeni koşullu teknik kanıt ve açık ürün işi belgenin sonundadır.
+14 November follow-up. Actual CLI tool and CCR tests passed on two protocols in an isolated profile with a local MCP bridge. Automatic retrieval failed in the default endpoint-only profiles. The H010-a record below covers the earlier tools-off test. Later conditional evidence and open product work appear at the end.
 
 ## Observed behavior
 
-The pinned OpenCode V1 CLI 1.19.3 sent one streamed `POST /v1/chat/completions` through Headroom 0.41.0 to the loopback fixture. The fixture saw model `headroom-opencode-fixture`, `stream=true`, the per-process fake API sentinel, and zero tools. It returned five OpenAI-compatible SSE frames: assistant role, text, finish reason, usage, and `[DONE]`. The CLI emitted `step_start`, a completed `text` part containing the fixture marker, and `step_finish`; the CLI reported 12 input and 4 output tokens and exited 0. The fixture recorded one total request and one chat-completion request.
+The pinned OpenCode V1 CLI 1.19.3 sent one streamed `POST /v1/chat/completions` through Headroom 0.41.0 to the loopback fixture. The fixture saw model `headroom-opencode-fixture`, `stream=true`, the process-only synthetic API sentinel, and zero tools. It returned five OpenAI-compatible SSE frames for assistant role, text, finish reason, usage, and `[DONE]`. The CLI emitted `step_start`, a completed `text` part with the fixture marker, and `step_finish`. It reported 12 input and 4 output tokens and exited with code 0. The fixture recorded one total request and one chat completion request.
 
-This does not establish token-by-token latency or that CLI text was visible before the upstream terminal frame. The pinned [V1 `run.ts` output path](https://github.com/anomalyco/opencode/blob/v1.19.3/packages/opencode/src/cli/cmd/run.ts#L710) publishes a JSON `text` event after the text part has ended, so the test asserts the completed text marker and terminal usage only.
+Token-by-token latency and visible text before the upstream terminal frame remain unmeasured. The pinned [V1 `run.ts` output path](https://github.com/anomalyco/opencode/blob/v1.19.3/packages/opencode/src/cli/cmd/run.ts#L710) publishes a JSON `text` event after the part ends. The test checks the completed text marker and terminal usage.
 
-The test used an inline, process-only V1 config: only the `headroom-fixture` provider was enabled; external plugins and MCP were empty; built-in tools were disabled and wildcard permission denied; `--pure` was passed. Its API key was a synthetic sentinel. No real model, provider credential, OAuth session, desktop/TUI session, or user configuration participated. No reasoning variant was selected or claimed. The V1 config and custom provider shape follow the official [configuration](https://opencode.ai/docs/config/), [provider](https://opencode.ai/docs/providers/), and [tool](https://opencode.ai/docs/tools/) documentation; V2 behavior is not covered.
+The run used inline V1 config for its process only. It enabled only the `headroom-fixture` provider. External plugins and MCP were empty. The run disabled built-in tools and denied wildcard permissions. It passed `--pure` and used a synthetic API sentinel.
 
-Headroom readiness was `0.41.0`, and its PID matched the loopback listener owner. `/health` reported the fixture as the OpenAI upstream, coding savings profile, cache mode, cache and optimize enabled, and effective `HEADROOM_OUTPUT_SHAPER=0`. `/v1/retrieve/stats` reported nested `store.default_ttl_seconds=7200`. The child engine received `HEADROOM_MODEL_ROUTER_ENABLED=0`, `HEADROOM_TELEMETRY=on`, and `HEADROOM_BEACON=off`; these three values are recorded as process environment settings, not as separately introspected health fields. The upstream readiness probe was disabled for this fixture run so the engine made no external readiness request.
+The scope excludes real models, provider credentials, OAuth sessions, desktop and TUI sessions, and user config. The test selected no reasoning variant and makes no claim about one. The V1 config and custom provider follow the official [configuration](https://opencode.ai/docs/config/), [provider](https://opencode.ai/docs/providers/), and [tool](https://opencode.ai/docs/tools/) documentation. V2 requires separate evidence.
 
-The engine's normal control path could not use Ctrl+Break from this proof runner (`controller-console-missing`). The owned engine was terminated through the H006 process handle; exit code was 1, the owned port closed, and the new temporary run root was removed. This is a force-fallback cleanup result, not a graceful-shutdown pass. The CLI itself completed normally with exit 0.
+Headroom reported ready at `0.41.0`. Its PID matched the loopback listener owner. `/health` showed the fixture as the OpenAI upstream, the coding profile, and cache mode. It showed cache and optimization on and effective `HEADROOM_OUTPUT_SHAPER=0`. `/v1/retrieve/stats` reported nested `store.default_ttl_seconds=7200`.
+
+The child engine received `HEADROOM_MODEL_ROUTER_ENABLED=0`, `HEADROOM_TELEMETRY=on`, and `HEADROOM_BEACON=off`. The proof records these three values as process environment settings. It did not inspect them through health fields. The run disabled the upstream readiness probe and made no external readiness request.
+
+The runner could not send Ctrl+Break through the normal control path (`controller-console-missing`). The H006 process handle terminated the owned engine with exit code 1. The owned port closed, and cleanup removed the new temporary run root. This verifies forced cleanup. Graceful engine shutdown needs separate evidence. The CLI completed normally with exit code 0.
 
 ## Reproduction
 
-Run these focused checks from `D:\Projeler\Headroom` in PowerShell:
+Run these focused checks in PowerShell from `D:\Projeler\Headroom`.
 
 ```powershell
 & work\proofs\packaging\artifacts\headroom-engine\runtime\python.exe -I -m unittest discover -s tests\fixtures\opencode -p test_opencode_proof_helpers.py -v
 & work\proofs\packaging\artifacts\headroom-engine\runtime\python.exe -I work\proofs\opencode\run_opencode_proof.py
 ```
 
-The test command reports four tests `OK`. The proof runner verifies the pinned archive and executable hashes before launch, creates a fresh UUID state/workspace/config tree with spaces in the path, captures bounded metadata only, and removes only that run's resolved child directory after owned processes and ports are closed. No raw CLI or engine failure log is persisted. The H010 run root count after the successful run was zero.
+The test command reports four tests `OK`. Before launch, the proof runner checks the pinned archive and executable hashes. It creates a fresh UUID state, workspace, and config tree with spaces in the path. It captures only bounded metadata. After owned processes and ports close, it removes only the resolved child directory for that run. The record excludes raw CLI or engine failure logs. After the successful run, the H010 run root count was zero.
 
-The child processes receive a scrubbed environment. OpenCode uses only the isolated HOME, XDG, config, temp, and workspace directories; its PATH is limited to the pinned CLI directory and Windows `System32`. `OPENAI_API_KEY` contains only the synthetic sentinel. Headroom binds `127.0.0.1` on a dynamic port and targets the local fixture. Local telemetry was explicitly configured on and anonymous beacon shipping off.
+The child processes receive only the allowed environment values. OpenCode uses isolated HOME, XDG, config, temp, and workspace directories. PATH contains only the pinned CLI directory and Windows `System32`. `OPENAI_API_KEY` contains only the synthetic sentinel. Headroom binds a dynamic port at `127.0.0.1` and targets the local fixture. The run enabled local telemetry and disabled the anonymous beacon.
 
 ## Fingerprints
 
-Host: Microsoft Windows 10 Pro 22H2, 10.0.19045, x64. Windows 11, a clean machine, and Tauri process wiring were not tested.
+The host ran Microsoft Windows 10 Pro 22H2, 10.0.19045, x64. Windows 11, clean machines, and Tauri process wiring need separate tests.
 
-Pinned OpenCode asset: baseline ZIP, 62,204,138 bytes, SHA-256 `0d59113484bfe8d6dc146fc981f5c33faa8318303c183711b7a9387060b289e8`; extracted executable reports version `1.19.3`, SHA-256 `cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375`. The runner checks both hashes before execution.
+The pinned OpenCode baseline ZIP has 62,204,138 bytes and SHA-256 `0d59113484bfe8d6dc146fc981f5c33faa8318303c183711b7a9387060b289e8`. The extracted executable reports version `1.19.3` and SHA-256 `cab0c9a8480f71fbb7cbc88ad91057712ecb500ab41fb9c01dd586cb9d8ea375`. The runner checks both hashes before execution.
 
-Pinned engine: `headroom-ai[proxy]==0.41.0`, CPython 3.13.13 x64. H006 packaged helper and runtime manifest hashes are checked before launch. The command fingerprint is the runner SHA-256; the inline config schema/model/provider and child environment are defined in that same runner. The selected fixture model ID is a test label, not a claim about an actual provider model.
+The engine pin is `headroom-ai[proxy]==0.41.0` with CPython 3.13.13 x64. The runner checks the H006 packaged helper and runtime manifest hashes before launch. Its SHA-256 identifies the command. The runner defines the inline config schema, model, provider, and child environment. The fixture model ID labels a test. It provides no evidence for an actual provider model.
 
 | Input | SHA-256 |
 | --- | --- |
@@ -55,37 +59,49 @@ Pinned engine: `headroom-ai[proxy]==0.41.0`, CPython 3.13.13 x64. H006 packaged 
 
 ## Limits
 
-This slice covers the V1 CLI's ordinary tools-off API transport with a synthetic OpenAI-compatible backend. It does not cover real credentials or inference, ChatGPT auth, tool execution, agents/MCP, TUI/desktop, V2 config, first-token streaming, graceful engine shutdown from the GUI, Windows 11, or clean-machine packaging. H010 remains open for those client paths and product integration.
+This slice covers ordinary V1 CLI transport with tools off and a synthetic OpenAI-compatible backend. Real credentials and inference, ChatGPT auth, tool execution, agents and MCP, TUI and Desktop, and V2 config require separate evidence. First-token streaming, graceful engine shutdown from the GUI, Windows 11, and clean-machine packaging also need evidence. H010 remains open for these client paths and product integration.
 
-## H010-b — Araç ve CCR yolları
+<a name="h010-b--araç-ve-ccr-yolları"></a>
 
-14 Kasım 2026. Windows 10 build 19045 x64, aynı pinned OpenCode 1.19.3 binary ve Headroom 0.41.0 ile iki protokol ayrı sınandı. **Kabul koşulludur:** Pozitif koşularda ayrı test profiline dar yerel retrieval MCP köprüsü açıkça eklendi. Mevcut Headroom Bağlan eylemi yalnız endpoint ayarını yönetiyor; bu köprüyü ürün olarak kurmuş veya varsayılan araç/CCR kabulünü geçmiş sayılmaz. Ana H010/42–54 açık kalır.
+## H010-b — Tool and CCR paths
 
-İlk endpoint-only Chat `9519a08f...` ve Responses `f46496df...` koşularında gerçek veri aracı tamamlandı, özgün 14.999 bayt motora ulaştı ve sıkıştırma marker'ı oluştu; otomatik retrieval aracı bildirilmediği için iki koşu da başarısız kaldı. Pinned `proxy/handlers/openai.py::_should_inject_openai_chat_ccr_tool`, streaming Chat'te continuation olmadığından otomatik araç eklemeyi bilerek reddeder. Responses ise zaten bildirilmiş headroom_retrieve aracı varsa buffered server-side continuation kullanır. Bu farklı gereklilikler genel OpenCode uyumluluğuna yükseltilmez.
+14 November 2026. Windows 10 build 19045 x64 tested both protocols separately with pinned OpenCode 1.19.3 and Headroom 0.41.0. **Acceptance is conditional.** The positive runs added a narrow local retrieval MCP bridge to a separate test profile. At this checkpoint the Headroom Connect action managed only the endpoint. Product bridge setup and default tool and CCR acceptance needed separate evidence. Main H010 remained open at 42/54.
 
-Sonraki test konfigürasyonu, tek sabit log/tanık aracı ile yalnız hash alıp sahip engine'in loopback `/v1/retrieve` adresine erişen ikinci stdio MCP sunucusunu tanımlar. URL/path/shell veya auth kabul etmez. [Sabit OpenCode local MCP şeması](https://github.com/anomalyco/opencode/blob/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/core/src/v1/config/mcp.ts) ve [araç adlandırma kaynağı](https://github.com/anomalyco/opencode/blob/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/opencode/src/mcp/catalog.ts) test yapılandırmasının temelidir; kaynaklar `work/research/h010-mcp/manifest.json` içinde hash'leriyle sabittir. Gerçek çalışma kanıtı bunlardan ayrı aşağıdaki iki koşudur.
+The actual data tool completed in the initial endpoint-only Chat `9519a08f...` and Responses `f46496df...` runs. The engine received all 14,999 original bytes and created a compression marker. Both runs failed because the automatic retrieval tool was absent. In streaming Chat, pinned `proxy/handlers/openai.py::_should_inject_openai_chat_ccr_tool` rejects automatic tool insertion because there is no continuation. Responses uses buffered server-side continuation when the declared headroom_retrieve tool is present. These behavior checks apply to the tested OpenCode paths.
 
-| Koşul | Chat Completions | Responses |
+The later test config declares one fixed log and witness tool and a second stdio MCP server. That server takes only a hash and calls the owned engine's loopback `/v1/retrieve` route. It accepts no URL, path, shell command, or auth. The test config uses the [pinned local OpenCode MCP schema](https://github.com/anomalyco/opencode/blob/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/core/src/v1/config/mcp.ts) and the [tool naming source](https://github.com/anomalyco/opencode/blob/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/opencode/src/mcp/catalog.ts). The file `work/research/h010-mcp/manifest.json` pins the sources and their hashes. The two runs below supply actual behavior evidence.
+
+| Condition | Chat Completions | Responses |
 | --- | --- | --- |
-| Yapılandırılan selector / wire model | lab/slot / headroom-opencode-tool-fixture | openai/slot / gpt-4.1 |
+| Configured selector and wire model | lab/slot / headroom-opencode-tool-fixture | openai/slot / gpt-4.1 |
 | Provider SDK | @ai-sdk/openai-compatible | @ai-sdk/openai |
-| Retrieval bildirimi | Test profilinde açıkça tanımlı MCP köprüsü | Aynı açık test MCP bildirimi |
-| Geri alma işlemi | OpenCode gerçek MCP tools/call yapar | Motor server-side işler; retrieval MCP tools/call yapılmaz |
-| Native istek / upstream mesajı | 4 / 4 | 3 / 4 |
-| Native araç çağrıları | Veri, retrieval, tanık; hepsi completed | Veri ve tanık; ikisi completed |
-| Sonuç | Final/CLI exit0/stderr0 | Final/CLI exit0/stderr0 |
+| Retrieval declaration | Explicit MCP bridge in the test profile | Same explicit test MCP declaration |
+| Retrieval action | OpenCode makes an actual MCP tools/call | The engine handles retrieval server-side. No MCP tools/call runs. |
+| Native requests and upstream messages | 4 / 4 | 3 / 4 |
+| Native tool calls | Data, retrieval, and witness all complete | Data and witness both complete |
+| Result | Final reply, CLI exit 0, stderr 0 | Final reply, CLI exit 0, stderr 0 |
 
-İki kolda native istemci streaming ister; Responses kolundaki dört upstream mesajı motor tarafından `stream:false` ile buffer edilir. Chat upstream'i streaming kalır. Fragment'lı tool arguments, call_id ve nihai text gerçek SDK/CLI'den geçti. Native girişte 14.999 bayt özgün sonuç korunur; upstream'te 103 bayt olur. CCR JSON hash/original_content, girişte görülen wire string ve sentetik logla SHA/bayt düzeyinde aynıdır. Model selector/wire ayrımı korunur; reasoning alanı seçilmediği için herhangi bir reasoning özelliği desteği iddia edilmez. Model isimleri sentetik sağlayıcı test girdileridir; gerçek çıkarım veya ürün model allowlist'i değildir.
+The native client requests streaming in both arms. The engine buffers the four Responses upstream messages with `stream:false`. Chat upstream continues to stream. Fragmented tool arguments, call_id, and final text passed through the actual SDK and CLI.
 
-Nihai kayıtlar Responses `work/proofs/opencode-tools/runs/5f4cdcee-f73f-4533-9ddf-9ea19f94960a/result.json` ve Chat `.../732cb0fe-23a1-4d03-909b-da5e9c69cba3/result.json`. Beş odaklı test; yanlış call_id/marker/hash/içerik/model/reasoning ve Responses biçim dönüşümünü denetler. Üç ek sınır kontrolü geçersiz hash/araç/ek URL alanını ağa çıkmadan reddeder ve pinned Chat streaming policy'sinin değişmediğini doğrular. Kaynak/CLI/motor/tokenizer ve araç fingerprint'leri önce/sonra aynı. Her kolda motor graceful exit0, sahip port kapalı ve force fallback yoktur. [Programatik kabul](opencode-tools.json), [inceleme](../reviews/H010-b.md).
+Native ingress kept all 14,999 original bytes. The upstream block had 103 bytes. The CCR JSON hash and original_content matched the ingress wire string and synthetic log byte for byte and by SHA. The test kept model selector and wire model separate.
 
-H009-b'nin sabit MCP veri sunucusu/BoundedOutput ve H041'in controller/helper altyapısı değiştirilmeden yeniden kullanıldı. HF/transformers offline, cache/coding, CCR TTL7200, yerel ölçüm açık ve beacon/router/output-shaper/memory/learn kapalıdır. Sentetik testte protected-tools boş listesi kullanılır; bu dilim gerçek Read kaynağı/sayısal korumasını yeniden sınamaz. Proxy/offline ayarları kayıttır, packet capture yapılmadı. Kullanıcının auth/config'i, aktif sohbetleri ve model/efor/ajan sayısı değiştirilmedi; Actions/kurulum/yayın veya ücretli çağrı yoktur.
+Reasoning support is outside scope because the test selected no reasoning field. The model names are synthetic provider test inputs. Real inference and any product model allowlist require separate evidence.
 
-Ürün kaynakları ve eski kapıdaki 325 girdi/araçlar aynı olduğundan 441 Rust, 221 Node, fmt ve frontend/embedded build kanıtları ilgili kapsamda yeniden kullanıldı. Yalnız yeni benchmark/fixture doğrulandı. Tek blok byte azalması toplam token, cache indirimi, maliyet, TTFT veya model kalitesi kazanımı değildir; CCR özgün içeriği tekrar taşır. Her protokolde bir olumlu koşu genel kararlılık veya tüm sürüm/model/alt ajan desteği sayılmaz.
+The final Responses record is `work/proofs/opencode-tools/runs/5f4cdcee-f73f-4533-9ddf-9ea19f94960a/result.json`. The Chat record is `.../732cb0fe-23a1-4d03-909b-da5e9c69cba3/result.json`. Five focused tests check wrong call_id, marker, hash, content, model, and reasoning, plus Responses format conversion. Three boundary checks reject invalid hashes, tools, and extra URL fields without network calls. They confirm the pinned Chat streaming policy. Sources, CLI, engine, tokenizer, and tool fingerprints match before and after. Both engines exited gracefully with code 0 and closed the owned port without forced cleanup. [Programmatic acceptance](opencode-tools.json) · [Review](../reviews/H010-b.md).
 
-### Tekrarlama ve açık ürün işi
+The test reused the pinned H009-b MCP data server and BoundedOutput and the H041 controller and helper with matching inputs. It used HF and Transformers offline, the cache and coding profile, and CCR TTL 7200. Local measurements were on. Beacon, model router, output shaper, memory, and Learn were off.
 
-Pinned payload/cache ve proje içi 1.19.3 executable gerekir. Repo kökünde; yalnız ilgili fingerprint değiştiğinde başarılı kontroller yenilenir:
+The synthetic test used an empty protected-tools list. Actual Read source and numeric protection have separate evidence. The record contains proxy and offline settings. The run did not capture packets.
+
+It preserved user auth, config, active chats, model, effort, and agent count. No Actions run, install, release, or paid call took place.
+
+The product source and 325 prior gate inputs and tools matched. The run reused the applicable evidence from 441 Rust tests, 221 Node tests, formatting, and frontend and embedded builds. New checks covered the benchmark and fixture. The byte reduction describes one block. CCR sends the original content again. Total tokens, cache discounts, cost, TTFT, and model quality require their own measurements. One positive run per protocol covers the tested cases. General reliability and all versions, models, or subagents need separate evidence.
+
+<a name="tekrarlama-ve-açık-ürün-işi"></a>
+
+### Reproduction and open product work
+
+Use the pinned payload and cache. Use the project-local 1.19.3 executable. Run the commands from the repository root. Repeat a passing check only after a relevant fingerprint changes.
 
 ```powershell
 & work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B -m unittest discover -s tests/fixtures/opencode -p test_tool_fixture.py
@@ -93,10 +109,12 @@ Pinned payload/cache ve proje içi 1.19.3 executable gerekir. Repo kökünde; ya
 & work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B bench/opencode/roundtrip.py --run --surface chat --with-retrieval-bridge
 ```
 
-Bayrak açıkça test-only köprü bildirimi ekler; kullanıcı ayarına kurulum yapmaz. Bridge'siz koşu bilinçli olarak başarısız başlangıç kanıtıdır; rutin başarılı smoke diye tekrar çalıştırılmaz.
+The flag adds the explicit test-only bridge declaration. It installs nothing in user config. The run without a bridge records the expected initial failure. Treat it as failure evidence during later verification.
 
-**H010-b3 Windows 10 yerel ürün kabulü tamamlandı:** Ürünün Önizle → Uygula akışı pinned retrieval köprüsünü native plan/receipt üzerinden atomik kurar; kullanıcı değişikliklerini koruyan Undo, duraklatma/yeniden açılış ve release kaldırma girişi doğrulandı. İki protokol gerçek native UI → kaydedilmiş kullanıcı JSONC'si → izole OpenCode CLI ile geçti; test bridge bayrağı veya inline endpoint override kullanılmadı. Ayrıntı ve sınırlar [ürün retrieval kanıtında](opencode-retrieval.md), [programatik sonuçta](opencode-retrieval.json) ve [incelemede](../reviews/H010-b3.md). Yukarıdaki koşullu b2 kayıtları tarihsel kapsamını korur. Canlı sağlayıcı/auth, gerçek alt ajan, TUI/V2/Desktop, temiz Windows/Windows 11 ve diğer OS açık olduğundan ana H010 tamamlandı veya bütün OpenCode yolları destekleniyor denmez.
+**H010-b3 local product acceptance passed on Windows 10.** Preview and Apply install the pinned retrieval bridge atomically through the native plan and receipt. The tests also verified conflict-preserving Undo, pause and reopen, and the release uninstall entry. Both protocols passed through the actual native UI → saved user JSONC → isolated OpenCode CLI path. The run used neither the test bridge flag nor an inline endpoint override.
 
-**H010-c sonraki yerel kabulü tamamlandı:** Gerçek foreground child ve aynı sohbet içinde model değişimi artık [native alt ajan kanıtıyla](opencode-subagents.md) doğrulandı. Aynı Chat modeli, açık model değişimi ve Responses parent/Chat child ayrı kimliklerle geçti; iki rolün araç/CCR/final yolu tamamlandı. B3'ün tarihsel alt ajan sınırı bu yeni dilimde karşılandı; canlı sağlayıcı/auth, TUI/V2/Desktop ve diğer OS açık kalır. [Programatik sonuç](opencode-subagents.json).
+See the [product retrieval evidence](opencode-retrieval.md), [programmatic result](opencode-retrieval.json), and [review](../reviews/H010-b3.md). The conditional b2 records above keep their historical scope. Main H010 remains open for live provider and auth, real subagents, TUI, V2 and Desktop, clean Windows, Windows 11, and other operating systems.
 
-**H010-d tam TUI yerel kabulü tamamlandı:** Aynı üç senaryo gerçek PTY, tam arayüz, terminal girdisi ve normal `/exit` ile ayrıca geçti. Model değişimi TUI'nin `/models` menüsünde açıkça seçildi; resume sırasında CLI model ipucunun önceki modeli geçeceği iddia edilmez. [TUI kanıtı](opencode-tui.md), [programatik sonuç](opencode-tui.json). Yukarıdaki tarihsel TUI sınırı bu sürüm/Windows 10 fixture'ında karşılandı; canlı sağlayıcı/auth, V2/Desktop ve diğer OS açık kalır.
+**H010-c later local acceptance passed.** The [native subagent evidence](opencode-subagents.md) verifies a real foreground child and a model change in the same chat. Same-model Chat, an explicit model change, and a Responses parent with a Chat child passed with separate identities. Both roles completed the tool, CCR, and final reply path. This slice covered b3's historical subagent limit. Live provider and auth, TUI, V2 and Desktop, and other systems remain open. [Programmatic result](opencode-subagents.json).
+
+**H010-d full local TUI acceptance passed.** The same three scenarios passed with a real PTY, full interface, terminal input, and normal `/exit`. The user selected the model change explicitly in the TUI's `/models` menu. A CLI model hint overriding an earlier model on resume remains unverified. This version and Windows 10 fixture cover the earlier TUI limit. Live provider and auth, V2 and Desktop, and other systems remain open. [TUI evidence](opencode-tui.md) · [Programmatic result](opencode-tui.json).

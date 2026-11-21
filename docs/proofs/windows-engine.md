@@ -2,15 +2,27 @@
 
 Status: local proof PASS on the attached Windows 10 host, 2026-10-19. This covers a relocated portable runtime and hidden-helper lifecycle only. It is not a Windows 11, clean-machine, Tauri integration, or full H006 result.
 
-Güncel takip: 14 Kasım H006-b, hazır durumdaki motor için gerçek Rust başlatma yolunda Job Object kaynaklı ani kapanış temizliğini ayrıca doğruladı. Tarihsel H006-a sonucu ve aşağıdaki hash'leri değişmez; yeni kapsam ve kaynaklar bu belgenin sonundadır. Ana H006 temiz Windows/Windows 11 nedeniyle açık kalır.
+Current update: On November 14, H006-b also verified abrupt-shutdown cleanup through the real Rust start path for a ready engine, with a Job Object. The historical H006-a result and hashes below remain unchanged. New scope and sources are at the end of this document. Main H006 remains open for clean Windows and Windows 11.
 
-The package is a copyable directory, not a zip. The pinned standalone CPython 3.13.13 base is 61.1 MiB and the locked environment's `site-packages` is 438.0 MiB; the resulting payload is 22,225 files / 523,394,231 bytes (499.1 MiB), excluding the small manifest. Keeping native-extension files extracted avoids adding an archive extraction layer to this first proof. The manifest records the engine/Python pins, source hashes, dependency-record and installed-distribution counts, and payload size. The packager's reuse path rejects reparse points and stale paths; its post-copy inventory must exactly match the pinned Python tree, locked `site-packages`, runner, and manifest.
+The package is a copyable directory. The pinned standalone CPython 3.13.13 base is 61.1 MiB. The locked environment's `site-packages` is 438.0 MiB. The payload has 22,225 files and uses 523,394,231 bytes (499.1 MiB), excluding the small manifest. The package keeps native extensions extracted so it needs no archive extraction layer.
 
-The integration proof copies the package to a separate path containing spaces and starts it with a controlled environment whose `PATH` contains only Windows `System32`. The runtime invokes its adjacent Python by absolute path and does not need a developer Python, uv, or Node entry on `PATH`. Temporary state, workspace, config, HOME, and TEMP paths are also under a separate path containing spaces. The engine environment binds only `127.0.0.1` on a dynamically selected port, enables local telemetry, disables anonymous beacon shipping, disables update checks, and does not log message contents.
+The manifest records the engine and Python pins, source hashes, dependency-record and installed-distribution counts, and payload size. The packager rejects reparse points and stale paths when it reuses a package. Its inventory after the copy must match the pinned Python tree, locked `site-packages`, runner, and manifest exactly.
 
-The proof launches an outer controller with `CREATE_NO_WINDOW`; that process uses a typed `GetConsoleWindow` call and confirms it has no console. It starts the runtime manager as a native hidden-console helper with `CREATE_NEW_CONSOLE` and `STARTF_USESHOWWINDOW/SW_HIDE`, redirecting stdin and stdout through pipes. The helper verifies its console window is not visible and accepts only a bounded stdin JSON command. The engine shares that hidden console while running in its own `CREATE_NEW_PROCESS_GROUP`. The manager accepts readiness only when `/readyz` reports version `0.41.0` and the exact engine PID owns the loopback listener. `/stats` reports local telemetry enabled and anonymous shipping disabled. On `{"command":"stop"}`, the manager sends `CTRL_BREAK_EVENT` only to the owned engine process group. Python's documented Windows process-group event behavior is described in [`GenerateConsoleCtrlEvent`](https://learn.microsoft.com/en-us/windows/console/generateconsolectrlevent), [console process groups](https://learn.microsoft.com/en-us/windows/console/console-process-groups), and Python's [`SIGBREAK`](https://docs.python.org/3/library/signal.html#signal.SIGBREAK) handling. The observed result is exit code 0, Headroom's proxy summary and Uvicorn lifespan-shutdown markers, and a closed owned port; the forced termination fallback is not used on this PASS.
+The integration test copies the package to a separate path with spaces. It starts the package in a controlled environment. The `PATH` contains only Windows `System32`. The runtime calls its adjacent Python by absolute path. It needs no developer Python, uv, or Node entry on `PATH`. The temporary state, workspace, config, HOME, and TEMP also use a separate path with spaces.
 
-A console-less manager that tried to attach to the engine's separate hidden console did not provide a working shutdown path in the earlier focused attempt. The passing path keeps the outer parent console-less and gives only the helper a hidden console shared with the engine process group. This test uses a small Python `CREATE_NO_WINDOW` fixture as the GUI-like parent; the Tauri GUI's native process creation and stdio wiring remain untested. H006/H014 must verify that Tauri can start this helper with the tested hidden-window flags and preserve the stdin control channel. The Job Object is configured with `KILL_ON_JOB_CLOSE` as an orphan-prevention fallback, but this test does not simulate an abrupt manager crash and does not claim that fallback was exercised. Windows 11 and a clean machine remain untested.
+The engine binds only `127.0.0.1` on a dynamically selected port. The environment enables local telemetry. It disables anonymous beacon shipping, update checks, and message logging.
+
+The test launches an outer controller with `CREATE_NO_WINDOW`. A typed `GetConsoleWindow` call confirms that the controller has no console. The controller starts the runtime manager as a native hidden-console helper with `CREATE_NEW_CONSOLE` and `STARTF_USESHOWWINDOW/SW_HIDE`. Pipes carry stdin and stdout. The helper confirms that its console window is hidden. It accepts only a bounded JSON command on stdin.
+
+The engine shares this console and runs in its own `CREATE_NEW_PROCESS_GROUP`. Before the manager accepts readiness, it checks that `/readyz` reports version `0.41.0` and that the exact engine PID owns the loopback listener. `/stats` reports local telemetry on and anonymous shipping off. On `{"command":"stop"}`, the manager sends `CTRL_BREAK_EVENT` only to the owned engine process group.
+
+The platform references describe Windows process-group events and Python's response to them. [`GenerateConsoleCtrlEvent`](https://learn.microsoft.com/en-us/windows/console/generateconsolectrlevent), [console process groups](https://learn.microsoft.com/en-us/windows/console/console-process-groups), [Python `SIGBREAK`](https://docs.python.org/3/library/signal.html#signal.SIGBREAK).
+
+The engine exits with code 0. It reports Headroom's proxy summary and Uvicorn's lifespan-shutdown markers. The owned port closes without forced termination.
+
+In the earlier attempt, a consoleless manager tried to attach to the engine's separate hidden console. That attempt failed to shut down the engine. In the passing test, the outer parent has no console. Only the helper and engine process group share a hidden console. The test uses a small Python `CREATE_NO_WINDOW` fixture as the GUI-like parent. Tauri GUI process creation and stdio wiring remain open.
+
+H006/H014 must check that Tauri uses the tested hidden-window flags and keeps the stdin control channel. The Job Object uses `KILL_ON_JOB_CLOSE` to prevent orphan processes. This test scope excludes abrupt manager failure and therefore leaves this fallback untested. Windows 11 and a clean machine remain untested.
 
 ## Reproduction
 
@@ -22,14 +34,16 @@ powershell.exe -NoLogo -NoProfile -NonInteractive -File scripts/package-engine.p
 & work\proofs\engine\toolchain\cpython-3.13.13-windows-x86_64-none\python.exe -I work\proofs\packaging\test_portable_runtime.py PortableRuntimeTests.test_relocated_runtime_is_ready_and_stops_through_a_consoleless_controller
 ```
 
-The manifest check reports `Ran 1 test in 0.000s — OK`; the focused integration test reports `Ran 1 test in 33.669s — OK`. The package command reports 22,225 payload files, 499.1 MiB, and 102 lock records. The manifest and an independent read-only inventory check agree on 22,225 payload files and 523,394,231 bytes, with 0 missing and 0 unexpected paths. The integration test confirms the `CREATE_NO_WINDOW` parent has no console, the helper window is hidden, relocation works, readiness and listener ownership match, telemetry flags are correct, graceful exit is 0, and the owned port closes. No model/API request was made and no client configuration was changed.
+The manifest check reports `Ran 1 test in 0.000s — OK`. The focused integration test reports `Ran 1 test in 33.669s — OK`. The package command reports 22,225 payload files, 499.1 MiB, and 102 lock records. The manifest and an independent read-only inventory agree on 22,225 payload files and 523,394,231 bytes. The inventory found 0 missing and 0 unexpected paths.
+
+The integration test confirms that the `CREATE_NO_WINDOW` parent has no console, the helper window is hidden, and relocation works. It also confirms readiness, listener ownership, telemetry flags, graceful exit code 0, and closure of the owned port. The run made no model or API requests and changed no client configuration.
 
 ## Fingerprints
 
 - Host: Microsoft Windows 10 Pro 22H2, 10.0.19045, x64. Windows 11 and clean-machine behavior are unknown.
 - Engine and Python: [`headroom-ai==0.41.0`](https://pypi.org/project/headroom-ai/0.41.0/), CPython 3.13.13 x64. The manifest counts 102 lock records and 96 installed `.dist-info` distributions. The payload includes the standalone base runtime and project-installed locked environment.
-- Environment: helper `PATH` is only `%SystemRoot%\System32`; engine `PATH` is the copied runtime root plus `%SystemRoot%\System32`. `HEADROOM_HOST=127.0.0.1`, dynamically allocated port, `HEADROOM_TELEMETRY=on`, `HEADROOM_BEACON=off`, `HEADROOM_UPDATE_CHECK=off`, `HEADROOM_STATELESS=false`, and `HEADROOM_LOG_MESSAGES=off`.
-- Command fingerprint: the three reproduction commands above; Python runs with `-I`, and test paths are copied under `work\proofs\packaging\runs` with spaces in the relocated runtime and state directories.
+- The helper `PATH` contains only `%SystemRoot%\System32`. The engine `PATH` contains the copied runtime root and `%SystemRoot%\System32`. The engine uses `HEADROOM_HOST=127.0.0.1`, a dynamically allocated port, `HEADROOM_TELEMETRY=on`, `HEADROOM_BEACON=off`, `HEADROOM_UPDATE_CHECK=off`, `HEADROOM_STATELESS=false`, and `HEADROOM_LOG_MESSAGES=off`.
+- The command fingerprint covers the three commands above. Python runs with `-I`. The test copies paths under `work\proofs\packaging\runs` and uses spaces in the relocated runtime and state directories.
 
 SHA-256 of the final proof inputs:
 
@@ -43,28 +57,32 @@ SHA-256 of the final proof inputs:
 | `work/proofs/packaging/test_portable_runtime.py` | `68156d35bc3b5d3460dd56c4b1a7c4ef448e24bba5815febc4696b8400c9e623` |
 | packaged `runtime-manifest.json` | `8e4edf5f1328a7a6323ecf435604feaa48fd80c9648288f05b449584924b7908` |
 
-## H006-b — Ani sahip süreç kaybı (14 Kasım 2026)
+<a name="h006-b--ani-sahip-süreç-kaybı-14-kasım-2026"></a>
 
-Yerel Windows 10 build 19045 x64 kabulü geçti. Test, `ControllerSession::launch` üretim kodunu, güncel staged Windows paketini ve UUID ile ayrılmış state'i kullanır. Konsolsuz fixture sahibi `TerminateProcess` yoluyla zorla kapatılır; Rust `Drop`, stop isteği veya `TerminateJobObject` çağrısı kullanılmaz. Bu deney Tauri penceresinden başlatılmış bir GUI çökmesi değildir.
+## H006-b — Abrupt owner-process loss (November 14, 2026)
 
-Windows'ta `KILL_ON_JOB_CLOSE`, son Job handle'ı kapanınca gruptaki süreçleri sonlandırır. [Microsoft Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects). Test gözlemcisi kontrol borusunun yazıcı handle'ını kendi sürecinde açık tutar; boru EOF'u ile normal kapanış, Job korumasının yerine geçemez. [DuplicateHandle sözleşmesi](https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-duplicatehandle). Üç çekirdek süreç için canlı, aynı Job'a ait process handle'ları; Job'ın inherit edilmediği ve fixture sahibini içermediği doğrulanır. Kimlikler yalnız test metadata'sındadır.
+Local acceptance passed on Windows 10 build 19045 x64. The test uses production `ControllerSession::launch`, the current staged Windows package and state separated by UUID. It force-terminates the consoleless fixture owner with `TerminateProcess`. It does not call Rust `Drop`, send a stop request or call `TerminateJobObject`. This experiment is not a GUI crash launched from a Tauri window.
 
-| Senaryo | Önceden belirlenen kabul | Gözlenen |
+On Windows, `KILL_ON_JOB_CLOSE` ends processes in the group when the last Job handle closes. [Microsoft Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects). The test observer keeps the control-pipe writer handle open in its own process. Pipe EOF and normal shutdown cannot replace Job protection. [DuplicateHandle contract](https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-duplicatehandle). The test verifies live process handles for three core processes in the same Job. It also verifies that the Job is not inherited and does not contain the fixture owner. It keeps identities only in test metadata.
+
+| Scenario | Preset acceptance | Observed |
 | --- | --- | --- |
-| Tek Job sahibi zorla kapanır; kontrol borusu açık | Üç çekirdek süreç ve motor listener'ı en çok 5000ms'de kapanır | Süreçler 53ms; portun kapalı olduğu gözlem 357ms |
-| Gözlemci ek Job handle'ını tutar | Sahip kapansa da üç süreç/port en az 1000ms yaşar | Süreç handle'ları canlı, readiness ve port sahibi aynı |
-| Gözlemci son Job handle'ını kapatır; kontrol borusu hâlâ açık | Üç süreç ve listener en çok 5000ms'de kapanır | Süreçler 54ms; port gözlemi 370ms |
-| Bağımsız test listener'ı | İki kolda da korunur | TCP bağlantısı ve 13 baytlık içerik eşitliği geçti |
+| Force-close the only Job owner while the control pipe stays open | Three core processes and the engine listener close within 5000ms | Processes closed in 53ms. The port-closed observation occurred at 357ms. |
+| Observer holds an extra Job handle | Three processes and the port stay alive for at least 1000ms after the owner closes | Process handles stayed live. Readiness and port owner stayed the same. |
+| Observer closes the last Job handle while the control pipe stays open | Three processes and the listener close within 5000ms | Processes closed in 54ms. The port observation occurred at 370ms. |
+| Independent test listener | Preserve it in both arms | TCP connection and 13-byte content equality passed |
 
-Süreler ilgili tetik çağrısının hemen öncesinden, gözlem sonuna kadar ölçülür; kernelin gerçek sonlanma anı veya ilk boş port anı değildir. Her kol bir kez çalıştı; uzun süreli kararlılık, hız/kalite veya token tasarrufu benchmark'ı değildir. Yalnız üç çekirdek süreç handle'ı gözlendi; bütün işletim sistemi süreçlerinin sayımı yapılmadı.
+We measured each time from just before the trigger call through the end of observation. It is not the actual kernel termination time or the first time the port became free. Each arm ran once. This is not a long-term stability, speed/quality or token-savings benchmark. The test observed handles for only three core processes. It did not count all operating-system processes.
 
-Paket **22.333 dosya / 536.626.939 bayt**. Paketleyicinin tam içerik doğrulaması, aynı paket girdileri/komut/araçlarla başlangıç kanıtı olarak yeniden kullanıldı. Test sonrası bütün paket dosyaları bağımsız hash'lendi; envanter ve kaynak/araç/ortam önce-sonra eşit. Son adayda opt-in test, 441 Rust testi / 18 ignored, fmt ve embedded build geçti. Önceki 221 Node ve frontend build kanıtı, ilgili girdiler ve Node/pnpm sürümleri eşleşerek yeniden kullanıldı. [Makine tarafından üretilen kabul](windows-engine-crash.json), [inceleme](../reviews/H006-b.md).
+Package: **22,333 files / 536,626,939 bytes**. The packager's full content verification was reused as startup evidence with the same package inputs, commands and tools. After the test, it independently hashed every package file. The inventory and source/tool/environment fingerprints matched before and after. The final candidate passed the opt-in test, 441 Rust tests/18 ignored, fmt and embedded build. The earlier 221 Node tests and frontend build were reused because their inputs and Node/pnpm versions matched. [Machine-generated acceptance](windows-engine-crash.json), [review](../reviews/H006-b.md).
 
-İlk deneme eski `work/build/windows/resources` helper pin'i uyuşmadığı için reddedildi. Eski paket korunarak ayrı güncel stage üretildi. İkinci deneme testin kendi Job mutex'ini yeniden alması nedeniyle zaman aşımına uğradı; testte liveness kontrolü kilitten önceye taşındı. Bu iki koşu başarısızdır; nihai geçer kanıt `verification-6fdcd6e65d`, güncel yerel kapı `quality-28623d163c` altındadır. Kayıtlar `work/proofs/windows-engine-crash/` içindedir; ham hata dökümü saklanmadı.
+The first attempt was rejected because the old `work/build/windows/resources` helper pin did not match. A separate current stage was produced, and the old package was preserved. The second attempt timed out because the test reacquired its own Job mutex. The test moved the liveness check before the lock. Both runs failed. The final passing evidence is under `verification-6fdcd6e65d`, and the current local gate is under `quality-28623d163c`. Records are in `work/proofs/windows-engine-crash/`. No raw error dump was kept.
 
-### Tekrarlama
+<a name="tekrarlama"></a>
 
-Pinned payload ön koşulları için [Windows paketleme kaydı](../validation/windows-install.md) geçerlidir. Başarılı kanıtı yalnız ilgili girdiler değiştiğinde yenile. Paketleyici eski hedef için `existing_stage_conflict` bildirirse eski artefaktı proje içinde koruyup boş hedefte güncel paketi üret; pin/guard gevşetilmez.
+### Repeat
+
+Use the [Windows packaging record](../validation/windows-install.md) for pinned-payload prerequisites. Renew passing evidence only when relevant inputs change. If the packager reports `existing_stage_conflict` for an old target, keep the old artifact in the project and build the current package at an empty target. Do not weaken the pin or guard.
 
 ```powershell
 & work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B scripts/package-windows.py --output work/build/windows/h006-crash-resources
@@ -73,38 +91,48 @@ $env:CARGO_TARGET_DIR = 'D:\Projeler\Headroom\work\caches\cargo-target'
 cargo +stable-x86_64-pc-windows-msvc test --locked --offline --manifest-path src-tauri/Cargo.toml runtime::manager::windows_crash_tests::packaged_controller_job_closes_after_owner_crash -- --exact --ignored --test-threads=1
 ```
 
-Ana H006 açık: temiz Windows 10/Windows 11, başlangıçta Job ataması öncesindeki çökme yarışı ve gerçek GUI çökmesi bu dilimle doğrulanmaz. Canlı sağlayıcı veya istemci ayarı değiştirilmedi; yayın ve Actions çalıştırılmadı.
+Main H006 remains open. This slice does not verify a clean Windows 10 or Windows 11 system, the startup crash race before Job assignment or a real GUI crash. No live provider or client setting changed. No release or Actions run occurred.
 
-## H006-c — Gerçek paketli GUI kaybı (15 Kasım 2026)
+<a name="h006-c--gerçek-paketli-gui-kaybı-15-kasım-2026"></a>
 
-Yerel alt dilim kabul edildi. Hazır Tauri release GUI'sinin zorla kaybında üç motor process handle'ı 57,429ms, motor/sabit ingress portları 58,299ms içinde kapandı. Dış gözlemci Job'ı bu ölçüm boyunca açıktı. Aynı test kimliği/profili Stopped açıldı, endpoint korundu ve Başlat/Ready/Durdur/normal Çıkış geçti. Yabancı listener korundu, model isteği 0. Bu, H006-b'nin controller fixture'ından ayrı gerçek GUI kanıtıdır. [Kapsam ve tekrar üretim](windows-gui-crash.md), [programatik sonuç](windows-gui-crash.json), [inceleme](../reviews/H006-c.md).
+## H006-c — Real packaged GUI loss (November 15, 2026)
 
-H006 ana kutusu açık kalır. Temiz Windows 10, ayrı Windows 11, Job ataması öncesi başlangıç yarışı ve aktif stream/CCR verisi bu yeni deneyle doğrulanmadı. Toplam 45/54 değişmez.
+The local slice passed after forced loss of the ready Tauri release GUI. The three engine process handles closed within 57.429 ms. The engine and fixed ingress ports closed within 58.299 ms.
 
-## H006-d — Job atamasından önce sahip kaybı (15 Kasım 2026)
+The external observer kept the Job open during this measurement. The same test identity and profile opened as Stopped. The endpoint stayed available. Start, Ready, Stop, and normal Exit passed. The foreign listener stayed intact.
 
-Windows 10 22H2 x64 build 19045 üzerinde gerçek paketli controller'ın başlangıç davranışı doğrulandı. Test, üretim başlatma işlevini `spawn` döndükten sonra ve henüz oluşturulan üretim Job'ına atama yapılmadan önce bekletti. Bu noktada `start` iletisi henüz gönderilmemişti. [Kabul koşulları](../decisions/002-runtime.md#h006-d--job-atamasından-önce-sahip-kaybı).
+The run made 0 model requests. This is evidence from the real GUI. The H006-b controller fixture has separate evidence. [Scope and reproduction](windows-gui-crash.md), [programmatic result](windows-gui-crash.json), [review](../reviews/H006-c.md).
 
-| Senaryo | Gözlem |
+The main H006 item remains open. This new experiment did not verify clean Windows 10, separate Windows 11, the startup race before Job assignment or active stream/CCR data. Total remains 45/54.
+
+<a name="h006-d--job-atamasından-önce-sahip-kaybı-15-kasım-2026"></a>
+
+## H006-d — Owner loss before Job assignment (November 15, 2026)
+
+The test verified startup behavior of the real packaged controller on Windows 10 22H2 x64 build 19045. It paused the production start function after `spawn` returned and before assignment to the newly created production Job. The `start` message had not yet been sent. [Acceptance criteria](../decisions/002-runtime.md#h006-d--job-atamasından-önce-sahip-kaybı).
+
+| Scenario | Observation |
 | --- | --- |
-| Sahip zorla kapatıldı, borunun yazma ucu kapandı | Controller 147 ms içinde exit 2 ile sonlandı. |
-| Gözlemci yazma ucunu tuttu | Sahip kaybından sonra controller bir saniyelik gözlemde canlıydı. Yazma ucu kapatıldıktan sonra 8 ms içinde exit 2 ile sonlandı. |
-| Süreç sahipliği ve protokol | Dış gözlemci Job'ı açık kaldı. Başlangıçtaki test sahibi, controller ve iki `conhost.exe` dışında süreç oluşmadı. İki kolda son canlı süreç ve controller stdout bayt sayısı 0. |
+| Owner was force-closed and the pipe write end closed | The controller exited with code 2 within 147 ms. |
+| Observer held the write end | The controller stayed alive during a one-second observation after owner loss. It exited with code 2 within 8 ms after the write end closed. |
+| Process ownership and protocol | The external observer kept the Job open. No process appeared except the test owner at startup, the controller and two `conhost.exe` processes. In both arms, final live-process count and controller stdout bytes were 0. |
 
-İlk ön kontrol geçmiş stage'deki `windows-hooks.nsh` pinini reddetti. H006-c'nin güncel stage'iyle devam edildi. İlk native test, Windows'un iki `conhost.exe` sürecini sayımda ayırt edemedi. Süreç türleri ayrı gözlendi. Nihai test başlangıç üyelerini tanıyor ve kümülatif Job sayacındaki her artışı hata kabul ediyor. Beş saniyelik kapanış sınırı korundu. Başarısız kayıtların referansları kanonik JSON'dadır.
+The first precheck rejected the `windows-hooks.nsh` pin in the earlier stage. The test continued with the current H006-c stage. The first native test could not distinguish the two `conhost.exe` processes in the Windows count. The test then observed process types separately. The final test recognizes startup members and treats every increase in the cumulative Job counter as a failure. It kept the five-second close limit. The canonical JSON contains references to failed records.
 
-Paket kaydı dahil 22.334 dosya, kaynaklar, doğrulama komutları ve araç/OS fingerprint'leri önce/sonra eşleşti. Son adayda 462 Rust testi, biçim ve embedded build geçti. 20 opt-in test normal koşuda atlandı. H006-d ayrı opt-in koşuda geçti. Aynı Node/pnpm ile değişmeyen frontend girdilerinin 222 uygulama testi ve frontend derlemesi yeniden kullanıldı. [Programatik kanıt](windows-engine-startup-crash.json) · [İnceleme](../reviews/H006-d.md).
+The 22,334 files including the package record, sources, validation commands and tool/OS fingerprints matched before and after. The final candidate passed 462 Rust tests, formatting and embedded build. The normal run skipped 20 opt-in tests. H006-d passed in a separate opt-in run. The team reused 222 application tests and the frontend build because frontend inputs and Node/pnpm matched. [Programmatic evidence](windows-engine-startup-crash.json) · [Review](../reviews/H006-d.md).
 
-Doğrulama için mevcut `work/build/windows/h010-retrieval-resources` stage'i ve proje içi Cargo cache kullanılır. Komut [kanıt kaydında](windows-engine-startup-crash.json) yer alır. Bu yerel test duraklatılmış bir spawn sonrası kontrol noktasını kapsar. Ayrı temiz Windows 10/11 x64 ortamları ana H006 için bekliyor.
+Use the existing `work/build/windows/h010-retrieval-resources` stage and project Cargo cache for validation. The [evidence record](windows-engine-startup-crash.json) contains the command. This local test covers the paused checkpoint after spawn. Separate clean Windows 10/11 x64 environments remain open for main H006.
 
-## Temiz Windows ortamı için taşınabilir test paketi
+<a name="temiz-windows-ortamı-için-taşınabilir-test-paketi"></a>
 
-`work/proofs/windows-engine-crash/clean-test-a8e23e494d/Headroom_0.1.0_Windows_x64_H006_test.zip` daha önce gerçek pencere ve motorla sınanan H006-c adayını, aynı motor dosyalarını, lisans bildirimini ve kısa test yönergesini içerir. 197.348.721 baytlık arşivin 22.335 dosyası tam SHA-256 karşılaştırmasından geçti. Windows'un `tar.exe` aracı girişleri okudu ve PowerShell arşiv hash'ini doğruladı. [Paket ve hash kaydı](windows-engine-clean-test-package.json).
+## Portable test package for a clean Windows environment
 
-Test eden kişi ayrı temiz Windows 10 22H2 x64 veya Windows 11 x64 bilgisayarda ZIP'i kısa bir klasöre çıkarır ve `headroom-desktop.exe` dosyasını açar. Arşivdeki `README.txt` açılış, motor hazır, durdurma ve normal çıkış adımlarını listeler. Ön koşul Microsoft Edge WebView2 Runtime'dır. Sonuçla birlikte Windows yapı numarası ve mimarisi kaydedilir. Arşiv SHA-256 değeri, aynı dizindeki `SHA256SUMS.txt` ile karşılaştırılır.
+`work/proofs/windows-engine-crash/clean-test-a8e23e494d/Headroom_0.1.0_Windows_x64_H006_test.zip` contains the H006-c candidate previously tested with a real window and engine, the same engine files, license notices and short test instructions. All 22,335 files in the 197,348,721-byte archive passed exact SHA-256 comparison. Windows `tar.exe` read the entries, and PowerShell verified the archive hash. [Package and hash record](windows-engine-clean-test-package.json).
+
+The tester extracts the ZIP to a short folder on a separate clean Windows 10 22H2 x64 or Windows 11 x64 computer. The tester opens `headroom-desktop.exe`. The archive's `README.txt` lists startup, engine readiness, stop and normal exit steps. Microsoft Edge WebView2 Runtime is a prerequisite. Record the Windows build number and architecture with the result. Compare the archive SHA-256 with `SHA256SUMS.txt` in the same folder.
 
 ```powershell
 Get-FileHash -Algorithm SHA256 -LiteralPath .\Headroom_0.1.0_Windows_x64_H006_test.zip
 ```
 
-Paket, H006-c'deki byte-eşleşen imzasız ve ayrı kimlikli executable'ı kullanır. Bağımsız temiz sistem kabulü, arşivdeki motor testinin iki hedef işletim sisteminde yapılmasını bekliyor. NSIS ve eksik WebView2 giderme deneyi H037 kapsamındadır.
+The package uses the byte-matched, unsigned H006-c executable with its separate app identity. Independent clean-system acceptance still requires the archive's engine test on both target operating systems. NSIS and missing-WebView2 recovery tests belong to H037.
