@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English metrics and optimization research
+
+H042-k3aq is complete. The English notes cover token measurement, optimization targets, and return on investment. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-metrics-optimization-research-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 216 of 222 tracked documents (97.3%). It flagged 6 documents (2.7%) with remaining Turkish prose. The estimated remaining text is about 35,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the Headroom and Serena research and the context tools benchmark notes. Other project documents, research notes, and historical checkpoints remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English October research notes
 
 H042-k3ap is complete. The English notes cover the desktop comparison and the local Computer Use diagnosis and follow-up. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-october-research-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 213 of 222 tracked documents (95.9%). It flagged 9 documents (4.1%) with remaining Turkish prose. The estimated remaining text is about 36,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the research notes on metrics, optimization targets, and return on investment. Other project documents, research notes, and historical checkpoints remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English UX and baseline reviews
 
