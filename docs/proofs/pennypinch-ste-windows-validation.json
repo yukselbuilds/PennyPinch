@@ -1,0 +1,109 @@
+{
+  "task": "H042-k3a",
+  "status": "pass",
+  "base_commit": "181507cae75db6e4128b8eac7a0c79bcbea04b66",
+  "skill": {
+    "repository": "https://github.com/danyuchn/asd-ste100-skill",
+    "commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "license": "MIT",
+    "files_sha256": {
+      "SKILL.md": "47e95213786b159e64275881f46da8cc020b55da12ddf24d82f57f1a6f58f188",
+      "LICENSE": "d3c674e8592076c9021a59b55177adbcba6fd7e1710082becb922522b22ec672",
+      "references/writing-rules.md": "4b92c86bf803f9f54e069767d34dc7356fbb95fb52a3f28476093917c608c102",
+      "examples/before-after.md": "54ed6e53c2674d1d068fc2b7c870667abea2faa1d5a5743c100b987e5b57361a",
+      "scripts/ste-lint.py": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d"
+    }
+  },
+  "checked": {
+    "documents": 4,
+    "legacy_heading_aliases": 11,
+    "incoming_heading_links": 0,
+    "outgoing_links": 8,
+    "local_receipts": [
+      "work/h038-test/7b843249/delete-locked-postcheck.json",
+      "work/h038-test/7b843249/delete-postcheck.json",
+      "work/h038-test/7b843249/keep.json",
+      "work/proofs/config-transaction/final-quality.json",
+      "work/proofs/config-transaction/native-checks.json",
+      "work/proofs/config-transaction/native-proof.json",
+      "work/proofs/config-transaction/ui-review/summary.json",
+      "work/proofs/connection-ingress/final-quality.json",
+      "work/proofs/connection-ingress/native-proof.json",
+      "work/proofs/windows-uninstall/acceptance.json",
+      "work/proofs/windows-uninstall/focus-655bfb8a4e9e46a78d2c62c13ac24825/result.json",
+      "work/proofs/windows-uninstall/local-quality.json",
+      "work/proofs/windows-uninstall/qa-build.json"
+    ]
+  },
+  "structural_lint": {
+    "AGENTS.md new section": {
+      "sha256": "0d6d2ab3a4fce45cc3a093b9e57c6013ef2e3b2aea4f61e443a65a2eabc194bf",
+      "hard": 0,
+      "advisory": 0
+    },
+    "docs/validation/config-transaction-matrix.md": {
+      "sha256": "a96901480d94b29680252e02f3f2ad78ecf1167254bed9992cfcc705b08c7fea",
+      "hard": 0,
+      "advisory": 0
+    },
+    "docs/validation/ingress-failure-matrix.md": {
+      "sha256": "38c9d86919d79d32a1e5dbcfb5cc0e090948fcc54568ea5403b885bdf7c6c0da",
+      "hard": 0,
+      "advisory": 0
+    },
+    "docs/validation/performance.md": {
+      "sha256": "90cf592f83e44196b31d28964045e78e012fd9e7d90543053fe99fb7c6a96e1a",
+      "hard": 0,
+      "advisory": 0
+    },
+    "docs/validation/uninstall.md": {
+      "sha256": "0cf4f145386019f819795b9904ecd7006952d9899090a7a22f74872e6d199908",
+      "hard": 0,
+      "advisory": 0
+    }
+  },
+  "scope": "Project STE writing guidance and English Windows validation records",
+  "documents": {
+    "docs/validation/config-transaction-matrix.md": {
+      "original_sha256": "3d24c38c9cc0f0cbe74dd299c015cd0c4512991555138f8869a817907eab2567",
+      "draft_sha256": "f56ca8c397ec45ddca53e876f2c001019d1dacccc248c26812a0576f2546bae7",
+      "final_sha256": "a96901480d94b29680252e02f3f2ad78ecf1167254bed9992cfcc705b08c7fea"
+    },
+    "docs/validation/ingress-failure-matrix.md": {
+      "original_sha256": "fd138dd894bc0c75589276d03d6d9f8f51e2090f26ff028549973aa38a1caf5e",
+      "draft_sha256": "42d5a00d7b5d69a1dd596854f6f843f96c959e8baac44f8f5a86156302576342",
+      "final_sha256": "38c9d86919d79d32a1e5dbcfb5cc0e090948fcc54568ea5403b885bdf7c6c0da"
+    },
+    "docs/validation/performance.md": {
+      "original_sha256": "60bab96f1de6335618f73f401c51a9e1f029845da9666057340e2128bd63db50",
+      "draft_sha256": "1f3fe95238f2dec3c31cef0b87a999654766cbc86c26211524efe29293b5e884",
+      "final_sha256": "90cf592f83e44196b31d28964045e78e012fd9e7d90543053fe99fb7c6a96e1a"
+    },
+    "docs/validation/uninstall.md": {
+      "original_sha256": "d4d9822a94e4911301e5c01715e60d357db9a84682b4c40ca291b3e863cb1443",
+      "draft_sha256": "d3ab7e1fbaa1717c6bfdf68aadca810c9edba901058bdbb9e8f055de72239c02",
+      "final_sha256": "0cf4f145386019f819795b9904ecd7006952d9899090a7a22f74872e6d199908"
+    }
+  },
+  "references_sha256": {
+    "docs/proofs/config-transaction.md": "27ead516bfe8d2cbb9290f5e677410c09ea775d9d16e60bee99a77d436ddab1a",
+    "docs/decisions/005-config-transaction.md": "98c0399fefcf50972b3b341657fa088e446178f4eeb735efa81e8705ee52f902",
+    "docs/decisions/003-connection-ingress.md": "ac3e4ebffeb98b0015c1f4b9ae5ec696ea7a220fa8d9dff3898bc92cec9afe2f",
+    "docs/proofs/connection-ingress.md": "a36c58ffaef6d698accea3dab028fa26274fc2b7b6b17cf07e02890b1e10fb8f",
+    "docs/decisions/023-accessibility-performance.md": "c8d28a02614e98c9704c46d5013c732336f907bf34fcb91a0117f544ebef9fd5",
+    "docs/proofs/accessibility-performance.md": "306299151dbf63f5c200932b892c0d71e59fa77a596d6c134fc5ae80a851309d",
+    "docs/decisions/026-windows-uninstall.md": "8aa1539c317304b864a5a286c137363a4bf37e2193e7088620a5a3150eaaa325",
+    "docs/proofs/uninstall.json": "7eb3211dbe209e0d8799b81dfd9a5a372c834b5211594a2acdf8770763a05dee"
+  },
+  "agents_sha256": "a730018d897dd07b29bdf83bc374f8d6d5393e1b97b5d3ba0c3ee2d823acd3eb",
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The lead agent pinned the skill and wrote the performance record. The single GPT-6 Luna xhigh worker drafted configuration, ingress, and uninstall. The lead agent checked the source, edited the drafts, and verified the final documents.",
+  "tool_checks": "The pinned linter self-test passed. The final structural check used the default rules for the new AGENTS section. Reports treated synonym rotation as advisory.",
+  "product_tests": "not_run_documentation_only"
+}

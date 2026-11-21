@@ -1,44 +1,58 @@
-# Kararlı giriş ve arıza davranışı
+<a name="kararlı-giriş-ve-arıza-davranışı"></a>
 
-21 Ekim 2026. H040 Windows10 yerel kabul matrisi; standalone relay, gerçek pinned motor ve native UI kanıtları ayrı tutulur. [Mimari karar](../decisions/003-connection-ingress.md), [yerel kanıt](../proofs/connection-ingress.md).
+# Stable ingress and failure behavior
 
-## Rota ve auth sınırı
+21 October 2026. This is the H040 local acceptance matrix for Windows 10. The standalone relay, real pinned engine, and native UI each have their own evidence. [Architecture decision](../decisions/003-connection-ingress.md) · [local evidence](../proofs/connection-ingress.md).
 
-Rust giriş opak TCP taşır; HTTP isteğini, auth yöntemini, modeli veya reasoning alanını seçmez. Yalnız doğrulanmış ve uygulamanın sahip olduğu Headroom backend'ine bağlantı açar. Mevcut istemci bağlantı planı veya katalog kaydı bu görevle otomatik destek durumuna yükselmez.
+<a name="rota-ve-auth-sınırı"></a>
 
-| Yol | H040 kanıtı | Motor arızasında doğrudan upstream |
+## Route and authentication boundary
+
+The Rust ingress forwards TCP opaquely. It does not select the HTTP request, authentication method, model or reasoning fields. It opens connections only to the verified Headroom backend that the app owns. This task does not upgrade an existing client connection plan or catalog entry to a supported status.
+
+| Route | H040 evidence | Direct upstream on engine failure |
 | --- | --- | --- |
-| Yerel Responses / sentetik API-key | A2 byte dizisi, half-close, SSE/no replay; gerçek sağlayıcı yok | Kapalı |
-| Yerel Anthropic Messages / sentetik API-key | A2 byte dizisi ve half-close; gerçek sağlayıcı yok | Kapalı |
-| ChatGPT gateway / OAuth | Bu giriş üzerinden test edilmedi | Kapalı; API-key yoluna çevrilmez |
-| Claude OAuth / yönetilen auth | Bu giriş üzerinden test edilmedi | Kapalı |
-| WebSocket / HTTP2 / HTTPS-to-local | Bu giriş üzerinden test edilmedi | Kapalı |
-| CCR geçmişi / eski nesilden retrieval | Restart sonrası süreklilik kanıtlanmadı | Kapalı; eski içeriğin yeni motorda var olduğu varsayılmaz |
-| Ayrı sağlayıcı, süreç veya bulut yolu kullanan model/alt ajan | İlgili istemci rotası için ayrıca kanıt gerekir | Kapalı |
+| Local Responses / synthetic API key | A2 byte sequence, half-close, SSE/no replay. No real provider. | Closed |
+| Local Anthropic Messages / synthetic API key | A2 byte sequence and half-close. No real provider. | Closed |
+| ChatGPT gateway / OAuth | Not tested through this ingress. | Closed. It does not switch to an API-key route. |
+| Claude OAuth / managed auth | Not tested through this ingress. | Closed |
+| WebSocket / HTTP2 / HTTPS-to-local | Not tested through this ingress. | Closed |
+| CCR history / retrieval from an old generation | Continuity after restart is not proven. | Closed. Do not assume old content exists in the new engine. |
+| Model/subagent that uses a separate provider, process or cloud route | Require separate evidence for the relevant client route. | Closed |
 
-Burada “kapalı”, istemcinin konfigürasyonuna yeni bir fallback eklenmediğini ve Rust'ın ikinci upstream POST üretmediğini ifade eder. İstemcinin kendi retry davranışı ayrı doğrulamadır. Opak relay hatada HTTP yanıtı sentezlemez; bağlantıyı kapatır. Yerel testlerin geçmesi canlı model veya bütün alt ajanların doğrulandığı anlamına gelmez.
+Here, “closed” means Headroom added no client fallback. It also means Rust sent no second upstream POST. Verify the client's own retry behavior separately. The opaque relay does not synthesize an HTTP response on error. It closes the connection. Passing local tests does not prove a live model or all subagents.
 
-## Arıza ve yaşam döngüsü
+<a name="arıza-ve-yaşam-döngüsü"></a>
 
-| Durum | Beklenen davranış | Kanıt durumu |
+## Failure and lifecycle
+
+| State | Expected behavior | Evidence status |
 | --- | --- | --- |
-| Kayıtlı endpoint portu dolu | Aynı kayıt korunur; başka adres seçilmez, yabancı süreç sahiplenilmez/sonlandırılmaz | A1 ve manager conflict regresyonu PASS |
-| Backend yok / stop başlatıldı | Yeni bağlantının payload'ı okunmadan kapanır | A2 ve gerçek manager no-route0response PASS; Windows reset geçerli kapanıştır |
-| Backend PID uyuşmazlığı veya belirsiz peer tablosu | Payload aktarılmaz; yabancı child canlı kalır | A1/A2 PASS |
-| Yeni motor nesli | Yeni TCP bağlantısı yeni nesle; açık bağlantı eski nesilde kalır | A2 pinleme PASS; gerçek pinned iki nesil ve native restart aynı endpoint PASS |
-| Yarım SSE / backend kopması | Yarım akış biter; başka backend'e taşıma veya tekrar gönderme yok | A2 PASS |
-| Geciktirilmiş okuyucu | Sınırlı buffer/partial-write offset; süreler içinde byte sırası korunur | A2 4MiB fixture PASS; gerçek uzun kernel backpressure ölçümü yok |
-| Bağlantı sınırı / idle / toplam ömür / drain aşımı | Sınırlı kaynaklar; zorlanan kapanış graceful değildir | A2 PASS |
-| Engine stop | Yeni route kapanır → engine request-aware stop → bounded TCP drain → owned cleanup | Gerçek manager+native idle keep-alive PASS; H029 gerçek pinned gated-SSE normal/stuck/no-replay/cleanup PASS. Aktif uygulama kapanışı/tray H030'da açık |
-| Uygulama kapanışı | Owned motor ve ingress kapanışı doğrulanır; belirsiz cleanup başarı sayılmaz | Native iki exit0/süreç0/listener0; yeni app süreci aynı kaydı/adresi açtı |
-| Eski observation / listener kaybı | Endpoint/engine gözlemleri ayrı; eski ready ve bilinmeyen sayaç başarı/sıfır sayılmaz | TTL/listener Start/poll ve startup sonrası heartbeat regresyonları PASS |
+| A process holds the registered endpoint port | Keep the same record. Do not select another address or claim/stop a foreign process. | A1 and manager conflict regression PASS |
+| Backend absent or stopping | Close before reading the payload of the new connection. | A2 and the real manager passed. The closed route returned 0 response bytes. A Windows reset is a valid close. |
+| Backend PID mismatch or ambiguous peer table | Do not forward payload. Keep the foreign child alive. | A1/A2 PASS |
+| New engine generation | Send a new TCP connection to the new generation. Keep an open connection on the old generation. | A2 pinning PASS. Two real pinned generations and native restart used the same endpoint. |
+| Partial SSE / backend disconnect | End the partial stream. Do not move it to another backend or resend it. | A2 PASS |
+| Delayed reader | Use bounded buffers/partial-write offsets. Preserve byte order within the deadlines. | A2 4MiB fixture PASS. No real long kernel backpressure measurement. |
+| Connection limit / idle / total lifetime / drain limit | Bound resource use. A forced close is not graceful. | A2 PASS |
+| Engine stop | Close new routes. Request an engine stop that accounts for active requests. Drain TCP within the limit. Clean up owned resources. | Real manager and native idle keep-alive passed. H029 passed pinned gated-SSE normal, stuck, no-replay, and cleanup checks. Active app close and tray were open in H030 at this checkpoint. |
+| App close | Check that the owned engine and ingress close. Require proof of cleanup. | Both native runs exited with code 0, with 0 processes and 0 listeners. A new app process opened the same record and address. |
+| Old observation / listener loss | Keep endpoint and engine observations separate. Do not count old ready state or unknown counters as success/zero. | TTL/listener Start/poll and post-startup heartbeat regressions PASS |
 
-Varsayılan relay sınırları:32 TCP bağlantı, her yönde16KiB buffer,2s connect,300s idle,8saat bağlantı ömrü,2s cancellation grace. TCP bağlantı sayısı aktif HTTP isteği veya SSE stream sayısı değildir. Bu süreler bütün sağlayıcıların sessiz SSE profilleri için ölçülmüş değildir.
+The relay permits 32 TCP connections by default. It uses a 16 KiB buffer in each direction. Connect and idle limits are 2 s and 300 s. Connection lifetime is 8 hours. The cancellation grace period is 2 s.
 
-Son aday68 Rust testi/0 hata/2 opt-in ignored ve uyarısız embedded debug build ile geçti; pinned lifecycle opt-in ayrıca1 PASS. Fiziksel native click/keyboard ve1224ms idle-close gözlemi [native-proof.json](../../work/proofs/connection-ingress/native-proof.json), fingerprint'ler [final-quality.json](../../work/proofs/connection-ingress/final-quality.json) içindedir. Bu süre tek kontrol isteğinden itibaren gözlemdir; performans garantisi değildir. Windows11/temiz makine/installer ve canlı model/alt ajan kanıtlanmadı.
+The connection counter measures TCP. It does not count active HTTP requests or SSE streams. These times still need measurement for silent SSE across providers.
 
-## Sonraki ürün kapıları
+The final candidate passed 68 Rust tests with 0 failures and 2 opt-in tests ignored. The embedded debug build produced no warnings. The pinned lifecycle opt-in check passed 1 test.
 
-H040 engine restart boyunca sabit adresi hedefler. Uygulama tamamen kapanınca listener bırakılır; istemci hâlâ bu adrese bağlıysa portu başka bir süreç alabilir. H017/H029 bağlantı geri alma ve H030/H034 tray/background yaşam döngüsü bu sınırı çözmeden uygulama kapalıyken koruma iddiası yapılmaz. H011/H028 pause ve CCR sürekliliği de ayrı kapılardır.
+The native proof (local receipt `work/proofs/connection-ingress/native-proof.json`) records real click and keyboard input and an idle-close observation of 1224 ms. The final gate (local receipt `work/proofs/connection-ingress/final-quality.json`) records fingerprints. The timing starts at one control request and applies to that observation.
 
-Bu matriste doğrudan fail-open için onaylı yol yoktur. İleride eklenirse aynı auth/upstream/model/reasoning, gönderim öncesi kesin durum, tek POST, cache/CCR ve stream sınırları ayrı kabul gerektirir.
+Windows 11, clean machines, installers, and live model or subagent behavior need separate evidence.
+
+<a name="sonraki-ürün-kapıları"></a>
+
+## Next product gates
+
+H040 targets a stable address across engine restart. When the app closes fully, it releases the listener. Another process can take the port if a client remains connected to that address. Protection after app exit requires H017/H029 connection rollback and H030/H034 tray and background lifecycle evidence. H011/H028 pause and CCR continuity are separate gates.
+
+This matrix has no approved direct fail-open route. A future route needs separate acceptance for the same auth/upstream/model/reasoning, exact state before sending, one POST, cache/CCR and stream limits.

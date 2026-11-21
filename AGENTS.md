@@ -81,3 +81,10 @@
 - Keep repository reports in English and communicate with the repository owner in Turkish. Ponytail provides development guidance within existing model, agent, publishing and settings authorization. The smallest complete change preserves ownership, atomic writes, conflict-safe rollback, security, error handling, accessibility and required tests.
 - Give each finding a concrete condition, file and line, user impact and small fix. A reduction in lines of code is separate from acceptance. Report savings only when measured in the same scope.
 - Start audits read-only and state what the audit covered. Treat an actual fix as a separate scoped implementation and choose the implementer as above. Resolve critical correctness or data-loss findings before dependent work. Keep prospective features and cosmetic suggestions outside the defect gate. Skills and tools operate within the product scope and the user's authorization.
+
+## Simplified Technical English
+
+- Use the project [ASD-STE100 skill](.agents/skills/asd-ste100/SKILL.md) when you write or revise English technical text.
+- Use Strict mode for procedures, error messages, tool descriptions, and agent instructions. Use STE-flavored mode for reports and explanations.
+- Keep technical names, code literals, measurements, exceptions, and the strength of each claim. Compare the revised text with the source.
+- Use the skill's linter to check sentence structure. Review its findings against the source.

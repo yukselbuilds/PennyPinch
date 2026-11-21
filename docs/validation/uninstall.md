@@ -1,21 +1,31 @@
-# H038 — Kaldırma ve veri tercihleri
+<a name="h038--kaldırma-ve-veri-tercihleri"></a>
 
-9 Kasım 2026. H038 yerel kabulü tamamlandı, 36/51. Kullanıcı H037’nin dış kabulü açıkken bu göreve geçişi onayladı. [Plan026](../decisions/026-windows-uninstall.md), [kanıt](../proofs/uninstall.json).
+# H038 — Uninstall and data choices
 
-Kurulu uygulama kaldırılmadan önce aynı kullanıcının açık Headroom örnekleri kontrol edilir. Ardından mevcut sahiplik kayıtları üzerinden istemci yönlendirmeleri geri alınır. Bir bağlantı geri alınamazsa kurulum korunur. Kullanıcının başka alanlara yaptığı düzenlemeler mevcut işlem sözleşmesiyle korunur.
+9 November 2026. H038 completed local acceptance, 36/51. The user approved the task while H037 external acceptance was open. [Plan 026](../decisions/026-windows-uninstall.md) · [evidence](../proofs/uninstall.json).
 
-Kaldırıcı yerel geçmişi ve tercihleri varsayılan olarak saklar. Silme kutusu seçilirse uygulamanın LocalAppData kökü silinir. Kilitli veride hata oluşabilir ve bu sırada silinmiş veriler geri getirilemez. Dışa aktarılan dosyalar ve istemci veri klasörleri kendi yerlerinde kalır.
+Before uninstalling the app, check for open Headroom instances owned by the same user. Then undo client routes by using the current ownership records. Keep the installation if a connection cannot be undone. Preserve user edits to other fields under the current transaction contract.
 
-Windows 10 build 19045 üzerinde dört odaklı Rust testi geçti. Kaynak ve araç girdilerinin önce/sonra değerleri eşleşti. Açık uygulamalar ile kaldırıcı birbirini dışladı. Mevcut kilit dosyasındaki yabancı veri korundu. Kilitli yerel veri için silme hatası ve yeniden deneme doğrulandı. Üç istemcide kullanıcı düzenlemeleri korundu ve kilitli istemcinin geri alması yeniden denemede tamamlandı. [Odaklı test kaydı](../../work/proofs/windows-uninstall/focus-655bfb8a4e9e46a78d2c62c13ac24825/result.json).
+By default, the uninstaller keeps local history and preferences. If the user selects the delete checkbox, it deletes the app's LocalAppData root. Locked data can cause an error, and deleted data cannot be recovered during that attempt. Exported files and client data folders stay in their locations.
 
-Kurulu adayın uygulama kimliği `dev.headroom.desktop.h038-qa` ve adı Headroom H038 QA. İstemci fixture’ları `%LOCALAPPDATA%\HeadroomDesktop-QA-H038` altında ayrı bir koşu dizininde tutulur. Normal kullanıcı ayarları fixture olarak kullanılmaz. [Derleme kaydı](../../work/proofs/windows-uninstall/qa-build.json).
+Four focused Rust tests passed on Windows 10 build 19045. Source and tool inputs matched before and after. Open app instances and the uninstaller excluded each other. Foreign data in the existing lock file stayed intact.
 
-Windows 10’da gerçek kurulu uygulama fareyle kontrol edildi. Motor başlatıldı, Codex fixture’ı bağlandı, ürün içi kaldırma ile kayıt released oldu ve tekrar bağlandı. Normal çıkış kodu 0. Gerçek kaldırıcı açık uygulamada, kilitli ayar dosyasında ve kullanıcı endpoint çatışmasında kod 2 ile durdu. Geçmişi saklayarak kaldırma kod 0 ile tamamlandı. Kullanıcının fixture model/reasoning/yorum değişiklikleri korundu. Geçmiş ve tercih dosyaları yerinde kaldı. [Koşu kayıtları](../../work/h038-test/7b843249/keep.json).
+The test verified a delete error and retry on locked local data. Undo preserved user edits in all three clients. A retry completed undo for the locked client. Focused test record (local receipt `work/proofs/windows-uninstall/focus-655bfb8a4e9e46a78d2c62c13ac24825/result.json`).
 
-Altı komutlu son yerel kapı başarılı. Python supervisor/paket testleri, 173 arayüz testi, TypeScript/Vite, Rust fmt, 392 Rust testi ve custom-protocol derlemesi geçti. Dokuz Rust opt-in testi ignored. Kaynak ve araç parmak izleri önce/sonra eşleşti. [Yerel kapı](../../work/proofs/windows-uninstall/local-quality.json).
+The installed candidate has app ID `dev.headroom.desktop.h038-qa` and name Headroom H038 QA. Client fixtures use a separate run directory under `%LOCALAPPDATA%\HeadroomDesktop-QA-H038`. Normal user settings are not fixtures. Build record (local receipt `work/proofs/windows-uninstall/qa-build.json`).
 
-İkinci kurulumda motor ve Codex bağlantısı arayüzden yeniden başlatıldı, uygulama normal yolla kapatıldı. Gerçek kaldırıcıdaki silme kutusu varsayılan olarak boştu. Kutuyu işaretleyip geçmiş dosyası kilitliyken kaldırma denendi. İstemci yönlendirmesi geri alındı, silme hata verdi ve kurulum korundu. Kilit bırakıldıktan sonra aynı kaldırıcıyla tekrar silme seçildi. Arayüz başarı gösterdi ve çıkış kodu 0 oldu. QA kurulum ve veri kökü kaldırıldı. Üç dış istemci config’inin önce/sonra hash’leri eşleşti. [Kilit kontrolü](../../work/h038-test/7b843249/delete-locked-postcheck.json), [silme kontrolü](../../work/h038-test/7b843249/delete-postcheck.json).
+The test used a mouse in the installed Windows 10 app. The test started the engine and connected the Codex fixture. In-app Disconnect released the ownership record. The test then reconnected the fixture. The app exited normally with code 0.
 
-Kabul betiği 40 kontrolü aynı aday kimliğine bağladı. 212 ürün/araç girdisi, derleme ve test kayıtları, iki normal çıkış ve installer kimliği eşleşti. Tanı portları ve test pencereleri kapalı. Tam adayın kabulü için başarılı testler tekrar çalıştırılmadı. [Kabul kaydı](../../work/proofs/windows-uninstall/acceptance.json).
+The real uninstaller stopped with code 2 for an open app, a locked settings file, and a user endpoint conflict. Uninstall with history retention completed with code 0. It preserved user edits to model, reasoning, and comments in the fixture. It also preserved history and preference files. Run records (local receipt `work/h038-test/7b843249/keep.json`).
 
-Bu kayıt Windows 10 build 19045’te ayrı QA uygulama kimliğine aittir. Üç adaptörün config/rollback davranışı Rust fixture’larıyla, kurulu uygulamanın bağlantı yolu Codex fixture’ıyla sınandı. Temiz Windows, Windows 11 ve üretim kimliğiyle kurulum H037’nin dış kabulünde, `/UPDATE` yolu H042’de kalır. Silme güvenli adli imha iddiası taşımaz. Sıfır baytlık kardeş `.desktop-use` eşzamanlılık dosyası korunur.
+The six-command final local gate passed. Python supervisor/package tests, 173 UI tests, TypeScript/Vite, Rust fmt, 392 Rust tests and the custom-protocol build passed. The gate left nine opt-in Rust tests ignored. Source and tool fingerprints matched before and after. Local gate (local receipt `work/proofs/windows-uninstall/local-quality.json`).
+
+At the second installation, the engine and Codex connection restarted from the UI. The app then closed normally. The real uninstaller shows an empty delete checkbox by default. The test selected delete and started uninstall with a lock on the history file.
+
+The client route was undone, deletion failed and the installation remained. After releasing the lock, we selected delete again in the same uninstaller. The UI showed success and exit code was 0.
+
+The uninstaller removed the QA installation and data root. Before/after hashes for all three external client configs matched. Locked-file check (local receipt `work/h038-test/7b843249/delete-locked-postcheck.json`), delete check (local receipt `work/h038-test/7b843249/delete-postcheck.json`).
+
+The acceptance script bound 40 checks to the same candidate ID. It matched 212 product/tool inputs, build and test records, two normal exits and installer identity. The test closed diagnostic ports and test windows. It did not rerun passing tests for full-candidate acceptance. Acceptance record (local receipt `work/proofs/windows-uninstall/acceptance.json`).
+
+This record applies to a separate QA app ID on Windows 10 build 19045. Rust fixtures tested config/rollback behavior for all three adapters. The installed app connection path used the Codex fixture. Clean Windows, Windows 11 and production identity installation remain in H037 external acceptance. The `/UPDATE` path remains in H042. This uninstall does not claim secure forensic erasure. The uninstaller keeps the zero-byte sibling `.desktop-use` file for concurrency.
