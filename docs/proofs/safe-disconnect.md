@@ -1,41 +1,61 @@
-# H029 — güvenli bağlantı kaldırma kabulü
+<a name="h029--güvenli-bağlantı-kaldırma-kabulü"></a>
 
-6 Kasım2026. Yerel Windows10 x64 kabulü. [Plan017](../decisions/017-safe-disconnect.md), [inceleme](../reviews/H029.md).
+# H029 — Safe disconnect acceptance
 
-## Gerçek davranış
+November 6, 2026. Local Windows 10 x64 acceptance. [Plan 017](../decisions/017-safe-disconnect.md), [review](../reviews/H029.md)
 
-Kaldırma, seçili istemci/kapsamın Headroom tarafından eklenen yönlendirmesini onaydan sonra geri alır. Mevcut `undo_connection` IPC → `PlanManager` → `FileTransaction`/ownership yolu kullanılır. Model/auth/reasoning ve kullanıcı ekleri korunur; sonradan değiştirilmiş endpoint silinmez. Yeni backend undo protokolü veya ikinci config yazıcısı eklenmedi. `integrations/disconnect.rs` yalnız Windows test modülüdür.
+<a name="gerçek-davranış"></a>
 
-Kaldırmak motoru durdurmaz. Açık istemci güncellenmiş ayarı almak için yeniden açılabilir; açık sohbetin otomatik doğrudan bağlantıya taşındığı vaat edilmez. Motor Stop ayrı eylemdir: stable ingress yeni route'u kapatır, mevcut bağlantıyı kendi neslinde bırakır ve owned engine/relay temizliğini bekler.
+## Native behavior
 
-## Kanıt matrisi
+After confirmation, Remove reverts the endpoint changes that Headroom owns for the selected client and scope. It uses the existing `undo_connection` IPC command, `PlanManager`, and the `FileTransaction` and ownership path. It preserves the model, authentication, reasoning, and user additions. It leaves a later endpoint change in place. This slice uses the existing undo protocol and config writer. The `integrations/disconnect.rs` module supplies Windows tests only.
 
-| Senaryo | Gözlenen | Kanıt / sınır |
+The engine keeps running after Remove. Reopen the client to load the updated setting if necessary. Routing for an already open chat remains unverified. The separate engine Stop action closes the route to new requests at stable ingress and leaves the active connection in its own generation. It waits for cleanup of the owned engine and relay.
+
+<a name="kanıt-matrisi"></a>
+
+## Evidence matrix
+
+| Scenario | Observed result | Evidence and scope |
 | --- | --- | --- |
-| Üç adaptörde sonradan kullanıcı düzenlemesi, manager yeniden açılışı, endpoint çatışması | Sahipli alan geri alındı; kullanıcı değişikliği ve başka dosya korundu; değiştirilmiş endpoint/config+active ownership byte'ları yazılmadı | İki yeni `disconnect_all_adapters_*` testi; son351 Rust suite'i gerçek izole dosya sistemini kullanır |
-| Gerçek motor + gated SSE sırasında kaldırma | İlk delta istemciye ulaştıktan sonra Codex leaf undo; aynı generation/endpoint açık, diğer iki bağlı istemci dosyası aynı, tek POST terminal frame ile tamamlandı | `live-17.json`; gerçek pinned0.41.0/controller/helper/manager, loopback sağlayıcı fixture'ı |
-| Aktif SSE → Stop → normal gate | Yeni stable-ingress isteği yanıt byte'ı almadan kapandı; eski SSE kapı açılmadan kesilmedi; terminal frame geldi; graceful stop ve owned port temizliği geçti | Aynı opt-in koşu. Normal gate2s içinde açılır; bu private engine portunun2s'de kapanacağı SLA değildir |
-| Aktif SSE → Stop, gate kapalı | Terminal başarı yok; `cleanup_failed` ile eksik kapanış görünür; POST tekrar gönderilmedi; active TCP sayısı0; owned backend portu kapalı; ayrı listener canlı; manager shutdown temiz | Aynı koşu, mevcut10s uvicorn request-drain/20s process/30s controller/90s actor bütçeleri değiştirilmedi; stop için önceden belirlenen60s üst sınırı |
-| Gerçek native kaldırma | Ayrı auth'suz Codex test profiline native preview/apply; gerçek yeni onay UI'sından ESC/iptal ve onay/undo; owner/revision released; motor generation aynı; ayrı explicit Stop ack | Native run `54557cfb-0979-4bac-bb62-44e0b6a33f34`; global kullanıcı config'i ve app ayarları önce/sonra aynı, yalnız teste ait metadata CAS ile eski byte'larına döndü |
-| Bekleyen/hatalı UI, erişilebilirlik | İkinci undo ve kapanış engeli; pending iyimser başarı değil; conflict/commit_unknown sonrası yeniden ownership okuma; odak geri dönüşü ve Tab döngüsü; TR/EN/açık/koyu/819–683 genişlik ve gerçek WebView125/150/100 ölçek | Aynı native run'daki izole bileşen fixture'ı; gerçek native IPC'ye erişmeyen bundle guard'ı vardır; mock sağlayıcı/hesap kanıtı değildir |
-| Tokenizer başlangıcı | Altı public vocab SHA256 ile doğrulandı; yedi tiktoken kodlaması socket bağlantıları yasakken gerçekten yüklendi | [Hazırlık](../development/tokenizers.md); `work/proofs/tokenizers/prepare-95e27441-9279-49bc-bb90-c3d5e8c58008.json` |
+| Later user edits, manager reopen, and endpoint conflict for all three adapters | Undo reverted the owned field and kept user edits and other files. After a user endpoint change, it left the config and active ownership bytes unchanged. | Two new `disconnect_all_adapters_*` tests. The final suite of 351 Rust tests used an isolated filesystem. |
+| Remove during gated SSE with the real engine | After the first delta reached the client, the test reverted the Codex leaf field. The active generation and endpoint stayed the same. The other two client files matched. One POST completed with a terminal frame. | `live-17.json`. The actual pinned 0.41.0 engine, controller, helper, and manager used a loopback provider fixture. |
+| Active SSE, Stop, then open the gate | The new stable ingress request closed before it received response bytes. The existing SSE connection stayed open until the gate opened and delivered its terminal frame. Graceful stop and owned port cleanup passed. | Same opt-in run. The test opened the normal gate within 2 s. The 2 s interval applies to the gate only. The private engine port has separate closure timing. |
+| Active SSE and Stop with the gate closed | The request did not reach a successful terminal event. The Stop result reported incomplete shutdown with `cleanup_failed`. The test did not resend the POST. It recorded 0 active TCP connections and a closed owned backend port. The separate listener stayed up and the manager shut down cleanly. | Same run. Uvicorn kept its 10 s request drain budget. The process, controller, and actor budgets stayed at 20 s, 30 s, and 90 s, respectively. The Stop test kept its 60 s limit. |
+| Native removal | The test used native preview and apply in a separate Codex profile without authentication. The new confirmation UI exercised Escape, Cancel, and confirmed Undo. Ownership and revision showed released status. The engine generation stayed the same. An explicit Stop separately received acknowledgement. | Native run `54557cfb-0979-4bac-bb62-44e0b6a33f34`. Global user config and app preferences stayed the same. The test used CAS to restore only its own metadata bytes. |
+| Pending and failed UI states, and accessibility | The UI blocked a second Undo and closing while Undo was pending. It waited for acknowledgement before showing success. It read ownership again after conflict or commit_unknown. The test checked focus return and Tab wrapping. It covered Turkish and English, light and dark, widths 819–683, and actual WebView scaling of 125, 150, and 100. | The isolated component fixture in the same native run used a bundle guard that blocks real native IPC. Provider and account behavior remain outside this fixture. |
+| Tokenizer startup | The test verified six public vocabularies by SHA256. It loaded seven tiktoken encodings with socket connections disabled. | [Preparation](../development/tokenizers.md) and `work/proofs/tokenizers/prepare-95e27441-9279-49bc-bb90-c3d5e8c58008.json` |
 
-Native pencere exit0 verdi; debug listener kapandı; artifact ve korunan kullanıcı/app ayarı fingerprint'leri koşu içinde değişmedi. Native onay görünümü ve açık/koyu izole render ana ajan tarafından incelendi. Son native onay capture'ı koyu/boş render ürettiğinden tek başına görsel kabul sayılmaz; aynı görünümün önceki gerçek native `9c8497df-f736-4a42-97ce-95b379aecf01` capture'ı ve son native run'ın izole render'ları kullanıldı. Fonksiyonel native ack/odak kontrolleri son artifact üzerinde geçti.
+The native window exited with code 0 and its debug listener closed. The artifact and protected user and app settings matched throughout the run. The lead agent reviewed the native confirmation and the isolated light and dark renders.
 
-## Bulunan iki motor sınırı
+The last native confirmation capture showed a dark or blank render. Visual acceptance used the earlier native capture from `9c8497df-f736-4a42-97ce-95b379aecf01` and the final run's isolated renders. Native acknowledgement and focus checks passed on the final artifact.
 
-İlk soğuk token sayımı, eksik vocab yüklemelerinde iki10s bekleme yapabildi. İzole tanıda20,080s görüldü; cache hazırlandıktan sonraki aynı taşıma tanısında ilk istek0,381s, sonraki üç istek0,032–0,046s idi. Bunlar tekil tanı gözlemleridir, benchmark veya gecikme garantisi değildir. Çözüm sağlık timeout'unu artırmadı: helper her engine açılışından önce cache verisini doğrular ve yalnız engine sürecinin `TIKTOKEN_CACHE_DIR` değerini bağlar. Git'e veri/binary girmez; installer içine alınması H038/H041'de ayrıca doğrulanır.
+<a name="bulunan-iki-motor-sınırı"></a>
 
-Pinned uvicorn,10s sonunda kalan yanıtı iptal edip process exit0 üretebiliyor. Adapter artık `timeout graceful shutdown exceeded` sabit işaretini içeriksiz flag olarak tanır; bu durumu graceful diye iletmez. Stop DTO/şeması değişmedi. Üç yeni Python shutdown/cache testi ve mevcut controller protokol testleri `units-2.json` ile geçti.
+## Two observed engine limits
 
-Erken fixture koşularındaki canonical Windows yol ve HEAD prewarm varsayımları düzeltildi. Kabul edilen TCP soketine açıkça blocking mod verilmemesi erken kapanma/502 ve startup beklemeleri üretebiliyordu; son fixture bu modu kurar ve yarım/boş prewarm girişinde döngüye girmez. Eşzamanlı kontrol yükü ilk şüpheydi; tek süreçte de502 görüldüğü için neden olarak kabul edilmedi. Son17 koşusu bu düzeltilmiş fixture'ı kullanır. Geçici actor/HTTP teşhis kodu ürün adayından kaldırıldı.
+A cold token count could wait twice for 10 s if vocabulary downloads were missing. The isolated diagnosis measured 20.080 s. With the cache ready, the same transport check measured 0.381 s for the first request. The next three requests took 0.032–0.046 s. These timings apply to individual diagnostic runs. Benchmarks and latency guarantees require separate evidence.
 
-## Son kalite ve yeniden kullanım
+The fix kept the health timeout. Before every engine start, the helper verifies cache data and sets `TIKTOKEN_CACHE_DIR` only for the engine process. Git excludes the data and binaries. H038 and H041 track separate installer verification.
 
-`build-2.json` TypeScript/Vite ve embedded native build; `final-1.json`138 frontend testi; `native-final-2.json` fmt ve351 Rust testi/7 opt-in ignored; `live-17.json` ayrı gerçek SSE opt-in PASS. Bunlar `work/proofs/disconnect/` içindedir.
+The pinned Uvicorn version can cancel a remaining response after 10 s and exit with code 0. The adapter recognizes the fixed marker `timeout graceful shutdown exceeded` as a content-free flag. It reports incomplete shutdown in this case. The Stop DTO and schema stayed the same. Three new Python shutdown and cache tests and the existing controller tests passed in `units-2.json`.
 
-Son incelemede yalnız `cfg(all(test, windows))` altındaki `integrations/disconnect.rs` fixture'ı değişti. Güncel native suite bu dosyayı derleyip çalıştırır. Node/build/Python sonuçları, değişmeyen bütün ilgili ürün/TS/runtime/script girdileri ve aynı araç/ortamla yeniden kullanılır; tam156 girdili haritaların tek farkı programatik kontrol edilir. Artifact, asset ve doküman bağlaması `acceptance.json` içindedir; başarılı engine/UI testleri nedensiz tekrarlanmaz.
+The test fixed canonical Windows path and HEAD prewarm assumptions from early fixture runs. An accepted TCP socket without an explicit blocking mode could cause an early close, a 502, or a startup wait. The final fixture sets blocking mode and handles partial or empty prewarm input without looping.
 
-## Kabul sınırı
+The first suspicion was concurrent control load. A 502 also occurred with a single process, so the cause remained unproven. The final run 17 uses the corrected fixture. The product candidate removed temporary actor and HTTP diagnostics.
 
-Gerçek sağlayıcı/model çağrısı ve yeni hesap girişi yapılmadı. SSE testi gerçek motoru, izole yerel sağlayıcıya bağlar; canlı Codex/Claude/OpenCode hesabı, bütün modeller veya alt ajan desteği iddiası değildir. Windows11/macOS/Linux, temiz makine/installer, uzun yük/kararlılık ve API-key H041 kapısı açık kalır. Geliştirme token tasarrufu ölçülmedi; yüzde üretilmez. H029 kapanınca H030'a geçilmez.
+<a name="son-kalite-ve-yeniden-kullanım"></a>
+
+## Final quality gate and reuse
+
+`build-2.json` records the TypeScript and Vite checks and the embedded native build. `final-1.json` records 138 frontend tests. `native-final-2.json` records formatting and 351 Rust tests with 7 opt-in tests ignored. `live-17.json` records the separate actual-engine SSE opt-in pass. The files are in `work/proofs/disconnect/`.
+
+Only the Windows test fixture in `cfg(all(test, windows))` changed at final review. The native suite builds and runs `integrations/disconnect.rs`. The Node, build, and Python results used the same relevant product, TypeScript, runtime, and script inputs and the same tools and environment.
+
+A programmatic check identified one difference in the maps of 156 inputs. `acceptance.json` binds the artifact, assets, and documentation to the evidence. Reuse passing engine and UI checks while their inputs match.
+
+<a name="kabul-sınırı"></a>
+
+## Acceptance limits
+
+The test made no live provider or model call and started no new account sign-in. SSE connected the actual engine to an isolated local provider. Live Codex, Claude, and OpenCode accounts, full model coverage, and subagent support have separate acceptance. Windows 11, macOS, Linux, clean installation, sustained load, stability, and the H041 API-key check remain open. Development token savings remain unmeasured. Work stopped after H029 and before H030.

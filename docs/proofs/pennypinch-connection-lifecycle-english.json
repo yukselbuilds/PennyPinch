@@ -1,0 +1,107 @@
+{
+  "task": "H042-k3h",
+  "status": "pass",
+  "base_commit": "efd311d026f5ad7167ee2faa49ab41ff54c2942b",
+  "verified": {
+    "translated_records": 4,
+    "legacy_heading_aliases": 12,
+    "incoming_heading_links": 0,
+    "outgoing_links": 13,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/proofs/discovery-desktop.md": {
+      "original_sha256": "e1ee36b5e6f2865df870c0804a35787c268974a7548f4428a76615488318641a",
+      "draft_sha256": "00ed0485a1b4596e88e6fe99f7faa805f385f48c487e359f01fefd28445efdad",
+      "candidate_sha256": "73ba9114b174af1a36fa08c23d19683f171f4a8a7afd82365c54309b02848ae2"
+    },
+    "docs/proofs/onboarding.md": {
+      "original_sha256": "8f4d2c9137c2dc25cbb05c9a0cfc798adf85893f818d9197dc3174f989de66f2",
+      "draft_sha256": "128fdf5d90f5ee51d543a11374a71e2b14733188db8f5a4d85464d005977f97a",
+      "candidate_sha256": "c5d40d7e5f514666f4a10a325c07dddf822de15b864e98136945bebc9bd2cdcd"
+    },
+    "docs/proofs/safe-disconnect.md": {
+      "original_sha256": "ee5ac4217b014c6fedc23d9907c7ce4da5da5ce2a3076de7872b965ac1bed91b",
+      "draft_sha256": "9c07cf3f07ebee7b675924756cc565041c482dd5111fa5bb511b231aed0504e6",
+      "candidate_sha256": "768353bc6fddc1a3824e7e720217761270bb9ecdf15381df2054edd44e5f1af9"
+    },
+    "docs/proofs/safe-pause.md": {
+      "original_sha256": "2fdf5900b4354d185e10c7f9d6f507d97c775a7d13a077b0abb101f9a4f5f9f2",
+      "draft_sha256": "7f17140fce8c7dfa99f942e47afc3301b24dcce8b91226f54ac0f2b626e98fed",
+      "candidate_sha256": "555186d7b2831b32f9ab4b5ca6d5f19d5cb458f7cf337ef2b26be32b55f66e9d"
+    }
+  },
+  "references_sha256": {
+    "docs/proofs/discovery-native-diagnosis.md": "ba16fecd11d7177f769bcdc27eb1d6bf8d08465d9b6819b8ec71da200bec3062",
+    "docs/proofs/discovery-picker-ui.md": "724a133250f237bdd9aba4c281ccafc76af365de9f36e5073013b34aee1ac023",
+    "docs/research/computer-use-2026-10-20.md": "30fbb88bb22267b1f11924c003a942da2a857677c45dbec20d253e0771588eb1",
+    "docs/reviews/H016-c2.md": "2d190093c7a3527d8b04dc906add266b5b6375efee2420d649686c6f8f0b81e8",
+    "TASKS.md": "46e1deb952155f3bc2e224d87c78a977d7121b33fa4a8e34a4a5537be213eea5",
+    "docs/reviews/H022.md": "6b4f13e8f67f5fccb5cbbbebc4914e916237b929da442e34649d31913a185419",
+    "docs/decisions/017-safe-disconnect.md": "75e09ce4722d167b18f645ba832a020d2d3f499e6efbd089e10db5d830658e52",
+    "docs/reviews/H029.md": "a162c58d9c701ad625c8dc99a0d6d47d777c12a186d5f29ada7adc3656124d55",
+    "docs/development/tokenizers.md": "1c07831a70bad39c36f2de0c122e5379210a769638f8cbe8d959f4278f8bd5f1",
+    "docs/decisions/016-safe-pause.md": "bb6b8a3b817b5bc423bd5e80c278dee4095ca94514f552e92b9d067221e94865",
+    "docs/reviews/H028.md": "9f3ebe867fbc2a0adc5da250eef6738bde04e0ef4abed26b3a20761decee6b23",
+    "docs/development/WORKFLOW.md": "ae6e3791370ada5d6f7983d4633d923857832b0d253175d3c9fbbe78bc0136b7"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/discovery-desktop.md": {
+        "hard": 0,
+        "advisory": 8
+      },
+      "docs/proofs/onboarding.md": {
+        "hard": 0,
+        "advisory": 11
+      },
+      "docs/proofs/safe-disconnect.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/safe-pause.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the discovery and onboarding records. The lead agent drafted the pause and disconnect records, reviewed the four reports against the source, and ran the final checks.",
+  "compatibility_evidence_test": {
+    "command": [
+      "cargo.exe",
+      "test",
+      "--offline",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--bin",
+      "headroom-desktop",
+      "compatibility::catalog::tests::compatibility_catalog_embedded_records_have_scoped_existing_evidence",
+      "--",
+      "--exact",
+      "--test-threads=1"
+    ],
+    "result": "1 passed",
+    "evidence_references": 22,
+    "checked_files": 168,
+    "before_sha256": "93a7a1696419762cc881133aa21b38a4020f956ba1d4292e85ce890fa4d0498e",
+    "after_sha256": "93a7a1696419762cc881133aa21b38a4020f956ba1d4292e85ce890fa4d0498e",
+    "toolchain": {
+      "cargo.exe": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "rustc.exe": "rustc 1.92.0 (ded5c06cf 2025-12-08)"
+    },
+    "environment_paths": {
+      "CARGO_HOME": "work/caches/cargo-home",
+      "CARGO_TARGET_DIR": "work/caches/cargo-target"
+    }
+  },
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}
