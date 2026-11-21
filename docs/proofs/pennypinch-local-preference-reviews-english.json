@@ -1,0 +1,118 @@
+{
+  "task": "H042-k3ac",
+  "status": "pass",
+  "base_commit": "1a871086ab086b7a7a347e4b1d42a51e530bcb9b",
+  "verified": {
+    "translated_records": 2,
+    "legacy_heading_aliases": 2,
+    "incoming_links": 3,
+    "incoming_heading_links": 0,
+    "outgoing_links": 2,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/reviews/H015-a.md": {
+      "original_sha256": "95b5039d294d3ad159a1ee94e8f6a61fb38124557e15fde5616225b42b475e87",
+      "draft_sha256": "8222c0cf04be75ccee84ae0c073a83da8cd06896713029412943c224c95256b4",
+      "candidate_sha256": "72f32c18109743306cbdaee6a3e384ca9bf69de6e79bf7bcd1cafa26c5b08b2a"
+    },
+    "docs/reviews/H015-b.md": {
+      "original_sha256": "8585d3b204e2da0c1a61bc6de0320e61bac0eef73be74ef75eec5e945049e027",
+      "draft_sha256": "adaff3372f3f0c4b22b1d7db0e359451c535ee46b9dc0db30e717d3e9ef3f019",
+      "candidate_sha256": "1b62af126d20885661bc074600f80e3836fe6e0a7e9a09a3c09b48275146f92a"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "17f410a5cf172aeaf4d0f673bc7ffe81ba3ca811ae47c878442aea50dd21c35d",
+    "docs/proofs/preferences-ui.md": "dc26b487ca4ecd50d79b306c03f2d2035665333021da9d55a15c2c83b75e36cc",
+    "docs/proofs/preferences-store.md": "8dbd4ba22599ce26457db0650183b074a2f58f02762fe6dd733b839356a72607"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H015-a.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H015-b.md": {
+        "hard": 0,
+        "advisory": 1
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "historical_evidence": {
+    "docs/proofs/preferences-store.md": {
+      "sha256": "8dbd4ba22599ce26457db0650183b074a2f58f02762fe6dd733b839356a72607"
+    },
+    "docs/proofs/preferences-ui.md": {
+      "sha256": "dc26b487ca4ecd50d79b306c03f2d2035665333021da9d55a15c2c83b75e36cc"
+    }
+  },
+  "verifier_sha256": "808c65b1112a1c4449b7c36f94134fe7a22845e2e18ccaab7ccd069a4efe6ed5",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "fa95794ce5907ba958c166033c8d2500e081f64e7b14deb80d59376b91f4f09d",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 46,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 35
+      },
+      "flagged_prose_lines": 1535,
+      "approximate_source_words": 58237,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 44,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 33
+      },
+      "flagged_prose_lines": 1523,
+      "approximate_source_words": 57700,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 176,
+      "remaining_documents": 46,
+      "ready_percent": 79.3,
+      "remaining_percent": 20.7
+    },
+    "progress_after": {
+      "ready_documents": 178,
+      "remaining_documents": 44,
+      "ready_percent": 80.2,
+      "remaining_percent": 19.8
+    },
+    "other_documents": [
+      "bench/context_tools/README.md",
+      "docs/IMPLEMENTATION_STATUS.md",
+      "docs/design-config-actions.md",
+      "docs/testing-codex-manually.md"
+    ],
+    "after_input_sha256": "28f8a7c8690d1f9e2b638f6d1616496aa10fe0594687f92c381fe90a52038774"
+  },
+  "date": "2026-11-21",
+  "implementation": "The lead agent translated the two related preference records together and verified them against their evidence.",
+  "programmatic_references": "The tracked code and configuration search found no direct reference to either review.",
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}

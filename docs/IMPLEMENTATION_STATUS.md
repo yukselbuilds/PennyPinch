@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English local preference reviews
+
+H042-k3ac is complete. The two English H015 reviews cover the preference store, its UI binding, and the native save and reopen evidence. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-local-preference-reviews-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 178 of 222 tracked documents (80.2%). It flagged 44 documents (19.8%) with remaining Turkish prose. The estimated remaining text is about 58,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the H016 discovery and file selection reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English desktop shell and engine control reviews
 
 H042-k3ab is complete. The four English reviews cover the desktop shell, Python bridge, Rust manager, and native engine controls. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-desktop-engine-reviews-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 176 of 222 tracked documents (79.3%). It flagged 46 documents (20.7%) with remaining Turkish prose. The estimated remaining text is about 58,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the H015 local preferences reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English architecture and compatibility reviews
 
