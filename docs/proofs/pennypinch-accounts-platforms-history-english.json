@@ -1,0 +1,162 @@
+{
+  "task": "H042-k3aw",
+  "date": "2026-11-22",
+  "status": "pass",
+  "base_commit": "12b1daabdb81d51bb10402bd6e2f938e0f9975ab",
+  "implementation": "The GPT-6 Luna xhigh worker drafted the macOS history. The lead drafted the deferral, account, session, recommendations, RTK, and release candidate history and reviewed all entries.",
+  "scope": "English translation of historical records. Product tests, model calls, and CI did not run.",
+  "translation": {
+    "approximate_source_words": 4157,
+    "source_working_range": [
+      1270,
+      1357
+    ],
+    "working_source_sha256": "a41276e6c1cb5c093a3439fe651738e755b72a7b7ee30b6bb5a8fb6d5758d60c",
+    "index_source_sha256": "e23ed3a32b6bfcd6f188618a2ee439cdec81da870f84d8b9165738fbc6394494",
+    "working_candidate_sha256": "46243742566d6de2565c8f7f9b16016ce7d873a88642d90898578d27868d2d71",
+    "index_candidate_sha256": "f25d5ecac590d97e187aade24a5436c3dc53be55585709b46d4eb0a0e092d77e",
+    "parts": {
+      "accounts.md": {
+        "source_sha256": "265ee59274c4d8b1d1b7b6311673fc01d8e3a80e71fe13d13e32844364be8e59",
+        "reviewed_draft_sha256": "5b3a3d79f88fb43ef13c1749a77a5f45952dfb94516b09e40c9ec9ad07b73b65"
+      },
+      "macos.md": {
+        "source_sha256": "958a8140874bdc1933cceb8b9f723a234c6e448cda1ced452f00286d7f07c953",
+        "reviewed_draft_sha256": "e4cd6b2c0ab9aff6acadab6cbeef508668ca6817e8a654ac9949cfd4cea196bf"
+      },
+      "local.md": {
+        "source_sha256": "56bb0502c1995f69a57d33702128af2df3e644666e86f8708a54f859d3aa6992",
+        "reviewed_draft_sha256": "cedfbf052e516134717a0c6c31953e7f897f999c44afdd282fa965b08398477f"
+      }
+    },
+    "worker_draft_sha256": "b62411e6bed6e2cf7dc2c21c2dcd600fa6756711e71558f400c859dec83f162f"
+  },
+  "verified": {
+    "legacy_heading_aliases": 9,
+    "incoming_links_to_preserved_anchors": 0,
+    "outgoing_relative_links": 44,
+    "preserved_actions_urls": 18,
+    "preserved_nonblank_rows": 68
+  },
+  "references_sha256": {
+    "docs/proofs/pennypinch-runtime-opencode-history-english.json": "44a761be03cf583e8c5ee19b57d5769fb045d4a67dfcb392e17496935bd9eb64",
+    "docs/proofs/sessions.md": "e82361fc1e00324b420f38296ce60b2693565a9a315753f578298397cb689572",
+    "docs/proofs/sessions.json": "7800df48fd22d7e8f7315d0c6ce8dde3937a11c7059833072702eb3ba57d123f",
+    "docs/reviews/H051.md": "e72d66f8843a4b58704d4b0dbc9874a32f4b6f7fe982cd7899314621fcafc2f8",
+    "docs/decisions/031-session-metadata.md": "9bf1685951efbb7156399ddb65138f0e6e6bf47ec9e197e88fab8e8763a5f9d1",
+    "docs/proofs/accounts.md": "22337f549408345d76f74ce0d9d66035ae52e4979f98ebb1de25e87e53c08329",
+    "docs/proofs/accounts.json": "65c6645442568a7d99b99657efbf5e7eb81256eb83263c1b5c81481af1df4581",
+    "docs/reviews/H050.md": "b526fbc7edf8384c688925849da9bd344b9285708a254297f399ecc9f19ea3a7",
+    "docs/proofs/macos-build.json": "dbc15d85c54a292d3b13fea8eef7cc5ed8fa944a2c322e1d25db110b9c619f8c",
+    "docs/proofs/macos-engine.json": "d63e7963a893bcb2f1072b40d859899594d9f2d5c12e181c26145a605699110d",
+    "docs/proofs/macos-payload.json": "22ec1fd4bd0ea64f87d91b0f9d7cfc7feb8a4eb246e53eff9b66f8c24024ee9e",
+    "docs/proofs/macos-unix-transport.json": "a3002b04ec09dc7092ac1dda0d9c8c936e71f3c60abbc5a5efc673943f6a513f",
+    "docs/proofs/macos-managed-session.json": "75d39ebbac2872cf42f7be30dd16a2ec4ff96738975c5d3a8cfb52680d346ba8",
+    "docs/proofs/macos-stable-ingress.json": "1b423ea6f37601a6a7aa9ef2c977e1f0947e97a6103d054d9cf87c824b5ca8f2",
+    "docs/proofs/macos-application-manager.json": "93a97ec6b34a8e121b2612447d3a9a87d23a355728b7349784bfe6b0427293f8",
+    "docs/proofs/macos-config-transaction-probe.json": "f3434be5f24cde2caba4e7d25a5d9289c5b9747f838d80772aa0a1e61b46bcc9",
+    "docs/proofs/macos-config-recovery.json": "feec5a0171123286217e726fbdcc4ec0d32da06ae646ec55422266853686ee4d",
+    "docs/proofs/macos-config-reader.json": "c44c6da1de15ef7b70845ac5a72ae710346aaaf16407706c5df0201089865df1",
+    "docs/proofs/macos-config-apply.json": "eab74e1d0430b952d51f29bfd100ba244b62d01c8a2bc87ba5a2398e41a43186",
+    "docs/proofs/macos-claude-project-directory.json": "44edb19cea5d6b83267bf8a468ad2d9aad929c35df428e3071d412ed045e8b95",
+    "docs/proofs/macos-retained-versions.json": "84995a3853d67956ae524dcf7f58cdde71b3b21e7c3076c39e5ad68792736b7e",
+    "docs/reviews/H048.md": "0f38b61b2f2534cef4da663f3ba03d34bd43f2686306208b92346e2adaeb2b5c",
+    "docs/proofs/macos-cli-discovery.json": "c30c95bc1805893a454905b3509576f13f97d9efa3a18e12fdfc7a4b589ec205",
+    "docs/proofs/macos-selection-store.json": "5d73bc6159fefa0edc1f597f7050978e76338efaf61f774d10573651dc930e32",
+    "docs/proofs/macos-desktop-discovery.json": "453db08512652322ca96d393393bee39b33980f4b14d3e620973d9ce59476045",
+    "docs/proofs/macos-file-picker.json": "5a3527ad3aa72c255ed6f96d5fd474ed4af59e0b0712015caafdd4ddb8104c54",
+    "docs/proofs/macos-package-lifecycle.json": "2d118815fa57a7f68385a894cb8776d7e5d4fdd1c5aac7db4e6597f0a5654a3c",
+    "docs/proofs/macos-report-export.json": "3524e4f183ab5374ee39dab55caebdafa99ffe80a7e9a1b12f19631192875ecf",
+    "docs/proofs/macos-desktop-preflight.json": "41cd642a04e76a56cf40248731d3a8bef8d8c840f3315f3c33a2ee14cd736c75",
+    "docs/proofs/macos-desktop-traffic.json": "58df9fb04bc2272b27dc3e6c762ab74f8c0cd4a4d047f39b5b9d8320d1bcb130",
+    "docs/decisions/029-local-recommendations.md": "4a14bec18c1157b722e71c4be3218c3fb93fb6148a7f691d12b4336a86ad997e",
+    "docs/proofs/recommendations.md": "ad9d7aeeb1214624dad4ae237614189ceaf6d25a6c01608472cc8e8f280e171e",
+    "docs/proofs/recommendations.json": "5359e5e1d7c0c890a609352a870d1fd39a204b4057f5a6060206b5c4d75814da",
+    "docs/proofs/rtk.md": "195ddc4b1e31767241dbf83b23e8c8882cd1fd7a9fff3b0ea1ecfddee3717c2f",
+    "docs/proofs/rtk.json": "a441eea099c5bec92efc23144fb86f7e3caa973fcd00b36de693a94023982dc1",
+    "docs/proofs/rtk-surfaces.md": "5a538a4d88489d8e52903b34e517777ac59010b6f608e150f4e547e1ee59714f",
+    "docs/proofs/release-candidate.json": "da9b44cdd82eb68350c90fdc83ff08d64a0b03632b3d05c71195436e549b75b1",
+    "docs/validation/release-candidate.md": "4c3c34fc7da16660356a6ce2b2faf4e67a045e4ad9e928df9044372fcf46723f",
+    "docs/reviews/H039.md": "f36d6bff86bbb524273b8a34ee98646ddb6bbf772d0cf6e04e0b501b193c70fd",
+    "docs/USER_GUIDE.md": "06923dd95d35ed6ff23bcf20b7a0c83fef3772b4d81144031aae6adf65770217"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "accounts.md": {
+        "hard": 0,
+        "advisory": 4
+      },
+      "macos.md": {
+        "hard": 0,
+        "advisory": 28
+      },
+      "local.md": {
+        "hard": 0,
+        "advisory": 5
+      },
+      "TASKS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/IMPLEMENTATION_STATUS.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "6016295700c4f2574f74728c1c4b715b4c0cae1ce67a17039ee6b1bb49706dc2",
+  "inventory_scanner_sha256": "252bb7cd485828727001a1ef48de5df9eb6148573a47709d82f1f30f5014f0d2",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "97300f617528a09a1828280dc52cab1de347efeb832cb9c44f4221ff395f77bb",
+    "after_input_sha256": "e65b68d0b5d082c8ba29bd1a477768f959cd97f4ea22019633c0535f7c8cb933",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 1,
+      "counts_by_area": {
+        "other_documents": 1
+      },
+      "flagged_prose_lines": 334,
+      "approximate_source_words": 14457,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 334,
+        "approximate_words": 14457
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 1,
+      "counts_by_area": {
+        "other_documents": 1
+      },
+      "flagged_prose_lines": 266,
+      "approximate_source_words": 10300,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 266,
+        "approximate_words": 10300
+      }
+    },
+    "progress_before": {
+      "ready_documents": 221,
+      "remaining_documents": 1,
+      "ready_percent": 99.5,
+      "remaining_percent": 0.5
+    },
+    "progress_after": {
+      "ready_documents": 221,
+      "remaining_documents": 1,
+      "ready_percent": 99.5,
+      "remaining_percent": 0.5
+    }
+  }
+}
