@@ -1,0 +1,136 @@
+{
+  "task": "H042-k3e",
+  "status": "pass",
+  "base_commit": "7fb0c3f7d17001ba84ff65cb2ccf07d36327e17f",
+  "verified": {
+    "translated_records": 5,
+    "existing_english_records": 3,
+    "legacy_heading_aliases": 27,
+    "incoming_heading_links": 3,
+    "outgoing_links": 19,
+    "local_receipts": [
+      "work/proofs/connection-plan/final-quality.json",
+      "work/proofs/connection-plan/final_gate.py",
+      "work/proofs/connection-plan/format-pass.json",
+      "work/proofs/connection-plan/frontend-quality.json",
+      "work/proofs/connection-plan/native-proof.json",
+      "work/proofs/connection-plan/native-run.json",
+      "work/proofs/connection-plan/native_fixture.py",
+      "work/proofs/connection-plan/planner-a.md",
+      "work/proofs/connection-plan/planner-b2.md",
+      "work/proofs/connection-plan/typed-bridge-c1-review-fixes.md",
+      "work/proofs/connection-plan/typed-bridge-c1.md",
+      "work/proofs/connection-plan/ui-review/plan-en-dark.png",
+      "work/proofs/connection-plan/ui-review/plan-tr-light-760.png",
+      "work/proofs/connection-plan/ui-review/summary.json",
+      "work/proofs/connection-plan/validate_handoff.py"
+    ]
+  },
+  "documents": {
+    "docs/proofs/codex-current-diagnostics.md": {
+      "original_sha256": "85b1d1ec14c30882863dd81a61b47043579dd65ea8bf6936443566195a3d0a4b",
+      "draft_sha256": "35d331693d00939eb1a174add53b106a0247d1f8fab2fbc8d6e7f60b7798a590",
+      "candidate_sha256": "110de091f7c442da47df46ed21ec49b5f92ee8a30681a2060fd8ce89142fecb7"
+    },
+    "docs/proofs/codex-current.md": {
+      "original_sha256": "74ef76c413494f0e3311fe0628259bdbff3383273941dee1082b78202653e659",
+      "draft_sha256": "cfa4ac741e02ee40c0f16d4ca663f829eb56302d5675636522357c3f9c810788",
+      "candidate_sha256": "b565a30e3748da99ecef101be4eceb0ed6514804b81ffe975ebd2f5bbdb79e1d"
+    },
+    "docs/proofs/codex-desktop-live.md": {
+      "original_sha256": "3f632e4c4a0edba8ea8a301ef2a93c9cc1f21a5808c7d3607c0ffeefe10cf00e",
+      "draft_sha256": "08e840a297e199c445d25971750fce27958c3977b004bee5748aff5a442b6b4d",
+      "candidate_sha256": "5778c46b1b788423dc5c9fd315da342c4b1a531a830f603261389d7021f14aa6"
+    },
+    "docs/proofs/codex-native-wait.md": {
+      "original_sha256": "b607cede2c1e4161d0f2d08d2a9e2cd9c28572ec3e7ef95f4f7a5754877167bb",
+      "draft_sha256": "84056189ee1ed20e6611d48483fb3e683476bc42b27cd8992c9f09a5f1259118",
+      "candidate_sha256": "1bec61ff6875cae6cbad11175fd0a5e22a190a13ffb786cee9fd80503484f8b1"
+    },
+    "docs/proofs/connection-plan.md": {
+      "original_sha256": "75367d3908d3540d9037471a5e81fe0023390cc1984abf300d0b3e002fbe9ca6",
+      "draft_sha256": "36f9ed0a72536c654fd18ff23f01356d242d15e8c106dc5bfb98d21223e88296",
+      "candidate_sha256": "4dcfbd8e020a5a7487182f70c18b56c4ea369b760eee8ec44cdd3b29cb8dce67"
+    }
+  },
+  "existing_english_sha256": {
+    "docs/proofs/codex-product-verification.md": "a4ed8d3e52481a353ac20096efff2425b92bc3000a37812d34136190deaed199",
+    "docs/proofs/claude-product.md": "e1593f7f56b502602c7e9e412f790fcd40348ffe877ef85a889bf58d47bdf6c1",
+    "docs/proofs/opencode-product.md": "e7b776a3e416339509e8c6a5c19283d7de7d021e629043ea6ebe2d8db76c907d"
+  },
+  "references_sha256": {
+    "TASKS.md": "968baf6cd235025b02fb0176c928b6d8b10c9c319abd374ced230ddfb2dae406",
+    "docs/IMPLEMENTATION_STATUS.md": "f2805ec1e51521f3ae70894935736792dd3c457968c3e152c22823bf1313a9f9",
+    "docs/decisions/011-current-codex.md": "dacbf72768f4579ee6352fba7a1bde8b566ccf8081f71480633e07be45d52011",
+    "docs/decisions/010-metrics-normalization.md": "bb71f8a14a3b4b0f09c64c2b457012a741a4599627cdc78a6aac16d881c408e5",
+    "compatibility/clients.json": "c373dfcf90687ecf99923b98f168b884eef8a6b651f4879df9ff031437f2762a",
+    "docs/decisions/004-connection-plan.md": "0cd6d581c0c7011fd50c73b92015715d1b53a96669ccd839e834bbda4aabbabb",
+    "docs/reviews/H017.md": "8dc931c6863ff2fc1f9f219ef7e7defa609a194d4fd0cd2cadb795fa3450db63",
+    "docs/proofs/connection-plan-ui.md": "38d1a5a8377e0f5af5542ac71652e1180682c195fe6910a5718bbe6e2cf73129",
+    "docs/proofs/connection-plan-ui-review-fixes.md": "8b47694ca498bb9beae477411347d08be9ad77208dcbd5c11e6d3e7ed8b73d81",
+    "docs/proofs/connection-plan-ui-focus-fix.md": "eb6653ea67fa921c8a617e1da502884c822d1efb795c0c92af5b45408360c479"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/codex-current-diagnostics.md": {
+        "hard": 0,
+        "advisory": 15
+      },
+      "docs/proofs/codex-current.md": {
+        "hard": 0,
+        "advisory": 19
+      },
+      "docs/proofs/codex-desktop-live.md": {
+        "hard": 0,
+        "advisory": 10
+      },
+      "docs/proofs/codex-native-wait.md": {
+        "hard": 0,
+        "advisory": 16
+      },
+      "docs/proofs/connection-plan.md": {
+        "hard": 0,
+        "advisory": 2
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the four Codex records. The lead agent drafted the connection preview, checked the related English reports, and reviewed the final documents.",
+  "compatibility_evidence_test": {
+    "command": [
+      "cargo.exe",
+      "test",
+      "--offline",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--bin",
+      "headroom-desktop",
+      "compatibility::catalog::tests::compatibility_catalog_embedded_records_have_scoped_existing_evidence",
+      "--",
+      "--exact",
+      "--test-threads=1"
+    ],
+    "result": "1 passed",
+    "evidence_references": 20,
+    "checked_files": 166,
+    "before_sha256": "1e50fdf2bae2086a06901b043a37641b03f89018da0244f646e93634a42851ed",
+    "after_sha256": "1e50fdf2bae2086a06901b043a37641b03f89018da0244f646e93634a42851ed",
+    "toolchain": {
+      "cargo.exe": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "rustc.exe": "rustc 1.92.0 (ded5c06cf 2025-12-08)"
+    },
+    "environment_paths": {
+      "CARGO_HOME": "work/caches/cargo-home",
+      "CARGO_TARGET_DIR": "work/caches/cargo-target"
+    }
+  },
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}

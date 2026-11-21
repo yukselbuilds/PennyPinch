@@ -1,43 +1,59 @@
-# H008 — gerçek Desktop hesabı ve aynı sohbet
+<a name="h008--gerçek-desktop-hesabı-ve-aynı-sohbet"></a>
 
-4 Kasım 2026. Windows 10 Pro 22H2 x64. Ana ajan auth, rota ve süreç sahipliği nedeniyle bu doğrulamayı yürüttü. Ürün kaynağı değişmedi.
+# H008 — real Desktop account and same chat
 
-## Gözlenen davranış
+4 November 2026, Windows 10 Pro 22H2 x64. The lead agent ran this verification because of authentication, route and process ownership. Product source did not change.
 
-Kurulu ve OpenAI imzası doğrulanan Desktop `26.1027.6604.0`, backend `0.166.0-alpha.5.1` ve pinli Headroom `0.41.0` kullanıldı. Kullanıcı ayrı uygulama state profilinde resmî ChatGPT girişini tamamladı ve ilk kullanım ekranını kendisi atladı. Profilin varsayılan modeli ve eforu korundu. İki turda `gpt-6-luna` / `medium` gözlendi. Bu, ürün için model koşulu değildir.
+<a name="gözlenen-davranış"></a>
 
-| Senaryo | Sonuç |
+## Observed behavior
+
+The run used installed Desktop `26.1027.6604.0` with a verified OpenAI signature, backend `0.166.0-alpha.5.1` and pinned Headroom `0.41.0`. The user completed official ChatGPT sign-in in a separate application-state profile and skipped the first-use screen. The profile's default model and effort were preserved. Two turns showed `gpt-6-luna` / `medium`. This is not a product model requirement.
+
+| Scenario | Result |
 | --- | --- |
-| Profilde kayıtlı Headroom uç noktasıyla Desktop açılışı ve kısa istek | Koşuya özel tam yanıt görünür arayüzde doğrulandı. |
-| Yeni sohbet ekranına geçiş | Test sohbetinin seçimi ve ilk yanıtın görünürlüğü kapandı. Önceki sohbetin gizli DOM'da kalması başarı ölçütü yapılmadı. |
-| Kenar çubuğundan aynı sohbeti açıp ikinci istek gönderme | İlk yanıt geri geldi, native sohbet kimliği eşleşti ve ikinci tam yanıt görünür oldu. |
+| Desktop startup with the Headroom endpoint saved in the profile and a short request | The run-specific full response was verified in the visible UI. |
+| Move to the new chat screen | The test chat's selection and first response were no longer visible. Hidden presence of the old chat in the DOM was not an acceptance criterion. |
+| Open the same chat from the sidebar and send a second request | The first response returned, the native chat identity matched, and the second full response became visible. |
 
-Sohbet kaydında aynı kimliğe ait iki kullanıcı girdisi, iki tam asistan yanıtı ve iki model/efor kaydı ayrıca eşleşti. İnceleme yalnız bu deneyin kimliğiyle sınırlandı. Kanıta metin içeriği veya auth dosyası eklenmedi.
+The chat record also matched two user inputs, two full assistant responses and two model/effort records with the same identity. Review was limited to this experiment's identity. Text content and auth files were not included in evidence.
 
-Motor beş yerel istek satırı, bir cache kaydı ve sıfır başarısız istek bildirdi. İstek amaçları ayrı sınıflandırılmadığı için bu sayılar iki kullanıcı turuna bire bir eşitlenmez. WebSocket üzerinden gerçek yanıt tamamlandı. Üç satırdaki ham yerel token tahminleri `22628→22212`, `15082→14885`, `23440→23413` idi. Bu alanlar sağlayıcı faturalandırması veya doğrulanmış kota tasarrufu değildir. [Ölçüm sözleşmesi](../decisions/010-metrics-normalization.md) korunur.
+The engine reported five local request rows, one cache record and zero failed requests. These counts cannot be equated one-to-one with the two user turns because request purposes were not classified separately. A real response completed over WebSocket. Raw local token estimates from three rows were `22628→22212`, `15082→14885` and `23440→23413`. These fields are not provider billing or verified quota savings. The [measurement contract](../decisions/010-metrics-normalization.md) remains in effect.
 
-## Sahiplik ve doğrulama
+<a name="sahiplik-ve-doğrulama"></a>
 
-- Microsoft paket içi tanı başlatması ve yalnız test sürecine ait loopback CDP kullanıldı. Bu, standart launcher veya kurulum paketi kabulü değildir.
-- Test penceresi sahipli Job ile kapatıldı. Bu kapanış normal GUI kapanış testi sayılmadı. Motor graceful/exit 0 ile durdu, test süreçleri ve iki listener kapandı.
-- Normal Codex config hash'i eşleşti. Ayrı test profilindeki sahipli endpoint alanı geri kaldırıldı; Desktop'ın eklediği diğer profil ayarları korundu. Kimlik bilgisi uygulama state kökünde kaldı.
-- Desktop/backend dosyaları önce/sonra eşleşti. Yardımcı ve motor kaynak fingerprint'leri eşleşti. Önceki tam kalite kapısının 101 ürün girdisi aynı kaldı; tam kapı tekrarlanmadı.
-- Kurulu Desktop paketi ve backend dosyası önceki opt-in testlerden sonra değiştiği için gerçek keşif/pin ve CLI+Desktop izole Apply/Undo testleri yenilendi. İkisi de PASS verdi. Bu kontroller model çağrısı yapmadı.
+## Ownership and verification
 
-Yerel kanıt kökü `work/proofs/codex-current/desktop-live-runs/dd004ad6-2551-403a-b07e-8a5a236f80ce/`. `desktop-live.json`, `finish.json`, `native-chat-metadata.json`, `installed-check.json` ve `verification.json` içeriksiz sonuç ve fingerprint'leri tutar.
+- Microsoft's package diagnostic launcher and loopback CDP for the test process only were used. This is not acceptance of the standard launcher or installer package.
+- The test window was closed through its owned Job. This did not count as a normal GUI shutdown test. The engine stopped gracefully with exit code 0. Test processes and two listeners closed.
+- The normal Codex config hash matched. The owned endpoint field was removed from the separate test profile. Other profile settings added by Desktop were preserved. Credentials remained in the app-state root.
+- Desktop/backend files matched before and after. Helper and engine source fingerprints matched. The previous full quality gate had the same 101 product inputs, so the full gate was not repeated.
+- The installed Desktop package and backend file changed after earlier opt-in tests. Real discovery/pinning and isolated CLI+Desktop Apply/Undo tests were rerun. Both passed. These checks made no model call.
 
-Önceki `9de4c852-5008-4870-b03a-4c184decc742` koşusu boş arayüzle süre sonunda kapandı, model isteği gözlenmedi. İki koşu arasında paket ve test ortamı değiştiğinden önceki boş ekranın kök nedeni bu PASS ile açıklanmış sayılmaz.
+Local evidence root: `work/proofs/codex-current/desktop-live-runs/dd004ad6-2551-403a-b07e-8a5a236f80ce/`. `desktop-live.json`, `finish.json`, `native-chat-metadata.json`, `installed-check.json` and `verification.json` contain content-free results and fingerprints.
 
-## Çalışan uygulamada ayar ve tam yeniden açılış
+Earlier run `9de4c852-5008-4870-b03a-4c184decc742` closed at timeout with an empty UI and no observed model request. The package and test environment changed between the runs. This PASS does not establish the root cause of the earlier empty screen.
 
-Aynı gün ayrı `6d0d6209-1743-43b0-84bb-4df18dac61f0` koşusu mevcut test hesabı ve sohbetiyle yapıldı. İlk Desktop süreci Headroom ayarı olmadan başlatıldı. Aynı native sohbet görünür olduktan sonra yalnız bu test profilinin endpoint alanı atomik eklendi.
+<a name="çalışan-uygulamada-ayar-ve-tam-yeniden-açılış"></a>
 
-İlk ek yanıt aynı GUI süreci açıkken tamamlandı, Headroom istek ve WebSocket sayaçları sıfır kaldı. Bu sürüm, çalışan süreçte haricen eklenen ayarı o turda kullanmadı. Test penceresi sahipli Job ile kapatılıp kayıtlı ayarla yeniden açıldı. Önceki sohbet ve yanıt geri geldi. İkinci ek yanıt aynı native kimlikle Headroom üzerinden tamamlandı. İkinci istek öncesi ve sonrası farklı motor satırı ayrıca gözlendi. Bu sonuç mevcut UI'daki yeniden açma uyarısıyla uyumlu; ürün kopyası değiştirilmedi.
+## Setting while the app is running and full reopen
 
-Frontend'in ilk süreçteki geçici `client-new-thread` kimliği yeniden açılışta native kimliğe dönüştü. Eşleme aynı native sohbet üzerinden yapıldı. Bu, sohbet DB'sini yeniden etiketleme işlemi değildir.
+On the same day, a separate run `6d0d6209-1743-43b0-84bb-4df18dac61f0` used the existing test account and chat. The first Desktop process started without a Headroom setting. After the same native chat became visible, only the endpoint field in this test profile was added atomically.
 
-İki test GUI süreci ve üç loopback listener kapandı. Motor graceful/exit 0 verdi. Normal config ve kaynak/paket fingerprint'leri eşleşti. Test profilindeki sahipli endpoint kaldırıldı. Yerel kanıtlar ikinci run altındaki `before-apply.json`, `after-change.json`, `before-second.json`, `finish.json`, `adoption.json` ve `verification.json` dosyalarıdır.
+The first extra response completed while the same GUI process remained open. Headroom request and WebSocket counters stayed at zero. This version did not use the externally added setting for that turn.
 
-## Kabul sınırı
+The test window was closed through its owned Job and reopened with the saved setting. The old chat and response returned. The second extra response completed through Headroom with the same native identity.
 
-H008, kullanıcının 4 Kasım kapsam kararıyla Windows10 ChatGPT CLI/Desktop kanıtları üzerinden kapandı. Canlı API-key sağlayıcı testi H041 yayın öncesi kabulünde açık/not_tested kaldı; API-key HTTP/SSE ve yerel Desktop WebSocket fixture kanıtları ayrı tutulur. Bu sürümde açık tur yeni ayarı kullanmadı; tam yeniden açılışla mevcut sohbet Headroom'a yönlendi. Eski CLI farklı model koşusunun iptal edilmiş wait sonucu tarihseldir; sonraki [native bekleme kanıtı](codex-native-wait.md) tamamlandı. Desktop alt ajanı, Windows11/macOS/Linux, bütün model özellikleri, aktif stream sırasında ayar değiştirme ve uzun süreli kararlılık bu kısa Desktop koşusunun kapsamı değildir.
+The engine snapshots before and after the second request showed a new row. This is consistent with the current UI reopen warning. Product copy did not change.
+
+The frontend's temporary `client-new-thread` identity from the first process mapped to the native identity after reopening. The mapping used the same native chat. This did not relabel the chat database.
+
+Two test GUI processes and all three loopback listeners closed. The engine exited gracefully with code 0. Normal config and source/package fingerprints matched. The owned endpoint was removed from the test profile. Local evidence is in the second run's `before-apply.json`, `after-change.json`, `before-second.json`, `finish.json`, `adoption.json` and `verification.json` files.
+
+<a name="kabul-sınırı"></a>
+
+## Acceptance limit
+
+H008 closed under the user's scope decision of 4 November with Windows 10 ChatGPT CLI/Desktop evidence. The live API-key provider test remains open/not_tested in H041 pre-release acceptance. API-key HTTP/SSE and local Desktop WebSocket fixture evidence remain separate. The open turn in this version did not use the new setting. After a full reopen, the existing chat routed through Headroom.
+
+The earlier cancelled wait from the different-model CLI run is historical. A later run completed the [native wait](codex-native-wait.md). Desktop subagents, Windows 11/macOS/Linux, all model features, setting changes during an active stream and long-term stability are outside this short Desktop run.
