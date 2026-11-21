@@ -1,0 +1,87 @@
+{
+  "task": "H042-k3i",
+  "status": "pass",
+  "base_commit": "3cfb9ceef61d86f9297954b5f2dedc72bb41c86c",
+  "verified": {
+    "translated_records": 4,
+    "legacy_heading_aliases": 11,
+    "incoming_heading_links": 3,
+    "outgoing_links": 8,
+    "local_receipts": [
+      "work/proofs/accessibility/ui-eb4d3baf-c1bb-499b-8e35-135f7219026d/result.json",
+      "work/proofs/panel-visibility/gate-1dcb0800-aeba-4132-b477-e35091a51d82.json",
+      "work/proofs/panel-visibility/native-12be617fb1/baseline-result.json",
+      "work/proofs/panel-visibility/native-12be617fb1/candidate-observation-872f98b0/result.json"
+    ]
+  },
+  "documents": {
+    "docs/proofs/operating-preferences.md": {
+      "original_sha256": "00cec57a3e476ee4a701118858f930ace4a623a9f7e9b0510029a6d545327045",
+      "draft_sha256": "9555af42a89e8d2ccd56101e21b70f4edfd2cda8c17c4eb37d2776ac08ad5eab",
+      "candidate_sha256": "9c07d65626278b92f1f6cfb7d64e56c988bafc3c667ee88ffafcd76e27422a85"
+    },
+    "docs/proofs/recovery.md": {
+      "original_sha256": "cc2cd8ea5f13711ba30826ac779b01fb71a2ce15af7d9719112112c92481e0b4",
+      "draft_sha256": "7f2f706337be2e9b85a9fb0a9e1088d787dfc5596256153ab8419cb0900f1c17",
+      "candidate_sha256": "855ba7f5bdadc865e77e20d1311a3fcdecb599c02dff8086269e4022883a8540"
+    },
+    "docs/proofs/theme-language.md": {
+      "original_sha256": "9f436417607d47f38d99e43991154ab8733bebf78bb27e31cb172f4c8ee60e27",
+      "draft_sha256": "76bb7820ac53c8b9d49a0e988b67c02d8c0324465a11a87640ce43643a6dc44b",
+      "candidate_sha256": "c9f69d83a1460fbc5ce2b73e22eee2d7e5e879edecc4e451293e19397ec7d25e"
+    },
+    "docs/proofs/tray-lifecycle.md": {
+      "original_sha256": "ee107a7617e8b83378cf89de29846bdb997a85b6439231812774068528cfc777",
+      "draft_sha256": "47f65dd7bea6407efc5484cff7b74f2bedc8fd1106658c5866c83825c12b66cb",
+      "candidate_sha256": "01998b072befb19f6d5cd4396df5964cae6f5818c76ac332e6fc17de8a088541"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "7d797e6f9d23e0784f440a6c6b3dca2ae247a022f017a061bc74f58f6184fd43",
+    "docs/IMPLEMENTATION_STATUS.md": "d8ebd2c338172a00498fa1ad1ca0a2190495faa37c244819c52a74446e77d9e5",
+    "docs/decisions/013-live-overview.md": "c8338ed2430e1907c52b8e29a90b030d781191b47f15cef260022fef02a2ad06",
+    "docs/decisions/019-operating-preferences.md": "8ca6a3fca4cd5857a0e0c4fb60bb8243944bc85b5501b4fc12485ed81193e089",
+    "docs/reviews/H031.md": "585fce4fc80ec8ce99e175c1a86b0579140f9605829931e5f99f0c1d1355a726",
+    "docs/decisions/022-recovery.md": "626f189efd56898181642d18cddd61340f97db996b8354ae1d7e0d955a5ed35c",
+    "docs/reviews/H034.md": "9ec22cdedb6df963691accfaaa6e1d4cab383f33fc4ca838d381c4309a17499d",
+    "docs/decisions/020-theme-language.md": "3ad57a282a4976f1c64c9927f5219f05993aebbb43330e19f60af17ab244e0a7",
+    "docs/reviews/H032.md": "9681d4a292034ee2ca22ddb2afd72f19e88de064b1b7ba630947b9497db26991",
+    "docs/decisions/018-tray-lifecycle.md": "4126f6d67ec7c870dc9ef0231557c06de9f29c8d0589c3f6c6cc90dd5efa2e67",
+    "docs/reviews/H030.md": "0030f2b984f7862bffedd856518206b2c9221b3165116e90cefed1919e9a6bff"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/operating-preferences.md": {
+        "hard": 0,
+        "advisory": 10
+      },
+      "docs/proofs/recovery.md": {
+        "hard": 0,
+        "advisory": 2
+      },
+      "docs/proofs/theme-language.md": {
+        "hard": 0,
+        "advisory": 8
+      },
+      "docs/proofs/tray-lifecycle.md": {
+        "hard": 0,
+        "advisory": 1
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the operating preferences and theme and language reports. The lead agent drafted the tray and recovery reports, checked all four against the source, and ran the final checks.",
+  "compatibility_catalog": {
+    "affected_references": 0,
+    "sha256": "c373dfcf90687ecf99923b98f168b884eef8a6b651f4879df9ff031437f2762a"
+  },
+  "product_tests": "not_run_documentation_only"
+}

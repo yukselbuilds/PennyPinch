@@ -1,31 +1,43 @@
-# H034 — hata ve toparlama kabulü
+<a name="h034--hata-ve-toparlama-kabulü"></a>
 
-8 Kasım 2026; **tamamlandı, 33/51**. [Plan 022](../decisions/022-recovery.md), [inceleme](../reviews/H034.md). Ana ajan backend/entegrasyon/sahiplik ve kabul sahibi; mevcut tek Luna strict istemci/yardım arayüzü dilimini tamamladı. H035 başlamadı.
+# H034 — Error and recovery acceptance
 
-Genel bakış ve Uygulamalar'ın sonunda “Bağlantıyı denetle” motoru, kalıcı girişi, üç uygulamanın kayıtlı ayar kapsamını ve son yedi günlük yerel trafik işaretini ayırır. Teşhis bir kullanıcı eyleminde tek okumadır; pending sırasında tek istek korunur. Config/auth yazımı, model/istemci çalıştırma, otomatik bypass/onarım yoktur. Sonraki adımlar mevcut lifecycle veya açık bağlantı önizlemesine götürür.
+November 8, 2026. **Complete. The total is 33/51.** The lead owned backend, integration, ownership, and acceptance. The existing single Luna worker completed the strict client and help UI changes. Work stopped before H035. [Plan 022](../decisions/022-recovery.md), [review](../reviews/H034.md)
 
-Kaydedilmiş hata varsa kaynak ancak gözlenebildiği ölçüde açıklanır; bu sürümde hata katmanı unknown kalır. İstemcide 401/403 veya giriş hatası varsa o istemcide oturum açma yönlendirmesi vardır; auth sırrı okunmaz. Hiç trafik görülmemesi kaçak veya sıfır tasarruf sayılmaz; hata bildirilmemesi başarılı istek etiketi almaz. Yerel ayar eşleşmesi sağlayıcı, model, ana/alt ajan veya sohbet doğrulaması değildir.
+Check connection is at the bottom of Overview and Applications. It shows separate statuses for the engine and stable ingress. It also shows the three apps' saved config scopes and local traffic observations from the last seven days.
 
-## Kanıt
+Each user action starts one read. The UI blocks another read while that request is pending. The check writes no config or authentication data and starts no model or client. It makes no automatic bypass or repair. The next steps use existing lifecycle actions or open the connection preview.
 
-Kayıtlar `work/proofs/recovery/` altında. `acceptance.json`, 18 kontrolle 187 kaynak/config girdisini, son binary/dist ve UI bundle'ını aynı araç/OS ortamına bağlar. Sonuçla önce/sonra SHA256 aynı adımda tutulur; kabul edilen girdilerde drift yoktur. Başarılı kalite kapısı tekrar çalıştırılmadı.
+If a recorded error exists, the report describes its source to the extent it can observe. In this version, the error layer remains unknown.
 
-| Senaryo | Gözlenen | Kanıt ve sınır |
+For a client 401, 403, or sign-in error, the app directs the user to sign in within that client. The check reads no authentication secrets. A lack of observed traffic leaves bypass and savings unknown. The lack of an error report leaves request success unverified. A local config match leaves provider, model, main agent, subagent, and chat verification open.
+
+<a name="kanıt"></a>
+
+## Evidence
+
+The records are in `work/proofs/recovery/`. `acceptance.json` records 18 checks and 187 source and config inputs. It links the inputs, final binary, distribution, and UI bundle to the same tool and OS environment. Verification records results and before-and-after SHA256 values in the same step. The accepted inputs matched. The team reused the passing quality gate.
+
+| Scenario | Observed result | Evidence and scope |
 | --- | --- | --- |
-| Strict IPC, korelasyon, alan/sayım/tarih/durum tutarlılığı, raw error bastırma, browser unavailable | 7 yeni client testi PASS; unavailable'da invoke yok, tek istek serbest bırakılır | `worker-final-20261108-358a1eb17f71448b869994f8b0c65245.json`; root gerçek DTO ve bağlı akışı inceledi. Son tam Node kapısı güncel root adayını içerir. |
-| Üç adaptörde sahip olunan config, farklı endpoint/bozuk config, auth canary, exit busy, Claude farklı proje kapsamı | Ayarlar ve ownership fingerprint'i aynı; çakışma/kapsam belirsizliğinde eşleşme bildirilmez | Gerçek Windows dosya fixture'ları; `focused-4.json` temel 7 Rust testi, son kapıda scan yarışına karşı ek test dahil 8 yeni Rust testi. |
-| Kurulum metadata değişimi/kayıp dosya/yeniden tarama; rapor sırasında yeni scan | Eski current/compatibility kullanılmaz; farklı scan'de ilk sayım korunup unknown olur | Kaynak `discovery_tests.rs`, `recovery_tests.rs`; dosya çalıştırılmaz. Metadata eşitliği hash veya protokol kanıtı değildir. |
-| Eksik runtime/failed/timeout public durumları | Gerçek manager raporu doğru kategori verir; generation/engine başlatılmaz, yabancı listener canlı | `manager_tests.rs` enjeksiyonu; gerçek motor sürecini öldürme veya canlı sağlayıcı arızası değildir. |
-| Son yerel kalite kapısı | 168 frontend/379 Rust PASS, 8 opt-in ignored; fmt/TS/Vite/custom-protocol build PASS | `final-1.json`, aynı aday önce/sonra fingerprint'i ve araç/OS. İlk fixture compile hatası düzeltildi; başarısız koşu PASS sayılmadı. |
-| TR/EN × koyu/açık × 1280/1024/819/683/507; klavye/focus, hata/pending, tarih, gezinme/unmount | 20 birleşim ve 8 davranış grubu PASS; overflow/page error yok | `ui-b73bf4d8-088b-48e1-9489-5a2669607e84/result.json`; gerçek App, açıkça izole örnek transport. Root TR-dark/EN-light render'larını inceledi. |
-| UI yeniden tarama ve motor/config bağlamı değişimi | Eski rapor gizlenir, stale açıklaması ve açık tekrar denetleme vardır | Son UI koşusu; ilk denemede eksik scan-generation bağlantısı bulundu ve gerçek `Applications → App → ProblemNotice` akışında düzeltildi. |
-| Gerçek native teşhis tıklaması | Stopped motor/ready giriş; start sırasında eski rapor ve disabled; sonra ready/ready | Run `b4cbd558-306c-497e-8387-87c2f22465b6`: `stopped-check.json`, `engine-changed.json`, `ready-check.json`. Gerçek Sky mouse/keyboard; passive observer sonuçları değiştirmedi, native invoke immutable kaldı. |
-| Gerçek native sonraki adım | Uygulamalar'a gitme ve bağlam değişiminde önceki raporun geçersizliği | `applications-context.json`; art arda native rescan yapılmadı, o davranış son gerçek-App UI testinde doğrulandı. |
-| Native frontend/backend sözleşmesi | Üç committed gerçek yanıt strict UI decoder'ından geçti | Aynı run `decoder-acceptance.json`; yeni veri çözümü, IPC/sağlayıcı çağrısı yok. |
-| Kapanış ve sahiplik | Normal exit0, debug/stable own portlar kapalı, yabancı listener canlı; orijinal runtime/metrics/preferences baytları geri yüklendi | Aynı run `result.json`, `baseline.json`; protected state ve gerçek HKCU Run aynı. Son çıkış tıklaması ayrıca gözlenmedi; kapanış helper process/port/exit kaydıyla doğrulandı. |
+| Strict IPC, correlation, field, count, date, and state consistency, raw error suppression, and browser unavailability | The 7 new client tests passed. An unavailable browser transport skips invoke and releases the single request guard. | `worker-final-20261108-358a1eb17f71448b869994f8b0c65245.json`. The lead reviewed the actual DTO and connected path. The final full Node gate covers the lead's final candidate. |
+| Owned config for three adapters, different endpoints, malformed config, auth canary, exit busy, and a different Claude project scope | Settings and ownership fingerprints stayed the same. The check reports a match only when the scope is clear and there is no conflict. | Windows filesystem fixtures. `focused-4.json` records 7 initial Rust tests. The final gate has 8 new Rust tests, including a scan race test. |
+| Installation metadata changes, missing files, rescan, and a new scan during the report | The report discards stale current and compatibility data. If the scan changes, it keeps the initial counts and reports unknown. | `discovery_tests.rs` and `recovery_tests.rs`. The test reads the file without executing it. Metadata equality supplies no proof of hash or protocol equality. |
+| Missing runtime, failure, and timeout states | The actual manager report returned the expected category without starting a generation or engine. A foreign listener stayed active. | `manager_tests.rs` injects the public states. Actual engine termination and live provider failure remain outside this check. |
+| Final local quality gate | 168 frontend and 379 Rust tests passed. The gate ignored 8 opt-in tests. Formatting, TypeScript, Vite, and custom-protocol builds passed. | `final-1.json` records matching fingerprints, tools, and OS. The team fixed the first fixture compile error and retained the failed result. |
+| Turkish and English, dark and light, widths 1280, 1024, 819, 683, and 507, keyboard and focus, error and pending states, dates, and navigation and unmount | 20 combinations and 8 behavior groups passed with no overflow or page errors. | `ui-b73bf4d8-088b-48e1-9489-5a2669607e84/result.json`. The real App used isolated fixture transport. The lead reviewed Turkish dark and English light renders. |
+| UI rescan and changes to engine or config context | The old report disappears. The app explains that it is stale and offers a new check. | Final UI run. The first run exposed a missing scan-generation link. The fix follows the actual `Applications → App → ProblemNotice` flow. |
+| Actual native diagnostic click | The engine was Stopped and ingress was Ready. During Start, the previous report stayed visible and the button was disabled. Both then showed Ready. | Run `b4cbd558-306c-497e-8387-87c2f22465b6`. See `stopped-check.json`, `engine-changed.json`, and `ready-check.json`. Sky sent actual mouse and keyboard input. The passive observer left the results and native invoke unchanged. |
+| Actual native next action | The action opened Applications. A context change invalidated the earlier report. | `applications-context.json`. The final real-App UI test covered repeated rescan. That case did not run in the native window. |
+| Native frontend and backend contract | The strict UI decoder accepted three actual committed replies. | `decoder-acceptance.json` from the same run. The check decoded existing data and made no IPC or provider call. |
+| Shutdown and ownership | Normal exit code 0. The owned debug and stable ingress ports closed, and the foreign listener stayed active. The test restored the original runtime, metrics, and preferences bytes. | `result.json` and `baseline.json` in the same run. The protected state and actual HKCU Run value matched. The helper verified processes, ports, and exit code. The final quit click lacked a separate observation. |
 
-Native koşu boş izole ölçüm deposunu kullandı; **sağlayıcı çağrısı 0**. Gerçek kullanıcı ayarı veya auth değiştirilmedi. “Son trafik” kayıtlı Headroom katmanındaki en yeni zamanlı istekten gelir; sınırlı görünümde kesin yokluk çıkarılamazsa unavailable kalır. Rapor içeriğinde path, raw log/error, auth, model/provider etiketi, owner/generation/sohbet kimliği yoktur.
+The native run used an empty isolated metrics store and made **0 provider calls**. Real user settings and authentication stayed unchanged.
 
-Ortam Windows10 x64 build19045, Rust/Cargo1.92.0, Node25.2.1, pnpm11.25.0, Python3.14.0. Native dil TR; EN izole UI/client ile doğrulandı. Windows11 H047/karar006 ücretsiz istisnasıyla not_tested; diğer OS, installer, uzun süreli yük, gerçek sağlayıcı auth hatası ve gerçek motor kill testi yapılmadı. H035 erişilebilirlik/performance ve H041 yayın kapıları kendi kapsamlarında açıktır. Geliştirme token tasarrufu ölçülmedi.
+Last traffic uses the latest timestamped request in the recorded Headroom layer. In a limited view, it stays unavailable when the report cannot establish absence. The report excludes paths, raw logs and errors, auth, model and provider labels, and owner, generation, and chat identifiers.
 
-H034 tamamlandı; sıradaki H035 başlamadı ve ana görev sonunda duruldu.
+The environment was Windows 10 x64 build 19045, Rust and Cargo 1.92.0, Node 25.2.1, pnpm 11.25.0, and Python 3.14.0. Native checks used Turkish. An isolated UI and client check verified English.
+
+Windows 11 remained not_tested under the H047 and Decision 006 free-use exception. Other OS combinations, installer behavior, sustained load, live provider auth failure, and actual engine termination remained untested. H035 accessibility and performance and H041 release gates have separate acceptance. Development token savings remain unmeasured.
+
+H034 closed. Work stopped before H035.

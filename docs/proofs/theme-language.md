@@ -1,26 +1,32 @@
-# H032 — tema ve iki dil kabulü
+<a name="h032--tema-ve-iki-dil-kabulü"></a>
 
-7 Kasım2026; **tamamlandı,31/51**. [Plan020](../decisions/020-theme-language.md), [inceleme](../reviews/H032.md). Ana ajan uygulama, kalıcı kayıt eşzamanlılığı ve kabul sahibi; mevcut tek Luna yalnız dar salt okunur lokalizasyon incelemesi yaptı. H033 başlamadı.
+# H032 — Theme and two-language acceptance
 
-Mevcut Graphite açık/koyu token'ları ve TR/EN bileşen sözlükleri korundu; yeni i18n katmanı veya bağımlılık eklenmedi. Motor hatası metni, gösterilmeyen bir ham koda atıf yapmak yerine görünen çevrilmiş iletiye yönlendirir. Tema/dil kaydı mevcut atomik revision/fingerprint deposunu kullanır; root `lang`, `data-theme` ve CSS `color-scheme` aynı seçimi yansıtır.
+7 November 2026. **Complete, 31/51.** [Plan 020](../decisions/020-theme-language.md), [review](../reviews/H032.md). The lead agent owns application behavior, persistent-record concurrency and acceptance. The single Luna worker reviewed only the localization in read-only mode. Work stopped before H033.
 
-Native açılışta kayıtlı dark tercihi okunamayıp system/light görünmesi incelendi. Ekran doğru biçimde busy hatası gösteriyor, kayıtlı dosyayı değiştirmiyor ve Yeniden oku sunuyordu. Kök neden aynı PreferenceStore klonlarının paralel okumasında sıfır beklemeli Windows named mutex'te çakışmasıydı. Paylaşılan std Mutex, aynı store'un okumalarını ve yazmalarını sıraya alır; mevcut cross-process kilit, CAS, atomik replace, doğrulama ve dış çatışma davranışı korunur. Bu düzeltme ana ajan tarafından yapıldı.
+The existing Graphite light/dark tokens and TR/EN component dictionaries were preserved. No new i18n layer or dependency was added. Engine error text points to the translated message shown to the user, not to an unseen raw code. Theme/language use the existing atomic revision/fingerprint store. Root `lang`, `data-theme` and CSS `color-scheme` reflect the same selection.
 
-## Kanıt
+The team reviewed a native startup where the saved dark preference failed to load and the app showed system/light. The screen correctly showed a busy error, did not change the saved file, and offered Refresh. Parallel reads by clones of the same PreferenceStore caused the race on a Windows named mutex with zero wait.
 
-Kayıtlar `work/proofs/appearance/` altında. `acceptance.json`26 kontrolle171 güncel kaynak/config girdisini, son binary/dist'i, UI bundle'ını ve araç/OS ortamını bağlar. Her koşuda sonuç ve önce/sonra fingerprint'ler programatik kaydedildi. Ham auth, prompt, HTTP gövdesi veya hata dökümü tutulmadı.
+A shared std Mutex now serializes reads and writes on the same store. Existing cross-process lock, CAS, atomic replace, validation and external-conflict behavior remain. The lead agent made this fix.
 
-| Senaryo | Gözlenen | Kanıt / sınır |
+<a name="kanıt"></a>
+
+## Evidence
+
+Records are under `work/proofs/appearance/`. `acceptance.json` binds 26 checks to 171 current source/config inputs, the final binary/dist, UI bundle and tool/OS environment. The run recorded results and before/after fingerprints programmatically. No raw auth, prompt, HTTP body or error dumps were kept.
+
+| Scenario | Observed result | Evidence / limit |
 | --- | --- | --- |
-| TR/EN × açık/koyu × veri/boş/hata × dört ana ekran |48 durum, her biri1280/1024/819/683/507 genişlikte PASS; yatay taşma yok | `ui-a613a3ad-734e-4ccd-a14c-274bebf0cf1d/result.json`; gerçek App, izole typed transport ve açıklanmış örnek ölçümler.16 görüntü üretildi, ana ajan dört farklı ekran/tema/dil örneğini görsel olarak inceledi. |
-| Render edilen sayı/yüzde/tarih/duration;0/artış/unknown, ayrıntı/ESC | TR/EN Intl çıktısıyla eşleşti, bilinmiyor sıfırlaşmadı | Aynı UI kaydı; Europe/Istanbul timezone, süre ayrıntısında12,5/12.5. Kaydedilen etkinlik listesi tam sayıya yuvarlar; ölçüm semantiği değişmedi. |
-| System media açık→koyu→açık, manuel seçim, dil değişimi, başarısız save | System izledi, manuel dark sabit kaldı, root-lang güncellendi, hata önceki kayda döndü | Aynı UI kaydı; medya taklidi, Windows görünüm ayarını değiştirmez. |
-| Aynı store'un4 okuyucu ×16 paralel okuması | Önce FAIL/busy, sonra tüm okumalar en/dark/revision1; dosya baytları aynı | `read-race-red.json`, `preferences-focused.json`:12 store testi PASS; stale/concurrent save ve CAS kontrolleri dâhil. |
-| Son adayın tam yerel kapısı |153 frontend/363 Rust PASS,8 opt-in ignored; fmt/TS/Vite/custom-protocol build PASS | `final-2.json`; native'de bulunan somut yarış ilk adayı geçersiz kıldı. Düzeltme sonrası son adayın tam kapısı bir kez. Değişmeyen frontend UI PASS tekrar çalıştırılmadı. |
-| Gerçek native dört tema/dil birleşimi ve iki dilde dört ekran | PASS; seçili değer, kaydedilmiş tercih, root-lang/theme ve renk paleti aynı | `native-runs/41c2d1c7-4a15-4ae4-8afd-64716e997d80/phase-*.json`; Windows input yalnız Sky mouse/keyboard, typed IPC yalnız salt okunur gözlem. |
-| Manuel EN/light save→exit→reopen ve TR/system save→exit→reopen | İki yeniden açılışta kayıtlı seçenekler, “Preferences loaded.” / “Tercihler yüklendi.” ve doğru görünüm | Aynı native run; üç oturumun tümü exit0, debug ve stable port kapalı, zorla kapanış yok. Başlangıçtaki TR/dark da kullanıcı retry'si olmadan yüklendi. |
-| State ve sahiplik | Runtime/metrics/preferences baytları geri yüklendi; protected state ve gerçek HKCU Run aynı, yabancı listener korundu | Aynı run `result.json`; model çağrısı0. İlk tanı run'ı `3c632979-7ff4-441e-bc95-7f5a60303afe` yarış görüldükten sonra yalnız owned job kapatılarak sonlandırıldı; state geri yüklendi, PASS sayılmadı. |
+| TR/EN × light/dark × data/empty/error × four main screens | 48 states passed at widths 1280/1024/819/683/507. No horizontal overflow. | `ui-a613a3ad-734e-4ccd-a14c-274bebf0cf1d/result.json`. It used the real App, isolated typed transport and explained sample measurements. 16 images were produced. The lead agent visually reviewed examples from four different screens/themes/languages. |
+| Rendered number/percentage/date/duration, 0/increase/unknown and details/ESC | The displays matched TR and EN Intl output. Unknown values stayed unknown. | Same UI record, Europe/Istanbul timezone. Duration details show 12,5/12.5. The saved activity list rounds to whole numbers. Measurement semantics did not change. |
+| System media light→dark→light, manual selection, language change, failed save | Followed system mode. Manual dark stayed fixed. root-lang updated. Error restored the previous saved value. | Same UI record. Media simulation does not change Windows appearance settings. |
+| 4 readers ×16 parallel reads on the same store | First FAIL/busy. Then all reads showed en/dark/revision1. File bytes matched. | `read-race-red.json`, `preferences-focused.json`: 12 store tests passed, including stale/concurrent save and CAS checks. |
+| Final full local gate | 153 frontend/363 Rust PASS, 8 opt-in ignored. Fmt/TS/Vite/custom-protocol build PASS | `final-2.json`. The concrete race found in native testing invalidated the earlier candidate. The full gate ran once on the final candidate after the fix. Unchanged frontend UI PASS was not repeated. |
+| Real native four theme/language combinations and four screens in both languages | PASS. Selected value, saved preference, root-lang/theme and color palette matched. | `native-runs/41c2d1c7-4a15-4ae4-8afd-64716e997d80/phase-*.json`. Windows input used only Sky mouse/keyboard. Typed IPC was read-only observation. |
+| Manual EN/light save→exit→reopen and TR/system save→exit→reopen | Both reopens showed saved selections, “Preferences loaded.” / “Tercihler yüklendi.” and the correct appearance. | Same native run. All three sessions exited with code 0. Debug/stable ports closed. No forced close. The initial TR/dark state also loaded without a user retry. |
+| State and ownership | Runtime/metrics/preferences bytes were restored. Protected state and real HKCU Run matched. Foreign listener remained intact. | Same run `result.json`. 0 model calls. The initial diagnosis run `3c632979-7ff4-441e-bc95-7f5a60303afe` ended by closing only its owned job after the race appeared. State was restored, and the run was not counted as PASS. |
 
-Yerel ortam Windows10 x64 build19045; Rust/Cargo1.92.0, Node25.2.1, pnpm11.25.0, Python3.14.0. Windows11 önceki H047/karar006 ücretsiz kullanım istisnasıyla not_tested. Native mevcut sistem tercihini salt okunur doğruladı; gerçek OS tema geçişi veya OS DPI testi yapılmadı. Diğer OS, installer/yayın, uzun yük ve canlı sağlayıcı kanıtı değildir. Global istemci/auth/model ayarı değiştirilmedi, geliştirme token tasarrufu ölçülmedi.
+Local environment: Windows 10 x64 build19045, Rust/Cargo 1.92.0, Node 25.2.1, pnpm 11.25.0 and Python 3.14.0. Windows 11 was not_tested under the earlier H047/decision 006 free-use exception. Native testing read the system preference at that checkpoint. Actual OS theme transitions and DPI have separate acceptance. Other operating systems, installer and release, sustained load, and live providers remain outside this result. No global client/auth/model setting changed. Development token savings were not measured.
 
-H032 kapatıldı; sıradaki H033 istatistik ve tanı dışa aktarma başlamadı. Ana görev sonunda duruldu.
+H032 closed. The next task, H033 statistics and diagnostics export, did not start. Work stopped at the end of the main task.
