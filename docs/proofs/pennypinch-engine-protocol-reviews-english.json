@@ -1,0 +1,109 @@
+{
+  "task": "H042-k3s",
+  "status": "pass",
+  "base_commit": "67f9df0feb37a701d2384408b8085529caa60095",
+  "verified": {
+    "translated_records": 2,
+    "legacy_heading_aliases": 5,
+    "incoming_links": 2,
+    "incoming_heading_links": 0,
+    "outgoing_links": 1,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/reviews/H005.md": {
+      "original_sha256": "746d69861088215aa3af39953cdb059432059e2c2fee8fcc4def1bedce3db0d0",
+      "draft_sha256": "78d22b0ad9fa19caea5741ca78ceef346904b3a9065d2b4d070026616493f938",
+      "candidate_sha256": "4f99a83bdcd9952b2c5723122cb89eba0a8ea0a5ea4da93e66ef3da7c9ec6179"
+    },
+    "docs/reviews/H007.md": {
+      "original_sha256": "127a88f83f527f7736542a2308ee470f04ec2cd7ee716a9d2514eaa535c54706",
+      "draft_sha256": "70c169d25f7df6383e1b7755ee1115210a450393f0308f1574d8e79009dd08b3",
+      "candidate_sha256": "ae2a5555c399e11be82adbb452087cc0f85d7affb7fcda3c4ac4e7f04d1a6bd2"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "75e011bd1a3c544ad9a5a903015c392fed85e57365b42f8e1f2f7993455e4267",
+    "docs/proofs/protocol.md": "2584c75849bc2a44bee10a1c1452e365a91d780fc6bbba459ecd7e1126b1d65d",
+    "docs/proofs/engine.md": "b74033005eb44685d515e4412e333a9933d8062c4a665c0fede7e2f12e49c2b0"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H005.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H007.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "historical_evidence": {
+    "H005": {
+      "path": "docs/proofs/engine.md",
+      "sha256": "b74033005eb44685d515e4412e333a9933d8062c4a665c0fede7e2f12e49c2b0",
+      "cited_hashes_matched": 2
+    },
+    "H007": {
+      "path": "docs/proofs/protocol.md",
+      "sha256": "2584c75849bc2a44bee10a1c1452e365a91d780fc6bbba459ecd7e1126b1d65d",
+      "cited_hashes_matched": 2
+    }
+  },
+  "verifier_sha256": "1a40510230eb9c4e86c91823915af1ee074caaaf474611009c1361cb2bc0837c",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "fe18d4843a0d1cabf870d977b47e35bbd524aae50dad636442b74524197b7532",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 72,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 61
+      },
+      "flagged_prose_lines": 1745,
+      "approximate_source_words": 65427,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 70,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 59
+      },
+      "flagged_prose_lines": 1724,
+      "approximate_source_words": 64917,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "other_documents": [
+      "bench/context_tools/README.md",
+      "docs/IMPLEMENTATION_STATUS.md",
+      "docs/design-config-actions.md",
+      "docs/testing-codex-manually.md"
+    ]
+  },
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the two reviews. The lead agent checked the translations against the originals and their evidence.",
+  "programmatic_references": "The tracked code and configuration search found no direct reference to the reviews.",
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}

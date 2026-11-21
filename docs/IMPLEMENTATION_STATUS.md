@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
+## 21 November — English early engine and protocol reviews
+
+H042-k3s is complete. The H005 engine and H007 protocol reviews are in English. The checks matched the cited hashes, measured bytes, test limits, and heading links. [Evidence](proofs/pennypinch-engine-protocol-reviews-english.json) · [Task list](../TASKS.md)
+
+The scan found 70 documents with remaining Turkish prose among 222 tracked documents. The count includes 59 reviews, 7 research notes, and 4 other documents. The estimate is about 65,000 source words. The historical handoff contains about 32,000.\n\n### Next H042 release step
+
+Continue H042-k3 with the H008 Codex reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English Windows runtime reviews
 
 H042-k3r is complete. The three English reviews cover the portable runtime, owner loss with the controller ready, and owner loss before Job assignment. The checks matched the recorded results, limits, and heading links. [Evidence](proofs/pennypinch-windows-runtime-reviews-english.json) · [Task list](../TASKS.md)
-
-### Next H042 release step
-
-Continue H042-k3 with the early engine and protocol reviews for H005 and H007. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English Windows GUI crash evidence
 
