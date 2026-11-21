@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English connection plan and transaction reviews
+
+H042-k3ae is complete. The two English reviews cover read-only connection preview, atomic config writes, and conflict-preserving Undo. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-connection-transaction-reviews-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 184 of 222 tracked documents (82.9%). It flagged 38 documents (17.1%) with remaining Turkish prose. The estimated remaining text is about 55,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the H019, H020, and H021 client connection reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English client discovery and file selection reviews
 
 H042-k3ad is complete. The four English H016 reviews cover discovery, file selection, and the two verified native rescans. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-client-discovery-reviews-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 182 of 222 tracked documents (82.0%). It flagged 40 documents (18.0%) with remaining Turkish prose. The estimated remaining text is about 56,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the H017 connection plan and H018 config transaction reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English local preference reviews
 
