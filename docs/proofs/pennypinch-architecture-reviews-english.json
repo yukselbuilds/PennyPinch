@@ -1,0 +1,156 @@
+{
+  "task": "H042-k3aa",
+  "status": "pass",
+  "base_commit": "8a863d1708ee3db6f009d24e5659c544140e9dbd",
+  "verified": {
+    "translated_records": 3,
+    "legacy_heading_aliases": 3,
+    "incoming_links": 6,
+    "incoming_heading_links": 0,
+    "outgoing_links": 5,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/reviews/H012-a.md": {
+      "original_sha256": "49de05bddf3e3e9eec4d14a8e5a2d765da82555973e47d4511ab7d5dd7495157",
+      "draft_sha256": "621a1e1c9b30f024088d7b0cad98de2a251df5000141dd38b5537a185ea091ad",
+      "candidate_sha256": "2bb488f8ab4bf977676db830a3ce7fc167bc2359f28ec83ca776ed1260802df7"
+    },
+    "docs/reviews/H012-b.md": {
+      "original_sha256": "33f3927d66065ccf742011fd1c4fba02f5152cad6ca9f3ea3444153e39d7abda",
+      "draft_sha256": "72497089238a4552b73f4c6558952fdf99044381a84e6e26800c5207177eb088",
+      "candidate_sha256": "3619fc162b15cad48296692df4b6d592407e9e635cdf900c28a4646cd169bbf0"
+    },
+    "docs/reviews/H012.md": {
+      "original_sha256": "7c47ad0db6f1b0e2b004953545e48357db88cf24afe8def39e380d0253a9ab41",
+      "draft_sha256": "db6e2fe856e9268b62cef3a8a876715d64f15f35ab25888fa711970cd4076ff8",
+      "candidate_sha256": "3004ed373e78d0a7af34367e704e52ba66b6a11edea487cea0e6ac003f9fa57b"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "4227b37b9d1ab898ec30c57adc65db17e4dfdeafe78b16aa2d25c9d3fd48efd9",
+    "docs/IMPLEMENTATION_STATUS.md": "5289bf46dbd2e2007b9b52de557511f6547d0b7bf619ca3b6087155975879e84",
+    "docs/proofs/architecture-acceptance.md": "710212b61e22901c20bb08ba4e165ffecd4b17a018b5916206b6a40ece484b4e",
+    "docs/proofs/architecture-contracts.json": "f03fea19c23b094a17bd72283d6d17f1d1125caca713951f272fe02215e2ee77",
+    "docs/contracts.md": "ac7df4476c07e801537062505abe61934442a60027cdd2e5676cbc94d2c4d8ed",
+    "docs/decisions/002-runtime.md": "a5934a6b27b608b6fd504d1e1a335e819abd3e72c43b89ca5a47dbb7fe1f67df",
+    "docs/proofs/architecture-acceptance.json": "a90d9e19ce733f59ad9eb17637aadee0149bf932d00c17a007ee159f00cea562"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H012-a.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H012-b.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H012.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "historical_evidence": {
+    "docs/proofs/architecture-contracts.json": {
+      "sha256": "f03fea19c23b094a17bd72283d6d17f1d1125caca713951f272fe02215e2ee77"
+    },
+    "docs/proofs/architecture-acceptance.json": {
+      "sha256": "a90d9e19ce733f59ad9eb17637aadee0149bf932d00c17a007ee159f00cea562"
+    },
+    "docs/proofs/architecture-acceptance.md": {
+      "sha256": "710212b61e22901c20bb08ba4e165ffecd4b17a018b5916206b6a40ece484b4e"
+    }
+  },
+  "initial_import_fingerprints": {
+    "import_commit": "357fbd2c3d1bbb2aba820703c44b34cbd1eee9f1",
+    "references": {
+      "docs/proofs/pause.md": {
+        "cited": "630b4b6f\u2026a12a386f",
+        "matches_import": true
+      },
+      "compatibility/clients.json": {
+        "cited": "a1298f10\u202652c2ae0",
+        "matches_import": true
+      },
+      "docs/decisions/002-runtime.md": {
+        "cited": "942a053b\u202673581961",
+        "matches_import": true
+      },
+      "docs/contracts.md": {
+        "cited": "15875e6d\u2026c28df574",
+        "matches_import": false
+      }
+    },
+    "limit": "The imported contract already includes the 20 October scope update. The translation retains the 19 October abbreviation from the review."
+  },
+  "verifier_sha256": "660a0d69354b30cf89f2bf5a35b6833ee705391ec6c328382ef657de6e06d740",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "b670a012f93eab86fab123d714fefec02a761828fc995225e52eea11a5b305aa",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 53,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 42
+      },
+      "flagged_prose_lines": 1584,
+      "approximate_source_words": 59846,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 50,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 39
+      },
+      "flagged_prose_lines": 1566,
+      "approximate_source_words": 59222,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 169,
+      "remaining_documents": 53,
+      "ready_percent": 76.1,
+      "remaining_percent": 23.9
+    },
+    "progress_after": {
+      "ready_documents": 172,
+      "remaining_documents": 50,
+      "ready_percent": 77.5,
+      "remaining_percent": 22.5
+    },
+    "other_documents": [
+      "bench/context_tools/README.md",
+      "docs/IMPLEMENTATION_STATUS.md",
+      "docs/design-config-actions.md",
+      "docs/testing-codex-manually.md"
+    ],
+    "after_input_sha256": "5e004b80d526afc94e65c91318488bfc3cb4d382068fba7e8031dafe1ce80180"
+  },
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted H012-a and H012-b. The lead agent drafted H012 and checked all three against the original text and recorded evidence.",
+  "programmatic_references": "The tracked code and configuration search found no direct reference to these three reviews.",
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}

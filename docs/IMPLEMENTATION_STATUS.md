@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English architecture and compatibility reviews
+
+H042-k3aa is complete. The three English H012 reviews record the architecture baseline, the local contract check, and main acceptance. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-architecture-reviews-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 172 of 222 tracked documents (77.5%). It flagged 50 documents (22.5%) with remaining Turkish prose. The estimated remaining text is about 59,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the H013 desktop shell and H014 engine control reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English OpenCode closing review
 
 H042-k3z is complete. The English H010 closing review records the accepted OpenCode scope and remaining limits. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-opencode-closing-review-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 169 of 222 tracked documents (76.1%). It flagged 53 documents (23.9%) with remaining Turkish prose. The estimated remaining text is about 60,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the H012 architecture and compatibility reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English OpenCode V2 shared service, subagent, and Desktop reviews
 
