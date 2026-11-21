@@ -1,0 +1,129 @@
+{
+  "task": "H042-k3am",
+  "date": "2026-11-21",
+  "status": "pass",
+  "base_commit": "2aa5ae7660264b8301a15b40d8ef10b9ec878173",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the opening through the package lifecycle section. The lead drafted report export through final acceptance and verified the merged review.",
+  "verified": {
+    "translated_records": 1,
+    "legacy_heading_aliases": 11,
+    "incoming_links": 11,
+    "incoming_heading_links": 8,
+    "outgoing_links": 12,
+    "unchanged_historical_evidence": [
+      "docs/proofs/macos-retained-versions.json",
+      "docs/proofs/macos-cli-discovery.json",
+      "docs/proofs/macos-selection-store.json",
+      "docs/proofs/macos-desktop-discovery.json",
+      "docs/proofs/macos-file-picker.json",
+      "docs/proofs/macos-package-lifecycle.json",
+      "docs/proofs/macos-report-export.json",
+      "docs/proofs/macos-desktop-preflight.json",
+      "docs/proofs/macos-desktop-renderer.json",
+      "docs/proofs/macos-desktop-traffic.json",
+      "docs/proofs/macos-desktop-connection.json",
+      "docs/proofs/macos-acceptance.json"
+    ]
+  },
+  "documents": {
+    "docs/reviews/H048.md": {
+      "original_sha256": "77e6b00b75daecc14df3abc17757749834dec95c3fa8d0855b7fcb71219d2e6d",
+      "draft_sha256": "ff9617c9a47e67885777bcdc1ff85657a1b4fd56e3fb1226c94162699717b536",
+      "candidate_sha256": "0f38b61b2f2534cef4da663f3ba03d34bd43f2686306208b92346e2adaeb2b5c"
+    }
+  },
+  "worker_draft_sha256": "aefa496a14bcaf1915b11daaf86a06c29e8e215c0ef1990670821ea58325a2fd",
+  "lead_draft_sha256": "dc638954c6d56963cacbc221a1326e21dd3a97419e3f394c0601d66950ba6698",
+  "references_sha256": {
+    "docs/proofs/macos-retained-versions.json": "84995a3853d67956ae524dcf7f58cdde71b3b21e7c3076c39e5ad68792736b7e",
+    "docs/proofs/macos-cli-discovery.json": "c30c95bc1805893a454905b3509576f13f97d9efa3a18e12fdfc7a4b589ec205",
+    "docs/proofs/macos-selection-store.json": "5d73bc6159fefa0edc1f597f7050978e76338efaf61f774d10573651dc930e32",
+    "docs/proofs/macos-desktop-discovery.json": "453db08512652322ca96d393393bee39b33980f4b14d3e620973d9ce59476045",
+    "docs/proofs/macos-file-picker.json": "5a3527ad3aa72c255ed6f96d5fd474ed4af59e0b0712015caafdd4ddb8104c54",
+    "docs/proofs/macos-package-lifecycle.json": "2d118815fa57a7f68385a894cb8776d7e5d4fdd1c5aac7db4e6597f0a5654a3c",
+    "docs/proofs/macos-report-export.json": "3524e4f183ab5374ee39dab55caebdafa99ffe80a7e9a1b12f19631192875ecf",
+    "docs/proofs/macos-desktop-preflight.json": "41cd642a04e76a56cf40248731d3a8bef8d8c840f3315f3c33a2ee14cd736c75",
+    "docs/proofs/macos-desktop-renderer.json": "ea1ce7608f453d37a05e852caceafce1b348d359c1f6f484c5691a21e99294b8",
+    "docs/proofs/macos-desktop-traffic.json": "58df9fb04bc2272b27dc3e6c762ab74f8c0cd4a4d047f39b5b9d8320d1bcb130",
+    "docs/proofs/macos-desktop-connection.json": "a9527319b07a0c16323ccb32fcb1f5e28ff4df2e6a09ae8e4471e75fad48d9c9",
+    "docs/proofs/macos-acceptance.json": "59f45bdb317f638b04c2cad5fc6a5b96c18ce7ccc49970e64135d07e58f739b0",
+    "docs/validation/macos.md": "323e552cb645c0d7ef2860c12a814c842d06213165354cdb9a86b5592f4ed227",
+    "docs/proofs/pennypinch-macos-validation-english.json": "4c433e9edc11f36361e275d148974a2c3b16dfd4d11667b26ad65d66fea9772f"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H048.md": {
+        "hard": 0,
+        "advisory": 2
+      },
+      "TASKS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/IMPLEMENTATION_STATUS.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "fbe9e130d216a0e9297ba4b118c5e6cb32c2cbf21c0436c3216358879472726d",
+  "inventory_scanner_sha256": "252bb7cd485828727001a1ef48de5df9eb6148573a47709d82f1f30f5014f0d2",
+  "development_token_savings": "not_measured",
+  "engine_provider_and_ci_tests": "not_run_documentation_only",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "d2f87bdd96be627e131353f3b17aa1302fb179744eac05c4612f908d3590a037",
+    "after_input_sha256": "7b19c67668d1838c706c4006ccfda9830a02a4f0a25db0112149cad9a96b5569",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 17,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 6
+      },
+      "flagged_prose_lines": 1181,
+      "approximate_source_words": 44752,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 16,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 5
+      },
+      "flagged_prose_lines": 1119,
+      "approximate_source_words": 41573,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 205,
+      "remaining_documents": 17,
+      "ready_percent": 92.3,
+      "remaining_percent": 7.7
+    },
+    "progress_after": {
+      "ready_documents": 206,
+      "remaining_documents": 16,
+      "ready_percent": 92.8,
+      "remaining_percent": 7.2
+    }
+  }
+}

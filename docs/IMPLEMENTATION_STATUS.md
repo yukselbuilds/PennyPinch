@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English macOS port review
+
+H042-k3am is complete. The English H048 review preserves the separate fixture and native Apple Silicon results. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-macos-port-review-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 206 of 222 tracked documents (92.8%). It flagged 16 documents (7.2%) with remaining Turkish prose. The estimated remaining text is about 42,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the H050 and H051 account and chat reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English routing, optimization, and update reviews
 
 H042-k3al is complete. The English reviews cover stable client routing, local optimization verification, and update and recovery. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-routing-update-reviews-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 205 of 222 tracked documents (92.3%). It flagged 17 documents (7.7%) with remaining Turkish prose. The estimated remaining text is about 45,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the H048 macOS review. Preserve the historical source, fixture, and native macOS evidence. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English Windows installation and release candidate reviews
 
