@@ -1,46 +1,62 @@
-# H010-c — Native OpenCode alt ajan ve model değişimi
+<a name="h010-c--native-opencode-alt-ajan-ve-model-değişimi"></a>
 
-14 Kasım 2026. **Yerel dilim kabul edildi; ana H010 ve toplam 42/54 açık.** Windows 10 22H2 x64/build19045, gerçek OpenCode 1.19.3, Headroom 0.41.0. [Programatik kabul](opencode-subagents.json), [plan](../decisions/009-opencode-provider-routes.md#h010-c--yerel-alt-ajan-kabulü), [inceleme](../reviews/H010-c.md).
+# H010-c — Native OpenCode subagents and model changes
 
-OpenCode sistem geneline kurulu kabul edilmedi. Proje içindeki resmî `work/toolchains/opencode/v1.19.3/runtime/opencode.exe` binary'sinin hash'i sabit sürümle eşleşti. CLI, gerçek task aracını ve gerçek MCP süreçlerini çalıştırdı; model yanıtlarını yalnız yerel, sentetik sağlayıcı verdi. Gerçek model çıkarımı veya fatura ölçülmedi.
+14 November 2026. **Local slice accepted. Main H010 and total 42/54 remain open.** Windows 10 22H2 x64/build19045, real OpenCode 1.19.3, Headroom 0.41.0. [Programmatic acceptance](opencode-subagents.json), [plan](../decisions/009-opencode-provider-routes.md#h010-c--yerel-alt-ajan-kabulü), [review](../reviews/H010-c.md).
 
-## Ürün yolu ve sonuç
+OpenCode was not accepted as a system-wide install. The hash of the official project-local binary `work/toolchains/opencode/v1.19.3/runtime/opencode.exe` matched the pinned version. The CLI ran the real task tool and real MCP processes. A local synthetic provider supplied the model responses. No real model inference or billing was measured.
 
-H010-b3'te kabul edilen aynı release executable/paket manifesti kullanıldı; ürün kaynağı yeniden derlenmedi veya değiştirilmedi. Native Başlat → OpenCode Önizle → Uygula iki uygun provider'ı ve ürün retrieval köprüsünü tek kez kaydetti. CLI kaydedilmiş kullanıcı JSONC'sini normal biçimde okudu; inline config veya endpoint override verilmedi. Test agent/model tanımları Apply öncesinde fixture dosyasındaydı ve Headroom tarafından değiştirilmedi.
+<a name="ürün-yolu-ve-sonuç"></a>
 
-| Senaryo | Parent / child selector | Gerçek kimlik kontrolü |
+## Product path and result
+
+The same release executable/package manifest accepted in H010-b3 was used. Product source was not rebuilt or changed. Native Start → OpenCode Preview → Apply saved the two eligible providers and the product retrieval bridge once. The CLI read the saved user JSONC normally. No inline config or endpoint override was provided. Test subagent/model definitions were in fixture files before Apply. Headroom did not change them.
+
+| Scenario | Parent / child selector | Real identity check |
 | --- | --- | --- |
-| Aynı model | `lab/slot` / `lab/slot` | Yeni parent ve ayrı child; child modeli parent'tan miras aldı. |
-| Aynı sohbette açık model değişimi | `lab/other` / `lab/other` | Önceki parent session ID'si korundu; farklı child açıldı, yeni modeli miras aldı; yeniden bağlanılmadı. |
-| Farklı provider/protokol | `openai/slot` Responses / `lab/child` Chat | Yeni parent ve ayrı child; açık child modeli/agent'i korundu; iki kaydedilmiş rota kullanıldı. |
+| Same model | `lab/slot` / `lab/slot` | New parent and separate child. The child inherited the parent's model. |
+| Open model change in the same chat | `lab/other` / `lab/other` | The previous parent session ID remained. A different child started and inherited the new model. No reconnect occurred. |
+| Different provider/protocol | `openai/slot` Responses / `lab/child` Chat | New parent and separate child. The explicit child model/agent remained. Both saved routes were used. |
 
-Üç CLI sıralı çalıştı; her biri tek foreground child başlattı. Toplam iki parent ve üç farklı child kimliği vardır. Task'ın `sessionId`, `parentSessionId`, model metadata'sı ile gerçek child export'unun `info.parentID` ve assistant agent/provider/model alanları eşleşti. Aynı model adı tek başına ajan kanıtı sayılmadı. Export stdout'u yalnız bellekte çözümlendi; rapora transcript veya HTTP gövdesi taşınmadı.
+Three CLI runs executed sequentially. Each started one foreground child. There were two parent identities and three distinct subagent identities. The task's `sessionId`, `parentSessionId` and model metadata matched `info.parentID` and assistant agent/provider/model fields in the real subagent export. A matching model name alone did not prove a subagent. Export stdout was parsed in memory only. No transcript or HTTP body was copied to the report.
 
-Her rol veri → CCR retrieval → tanık; parent ayrıca task sonucunu bekleme → final yolunu tamamladı. Toplam 27 upstream mesajı; altı log bloğunun her birinde 14.999→103 bayt ve özgün içerikle hash/bayt eşitliği doğrulandı. Chat gerçek ürün MCP retrieval çağırdı; Responses parent'ında retrieval motor tarafından server-side işlendi. Parent/child araçları completed, sentetik auth ve wire modeller doğru, CLI exit0/stderr0. Model/efor değiştiren ürün kuralı veya model allowlist'i eklenmedi; fixture selector/wire isimleri gerçek model desteği ilanı değildir. Reasoning seçimi bu senaryoda yapılmadı.
+Every role completed data → CCR retrieval → witness. Each parent also completed wait for the task result → final response. There were 27 upstream messages. Each of six log blocks was reduced from 14,999 to 103 bytes. The retrieved content matched the original bytes and hash.
 
-Her CLI boyunca kaydedilmiş config ve owner fingerprint'leri değişmedi. GUI normal onaylı çıkışla kapandı; aynı release'in mevcut exclusive gate'li `--headroom-uninstall keep` girişi bağlantıyı geri aldı. Exit0, byte-exact özgün JSONC, released owner, korunmuş state ve kapalı sahip listener doğrulandı; zorla kapatma fallback'i yoktu. Son uygulama ayarı fixture'ın kendi önceki baytlarına döndü. H010-b3'te UI Undo ayrıca doğrulanmıştı; bu dilimde arka planda açılmayan kaldırma popup'ı için kullanıcının ön plandaki uygulamasına fiziksel girdi gönderilmedi.
+Chat made a real product MCP retrieval call. The engine processed retrieval server-side in the Responses parent. Parent/subagent tools completed. Synthetic auth and wire models were correct. CLI exit0/stderr0.
 
-## Kanıt ve tekrar
+No product rule or model allowlist that changes model/effort was added. Fixture selectors/wire names do not claim real model support. No reasoning selection occurred in this scenario.
 
-Nihai kayıt `work/proofs/opencode-subagents/runs/5efdb40e1eea/result.json` passed:true. Dokuz odaklı test; yanlış parent/model/agent, kısmi retrieval, tamamlanmamış task, kullanıcı işareti ile tool prompt'unun karışması ve Responses kullanıcı/CCR biçim farkları dahil geçti. `focused-responses.json` ve `focused-responses-extra.json` kaynak/araç önce-sonra eşleşmesini taşır. Native input ve sonuç referanslarının hash'leri kanonik JSON'a programatik yazıldı.
+Saved config and owner fingerprints stayed unchanged during all CLI runs. The GUI closed through the normal approved exit path. The same release's existing exclusive-gate `--headroom-uninstall keep` entry removed the connection. Exit0, byte-exact original JSONC, released owner, preserved state and closed owned listener were verified. No force-close fallback occurred. The final app setting returned to the fixture's own original bytes.
 
-Eski 332 ürün girdisi ve araç sürümleri aynı olduğundan 222 Node/448 Rust (18 ignored)/fmt/frontend/embedded build kanıtı yeniden kullanıldı. Yeni benchmark/fixture ayrı sınandı; eski ürün kapısının test etmediği yeni dosyalar eski PASS'e dahilmiş gibi sunulmadı. Pinned OpenCode task/config/agent/run/export kaynaklarının altı hash'i `work/research/h010-subagents/manifest.json` içinde; motorun gerçek paketli CCR response handler'ı da native fingerprint'e dahil.
+UI Undo was separately verified in H010-b3. This slice sent no physical input to the foreground app for a removal popup that did not open in the background.
 
-Üç önceki başarısız deneme korunur: `e2d4db02d026` GUI açılmadan app state namespace kontrolünde durdu; `55d8ed1099e3` Responses `input_text` biçiminde; `6dcbb93aa03d` server-side CCR'nin ek `original_item_count` alanında durdu. Son ikisinde aynı model/model değişimi adımları geçti fakat genel koşu kabul edilmedi. Son fixture gerçek kaynak zarfını doğrular; içerik/hash eşitliği aynen zorunludur. Native koşular normal kapandı ve sahipli bağlantıları geri alındı; ilk native koşunun ayrı temizliği `cleanup.json` içinde kayıtlıdır.
+<a name="kanıt-ve-tekrar"></a>
 
-Ön koşul: H010-b3'ün kabul edilen yerel QA release'i/paketi ve sabit OpenCode/Python hazır olmalı; aynı QA state'te aktif bağlantı bulunmamalı. Aşağıdaki opt-in komut kendi ayrı client state/workspace'ini açar. Native UI'da Başlat/Önizle/Uygula gerekir; koşu dizinindeki `run-all` tetikleyicisinden sonra üç senaryo çalışır. Sonunda GUI normal onayla kapatılır; benchmark aynı native Undo girişiyle temizler.
+## Evidence and repeat
+
+Final record: `work/proofs/opencode-subagents/runs/5efdb40e1eea/result.json` passed:true. Nine focused tests passed. They covered a wrong parent/model/agent, partial retrieval, incomplete task, mixing the user marker with the tool prompt and Responses user/CCR format differences. `focused-responses.json` and `focused-responses-extra.json` contain matching before/after source/tool fingerprints. Canonical JSON records hashes for native inputs and result references programmatically.
+
+The earlier 332 product inputs and tool versions matched. Evidence for 222 Node/448 Rust (18 ignored)/fmt/frontend/embedded build was reused. The new benchmark/fixture was tested separately. The old product gate does not claim to include files it did not test. Six hashes for pinned OpenCode task/config/agent/run/export sources are in `work/research/h010-subagents/manifest.json`. The engine's real packaged CCR response handler is also included in the native fingerprint.
+
+Three earlier failed attempts remain: `e2d4db02d026` stopped at app-state namespace validation before GUI opened. `55d8ed1099e3` stopped at Responses `input_text` format. `6dcbb93aa03d` stopped at the extra server-side CCR `original_item_count` field. The same-model/model-change steps passed in the latter two runs, but the overall runs were not accepted.
+
+The final fixture validates the real source envelope. Content/hash equality remains mandatory. Native runs closed normally and removed owned connections. The first native run's separate cleanup is in `cleanup.json`.
+
+Prerequisite: the locally accepted QA release/package from H010-b3 and pinned OpenCode/Python must be ready. The same QA state must have no active connection. The opt-in command below opens its own client state/workspace. Native UI requires Start/Preview/Apply. After the `run-all` trigger in the run directory, the three scenarios run. At the end, close the GUI normally. The benchmark cleans up through the same native Undo entry.
 
 ```powershell
 & work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B -m unittest discover -s tests/fixtures/opencode -p test_subagent_fixture.py
 & work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B bench/opencode/subagents.py --run
 ```
 
-İlgili fingerprint değişmedikçe başarılı kontroller tekrarlanmaz. Bu benchmark otomatik CI veya ücretli çağrı başlatmaz. İzinler yalnız sabit veri MCP'si, retrieval ve adı belirtilmiş iki test child türüdür; shell/dosya/ağ araçları, nested/background ajan ve auto/yolo izin bayrağı kapalıdır.
+Do not repeat successful checks unless their fingerprints change. This benchmark does not start automatic CI or a paid call. Permissions are limited to the fixed data MCP, retrieval and two named test child types. Shell/file/network tools, nested/background agents and the auto/yolo permission flag are off.
 
-## Tasarruf ve açık sınır
+<a name="tasarruf-ve-açık-sınır"></a>
 
-Bu koşunun byte azalması toplam oturum token/fatura kazancı değildir; geri alma özgün içeriği yeniden taşır. H041'in ayrı yerel `o200k_base`/tam canonical istek JSON'u kıyasında tekrarlı log için %98,15–98,23; kaynak/sayısal/kısa JSON için %0 ölçüldü. Bu, canlı sağlayıcı usage/cache veya günlük kullanım ortalaması değildir. [H041 ölçüm temeli](../validation/optimization-benefit.md), [yerel özet](optimization-local-acceptance.json).
+## Savings and open limits
 
-RTK-OSS 1.1.0'ın sekiz örneği H043 koruma/geri alma/asgari fayda kapısını geçmedi; H044'te yönetilen etkinleştirme beklemede. RTK bu sohbet veya ürün trafiğine sessizce kurulmadı. [RTK sonuçları](rtk.md). Bu geliştirme sohbetinin Headroom rotası/tasarrufu doğrulanmadı; yüzde atanmaz.
+Byte reduction in this run is not total-session token/billing savings. Retrieval carries the original content again. In H041's separate local `o200k_base`/full canonical request JSON comparison, repeated logs measured %98.15–98.23. Source/numeric/short JSON measured %0. This is not live provider usage/cache or an average of daily use. [H041 measurement basis](../validation/optimization-benefit.md), [local summary](optimization-local-acceptance.json).
 
-Canlı sağlayıcı/auth ve gerçek model kalitesi/TTFT/fatura, TUI/V2/Desktop, temiz Windows/Windows 11 ve diğer OS açık. Başka kullanıcı/config katmanları ve tüm modeller için kapsama garantisi yoktur. Normal kullanım ölçümü ancak gerçekten bağlı oturumdan geçen, aynı temelde sayılabilen isteklerle oluşur; fatura ve cache ayrıca değerlendirilir. Actions/hesap girişi/yayın/ücretli çağrı yapılmadı; Linux/Cloudflare ertelemeleri korundu.
+The eight RTK-OSS 1.1.0 examples did not pass H043's safety/rollback/minimum-benefit gate. Managed enablement remains pending in H044. RTK was not silently installed into this chat or product traffic. [RTK results](rtk.md). Headroom routing/savings in this development chat were not verified. No percentage is assigned.
+
+Live provider/auth and real model quality/TTFT/billing, TUI/V2/Desktop, clean Windows/Windows 11 and other OS remain open. Coverage is not guaranteed for other user/config layers or all models. A normal-use measurement requires requests that actually pass through a connected session and can be counted on the same basis. Billing and cache require separate evaluation. No Actions/account sign-in/release/paid call occurred. Linux/Cloudflare deferrals remain.

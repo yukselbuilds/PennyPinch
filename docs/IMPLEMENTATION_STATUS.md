@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 21 November — English connection and Codex verification
+## 21 November — English Claude Code and OpenCode acceptance
 
-H042-k3e is complete. Five English records describe the H017 connection preview and the H008 Codex evidence. The checks kept the recorded results, limits, and heading links. The catalog evidence test passed. The checks also covered the existing English product connection reports. [Evidence](proofs/pennypinch-connection-client-evidence-english.json) · [Task list](../TASKS.md)
+H042-k3f is complete. Five English records describe the H009 and H010 acceptance and the OpenCode 1.19.3 retrieval, subagent, and TUI checks. The checks kept the recorded results, limits, and heading links. The catalog evidence test passed. [Evidence](proofs/pennypinch-claude-opencode-acceptance-english.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue H042-k3 with the Claude Code and OpenCode acceptance records. Other historical proof and review documents are still open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+Continue H042-k3 with the OpenCode V2 validation records. Other historical proof and review documents are still open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
+## 21 November — English connection and Codex verification
+
+H042-k3e is complete. Five English records describe the H017 connection preview and the H008 Codex evidence. The checks kept the recorded results, limits, and heading links. The catalog evidence test passed. The checks also covered the existing English product connection reports. [Evidence](proofs/pennypinch-connection-client-evidence-english.json) · [Task list](../TASKS.md)
 
 ## 21 November — English early runtime and client evidence
 

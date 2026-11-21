@@ -1,0 +1,131 @@
+{
+  "task": "H042-k3f",
+  "status": "pass",
+  "base_commit": "e0fd6986330ace742f701a4afb205d4d80fcd050",
+  "verified": {
+    "translated_records": 5,
+    "legacy_heading_aliases": 15,
+    "incoming_heading_links": 0,
+    "outgoing_links": 45,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/proofs/claude-acceptance.md": {
+      "original_sha256": "353f99fc3a17f41344b808ef8e5108e801f3271677a253ab67be4ca2a2a52d2d",
+      "draft_sha256": "cbba46680225f3655d475be7ac880aa3f60512451faed1cf5fcbe4588e5757d5",
+      "candidate_sha256": "5fed248746ff2ebe8f2d41ec80f13c5e62cb1f752bdf6e3153c3a8da5b122cb3"
+    },
+    "docs/proofs/opencode-acceptance.md": {
+      "original_sha256": "295f3fb4d1eaf72b6fb9a840ebbf6e6b2edd94263f4fd95a34658e8bfccd9d38",
+      "draft_sha256": "5f1f9645d820a95ff9cd152a62678508be0e7f2bc6853898d6ef6edf639c2619",
+      "candidate_sha256": "2c4acb2d4bcb47ad59b224244bfa8523d0f40f95ea6d16673838824c6925e910"
+    },
+    "docs/proofs/opencode-retrieval.md": {
+      "original_sha256": "6655063340f96b8c8c4a767c377716158e54273b3aa544516199dbade189a37d",
+      "draft_sha256": "2b3d057d33da471a8a50029b01d0b6c8223792ca59a88755f3ea6695d6f13ede",
+      "candidate_sha256": "0402b2beef790d2ff3524f38dcb49119c0468fd61ae3d84d779e6ab58e98911b"
+    },
+    "docs/proofs/opencode-subagents.md": {
+      "original_sha256": "cf3b520b7141dfb99bcea44af30bad66ccbd403d0998e71a49d4d422a4c4a26f",
+      "draft_sha256": "43b9a5d11d19f3ee99c2d8ed5cb0d97258faa50ac5cc1bf4f8d1e04913db02b8",
+      "candidate_sha256": "01dba1e7c1c26d0513bbac2d1d118b1c8325e11235b10924611a495e44450cfd"
+    },
+    "docs/proofs/opencode-tui.md": {
+      "original_sha256": "4f5143bce67585a63356bada165e40eb55d3de4b05f5b2be34701eed6acedb0a",
+      "draft_sha256": "042d99ed2dfffaedb2c52a17881b1c767f63c52f53fcdca87c7e81b12bbd45be",
+      "candidate_sha256": "d8f0c61094b5a0e2e5b7fbeed02c7623d5ee42d350a67e86422f6f0d2abee49d"
+    }
+  },
+  "references_sha256": {
+    "docs/proofs/claude-product.md": "e1593f7f56b502602c7e9e412f790fcd40348ffe877ef85a889bf58d47bdf6c1",
+    "docs/proofs/claude.md": "065a14ac7bf24ca1a86c610846db2f25e0bdac56f38cda43ab98f7f57d61aa0d",
+    "docs/proofs/claude-tools.json": "d8d26d72ea8c6ca9cb04cb10651ce70a317b55a37218e740ed48781a9640838e",
+    "docs/reviews/H009-b.md": "19a97349982f7ecd30c4093ef749d338c1593eda16664eb9ba85ee7ba52f8446",
+    "docs/proofs/onboarding.md": "8f4d2c9137c2dc25cbb05c9a0cfc798adf85893f818d9197dc3174f989de66f2",
+    "docs/decisions/008-claude-connection.md": "6de531151fb9252720f60e4b05b3da8207f23187ed30da8981fe49a2fdac98a8",
+    "compatibility/clients.json": "c373dfcf90687ecf99923b98f168b884eef8a6b651f4879df9ff031437f2762a",
+    "docs/proofs/claude-acceptance.json": "26182c1ef0e4a2b0d97cac2d2f41c293875bb884833a6040ddc14d032dc3180b",
+    "docs/reviews/H009.md": "31c0c560044c1137353554d0f7625af61662f44bb0e40516171765f18f53ef81",
+    "docs/proofs/opencode-acceptance.json": "d441b77c9589a1372cf918d1089d52a18559cd23cdb51a9317a8a2ac64a0090f",
+    "docs/reviews/H010.md": "2f2d09de390cb36a6399efe78b35ef961baffdcf99ea1b777568f61bb961e71c",
+    "docs/decisions/009-opencode-provider-routes.md": "910dfd50f0cfb73c224318ab34a7c1f2d295b1519ed9186040133c1bfee08dc7",
+    "docs/proofs/opencode-v2-subagents.md": "00a0542656396f60f7d6fc548e76eda2914700180842f6102dc0da97ea33f7df",
+    "docs/proofs/opencode-v2-binding.md": "3a19fc7fef7990951e50786cccc4ccbe35ba91aafcc9916715ce42f16ba891b2",
+    "docs/proofs/opencode-v2-service.md": "ec97c18bd5ae659889ffd636e81c65dae5b56ccbd5d1fed4ba27f6aefe6bdac2",
+    "docs/proofs/opencode-v2-desktop.md": "33e9c5ef3f1f49d4ff78b2588770413330068783e19611a4484399697fec00d2",
+    "docs/proofs/opencode-v2-discovery.md": "ea76f1d43206231fd944030dd39faf5e440da3a1f9d52f80858c9bedbdfab1ee",
+    "docs/validation/optimization-benefit.md": "7e5bab80ec9b889fede5e3a53a1c97055b0dcfd8fddef56911b3720496f46849",
+    "docs/proofs/opencode-retrieval.json": "67c32859614791ddb80100ac60e6b772387dc179980252d8a3ecb9dc9b773f73",
+    "docs/reviews/H010-b3.md": "a783fa350fa58deb8ab9ada77885e6271d8e3751fed7b3302040b40c00cd9702",
+    "docs/development/WORKFLOW.md": "ae6e3791370ada5d6f7983d4633d923857832b0d253175d3c9fbbe78bc0136b7",
+    "docs/proofs/opencode-subagents.json": "7d8cafb4ee632906d5b269190b8bf2221e97f2ebdc48bc63d7c4d3a1eca7a92e",
+    "docs/reviews/H010-c.md": "b4d89b5c4e5aef708249b71ed3012ae7cf8751223f236c17add970925700eace",
+    "docs/proofs/optimization-local-acceptance.json": "5bd7e3d7c5c57ae2e24bf866a6e3e4f7c3e28a7442a7914857e2934883617fbc",
+    "docs/proofs/rtk.md": "e2b6f5ddc80dde0c5249cbac144d75857fa06112f8697dcfe57d5c60822b0cac",
+    "docs/proofs/opencode-tui.json": "896d561aae8ab6bf3772a293fdda090f2299b2310cc0fd30582c64619333784d",
+    "docs/reviews/H010-d.md": "e51aa74c38a99275e42168c939ac8eb07ed04c4c728817db4bcccffe5eb1c782"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/claude-acceptance.md": {
+        "hard": 0,
+        "advisory": 1
+      },
+      "docs/proofs/opencode-acceptance.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/opencode-retrieval.md": {
+        "hard": 0,
+        "advisory": 16
+      },
+      "docs/proofs/opencode-subagents.md": {
+        "hard": 0,
+        "advisory": 13
+      },
+      "docs/proofs/opencode-tui.md": {
+        "hard": 0,
+        "advisory": 1
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the OpenCode retrieval and subagent records. The lead agent drafted the two acceptance summaries and the OpenCode TUI record and reviewed the final documents.",
+  "compatibility_evidence_test": {
+    "command": [
+      "cargo.exe",
+      "test",
+      "--offline",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--bin",
+      "headroom-desktop",
+      "compatibility::catalog::tests::compatibility_catalog_embedded_records_have_scoped_existing_evidence",
+      "--",
+      "--exact",
+      "--test-threads=1"
+    ],
+    "result": "1 passed",
+    "evidence_references": 20,
+    "checked_files": 166,
+    "before_sha256": "fb68ec99b9c982917cb16cf0db065bb33f58b894a0575bd79126be6f4004a149",
+    "after_sha256": "fb68ec99b9c982917cb16cf0db065bb33f58b894a0575bd79126be6f4004a149",
+    "toolchain": {
+      "cargo.exe": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "rustc.exe": "rustc 1.92.0 (ded5c06cf 2025-12-08)"
+    },
+    "environment_paths": {
+      "CARGO_HOME": "work/caches/cargo-home",
+      "CARGO_TARGET_DIR": "work/caches/cargo-target"
+    }
+  },
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}

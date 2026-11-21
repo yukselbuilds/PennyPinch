@@ -1,44 +1,74 @@
-# H010-d — Windows 10 tam OpenCode TUI kabulü
+<a name="h010-d--windows-10-tam-opencode-tui-kabulü"></a>
 
-14 Kasım 2026. **Yerel dilim kabul edildi; ana H010 ve toplam 42/54 açık.** Windows 10 22H2 x64/build19045, gerçek OpenCode 1.19.3 binary'si ve Headroom 0.41.0. [Programatik kabul](opencode-tui.json), [plan](../decisions/009-opencode-provider-routes.md#h010-d--tam-tui-kabulü), [inceleme](../reviews/H010-d.md).
+# H010-d — Full OpenCode TUI acceptance on Windows 10
 
-## Gerçek terminal ve ürün yolu
+November 14, 2026. **The local slice passed. Main H010 remained open and the total remained 42/54.** The test used Windows 10 22H2 x64 build 19045, the real OpenCode 1.19.3 binary, and Headroom 0.41.0. [Acceptance record](opencode-tui.json), [plan](../decisions/009-opencode-provider-routes.md#h010-d--tam-tui-kabulü), [review](../reviews/H010-d.md)
 
-H010-b3'ün aynı hash'li release'i/paket manifesti ve H010-c'nin native config/metadata yardımcıları kullanıldı. Native Başlat → OpenCode Önizle → Uygula, fixture kullanıcı JSONC'sine iki provider ve ürün retrieval köprüsünü yazdı. Her terminal normal kaydedilmiş dosyayı okudu; inline config veya endpoint override yoktu. Standart ürün kodu/paket yeniden derlenmedi.
+<a name="gerçek-terminal-ve-ürün-yolu"></a>
 
-Varsayılan tam TUI komutu gerçek Windows PTY'ye bağlandı; stdin/stdout/stderr TTY'dir. `run --format json`, `--mini` veya UI yerine provider çağıran bir test kullanılmadı. Terminale `/models`, arama metni, Enter, kullanıcı mesajı ve Enter gönderildi. Final gerçek arayüzde gözlendi; ardından `/exit` ve Enter ile çıkıldı. Ayrı kontrollü metadata CLI'si yalnız izole profilin session list/export'unu okudu; transcript ve terminal gövdesi rapora taşınmadı.
+## Native terminal and product route
 
-| Tur | Açık TUI model seçimi | Gözlenen |
+The test reused the H010-b3 release and package manifest with matching hashes. It used the native config and metadata helpers from H010-c. In the native UI, Start, OpenCode Preview, and Apply wrote two providers and the product retrieval bridge to the fixture's user JSONC. Each terminal read the normally saved file without inline config or an endpoint override. The run reused the standard product build and package.
+
+The default full TUI command ran in a real Windows PTY. Its stdin, stdout, and stderr were TTYs. The test used the full UI and kept `run --format json`, `--mini`, and direct test calls to the provider outside this path. It sent `/models`, the search text, Enter, the user message, and Enter to the terminal. The real UI displayed the final response. The test exited with `/exit` and Enter.
+
+A separate metadata CLI read only the session list and export of the isolated profile. The report excluded the transcript and raw terminal output.
+
+| Turn | Explicit TUI model selection | Observation |
 | --- | --- | --- |
-| Aynı model | `Headroom base fixture` → `lab/slot` | Parent ve modeli miras alan gerçek child; araç/CCR/tanık/final tamamlandı. |
-| Aynı sohbette değişim | `/models` → `Headroom switch fixture` → `lab/other` | Parent session ID aynı; farklı child açıldı ve yeni modeli miras aldı; bağlantı yeniden kurulmadı. |
-| İki protokol | `Headroom Responses fixture` → `openai/slot`; child `lab/child` | Responses parent ve Chat child ayrı gerçek kimliklerle iki kayıtlı rotayı kullandı. |
+| Same model | `Headroom base fixture` → `lab/slot` | The real subagent inherited the parent model. Tool use, CCR, the witness response, and final responses completed. |
+| Change within the same chat | `/models` → `Headroom switch fixture` → `lab/other` | The parent session ID remained the same. A different subagent started and inherited the new model. The connection stayed in place. |
+| Two protocols | `Headroom Responses fixture` → `openai/slot`. Subagent `lab/child`. | The Responses parent and Chat subagent used two saved routes with distinct native identities. |
 
-İki parent ve üç farklı foreground child, en fazla bir eşzamanlı child vardır. Task metadata'sı ile child export parentID/agent/provider/model alanları eşleşti. Toplam 27 upstream mesajında iki rolün altı log bloğu 14.999→103 bayta indi ve özgün içerik hash/bayt düzeyinde aynı geri geldi. Chat ürün MCP retrieval'ı, Responses parent motorun server-side continuation yolunu kullandı. Call ID, model ve sentetik auth korundu; parent/child araçları completed, final'ler doğru.
+The test observed two parents and three different foreground subagents, with at most one subagent at a time. Task metadata matched the exported subagent parentID, agent, provider, and model fields. Across 27 upstream messages, six log blocks for the two roles decreased from 14,999 bytes to 103 bytes each. Retrieval returned the same original bytes and hash.
 
-Üç terminalin gerçek CLI exit0, source/config/owner fingerprint'leri aynı ve forced=false; süreçler kendilerine ait Windows Job'a bağlıdır. Bu, beklenmedik yardımcı kapanışında orphan engeli sağlar; bütün çocukların ayrı graceful shutdown ölçümü değildir. GUI onaylı normal exit0 ile kapandı. Aynı native exclusive gate'li `--headroom-uninstall keep` bağlantıyı geri aldı: byte-exact özgün JSONC, released owner, kapalı listener ve korunmuş state. Küçük, içerik doğrulanmış fixture settings başlangıç kaydı da birebir geri yüklendi. Fiziksel fare/klavye kullanıcının ön plandaki uygulamasına gönderilmedi; native GUI erişilebilirlik eylemleri arka planda çalıştı.
+Chat used the product MCP retrieval bridge. The Responses parent used the engine's server-side continuation. Call ID, model, and synthetic auth were preserved. Each parent and subagent tool call completed, and the final responses matched.
 
-## Model seçimi ve önceki denemeler
+The three real terminal processes exited with code 0. Source, config, and owner fingerprints matched, and forced=false. Each process belonged to its own Windows Job. The Job prevents orphan processes if the helper exits unexpectedly. Separate measurements of graceful shutdown for every child remain outside this evidence.
 
-Olumsuz resume denemesinde `--model lab/other` ipucuna rağmen önceki TUI modeli korundu. Bu koşu kabul edilmedi; doğru model seçilmiş gibi raporlanmadı. Kabul, kullanıcının model menüsünden yaptığı açık seçimi kapsar. Pinned local state'te agent/model store CLI fallback'inden önce gelir; model dialog'u aramayı title/category üzerinden yapar. Bu nedenle fixture model adları ayırt edilebilir tutuldu. [Model state kaynağı](https://github.com/anomalyco/opencode/blob/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/tui/src/context/local.tsx), [model menüsü kaynağı](https://github.com/anomalyco/opencode/blob/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/tui/src/component/dialog-model.tsx). Kaynak okumak runtime PASS değildir; doğru gerçek seçim son export'ta ayrıca doğrulandı.
+The GUI closed normally with confirmed exit code 0. The same exclusive native path ran `--headroom-uninstall keep` to remove the connection. It restored the original JSONC byte for byte, released ownership, closed the listener, and kept state. The run also restored the exact initial record of the small fixture settings with validated content.
 
-İlk salt başlangıç probe'unda CLI exit0/TTY vardı, dış wrapper exit1 idi; model turu yoktu ve tam kabul sayılmadı. `5acf73fd324c`, süreç job koruması tamamlanmadan model trafiği başlamadan normal kapatıldı. `e1617ea4930e` aynı model turunu geçti, resume modeli nedeniyle switch başarısız oldu; terminal kendi 180s sınırında sonlandı. Controller kesildiği için normal GUI/settings kapanışı gözlenmedi; sonuç tamamlanmış sayılmadı. Devamda süreç/listener olmadığı kontrol edildi, native Undo özgün istemci ayarını birebir döndürdü. Önceki fixture settings baytları bellekte kaybolduğu için yalnız QA state'i kapalı loopback9'a sıfırlandı. [Kanonik JSON](opencode-tui.json) eski partial/recovery dosyalarını hash'leriyle bağlar.
+Native accessibility actions ran in the background. The test sent no physical mouse or keyboard input to the user's foreground app.
 
-Son aday, kendi ayarı için durable başlangıç kaydı ekler. Yalnız uygulamaya ait proof köküne, tek loopback ayarı içerdiği doğrulanan sınırlı fixture JSON'u yazılır; gerçek kullanıcı/auth yedeği alınmaz. Negatif test yanlış içerik/uzak URL için kayıt oluşmadığını doğrular.
+<a name="model-seçimi-ve-önceki-denemeler"></a>
 
-## Doğrulama ve tekrar
+## Model selection and earlier runs
 
-Nihai native kayıt `work/proofs/opencode-tui/runs/a13dae9bba7a/result.json` passed:true. 19 odaklı kontrol geçti: beş TUI export/izin/fixture testi, on subagent/fixture backup kontrolü ve dört mevcut OpenCode proof helper testi. `focused-selection.json` ve `focused-selection-extra.json` kaynak/araç önce-sonra eşleşmesini taşır. 363 native girdi değişmedi; kaynak, CLI/runtime/binary, settings/config ve terminal parmak izleri programatik bağlandı. Sekiz TUI kaynağı iki manifestte pinlidir.
+In the negative resume test, the TUI kept the previous model despite the `--model lab/other` hint. The run failed acceptance. Its evidence did not establish correct model selection. The accepted run covers explicit selection from the model menu.
 
-Aynı 332 ürün girdisi ve araçlar eşleştiğinden 222 Node/448 Rust (18 ignored)/fmt/frontend/embedded build kanıtı yeniden kullanıldı. Değişen benchmark ve yeni helper bu eski PASS'in içinde sayılmadı; odaklı ve gerçek TUI akışı ayrıca doğrulandı. Kaynak değişmeden başarılı kontrol tekrarlanmaz.
+Pinned local state checks the agent and model store before the CLI fallback. The model dialog searches by title and category. The fixture used distinct model names for this reason. The final export verified the actual selection in the running TUI. [Model state source](https://github.com/anomalyco/opencode/blob/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/tui/src/context/local.tsx), [model menu source](https://github.com/anomalyco/opencode/blob/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/tui/src/component/dialog-model.tsx)
 
-Ön koşul: H010-b3 QA release/paket ve pinned Python/OpenCode hazır, aynı QA state'te aktif bağlantı olmamalıdır. Repo kökünde ilk komut controller'ı açar. Native arayüzde Başlat → OpenCode Önizle → Uygula; yazdırılan koşu dizininde `run-all` dosyası oluşturulur. Ayrı gerçek terminalde ikinci komut `same`, ardından `switch`, ardından `mixed` ile çalıştırılır. Her tur yukarıdaki görünür model adı menüden seçilir, `HEADROOM_PARENT_<tur>` yazılıp Enter gönderilir; final sonrası `/exit`. Controller geçerli `same.json` yazdıktan sonra switch açılır. En sonda GUI normal onayla kapatılır; native Undo controller tarafından yürür.
+The first startup-only probe recorded CLI exit code 0 and a TTY. Its outer wrapper exited with code 1. The probe ran no model turn and gave only startup evidence. Run `5acf73fd324c` closed normally before model traffic while process Job protection was incomplete.
+
+Run `e1617ea4930e` passed the same-model turn. The resume model caused the switch to fail. The terminal ended at its 180 s limit.
+
+The controller stopped before normal GUI and settings cleanup could be observed. The run remained incomplete. Later checks found no process or listener. Native Undo restored the exact client settings. The previous fixture settings bytes existed only in memory and were lost. The recovery reset only QA state to closed loopback port 9. [JSON record with partial runs, recovery, and hashes](opencode-tui.json)
+
+The final candidate adds a durable copy of its initial test settings. It writes bounded fixture JSON only inside the app-owned proof root. The JSON must contain a single loopback setting. The test creates no backup of real user settings or auth. A negative test confirms that invalid content or a remote URL creates no record.
+
+<a name="doğrulama-ve-tekrar"></a>
+
+## Verification and reproduction
+
+The final native record `work/proofs/opencode-tui/runs/a13dae9bba7a/result.json` reports passed:true. It passed 19 focused checks. These included five TUI export, permission, and fixture checks, ten subagent and fixture backup checks, and four existing OpenCode helper checks. `focused-selection.json` and `focused-selection-extra.json` record matching source and tool inputs before and after. All 363 native inputs matched.
+
+The final record binds source, CLI, runtime, binary, settings, config, and terminal fingerprints. Two manifests pin eight TUI source files.
+
+The same 332 product inputs and tools matched. The review reused 222 Node and 448 Rust test results, with 18 ignored, and the formatting, frontend, and embedded builds. The changed benchmark and new helper had separate coverage. Focused checks and the real TUI run verified them. Reuse a successful check while its source inputs match.
+
+Prepare the H010-b3 QA release and package and the pinned Python and OpenCode tools. The same QA state must have no active connection. Run the first command from the repository root to start the controller.
+
+In the native UI, choose Start, OpenCode Preview, and Apply. Create the `run-all` file in the printed run directory.
+
+In a separate native terminal, run the second command with `same`, then `switch`, then `mixed` in order. For each turn, select the visible model from the table. Enter `HEADROOM_PARENT_<tur>` and press Enter. After the final response, enter `/exit`.
+
+Start the switch turn after the controller writes a valid `same.json`. Close the GUI with normal confirmation after the final turn. The controller performs native Undo.
 
 ```powershell
 & work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B bench/opencode/tui.py --run
 & work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B bench/opencode/tui.py --case same
 ```
 
-Her terminal 180s, metadata komutları 30s/4MiB, GUI koşusu 900s sınırındadır. Title agent yalnız fixture'da kapalı; shell/read/write/network, nested/background ve auto/yolo kapalıdır. İzinler sabit MCP/veri/retrieval ve iki adlandırılmış test child'ıdır. Açıkça test edilmemiş başka hesap/model özelliği veya etkin config katmanı kapsanmaz.
+Each terminal has a 180 s limit. Metadata commands have limits of 30 s and 4 MiB. The GUI run has a 900 s limit. The fixture alone disables the title agent. It disables shell, file reads and writes, network, nested and background agents, and auto and yolo. Permissions allow only the fixed MCP, data, and retrieval operations and the two named test subagents. The result covers only the tested accounts, model features, and effective config layers.
 
-**Sınır:** Gerçek CLI/worker/TUI kullanıldı; model sunucusu yerel ve sentetiktir. Byte azalması toplam token/cache/fatura veya bu geliştirme sohbetinin tasarrufu değildir. Canlı sağlayıcı/auth, gerçek model kalitesi/TTFT, V2/Desktop ve diğer OS açık. Hesap girişi, Actions, ücretli çağrı veya yayın yapılmadı; Linux/Cloudflare ertelemeleri korundu.
+**Scope.** The run used the real CLI, subagents, and TUI with a local synthetic model server. The byte reduction measures log payload size. Total tokens, cache, billing, and development-chat savings remain unmeasured here. Live providers and auth, real model quality and TTFT, V2, Desktop, and other operating systems remain open. The test ran locally without account sign-in, Actions, a paid call, or a release. Linux and Cloudflare remained deferred.
