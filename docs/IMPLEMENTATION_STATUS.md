@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English desktop shell and engine control reviews
+
+H042-k3ab is complete. The four English reviews cover the desktop shell, Python bridge, Rust manager, and native engine controls. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-desktop-engine-reviews-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 176 of 222 tracked documents (79.3%). It flagged 46 documents (20.7%) with remaining Turkish prose. The estimated remaining text is about 58,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the H015 local preferences reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English architecture and compatibility reviews
 
 H042-k3aa is complete. The three English H012 reviews record the architecture baseline, the local contract check, and main acceptance. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-architecture-reviews-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 172 of 222 tracked documents (77.5%). It flagged 50 documents (22.5%) with remaining Turkish prose. The estimated remaining text is about 59,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the H013 desktop shell and H014 engine control reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English OpenCode closing review
 
