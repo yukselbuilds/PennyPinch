@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English recovery, accessibility, and compatibility reviews
+
+H042-k3aj is complete. The English reviews cover recovery, accessibility, local performance, and compatibility. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-recovery-compatibility-reviews-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 199 of 222 tracked documents (89.6%). It flagged 23 documents (10.4%) with remaining Turkish prose. The estimated remaining text is about 48,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the H037 through H039 reviews. These cover Windows installation, uninstall and data choices, and local candidate acceptance. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English settings, appearance, and export reviews
 
 H042-k3ai is complete. The three English reviews cover operating settings, themes and languages, and statistics and diagnostics export. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-settings-export-reviews-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 196 of 222 tracked documents (88.3%). It flagged 26 documents (11.7%) with remaining Turkish prose. The estimated remaining text is about 50,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the H034 through H036 reviews. These cover recovery, accessibility, performance, the compatibility catalog, and updates. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English runtime control and disconnect reviews
 
