@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English Overview, attribution, and activity reviews
+
+H042-k3ag is complete. The three English reviews cover the live Overview, model and agent attribution, and content-free activity. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-overview-activity-reviews-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 190 of 222 tracked documents (85.6%). It flagged 32 documents (14.4%) with remaining Turkish prose. The estimated remaining text is about 52,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the H028 safe start and pause, H029 disconnect, and H030 system tray and shutdown reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English onboarding and metrics reviews
 
 H042-k3af is complete. The three English reviews cover first launch, counter normalization, and the local metrics store. The checks matched the recorded results, historical scope, and heading links. H019, H020, and H021 already use English. [Evidence](proofs/pennypinch-onboarding-metrics-reviews-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 187 of 222 tracked documents (84.2%). It flagged 35 documents (15.8%) with remaining Turkish prose. The estimated remaining text is about 54,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the H025, H026, and H027 Overview, attribution, and activity reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English connection plan and transaction reviews
 
