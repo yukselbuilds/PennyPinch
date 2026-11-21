@@ -1,0 +1,133 @@
+{
+  "task": "H042-k3af",
+  "date": "2026-11-21",
+  "status": "pass",
+  "base_commit": "1286c664c1159dc575e92ed9e69a9157cd8bccae",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted H023 and H024. The lead agent drafted H022 and checked all three against the original and acceptance records.",
+  "verified": {
+    "translated_records": 3,
+    "already_english": [
+      "docs/reviews/H019.md",
+      "docs/reviews/H020.md",
+      "docs/reviews/H021.md"
+    ],
+    "legacy_heading_aliases": 11,
+    "incoming_links": 9,
+    "incoming_heading_links": 0,
+    "outgoing_links": 3,
+    "unchanged_historical_evidence": [
+      "docs/proofs/onboarding.md",
+      "docs/proofs/metrics-normalization.md",
+      "docs/proofs/metrics-store.md"
+    ]
+  },
+  "documents": {
+    "docs/reviews/H022.md": {
+      "original_sha256": "6b4f13e8f67f5fccb5cbbbebc4914e916237b929da442e34649d31913a185419",
+      "draft_sha256": "996f2900b3f99303bfb85d80d820fd3718c86c9be39d979ef6475926417a4476",
+      "candidate_sha256": "944649cff8c238851817e9b740ef1e79669a452452380744129b75ea2d5d3cfb"
+    },
+    "docs/reviews/H023.md": {
+      "original_sha256": "b0e110e6018ca8ff581c3fdb955c16a1a577c942f29cfef864af46981c8d9351",
+      "draft_sha256": "78eb6cc4a784347e8789942cc107116eb6a88db2576a018e6c88d437bececaa1",
+      "candidate_sha256": "20bb6a33885aba082c89ea353c32af4fcef899337fa19f88ac5c3c4a832200aa"
+    },
+    "docs/reviews/H024.md": {
+      "original_sha256": "d12066c7c2fc4420a73b05e1f092c2ca9811d2618886d36d53a9471819bab860",
+      "draft_sha256": "3c301acc16acf2f3c1cf2f84c9e7899ea148acdd5b5e4dd564388bd279a77997",
+      "candidate_sha256": "648e631cac8bce4ead2a8b30750fdadc762ce60b40c04099a19bcd78ead25279"
+    }
+  },
+  "references_sha256": {
+    "docs/reviews/H019.md": "79c61bef46ecbc63b0a5d725eb8f27b15f111f58492b7dfb1a72c16fd36b66c2",
+    "docs/reviews/H020.md": "0c5d9f8ce95730c264c7ec624131af0ff4bd46a11cfc59a68984746b662b3d31",
+    "docs/reviews/H021.md": "af325bf07debbe4a74bcf866da9b992a09858a201ae40f537586ad52efa76e1c",
+    "docs/proofs/onboarding.md": "c5d40d7e5f514666f4a10a325c07dddf822de15b864e98136945bebc9bd2cdcd",
+    "docs/proofs/metrics-normalization.md": "4ca2045b9fd1c4909e79bb839eb741ee02388ef72b0dfb3bf826f4ce2b1fff88",
+    "docs/proofs/metrics-store.md": "7462ba3d613a0bb7cdb6e6bcf361e3f64975205bceecbcd697abf7116dcd76a2"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H022.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H023.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H024.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "TASKS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/IMPLEMENTATION_STATUS.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "6e07cdeafaa7121bab7dc71d345d89ba4df5801ecdd51c44f6f9e474ebead929",
+  "inventory_scanner_sha256": "252bb7cd485828727001a1ef48de5df9eb6148573a47709d82f1f30f5014f0d2",
+  "development_token_savings": "not_measured",
+  "engine_provider_and_ci_tests": "not_run_documentation_only",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "0a0800d922ab6fa937ec56de8c5c74e96286796294edaa08c92da334b5a25aa4",
+    "after_input_sha256": "eb5e0e22aee8ac1e717a3f60261cdcae1e172cd4feb3c0a610f3e80fa58a7751",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 38,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 27
+      },
+      "flagged_prose_lines": 1458,
+      "approximate_source_words": 54781,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 35,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 24
+      },
+      "flagged_prose_lines": 1419,
+      "approximate_source_words": 53502,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 184,
+      "remaining_documents": 38,
+      "ready_percent": 82.9,
+      "remaining_percent": 17.1
+    },
+    "progress_after": {
+      "ready_documents": 187,
+      "remaining_documents": 35,
+      "ready_percent": 84.2,
+      "remaining_percent": 15.8
+    }
+  }
+}
