@@ -1,0 +1,144 @@
+{
+  "task": "H042-k3y",
+  "status": "pass",
+  "base_commit": "e133da672de2c0e3b7f55e295471e2c2945c68bc",
+  "verified": {
+    "translated_records": 3,
+    "legacy_heading_aliases": 3,
+    "incoming_links": 9,
+    "incoming_heading_links": 0,
+    "outgoing_links": 3,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/reviews/H010-h.md": {
+      "original_sha256": "fe20c6bed817b04ec69189ed1e2154ec7a72e5b1a5fd53b66cc4a3ae5532c679",
+      "draft_sha256": "ef06e1c2acb0c6be5826e4b1375d205336f4d08ffb36a3de994ccf74a8fccf71",
+      "candidate_sha256": "378ffe75d079fa37e4a9c6cb0a544439db476ba653ba22363bdd5359a4bc2153"
+    },
+    "docs/reviews/H010-i.md": {
+      "original_sha256": "6ea1f831cb512f61eed26e6b19a34e83ab6b18a7f4428634f4c498968890922a",
+      "draft_sha256": "07a737613ea1e519fb19b2d5df473fbf92bde9dda1cd05929b512d38ec46e3a0",
+      "candidate_sha256": "735b11de66e2f488c8d21f98b50ec0bd3266ab1940feae05c5969a71cd52a731"
+    },
+    "docs/reviews/H010-j.md": {
+      "original_sha256": "c90a94bd9751ae15066446fdd7d34af849ff02642f8ee859858ba24016c46605",
+      "draft_sha256": "86cf8e04c4b6ea1d7446cee29faf8f7e9a39260618ab5bad48753ffbe718860c",
+      "candidate_sha256": "4bba9d639e0c8cda45bd92e1661010dad36b251b084ab9568064fe67ce23db7b"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "90ffafa63d5c1f65eec3b2a43171256d9599d423cf85c6aacb96dd815b6dd3e8",
+    "docs/IMPLEMENTATION_STATUS.md": "c452c344fe8d76bfff8461370674c4eae59d2e8e1980811926bf277e9c26fcb2",
+    "docs/proofs/opencode-v2-desktop.md": "890fc8ce122c117ba43c2ad279cec0ccbd6b884163bd0ed9dcbcaf12283ab2dd",
+    "docs/proofs/opencode-v2-service.md": "03a028cf902ef010aed8de50dff7c4e0b2c0457341e470d485924acb9367c874",
+    "docs/proofs/opencode-v2-subagents.md": "266a182de514bbc3bd9ae90d897c99b56cca05d6abf6ded1af76088c5a7ce094",
+    "docs/proofs/opencode-v2-service.json": "e27e288ea86a2ca84141121989c5e9bbb2b718252ab6bb7c8987232b32a838c4",
+    "docs/proofs/opencode-v2-subagents.json": "3e67972daca6cd7953ccca3f78a0f5b64c995ed314a124d10f507b3b75917e6f",
+    "docs/proofs/opencode-v2-desktop.json": "dbbcacd339acb561be63b8616f77895330ac853e791e4588f7517730fdbdc578"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H010-h.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H010-i.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H010-j.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "historical_evidence": {
+    "docs/proofs/opencode-v2-service.json": {
+      "sha256": "e27e288ea86a2ca84141121989c5e9bbb2b718252ab6bb7c8987232b32a838c4"
+    },
+    "docs/proofs/opencode-v2-service.md": {
+      "sha256": "03a028cf902ef010aed8de50dff7c4e0b2c0457341e470d485924acb9367c874"
+    },
+    "docs/proofs/opencode-v2-subagents.json": {
+      "sha256": "3e67972daca6cd7953ccca3f78a0f5b64c995ed314a124d10f507b3b75917e6f"
+    },
+    "docs/proofs/opencode-v2-subagents.md": {
+      "sha256": "266a182de514bbc3bd9ae90d897c99b56cca05d6abf6ded1af76088c5a7ce094"
+    },
+    "docs/proofs/opencode-v2-desktop.json": {
+      "sha256": "dbbcacd339acb561be63b8616f77895330ac853e791e4588f7517730fdbdc578"
+    },
+    "docs/proofs/opencode-v2-desktop.md": {
+      "sha256": "890fc8ce122c117ba43c2ad279cec0ccbd6b884163bd0ed9dcbcaf12283ab2dd"
+    }
+  },
+  "verifier_sha256": "bd88e0d926193795b7298a2a9f0b0ec4d834e2814586d65acbad5c2683dc1710",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "660ffaec75b7aaa086db307593c67e99eb819e0a5f1f0c4927b3906246929ebc",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 57,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 46
+      },
+      "flagged_prose_lines": 1606,
+      "approximate_source_words": 60531,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 54,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 43
+      },
+      "flagged_prose_lines": 1590,
+      "approximate_source_words": 60052,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 165,
+      "remaining_documents": 57,
+      "ready_percent": 74.3,
+      "remaining_percent": 25.7
+    },
+    "progress_after": {
+      "ready_documents": 168,
+      "remaining_documents": 54,
+      "ready_percent": 75.7,
+      "remaining_percent": 24.3
+    },
+    "other_documents": [
+      "bench/context_tools/README.md",
+      "docs/IMPLEMENTATION_STATUS.md",
+      "docs/design-config-actions.md",
+      "docs/testing-codex-manually.md"
+    ],
+    "after_input_sha256": "89b23dd4bb35a58ef5bae3d80a7f82b75d2b84e95b96712bb76f6ab6dcf9aed0"
+  },
+  "date": "2026-11-21",
+  "implementation": "The lead agent translated and verified the three short, related OpenCode V2 reviews together.",
+  "programmatic_references": "The tracked code and configuration search found no direct reference to these three reviews.",
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}

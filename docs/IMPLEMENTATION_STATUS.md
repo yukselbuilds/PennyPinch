@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English OpenCode V2 shared service, subagent, and Desktop reviews
+
+H042-k3y is complete. The three English H010 reviews cover the shared service, native subagents, and the packaged Desktop application. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-opencode-v2-runtime-reviews-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 168 of 222 tracked documents (75.7%). It flagged 54 documents (24.3%) with remaining Turkish prose. The estimated remaining text is about 60,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the H010 closing review. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English OpenCode V2 preflight, detection, and connection reviews
 
 H042-k3x is complete. The three English H010 reviews cover a private server preflight, read-only detection, and the native Apply and Undo flow. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-opencode-v2-connection-reviews-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 165 of 222 tracked documents (74.3%). It flagged 57 documents (25.7%) with remaining Turkish prose. The estimated remaining text is about 61,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the H010-h, H010-i, and H010-j OpenCode V2 reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English OpenCode V1 subagent and terminal reviews
 
