@@ -1,0 +1,122 @@
+{
+  "task": "H042-k3t",
+  "status": "pass",
+  "base_commit": "4150218f6a1e56f9e5cf1373bc3f0595a1916439",
+  "verified": {
+    "translated_records": 2,
+    "legacy_heading_aliases": 2,
+    "incoming_links": 4,
+    "incoming_heading_links": 0,
+    "outgoing_links": 2,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/reviews/H008-current.md": {
+      "original_sha256": "0c67717b4271638691fcae09a8d9adf6e32acbcfd996528ae09f7eef212be1ae",
+      "draft_sha256": "34de72769cfd8794833fcff769ba99972e1d7a3159c118f78f023badb984d8fc",
+      "candidate_sha256": "e7a926e71bbc37eddbd6c2c4e7a28f04beba75c701564274253a1bd5e55a71f4"
+    },
+    "docs/reviews/H008.md": {
+      "original_sha256": "01bde191233b10b3348a415106123a83ab51d375b990a1b003ca8ce9ce2b02ab",
+      "draft_sha256": "d87153fd5138a7665a0e2a8c9f7a483e1ca8be22242ac199628e4539d9875ca1",
+      "candidate_sha256": "b160c1ac970827b4cc9e0de616bf5f7282355bc96ffbfe76fb6f7121e5560ee7"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "ab50e62feab49c5f71f48d1d869f363d0fb5cdeeed25d9d9ffb79a6542e56558",
+    "docs/IMPLEMENTATION_STATUS.md": "e60d3ac80f16be24aab4860f14290ca94b535c19c02705ac44af2dbf29c45c26",
+    "docs/decisions/011-current-codex.md": "dacbf72768f4579ee6352fba7a1bde8b566ccf8081f71480633e07be45d52011",
+    "docs/proofs/codex-current.md": "b565a30e3748da99ecef101be4eceb0ed6514804b81ffe975ebd2f5bbdb79e1d",
+    "docs/proofs/codex.md": "4a50da5f20664282bfcf8241752adde14bff00e337b1b07537ca536c8b53d114"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H008-current.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H008.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "historical_evidence": {
+    "docs/proofs/codex.md": {
+      "sha256": "4a50da5f20664282bfcf8241752adde14bff00e337b1b07537ca536c8b53d114",
+      "matched_evidence_fields": 5
+    },
+    "docs/proofs/codex-current.md": {
+      "sha256": "b565a30e3748da99ecef101be4eceb0ed6514804b81ffe975ebd2f5bbdb79e1d",
+      "matched_evidence_fields": 5
+    }
+  },
+  "verifier_sha256": "f22244bf51ab8817e16f058a3f96d63e88be39e6f06ab35fbaef0d8db4f8d1e3",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "bef6376bbcef9fb50786dfb10f78c5dfa46095a5e4ae29e02d075bd92527fe2d",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 70,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 59
+      },
+      "flagged_prose_lines": 1724,
+      "approximate_source_words": 64917,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 68,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 57
+      },
+      "flagged_prose_lines": 1708,
+      "approximate_source_words": 64312,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 152,
+      "remaining_documents": 70,
+      "ready_percent": 68.5,
+      "remaining_percent": 31.5
+    },
+    "progress_after": {
+      "ready_documents": 154,
+      "remaining_documents": 68,
+      "ready_percent": 69.4,
+      "remaining_percent": 30.6
+    },
+    "other_documents": [
+      "bench/context_tools/README.md",
+      "docs/IMPLEMENTATION_STATUS.md",
+      "docs/design-config-actions.md",
+      "docs/testing-codex-manually.md"
+    ],
+    "after_input_sha256": "399393e0fdbd21357e2763e2a4a74294b3301def3598488fbd3b630c59981fd7"
+  },
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the interim review. The lead agent drafted the later Codex correction review and checked both against the original text and historical evidence.",
+  "programmatic_references": "The tracked code and configuration search found no direct reference to either review.",
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}
