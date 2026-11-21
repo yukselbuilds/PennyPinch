@@ -4,7 +4,9 @@
 
 H042-k3s is complete. The H005 engine and H007 protocol reviews are in English. The checks matched the cited hashes, measured bytes, test limits, and heading links. [Evidence](proofs/pennypinch-engine-protocol-reviews-english.json) · [Task list](../TASKS.md)
 
-The scan found 70 documents with remaining Turkish prose among 222 tracked documents. The count includes 59 reviews, 7 research notes, and 4 other documents. The estimate is about 65,000 source words. The historical handoff contains about 32,000.\n\n### Next H042 release step
+The scan found 70 documents with remaining Turkish prose among 222 tracked documents. The count includes 59 reviews, 7 research notes, and 4 other documents. The estimate is about 65,000 source words. The historical handoff contains about 32,000.
+
+### Next H042 release step
 
 Continue H042-k3 with the H008 Codex reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
