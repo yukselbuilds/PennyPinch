@@ -1,0 +1,65 @@
+{
+  "task": "H042-k3q",
+  "status": "pass",
+  "base_commit": "268542dda92b4a80bed6e6bc88e4fa2613550e09",
+  "verified": {
+    "translated_records": 2,
+    "legacy_heading_aliases": 2,
+    "incoming_links": 9,
+    "incoming_heading_links": 0,
+    "outgoing_links": 5,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/proofs/windows-gui-crash.md": {
+      "original_sha256": "4fb52b3f841e24ae8e7be89441e53386f080477a13c26539544f30ee7d38994e",
+      "draft_sha256": "b6f1010c6c27929807b62476c025224f08a96f5b02915ea775c5b78f24726f52",
+      "candidate_sha256": "c68e4e27553fa6993ec2cf056384a10df2ba4d3b4702735fa63e8da667bfe6a6"
+    },
+    "docs/reviews/H006-c.md": {
+      "original_sha256": "bf3b2aad587315cd0998461164d605e53b65a931a7af7ff8f29b8d49b9e72c80",
+      "draft_sha256": "fbdac25f659927fe621bd6c89d64fa037aa2bbfae2cdcbbdb6363e7da3168acc",
+      "candidate_sha256": "ec763be09fb9a135dd831d002fd9b1818bc9280e9b702ae9cd62458c42ce8652"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "1ef8b35048c31489e091564e21d21f9727f5bbe448b1b51ff18fce09a8595de0",
+    "docs/IMPLEMENTATION_STATUS.md": "eb6ddd17696e955de4e91b057dcd68a6ecf0854fb85e50195dd3ee536aacfc6c",
+    "docs/decisions/002-runtime.md": "a5934a6b27b608b6fd504d1e1a335e819abd3e72c43b89ca5a47dbb7fe1f67df",
+    "docs/proofs/windows-engine.md": "154f8028558fe464beadb742f1cc5821da72091cf2b962468788ab68e27ae23d",
+    "docs/proofs/windows-gui-crash.json": "9a8fc9476212d33fdce4bff7b3bd85dd2571e9c3c3c96a4b36caf420ccb0e5a6",
+    "bench/windows/gui_crash.py": "9bb050fa426d15d23828592870c4cee7a38360120d87f48bbd4ac5fbc0e78c53"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/windows-gui-crash.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H006-c.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "canonical_record": {
+    "path": "docs/proofs/windows-gui-crash.json",
+    "process_shutdown_ms": "57.429",
+    "port_shutdown_ms": "58.299",
+    "threshold_ms": 5000,
+    "scope": "historical_local_windows_10"
+  },
+  "verifier_sha256": "38e1bd52a440fa0757f8ae5cf5470faa17d532d3ff30d27a6efa69ccd66c7c23",
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The lead agent translated the paired evidence and review and verified both against the recorded native result. The same change corrects the decimal marks in the English task entry.",
+  "programmatic_references": "No direct code or configuration references to the two documents were found.",
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}

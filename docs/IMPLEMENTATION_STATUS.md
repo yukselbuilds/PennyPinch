@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 21 November — English development, roadmap, and design evidence
+## 21 November — English Windows GUI crash evidence
 
-H042-k3p is complete. Three English records describe development tools, the roadmap comparison, and the UX001 visual refresh. The checks preserved measurements, test limits, dependency edges, and heading links. [Evidence](proofs/pennypinch-development-design-evidence-english.json) · [Task list](../TASKS.md)
+H042-k3q is complete. The H006-c Windows GUI crash evidence and review are in English. The canonical result confirms process closure at 57.429 ms and port closure at 58.299 ms. The English task entry now uses those decimal marks. The acceptance still covers the historical Windows 10 run. [Evidence](proofs/pennypinch-windows-gui-crash-evidence-english.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue H042-k3 with the Windows GUI crash evidence and its related H006 review. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+Continue H042-k3 with the remaining H006 runtime reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
+## 21 November — English development, roadmap, and design evidence
+
+H042-k3p is complete. Three English records describe development tools, the roadmap comparison, and the UX001 visual refresh. The checks preserved measurements, test limits, dependency edges, and heading links. [Evidence](proofs/pennypinch-development-design-evidence-english.json) · [Task list](../TASKS.md)
 
 ## 21 November — English client-use and model scope evidence
 
