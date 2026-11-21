@@ -1,45 +1,65 @@
-# OpenCode V2 Windows teknik ön kontrolü
+<a name="opencode-v2-windows-teknik-ön-kontrolü"></a>
 
-14 Kasım 2026. **H010-e yerel kabul edildi; ana H010 açık, toplam 42/54.** [Programatik kabul](opencode-v2.json), [plan](../decisions/009-opencode-provider-routes.md#h010-e--v2-windows-ön-kontrolü), [inceleme](../reviews/H010-e.md).
+# OpenCode V2 technical preflight on Windows
 
-Resmî [v2.3.0 yayını](https://github.com/anomalyco/opencode/releases/tag/v2.3.0) Windows x64 baseline ZIP'i yalnız `work/toolchains/opencode/v2.3.0` içine alındı. Release API digest'i, SHA256SUMS ve yerel archive hash'i eşleşti; executable ayrıca sabitlendi. `receipt.json` indirme/çıkarma anını kaydeder ve o anda `executed:false` der; sonraki gerçek yürütme ayrı runtime kanıtındadır. V1 kurulumu veya global PATH değişmedi. Kaynaklar `a6b15d33daf6ab7d35569f6d711fdb630b9f04e7` commit'ine bağlı 34 dar dosyadır; URL/hash'leri kanonik JSON'da bulunur.
+14 November 2026. **H010-e passed locally. Main H010 remained open at this checkpoint. The total remained 42/54.** [Programmatic acceptance](opencode-v2.json), [plan](../decisions/009-opencode-provider-routes.md#h010-e--v2-windows-ön-kontrolü), [review](../reviews/H010-e.md).
 
-## Gerçek yol ve sonuç
+The official [v2.3.0 release](https://github.com/anomalyco/opencode/releases/tag/v2.3.0) Windows x64 baseline ZIP was placed only in `work/toolchains/opencode/v2.3.0`. The release API digest, SHA256SUMS and local archive hash matched. The executable was also pinned. `receipt.json` records the download/extraction time and says `executed:false` at that time.
 
-Windows 10 22H2 x64 build19045 üzerinde her protokol yeni HOME/XDG/AppData/ProgramData/temp kullanır. Çalışma dizini kendi global config köküdür. Pinned ConfigDiscovery bu durumda ancestor/proje aramasını atlar. CLI yalnız açık allowlist ortamını alır; caller auth/config/server-password aktarılmaz. V2 `providers/settings`, izin/policy ve agent tanımı kullanılır. Güncelleme, share, warming, snapshot, compaction, araçlar ve title agent kapalıdır.
+Later real execution has separate runtime evidence. V1 installation and global PATH did not change. The sources are 34 focused files pinned to commit `a6b15d33daf6ab7d35569f6d711fdb630b9f04e7`. Their URLs/hashes are in canonical JSON.
 
-Her profilde sürüm/help/debug paths ve `run --standalone --format json` gerçek binary ile çalıştı. Help private server bayrağını, debug paths on yolun tamamının fixture altında olduğunu gösterdi. `--standalone`, normal background service keşfi yerine stdin lease'i olan özel sunucu açar. Normal CLI/Desktop servisinin ayarları benimsemesi bu yolla sınanmış sayılmaz. [Bağlantı seçimi kaynağı](https://github.com/anomalyco/opencode/blob/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/cli/src/services/server-connection.ts), [private server kaynağı](https://github.com/anomalyco/opencode/blob/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/cli/src/services/standalone.ts).
+<a name="gerçek-yol-ve-sonuç"></a>
 
-| Kontrol | Chat | Responses |
+## Native CLI route and result
+
+On Windows 10 22H2 x64 build 19045, each protocol used new HOME, XDG, AppData, ProgramData, and temp paths. The working directory was its own global config root. Pinned ConfigDiscovery skips ancestor/project search in this case. The CLI received only an explicit allowlist environment. The caller's auth/config/server-password were not passed through.
+
+V2 uses `providers/settings`, permission/policy and agent definitions. Update, share, warming, snapshot, compaction, tools and title agent were disabled.
+
+For each profile, the real binary ran version/help/debug paths and `run --standalone --format json`. Help showed the private server flag. Debug paths showed that all ten paths were under the fixture. `--standalone` opens a private server with an stdin lease instead of discovering the normal background service. This path does not test whether the normal CLI/Desktop service adopts the settings. [Connection selection source](https://github.com/anomalyco/opencode/blob/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/cli/src/services/server-connection.ts), [private server source](https://github.com/anomalyco/opencode/blob/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/cli/src/services/standalone.ts).
+
+| Check | Chat | Responses |
 | --- | --- | --- |
-| Seçici → upstream model | lab/slot → headroom-opencode-tool-fixture | openai/slot → gpt-4.1 |
-| Model isteği | 1 | 1 |
-| Model ve sentetik Bearer | Korundu | Korundu |
+| Selector → upstream model | lab/slot → headroom-opencode-tool-fixture | openai/slot → gpt-4.1 |
+| Model requests | 1 | 1 |
+| Model and synthetic Bearer | Preserved | Preserved |
 | SSE final + terminal step | Exact final / 1 step | Exact final / 1 step |
-| Dört CLI komutu | exit0 / stderr0 | exit0 / stderr0 |
-| Her komut sonrası owned job | süreç0 | süreç0 |
-| Config ve ortam | Aynı | Aynı |
-| Motor kapanışı | graceful / exit0 / port kapalı / force=false | graceful / exit0 / port kapalı / force=false |
+| Four CLI commands | exit0 / stderr0 | exit0 / stderr0 |
+| Owned job after each command | process0 | process0 |
+| Config and environment | Same | Same |
+| Engine shutdown | graceful / exit0 / port closed / force=false | graceful / exit0 / port closed / force=false |
 
-İlk gerçek model koşusu `f89faa722bae`, `provider.no-route` ile reddedildi ve başarısız tutuldu; motor normal kapandı. Teşhis özel profilde yapıldı. V2 policy yalnız `provider.use` iznine bakmaz: sağlayıcının kendi integration kaydı da kullanılabilir olmalıdır. Son config deny-all ardından yalnız seçili sağlayıcının `provider.use` ve `integration.use` izinlerini açar. Diğer entegrasyonlar ve araç izinleri kapalıdır. Bu test config'i kullanıcı ayarına yazılmaz. [Policy kaynağı](https://github.com/anomalyco/opencode/blob/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/config/plugin/policy.ts).
+The first request from the real CLI in run `f89faa722bae` returned `provider.no-route`. The run remains a failure in the record. The engine closed normally. Diagnosis used a private profile. V2 policy requires `provider.use` and a usable integration record for the provider. The final config denies all, then allows only the selected provider's `provider.use` and `integration.use` permissions.
 
-## Doğrulama ve tekrar
+Other integrations and tool permissions remain off. This test config is not written to user settings. [Policy source](https://github.com/anomalyco/opencode/blob/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/core/src/config/plugin/policy.ts).
 
-Nihai kayıt `work/proofs/opencode-v2/runs/1dbf43fb31b2/result.json` passed:true. Altı test; bölünmüş text/final, eksik/çift terminal step ve hata olayı, yanlış rota/auth/model/stream/prompt, V2 deny-by-default config, profil dışı yol/caller env izolasyonunu ve job ataması hatasında owned CLI temizliğini kapsar. `focused-72dd3c285b.json` aynı son benchmark kaynağıyla geçti. Runtime'ın 645 girdisi, case config/ortamı ve 34 pinned kaynak eşleşir. Eski 332 ürün girdisi, araç sürümleri ve OS/Python eşleştiğinden 222 Node/448 Rust (18 ignored)/fmt/frontend/embedded build yeniden çalıştırılmadı. Yeni test bu eski PASS'in kapsamına dahil edilmedi. CodeGraph sync exit0/stderr0.
+<a name="doğrulama-ve-tekrar"></a>
 
-Proje kökünde, doğrulanmış V2 toolchain ve mevcut pinned engine payload hazırken:
+## Verification and reproduction
+
+The final record `work/proofs/opencode-v2/runs/1dbf43fb31b2/result.json` reports passed:true. Six tests cover split text and final events, missing or duplicate terminal steps, and error events. They also check incorrect routes, auth, models, streams, and prompts. They cover V2 deny-by-default config, paths outside the profile, and isolation from the caller's environment. They verify cleanup of the owned CLI after a Job assignment error.
+
+`focused-72dd3c285b.json` passed with the same final benchmark source. The runtime's 645 inputs, case config/environment and 34 pinned sources matched. The earlier 332 product inputs, tool versions, OS, and Python matched. The team reused 222 Node and 448 Rust results, with 18 ignored. It reused the format, frontend, and embedded build results. The new test has separate evidence. CodeGraph sync exited 0/stderr0.
+
+With the verified V2 toolchain and existing pinned engine payload ready at the project root:
 
 ```powershell
 & .\work\proofs\packaging\artifacts\headroom-engine\runtime\python.exe -I -B -m unittest discover -s tests/fixtures/opencode -p test_v2.py
 & .\work\proofs\packaging\artifacts\headroom-engine\runtime\python.exe -I -B .\bench\opencode\v2.py
 ```
 
-Her tekrar yeni UUID profili/engine kullanır; önceki kayıt üzerine yazılmaz. CLI komutu120s/4MiB, HTTP4MiB, motor startup100s ile sınırlıdır. Owned job zorunlu kapanış fallback'idir; PASS, job kapatılmadan önce süreç0 ister. Token/usage sabit sentetik fixture sayılarıdır; gerçek kullanım, tasarruf, maliyet veya ilk-token süresi ölçülmedi. Kapalı loopback proxy ve offline motor profili yapılandırma kontrolleridir; firewall/packet capture kanıtı yoktur.
+Each repeat uses a new UUID profile/engine. It does not overwrite the previous record. The CLI command has limits of 120 s and 4 MiB. HTTP has a 4 MiB limit. Engine startup has a 100 s limit. The owned Job supplies the required shutdown fallback. A pass requires 0 processes before the Job closes.
 
-İlk olumlu `42d4a3f93ce4` runtime kaydı korunur. İncelemede job atama hatasında henüz job'a alınmamış kendi CLI handle'ı için kill/wait fallback'i ve negatif testi eklendi. Kaynak fingerprint'i değiştiğinden bu eski PASS son adayda yeniden kullanılmadı; yukarıdaki altı test ve iki protokol yeni adayla yeniden doğrulandı. Önceki kanonik kabul JSON'unun özgün baytları da proje proof kökünde korundu.
+Token/usage values are fixed synthetic fixture counts. Real usage, savings, cost and time to first token were not measured. The closed loopback proxy and offline engine profile are config checks. They are not firewall/packet-capture evidence.
 
-## Desktop ve açık kapsam
+The first positive runtime record `42d4a3f93ce4` remains. Review added a kill/wait fallback and a negative test for the CLI handle that had not yet been assigned to a job when assignment failed. The source fingerprint changed, so the old PASS was not reused for the final candidate. The six tests above and two protocols were verified again on the new candidate. Original bytes of the earlier canonical acceptance JSON were also preserved in the project proof root.
 
-V2 Desktop ayrı `opencode-desktop-win-x64.exe` (267.406.912 bayt) artefaktıdır. Pinned Electron builder paketli `opencode-cli` kaynağını taşır; ana giriş sidecar probe'u başlatır. Bu installer indirilmedi veya çalıştırılmadı. CLI ön kontrolü Desktop'ın service/process/config adoption, auth veya gerçek GUI kabulü sayılmaz. [Paket kaynağı](https://github.com/anomalyco/opencode/blob/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/desktop/electron-builder.config.ts).
+<a name="desktop-ve-açık-kapsam"></a>
 
-Mevcut ürün V2 blocker'ı ve `not_tested` katalog kaydı korunur. Sonraki dilim keşif/trust, atomik Plan/Apply/Undo ve V2 `mcp.servers` retrieval sözleşmesidir. V2 MCP/CCR/alt ajan, normal servis/GUI, canlı provider/auth, Windows 11 ve diğer OS açık. Hesap, ücretli çağrı, Actions veya yayın yapılmadı; geliştirme sohbeti tasarrufu ölçülmedi.
+## Desktop and remaining verification
+
+V2 Desktop is a separate `opencode-desktop-win-x64.exe` artifact (267,406,912 bytes). The pinned Electron builder includes the bundled `opencode-cli` resource. The main entry starts a sidecar probe. This installer was not downloaded or run. CLI precheck does not count as Desktop service/process/config adoption, auth or real GUI acceptance. [Package source](https://github.com/anomalyco/opencode/blob/a6b15d33daf6ab7d35569f6d711fdb630b9f04e7/packages/desktop/electron-builder.config.ts).
+
+At this checkpoint, the V2 product blocker and `not_tested` catalog status remained. The next slice covered discovery and trust, atomic Plan, Apply and Undo, and V2 `mcp.servers` retrieval. V2 MCP, CCR, subagents, and normal service and GUI use remained open. Live providers and auth, Windows 11, and other operating systems also remained open.
+
+No account, paid call, Actions or release was used. Development-chat savings were not measured.

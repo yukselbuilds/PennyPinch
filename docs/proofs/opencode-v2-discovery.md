@@ -1,39 +1,51 @@
-# OpenCode V2 salt okunur sürüm tanıma
+<a name="opencode-v2-salt-okunur-sürüm-tanıma"></a>
 
-14 Kasım 2026. **H010-f yerel kabul; ana H010 açık, toplam 42/54.** [Kanonik JSON](opencode-v2-discovery.json), [karar](../decisions/009-opencode-provider-routes.md#h010-f--v2-sürüm-tanıma-ve-güvenlik-sınırı), [inceleme](../reviews/H010-f.md).
+# OpenCode V2 read-only version detection
 
-Ürün keşfi artık H010-e'de doğrulanmış resmî Windows x64 baseline 2.3.0 executable'ını boyut/SHA256 çiftiyle tanır. Yeni indirme veya sistem kurulumu yapılmadı. V1 1.19.3 aynı matcher'da korunur. PATH, kullanıcı-local ve manuel dosya okuyucuları iki boyuttan birini kabul eder; hash, bounded read, ilk/son handle ve path identity kontrolleri aynı kalır. Keşif `--version` çalıştırmaz. Retained file pin doğru sürümü ayrıca doğrular ve normal yazma/replacement yarışına karşı read handle'ını tutar.
+14 November 2026. **H010-f passed locally. Main H010 remained open at this checkpoint. The total remained 42/54.** [Canonical JSON](opencode-v2-discovery.json), [decision](../decisions/009-opencode-provider-routes.md#h010-f--v2-sürüm-tanıma-ve-güvenlik-sınırı), [review](../reviews/H010-f.md).
 
-## Gerçek dosya ve backend sonucu
+Product discovery now detects the official Windows x64 baseline 2.3.0 executable verified in H010-e by the size/SHA256 pair. No new download or system install occurred. V1 1.19.3 remains in the same matcher.
 
-Windows 10 22H2 x64 build19045 üzerinde, yalnız proje içindeki açıkça seçilmiş iki CLI artefaktı okundu. V2 opt-in testi kendi UUID fixture'ında geçici user-local hardlink kurar; cleanup yalnız bu kökü/linki kaldırır. Kaynak binary'nin baytları değişmez. Normal dosya seçici yerine aynı DiscoveryManager metoduna fixture seçimi verilir; fiziksel pencere/file-picker yeniden denenmiş sayılmaz.
+The PATH, user-local, and manual file readers accept either of the two pinned sizes. The same checks apply to the hash, bounded reads, initial and final handles, and path identity. Discovery does not run `--version`. The retained file pin verifies the correct version separately. It holds the read handle to protect against normal write or replacement races.
 
-| Kabul | Gözlenen |
+<a name="gerçek-dosya-ve-backend-sonucu"></a>
+
+## Real file and backend result
+
+On Windows 10 22H2 x64 build 19045, the test read only two explicitly selected CLI artifacts inside the project. The V2 opt-in test creates a temporary user-local hard link in its own UUID fixture. Cleanup removes only that root/link. The source binary's bytes remain unchanged. The test injects a fixture selection into the same DiscoveryManager method instead of the normal file picker. It does not count as a physical window/file-picker retest.
+
+| Acceptance | Observed result |
 | --- | --- |
-| Gerçek V2 PATH/manual/user-local | Üçü de 2.3.0; bağlantı not_verified |
-| Manual rescan | Seçili dosya ve sürümü kaldı |
-| Doğru sürüm pin | Alındı; write-open reddedildi |
-| Yanlış expected version | Pin reddedildi |
-| Gerçek V1 dosyası | PATH keşfinde 1.19.3 korundu |
-| Backend V2 preview | Bilinen sürüm; blocked, after_headroom=false |
-| Backend Apply | config_conflict; fixture JSONC aynı; ownership root yok |
-| Hesap kabiliyeti | 2.3.0 için kapalı |
+| Real V2 PATH/manual/user-local | All three were 2.3.0. Connection was not_verified. |
+| Manual rescan | Selected file and version remained. |
+| Correct version pin | Acquired. Write-open was rejected. |
+| Wrong expected version | Pin was rejected. |
+| Real V1 file | PATH discovery preserved 1.19.3. |
+| Backend V2 preview | Known version. Blocked, after_headroom=false. |
+| Backend Apply | config_conflict. Fixture JSONC unchanged. No ownership root. |
+| Account capability | Off for 2.3.0. |
 
-Yanlış boyut/digest, iki binary'nin çapraz boyut/hash eşleşmesi ve aynı boyutta farklı digest unknown kalır. Plan testi hem V1 hem V2 biçimindeki JSON'un 2.3.0 sürümle V1 writer'a açılamadığını doğrular. Hesap parser/login kapısı ayrıca kapalıdır. UI'nin select_client_file → DiscoveryManager ve preview/apply komutları → PlanManager yolu incelendi; backend testi gerçek dosya/gerçek transaction engelini kullanır. Mock model/başarılı bağlantı sunulmaz.
+An incorrect size or digest remains unknown. A size from one binary with a hash from the other also remains unknown. The same applies to a matching size with a different digest. The plan test verifies that a V1 writer cannot open JSON in either V1 or V2 format for version 2.3.0. The account parser/login gate is also off.
 
-Katalog yalnız eski standalone CLI Chat/Responses preflight'ını local_fixture_partial olarak günceller. V2 config yazma/GUI/alt ajan kabiliyetleri not_tested, auth/platform/surface/version matching kapsamı aynı kalır. Bu kayıt otomatik V2 ürün desteği veya giriş yapılmış hesap göstermez.
+The UI select_client_file → DiscoveryManager and preview/apply commands → PlanManager path was reviewed. The backend test uses a real file/real transaction blocker. It does not present a mock model or successful connection.
 
-## Kanıt ve tekrar
+The catalog only updates the old standalone CLI Chat/Responses precheck to local_fixture_partial. V2 config writing/GUI/subagent capabilities remain not_tested. Auth/platform/surface/version matching scope remains unchanged. This record does not show automatic V2 product support or a signed-in account.
 
-- Son tam kapı `work/proofs/opencode-discovery/checks-b3151e09f2/final.json`: **222 Node, 450 Rust PASS; 19 ignored; fmt/frontend/embedded build PASS.**
-- Ayrı gerçek dosya testi `checks-296b2e1367/real.json`: **1 PASS**; tam kapıdaki ignored testin gerçek çağrısıdır. Her iki kayıt aynı 341 kaynak/test/config/CLI/bağımlılık/araç/OS girdisini önce/sonra bağlar.
-- H010-e'nin 645 protokol girdisi değişmedi; başarılı yerel model turu tekrarlanmadı ve kapsamı genişletilmedi. Debug exe ve dist hash'leri kanonik kayıtta ayrıca sabittir.
-- 59 Rust/5 frontend focused PASS, son ignored test fixture'ındaki DOS-path düzeltmesinden önce alındı. Son adayın normal testleri tam kapıyla, gerçek dosya testi ayrı güncel kayıtla kabul edilir. Eski focused kayıt güncel dosya fingerprint'i gibi sunulmaz.
-- CodeGraph son dört Rust dosyasını sync etti; yeni ortak digest matcher'ı bir sonuçlu sorguyla bulundu. Graph çıktısı runtime PASS değildir.
+<a name="kanıt-ve-tekrar"></a>
 
-İlk derlemede test private sibling fonksiyonuna erişti. Üretim API görünürlüğü genişletilmeden gerçek public discovery/pin yolu kullanıldı. İlk gerçek koşuda V2/plan/pin adımları geçti; V1 fixture'ının canonical `\\?\` PATH girdisi namespace guard'ına takıldı. Yalnız test normal DOS proje yoluna düzeltildi; güvenlik guard'ı değiştirilmedi. İki başarısız kayıt ve önceki focused PASS hash'leri kanonik JSON'da korunur.
+## Evidence and reproduction
 
-Pinned proje toolchain ve önceki yerel hazırlıklar hazırken repo kökünde:
+- Final full gate `work/proofs/opencode-discovery/checks-b3151e09f2/final.json`: **222 Node, 450 Rust PASS. 19 ignored. fmt/frontend/embedded build PASS.**
+- Separate real file test `checks-296b2e1367/real.json`: **1 PASS**. This is the real invocation of the ignored test in the full gate. Both records link the same 341 source/test/config/CLI/dependency/tool/OS inputs before and after.
+- H010-e's 645 protocol inputs did not change. The successful local model turn was not repeated or expanded. Debug exe and dist hashes are also pinned in the canonical record.
+- 59 Rust/5 frontend focused PASS preceded the DOS-path fix in the final ignored test fixture. The final candidate's normal tests are accepted through the full gate. The real file test has its own current record. The old focused record is not presented as the current file fingerprint.
+- CodeGraph synced the final four Rust files. A single-result query found the new shared digest matcher. Graph output is not runtime PASS evidence.
+
+The first compile had a test that accessed a private sibling function. The test then used the real public discovery/pin path without expanding production API visibility. In the first real run, V2/plan/pin steps passed. The V1 fixture's canonical `\\?\` PATH input then failed the namespace guard.
+
+Only the test changed to a normal DOS project path. The security guard did not change. Both failed records and prior focused PASS hashes remain in the canonical JSON.
+
+With the pinned project toolchain and earlier local preparation ready, run from the repository root:
 
 ```powershell
 $env:HEADROOM_TEST_OPENCODE_V2_CLI = 'D:\Projeler\Headroom\work\toolchains\opencode\v2.3.0\runtime\opencode.exe'
@@ -42,6 +54,6 @@ $env:CARGO_TARGET_DIR = 'D:\Projeler\Headroom\work\caches\cargo-target'
 cargo test --locked --offline --manifest-path src-tauri/Cargo.toml opencode_v2_project_binary_is_discovered_retained_and_pinned_without_execution -- --ignored --nocapture --test-threads=1
 ```
 
-Kanonik kayıttaki `verify.py real/final` aynı komutları yalnız alt sürece ait ortamla, yeni proof dizininde çalıştırır. Gerçek kullanıcı ayarı/auth, kurulu istemci veya aktif chat değiştirilmez. Client/model/account açma, Actions, ücretli API veya yayın yoktur.
+`verify.py real/final` in the canonical record runs the same commands with only child-process environment variables in a new proof directory. No real user settings/auth, installed client or active chat is changed. No client/model/account is opened, and no Actions, paid API or release is used.
 
-V2 writer/receipt/MCP retrieval, normal CLI/Desktop servis adoption, gerçek auth/alt ajan ve Windows 11/macOS/Linux kabulü açık. Gerçek token/fatura veya geliştirme sohbeti tasarrufu ölçülmedi.
+At this checkpoint, V2 writing, receipts, and MCP retrieval remained open. Normal CLI and Desktop service adoption and live auth and subagent acceptance also remained open. Windows 11, macOS, and Linux had separate open acceptance. Real token/billing or development-chat savings were not measured.

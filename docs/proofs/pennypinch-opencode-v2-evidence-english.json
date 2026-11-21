@@ -1,0 +1,125 @@
+{
+  "task": "H042-k3g",
+  "status": "pass",
+  "base_commit": "88708dad33b89bc63109c99f20f3893de1902e6f",
+  "verified": {
+    "translated_records": 6,
+    "legacy_heading_aliases": 11,
+    "incoming_heading_links": 0,
+    "outgoing_links": 27,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/proofs/opencode-v2-binding.md": {
+      "original_sha256": "3a19fc7fef7990951e50786cccc4ccbe35ba91aafcc9916715ce42f16ba891b2",
+      "draft_sha256": "4e376d6dad487abf7e298c662bf4ce46b4a40cbc293dcbafbc4739c8a9fffb2b",
+      "candidate_sha256": "a31f81f1a53046503c1436440818d7aff9a76c013adc061bbbb11308ff45ddb6"
+    },
+    "docs/proofs/opencode-v2-desktop.md": {
+      "original_sha256": "33e9c5ef3f1f49d4ff78b2588770413330068783e19611a4484399697fec00d2",
+      "draft_sha256": "c05974a0f18d9d642d3c9bdc93c16ab1ef799ef3b58dc184e201e9e62d858a13",
+      "candidate_sha256": "890fc8ce122c117ba43c2ad279cec0ccbd6b884163bd0ed9dcbcaf12283ab2dd"
+    },
+    "docs/proofs/opencode-v2-discovery.md": {
+      "original_sha256": "ea76f1d43206231fd944030dd39faf5e440da3a1f9d52f80858c9bedbdfab1ee",
+      "draft_sha256": "2d434f06d05de04ca1885379a16467950f9de629ab08853098f44680acd4178c",
+      "candidate_sha256": "e195e012ff873d932226f30ae92ac7e727d5fafb133a565dfe3ebe9ba3028353"
+    },
+    "docs/proofs/opencode-v2-service.md": {
+      "original_sha256": "ec97c18bd5ae659889ffd636e81c65dae5b56ccbd5d1fed4ba27f6aefe6bdac2",
+      "draft_sha256": "cb5f0cd71723847716f0a1981cf788d441dbf91a0ba422b71e6dfd96f76716e7",
+      "candidate_sha256": "03a028cf902ef010aed8de50dff7c4e0b2c0457341e470d485924acb9367c874"
+    },
+    "docs/proofs/opencode-v2-subagents.md": {
+      "original_sha256": "00a0542656396f60f7d6fc548e76eda2914700180842f6102dc0da97ea33f7df",
+      "draft_sha256": "5cb4a3cb1093d83f5ce53eca40a64d3fe54afa550af8073c35d1adbd432d9519",
+      "candidate_sha256": "266a182de514bbc3bd9ae90d897c99b56cca05d6abf6ded1af76088c5a7ce094"
+    },
+    "docs/proofs/opencode-v2.md": {
+      "original_sha256": "41aa21e8755fec194399e9398e79570a8830f9fa14e6e8f6036dcd7b78463554",
+      "draft_sha256": "3b402938c90cb1e52f586e22277c345ce71662a6e0970be26ec746bb962a8899",
+      "candidate_sha256": "3a7a827d29ab6e10452808fb6a2c873eb37323dd62df222c0ea449fb2552cf92"
+    }
+  },
+  "references_sha256": {
+    "docs/decisions/009-opencode-provider-routes.md": "910dfd50f0cfb73c224318ab34a7c1f2d295b1519ed9186040133c1bfee08dc7",
+    "docs/proofs/opencode-v2-binding.json": "301514f3148f4b800cb8a8f0b3dcb8098388c04b7fa62753c2a8b27573bb976e",
+    "docs/proofs/opencode-v2-desktop.json": "dbbcacd339acb561be63b8616f77895330ac853e791e4588f7517730fdbdc578",
+    "docs/reviews/H010-j.md": "c90a94bd9751ae15066446fdd7d34af849ff02642f8ee859858ba24016c46605",
+    "docs/proofs/opencode-v2-discovery.json": "3bed32362775d7ab8406c899ede18627aae7405a21e146afa5f41d9d94e96cf7",
+    "docs/reviews/H010-f.md": "7f85d3502a1da37c3283e3b5be9620e944fea6445b691caa3b9c546f38650751",
+    "docs/proofs/opencode-v2-service.json": "e27e288ea86a2ca84141121989c5e9bbb2b718252ab6bb7c8987232b32a838c4",
+    "docs/reviews/H010-h.md": "fe20c6bed817b04ec69189ed1e2154ec7a72e5b1a5fd53b66cc4a3ae5532c679",
+    "docs/proofs/opencode-v2-subagents.json": "3e67972daca6cd7953ccca3f78a0f5b64c995ed314a124d10f507b3b75917e6f",
+    "docs/reviews/H010-i.md": "6ea1f831cb512f61eed26e6b19a34e83ab6b18a7f4428634f4c498968890922a",
+    "docs/proofs/opencode-v2.json": "445d270449a104e994594d60e4c42e72a7105125ae9cf05e4cc3a581279ed5b3",
+    "docs/reviews/H010-e.md": "644d024b94a34471d4554e82cb1a5b6089c435df6d35bda3d0e500e82696c4e5"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/opencode-v2-binding.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/opencode-v2-desktop.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/opencode-v2-discovery.md": {
+        "hard": 0,
+        "advisory": 8
+      },
+      "docs/proofs/opencode-v2-service.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/opencode-v2-subagents.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/opencode-v2.md": {
+        "hard": 0,
+        "advisory": 6
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the OpenCode V2 preflight and discovery records. The lead agent drafted the connection, normal service, subagent, and Desktop records. The worker handle was no longer attached after resumption. The lead agent kept its drafts, resolved wording differences against the source, and ran the final checks.",
+  "compatibility_evidence_test": {
+    "command": [
+      "cargo.exe",
+      "test",
+      "--offline",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--bin",
+      "headroom-desktop",
+      "compatibility::catalog::tests::compatibility_catalog_embedded_records_have_scoped_existing_evidence",
+      "--",
+      "--exact",
+      "--test-threads=1"
+    ],
+    "result": "1 passed",
+    "evidence_references": 20,
+    "checked_files": 166,
+    "before_sha256": "788adaf66f2a0612aa7c5d166a2d7c10b81a75c6924fd4a749db2fb5fa1b5c95",
+    "after_sha256": "788adaf66f2a0612aa7c5d166a2d7c10b81a75c6924fd4a749db2fb5fa1b5c95",
+    "toolchain": {
+      "cargo.exe": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "rustc.exe": "rustc 1.92.0 (ded5c06cf 2025-12-08)"
+    },
+    "environment_paths": {
+      "CARGO_HOME": "work/caches/cargo-home",
+      "CARGO_TARGET_DIR": "work/caches/cargo-target"
+    }
+  },
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}

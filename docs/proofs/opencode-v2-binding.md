@@ -1,19 +1,25 @@
-# OpenCode V2 kullanıcı bağlantısı
+<a name="opencode-v2-kullanıcı-bağlantısı"></a>
 
-15 Kasım 2026. Headroom, Windows 10 22H2 x64’te sabit OpenCode 2.3.0 CLI için mevcut sağlayıcı uç noktalarını Önizle ve Uygula üzerinden bağladı. Plan, model, efor, kimlik doğrulama ve izin ayarlarının mevcut değerlerini korudu. Test edilen kurulum resmî Windows x64 baseline paketidir. [Karar](../decisions/009-opencode-provider-routes.md#h010-g--v2-kullanıcı-bağlantısı-ve-şemalı-geri-alma)
+# OpenCode V2 user connection
 
-| Senaryo | Gözlem |
+November 15, 2026. Headroom connected existing provider endpoints for the pinned OpenCode 2.3.0 CLI on Windows 10 22H2 x64 through Preview and Apply. The plan preserved the current model, effort, authentication, and permission settings. The test used the official Windows x64 baseline package. [Decision](../decisions/009-opencode-provider-routes.md#h010-g--v2-kullanıcı-bağlantısı-ve-şemalı-geri-alma)
+
+| Scenario | Observation |
 | --- | --- |
-| Gerçek Headroom penceresinde Önizle ve Uygula | İki sağlayıcı uç noktası ve MCP köprüsü aynı JSONC dosyasına kaydedildi. Ortak sahiplik kaydı V2 şemasını taşıdı. |
-| Chat Completions ve Responses | Her protokolde dört yerel model isteği, üç tamamlanan araç, doğru model ve sahte API anahtarı, beklenen son yanıt ve CLI exit 0. |
-| Sıkıştırılmış logu geri çağırma | 14.999 baytlık örnek blok iki protokolde de 103 bayta indi. `headroom_retrieve` özgün baytları ve hash’i doğruladı. |
-| Headroom yeniden açıldıktan sonra Kaldır | MCP tanımına yapılan düzenleme çatışma üretti. Ayar dosyası ve sahiplik kaydı aynı kaldı. Test düzenlemesi silinince Kaldır özgün JSONC baytlarını döndürdü ve sahipliği bıraktı. |
-| Kapanış | İki Headroom penceresi normal kapandı. Sahipli süreçler ve bağlantı portları serbest kaldı. |
+| Preview and Apply in the real Headroom window | The app wrote two provider endpoints and the MCP bridge to the same JSONC file. The shared ownership record stored the V2 schema. |
+| Chat Completions and Responses | Each protocol made four local model requests and completed three tool calls. The model, synthetic API key, and final response matched. The CLI exited with code 0. |
+| Retrieve a compressed log | The sample block decreased from 14,999 bytes to 103 bytes in both protocols. `headroom_retrieve` verified the original bytes and hash. |
+| Remove after reopening Headroom | An edit to the MCP entry caused a conflict. The app preserved the settings file and ownership record. After the test removed the edit, Remove restored the original JSONC bytes and released ownership. |
+| Shutdown | Both Headroom windows closed normally. The owned processes exited and their ports closed. |
 
-Gerçek OpenCode binary’si kendi `--standalone` servisini başlattı ve Headroom’un kaydettiği V2 ayar dosyasını okudu. Yerel upstream sabit sentetik veri döndürdü. Bayt karşılaştırması örnek log bloğuna aittir. Canlı kullanımda token, fatura ve geliştirme sohbeti tasarrufu ölçülmedi.
+The real OpenCode binary started its own `--standalone` service and read the V2 settings file that Headroom saved. The local upstream returned fixed synthetic data. The byte comparison measures the sample log block. Live token savings, billing savings, and development-chat savings remain unmeasured.
 
-Pencere ve model kanıtı `work/proofs/opencode-v2-binding/native-d2a0ee959b/result.json` içindedir. Test penceresi ayrı uygulama kimliği ve profil kullandı. Arayüz düğmelerine yalnız bu pencereye ait WebView üzerinden erişildi. Gerçek OpenCode TUI, Desktop, paylaşılan servis, alt ajan, canlı hesap ve diğer işletim sistemleri H010 kapsamında açık.
+Window and model evidence is in `work/proofs/opencode-v2-binding/native-d2a0ee959b/result.json`. The test window used a separate application identity and profile. The test accessed the controls only through that window's WebView. Full OpenCode TUI, Desktop, shared service, subagents, live accounts, and other operating systems remained open in H010 at this checkpoint.
 
-Son ürün kapısında 222 Node ve 462 Rust testi geçti. 19 opt-in Rust testi normal koşuda atlandı. Biçim kontrolü, ön yüz ve gömülü uygulama derlemeleri başarılı. V2 gerçek dosya testi ayrıca çalıştırıldı ve köprü bulunmadığında yazımın reddedildiğini doğruladı. Native koşuda 22.685, son kapıda 344 girdi eşleşti. Native koşu sonrasında uyumluluk kataloğuna Windows 10 CLI kanıtı eklendi. Bağlantı kaynakları, testler ve WebView dosyaları aynı hash'leri taşıyor. Son yerel derleme yeni katalog kaydını içeriyor. [JSON kanıtı](opencode-v2-binding.json)
+The final product gate passed 222 Node and 462 Rust tests. The default run skipped 19 opt-in Rust tests. Format checks, frontend build, and embedded app build passed. A separate V2 test used a real file and verified that the app refused to write when the bridge was absent. The native run matched 22,685 inputs, and the final gate matched 344.
 
-İlk pencere koşusu dar GUI ortamıyla açılmadı. Sonraki koşular Windows ortam girdileri ve aynı diskteki izole ayar dosyasıyla açıldı. Test yardımcıları paket yolu için dosya kimliğini ve hash'i karşılaştıracak biçimde düzeltildi. Responses doğrulamasında upstream akış biçimi ve beklenen araç dizisi, gözlenen V2 çıktısına göre düzeltildi. İki protokolün `headroom_retrieve` tamamlanması yalnız test profiline ait SQLite kayıtlarından da doğrulandı. Başarısız koşular ve bu tanı sonucu JSON kanıtına bağlıdır.
+After the native run, the compatibility catalog added Windows 10 CLI evidence. The connection source, tests, and WebView files retained matching hashes. The final local build included the new catalog record. [JSON evidence](opencode-v2-binding.json)
+
+The first window did not open with a restricted GUI environment. Later runs opened the window with the Windows environment inputs and an isolated settings file on the same disk. The test helpers checked the identity and hash of the file at the package path. The Responses verifier used the observed V2 output to correct its assumptions about upstream streaming and tool order.
+
+Separate SQLite records in the test profile verified `headroom_retrieve` completion for both protocols. The JSON evidence references the failed runs and diagnosis.
