@@ -1,34 +1,46 @@
-# H025 — canlı metadata ve Genel bakış kabulü
+<a name="h025--canlı-metadata-ve-genel-bakış-kabulü"></a>
 
-5 Kasım 2026, Windows10 22H2 x64/build19045. [Plan013](../decisions/013-live-overview.md), [ana ajan incelemesi](../reviews/H025.md). Ana ajan runtime/nesil, ölçüm, kalıcı kayıt, bağlantı güveni ve kabulü üstlendi. Aynı tek GPT-6 Luna xhigh çalışanı yalnız sabit props'lu üç sunum dosyasını ve ayrı frontend sözleşme testlerini yazdı; birleştirilmiş düzeltmeler sonrası completed/durdurulmuş durumu doğrulandı. Ana ajan gerçek bağlı akışı inceledi ve kalan uygulamayı tamamladı. Model/efor değişmedi; geliştirme token tasarrufu veya süre uydurulmadı.
+# H025 — Live metadata and Overview acceptance
 
-## Sonuç
+5 November 2026, Windows 10 22H2 x64/build19045. [Plan 013](../decisions/013-live-overview.md), [lead review](../reviews/H025.md). The lead agent owned runtime/generation, measurement, persistent storage, connection trust, and acceptance. The same single GPT-6 Luna xhigh worker wrote only three presentation files with fixed props and separate frontend contract tests. The completed/stopped state was checked after merged fixes. The lead agent inspected the real connected path and completed the remaining implementation. Model/effort did not change. No development token savings or duration was invented.
 
-- Uygulama açıkken5 saniyede bir yalnız kendi ready motorundan metadata toplar. Exact peer PID, held lease ve nesil denetlenir; sabit loopback rota,2MiB gövde ve1.5s HTTP bütçesi korunur. Prompt/auth içeriği depoya veya renderer'a geçmez.
-- H023 → H024 upsert; tekrar polling toplamı şişirmez. Motor kapalıyken geçmiş okunur. İzleme oturumu uygulamanın bu açılışıdır; istemci sohbeti/hesabı değildir.
-- Session/bugün/7 yerel gün, aynı toplamdan token ve yüzde, karşılaştırılabilir sparse grafik. Boş/bilinmeyen sıfır olmaz; eksik/karma temel veya sayaç taşması ortak yüzde üretmez. Negatif sonuç açık artıştır. Kaynak/zaman/saklama/kısmi kapsam görünür.
-- Tek sonraki eylem ve gerçek bağlantı kaydı; eski/karışık hedef otomatik seçilmez. Hesap, açık sohbet veya model trafiği kaydedilmiş bağlantıdan türetilmez. Teknik ayrıntı açılır bölümlerdedir. Ayarlar100/125/150 yalnız pencere ölçeğidir.
+<a name="sonuç"></a>
 
-## Doğrulama
+## Result
 
-| Senaryo | Gözlenen / kapsam |
+- While the app is open, it collects metadata every 5 seconds only from its own ready engine. It checks the exact peer PID, held lease, and generation. It keeps the fixed loopback route, 2 MiB body limit, and 1.5-second HTTP budget. Prompt/auth content does not enter storage or the renderer.
+- H023 → H024 uses upsert. Repeated polling does not increase totals. The app can read history while the engine is stopped. A monitoring session means this app opening. It does not mean a client chat/account.
+- The periods are the monitoring session, today, and 7 local days. Token values and percentages use the same totals. The graph shows only comparable points. Empty and unknown values stay distinct from zero. A missing/mixed basis or counter overflow does not produce an aggregate percentage. A negative result is shown as an increase. Source/time/retention/partial coverage are visible.
+- One next action and a real connection record. The app does not select an old/mixed target automatically. A saved connection does not prove an account, open chat, or model traffic. Technical details are in disclosures. Settings 100/125/150 refer only to window scaling.
+
+<a name="doğrulama"></a>
+
+## Verification
+
+| Scenario | Observed / scope |
 | --- | --- |
-| Sahipli HTTP → SQLite | Fixed GET, doğru peer/lease/nesil, büyük ama bounded metadata, malformed ve owner reddi. Aynı HTTP kaynağı iki kez → tek event; body/auth canary dışarı çıkmaz. Bu yerel fixture gerçek sağlayıcı değildir. |
-| Replay/generation/source hatası | Collector devam eder; yeni nesil ayrı kimliktir. Kaynak hatası geçmişi silmez, kesinti görünür. Stopped kaynak motoru başlatmaz. |
-| Dönem/yarış | Geç yanıt yeni dönemin etiketinde görünmez; aynı dönem hatası önceki görüntüyü stale tutar. Grafik/toplam aynı yerel sorgudan; saat/gün kovaları ve karma temel kontrolü PASS. |
-| Gerçek pinned motor | Uygulamanın gerçek Başlat/native manager yolu ready oldu; collection recorded. Overview dışındayken yeni capture; UI Durdur → geçmiş ve capture zamanı korundu; restart → farklı motor nesli/aynı izleme kimliği. Model isteği0, olay0, yüzde bilinmiyor. |
-| Sayısal UI | İzole fixture120.000→75.000 =45.000/%37,5; dönem değişimi%14; artış%25; gerçek0, B=0, unknown/mixed, stale/hata ve TR/EN geçti. Bunlar gerçek kullanıcı tasarrufu değildir. |
-| Gelişmiş ve eşzamanlılık | Gerçek readonly Gelişmiş açıkken rescan PASS. Ayrı modül mock'u native çağrıları dışlayan fixture'da verify beklerken collapse ve gezinme kilidi korunur; tamamlanınca açılır. Native doğrulama/provider testi yapılmadı. |
-| Bağlantı seçimi | Native planda eşdeğer2–4 adayın geçici birleşimi ve farklı/stale/unsupported planın reddi unit testlerinde PASS. Gerçek kurulu üç CLI/Desktop adayı için eski seçim unavailable; otomatik başka hedefe düşülmedi. Mevcut config/ownership değişmedi. |
-| Ekran/klavye/ölçek |1280×800/1024×720 ve dar CSS viewport kontrolleri, dönem klavye odağı, sıfır pageerror. Ayarlar → gerçek Tauri WebView zoom125/150, devicePixelRatio1.25/1.5 ve100'e dönüş; yatay taşma yok. OS DPI değişmedi, onun testi sayılmaz. |
-| Kapanış | Son UI/live/zoom pencereleri WM_CLOSE→exit0; sahipli Job ve debug portları kapandı. Normal Codex config, preferences, onboarding ve ownership fingerprint'leri aynı. |
+| Owned HTTP → SQLite | Fixed GET, correct peer/lease/generation, large but bounded metadata, malformed and non-owner rejection. The same HTTP source twice → one event. Body/auth canaries stay out. This local fixture is not a real provider. |
+| Replay/generation/source failure | The collector continues. A new generation has a separate identity. A source failure does not delete history and shows an interruption. A stopped source does not start the engine. |
+| Period/race | A late reply does not appear under a new period label. An error in the same period keeps the prior view stale. Graph/totals come from one local query. Hour/day buckets and mixed-basis checks PASS. |
+| Real pinned engine | The real app Start/native manager path reached ready. Collection recorded. A new capture occurred outside Overview. UI Stop kept history and capture time. Restart used a different engine generation and the same monitoring ID. Model requests: 0. Events: 0. Percentage: unknown. |
+| Numeric UI | Isolated fixture 120,000→75,000 = 45,000/37.5%. Period change: 14%. Increase: 25%. Real 0, B=0, unknown/mixed, stale/error, and TR/EN passed. These are not real user savings. |
+| Advanced/concurrency | Rescan passed with real read-only Advanced open. A separate module mock in a fixture excluded native calls while verify was pending. It preserved collapse and navigation locks until completion. No native verification/provider test ran. |
+| Connection choice | Unit tests passed for temporary merging of 2–4 equivalent candidates in the native plan and rejection of different/stale/unsupported plans. The old saved choice was unavailable when the app found the three installed CLI and Desktop candidates. The app did not fall back to another target. Config/ownership did not change. |
+| Screen/keyboard/scale | 1280×800/1024×720 and narrow CSS viewports, period keyboard focus, and zero page errors. Real Tauri WebView zoom at 125/150 with devicePixelRatio 1.25/1.5 and return to 100 had no horizontal overflow. OS DPI did not change. This is not an OS DPI test. |
+| Exit | The final UI/live/zoom windows received WM_CLOSE and exited 0. Owned Jobs and debug ports closed. Normal Codex config, preferences, onboarding, and ownership fingerprints stayed the same. |
 
-Son aday `work/proofs/overview/final2.json`: **120 frontend PASS,327 Rust PASS,5 mevcut opt-in ignored**, TypeScript/Vite build, fmt ve offline embedded build PASS. Focused kayıtlar `generation-red3.json`, `generation-green2.json`, `generation-transport-red.json`, `generation-transport-green.json`, `metrics-green3.json`; başlangıç testlerinin tireli kimlik varsayımı canlı kabulde geçersizleşti, bunun gerçek32hex regresyonu eklendi. İlk son-aday kapısı canlı kabulden sonra değişen kaynak için tekrar kanıt sayılmadı. Ham hata/HTTP gövdesi saklanmadı; yalnız sabit metadata/sonuç/fingerprint kayıtları tutuldu.
+The final candidate is `work/proofs/overview/final2.json`: **120 frontend PASS, 327 Rust PASS, 5 existing opt-in ignored**, plus TypeScript/Vite build, fmt, and offline embedded build PASS. Focused records are `generation-red3.json`, `generation-green2.json`, `generation-transport-red.json`, `generation-transport-green.json`, and `metrics-green3.json`.
 
-Güncel native kanıt `ui-latest.json`, `live-latest.json`, `zoom-latest.json`; bütünleştirilmiş uygunluk `work/proofs/overview/acceptance.json`. Bunlar proje içi geliştirme artefaktlarıdır, Git'e gerçek app-state veya browser profili girmez. Rust1.92.0, Node25.2.1, pnpm11.25.0, Python3.14.0. Yeni browser, Vite sunucusu veya Codex kurulumu başlatılmadı. CodeGraph kaynak değişimi sonrası proje launcher'ı üzerinden sync edildi; graph test kanıtı değildir.
+Initial tests had an invalid dashed-ID assumption. Live acceptance showed this, and a real 32-hex regression test was added. The first final-candidate gate did not count as proof after live acceptance changed source. No raw error/HTTP body was stored. Records contain only fixed metadata, results, and fingerprints.
 
-## Ortam olayı ve sınırlar
+Current native evidence is `ui-latest.json`, `live-latest.json`, and `zoom-latest.json`. Combined acceptance is `work/proofs/overview/acceptance.json`. These are project development artifacts. They do not put real app state or a browser profile in Git. Rust1.92.0, Node25.2.1, pnpm11.25.0, and Python3.14.0 were used. No new browser, Vite server, or Codex installation was started. CodeGraph was synced after source changes through the project launcher. A graph result is not test evidence.
 
-Windows ayrılmış port aralığı51717–51816 eski geliştirme uç noktasını10013 ile engelledi. OS rezervasyonu değiştirilmedi. Aktif sahiplik olmadığı ve bilinen config'lerin eski portu kullanmadığı doğrulandı; yalnız geliştirme app-state uç noktası yedek/atomik yazım/fingerprint ile52175'e yenilendi. Üç released ownership kaydı korundu. Yardımcının ilk revision artırımı fixed1 sözleşmesine düzeltildi; native doğrulayıcı gevşetilmedi. Kanıt `work/proofs/overview/endpoint-refresh/0ae1a8d8-3ff5-4680-8bb9-d3753d720d3a/`.
+<a name="ortam-olayı-ve-sınırlar"></a>
 
-Pinned0.41.0 sayaçlarının karşılaştırılabilir tokenizer temeli bilinmediği sürece gerçek olaylar gözlem olarak saklanır, ana kart tasarruf uydurmaz. Model/ajan/platform dağılımı ve hesap/sohbet listesi bu görevin kabulü değildir. Windows11/macOS/Linux, installer, gerçek OS DPI, güç kesintisi, uzun çalışma/yük ve canlı API-key bu koşuda test edilmedi. H026 sonraki görevdir; H041 canlı API-key kabulü açık kalır. H025 bitince çalışma durur.
+## Environment event and limits
+
+The Windows reserved port range 51717–51816 blocked the old development endpoint at 10013. The OS reservation did not change. No active owner existed, and the known configs did not use the old port. Only the development app-state endpoint was changed to 52175 with backup, atomic write, and fingerprint checks. Three released ownership records were preserved.
+
+The helper's initial revision increment was corrected to the fixed 1 contract. The native validator was not weakened. Evidence: `work/proofs/overview/endpoint-refresh/0ae1a8d8-3ff5-4680-8bb9-d3753d720d3a/`.
+
+The pinned 0.41.0 counter basis remains unknown. The app stores those events as observations. The main card leaves savings unknown for those observations. Model/agent/platform distribution and account/chat lists are outside this task's acceptance. Windows 11/macOS/Linux, installer, real OS DPI, power loss, long run/load, and live API-key were not tested in this run. H026 is the next task. H041 live API-key acceptance stays open. Work stops after H025.

@@ -1,0 +1,93 @@
+{
+  "task": "H042-k3k",
+  "status": "pass",
+  "base_commit": "c58ce4b3ec3195430a577c1051f94fc8a48e9ba9",
+  "verified": {
+    "translated_records": 5,
+    "legacy_heading_aliases": 18,
+    "incoming_heading_links": 4,
+    "outgoing_links": 14,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/proofs/activity.md": {
+      "original_sha256": "b1106289384147065679377786ed3c7ba2e8117fdbeaadf4083ba100cccb391c",
+      "draft_sha256": "f39d60bcf61f28214053babe52aeafc8e333c8bd5b1e0cac7958c6c185903e3c",
+      "candidate_sha256": "16e078e6200678c1820380aff84fa86a0c0493790c37b22a2900158d7a963e81"
+    },
+    "docs/proofs/attribution.md": {
+      "original_sha256": "c835fea6e66a2b40b4dffc38553413790954d7b79a9bdb0ebcaef685d7e41e20",
+      "draft_sha256": "f05dfd383251f9dcbe9fac437f200ab681150b7d197de7fd1f3d802c1673f936",
+      "candidate_sha256": "fe29f53f14398be17b72654a23821c2f86eaa8f9b46174a1d448c3e1bb0afda7"
+    },
+    "docs/proofs/live-overview.md": {
+      "original_sha256": "86962d5a2af01bce3a0258950fe94ea026ff3226d3b21ad921c8b2e0f8cd72a1",
+      "draft_sha256": "b1fd80bca9d7ec62b332d351e98e32edf0805fa2fa4a7a16c42f9291741dbad0",
+      "candidate_sha256": "255e257f9f3fd70c1df6722c18fc50c66083f3923a17b9162db4e311fc5a244b"
+    },
+    "docs/proofs/metrics-normalization.md": {
+      "original_sha256": "77287f46f3ff86c71cbe011c7e7c0e003eb03875a788b98bd228c899ccce3806",
+      "draft_sha256": "e60bf119a7c619a7679140f55c02821f978a94113b826addcc9b82e19d4d3d00",
+      "candidate_sha256": "4ca2045b9fd1c4909e79bb839eb741ee02388ef72b0dfb3bf826f4ce2b1fff88"
+    },
+    "docs/proofs/metrics-store.md": {
+      "original_sha256": "52581c74fd1187919ceb46a51972cab81aee13ea4bbf6d2e062815a3bb4f28dd",
+      "draft_sha256": "f9bce94a9896d46fa10ce1f3c56be8d3b615139881ee1161fdf1d8726957f632",
+      "candidate_sha256": "7462ba3d613a0bb7cdb6e6bcf361e3f64975205bceecbcd697abf7116dcd76a2"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "9293d5ba41d18842ffa03bf358c1d8db7b50fd8878dfefac9e550ed3be7bace9",
+    "docs/IMPLEMENTATION_STATUS.md": "92bdf08e598becb126c893599a6ecd86466590d7a7ba32abfc2636a4867a29e0",
+    "docs/decisions/015-activity.md": "aa381fc3d126d64ee424858e9d0f12129c5227b076b667e6fd174110abba8367",
+    "docs/reviews/H027.md": "2487d5ac7dc5d48eb87bb57b4860f2a7385df106583931c969c6d17f7bd7cbbf",
+    "docs/decisions/014-attribution.md": "34495af6ba516d4c55a8b1f4d700321cc6f848400e921aef36609315c5290fa6",
+    "docs/reviews/H026.md": "2f1a65dbf9469a2f1d271c0d23dc5dd31cd6ab4937b80486415fee3d45af119b",
+    "docs/decisions/013-live-overview.md": "c8338ed2430e1907c52b8e29a90b030d781191b47f15cef260022fef02a2ad06",
+    "docs/reviews/H025.md": "7e5a1c1f02eb04e34342912e42a051652b608156abcba687f3da27a68e0ddb4e",
+    "docs/decisions/010-metrics-normalization.md": "bb71f8a14a3b4b0f09c64c2b457012a741a4599627cdc78a6aac16d881c408e5",
+    "docs/contracts.md": "ac7df4476c07e801537062505abe61934442a60027cdd2e5676cbc94d2c4d8ed",
+    "docs/reviews/H023.md": "b0e110e6018ca8ff581c3fdb955c16a1a577c942f29cfef864af46981c8d9351",
+    "docs/decisions/012-metrics-store.md": "e2d1562ba27e4861c014c8e45900c05ecdcd2d25b5dcc7041bd5540db1a1942e",
+    "docs/reviews/H024.md": "d12066c7c2fc4420a73b05e1f092c2ca9811d2618886d36d53a9471819bab860"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/activity.md": {
+        "hard": 0,
+        "advisory": 1
+      },
+      "docs/proofs/attribution.md": {
+        "hard": 0,
+        "advisory": 10
+      },
+      "docs/proofs/live-overview.md": {
+        "hard": 0,
+        "advisory": 12
+      },
+      "docs/proofs/metrics-normalization.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/metrics-store.md": {
+        "hard": 0,
+        "advisory": 2
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the Overview, attribution, and Activity reports. The lead agent drafted the normalization and storage reports. The lead reviewed all five against the source and ran the final checks.",
+  "compatibility_catalog": {
+    "affected_references": 0,
+    "sha256": "c373dfcf90687ecf99923b98f168b884eef8a6b651f4879df9ff031437f2762a"
+  },
+  "product_tests": "not_run_documentation_only"
+}

@@ -1,41 +1,57 @@
-# H023 — İçeriksiz sayaç normalizasyonu
+<a name="h023--içeriksiz-sayaç-normalizasyonu"></a>
 
-3 Kasım 2026. **Kabul edildi; ürün sayımı20/51.** [Karar010](../decisions/010-metrics-normalization.md), [sözleşme](../contracts.md), [inceleme](../reviews/H023.md). Uygulamayı yeni AGENTS kapsamında ana ajan yaptı: token ölçüm semantiği ve köken kararları root'a aittir. Luna'ya iş verilmedi; aynı alanda ikinci yazan yoktu.
+# H023 — Content-free counter normalization
 
-## Kabul edilen davranış
+November 3, 2026. **Accepted. The product total was 20/51.** Under the new AGENTS instructions, the lead agent implemented the change and owned decisions on token measurement and provenance. The lead was the only writer. Luna had no assignment. [Decision 010](../decisions/010-metrics-normalization.md), [contract](../contracts.md), [review](../reviews/H023.md)
 
-| Senaryo | Sonuç | Kanıt |
+<a name="kabul-edilen-davranış"></a>
+
+## Accepted behavior
+
+| Scenario | Result | Evidence |
 | --- | --- | --- |
-| Açık aynı temelli120.000→75.000 |45.000 token, %37,5; yalnız aritmetik fixture, canlı tasarruf değil | `metrics_comparable_reduction_zero_baseline_and_increase` |
-| Gerçek sıfır / sıfır taban / eksik / artış | %0, null yüzde, null miktar ve negatif fark ayrı korunur | Aynı test; boş batch testi |
-| Farklı veya bilinmeyen temel/bileşen | Ana miktar/yüzde türetilmez; eski gözlem sayıları kaybolmaz | Basis/component ve legacy regression testleri |
-| H021 gerçek satırlarının sayı biçimi |2306/12/saved0 ve12/12/saved0 satırları bilinmeyen temelde; sahte yüzde yok | Git fixture + `review-boundaries.json`; sayı dizileri H021 `traffic.json` ile programatik eşleştirildi |
-| İçeriksiz projeksiyon | Request/response içeriği, auth, raw ID, serbest tags, sahte basis/köken, lifetime/saved/% çıkışa taşınmaz | Canary fixture, raw-origin ve limit testleri |
-| Kanıtlı proxy/MCP kökeni ve tekrar | Aynı ölçüm bir event; eşlenmeyen MCP ana toplam adayı değil | `metrics_proxy_mcp_replay_deduplicates_only_proven_origin` |
-| Çelişen tekrar | Miktar/yüzde ve belirsiz zaman/temel unknown olur; çatışma görünür | İlk red regresyonu → düzeltme → PASS |
-| Runtime restart / UTC eşdeğeri | Aynı ID farklı nesilde ayrı; aynı UTC anının farklı offset yazımı birleşir | Restart ve equivalent UTC testleri |
-| Katman ve provider sayımları | RTK/schema/novel/cache/output ana girdiye eklenmez; provider usage ayrı | Katman testleri ve novel input kaynak incelemesi; aynı kökende üç ölçümden yalnız bir main-eligible |
-| Aggregate / kısmi pencere / kimliksiz satır | Aggregate event yapılmaz; eksik kimlik sayılır, snapshot tam trafik sayılmaz | Partial-window testi; `complete_traffic=false` |
-| Sınır / hatalı metadata |2MiB,10.000 gözlem, JSON-güvenli tamsayı, UTC/UUID doğrulaması; sabit hata | Limit/type/identity testleri |
+| Explicit matching basis, 120,000 to 75,000 | 45,000 tokens and 37.5% savings in an arithmetic fixture. Live savings remain outside the result. | `metrics_comparable_reduction_zero_baseline_and_increase` |
+| Actual zero, zero baseline, missing values, and increase | The test kept 0%, a null percentage, a null amount, and a negative difference distinct. | Same test and empty batch test |
+| Different or unknown basis or component | The main amount and percentage remain unknown. The normalizer keeps the original observation counts. | Basis, component, and legacy regression tests |
+| Numeric format of actual H021 rows | Rows 2306/12/saved0 and 12/12/saved0 have an unknown basis. They yield no derived percentage. | Git fixture and `review-boundaries.json`. The check matched the numeric sequences with H021 `traffic.json`. |
+| Content-free projection | The output excludes request and response content, authentication, raw IDs, free-form tags, and false claims about basis or origin. It also excludes lifetime totals and supplied savings amounts and percentages. | Canary fixture, raw-origin tests, and limit tests |
+| Verified proxy and MCP origin, and replay | The same measurement yields one event. MCP with no proven matching origin is ineligible for the main total. | `metrics_proxy_mcp_replay_deduplicates_only_proven_origin` |
+| Conflicting replay | The amount and percentage become unknown. Ambiguous time and basis also become unknown. The conflict stays visible. | The initial regression failed. The fix passed. |
+| Runtime restart and equivalent UTC time | The same ID from a different generation remains distinct. Different offsets for the same UTC instant merge. | Restart and equivalent UTC tests |
+| Layer and provider counts | RTK, schema, novel, cache, and output counts stay outside the main input total. Provider usage remains separate. | Layer tests and review of novel input source. Only one of the three measurements for the same origin is eligible for the main total. |
+| Aggregate, partial window, and row without identity | An aggregate does not become an event. The normalizer counts missing identities. Snapshot coverage stays partial. | Partial-window test and `complete_traffic=false` |
+| Limits and invalid metadata | The bounds are 2 MiB and 10,000 observations. The checks require JSON-safe integers, UTC, and UUIDs. Invalid data returns a fixed error. | Limit, type, and identity tests |
 
-Rust veriyolu `bounded JSON → allowlist metadata → typed Observation → normalize → schema1 event/batch` olarak doğrulandı. `recent_requests` tercih edilir; yoksa `request_logs`. Aynı iki liste birden sayılmaz. Kaynakta tokenizer/bileşen provenance'ı bulunmayan0.41.0 gözlemlerinden karşılaştırılabilirlik çıkarılmaz; kanıtlı yeni toplayıcı bu API'ye açık temel sağlayabilir. Generic ölçüm API'si ham engine/renderer claims kabul eden bir Tauri komutu değildir.
+The Rust check verified this path `bounded JSON → allowlist metadata → typed Observation → normalize → schema1 event/batch`. Use `recent_requests` when available. Otherwise use `request_logs`. Count only one list.
 
-## Doğrulama ve fingerprint
+Headroom 0.41.0 observations without tokenizer and component provenance cannot establish comparability. A new collector with trusted evidence can supply an explicit basis. The API exposes no Tauri command for raw engine or renderer claims.
 
-`work/proofs/metrics-normalization/` altında:
+<a name="doğrulama-ve-fingerprint"></a>
 
-- `entry.json`: kanonik kök, uygulayıcı kararı, başlangıç kaynak/config hash'leri; kaynak notundaki altı pinned engine dosyası eşleşti.
-- `red.json`: ilk8 test uygulanmamış davranışta beklenen şekilde başarısız. `focused-first.json`:8 PASS.
-- `review-red.json`: üç çelişkili kaydın zaman/temel hatası yeniden üretildi. `focused-review.json`: düzeltme ve genişleyen12 test PASS; kaynak önce/sonra aynı.
-- `review-boundaries.json`: mevcut H022 kaynaklarından yalnız `main.rs` modül satırı ve Cargo'nun mevcut time parsing özelliği değişti; Cargo.lock aynı. Diğer H022 kaynakları korundu.
-- `frontend-reuse.json`: mevcut32 frontend kaynak/config ve3 dist, Node25.2.1/pnpm11.25.0/Windows10 fingerprint'leri H022 kanıtıyla aynı. **97 frontend PASS ve build kanıtı yeniden kullanıldı; pnpm test/build tekrarlanmadı.**
-- `final-quality.json`: final adayda bir kez Cargo fmt, tüm Rust testleri **285 PASS/3 ignored**, offline custom-protocol build PASS. Rust/Cargo1.92.0; kaynak, araç ve ortam önce/sonra eşleşti.81 kaynak/fixture/config ve binary hash'i kaydedildi. Önceden var olan6 build warning'i,0 hata. QA sonrası hash kontrolünde aynı aday korundu.
-- `acceptance.json`: kapsam, kanıt hash'leri ve sınırlamalar. CodeGraph proje launcher sync başarılı, zaten güncel; graf sonucu runtime/test kanıtı sayılmadı.
+## Verification and fingerprints
 
-Başarılı testler compact, yeni gün veya belge kapanışı nedeniyle yinelenmedi. Yalnız yeni test/kod değişikliği ilgili odaklı kanıtı yeniledi. Ham başarısızlık dökümü, HTTP içerikleri veya auth bilgisi saklanmadı.
+The records are in `work/proofs/metrics-normalization/`.
 
-## Sınır ve sonraki bağ
+- `entry.json` records the canonical root, implementer decision, and initial source and config hashes. The six pinned engine files in the source note matched.
+- `red.json` records the 8 expected failures before the behavior existed. The 8 tests passed in `focused-first.json`.
+- `review-red.json` reproduces the time and basis error across three conflicting records. The fix and expanded 12 tests passed in `focused-review.json`. Sources matched before and after.
+- `review-boundaries.json` shows that only the `main.rs` module line and Cargo's existing time parsing feature changed among H022 inputs. Cargo.lock and the other H022 sources stayed the same.
+- `frontend-reuse.json` records 32 frontend source and config inputs and 3 distribution inputs that match the H022 evidence. Node 25.2.1, pnpm 11.25.0, and Windows 10 also match. **The team reused the 97 frontend results and build evidence.**
+- `final-quality.json` records the single full Rust gate for the final candidate. Cargo formatting, **285 tests with 3 ignored**, and the offline custom-protocol build passed. Rust and Cargo were 1.92.0.
 
-Bu saf hesaplama/adaptör kabulüdür. H023 uygulamada polling, kalıcı kayıt veya gerçek dashboard açmadı; UI değişmediği için masaüstü akışı tekrar edilmedi. H024 kayıt/upsert, dönem ve gerçek gap takibini; H025 ekranı bağlayacak. Canlı karşılaştırılabilir token toplayıcısı veya motorun0.41.0 satırlarının temeli kanıtlanmış sayılmaz. Yeni toplayıcı eklenirse sayım yöntemi/tokenizer ve bileşen provenance'ı ayrıca gösterilmeli; eski sayılar otomatik yükseltilmez.
+  Sources, tools, and environment matched before and after. The record contains 81 source, fixture, and config inputs and the binary hash. The build reported 6 existing warnings and 0 errors. The candidate hash also matched after QA.
+- `acceptance.json` records scope, evidence hashes, and limits. The project launcher synced an up-to-date CodeGraph index. The graph result documents source discovery only.
 
-Model/auth/rota/kullanıcı ayarı veya canlı süreç değiştirilmedi. Model/istemci/alt ajan desteği genişletilmedi. Provider/model çağrısı veya ücretli kaynak kullanılmadı. Windows10 embedded derlemesi diğer OS/installer veya uzun süreli performans kanıtı değildir. Geliştirme token tasarrufu ölçülmedi. H008 Codex sürüm engeli, H012'nin dış kabiliyetleri ve H019 amber sınırı açık kalır.
+The team reused passing checks across context compaction, the new day, and documentation closeout. Changes to tests or code required new checks only in the affected scope. The team retained no raw failures, HTTP content, or authentication data.
+
+<a name="sınır-ve-sonraki-bağ"></a>
+
+## Scope and next integration
+
+This result covers the pure calculation and adapter. H023 introduced no app polling, persistent storage, or working dashboard. The UI stayed the same. The task did not repeat the desktop flow.
+
+H024 tracks storage, upsert, periods, and gaps. H025 connects the screen. A live comparable token collector and the measurement basis of Headroom 0.41.0 remain unverified. A new collector must show its counting method, tokenizer, and component provenance. Earlier observations keep their existing scope.
+
+The work preserved the model, authentication, routes, user settings, and live processes. Client, model, and subagent coverage stayed the same. It used no provider or model call or paid resource.
+
+The Windows 10 embedded build covers its local environment. Other operating systems, installation, and sustained performance need separate evidence. Development token savings remain unmeasured. H008 Codex version eligibility, H012 external capabilities, and the H019 amber status remained open.
