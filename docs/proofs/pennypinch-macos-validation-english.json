@@ -1,0 +1,106 @@
+{
+  "task": "H042-k3c",
+  "status": "pass",
+  "base_commit": "5280f41ca838b66b35cc71b230bac683ee082db5",
+  "document": "docs/validation/macos.md",
+  "checked": {
+    "source_lines": 324,
+    "headings": 25,
+    "aliases": 25,
+    "incoming_heading_links": 6,
+    "outgoing_links": 70,
+    "local_receipts": []
+  },
+  "original_sha256": "50c22012f8e5a09f601f12c19a6677ea797a3932d642d700e9abc1d486f7e4d4",
+  "candidate_sha256": "323e552cb645c0d7ef2860c12a814c842d06213165354cdb9a86b5592f4ed227",
+  "agents_sha256": "9cb67f388d1a354c92e012351f691cd9a7139eac402c0413254c142073f882d5",
+  "reply_style_hard_findings": 0,
+  "fragments": {
+    "01-build-and-engine.md": {
+      "start_line": 1,
+      "last_line": 64,
+      "owner": "luna",
+      "sha256": "20896016086f39d397d09f40572c0963f8d388b713d1298831fff9ee33f8c414",
+      "draft_sha256": "51be81666150fe21dc5a57c142f591bdd85e6da5586d7baae97b8d8072fe42a2"
+    },
+    "02-apfs-transactions.md": {
+      "start_line": 65,
+      "last_line": 154,
+      "owner": "lead",
+      "sha256": "7810f3158809f207d241c5f047c465cf2a765616a5ce8eb750f5345805a0f619",
+      "draft_sha256": "3230bc04159aad3fe14d45f2f5402516d2b17d2e8cd6847f84888610fcba9799"
+    },
+    "03-native-app-workflows.md": {
+      "start_line": 155,
+      "last_line": 259,
+      "owner": "luna",
+      "sha256": "d04299b4dd207c14c965714afea7f8ea6e4769d0e5846d4e5c7cb0dae397ef2b",
+      "draft_sha256": "a334d78ebf13f0da405f11ea216a425e468912e229dcbe88ad1f5a5a764a5a68"
+    },
+    "04-desktop-traffic.md": {
+      "start_line": 260,
+      "last_line": 312,
+      "owner": "lead",
+      "sha256": "52df419ac5f20eb5114189ad9e7dea2b51ff7d48e8c5a10ad1cf187059ca02c1",
+      "draft_sha256": "553ac5bacdc25376d60755987ef80af712d430ccf40ed55f5e5929b0a3110538"
+    },
+    "05-final-acceptance.md": {
+      "start_line": 313,
+      "last_line": 324,
+      "owner": "luna",
+      "sha256": "19b69638f35a1bc4b44142b75a41fd51405cd6e8e4a21b8fd96f66b4921f1f93",
+      "draft_sha256": "d003bca46a169e9b08526138cfef9a7f20a04a54a5317160692f8ee5caaf2657"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "c3c900761ee4c94d16cb3a055ab6383b8bf92996d79863e64310e71892dd38cb",
+    "docs/proofs/macos-desktop.md": "89e6d48f3b34d12d71dcb7da635e73f5ff98d301228aaef01c6fc0bdd8614871",
+    "docs/decisions/006-free-ci.md": "eb081d0193215c7505f8a3355266935202ad3f0a754f98069600add4cd9df6d9",
+    ".github/workflows/macos-build.yml": "e0574c6cc21a387495086c2786dbcda98f0ce721f332d6f770cba3581e465ee4",
+    "docs/proofs/macos-build.json": "dbc15d85c54a292d3b13fea8eef7cc5ed8fa944a2c322e1d25db110b9c619f8c",
+    "docs/proofs/macos-engine.json": "d63e7963a893bcb2f1072b40d859899594d9f2d5c12e181c26145a605699110d",
+    "docs/proofs/macos-payload.json": "22ec1fd4bd0ea64f87d91b0f9d7cfc7feb8a4eb246e53eff9b66f8c24024ee9e",
+    "docs/proofs/macos-unix-transport.json": "a3002b04ec09dc7092ac1dda0d9c8c936e71f3c60abbc5a5efc673943f6a513f",
+    "docs/proofs/macos-managed-session.json": "75d39ebbac2872cf42f7be30dd16a2ec4ff96738975c5d3a8cfb52680d346ba8",
+    "docs/proofs/macos-stable-ingress.json": "1b423ea6f37601a6a7aa9ef2c977e1f0947e97a6103d054d9cf87c824b5ca8f2",
+    "docs/proofs/macos-application-manager.json": "93a97ec6b34a8e121b2612447d3a9a87d23a355728b7349784bfe6b0427293f8",
+    "docs/decisions/005-config-transaction.md": "98c0399fefcf50972b3b341657fa088e446178f4eeb735efa81e8705ee52f902",
+    "docs/proofs/macos-config-transaction-probe.json": "f3434be5f24cde2caba4e7d25a5d9289c5b9747f838d80772aa0a1e61b46bcc9",
+    ".github/workflows/macos-config-transaction.yml": "5fe0dcca625008e190645c5095086701487d25fd1e1c5be75c20c906cc8577ee",
+    "docs/proofs/macos-config-recovery.json": "feec5a0171123286217e726fbdcc4ec0d32da06ae646ec55422266853686ee4d",
+    "docs/proofs/macos-config-reader.json": "c44c6da1de15ef7b70845ac5a72ae710346aaaf16407706c5df0201089865df1",
+    "docs/proofs/macos-config-apply.json": "eab74e1d0430b952d51f29bfd100ba244b62d01c8a2bc87ba5a2398e41a43186",
+    "docs/proofs/macos-claude-project-directory.json": "44edb19cea5d6b83267bf8a468ad2d9aad929c35df428e3071d412ed045e8b95",
+    "docs/proofs/macos-retained-versions.json": "84995a3853d67956ae524dcf7f58cdde71b3b21e7c3076c39e5ad68792736b7e",
+    "docs/reviews/H048.md": "77e6b00b75daecc14df3abc17757749834dec95c3fa8d0855b7fcb71219d2e6d",
+    "docs/proofs/macos-cli-discovery.json": "c30c95bc1805893a454905b3509576f13f97d9efa3a18e12fdfc7a4b589ec205",
+    "docs/proofs/macos-selection-store.json": "5d73bc6159fefa0edc1f597f7050978e76338efaf61f774d10573651dc930e32",
+    "docs/proofs/macos-desktop-discovery.json": "453db08512652322ca96d393393bee39b33980f4b14d3e620973d9ce59476045",
+    "docs/proofs/macos-file-picker.json": "5a3527ad3aa72c255ed6f96d5fd474ed4af59e0b0712015caafdd4ddb8104c54",
+    "docs/proofs/macos-package-lifecycle.json": "2d118815fa57a7f68385a894cb8776d7e5d4fdd1c5aac7db4e6597f0a5654a3c",
+    "docs/proofs/macos-report-export.json": "3524e4f183ab5374ee39dab55caebdafa99ffe80a7e9a1b12f19631192875ecf",
+    "docs/proofs/macos-desktop-preflight.json": "41cd642a04e76a56cf40248731d3a8bef8d8c840f3315f3c33a2ee14cd736c75",
+    "docs/proofs/macos-desktop-renderer.json": "ea1ce7608f453d37a05e852caceafce1b348d359c1f6f484c5691a21e99294b8",
+    "docs/proofs/macos-desktop-traffic-attempt.json": "9b9fb823771fe019de189ee945d16ead5de80d2498605c918f99ffebdc4b51e1",
+    "docs/proofs/macos-desktop-traffic.json": "58df9fb04bc2272b27dc3e6c762ab74f8c0cd4a4d047f39b5b9d8320d1bcb130",
+    "docs/proofs/macos-desktop-connection-attempt.json": "e2829701a552a4ba79225f5e6b18a5bf8ebd4f271b94d28e8f6e7eb995bced22",
+    "docs/proofs/macos-desktop-connection-download-attempt.json": "4e0619b75ed1497df0e6eba2183b7dcba8bf8d12894831c35c2ade935eedf578",
+    "docs/proofs/macos-desktop-connection.json": "a9527319b07a0c16323ccb32fcb1f5e28ff4df2e6a09ae8e4471e75fad48d9c9",
+    "docs/proofs/macos-acceptance.json": "59f45bdb317f638b04c2cad5fc6a5b96c18ce7ccc49970e64135d07e58f739b0"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "hard": 0,
+    "advisory": 8
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted build, engine, native workflows, and final acceptance. The lead agent drafted APFS and Desktop traffic and updated the reply style rule. The lead agent reviewed and assembled the report.",
+  "product_tests": "not_run_documentation_only"
+}

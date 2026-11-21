@@ -85,6 +85,7 @@
 ## Simplified Technical English
 
 - Use the project [ASD-STE100 skill](.agents/skills/asd-ste100/SKILL.md) when you write or revise English technical text.
+- Use the same sentence rules in replies to the repository owner in Turkish. Use short, active sentences and consistent terms. Put one action in each instruction.
 - Use Strict mode for procedures, error messages, tool descriptions, and agent instructions. Use STE-flavored mode for reports and explanations.
 - Keep technical names, code literals, measurements, exceptions, and the strength of each claim. Compare the revised text with the source.
 - Use the skill's linter to check sentence structure. Review its findings against the source.
