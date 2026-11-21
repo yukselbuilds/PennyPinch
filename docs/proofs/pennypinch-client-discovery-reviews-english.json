@@ -1,0 +1,156 @@
+{
+  "task": "H042-k3ad",
+  "status": "pass",
+  "base_commit": "bc1f8266b83a28d492bbfd6d7c022a3b1f61ad8b",
+  "verified": {
+    "translated_records": 4,
+    "legacy_heading_aliases": 4,
+    "incoming_links": 4,
+    "incoming_heading_links": 0,
+    "outgoing_links": 1,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/reviews/H016-a.md": {
+      "original_sha256": "05b3b882ebc9c497ac2c4bb6a53c53277846e7522dcfc9c9785a0d0ab039f32d",
+      "draft_sha256": "4467577a6f6fbaacd8572daf3d7e2d8e2ee3c81edb0ccc3cd727f15828286a83",
+      "candidate_sha256": "1fb50fc6167614b3e5d217de62eb0e83b82d84e30f0170ef3a520454e29f8876"
+    },
+    "docs/reviews/H016-b.md": {
+      "original_sha256": "f170ce7bf726c48a1a0b7d20c7960039033bb8970461796124f000032506f416",
+      "draft_sha256": "9653cdbfe166974e7669a2f7858c3f8e3fbf89e5364be538c84bf0db042dcba8",
+      "candidate_sha256": "8b42800e9ac7f4bfc87d7db2b983c96c6abfc6365a4af47fa01be6ef96b656b3"
+    },
+    "docs/reviews/H016-c1.md": {
+      "original_sha256": "2dab648ffaceb417c259945bbe21f00f057c356d0994ff3ee656dd776f412f3a",
+      "draft_sha256": "2bdcbe37ad5bf7381c62d518cd426ca9df47de32c56b065375d7443f6e9c0eea",
+      "candidate_sha256": "886bd1cde837f26ee3d14337f8aa65bc429f26adbf4bfd2284d7710596104a9f"
+    },
+    "docs/reviews/H016-c2.md": {
+      "original_sha256": "2d190093c7a3527d8b04dc906add266b5b6375efee2420d649686c6f8f0b81e8",
+      "draft_sha256": "bcf6b3d0b519c279aa38579f44a5ad8c25e350ed1f56b60da934b9456a873a69",
+      "candidate_sha256": "4f0fe8513eaabd0e51d87d022adde5be2e3c18ba5ddb96ea45985437245bcd24"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "1adb7146c7e3f095e1c91446410132f3e35373e653562ef2a7b28703ef7acdfd",
+    "docs/proofs/discovery-desktop.md": "73ba9114b174af1a36fa08c23d19683f171f4a8a7afd82365c54309b02848ae2",
+    "docs/proofs/discovery-backend.md": "30ed211463391ccdaf6808300bf398439013bfbae29219b90778780a00feb56e",
+    "docs/proofs/discovery-ui.md": "5a6fce3a04bd8095c25de3b98abce76b6c3de00406a712b5a4a93758c9f89509",
+    "docs/proofs/discovery-picker-backend.md": "04a4c72f2dd8f544594544c0d618e687a69ba895fea583b84d4bc6f691d141d0",
+    "docs/proofs/discovery-native-diagnosis.md": "ba16fecd11d7177f769bcdc27eb1d6bf8d08465d9b6819b8ec71da200bec3062",
+    "docs/proofs/discovery-picker-ui.md": "724a133250f237bdd9aba4c281ccafc76af365de9f36e5073013b34aee1ac023"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H016-a.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H016-b.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H016-c1.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H016-c2.md": {
+        "hard": 0,
+        "advisory": 2
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "historical_evidence": {
+    "docs/proofs/discovery-backend.md": {
+      "sha256": "30ed211463391ccdaf6808300bf398439013bfbae29219b90778780a00feb56e"
+    },
+    "docs/proofs/discovery-ui.md": {
+      "sha256": "5a6fce3a04bd8095c25de3b98abce76b6c3de00406a712b5a4a93758c9f89509"
+    },
+    "docs/proofs/discovery-picker-backend.md": {
+      "sha256": "04a4c72f2dd8f544594544c0d618e687a69ba895fea583b84d4bc6f691d141d0"
+    },
+    "docs/proofs/discovery-desktop.md": {
+      "sha256": "73ba9114b174af1a36fa08c23d19683f171f4a8a7afd82365c54309b02848ae2"
+    },
+    "docs/proofs/discovery-native-diagnosis.md": {
+      "sha256": "ba16fecd11d7177f769bcdc27eb1d6bf8d08465d9b6819b8ec71da200bec3062"
+    },
+    "docs/proofs/discovery-picker-ui.md": {
+      "sha256": "724a133250f237bdd9aba4c281ccafc76af365de9f36e5073013b34aee1ac023"
+    }
+  },
+  "historical_build_citation": {
+    "sha256": "60795f6cb84b74a17f7e446b15d3f02639d960303cdaa5ec140f9d5c8c3a1ca1",
+    "scope": "The earlier executable digest was preserved from the source review. The final executable digest and preference digest match the native acceptance record."
+  },
+  "verifier_sha256": "40f7d2299e7612b00dc192e83bcd699e76c41b05c00ece0d6e8d2494aade4781",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "28f8a7c8690d1f9e2b638f6d1616496aa10fe0594687f92c381fe90a52038774",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 44,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 33
+      },
+      "flagged_prose_lines": 1523,
+      "approximate_source_words": 57700,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 40,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 29
+      },
+      "flagged_prose_lines": 1488,
+      "approximate_source_words": 56121,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 178,
+      "remaining_documents": 44,
+      "ready_percent": 80.2,
+      "remaining_percent": 19.8
+    },
+    "progress_after": {
+      "ready_documents": 182,
+      "remaining_documents": 40,
+      "ready_percent": 82.0,
+      "remaining_percent": 18.0
+    },
+    "other_documents": [
+      "bench/context_tools/README.md",
+      "docs/IMPLEMENTATION_STATUS.md",
+      "docs/design-config-actions.md",
+      "docs/testing-codex-manually.md"
+    ],
+    "after_input_sha256": "79c6615076d5aa1af16104819ada79acfc44ffe7c35ecd146222f5453a0f132b"
+  },
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted H016-a and H016-b. The lead agent drafted H016-c1 and H016-c2 and verified all four against the source and evidence.",
+  "programmatic_references": "The tracked code and configuration search found no direct reference to these four reviews.",
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}
