@@ -1,0 +1,69 @@
+{
+  "task": "H042-k3m",
+  "status": "pass",
+  "base_commit": "6c7e7d4fd6a18394a04236e9a68b58155a8b05c9",
+  "verified": {
+    "translated_records": 3,
+    "comparison_cells": 74,
+    "targeted_query_receipt_matched": true,
+    "legacy_heading_aliases": 14,
+    "incoming_heading_links": 1,
+    "outgoing_links": 17,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/proofs/context-tools-pilot.md": {
+      "original_sha256": "e2090cfc4df830e17c9af95fe6faab64f40cdaa59d9787fc75a91bfc99113c1d",
+      "draft_sha256": "6b1293dbf4708eb8de2abe055e433ae7f4f8817a68e693db7a757530d9c493fe",
+      "candidate_sha256": "77dee0888a635960ffd4a099543826392c41d863397abba5773f7584f221ef3a"
+    },
+    "docs/proofs/rtk-surfaces.md": {
+      "original_sha256": "f707ba6596b569855e48c2a8472c6907fc828c0969a84e728d19319f0b8263cd",
+      "draft_sha256": "843516c127b56c38213b755e805b3dfe88a527c5594ce6ea47c22b4f897b625e",
+      "candidate_sha256": "5a538a4d88489d8e52903b34e517777ac59010b6f608e150f4e547e1ee59714f"
+    },
+    "docs/proofs/rtk.md": {
+      "original_sha256": "e2b6f5ddc80dde0c5249cbac144d75857fa06112f8697dcfe57d5c60822b0cac",
+      "draft_sha256": "2ab0e10ad681752e3dd015cd9d0c5253eed5a2ce0177775919aee40f8b6c4cd6",
+      "candidate_sha256": "195ddc4b1e31767241dbf83b23e8c8882cd1fd7a9fff3b0ea1ecfddee3717c2f"
+    }
+  },
+  "references_sha256": {
+    "docs/IMPLEMENTATION_STATUS.md": "86d69a92152eed5b3d29cfe8e1d787a73b27b30541cd39497e71efae6aaed035",
+    "docs/proofs/context-tools-pilot.json": "654d2093c9e0cd8fa7943e61b5369fca69ec1eb0e1db7ca740e04611703010bc",
+    "bench/context_tools/README.md": "ec87dbb1ed5d6278caf4fd516729c7ed8e534bcfdca0e03c0f303d5fce1baa6f",
+    "docs/proofs/rtk.json": "a441eea099c5bec92efc23144fb86f7e3caa973fcd00b36de693a94023982dc1",
+    "docs/proofs/rtk-1.2.0-preflight.json": "588a654af86e11a5262c8a1af1d81f0d7baac360aa82d6a0fa4f60c6b9dbf989"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/context-tools-pilot.md": {
+        "hard": 0,
+        "advisory": 1
+      },
+      "docs/proofs/rtk-surfaces.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/rtk.md": {
+        "hard": 0,
+        "advisory": 1
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the RTK benchmark and client hook reports. The lead agent drafted the context tool pilot report and checked all three against the source.",
+  "compatibility_catalog": {
+    "affected_references": 0,
+    "sha256": "c373dfcf90687ecf99923b98f168b884eef8a6b651f4879df9ff031437f2762a"
+  },
+  "product_tests": "not_run_documentation_only"
+}

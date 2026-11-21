@@ -1,37 +1,47 @@
-# RTK-OSS 1.1.0: istemci hook yüzeyleri
+<a name="rtk-oss-110-istemci-hook-yüzeyleri"></a>
 
-Tablo `work/proofs/rtk/toolchain/1.1.0/receipt.json` içinde sabitlenen `753a3b0e939f2e4490fc24e3a1984010f40a103c` kaynaklarına dayanır. Hook README, plugin ve Rust dosyalarının yerel kopyaları kaydedilen SHA-256 değerleriyle eşleşti. Alt bölümde Windows üzerinde çalıştırılan fixture’ların kapsamı bulunur.
+# RTK-OSS 1.1.0: Client hook surfaces
 
-| İstemci / önkoşul | Hook girdisi ve kapsamı | Yeniden yazma ve izin davranışı |
+The table uses sources pinned in `work/proofs/rtk/toolchain/1.1.0/receipt.json` at commit `753a3b0e939f2e4490fc24e3a1984010f40a103c`. Local copies of hook READMEs, plugins, and Rust files matched their recorded SHA-256 values. The lower section gives the scope of fixtures run on Windows.
+
+| Client / prerequisite | Hook input and scope | Rewrite and permission behavior |
 |---|---|---|
-| **Codex CLI**. README bir Codex sürüm alt sınırı belirtmiyor. Hook, proje `.codex/hooks.json` veya `$CODEX_HOME/hooks.json` içine `rtk init --codex` ile eklenebilir. | `PreToolUse` olayı, `Bash`/`bash` aracı ve `tool_input.command`; izin kipleri yalnız `default`, `acceptEdits`, `plan`, `dontAsk`, `bypassPermissions`. Bash dışı araçlar, bilinmeyen kipler ve güvenle çözümlenemeyen shell yapıları olduğu gibi bırakılır. | `hookSpecificOutput.updatedInput` içinde mevcut `tool_input` korunup yalnız `command` değişir; `permissionDecision: "allow"` RTK yanıtında bulunur. Codex değiştirilmiş komut için kendi normal onay ve sandbox denetimlerini tekrar yapar. RTK diğer ajanların izin dosyalarını yorumlamaz. |
-| **Claude Code**. Sabit shell hook’u Bash, `jq` ve RTK `0.23.0` veya üstünü ister. Ayrı `rtk hook claude` yolu native JSON işler. | Her iki yol `tool_input.command` alanını okur. Shell scripti `rtk rewrite` çağırır. Native yol girdide varsa `cwd` alanını da alır. | İzinli rewrite `updatedInput` ve `permissionDecision: "allow"` döndürür. Onay isteyen durumda `permissionDecision` alanı eklenmez. Eşleşme yoksa veya kural reddediyorsa orijinal komut geçer. Shell scripti eksik bağımlılıkta da rewrite vermez. |
-| **OpenCode**. 1.x için en az `1.18.29` gerekir. README 2.0 plugin yolunu da listeler. RTK PATH’te bulunmalı ve `rtk hook opencode --help` yetenek kontrolünden geçmeli. | TypeScript plugin yalnız `bash` veya `shell` aracının `command` metnini ele alır. 2.x `execute.before` girdisinde isteğe bağlı `event.agent` alınır. 1.x `tool.execute.before` biçiminde ajan alanı yoktur. Windows’ta PATH araması `PATHEXT` kullanır. | Plugin komutu `execFile` argv’siyle `rtk hook opencode [--agent NAME] COMMAND` çağrısına verir. Rust tarafı yorumlayabildiği OpenCode kurallarıyla rewrite öncesi ve sonrası izin sonucunu karşılaştırır. Sonuç değişirse boş cevap verir. Geçerli rewrite v2 `event.input.command`, v1 `output.args.command` içine yazılır. Hata, timeout veya geçersiz yanıt orijinal komutu korur. |
+| **Codex CLI**. The README does not state a minimum Codex version. The hook can be added to project `.codex/hooks.json` or `$CODEX_HOME/hooks.json` with `rtk init --codex`. | `PreToolUse` event, `Bash`/`bash` tool, and `tool_input.command`. Permission modes are only `default`, `acceptEdits`, `plan`, `dontAsk`, and `bypassPermissions`. Non-Bash tools, unknown modes, and shell forms that cannot be resolved safely stay unchanged. | In `hookSpecificOutput.updatedInput`, the handler keeps existing `tool_input` and changes only `command`. The RTK reply includes `permissionDecision: "allow"`. Codex repeats its normal approval and sandbox checks for the modified command. RTK does not interpret other agents' permission files. |
+| **Claude Code**. The fixed shell hook needs Bash, `jq`, and RTK `0.23.0` or later. The separate `rtk hook claude` path handles JSON natively. | Both paths read `tool_input.command`. The shell script calls `rtk rewrite`. The native path also reads `cwd` when it is present in the input. | An allowed rewrite returns `updatedInput` and `permissionDecision: "allow"`. An operation that needs approval omits `permissionDecision`. If no match occurs or a rule rejects it, the original command passes through. The shell script also gives no rewrite when a dependency is missing. |
+| **OpenCode**. Version 1.x needs at least `1.18.29`. The README also lists the version 2.0 plugin path. RTK must be on PATH, and `rtk hook opencode --help` must pass the capability check. | The TypeScript plugin handles only the `bash` or `shell` tools and their `command` text. The version 2.x `execute.before` input may contain `event.agent`. Version 1.x `tool.execute.before` has no agent field. Windows PATH search uses `PATHEXT`. | The plugin passes the command with `execFile` argv to `rtk hook opencode [--agent NAME] COMMAND`. The Rust side compares permission results before and after the rewrite under the OpenCode rules it can interpret. It returns an empty response if the result changes. It writes a valid rewrite to version 2 `event.input.command` or version 1 `output.args.command`. An error, timeout, or invalid response preserves the original command. |
 
-## Windows 10 fixture sonuçları
+<a name="windows-10-fixture-sonuçları"></a>
 
-| Yüzey | Gözlenen | Kanıt kapsamı |
+## Windows 10 fixture results
+
+| Surface | Observed result | Evidence scope |
 | --- | --- | --- |
-| PowerShell 5.1 | Ayrı, profilsiz shell’de `git status` 2.279 bayt, açık `rtk git status` 2.151 bayt çıktı verdi. `rtk bypass` stdout, stderr ve çıkış kodunu bire bir korudu. | Açık komut çağrısı. İstemci tarafından otomatik yakalama denenmedi. |
-| Codex | RTK’nın native hook’u sentetik `Bash` girdisinde `rtk git status` döndürdü. `shell_command`, `Read`, `Grep` ve bilinmeyen izin kipi boş yanıt aldı. | RTK’nın girdi ayrımı. JSON cevabı istemciye verilmedi ve cevapla komut çalıştırılmadı. |
-| Claude Code | Native RTK hook’u geçici Claude config diziniyle `Bash` girdisinde `rtk git status` döndürdü, `permissionDecision` alanı boş kaldı. `command` alanı taşımayan `Read` girdisi boş yanıt aldı. | Native RTK hook fixture’ı. Bash/jq scripti ve gerçek istemci oturumu denenmedi. |
-| OpenCode | Gerçek RTK plugin fonksiyonu `read` ve `grep` için dönüşüm vermedi. `RTK_DISABLED=1` ile `bash` ve `shell` olduğu gibi geçti. | Node’da erken geçiş koşulları. Gerçek OpenCode yükleyicisi ve rewrite sonrası komut çalışması denenmedi. |
+| PowerShell 5.1 | In a separate profile-free shell, `git status` returned 2,279 bytes. Explicit `rtk git status` returned 2,151 bytes. `rtk bypass` preserved stdout, stderr, and exit code exactly. | Explicit command call. The test did not check automatic client capture. |
+| Codex | For a synthetic `Bash` input, RTK's native hook returned `rtk git status`. It returned an empty response for `shell_command`, `Read`, `Grep`, and an unknown permission mode. | RTK input handling. The JSON reply was not sent to a client, and the reply did not run a command. |
+| Claude Code | The native RTK hook received a `Bash` input with a temporary Claude config directory and returned `rtk git status`. The fixture recorded no `permissionDecision` value. An input without a `command` field for `Read` returned an empty response. | Native RTK hook fixture. The Bash/jq script and a real client session were not tested. |
+| OpenCode | The real RTK plugin function gave no rewrite for `read` and `grep`. With `RTK_DISABLED=1`, `bash` and `shell` stayed unchanged. | Early-pass conditions in Node. The real OpenCode loader and execution of rewritten commands were not tested. |
 
-12 girdinin önce/sonra SHA-256 değerleri eşleşti. Bu dört fixture çalışması istemci ayarına yazmadı. Windows 11, macOS, Linux, Codex Desktop, gerçek OpenCode/Claude hook kurulumu ve alt ajan kapsamı `not_tested` olarak kaldı. [Makinece okunan kayıt](rtk.json)
+The before/after SHA-256 values for 12 inputs matched. These four fixture runs did not write client settings. Windows 11, macOS, Linux, Codex Desktop, real OpenCode/Claude hook setup, and subagent scope remain `not_tested`. [Machine-readable record](rtk.json)
 
-## Kapsam ve sınırlar
+<a name="kapsam-ve-sınırlar"></a>
 
-- Bu üç entegrasyon shell komutunu çalıştırmadan önce yeniden yazar. Bunlar model sağlayıcısına giden API isteklerini gözleyen bir proxy yüzeyi değildir; bu kaynaklar tüm model trafiğini, token tasarrufunu veya her model/rotayı kanıtlamaz.
-- Codex ve Claude kayıtları `Bash`/shell komutlarıyla sınırlıdır. Yerel `Read`, `Grep`, MCP veya başka native araçların çağrılarını kapsadıkları bu kaynaklarda gösterilmiyor. OpenCode plugin’i de yalnız `bash`/`shell` adlarını kabul ediyor.
-- Windows için OpenCode plugin README’si Node `execFile`, Windows PATH/PATHEXT ve OpenCode Desktop/Electron uyumluluğunu beyan ediyor. Bu, Headroom içindeki Windows runtime veya gerçek Desktop kullanımının testi değildir. Codex hook kaydı Bash matcher’ıdır; bu kaynaklar PowerShell komutlarının yakalandığını göstermiyor. Claude hook’u Bash scriptidir; Windows/PowerShell çalışması belgelenmiyor. Dolayısıyla bu yüzeylerden Windows PowerShell kapsamı çıkarılamaz.
-- Codex README’si hook’un diğer ajanların izin dosyalarını yeniden kullanmadığını açıkça söyler. OpenCode 2.x `agent` bilgisini yalnız ajan izin kurallarını değerlendirirken aktarır; 1.x’te bu alan yoktur. Bu ayrıntılar, tüm ana/alt ajan çağrılarının yakalandığını kanıtlamaz. Claude için de burada alt ajan kapsamı gösterilmemiştir.
-- Hook’un kurulması veya komut eşleşmesi gerçek entegrasyon, rota, hesap doğrulaması ya da sağlayıcı ölçümü yerine geçmez. RTK proxy’si veya diğer araçlarla birlikte çalışma bu kaynak incelemesinde denenmemiştir.
+## Scope and limits
 
-## Kaynaklar ve fingerprint
+- These three integrations rewrite shell commands before they run. They are not a proxy surface that observes API requests to model providers. These sources do not prove all model traffic, token savings, or every model/route.
+- Codex and Claude records cover only `Bash`/shell commands. These sources do not show that they cover calls to local `Read`, `Grep`, MCP, or other native tools. The OpenCode plugin also accepts only the names `bash`/`shell`.
+- The OpenCode plugin README states Windows Node `execFile`, Windows PATH/PATHEXT, and OpenCode Desktop/Electron compatibility. This is not a test of the Windows runtime inside Headroom or real Desktop use.
 
-Satır numaraları `work/proofs/rtk/toolchain/1.1.0/source/` altındadır.
+  The Codex hook record uses a Bash matcher. These sources do not show that it captures PowerShell commands. The Claude hook is a Bash script. Windows/PowerShell execution is not documented. Therefore, these surfaces do not establish Windows PowerShell coverage.
+- The Codex README states that the hook does not reuse other agents' permission files. OpenCode 2.x passes `agent` only when it evaluates agent permission rules. Version 1.x has no such field. These details do not prove capture of all main-agent/subagent calls. Subagent coverage for Claude is also not shown here.
+- Hook installation or command matching does not prove real integration, routing, account verification, or provider measurement. This source review did not test RTK proxy or coexistence with other tools.
 
-- Codex: `hooks/codex/README.md:7-19`; `src/hooks/hook_cmd.rs:681-700,983-1025,1027-1066`; CLI hook komutu `src/lib.rs:1274-1303`.
-- Claude: `hooks/claude/README.md:7-10`; `hooks/claude/rtk-rewrite.sh:1-4,16-27,46-60,62-105`; JSON işleme/yanıt `src/hooks/hook_cmd.rs:703-777,824-878`.
-- OpenCode: `hooks/opencode/README.md:7-20`; `hooks/opencode/rtk.ts:137-172,177-225`; izin karşılaştırması/yanıt `src/hooks/hook_cmd.rs:1278-1335`; CLI komutu `src/lib.rs:1294-1303`.
-- Receipt’teki commit: `753a3b0e939f2e4490fc24e3a1984010f40a103c`. İncelenen yedi dosyanın SHA-256’sı receipt kayıtlarıyla eşleşti: Codex README `c1f3d218…ff0489ca`, Claude README `424e28ef…ab4e82c`, Claude script `d4cd1e04…893267d`, OpenCode README `a289a50b…fb1c8b`, OpenCode plugin `989e9231…d4898aa4`, Rust hook `ce9965fa…2308ad7`, CLI definitions `c737ed90…f4e372`.
+<a name="kaynaklar-ve-fingerprint"></a>
+
+## Sources and fingerprints
+
+Line numbers refer to `work/proofs/rtk/toolchain/1.1.0/source/`.
+
+- Codex: `hooks/codex/README.md:7-19`, `src/hooks/hook_cmd.rs:681-700,983-1025,1027-1066`, CLI hook command `src/lib.rs:1274-1303`.
+- Claude: `hooks/claude/README.md:7-10`, `hooks/claude/rtk-rewrite.sh:1-4,16-27,46-60,62-105`, JSON handling/reply `src/hooks/hook_cmd.rs:703-777,824-878`.
+- OpenCode: `hooks/opencode/README.md:7-20`, `hooks/opencode/rtk.ts:137-172,177-225`, permission comparison/reply `src/hooks/hook_cmd.rs:1278-1335`, CLI command `src/lib.rs:1294-1303`.
+- Commit in the receipt: `753a3b0e939f2e4490fc24e3a1984010f40a103c`. SHA-256 values for the seven inspected files matched the receipt: Codex README `c1f3d218…ff0489ca`, Claude README `424e28ef…ab4e82c`, Claude script `d4cd1e04…893267d`, OpenCode README `a289a50b…fb1c8b`, OpenCode plugin `989e9231…d4898aa4`, Rust hook `ce9965fa…2308ad7`, and CLI definitions `c737ed90…f4e372`.
