@@ -1,200 +1,284 @@
-# H041 — Optimizasyon ve gecikme
+<a name="h041--optimizasyon-ve-gecikme"></a>
 
-10 Kasım 2026. Windows 10 x64 build 19045 yerel kabulü geçti. H041’in canlı API-key ve Windows 11 doğrulamaları açık. [Plan](../decisions/027-optimization-regression.md), [güncel yerel kanıt](../proofs/optimization-local-acceptance.json).
+# H041 — Optimization and latency
 
-`bench/optimization/replay.py --run` proje içindeki sabitlenmiş CPython 3.13.13 ile çalışır. Geliştirme manifestinin işaret ettiği payload ve hazırlanmış tokenizer verisi gerekir. `--self-check` dört fixture’ın çağrı kimlikleri ve geçmiş ekleme yapısını ağ çağrısı olmadan denetler. `--run`, ölçüm ve sağlık isteklerini loopback fixture’a yönlendirir. Kopyalanan test katmanında Hugging Face ve Transformers dosya indirmeleri kapalıdır. Sıfır model cache yükü ve parmak izi kontrolü kaydedilir. Ağ paketi izlemesi yapılmadı.
+10 November 2026. Local acceptance passed on Windows 10 x64 build 19045. H041 live API-key and Windows 11 checks remain open. [Plan](../decisions/027-optimization-regression.md), [current local evidence](../proofs/optimization-local-acceptance.json).
 
-Üç yeni controller/helper/engine süreci ve her örnekte üç konuşma turu kullanıldı. Aynı 36 iş yükü doğrudan loopback kontrolüne ve Headroom’a gönderildi. Model, reasoning ve sentetik auth korundu. Kaynak kodu ve kesin sayısal JSON `Read` aracında aynen kaldı. İletilmiş geçmiş prefix’i ve araç şemaları yeni turlarda eşleşti. CCR özgün logu döndürdü.
+Run `bench/optimization/replay.py --run` with the project-pinned CPython 3.13.13. The run needs the payload and prepared tokenizer data named by the development manifest. `--self-check` checks the call IDs and history-append structure of four fixtures without network calls. `--run` sends measurement and health requests to a loopback fixture.
 
-| Fixture | Headroom isteği | Yerel token azalması |
+Hugging Face and Transformers downloads are off in the copied test layer. The run records zero model-cache load and checks fingerprints. The test did not capture network packets.
+
+The test used three new controller/helper/engine processes and three conversation turns per instance. It sent the same 36 workloads to the direct loopback control and Headroom. It preserved the model, reasoning and synthetic auth. The source code and exact numeric JSON stayed unchanged in the `Read` tool. The forwarded history prefix and tool schemas matched in new turns. CCR returned the original log.
+
+| Fixture | Headroom requests | Local token reduction |
 | --- | --- | --- |
-| Kaynak kodu | 9 | %0, içerik korundu |
-| Kesin sayısal JSON | 9 | %0, içerik korundu |
-| Tekrarlayan sentetik log | 9 | %98,15–98,23 |
-| Kısa JSON | 9 | %0 |
+| Source code | 9 | 0%, content preserved |
+| Exact numeric JSON | 9 | 0%, content preserved |
+| Repeated synthetic log | 9 | 98.15–98.23% |
+| Short JSON | 9 | 0% |
 
-Tokenlar iki kolda aynı `o200k_base` kodlamasıyla tam sıralanmış JSON üzerinden sayıldı. Eklenen araç şemaları dahil edildi. Bu örnek sonucu sağlayıcı cache indirimi veya fatura tasarrufu olarak sunulmaz. Gerçek model TTFT’si ve yanıt kalitesi ölçülmedi. İlk fixture içerik delta süresi, toplam süre ve CPU/RAM her normal istek kaydında var.
+Both arms counted tokens from fully ordered JSON with the same `o200k_base` encoding. The count includes added tool schemas. Do not present this sample result as a provider cache discount or billing savings. Actual model TTFT and response quality were not measured. Each normal request record contains the time to first fixture content delta, total time and CPU/RAM.
 
-Güncel koşuda ısınmış ek p95 gecikme 72,45 ms, istek CPU p95 78,125 ms. Gözlenen motor özel belleği en çok 855,67 MiB. Önceden belirlenen 1000 ms, 2000 ms ve 1536 MiB sınırları geçti. Bellek 50 ms aralıkla ve istek sınırlarında gözlendi. CPU kapsamı benchmark/fixture ve ilgili controller/helper/engine süreçleridir. Rust ingress ayrı ölçüldü.
+In the current run, warm additional p95 latency was 72.45 milliseconds. Request CPU p95 was 78.125 milliseconds. The observed private engine memory reached 855.67 mebibytes. The preset limits of 1000 milliseconds, 2000 milliseconds and 1536 mebibytes passed. The process sampled memory every 50 milliseconds and at request boundaries. CPU scope includes the benchmark/fixture and relevant controller/helper/engine processes. We measured Rust ingress separately.
 
-İlk koşu 24 normal isteği tamamladıktan sonra hata testinin tek upstream çağrısı varsayımında durdu. Sabit ProxyConfig 429 için üç deneme tanımlar. Koşucu bunu doğrulayacak ve gecikmesini kaydedecek biçimde düzeltildi. Son koşuda doğrudan kol 1, Headroom kolu 3 denemeyle 429 ve Retry-After değerini korudu. Headroom hata yanıtları yaklaşık 2,02–2,07 s sürdü. Eşikler değiştirilmedi. [İlk Responses ölçümü](../proofs/optimization-benefit.json).
+The first run completed 24 normal requests. It then stopped because the error test assumed one upstream call. Fixed ProxyConfig defines three attempts for 429. We corrected the runner to check this behavior and record latency.
 
-Üç süreç normal/graceful kod 0 ile kapandı, portlar kapandı. Ham istek, auth, kontrol sırrı ve stderr dökümü raporda tutulmadı. Stderr içeriği bilinmiyor olarak işaretlendi. Dış sağlayıcı çağrısı 0. Diğer yerel protokol ve relay sonuçları aşağıdadır. Gerçek API-key ve dış işletim sistemi kontrolleri açık.
+In the final run, the direct arm used 1 attempt. The Headroom arm used 3 attempts. Both arms preserved 429 and Retry-After. Headroom error responses took about 2.02–2.07 s. Thresholds did not change. [First Responses measurement](../proofs/optimization-benefit.json).
 
-## Relay ve okumayan istemci
+Three processes closed with normal/graceful exit code 0, and their ports closed. The report did not retain raw requests, auth, control secrets or stderr dumps. It marked stderr content as unknown. External provider calls totaled 0. Other local protocol and relay results follow. Real API-key and checks on other operating systems remain open.
 
-`bench/optimization/backpressure.py` aynı 4 MiB veriyi doğrudan TCP ve Rust relay kolunda sınadı. İstemci alım tamponu 2048 bayt, okumadığı süre 30 s. Önceki 180 ms delayed-reader testi kendi kapsamıyla korundu. Yeni sayaçlar yalnız test derlemesinde, relay’in istemciye yazdığı noktadaki gerçek WouldBlock ve yazılan baytları kaydetti.
+<a name="relay-ve-okumayan-istemci"></a>
 
-10/20/30 s örneklerinde son iki aralık boyunca WouldBlock arttı ve aktarım bitmemişti. İstemci okumaya başladığında iki kolda da 4 MiB SHA-256 eşitliği ve cleanup geçti. Kaynak, plan ve test binary’si değişmedi. [Backpressure kanıtı](../proofs/relay-backpressure.json).
+## Relay and non-reading client
 
-Native test süreci dışarıdan örneklendi. Son tekrarda relay kolunda 46,875 ms CPU ile yaklaşık 30 s boyunca tek çekirdeğin %0,156’sı ve gözlenen özel bellek artışı 0 ölçüldü. Okumaya başlanmasından EOF’a kadar doğrudan kol 174,97 ms, relay kolu 143,71 ms sürdü. Bu süreler aynı makinedeki tek bir çiftin gözlemidir. Önceden belirlenmiş %10 CPU ve 32 MiB büyüme sınırları geçti. Ölçüm tek bağlantı ve test derlemesi kapsamındadır. [İlk backpressure ölçümü](../proofs/relay-backpressure.json).
+`bench/optimization/backpressure.py` tested the same 4 MiB data in direct TCP and Rust relay arms. The client receive buffer was 2048 bytes, and it did not read for 30 s. The earlier 180 ms delayed-reader test remained valid within its scope. New counters, enabled only in test builds, recorded actual WouldBlock and bytes written where the relay writes to the client.
 
-## Diğer protokoller
+In the 10/20/30 s samples, WouldBlock increased across the last two intervals, and transfer had not finished. After the client started reading, both arms passed 4 MiB SHA-256 equality and cleanup. Source, plan and test binary did not change. [Backpressure evidence](../proofs/relay-backpressure.json).
 
-`bench/optimization/surfaces.py --run` üç yeni motor süreciyle aynı dört içerik/üç turu Chat HTTP/SSE, Anthropic HTTP/SSE ve Responses WebSocket üzerinden çalıştırdı. 108 eşlenmiş iş yükünde 216 istek geçti. Kaynak/sayısal içerik, araç kimlikleri, model/reasoning, sentetik auth ve iletilmiş geçmiş prefix’i korundu. Bulunan CCR işaretlerinin özgün çıktıları geri alındı.
+An external process sampled the native test process. In the final repeat, the relay arm used 46.875 milliseconds of CPU over about 30 seconds. That equals 0.156% of one core. External sampling found 0 private-memory growth.
 
-| Yüzey | Sentetik log token azalması | Isınmış ek p95 | Isınmış CPU p95 |
+From the start of reading to EOF, the direct arm took 174.97 milliseconds. The relay arm took 143.71 milliseconds. These times come from one pair on the same machine. The preset limits of 10% CPU and 32 mebibytes growth passed. The measurement covers one connection and a test build. [First backpressure measurement](../proofs/relay-backpressure.json).
+
+<a name="diğer-protokoller"></a>
+
+## Other protocols
+
+`bench/optimization/surfaces.py --run` used three new engine processes. It ran the same four inputs and three turns through Chat HTTP/SSE, Anthropic HTTP/SSE and Responses WebSocket. All 216 requests passed across 108 matched workloads. The test preserved source/numeric content, tool IDs, model/reasoning, synthetic auth and forwarded history prefixes. The test restored the original outputs for found CCR markers.
+
+| Surface | Synthetic log token reduction | Warm additional p95 | Warm CPU p95 |
 | --- | --- | --- | --- |
-| Chat HTTP/SSE | %24,64–49,34 | 60,18 ms | 62,5 ms |
-| Anthropic HTTP/SSE | %16,24–24,33 | 48,93 ms | 46,875 ms |
-| Responses WebSocket | %98,15–98,23 | 13,60 ms | 31,25 ms |
+| Chat HTTP/SSE | 24.64–49.34% | 60.18 ms | 62.5 ms |
+| Anthropic HTTP/SSE | 16.24–24.33% | 48.93 ms | 46.875 ms |
+| Responses WebSocket | 98.15–98.23% | 13.60 ms | 31.25 ms |
 
-Tablodaki log örnekleri farklı protokol zarflarıyla taşınır; sonuçlar bütün işlere uygulanacak genel tasarruf oranı değildir. Ek araç şemaları tam JSON token hesabına dahildir. Gerçek Anthropic tokenizer’ı/faturası, sağlayıcı cache isabeti, gerçek model TTFT’si ve yanıt kalitesi ölçülmedi. Anthropic kolunda istemcinin açık cache işareti sabit tutuldu. WebSocket konuşması aynı bağlantıda üç tur sürdü; açılış el sıkışması istek zamanlamasına dahil değil. Her yeni motorun başlangıç süresi ayrıca kaydedildi, işletim sistemi dosya cache’i sıfırlanmadı.
+The log samples in this table used different protocol envelopes. Do not apply these results as a general savings rate for all work. Full JSON token counts include added tool schemas. The test did not measure the real Anthropic tokenizer/bill, provider cache hits, actual model TTFT or response quality. It held the client's explicit cache marker constant in the Anthropic arm.
 
-Küçük veya korumalı içerikte ek şemaların maliyeti de korundu. Aşağıdaki negatif azalma token artışı demektir; korumalı araç çıktısının değiştiği anlamına gelmez.
+The WebSocket conversation used three turns on one connection. Request timing excluded the opening handshake. The test recorded each new engine's startup time separately and did not clear the operating-system file cache.
 
-| Yüzey | Kaynak kodu | Kesin sayısal JSON | Kısa JSON |
+The test retained the cost of added schemas for small or protected content. A negative reduction below means an increase in token count. It does not mean that protected tool output changed.
+
+| Surface | Source code | Exact numeric JSON | Short JSON |
 | --- | --- | --- | --- |
-| Chat HTTP/SSE | −%0,10…−%0,07 | −%0,07…−%0,05 | −%2,50…−%1,79 |
-| Anthropic HTTP/SSE | −%1,30…−%0,87 | −%0,84…−%0,56 | −%27,93…−%20,49 |
-| Responses WebSocket | %0 | %0 | %0 |
+| Chat HTTP/SSE | −0.10%…−0.07% | −0.07%…−0.05% | −2.50%…−1.79% |
+| Anthropic HTTP/SSE | −1.30%…−0.87% | −0.84%…−0.56% | −27.93%…−20.49% |
+| Responses WebSocket | 0% | 0% | 0% |
 
-Kısa Anthropic örneğinde artışın tamamı `headroom_retrieve` araç tanımından geldi. Üç turlu loopback tekrarının girdi ve çıktı parmak izleri önceki dokuz kayıtla eşleşti. İletilen gövdeden bu tanım çıkarıldığında özgün istek birebir elde edildi. `o200k_base` tam JSON sayımı her turda 100 ek token gösterdi. İlk tur 358’den 458’e, son tur 488’den 588’e çıktı. [Alan bazında ölçüm](../proofs/anthropic-request-overhead.json).
+In the short Anthropic sample, the `headroom_retrieve` tool definition caused the full increase. Input and output fingerprints from the three-turn loopback repeat matched the previous nine records. Removing that definition from the forwarded body restored the original request exactly. Full `o200k_base` JSON counts showed 100 extra tokens per turn. The first turn changed from 358 to 458, and the last changed from 488 to 588. [Field-level measurement](../proofs/anthropic-request-overhead.json).
 
-Sabit motor varsayılan ayarla, araç listesi bulunan ve optimizasyona açık isteklerde bu aracı ilk turdan itibaren ekler. Sonradan araç listesini değiştirmek Anthropic’in önbelleğe aldığı ortak başlangıcı geçersiz kılabilir. Aracı ihtiyaç oluştuğunda ekleyen `lazy` ayarı kısa konuşmalardaki bu maliyeti azaltabilir. Uzun konuşmadaki önbellek etkisi canlı sağlayıcıyla ölçülmedi.
+With fixed engine defaults, the engine adds the tool from the first turn when the request has a tool list and allows optimization. Changing the tool list later can invalidate Anthropic's cached common prefix. The `lazy` setting adds the tool when needed. It may reduce this cost in short conversations. The cache effect in a long conversation was not measured with a live provider.
 
-Üç motor normal kod 0 ile kapandı, portlar kapandı. Güncel koşuda 648 kaynak ve araç girdisi önce ve sonra eşleşti. İlk koşunun doğrudan WebSocket bağlantısı uyarısı, sabit kütüphanenin açık `legacy=True` seçimiyle giderildi. Bağlantı yaşam döngüsü kontrollü biçimde sonlandırıldı. [İlk protokol ölçümü](../proofs/optimization-surfaces.json).
+Three engines closed with normal exit code 0, and their ports closed. The current run matched 648 source and tool inputs before and after. An explicit `legacy=True` setting in the pinned library fixed the first run's direct WebSocket warning. The test ended the connection lifecycle in a controlled way. [First protocol measurement](../proofs/optimization-surfaces.json).
 
-## Anthropic CCR aracının eklenme zamanı
+<a name="anthropic-ccr-aracının-eklenme-zamanı"></a>
 
-15 Kasım 2026’da `bench/optimization/ccr_policy.py --run` sabit 0.41.0 motorla dört yeni süreç başlattı. İki eşlenmiş tekrarda sıra ters çevrildi. Her süreç üç kısa tur, geç log ve korumalı sayısal Read içeren beş turlu oturum ve ayrı bir kısa istek gönderdi. Aşağıdaki sayılar iki tekrarda da aynıdır. `o200k_base` ile tam kanonik JSON sayımı, CCR tanımını da içerir. [Çalıştırma kaydı](../proofs/anthropic-ccr-policy.json).
+## When to add the Anthropic CCR tool
 
-| Oturum veya istek | Özgün | `eager` | `lazy` |
+On 15 November 2026, `bench/optimization/ccr_policy.py --run` started four new processes with the fixed 0.41.0 engine. It reversed the order in two matched repeats. Each process sent three short turns, a five-turn session with a late log and protected numeric Read, and a separate short request. The numbers below were the same in both repeats. Full canonical JSON counts with `o200k_base` included the CCR definition. [Run record](../proofs/anthropic-ccr-policy.json).
+
+| Session or request | Original | `eager` | `lazy` |
 | --- | ---: | ---: | ---: |
-| Üç kısa turun toplamı | 1.386 | 1.686 | 1.386 |
-| Beş uzun turun toplamı | 29.376 | 13.560 | 13.260 |
-| Uzun oturumda logun ilk geldiği tur | 10.321 | 2.263 | 2.263 |
+| Total for three short turns | 1,386 | 1,686 | 1,386 |
+| Total for five long turns | 29,376 | 13,560 | 13,260 |
+| Turn when the log first arrived in the long session | 10,321 | 2,263 | 2,263 |
 
-Üç kısa turda `lazy` toplam 300 token, `eager` koluna göre %17,79 azalttı. İki ayar da logun ilk geldiği isteği özgüne göre %78,07 küçülttü. Geç log geldikten sonra `lazy` araç dizisi bir kez değişti ve bir sonraki turda sabit kaldı. `eager` dizisi baştan sabitti. Mesaj başlangıcı, sentetik auth, model/efor, araç çağrıları ve korumalı Read içeriği korundu. Ayrı oturum `lazy` aracını devralmadı. Model çağrısı gerektirmeyen sekiz yerel CCR isteği özgün logu birebir döndürdü. Dört motor kod 0 ile kapandı ve sahipli portlar serbest kaldı.
+Across three short turns, `lazy` reduced the total by 300 tokens, or 17.79%, compared with `eager`. Both settings reduced the first request with the log by 78.07% compared with the original. After the late log arrived, the `lazy` tool array changed once and stayed fixed in the next turn. The `eager` array stayed fixed from the start.
 
-İlk koşuda fixture önceki sentetik cevabı yeni isteğe eklemediği için cache modu logu sıkıştırmadan iletti. İkinci koşu doğru geçmişle logu sıkıştırdı ve CCR için sağlayıcı tarafının `stream: false` olduğunu gösterdi. Son koşu o kola JSON, diğer kola SSE verdi. İstemci iki durumda da tamamlanmış SSE aldı. Ölçüm bu yerel protokol kontrolleriyle sınırlıdır. Sağlayıcı cache sayaçları, fatura etkisi ve gerçek görev başarısı açık. Ürün varsayılanı `eager` kaldı.
+The test preserved the message prefix, synthetic auth, model/effort, tool calls and protected Read content. A separate session did not inherit the `lazy` tool. Eight local CCR requests that needed no model call returned the original log exactly. Four engines exited with code 0 and released their owned ports.
 
-## Anthropic CCR ve kullanım kapsamı
+In the first run, the fixture did not append the previous synthetic answer to the new request. Cache mode therefore forwarded the log without compression. The second run used the correct history and compressed the log. It showed that provider-side `stream: false` applied to CCR.
 
-15 Kasım 2026’da `bench/optimization/anthropic_usage.py --run`, sabit 0.41.0 motorunda 3 ayrı Anthropic Messages oturumu çalıştırdı. Dokuz kısa istek geçmişi kurdu. Sonraki üç istekte sağlayıcı fixture’ı `headroom_retrieve` çağırdı. Gerçek motor aynı test isteği için bir ek upstream isteği gönderdi ve özgün logu eksiksiz taşıdı. Toplam 12 istemci ve 15 upstream isteği gözlendi. Model, reasoning ve sentetik auth korundu. [Sayısal kayıt](../proofs/anthropic-usage-coverage.json).
+The final run sent JSON to that arm and SSE to the other arm. The client received completed SSE in both cases. This measurement covers these local protocol checks. Provider cache counters, billing impact and actual task success remain open. The product default stayed `eager`.
 
-| Ölçülen son istek | İstemci sonucu | Gözlenen upstream kullanım toplamı |
+<a name="anthropic-ccr-ve-kullanım-kapsamı"></a>
+
+## Anthropic CCR and usage coverage
+
+On 15 November 2026, `bench/optimization/anthropic_usage.py --run` ran 3 separate Anthropic Messages sessions on the fixed 0.41.0 engine. It used nine short requests to build history. In the next three requests, the provider fixture called `headroom_retrieve`. The real engine sent one extra upstream request for the same test request and carried the original log in full.
+
+The test observed 12 client requests and 15 upstream requests. It preserved the model, reasoning and synthetic auth. [Numeric record](../proofs/anthropic-usage-coverage.json).
+
+| Final measured request | Client result | Observed upstream usage total |
 | --- | --- | --- |
-| İki başarılı çağrı | SSE 200, son çağrı 1.343 token | 2.429 token, 300 önbellek dışı giriş + 2.000 okuma + 100 yazma + 29 çıktı |
-| Birincil yanıtta önbellek yazma alanı eksik | SSE 200, son çağrıda yazma 0 | Yazma ve toplam bilinmiyor, çıktı 29 |
-| Devam isteği 429, kullanım alanı yok | SSE 502, kullanım alanı yok | Toplam bilinmiyor |
+| Two successful calls | SSE 200, final call 1,343 tokens | 2,429 tokens, 300 uncached input + 2,000 read + 100 write + 29 output |
+| Cache-write field missing in primary response | SSE 200, write 0 in final call | Write and total unknown, output 29 |
+| Continuation request 429, no usage fields | SSE 502, no usage fields | Total unknown |
 
-Tam örnekte özel `/stats` satırı yalnız son çağrının dört sayacını gösterdi. Başarısız devamda satırda ilk çağrının sayaçları vardı. Doğrudan upstream fixture cevabı dışındaki bu iki görünüm bütün çağrıları kapsamaz. Fixture geçmişi ayrı oturum anahtarları ve tekil yeni satırla doğrulandı. Bu eşleme izole seri deneyin kapsamındadır. Ürün trafiğinde oturum sahipliği, gerçek kullanım ve fatura ayrı kabulde doğrulanacak. [Anthropic kullanım alanları](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#tracking-cache-performance).
+The custom `/stats` row in the complete sample showed only the last call's four counters. The row in the failed continuation showed the first call's counters. Neither view covers all calls outside the direct upstream fixture response. The fixture verified history with separate session keys and one unique new row. This mapping covers the isolated serial experiment. Product session ownership, real usage and billing need separate acceptance. [Anthropic usage fields](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#tracking-cache-performance).
 
-## Anthropic kullanımının motorda kaydı
+<a name="anthropic-kullanımının-motorda-kaydı"></a>
 
-`tests/runtime/anthropic_usage_capture.py` Windows 10 x64 üzerinde sabit 0.41.0 motorunun sahip olduğu istemciyi kullandı. 15 istemci isteği 19 upstream gönderime dönüştü. Her gözlem motorun verdiği istek kimliğiyle eşleşti. İlk yanıt ve CCR devamı birlikte 2.429 sentetik token olarak kaydedildi. Açıkça bildirilen 0 korundu. Bildirilmeyen cache yazma değeri, başarısız devam ve 429 sonrası başarılı tekrarda toplam bilinmiyor kaldı. İki eşzamanlı SSE isteği kendi sayaçlarıyla tamamlandı. [Doğrulama ve kaynak parmak izleri](../proofs/desktop-anthropic-usage.json).
+## Engine capture of Anthropic usage
 
-Bölünmüş SSE çerçeveleri ilk ve son kullanım bilgilerini birleştirdi. Eksik terminal, bozuk çerçeve, boyut ve çağrı sınırı toplamı geçersiz bıraktı. İzlenen akış baytları aynı teslim edildi. Kontrol anahtarı eksik veya yanlış istekler 404 aldı. Yeniden başlatılan motorun kaydı boştu ve önceki anahtar geçersizdi. Kayıtlar yalnız motor neslinin belleğinde tutulur.
+`tests/runtime/anthropic_usage_capture.py` used the client owned by the fixed 0.41.0 engine on Windows 10 x64. It converted 15 client requests into 19 upstream sends. Each observation matched the request ID issued by the engine.
 
-Mevcut istemci yanıtı ve `/stats` karşılaştırması ile üç yerel Anthropic duraklatma senaryosu geçti. Native Windows runtime odaklı test 35 başarılı, 6 opt-in test atlandı. Controller 10 test ve Rust format kontrolü geçti. Bu kabul özel motor kaydını kapsar. Masaüstüne yansıtma, canlı sağlayıcı, diğer protokoller ve Windows 11 doğrulaması açık.
+The first response and CCR continuation recorded 2,429 synthetic tokens together. The test retained the explicitly reported 0. A missing cache-write value or a failed continuation left the total unknown. A successful retry after 429 also left the total unknown. Two concurrent SSE requests completed with their own counters. [Validation and source fingerprints](../proofs/desktop-anthropic-usage.json).
 
-## Anthropic kullanımı masaüstü istek ayrıntısında
+Split SSE frames combined the first and final usage data. A missing terminal, malformed frame, or size or call limit made the total invalid. The relay delivered the observed stream bytes unchanged. Requests with a missing or wrong control key returned 404. After restart, the engine record was empty and the earlier key was invalid. Records stay in the engine generation's memory.
 
-Windows 10 x64 yerel deneyinde `tests/runtime/anthropic_usage_capture.py --native-reader` gerçek motoru açtı. İki upstream yanıtı, aynı nesil ve tam istek kimliğiyle, sahipliği doğrulanmış native ölçüm okuyucusundan SQLite ve istek ayrıntısına ulaştı. Kullanım alanları 2.400 toplam girdi, 29 çıktı, 2.000 önbellek okuma, 100 önbellek yazma ve iki gönderim denemesi olarak doğrulandı. Giriş sayım temeli ve tasarruf ölçümü bağımsız kaldı. [Doğrulama kaydı](../proofs/anthropic-usage-desktop-detail.json).
+The current client-response and `/stats` comparison and three local Anthropic pause scenarios passed. The native Windows runtime test passed 35 tests and skipped 6 opt-in tests. The controller passed 10 tests, and Rust format checks passed. This acceptance covers the private engine record. Desktop display, live provider use, other protocols and Windows 11 validation remain open.
 
-Yerel Rust ve istemci testlerinde yanlış nesil ve başka istek kimliği eşleşmedi. Başarısız yanıtta ve eksik sayaçta toplam bilinmiyor kaldı. Geçici eksiklik, önceki doğrulanmış alanı silmedi. Çelişkili sonraki veri, kullanım alanlarını bilinmiyor yaptı ve yerel sıkıştırma farkını korudu. Eski ayrıntı kayıtları yeni alanlar olmadan açıldı. 464 Rust, 223 frontend ve gerçek motor opt-in testi geçti. Windows 11 ve macOS çalıştırması, görsel native yürüyüş, diğer sağlayıcılar ve canlı maliyet kapsamı açık.
+<a name="anthropic-kullanımı-masaüstü-istek-ayrıntısında"></a>
 
-## Süreli yük ve başlangıçta Kompress yüklemesi
+## Anthropic usage in desktop request details
 
-`bench/optimization/stability.py --run`, önce dört yüzey × dört içerik × üç tur × iki kol ile 96 isteği ısıttı. Ardından 300 saniye boyunca saniyede bir eşlenmiş iş yükü gönderdi. 300 çift/600 istek, kaynak/sayısal/araç/prefix/CCR kontrollerini tamamladı. CPU birleşik benchmark/fixture/controller/helper/engine kapsamıyla tek çekirdeğin %6,24’ü, ek p95 48,67 ms ve istek CPU p95 31,25 ms idi.
+In a local Windows 10 x64 experiment, `tests/runtime/anthropic_usage_capture.py --native-reader` started the real engine. Two upstream responses reached SQLite and request details through the ownership-verified native metrics reader. Both had the same generation and exact request ID. The test verified 2,400 total input, 29 output, 2,000 cache read, 100 cache write and two submission attempts. The input-counting basis and savings measurement stayed separate. [Validation record](../proofs/anthropic-usage-desktop-detail.json).
 
-İlk koşuda ısınma sonrası gözlenen özel bellek artışı yaklaşık 605 MiB ile 128 MiB sınırını aştı. Tepe yaklaşık 1470 MiB, bitiş yaklaşık 1207 MiB idi. Normal çıkış 0 ve port kapanışı geçti. 646 girdi eşleşti. [Başarısız koşu](../proofs/optimization-stability-failure.json).
+Local Rust and client tests did not match a wrong generation or another request ID. A failed response and missing counters left the total unknown. A temporary omission did not erase a previously verified field. Conflicting later data made usage fields unknown and preserved the local compression difference.
 
-120 saniyelik tanıda izlenen içerik ve kayıt depoları yaklaşık 0,2 MiB düzeyinde kaldı. Artış motor sürecinde gözlendi. Sabit kaynakta model başlatıldıktan sonra Kompress’i arka planda yükleyen yol belirlendi. Headroom Desktop bu arka plan yüklemesini kendi motorunda kapattı. İstek gerektiğinde Kompress’i kullanma yolu korunur. Aynı 300 saniye planıyla sonraki koşuda özel bellek artışı 56,18 MiB, tepe 1138,81 MiB ve ek p95 49,88 ms ölçüldü. İki koşuda da ayrı Kompress dosyaları cache’e yazıldı. Bu gözlemler model dosyasının indirilme maliyeti ile yüklenme maliyetini tek başına ayırmaz. [Varsayılan motor ayarlarıyla düzeltme sonrası koşu](../proofs/optimization-stability.json).
+Old detail records opened without the new fields. 464 Rust tests, 223 frontend tests and a real-engine opt-in test passed. Windows 11 and macOS runs, a visual native walkthrough, other providers and live cost coverage remain open.
 
-0.41.0’da model dosyası indirmeleri kapalı koşu, aynı planla 300 çift, 600 istek ve 249 CCR geri alımı tamamladı. Artış 24,12 MiB, özel bellek tepesi 889,40 MiB, birleşik CPU tek çekirdeğin %4,09’u ve ek p95 47,04 ms oldu. Beş dakikalık pencere için önceden belirlenen bütün eşikler geçti. 653 girdi eşleşti. Motor normal çıkış kodu 0 ile kapandı ve port serbest kaldı. Hugging Face hub cache’inde model yükü sıfır bayttı. Sağlayıcı modeli, eşzamanlı çok istemci yükü ve saatlerce açık kalma ayrı kapsamda kalır.
+<a name="süreli-yük-ve-başlangıçta-kompress-yüklemesi"></a>
 
-## Headroom 0.44.0 ile süreli yük
+## Timed load and startup Kompress load
 
-18 Kasım 2026. Önceki 300 saniye planı ve eşikler güncel 0.44.0 pininde kullanıldı. Windows 10’da Responses HTTP/SSE, Chat HTTP/SSE, Anthropic HTTP/SSE ve Responses WebSocket üzerinde 96 ısınma isteği ve 300 ölçüm çifti tamamlandı. 600 ölçüm isteğinde kaynak, kesin sayısal içerik, araç kimliği ve prefix kontrolleri geçti. 249 CCR geri alımı birebir doğrulandı. 688 kaynak ve araç girdisi eşleşti. Motor kod 0 ile normal kapandı ve sahipli port serbest kaldı.
+`bench/optimization/stability.py --run` first warmed up with 96 requests. It used four surfaces × four inputs × three turns × two arms. It then sent matched workloads at one per second for 300 seconds. The 300 pairs/600 requests completed source/numeric/tool/prefix/CCR checks. Combined benchmark/fixture/controller/helper/engine CPU was 6.24% of one core. Additional p95 was 48.67 ms, and request CPU p95 was 31.25 ms.
 
-| Ölçüm | Gözlenen | Plan sınırı |
+In the first run, observed private-memory growth after warmup was about 605 MiB. It exceeded the 128 MiB limit. Peak memory was about 1,470 MiB, and ending memory was about 1,207 MiB. Normal exit code 0 and port closure passed. 646 inputs matched. [Failed run](../proofs/optimization-stability-failure.json).
+
+A 120-second diagnosis found that monitored content and record stores stayed near 0.2 mebibytes. The engine process showed the increase. The pinned source showed a background load of Kompress after model start. Headroom Desktop disabled this background load in its engine. It kept the path that uses Kompress when a request needs it.
+
+In the next run with the same 300-second plan, private-memory growth was 56.18 mebibytes. Peak was 1,138.81 mebibytes. Additional p95 latency was 49.88 milliseconds. Both runs wrote separate Kompress files to cache. These observations alone do not separate model-file download cost from model-load cost. [Run after correction with default engine settings](../proofs/optimization-stability.json).
+
+The 0.41.0 run disabled model-file downloads. Under the same plan, it completed 300 pairs, 600 requests and 249 CCR retrievals. Growth was 24.12 mebibytes. Peak private memory was 889.40 mebibytes. Combined CPU was 4.09% of one core. Additional p95 latency was 47.04 milliseconds.
+
+All preset thresholds for the five-minute window passed. 653 inputs matched. The engine exited normally with code 0, and the port was free. The Hugging Face Hub cache held zero bytes of model payload. Provider models, concurrent multi-client load and hours-long operation remain separate scopes.
+
+<a name="headroom-0440-ile-süreli-yük"></a>
+
+## Timed load with Headroom 0.44.0
+
+18 November 2026. The previous 300-second plan and thresholds ran with the current 0.44.0 pin. The Windows 10 run completed 96 warmup requests and 300 measured pairs across Responses HTTP/SSE, Chat HTTP/SSE, Anthropic HTTP/SSE and Responses WebSocket.
+
+Source, exact numeric content, tool ID and prefix checks passed in 600 measured requests. The run verified 249 CCR retrievals exactly. 688 source and tool inputs matched. The engine exited normally with code 0, and the owned port was free.
+
+| Measurement | Observed | Plan limit |
 | --- | ---: | ---: |
-| Ölçüm çifti | 300 | En az 250 |
-| Isınma sonrası özel bellek artışı | 22,96 MiB | En çok 128 MiB |
-| Gözlenen özel bellek tepesi | 914,59 MiB | En çok 1.536 MiB |
-| Ek p95 gecikme | 46,14 ms | En çok 1.000 ms |
-| Birleşik CPU, tek çekirdeğin yüzdesi | %3,32 | En çok %25 |
+| Measured pairs | 300 | At least 250 |
+| Private-memory growth after warmup | 22.96 MiB | At most 128 MiB |
+| Observed private-memory peak | 914.59 MiB | At most 1,536 MiB |
+| Additional p95 latency | 46.14 ms | At most 1,000 ms |
+| Combined CPU as a percentage of one core | 3.32% | At most 25% |
 
-Aşağıdaki sayılar, her örneğin 75 ölçüm isteğinde aynı `o200k_base` kodlamasıyla sayılan tam JSON gövdeleridir. Ek araç şemaları sayıya dahildir. Değerler yerel sentetik trafikte ana isteğin boyutunu gösterir. [Programatik kanıt](../proofs/optimization-local-acceptance.json).
+The following values are full JSON bodies counted with the same `o200k_base` encoding across 75 measured requests per sample. These counts include added tool schemas. The values show the main request size in local synthetic traffic. [Programmatic evidence](../proofs/optimization-local-acceptance.json).
 
-| Sentetik örnek | Özgün token | İletilen token | Fark |
+| Synthetic sample | Original tokens | Forwarded tokens | Difference |
 | --- | ---: | ---: | ---: |
-| Kaynak okuması | 724.026 | 725.970 | %0,27 artış |
-| Kesin sayısal okuma | 1.114.776 | 1.116.720 | %0,17 artış |
-| Tekrarlayan log | 3.110.226 | 1.079.854 | %65,28 azalma |
-| Kısa JSON | 37.476 | 39.420 | %5,19 artış |
+| Source read | 724,026 | 725,970 | 0.27% increase |
+| Exact numeric read | 1,114,776 | 1,116,720 | 0.17% increase |
+| Repeated log | 3,110,226 | 1,079,854 | 65.28% reduction |
+| Short JSON | 37,476 | 39,420 | 5.19% increase |
 
-## H041 açık kabulleri
+<a name="h041-açık-kabulleri"></a>
 
-19 Kasım 2026’da **6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü** açık. Ana görev sayımı **45/54**.
+## Open H041 acceptance criteria
 
-| Kabul | Tamamlanması için gereken |
+On 19 November 2026, **6 verification criteria and 3 optional R&D criteria** were open. The main task count was **45/54**.
+
+| Criterion | Evidence needed |
 | --- | --- |
-| Kısıtlı Codex native Windows dosya profili | Uygun native sandbox ile izinli okuma ve açık erişim reddi. Windows 10 üzerinde kullanılan eski sandbox profili başlatmadı. WSL2 aynı dosya sınırını doğruladı. [Dosya ve arşiv kanıtı](../proofs/targeted-query-comparison.json) |
-| Windows 11 x64 | Gerçek Windows 11 x64 ortamında 0.44.0 paketli çalışma, kapanış ve trafik. Standart GitHub Windows 11 imajı ARM64. CircleCI, Windows Server imajları sunuyor. [GitHub standart runner’ları](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-private-repositories) · [CircleCI Windows imajları](https://circleci.com/docs/guides/execute/using-windows/) |
-| macOS ARM64 | Doğrulanmış ücretsiz kapasiteyle 0.44.0 paketli açılış, sahipli kapanış, trafik ve ölçüm. GitHub işi 15 dakikayla sınırlı. [Başlatma koşulları](#19-kasım--kalan-kabullerin-başlatma-koşulları) |
-| Canlı Anthropic Messages | Yetkili hesapla gerçek Messages yanıtının kullanım sayaçlarını ilgili Headroom isteğine bağla. [Yerel kullanım kanıtı](../proofs/desktop-anthropic-usage.json) |
-| Canlı OpenAI API-key | API-key rotasına yetkili erişim. H008’den devreden kapsamın kendi kullanım kanıtı. [H041-d planı](../decisions/027-optimization-regression.md#h041-d-responses-httpsse-kullanım-ölçümü) |
-| Gerçek fatura farkı | Eşlenmiş koşuların karşılaştırılabilir fatura verisi. Token kıyası kaydedildi. [Canlı kıyas](../proofs/targeted-query-comparison.json) |
-| Learn geniş fayda kabulü | Somut tekrar örüntüsüyle aynı model ve eforda eşlenmiş görevler. İlk canlı çift fayda göstermedi. [Learn ölçümü](../proofs/learn-merit-pilot.json) |
-| Deneysel kurallar e3 | Donduruldu. Yeniden başlatmak için yeni aday ve önceden belirlenmiş kalite/net fayda kapsamı gerekiyor. [Ar-Ge kararı](../research/optimization-roi-review-2026-11-17.md) |
-| Deneysel kurallar e4 | e3 geçince kapsamlı etkinleştirme, kapatma ve geri alma kabulü. [Deneysel kurallar planı](../decisions/027-optimization-regression.md#h041-e-deneysel-kurallar) |
+| Restricted native Windows file profile for Codex | Check an allowed read in a suitable native sandbox. Check an explicit access denial. The legacy sandbox on Windows 10 did not start the profile. WSL2 verified the same file boundary. [File and archive evidence](../proofs/targeted-query-comparison.json) |
+| Windows 11 x64 | Test the packaged 0.44.0 engine, shutdown, and traffic on actual Windows 11 x64. The standard GitHub Windows 11 image was ARM64. CircleCI offered Windows Server images. [Standard GitHub runners](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-private-repositories) · [CircleCI Windows images](https://circleci.com/docs/guides/execute/using-windows/) |
+| macOS ARM64 | Confirm free capacity. Test packaged 0.44.0 startup, owned shutdown, traffic, and metrics. The GitHub job has a 15-minute limit. [Launch conditions](#19-kasım--kalan-kabullerin-başlatma-koşulları) |
+| Live Anthropic Messages | Use an authorized account. Match the usage counters of an actual Messages response to the corresponding Headroom request. [Local usage evidence](../proofs/desktop-anthropic-usage.json) |
+| Live OpenAI API-key route | Confirm authorized access to the API-key route. Collect usage evidence for the scope that H008 carried forward. [H041-d plan](../decisions/027-optimization-regression.md#h041-d-responses-httpsse-kullanım-ölçümü) |
+| Actual billing difference | Collect comparable billing data for the paired runs. The token comparison is on record. [Live comparison](../proofs/targeted-query-comparison.json) |
+| Broader acceptance of Learn benefits | Pair tasks with a known repeat pattern on the same model and effort. The first live pair showed no benefit. [Learn measurement](../proofs/learn-merit-pilot.json) |
+| Experimental rules e3 | The work is frozen. A restart requires a new candidate and predefined criteria for quality and net benefit. [R&D decision](../research/optimization-roi-review-2026-11-17.md) |
+| Experimental rules e4 | After e3 passes, verify enablement, disabling, and rollback within the selected scope. [Experimental rules plan](../decisions/027-optimization-regression.md#h041-e-deneysel-kurallar) |
 
-### 19 Kasım — Kalan kabullerin başlatma koşulları
+<a name="19-kasım--kalan-kabullerin-başlatma-koşulları"></a>
 
-- **GitHub macOS.** 6531cc4 adayında `macos-package.yml` elle başlatılan `macos-15` işini seçiyor. Yerel ön kontrolde workflow, iki Bash adımı, üç Bash scripti ve altı Python kaynağı okundu. 230 girdinin önce/sonra özeti eşleşti. 0.44.0 pini doğrulandı. İş, ücretsiz kota ve sıfır harcama sınırı teyit edilince `verify_desktop_traffic=true` ile başlatılabilir. [Yerel ön kontrol](../../work/proofs/macos/h041-package-preflight-3f48e53e19.json) · [Akış](../../.github/workflows/macos-package.yml).
-- **Kota ve süre.** GitHub CLI oturumu 19 Kasım’da doğrulandı. Özel deponun geçmiş koşuları okundu. Kullanıcı 0,10 USD kalan kotayı teyit etti. Hesap kullanım özeti için CLI kimliğinin `user` kapsamı yok. 0,10 USD bir tam Mac dakikasına karşılık geliyor. Önceki gerçek Headroom 0.41.0 paket ve Desktop trafik işi 5 dakika 39 saniye sürdü. Bugünkü tarifeyle 6 yuvarlanmış dakika, 0,372 USD dahil kota eder. Güncel 0.44.0 için 15 dakikalık iş limitinin tarife karşılığı 0,93 USD dahil kota. Yeni iş, yeterli ücretsiz kapasite teyidi bekliyor. [Önceki iş](https://github.com/Protocol272/headroom-desktop/actions/runs/43284385567) · [Süre kanıtı](../../work/proofs/macos/h041-remote-history-0136ac2a66.json) · [GitHub tarifesi](https://docs.github.com/en/billing/reference/actions-runner-pricing) · [Kota yenilemesi](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
-- **CircleCI macOS seçeneği.** Free plan özel depolar için ayda 30.000 kredi sağlıyor. Apple Silicon `m4pro.medium` dakikada 200 kredi. 15 dakikanın işlem karşılığı 3.000 kredi. Bu yol özel deponun CircleCI’ye açılması için ayrı yetki, hesap kotası ve native GUI ön kontrolü gerektirir. [Plan](https://circleci.com/pricing/) · [Tarife](https://circleci.com/pricing/price-list/) · [Apple Silicon imajları](https://circleci.com/docs/guides/execute/using-macos/).
-- **Native Codex profili.** Aktif Codex sürecinin CLI sürümü 0.169.0-alpha.11.1 ve bu bilgisayar Windows 10 x64 build 19045. MXC için uygun güncel Windows 11 ortamı gerekiyor. Önceden hazırlanmış legacy elevated testi, `:root` okuma şartı nedeniyle komutu başlatmadı. [OpenAI sandbox uyumluluğu](https://learn.chatgpt.com/docs/windows/windows-sandbox#mxc-compatibility) · [Önceki koşu](../proofs/targeted-query-comparison.json).
+### 19 November — Launch conditions for remaining acceptance
 
-Yerel ön kontrol raporu SHA-256 `38ce4294dd93fadb20762023699e96f197c362f61b73e3eb5908770d1dff4b63`. Native macOS kabulü erişim ve gerçek koşu bekliyor. Bu tarihte H041’in bütün kabullerine ortak bitiş tarihi verilemiyor.
+- **GitHub macOS.** On candidate 6531cc4, `macos-package.yml` selects the manual `macos-15` job. The local precheck read the workflow, two Bash steps, three Bash scripts, and six Python sources. All 230 input digests matched before and after. The precheck verified the 0.44.0 pin. Confirm the free quota and zero-spend limit before starting the job with `verify_desktop_traffic=true`. Local precheck (local receipt `work/proofs/macos/h041-package-preflight-3f48e53e19.json`) · [Workflow](../../.github/workflows/macos-package.yml).
+- **Quota and duration.** The team verified GitHub CLI access on 19 November and read the private repository's past runs. The user confirmed USD 0.10 of quota. The CLI credential lacks the `user` scope for the account usage summary.
 
-### 18 Kasım erişim kontrolü
+  USD 0.10 covers one full Mac minute. The prior actual Headroom 0.41.0 package and Desktop traffic job took 5 minutes and 39 seconds. At the rate recorded that day, 6 rounded minutes used USD 0.372 of included quota.
 
-- Bu bilgisayar Windows 10 x64 build 19045 ve kurulu Codex CLI 0.169.0-alpha.11.1 kullanıyor. Önceki koşuda unelevated profil komutu başlatmadı ve MXC mevcut değildi. Ayrı ACL kontrolünün izinli okuma ve erişim reddi kanıtı kendi kapsamında geçerli. Adlandırılmış test profilinin iki dosya sınırı için uygun MXC veya yönetici tarafından hazırlanmış elevated sandbox gerekiyor. [Önceki koşu](../proofs/targeted-query-comparison.json) · [OpenAI Windows sandbox belgesi](https://learn.chatgpt.com/docs/windows/windows-sandbox#mxc-compatibility).
-- GitHub CLI mevcut oturumu geçersiz bildirdi. Tarayıcıdaki fatura sayfasından hesap kotası alınamadı. macOS ARM64 koşusu için güncel dahil kota ve sıfır ücret sınırı doğrulaması açık. Standart Windows 11 runner etiketi ARM64. Windows 11 x64 doğrulaması ilgili masaüstü ortamını bekliyor. [GitHub runner tablosu](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-private-repositories) · [GitHub Actions kullanım kotası](https://docs.github.com/en/billing/concepts/product-billing/github-actions#included-compute-usage-and-storage).
-- OpenCode'un ücretsiz sohbet modelleri kendi istemcisiyle kullanılır. H041’in doğrudan uzak Chat Completions gözlemi için bu projede kullanılabilen yetkili bir API rotası gerekiyor. [OpenCode Console uçları](https://opencode.ai/docs/console/models/#endpoints).
+  The 15-minute limit for the current 0.44.0 job represents USD 0.93 of included quota. The new job awaits confirmation of sufficient free capacity. [Prior job](https://github.com/Protocol272/headroom-desktop/actions/runs/43284385567) · Duration evidence (local receipt `work/proofs/macos/h041-remote-history-0136ac2a66.json`) · [GitHub rates](https://docs.github.com/en/billing/reference/actions-runner-pricing) · [Quota renewal](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
+- **CircleCI macOS option.** At this checkpoint, Free plan capacity for private repositories was 30,000 credits per month. Apple Silicon `m4pro.medium` used 200 credits per minute. At that rate, 15 minutes used 3,000 credits.
 
-### 19 Kasım — Uzak Chat Completions sayaç kaydı
+  This option requires authorization to connect the private repository to CircleCI. Confirm the account quota. Run the native GUI precheck. [Plan](https://circleci.com/pricing/) · [Rates](https://circleci.com/pricing/price-list/) · [Apple Silicon images](https://circleci.com/docs/guides/execute/using-macos/).
+- **Native Codex profile.** The running Codex process used CLI 0.169.0-alpha.11.1. The test computer ran Windows 10 x64 build 19045. MXC requires a suitable current Windows 11 environment. The earlier legacy elevated test stopped before the command because it required `:root` read access. [OpenAI sandbox compatibility](https://learn.chatgpt.com/docs/windows/windows-sandbox#mxc-compatibility) · [Earlier run](../proofs/targeted-query-comparison.json).
 
-AI Horde’un belgelenmiş anonim API’si üzerinden her taşıma için tek gönderim kullanıldı. Projeye ait izole Headroom 0.44.0 motoru yalnız sabit HTTPS hedefine sentetik aritmetik soruları gönderdi. İki HTTP 200 yanıtında istek kimliği, bitiş durumu ve sağlayıcının kullanım değerleri motorun ilgili gönderim kaydıyla eşleşti. İki isteğin her birinde 49 giriş ve 2 çıkış tokenı vardı. Sağlayıcı sayaçları tahmini olarak işaretlemedi. Önbellek okuma ve yazma değerleri bilinmiyor. SSE’de son kullanım çerçevesi ve `[DONE]` görüldü. [AI Horde kullanım sözleşmesi](https://haidra-org.github.io/AI-Horde/reference/chat_front/#reasoning-and-usage) · [Ölçüm](../proofs/chat-completions-usage.json).
+The local precheck report has SHA-256 `38ce4294dd93fadb20762023699e96f197c362f61b73e3eb5908770d1dff4b63`. Native macOS acceptance awaits access and an actual run. At this checkpoint, the team could give no completion date for all H041 criteria.
 
-SSE’nin beklenen tek hanesi birebir eşleşti. JSON yanıtı normal sonlandı ve sayaçları korudu. JSON’un model çıktısı tek hane biçim kontrolünü geçmedi. Önceki şemalı 404 ile bitiş ve biçim aşamalarında duran koşular ayrı kaydedildi. Bu doğrulama canlı sayaç aktarımını kapsar. Fatura farkı ve tasarruf oranı ölçülmedi.
+<a name="18-kasım-erişim-kontrolü"></a>
 
-### 19 Kasım — Kısıtlı Codex dosya profili
+### 18 November access check
 
-Hazır ve daha önce yalnız yerel fixture trafik kullanmış Windows test profiliyle `elevated` arka ucu denendi. CLI 0.169.0-alpha.11.1, `:root` okuma izni gerektiren denetimde komut başlamadan durdu. Bu sonuç dosyaya erişim reddi olarak sayılmadı. [Sabit Codex kaynak kodu](https://github.com/openai/codex/blob/226fa88979b1a9d76dc36f339ee9c5fbdb2c8e7f/codex-rs/windows-sandbox-rs/src/resolved_permissions.rs#L114).
+- The test computer ran Windows 10 x64 build 19045 and Codex CLI 0.169.0-alpha.11.1. The earlier unelevated profile did not start the command. MXC was unavailable. The separate ACL check verifies an allowed read and an access denial within its scope. The named profile's two file boundaries require MXC or an elevated sandbox that an administrator configured. [Earlier run](../proofs/targeted-query-comparison.json) · [OpenAI Windows sandbox documentation](https://learn.chatgpt.com/docs/windows/windows-sandbox#mxc-compatibility).
+- GitHub CLI reported an invalid session. The browser billing page could not show the account quota. The macOS ARM64 run still requires confirmation of included quota and the zero-charge limit. The standard Windows 11 runner label was ARM64. Windows 11 x64 acceptance awaits the matching desktop environment. [GitHub runner table](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-private-repositories) · [GitHub Actions usage quota](https://docs.github.com/en/billing/concepts/product-billing/github-actions#included-compute-usage-and-storage).
+- OpenCode provides its free chat models through its own client. H041 requires an authorized API route for direct observation of remote Chat Completions in this project. [OpenCode Console endpoints](https://opencode.ai/docs/console/models/#endpoints).
 
-Aynı CLI sürümünün resmî Linux ikilisi ve Ubuntu paketinden proje içine çıkarılan Bubblewrap 0.9.0 ile mevcut WSL2 ortamı sınandı. `headroom-file-scope` profili kökü kapattı, yalnız test kapsamını ve gerekli çalışma yollarını okudu. İlk ve son kontrolde iki sentetik dosya açıldı. Aradaki koşuda izinli dosya birebir okundu ve hedef dosya erişim reddi verdi. İzinli dosyadan arşiv sorgusu ve tam geri okuma 48 kayıt ile 5.926 özgün baytı doğruladı. On yedi girdi eşleşti. Koşu WSL2 içindeki Codex CLI dosya sınırını kapsar. Model çağrısı yapılmadı. [Codex sandbox belgesi](https://learn.chatgpt.com/docs/sandboxing) · [Programatik kanıt](../proofs/targeted-query-comparison.json).
+<a name="19-kasım--uzak-chat-completions-sayaç-kaydı"></a>
 
-### 19 Kasım — Anthropic Messages gerçek yerel inference
+### 19 November — Remote Chat Completions usage records
 
-Windows 10’da sabit Headroom 0.44.0 motoru ve llama.cpp b12359, yerel SmolLM2-135M ile iki sentetik isteği tamamladı. JSON ve SSE’de şemaya uygun doğru cevap, normal bitiş ve motorun istek kimliğiyle eşleşen tek sağlayıcı gönderimi doğrulandı. SSE’nin son kullanım değerleri birikimli olarak okundu. [llama.cpp Messages ucu](https://github.com/ggml-org/llama.cpp/blob/b12359/tools/server/README.md#anthropic-compatible-api-endpoints) · [Anthropic akış sözleşmesi](https://platform.claude.com/docs/en/build-with-claude/streaming).
+The test used one submission per transport through the documented anonymous AI Horde API. The isolated project Headroom 0.44.0 engine sent synthetic arithmetic questions to one fixed HTTPS endpoint. Both HTTP 200 responses matched the request ID, completion state, and provider usage values in their engine submission records. Each request used 49 input tokens and 2 output tokens.
 
-| Yanıt | Önbellek dışı giriş | Önbellekten okuma | Önbelleğe yazma | Çıkış |
+The provider did not mark the counters as estimates. Cache reads and writes remain unknown. The SSE response included the final usage frame and `[DONE]`. [AI Horde usage contract](https://haidra-org.github.io/AI-Horde/reference/chat_front/#reasoning-and-usage) · [Measurement](../proofs/chat-completions-usage.json).
+
+The SSE output matched the expected single digit exactly. The JSON response ended normally and kept its counters. Its model output failed the single-digit format check. The record keeps the earlier schema-constrained 404 and runs that stopped at completion or format checks. This check covers live counter delivery.
+
+Billing difference and savings percentage remain unmeasured.
+
+<a name="19-kasım--kısıtlı-codex-dosya-profili"></a>
+
+### 19 November — Restricted Codex file profile
+
+The test tried the `elevated` backend in a prepared Windows profile with only earlier local fixture traffic. CLI 0.169.0-alpha.11.1 stopped before the command at a check that required `:root` read permission. The run provides no file-denial evidence. [Pinned Codex source](https://github.com/openai/codex/blob/226fa88979b1a9d76dc36f339ee9c5fbdb2c8e7f/codex-rs/windows-sandbox-rs/src/resolved_permissions.rs#L114).
+
+The WSL2 test used the official Linux binary of the same CLI version and Bubblewrap 0.9.0 from the Ubuntu package. The team extracted Bubblewrap inside the project. The `headroom-file-scope` profile denied reads at the root and allowed only the test scope and required runtime paths.
+
+The first and last checks opened both synthetic files. The intervening check read the allowed file exactly and returned an access denial for the target file.
+
+Archive queries and full readback on the allowed file verified 48 records and 5,926 original bytes. Seventeen inputs matched.
+
+The run covers the Codex CLI file boundary inside WSL2. It made no model calls. [Codex sandbox documentation](https://learn.chatgpt.com/docs/sandboxing) · [Programmatic evidence](../proofs/targeted-query-comparison.json).
+
+<a name="19-kasım--anthropic-messages-gerçek-yerel-inference"></a>
+
+### 19 November — Anthropic Messages with real local inference
+
+On Windows 10, the pinned Headroom 0.44.0 engine and llama.cpp b12359 completed two synthetic requests with local SmolLM2-135M. JSON and SSE both returned correct schema-constrained answers and ended normally. Each used one provider submission that matched the engine request ID. The test read the final SSE usage values as cumulative counters. [llama.cpp Messages endpoint](https://github.com/ggml-org/llama.cpp/blob/b12359/tools/server/README.md#anthropic-compatible-api-endpoints) · [Anthropic stream contract](https://platform.claude.com/docs/en/build-with-claude/streaming).
+
+| Response | Input outside cache | Cache reads | Cache writes | Output |
 | --- | ---: | ---: | --- | ---: |
-| JSON | 44 | 0 | Bilinmiyor | 15 |
-| SSE | 11 | 33 | Bilinmiyor | 15 |
+| JSON | 44 | 0 | Unknown | 15 |
+| SSE | 11 | 33 | Unknown | 15 |
 
-İki istek aynı yerel sunucuda sırayla çalıştı. 33 token yerel sağlayıcının bildirdiği önbellek okumasıdır. Önbellek yazma alanı eksik olduğu için tam giriş ve toplam kullanım bilinmiyor kaldı. Üç ayrıştırma ve yedi istek sınırı kontrolü geçti. Yerel motor ve model sunucusu kapandı. Canlı Anthropic hesabı ve fatura karşılaştırması açık. [Programatik kanıt](../proofs/desktop-anthropic-usage.json).
+The two requests ran in order on the same local server. The local provider reported 33 cache-read tokens. The missing cache-write field left total input and full usage unknown.
 
-### 19 Kasım — Gerçek yerel modelde eşlenmiş Chat Completions kıyası
+Three parser checks and seven request-boundary checks passed. The local engine and model server shut down. Live Anthropic account and billing comparisons remain open. [Programmatic evidence](../proofs/desktop-anthropic-usage.json).
 
-Windows 10’da Headroom 0.44.0’ın varsayılan coding/cache profili ile doğrudan istek karşılaştırıldı. Aynı llama.cpp b12359 ve SmolLM2-135M, dört 24 satırlık sentetik logdan aynı sonucu okudu. Prompt cache kapalıydı. İki yanıt da doğru ve tamamlanmıştı. Sayılar model sunucusunun SSE kullanım sayaçlarıdır.
+<a name="19-kasım--gerçek-yerel-modelde-eşlenmiş-chat-completions-kıyası"></a>
 
-| Rota | Girdi | Çıktı | Toplam |
+### 19 November — Paired Chat Completions comparison with a real local model
+
+On Windows 10, the test compared a direct request with Headroom 0.44.0 using the default coding and cache profile. Both arms used llama.cpp b12359 and SmolLM2-135M. They read the same answer from four synthetic logs of 24 lines each. Prompt caching was off. Both responses were correct and complete. The numbers come from the model server's SSE usage counters.
+
+| Route | Input | Output | Total |
 | --- | ---: | ---: | ---: |
-| Doğrudan | 6.647 | 10 | 6.657 |
-| Headroom üzerinden | 6.647 | 10 | 6.657 |
+| Direct | 6,647 | 10 | 6,657 |
+| Through Headroom | 6,647 | 10 | 6,657 |
 
-İki kolda da 12.013 baytlık araç çıktısı iletildi. %0 girdi tasarrufu ölçüldü. Headroom kullanım kaydı ilgili tek model isteğiyle eşleşti. 67 girdi ve araç dosyası eşleşti. Motor, yerel model ve sahipli portlar kapandı. Bulut modeli çağrısı 0. Sonuç bu iş yükündeki bir çifti kapsar. [Koşucu](../../bench/optimization/chat_local_savings.py) · [Yerel kanıt](../../work/proofs/optimization/chat-real-inference/pairs/cdbbc80e8eba4368b4db81e640194218/result.json)
+Both arms forwarded 12,013 bytes of tool output. Input savings were 0%. The Headroom usage record matched the single model request. All 67 input and tool files matched.
 
-## 20 Kasım — Headroom benchmark tekrarları
+The engine, local model server, and owned ports closed. The cloud model call count was 0. The result covers one pair on this workload. [Runner](../../bench/optimization/chat_local_savings.py) · Local evidence (local receipt `work/proofs/optimization/chat-real-inference/pairs/cdbbc80e8eba4368b4db81e640194218/result.json`)
 
-Windows 10 22H2’de paketli Headroom 0.44.0 ve CPython 3.13.13 ile sabit upstream SDK betiğinin 33 senaryosu çalıştı. Üç ısınma ve on ölçüm turunda ana altı örneğin SDK sayımı 126.289 → 55.209 token verdi (%56,28 azalma). Sayfanın Headroom 0.37.0 ve Apple M serisiyle yayımladığı karşılık %56. Altı örneğin yerel sıkıştırma p50 değerleri 0,48–5,32 ms. [Upstream sayfa](https://github.com/headroomlabs-ai/headroom/blob/b21479e0fa84db5f3e46bb79f96c962de4d5fdc6/docs/content/docs/benchmarks.mdx) · [Koşucu](https://github.com/headroomlabs-ai/headroom/blob/b21479e0fa84db5f3e46bb79f96c962de4d5fdc6/benchmarks/bench_latency.py).
+<a name="20-kasım--headroom-benchmark-tekrarları"></a>
 
-Aynı sentetik örneklerin Chat Completions SSE tam istekleri `o200k_base` ile eşlenerek sayıldı. Ana altıda doğrudan 122.922, SDK 69.280 (%43,64 azalma), yönetilen masaüstü proxy’si 69.328 (%43,60 azalma) verdi. Sayımlar JSON isteğinin tamamını kapsar. Kod içeriği birebir korundu. 67. indekste hata içeren yeniden oluşturulmuş JSON örneğinde kod, çözüm ve 731 değeri aynı sıkıştırılmış satırda korundu. O örnekte SDK ve proxy mesajları eşleşti, proxy `stream_options.include_usage` ekledi. İki yerel koşuda model çağrısı yapılmadan sahipli motor ve port kapandı. [Programatik kanıt](../proofs/upstream-benchmarks-044.json).
+## 20 November — Headroom benchmark reruns
 
-Sabit Scrapinghub veri seti ve test ortamına eklenen HTML bağımlılıklarıyla 181 sayfanın F1 skoru 0,9168, ortalama karakter azalması %94,98 oldu. Upstream tam veri F1 eşiği 0,90 aşıldı. Ücretli SQuAD model değerlendirmesi, gerçek sağlayıcı faturası ve uçtan uca yanıt süresi ölçülmedi. [HTML test kaynağı](https://github.com/headroomlabs-ai/headroom/blob/b21479e0fa84db5f3e46bb79f96c962de4d5fdc6/tests/test_evals/test_html_oss_benchmarks.py) · [Programatik kanıt](../proofs/upstream-benchmarks-044.json).
+Windows 10 22H2 ran 33 scenarios from the pinned upstream SDK script with packaged Headroom 0.44.0 and CPython 3.13.13. The SDK measured six headline examples in three warmup and ten measured rounds. The count fell from 126,289 to 55,209 tokens (56.28%).
+
+The upstream page reported 56% with Headroom 0.37.0 and an Apple M-series system. Local compression p50 for the six examples ranged from 0.48 to 5.32 ms. [Upstream benchmark page](https://github.com/headroomlabs-ai/headroom/blob/b21479e0fa84db5f3e46bb79f96c962de4d5fdc6/docs/content/docs/benchmarks.mdx) · [Runner](https://github.com/headroomlabs-ai/headroom/blob/b21479e0fa84db5f3e46bb79f96c962de4d5fdc6/benchmarks/bench_latency.py).
+
+The test paired the full Chat Completions SSE requests for those synthetic examples and counted them with `o200k_base`. On the six headline examples, direct used 122,922 tokens, SDK used 69,280 (43.64% lower), and the managed desktop proxy used 69,328 (43.60% lower).
+
+The counts cover the full request JSON. The test preserved source code exactly. At index 67, a reconstructed JSON error case kept the code, solution, and value 731 on the same compressed line. The SDK and proxy messages matched in that case. The proxy added `stream_options.include_usage`.
+
+Both local runs closed the owned engine and port without model calls. [Programmatic evidence](../proofs/upstream-benchmarks-044.json).
+
+The HTML test used the pinned Scrapinghub dataset and HTML dependencies in the test environment. On 181 pages, F1 was 0.9168 and average character reduction was 94.98%. This exceeded the upstream full-dataset F1 threshold of 0.90. Paid SQuAD model evaluation, actual provider billing, and end-to-end response time remain unmeasured. [HTML test source](https://github.com/headroomlabs-ai/headroom/blob/b21479e0fa84db5f3e46bb79f96c962de4d5fdc6/tests/test_evals/test_html_oss_benchmarks.py) · [Programmatic evidence](../proofs/upstream-benchmarks-044.json).

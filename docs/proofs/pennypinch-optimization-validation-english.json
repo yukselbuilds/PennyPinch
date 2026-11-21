@@ -1,0 +1,74 @@
+{
+  "task": "H042-k3b",
+  "status": "pass",
+  "base_commit": "249da300042e1d36a3900ae47c99400a89268804",
+  "document": "docs/validation/optimization-benefit.md",
+  "checked": {
+    "source_lines": 200,
+    "headings": 17,
+    "aliases": 17,
+    "incoming_heading_links": 18,
+    "outgoing_links": 53,
+    "local_receipts": [
+      "work/proofs/macos/h041-package-preflight-3f48e53e19.json",
+      "work/proofs/macos/h041-remote-history-0136ac2a66.json",
+      "work/proofs/optimization/chat-real-inference/pairs/cdbbc80e8eba4368b4db81e640194218/result.json"
+    ]
+  },
+  "original_sha256": "718966cd1a4c99bae71f749946b2fc7eb1781370efcdf2b1c67d2479c783d2c8",
+  "candidate_sha256": "7e5bab80ec9b889fede5e3a53a1c97055b0dcfd8fddef56911b3720496f46849",
+  "fragments": {
+    "01-local-measurements.md": {
+      "start_line": 1,
+      "last_line": 128,
+      "owner": "luna",
+      "sha256": "a68c6482731fd302be1394568032e0366831b7fdb52aaefb93a6d4bde7e66158",
+      "draft_sha256": "5744c79ef9df1deb79513d0382b66f2d0ad863825313cbcc637ff1a7096c3388"
+    },
+    "02-open-criteria-and-benchmarks.md": {
+      "start_line": 129,
+      "last_line": 200,
+      "owner": "lead",
+      "sha256": "c12fbafce5115fc924d20eeb5630745b87fb19c200cc2054b88cdd374ad334a4",
+      "draft_sha256": "5ee3f10dc21c360ef7dca43e5d0d2790957f656fb47e6b0337c8d9c193926d50"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "323a2b37d35cce954286c9d94ad51b31b561dd7811b5c3014c2e5c8fe074a70f",
+    "docs/IMPLEMENTATION_STATUS.md": "d6fa07b3ffd4cc9f332faca2a2c5107a668352be3eab0ff42406d9bf9e204458",
+    "docs/decisions/027-optimization-regression.md": "45a085f40f0323600f36718cba6a71e0aef9d57350e8b90292224822fe56af5e",
+    "docs/proofs/optimization-local-acceptance.json": "5bd7e3d7c5c57ae2e24bf866a6e3e4f7c3e28a7442a7914857e2934883617fbc",
+    "docs/proofs/optimization-benefit.json": "1fb3718d1fb55ee142e5ab8c451d29a59892e6164130992a4a9447ac9643ab85",
+    "docs/proofs/relay-backpressure.json": "1195c4523ac2757ad8dfb5a4c75ce7077a2d6803e9677794664925d5f90899d3",
+    "docs/proofs/anthropic-request-overhead.json": "d280d3994c712da4d2f1c35c60ed7f6c8bb692c724de6d1d709b052c6964e3ec",
+    "docs/proofs/optimization-surfaces.json": "2907b9f992877e79dd69d895020732ece5658b031378d6a2671503e717bbc4e2",
+    "docs/proofs/anthropic-ccr-policy.json": "e1ce30848c5e046a99fe8cad9f91eee37665a0d6983653503cbd02ef0123c9f2",
+    "docs/proofs/anthropic-usage-coverage.json": "49a2732bff136c99660a9b6c88ffbc0b906b59420bd04fabf8c8e482f7ef5170",
+    "docs/proofs/desktop-anthropic-usage.json": "711ee7a86179926973d99f3ba32806dec58b115149ed41c0f27c8ea03e7a0916",
+    "docs/proofs/anthropic-usage-desktop-detail.json": "c7657b051dcec2fda5130344da7510b63279a1be2a955e2b498ef98b5276c028",
+    "docs/proofs/optimization-stability-failure.json": "88e4d3f4802d4f028b01d83c470b11994106b54d2c2b230148c26be4b8e7b3b2",
+    "docs/proofs/optimization-stability.json": "fd0928f48f9cdf88f41fff9691f489793502d00d13e1ced8eeb0560933972110",
+    "docs/proofs/targeted-query-comparison.json": "7ec330175f2a17dca8616920681df95941c84cb71a93a6a25252e4b5056807f6",
+    "docs/proofs/learn-merit-pilot.json": "82b542d6c00751e4546e04472d79bbc760fd8c6f6d5b19c6915be216197a39bb",
+    "docs/research/optimization-roi-review-2026-11-17.md": "685759a2f821c975126387166d2b54b7332fa6a9191abe396b82a83f7d27bd6e",
+    ".github/workflows/macos-package.yml": "946e55cbf74d883ebe9bd5d945fa39d8cbc99860af7562c30f557e0f5820d770",
+    "docs/proofs/chat-completions-usage.json": "0f85e098c9a8da1055b0d985b9e94a71004baf2281d8d989f7cdad986f6eb002",
+    "bench/optimization/chat_local_savings.py": "8679aa73c2a616896552defbc98ebd76ff639325a860f747f191e4f438f00514",
+    "docs/proofs/upstream-benchmarks-044.json": "1f1f6f992b955fc714955ddade9ecc4e2c54187b2dfb727aa064d537e1986d74"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "hard": 0,
+    "advisory": 0
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted local measurements. The lead agent drafted open criteria and later benchmarks. The lead agent reviewed recorded evidence and assembled both parts.",
+  "product_tests": "not_run_documentation_only"
+}

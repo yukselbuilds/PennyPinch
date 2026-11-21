@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 21 November — English Windows validation and STE guidance
+## 21 November — English optimization validation
 
-H042-k3a is complete. The project uses a pinned ASD-STE100 skill for English technical writing. Four Windows validation records use clear terms and short sentences. The checks preserved measurements, test scope, and heading links. [Evidence](proofs/pennypinch-ste-windows-validation.json) · [Task list](../TASKS.md)
+H042-k3b is complete. The English report keeps benchmark results, measurement bases, and evidence limits. It also preserves failed runs, open H041 criteria, and historic heading links. [Evidence](proofs/pennypinch-optimization-validation-english.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue H042-k3 with the English optimization validation record. The macOS validation record and the remaining historical evidence and review documents are open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+Continue H042-k3 with the macOS validation record. Historical evidence and review documents are still open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
+## 21 November — English Windows validation and STE guidance
+
+H042-k3a is complete. The project uses a pinned ASD-STE100 skill for English technical writing. Four Windows validation records use clear terms and short sentences. The checks preserved measurements, test scope, and heading links. [Evidence](proofs/pennypinch-ste-windows-validation.json) · [Task list](../TASKS.md)
 
 ## 21 November — English roadmap and product documentation
 
