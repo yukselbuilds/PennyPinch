@@ -1,0 +1,70 @@
+{
+  "task": "H042-k3l",
+  "status": "pass",
+  "base_commit": "8d61948f91e71a278b887f1759adaee916fb2e54",
+  "verified": {
+    "translated_records": 3,
+    "legacy_heading_aliases": 8,
+    "incoming_heading_links": 0,
+    "outgoing_links": 8,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/proofs/accounts.md": {
+      "original_sha256": "490c4080ac97dee5b705c8f8cf5de1296bd667709e86e0fc3c3d28f34d9616ec",
+      "draft_sha256": "41cf2e79e352ff917af5f76c627fd0e2a5d0037d0fd366072bf41d62738ca343",
+      "candidate_sha256": "22337f549408345d76f74ce0d9d66035ae52e4979f98ebb1de25e87e53c08329"
+    },
+    "docs/proofs/recommendations.md": {
+      "original_sha256": "fcf631961f0be8f41a8e5239326d5b1e6dd58ffa6d43cbfada5d053443080bbe",
+      "draft_sha256": "6927b076844c00070700da07a5b6c6a63d539f9e6020af26bbd1c264ef03ba0d",
+      "candidate_sha256": "ad9d7aeeb1214624dad4ae237614189ceaf6d25a6c01608472cc8e8f280e171e"
+    },
+    "docs/proofs/sessions.md": {
+      "original_sha256": "c8e1bdd54d2619e4b0a6ba32bfd9d3b2b8992e798cd5600def3ddd60c42df29e",
+      "draft_sha256": "beca472abd139f079b4ae5beebe7e673b87b32f0dccac1834d973e0193162da2",
+      "candidate_sha256": "e82361fc1e00324b420f38296ce60b2693565a9a315753f578298397cb689572"
+    }
+  },
+  "references_sha256": {
+    "docs/proofs/accounts.json": "65c6645442568a7d99b99657efbf5e7eb81256eb83263c1b5c81481af1df4581",
+    "docs/decisions/030-account-connections.md": "d7e77ca3faffe90e8bd61e23cf7d460029e283c57c6b67b378eddbe27607eb6e",
+    "docs/reviews/H050.md": "57ef5bde6b30c16c6f2f43b47bc006750586057823ab17d90497a5ab77a45cf1",
+    "docs/decisions/029-local-recommendations.md": "4a14bec18c1157b722e71c4be3218c3fb93fb6148a7f691d12b4336a86ad997e",
+    "docs/proofs/recommendations.json": "5359e5e1d7c0c890a609352a870d1fd39a204b4057f5a6060206b5c4d75814da",
+    "docs/proofs/sessions.json": "7800df48fd22d7e8f7315d0c6ce8dde3937a11c7059833072702eb3ba57d123f",
+    "docs/decisions/031-session-metadata.md": "9bf1685951efbb7156399ddb65138f0e6e6bf47ec9e197e88fab8e8763a5f9d1",
+    "docs/reviews/H051.md": "1286f97f24d77e73308ed219e28b7299b6608f42d8664fb065ae1a6d047824a7"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/accounts.md": {
+        "hard": 0,
+        "advisory": 1
+      },
+      "docs/proofs/recommendations.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/sessions.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the recommendations and sessions reports. The lead agent drafted the account connections report and checked all three against the source.",
+  "compatibility_catalog": {
+    "affected_references": 0,
+    "sha256": "c373dfcf90687ecf99923b98f168b884eef8a6b651f4879df9ff031437f2762a"
+  },
+  "product_tests": "not_run_documentation_only"
+}

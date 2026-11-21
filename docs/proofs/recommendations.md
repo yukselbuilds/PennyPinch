@@ -1,21 +1,25 @@
-# H045 — Yerel öneriler kabulü
+<a name="h045--yerel-öneriler-kabulü"></a>
 
-10 Kasım 2026. Windows 10 22H2 x64 yerel kabulü geçti. Ayarlar’daki **Yerel öneriler** seçeneği kapalı başlar. Açıldığında Genel bakış, yeterli kanıt olan önerileri gösterir. Yeni ölçüm veya kurulum kontrolü koşulu ortadan kaldırınca satır kaybolur. [Ölçüm ve tercih sözleşmesi](../decisions/029-local-recommendations.md) · [Kanıt kaydı](recommendations.json)
+# H045 — Local recommendations acceptance
 
-| Kontrol | Sonuç |
+10 November 2026. Local acceptance passed on Windows 10 22H2 x64. The **Local recommendations** option in Settings starts off. When enabled, Overview shows recommendations with sufficient evidence. A row disappears when a new measurement or installation check removes its condition. [Measurement and preference contract](../decisions/029-local-recommendations.md) · [Evidence record](recommendations.json)
+
+| Check | Result |
 | --- | --- |
-| Sinyal kuralları | Boş/kısmi/karışık ölçümler, sıfır veya negatif fayda, eski zaman, yinelenen origin, çakışma, farklı motor/model/rota ve eşik sınırı test edildi. Test fixture’ları yeni sağlıklı örneklerle önerinin kalktığını gösterdi. |
-| Tercih ve IPC | Eksik alan kapalı başlar. Eski biçimde kayıt mevcut tercihi korur. Yanlış tip ve revision/fingerprint çatışması önceki kaydı korur. Kapalı istemci öneri sorgusu istemez. Eski ve geçersiz öneri cevabı görünmez. |
-| Gerçek Windows uygulaması | QA geçmişindeki 1.000 → 1.250 token örneğinde açma ve kapatma, aynı negatif ölçüm üzerinde doğrulandı. Uygulama normal kapandı. Yeniden açılışta açık tercih yüklendi. İkinci geçerli ölçümle net 400 token azalma oluştu ve girdi artışı önerisi kayboldu. Kapatma tercihi kaydedildi ve uygulama yine kod 0 ile çıktı. |
-| Arayüz | İzole Tauri transport ile gerçek App’de dört öneri, tek Etkinlik ve tek Uygulamalar eylemi, güncel ölçümle kalkma ve klavye doğrulandı. TR/EN, açık/koyu ve dar görünümde 88 erişilebilirlik denetiminde ihlal yok. Viewport kontrolü gerçek OS DPI kabulü değildir. |
-| Son yerel kapı | 181 frontend ve 417 Rust testi, TypeScript/Vite, fmt ve embedded custom-protocol derlemesi geçti. 15 opt-in Rust testi ignored. 239 kalite ve 248 native girdi kendi koşularında aynı kaldı. |
+| Signal rules | Tests covered empty/partial/mixed measurements, zero or negative benefit, old time, duplicate origin, conflict, different engine/model/route, and threshold boundary. Test fixtures showed the recommendation disappear with new healthy samples. |
+| Preference and IPC | A missing field defaults to off. A save in the older format preserves the current preference. A wrong type or revision/fingerprint conflict preserves the prior record. With the preference off, the client sends no recommendation request. Old and invalid recommendation replies stay hidden. |
+| Real Windows app | The QA history's 1,000 → 1,250 token example verified enabling and disabling on the same negative measurement. The app exited normally. It loaded the enabled preference after reopening. After the test added a second valid measurement, the QA history showed a net reduction of 400 tokens. The input increase recommendation disappeared. The app saved the disabled preference and exited with code 0 again. |
+| UI | Tests used isolated Tauri transport in the real App. They checked four recommendations, one Activity action, one Applications action, removal after a current measurement, and keyboard use. The TR/EN, light/dark, and narrow views had no accessibility violations in 88 checks. A viewport check is not real OS DPI acceptance. |
+| Final local gate | 181 frontend and 417 Rust tests passed, with 15 opt-in Rust tests ignored. TypeScript/Vite, fmt, and embedded custom-protocol build passed. 239 quality inputs and 248 native inputs stayed the same in their own runs. |
 
 | Before | After | Why |
 | --- | --- | --- |
-| Her ölçüm satırında ayrı Etkinlik düğmesi. | Bölüm altında tek Etkinlik ve gerektiğinde tek Uygulamalar düğmesi. | Özellikle dar ekranda tekrar ve klavye durakları azaldı. |
-| Satır anahtarı liste sırasını içeriyordu. | Sinyal türü ve gerektiğinde istemciye bağlı sabit anahtar. | Bir öneri kaybolunca diğer satırların kimliği korunur. |
-| Cache notunda kaynak ayrımı belirsizdi. | Sayımın sağlayıcı ve yerel yanıt cache isabetlerini birlikte kapsadığı yazıyor. | Ekrandaki oran motorun raporladığı alanı tarif eder. |
+| Each measurement row had its own Activity button. | One Activity button appears under the section. One Applications button appears when needed. | This reduced repetition and keyboard stops on narrow screens. |
+| The row key contained list order. | A fixed key uses signal type and, when needed, client. | Other row identities stay stable when a recommendation disappears. |
+| The cache note did not state the source. | The note says the count combines provider and local response-cache hits. | The displayed ratio describes the field reported by the engine. |
 
-İlk native denemede sürücü açma adımında durdu. QA tercih dosyasında `true` kaydı doğrulandı. Beklemeli klavye akışıyla aynı QA binary’si tekrar kullanıldı. İlk kapanışın cleanup adımında dosya paylaşım kilidi görüldü. Daha sonra klasörü silme komutu otomatik denetimde `blocked by policy` nedeniyle reddedildi. Ayrı QA profili kapalı tercih ve iki sentetik ölçümle yerinde kaldı. Son iki koşu normal çıktı ve QA debug portları kapandı.
+The test driver stopped at the enable step in the first native attempt. The QA preference file confirmed a `true` record. The team reused the same QA binary with a wait-based keyboard flow.
 
-Gerçek uygulama testi ayrı QA kimliği ve yerel geçmiş veritabanı kullandı. Motor başlatılmadı. Cache ve sıkıştırma kuralları deterministik metadata fixture’larıyla sınandı. Model sağlayıcısına çağrı yapılmadı. Bu kabul Windows 11, üretim dağıtımı, canlı sağlayıcı etkisi veya yeni ayar açıkken eski ikiliye geri dönüşü kapsamaz.
+The first cleanup step found a file-sharing lock. An automated check later rejected the folder-delete command with `blocked by policy`. A separate QA profile remained in place with the preference off and two synthetic measurements. The last two runs exited normally and closed the QA debug ports.
+
+The real app test used a separate QA identity and local history database. It did not start the engine. Deterministic metadata fixtures tested cache and compression rules. No model provider call occurred. This acceptance does not cover Windows 11, production distribution, live provider effects, or fallback to an older binary with the new setting on.

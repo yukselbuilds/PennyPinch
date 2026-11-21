@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 21 November — English metrics and reporting evidence
+## 21 November — English recommendations, accounts, and sessions evidence
 
-H042-k3k is complete. Five English records describe measurement normalization, storage, Overview, attribution, and Activity. The checks kept the recorded results, limits, and heading links. [Evidence](proofs/pennypinch-metrics-evidence-english.json) · [Task list](../TASKS.md)
+H042-k3l is complete. Three English records describe local recommendations, account connections, and session metadata. The checks kept the recorded results, limits, and heading links. [Evidence](proofs/pennypinch-account-session-recommendation-english.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue H042-k3 with local recommendations, account connections, and sessions evidence. Other historical proof and review documents are still open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+Continue H042-k3 with the RTK and context tool evaluation records. Other historical proof and review documents are still open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
+## 21 November — English metrics and reporting evidence
+
+H042-k3k is complete. Five English records describe measurement normalization, storage, Overview, attribution, and Activity. The checks kept the recorded results, limits, and heading links. [Evidence](proofs/pennypinch-metrics-evidence-english.json) · [Task list](../TASKS.md)
 
 ## 21 November — English desktop validation evidence
 

@@ -1,29 +1,41 @@
-# H051 — Oturumlar: yerel kanıt ve açık kabul
+<a name="h051--oturumlar-yerel-kanıt-ve-açık-kabul"></a>
 
-13 Kasım 2026. **H051 tamamlandı — Windows 10 22H2 x64 yerel geliştirme.** [Makine kaydı](sessions.json), [karar](../decisions/031-session-metadata.md), [inceleme](../reviews/H051.md).
+# H051 — Sessions: local evidence and open acceptance
 
-Oturumlar → Sohbetler / Hesaplar hazır. Desteklenen mevcut Codex sunucusunda açık/çalışıyor/bekliyor/kayıtlı/sona erdi/bilinmiyor ayrılır. Platform, model, proje basename'i ve varsa üst/alt ajan ilişkisi gösterilir. Son trafik ve sohbet tasarrufu, istek bağı doğrulanmadığı için bilinmiyor kalır. Sohbet başlığı, geçmişi ve auth kaydı tutulmaz; metadata API'sindeki fazladan alanlar parser'da atılır. Açma, resmî Codex sohbet merkezinde kullanıcı seçimiyle devam eder; Headroom gizli resume veya turn başlatmaz.
+13 November 2026. **H051 complete — Windows 10 22H2 x64 local development.** [Machine record](sessions.json), [decision](../decisions/031-session-metadata.md), [review](../reviews/H051.md).
 
-| Senaryo | Gözlenen | Kanıt / kapsam |
+Sessions → Chats/Accounts is ready. For the supported Codex server, the app distinguishes open, working, waiting, recorded, ended, and unknown states. It shows the platform, model, project basename, and any parent and subagent relationship. Last traffic and chat savings stay unknown because request association is not verified.
+
+The app does not store chat titles, history, or auth records. The parser drops extra fields from the metadata API. The user selects the chat in the official Codex chat center. Headroom leaves chat resume and new turns under user control.
+
+| Scenario | Observed result | Evidence / scope |
 | --- | --- | --- |
-| Strict istemci/IPC, hata ve modelden bağımsız metadata | 221 Node testi geçti | `work/proofs/sessions/final-reviewed.json`; sonraki React görünürlük yardımcı değişikliği Node testleri tarafından içe aktarılmaz. Diğer girdiler eşleşir. |
-| Runtime, süreç güveni, parser/manager ve mevcut ürün | 441 Rust testi geçti, 17 opt-in ignored; fmt, frontend ve embedded debug derlemesi geçti | `final-candidate.json`; sonradan yalnız ignore edilen native assertion ve UI test harness'i değişti. Üretim kodu aynı; yeni assertion gerçek opt-in native koşuda derlendi ve geçti. |
-| Gerçek App fixture: TR/EN, açık/koyu, boş/hata, görünmezlik, focus, onay ve launch hatası | 6 sohbet, 3 hesap ve 4 genel ekran senaryosu; 122 Axe denetimi, 0 ihlal | `ui-stable-theme.json` ve makine kaydındaki üç UI raporu. Native IPC/sağlayıcı kanıtı değildir. |
-| Gezinme | 60 örnekte ikinci çizim karesine p95 16.9 ms, eşik 250 ms | İzole browser click ölçümü; test sürücüsü bekleme zamanı, native DPI ve uzun süreli kararlılık hariç. |
-| Gerçek Codex metadata, iki aynı model, sessiz açık sohbet, sunucu kaybı | 3 boş sohbet, 2 aynı model, mevcut user-agent korundu; kayıp sunucu canlı/ended sayılmadı | `work/proofs/s51/7aa331aa/result.json`; 0 inference POST, 0 dış ağ denemesi. |
-| Resmî Codex merkezi | Hedef izole sunucuda gerçek `codex-tui` initialize tanığı, üç sohbetin model/provider/reasoning korunumu ve Headroom çıktıktan sonra açık kalma | `work/proofs/s51/12e3ea28/result.json`; fixed-command/sahip-parent receipt'i `ui-center.json` içinde. Public TUI duyuru CONNECT'i TLS başlamadan guard ile engellendi; inference POST 0. |
-| Gerçek Headroom penceresinde son onay/iptal/açma/çıkış | **Geçti** | Üç açık kayıt/iki aynı model, Hesaplar ve Sohbetler arasında gidip dönme, odaklı onay penceresinde Vazgeç ile istemci başlatmama, yeniden onayla resmî merkezi açma ve başarı mesajı gözlendi. Headroom normal kod 0 ile çıktı; açılan istemci hem Headroom hem test sohbetlerinin sahibi çıktıktan sonra yaşadı. Yalnız sahipli test süreçleri temizlendi. |
+| Strict client/IPC, errors, and model-independent metadata | 221 Node tests passed | `work/proofs/sessions/final-reviewed.json`. The later React visibility-helper change is not imported by the Node tests. Other inputs match. |
+| Runtime, process trust, parser/manager, and existing product | 441 Rust tests passed, 17 opt-in ignored. Fmt, frontend, and embedded debug build passed. | `final-candidate.json`. Only an ignored native assertion and the UI test harness changed later. Production code stayed the same. The new assertion compiled and passed in a real opt-in native run. |
+| Real App fixture: TR/EN, light/dark, empty/error, hidden, focus, confirmation, and launch error | 6 chat, 3 account, and 4 general-screen scenarios. 122 Axe checks, 0 violations. | `ui-stable-theme.json` and three UI reports in the machine record. This is not native IPC/provider evidence. |
+| Navigation | p95 to the second paint frame was 16.9 ms across 60 samples, against a 250 ms threshold. | Isolated browser-click measurement. It excludes test-driver wait time, native DPI, and long-term stability. |
+| Real Codex metadata, two same-model chats, silent open chat, server loss | 3 empty chats, 2 same-model chats, the existing User-Agent stayed the same. The state became unknown after the server connection dropped. | `work/proofs/s51/7aa331aa/result.json`, 0 inference POST, 0 external network attempts. |
+| Official Codex center | A real `codex-tui` initialize witness on the isolated server, preservation of model/provider/reasoning for three chats, and continued operation after Headroom exited. | `work/proofs/s51/12e3ea28/result.json`, fixed-command/owned-parent receipt is in `ui-center.json`. A guard blocked the public TUI announcement CONNECT before TLS began. Inference POST: 0. |
+| Final confirm/cancel/open/exit in the real Headroom window | **Passed** | The test kept three open records/two same-model chats and navigated between Accounts and Chats. It selected Cancel in the focused confirmation dialog without launching the client. After reconfirmation, it opened the official center and showed a success message. Headroom exited normally with code 0. The opened client remained after Headroom and the test-chat owner exited. The test cleaned up only owned test processes. |
 
-Sohbet/hesap bileşenlerinin geçerli UI kanıtı yeniden kullanılabilir: üretim kaynakları aynı, yalnız içe aktarılmayan genel erişilebilirlik testi ve `preserveOutput` artefakt politikası değişti. Eski config baytları programatik yeniden oluşturulup hash ile doğrulandı. Genel ekran kontrast koşusunda tema geçişinin iki farklı paleti bir ölçümde yakaladığı görüldü; font ve iki çizim karesi beklenerek aynı kontrast kurallarıyla 100 denetim yeniden geçti. Hiçbir kontrast kuralı veya performans eşiği düşürülmedi. Ham Playwright hata bağlamı korunmaz.
+Valid UI evidence for the chat/account components can be reused. Production sources stayed the same. Only the unimported general accessibility test and `preserveOutput` artifact policy changed. The test recreated the old config bytes programmatically and checked their hash.
 
-Önce/sonra kaynak/config, bağımlılık ve araç fingerprint'leri JSON kaydındadır. Cargo/rustc 1.92.0, Node 25.2.1, pnpm 11.25.0 ve Edge 157.0.4341.46 kullanıldı. Gerçek Codex `0.167.0-alpha.4.1` imza/sürüm ve sabit kamu kaynaklarıyla doğrulandı; bu sınır başka sürümlere taşınmaz.
+A general-screen contrast run captured two palettes during a theme transition. The team reran 100 checks after waiting for fonts and two paint frames. The same contrast rules passed. The team did not lower any contrast rule or performance threshold. Raw Playwright error context was not retained.
 
-Koyu/TR ve açık/EN render'ları `work/proofs/sessions/tr-dark.png` ile `en-light.png` içinde görsel olarak incelendi. Bunlar açıkça izole örnek verilerdir; gerçek sohbet/hesap veya native başarı resmi değildir.
+The JSON record contains before/after source/config, dependency, and tool fingerprints. The run used Cargo/rustc 1.92.0, Node 25.2.1, pnpm 11.25.0, and Edge 157.0.4341.46. The team verified real Codex `0.167.0-alpha.4.1` signature/version against fixed public sources. This evidence does not extend to other versions.
 
-## Son kabul ve sınır
+The team visually reviewed the dark/TR and light/EN renders in `work/proofs/sessions/tr-dark.png` and `en-light.png`. These use explicitly isolated sample data. They are not real chat/account or native success images.
 
-Kullanıcı kilidi açtıktan sonra WTS unlock durumu doğrulandı. Sky capture zaman aşımı nedeniyle mevcut open-computer-use erişilebilirlik eylemleriyle ana ajan gerçek pencereyi kontrol etti; native görüntü de gözle incelendi. İlk kilitli koşu `e782f555` ile boş test sohbetlerinin sahibi erken kapandığı için 0 yüklü gösteren `4ba2fa29` koşusu başarısız olarak korunur. Son fixture, boş sohbetlerin sahibi olan bağlantıyı UI bitene kadar tutar. Bu yalnız ignore edilen test kurulumu değişikliğidir; üretim kodu değişmedi. Yeni opt-in test derlenip çalıştı, güncel fmt kontrolü geçti; önceki geçerli Node/Rust/default build ve browser kontrolleri tekrar edilmedi.
+<a name="son-kabul-ve-sınır"></a>
 
-`12e3ea28/observations.json` gerçek UI gözlemlerini içerik toplamadan sayılar/boolean'larla kaydeder. Aynı koşu kaynak ve fixture config fingerprint'leri önce/sonra eşleşir. H051 kutusu kapandı, toplam **42/54**. Sonraki ana görev kullanıcı devam mesajını bekler.
+## Final acceptance and limits
 
-Linux H049 kullanıcının kalan yaklaşık $0.10 Actions kotası nedeniyle ertelenmiştir. Bu görevde CI, gerçek giriş veya model isteği başlatılmadı. Yeni özelliğin Windows 11, macOS/Linux, gerçek sağlayıcı/alt ajan turn'ü, başka profil/sürüm ve yayın paketi kabulü yoktur. Claude/OpenCode sohbet durumunun bilinmemesi, sıkıştırma motorunun model desteği hakkında hüküm değildir. Geliştirme token tasarrufu ölçülmedi.
+After the user unlocked the session, the team verified the WTS unlock state. A Sky capture timed out, so the lead agent controlled the real window through the available open-computer-use actions. The lead agent also inspected the native image.
+
+The first locked run, `e782f555`, failed. In run `4ba2fa29`, the owner of the empty test chats exited early, so the UI showed 0 loaded chats. This run failed acceptance. The final fixture keeps the connection that owns the empty chats alive until the UI finishes.
+
+Only ignored test setup changed. Production code did not change. The new opt-in test compiled and ran. The current fmt check passed. The earlier valid Node/Rust/default build and browser checks were not repeated.
+
+`12e3ea28/observations.json` records real UI observations as counts/booleans without collecting content. The same run's source and fixture-config fingerprints match before and after. H051 closed at **42/54**. The next main task awaits the user's continuation.
+
+The team postponed H049 Linux work because about $0.10 remained in the user's Actions quota. No CI, real login, or model request started in this task. This task does not accept Windows 11, macOS/Linux, real provider/subagent turns, other profiles/versions, or a release package. Unknown Claude/OpenCode chat status does not decide model support for the compression engine. Development token savings were not measured.

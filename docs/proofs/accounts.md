@@ -1,33 +1,51 @@
-# H050 — Hesap bağlantıları kabulü
+<a name="h050--hesap-bağlantıları-kabulü"></a>
 
-13 Kasım 2026. Windows 10 22H2 x64 yerel geliştirme kabulü tamamlandı. [Makine kanıtı](accounts.json) 317 kaynak/config girdisini, araç sürümlerini, komut özetlerini ve native ikiliyi programatik bağlıyor. [Karar 030](../decisions/030-account-connections.md) hesap, yönlendirme ve trafik durumlarının ayrımını tanımlar.
+# H050 — Account connections acceptance
 
-## Kullanıcıya sunulan davranış
+November 13, 2026. Local development acceptance passed on Windows 10 22H2 x64. The machine record links 317 source and config inputs, tool versions, command summaries, and the native binary. The account contract defines the account, route, and traffic states. [Machine record](accounts.json), [Decision 030](../decisions/030-account-connections.md)
 
-Uygulamalar ekranındaki Hesaplar bölümü bulunan istemcileri otomatik seçer; birden çok kurulum varsa seçim değiştirilebilir. Yerel kayıt var/yok/bilinmiyor durumları, kaydın türü ve desteklenen OpenCode provider kayıtları gösterilir. Desktop ve başka CLI profilleri bu kayıtla doğrulanmış sayılmaz. Hesap okunması bağlantı ayarı yazmaz veya model/alt ajan seçmez.
+<a name="kullanıcıya-sunulan-davranış"></a>
 
-Resmî giriş önce seçilen CLI sürümünü ve mevcut oturumu değiştirme riskini gösterir. Codex ChatGPT, Claude Code Claude hesabını açar; OpenCode yöntem/sağlayıcıyı kendi konsolunda seçtirir. Parola/kod Headroom'da alınmaz. Tam çıkış ve süre sınırı yalnız sahip olunan CLI kökünü durdurur; tarayıcı başka süreçlerle birlikte kapatılmaz. İptal önceki auth'u geri yükleme vaadi vermez. Kapanış doğrulanamazsa sahiplik korunur ve yeniden durdurulabilir.
+## User-facing behavior
 
-## Doğrulamalar
+The Accounts section in Applications selects from discovered clients automatically. The user can change the selection when several installations are available. The section shows local record states of present, absent, and unknown. It shows the record type and supported OpenCode provider records. Desktop and other CLI profiles need separate verification. Reading an account writes no connection settings and selects no model or subagent.
 
-| Katman | Sonuç ve sınır |
+Before official sign-in, the app shows the selected CLI version and the risk of changing the current session. Codex opens the ChatGPT sign-in flow. Claude Code opens the Claude account flow. OpenCode asks the user to select the method and provider in its own console. Headroom accepts no passwords or codes.
+
+Full quit and timeout stop only the owned CLI root process. The app leaves the browser open. Restoring previous authentication after cancellation is outside this contract. If the app cannot confirm shutdown, it retains ownership and lets the user retry Stop.
+
+<a name="doğrulamalar"></a>
+
+## Verification
+
+| Layer | Result and scope |
 | --- | --- |
-| Frontend sözleşmesi | 216 Node testi geçti; account korelasyonu, açık onay, fazla/secret alan reddi ve akış kimliği dahil. |
-| Rust | 432 geçti, 16 doğrudan ignored. Hesap parser'ları, pin/discovery regresyonları, stale seçim ve native konsol sahibi testleri kapsamda. Ignored çocuk süreç yardımcısı ilgili ebeveyn testinden çağrılır; diğer opt-in testler çalıştırılmış sayılmaz. |
-| Derleme | TypeScript/Vite, Rust fmt, kilitli/offline native debug build ve ayrı kimlikli QA release build geçti. Rust 1.92.0, Node 25.2.1, pnpm 11.25.0. |
-| İzole UI | 7 Edge senaryosu, 100 erişilebilirlik denetimi; sıfır ihlal. TR/EN, açık/koyu, dar görünüm, odak, onaydan vazgeçme, pending akışla yeniden açılış, cleanup retry, kayıp başlangıç yanıtı ve stale okuma test edildi. Navigasyon ölçümü yalnız tarayıcı fixture'ıdır; OS DPI veya sağlayıcı gecikmesi değildir. |
-| Native Windows 10 | Ayrı release kimliğiyle gerçek Uygulamalar → AccountManager/IPC → hesap satırları → Codex kapsam onayı → Vazgeç → Etkinlik → geri dönüş → normal onaylı çıkış. Gerçek Codex 0.167.0-alpha.4.1 varsayılan CLI ChatGPT kaydı okundu; OpenCode 1.19.3 verisi sahipli sentetik XDG kaydıydı. Claude status komutu çalıştırılmadı. Çıkış kodu 0, kaynak/ikili fingerprint ve kontrol edilen gerçek auth/ayar dosyalarının boyut/mtime/kimlik metadata'sı değişmedi. Auth içerikleri kopyalanmadı veya hash'lenmedi. |
+| Frontend contract | 216 Node tests passed. The tests cover account correlation, explicit confirmation, rejection of extra and secret fields, and flow identity. |
+| Rust | 432 tests passed. The direct run ignored 16 tests. The tests cover account parsers, pin and discovery regressions, stale selection, and native console ownership. Its parent test calls the ignored child-process helper. The other opt-in tests remain unverified in this run. |
+| Build | TypeScript and Vite, Rust formatting, the locked offline native debug build, and the QA release build with a separate identity passed. The run used Rust 1.92.0, Node 25.2.1, and pnpm 11.25.0. |
+| Isolated UI | 7 Edge scenarios and 100 accessibility checks passed with zero violations. The tests covered Turkish and English, light and dark themes, narrow viewports, focus, and cancellation from confirmation. They covered reopen with a pending flow, cleanup retry, loss of the start reply, and stale reads. Navigation timing covers the browser fixture only. OS DPI and provider latency have separate acceptance. |
+| Native Windows 10 | The separate release identity ran the real Applications flow through AccountManager and IPC to the account rows. The test opened and cancelled Codex scope confirmation, visited Activity, returned, and confirmed normal quit. It read the existing default CLI ChatGPT record through the real Codex 0.167.0-alpha.4.1. OpenCode 1.19.3 data came from an owned synthetic XDG record. The test made no Claude status call. The app exited with code 0. Source and binary fingerprints matched. The checked auth and settings files retained their size, modification time, and file identity. The before-and-after check used auth file metadata only. It copied no auth contents and calculated no content hashes. |
 
-İlk Sky ekran yakalama/tıklama yolu zaman aşımı ve koordinat hatası verdi; klavye odağı da değişmedi. Kabul, kurulu open-computer-use aracının erişilebilirlik Invoke/ScrollIntoView eylemleri ve gerçek native görüntüleriyle yapıldı. Kullanıcıdan bu koşuda tıklama yardımı istenmedi. QA kopyasında motor payload'ı yoktu; görülen motor-kullanılamıyor bandı hesap kabulünün dışında ve beklenen durumdu. Bu koşu installer/motor teslimi kabulü değildir.
+The first Sky capture and click attempts hit timeouts and coordinate errors. Keyboard focus also stayed unchanged. The lead verified the native window with the installed open-computer-use tool's Invoke and ScrollIntoView accessibility actions and real native images. The run needed no user click assistance.
 
-## Pasif okuma ve inceleme bulguları
+The QA copy had no engine payload. Its engine unavailable banner was expected and outside account acceptance. The installer and engine delivery have separate acceptance.
 
-Claude Code 2.1.158 resmî status komutu, yalnız sahipli sentetik profilde ayar ve yedek oluşturdu. OpenCode V1 auth-list, fetch kapatılmış izole deneyde bile global DB/WAL/SHM oluşturdu. Bu komutlar ürünün otomatik hesap okumasında kullanılmaz: Claude bilinmiyor, OpenCode salt okunur sabit V1 metadata adapter'ı. Proxy'de sıfır erişim gözlemi tam ağ izolasyonu olarak sunulmaz.
+<a name="pasif-okuma-ve-inceleme-bulguları"></a>
 
-Ana ajan UI devrinde ekrana dönüşün akışı iptal ettiğini buldu ve düzeltti. Kapanışı doğrulanmayan sürecin değiştirilmesi, hatalı süreç durumu sonrası erken kaynak bırakma ve launch yanıtı kaybolduğunda toparlanamama da düzeltildi. [İnceleme](../reviews/H050.md).
+## Passive reads and review findings
 
-İlk tam kapıda Node testleri geçti, TypeScript durum daraltması düzeltildi. Geçerli Node girdileri yeniden kullanılabildi. Sonraki ürün kapısında Rust/fmt/build geçti; eski UI testi katalogda 12 kayıt beklerken mevcut 13 kaydı gördü. Sayı beklentisi güncel kataloğun bütün kayıtlarının görünmesini doğrulayacak biçimde düzeltildi ve tüm UI senaryoları yenilendi. Başarısız raporlar korunur; başarılı ürün kontrolleri yalnız ilgili girdileri programatik eşleştiğinde yeniden kullanıldı.
+The official Claude Code 2.1.158 status command created settings and a backup inside the owned synthetic profile. OpenCode V1 auth-list created a global DB, WAL, and SHM in an isolated run with fetch off. Automatic account reads leave both commands unused. The product reports Claude as unknown. OpenCode uses a fixed read-only V1 metadata adapter. Zero accesses in the proxy observation alone do not establish complete network isolation.
 
-## Doğrulanmayan kapsam
+During the UI handoff, the lead found that returning to the screen cancelled the flow. The lead fixed this. Other fixes prevent replacing a process whose shutdown is unknown and releasing resources early after a process state error. A refresh recovers the existing flow if the launch reply is lost. [Review](../reviews/H050.md)
 
-Yeni gerçek sağlayıcı girişinin tamamlanması, canlı API-key erişimi, Desktop hesapları, yeni hesap adapter'ının Windows 11/macOS/Linux çalışması doğrulanmadı. Desteksiz sürüm/yüzey bilinmiyor döner. Yerel kaydın bulunması uzaktaki erişim, abonelik, sohbet veya Headroom trafiği kanıtı değildir. Yeni login/model isteği ve CI başlatılmadı; Linux ertelemesi korundu. Geliştirme token tasarrufu ölçülmedi.
+Node tests passed in the first full gate. The team fixed TypeScript state narrowing. It reused the passing Node inputs that still matched.
+
+The next product gate passed Rust tests, formatting, and the build. The old UI test expected 12 catalog records and found 13. The team updated the assertion to require every record from that catalog. It reran all UI scenarios. The records preserve failed runs. The team reused passing product checks when the relevant inputs matched programmatically.
+
+<a name="doğrulanmayan-kapsam"></a>
+
+## Unverified scope
+
+A new live provider sign-in, live API-key access, Desktop accounts, and account adapters on Windows 11, macOS, and Linux remain unverified.
+
+An unsupported version or client surface returns unknown. A local record establishes local status only. Remote access, subscriptions, chats, and Headroom traffic require separate evidence. The run started no new sign-in, model request, or CI. Linux remained deferred. Development token savings remain unmeasured.
