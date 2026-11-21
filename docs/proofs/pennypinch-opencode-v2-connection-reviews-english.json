@@ -1,0 +1,155 @@
+{
+  "task": "H042-k3x",
+  "status": "pass",
+  "base_commit": "3a5e4c0d7ce6d8499a603ceaed28c52f383a3212",
+  "verified": {
+    "translated_records": 3,
+    "legacy_heading_aliases": 3,
+    "incoming_links": 9,
+    "incoming_heading_links": 0,
+    "outgoing_links": 11,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/reviews/H010-e.md": {
+      "original_sha256": "644d024b94a34471d4554e82cb1a5b6089c435df6d35bda3d0e500e82696c4e5",
+      "draft_sha256": "756476bd9f56ef28c7b3d877850b2372c13614f781f8bbcd4d3adb369606cae4",
+      "candidate_sha256": "a02ae38fe542805daae36646b67799aa2eef94a429b2d95973ef2d16fd65cc8a"
+    },
+    "docs/reviews/H010-f.md": {
+      "original_sha256": "7f85d3502a1da37c3283e3b5be9620e944fea6445b691caa3b9c546f38650751",
+      "draft_sha256": "079cbab97c95e173a284de9b9c716696ef48279f1415eca36438a0167e206da4",
+      "candidate_sha256": "be4d62414b0334ff8e2739f575a345f7a9be17baaea4effb689d06f69520b29b"
+    },
+    "docs/reviews/H010-g.md": {
+      "original_sha256": "2ada12ad8de8d75ed9c85676eccad90c2dde0ffacc38027598ad719c835fa9b7",
+      "draft_sha256": "7a7d42c5c86ad315b7c2764c5d3410ff4ffe3b004559f4858c6e823103c9ab3a",
+      "candidate_sha256": "fc8b9c4e569e8381cad8d630c1992a1aaadee939ee38cdcdb9fcea24cca03f34"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "26b914ab0871dcbc03e835ce78402ac93ca7505a86455b6f0c478ee4f7585a6d",
+    "docs/IMPLEMENTATION_STATUS.md": "bd9ae98c301a9773660947ced05ff2b1c0b104bcbf1956bd130ae4411a2ca188",
+    "docs/decisions/009-opencode-provider-routes.md": "910dfd50f0cfb73c224318ab34a7c1f2d295b1519ed9186040133c1bfee08dc7",
+    "docs/proofs/opencode-v2-discovery.md": "e195e012ff873d932226f30ae92ac7e727d5fafb133a565dfe3ebe9ba3028353",
+    "docs/proofs/opencode-v2.md": "3a7a827d29ab6e10452808fb6a2c873eb37323dd62df222c0ea449fb2552cf92",
+    "docs/proofs/opencode-v2.json": "445d270449a104e994594d60e4c42e72a7105125ae9cf05e4cc3a581279ed5b3",
+    "docs/proofs/opencode-v2-discovery.json": "3bed32362775d7ab8406c899ede18627aae7405a21e146afa5f41d9d94e96cf7",
+    "docs/proofs/opencode-v2-binding.md": "a31f81f1a53046503c1436440818d7aff9a76c013adc061bbbb11308ff45ddb6",
+    "src-tauri/src/integrations/opencode_v2_routes.rs": "f4b7081b766675de76221adc2136f437583967bb66702f6231e00e3919377f56",
+    "src-tauri/src/integrations/connection_actions.rs": "935bac043c368064921c78941a33af01ef83edb75445b7d16010bbe686af8385",
+    "src-tauri/src/integrations/opencode_retrieval.rs": "3f2e6538b5f0f746e86cfbbe4e953064eb489daf1e5ebcba19463055b7f4323d",
+    "src-tauri/src/integrations/transaction.rs": "eb76cd44e56a8823be7bb805e4a3f52cd053358ead15b5bffdcaf726a7dcd3fb",
+    "docs/proofs/opencode-v2-binding.json": "301514f3148f4b800cb8a8f0b3dcb8098388c04b7fa62753c2a8b27573bb976e"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H010-e.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H010-f.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H010-g.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "historical_evidence": {
+    "docs/proofs/opencode-v2.json": {
+      "sha256": "445d270449a104e994594d60e4c42e72a7105125ae9cf05e4cc3a581279ed5b3"
+    },
+    "docs/proofs/opencode-v2-discovery.json": {
+      "sha256": "3bed32362775d7ab8406c899ede18627aae7405a21e146afa5f41d9d94e96cf7"
+    },
+    "docs/proofs/opencode-v2-binding.json": {
+      "sha256": "301514f3148f4b800cb8a8f0b3dcb8098388c04b7fa62753c2a8b27573bb976e"
+    },
+    "docs/proofs/opencode-v2.md": {
+      "sha256": "3a7a827d29ab6e10452808fb6a2c873eb37323dd62df222c0ea449fb2552cf92"
+    },
+    "src-tauri/src/integrations/opencode_v2_routes.rs": {
+      "sha256": "f4b7081b766675de76221adc2136f437583967bb66702f6231e00e3919377f56"
+    },
+    "src-tauri/src/integrations/connection_actions.rs": {
+      "sha256": "935bac043c368064921c78941a33af01ef83edb75445b7d16010bbe686af8385"
+    },
+    "src-tauri/src/integrations/opencode_retrieval.rs": {
+      "sha256": "3f2e6538b5f0f746e86cfbbe4e953064eb489daf1e5ebcba19463055b7f4323d"
+    },
+    "src-tauri/src/integrations/transaction.rs": {
+      "sha256": "eb76cd44e56a8823be7bb805e4a3f52cd053358ead15b5bffdcaf726a7dcd3fb"
+    }
+  },
+  "verifier_sha256": "1e7b90c1de63493f807967239fa2653f2066728b9908f9caa752cb739e94c2b2",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "ecf4a03365af035a7bb5fab30faa698a0c7a042f20892db9d74a8f9dd4cd970e",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 60,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 49
+      },
+      "flagged_prose_lines": 1634,
+      "approximate_source_words": 61486,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 57,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 46
+      },
+      "flagged_prose_lines": 1606,
+      "approximate_source_words": 60531,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 162,
+      "remaining_documents": 60,
+      "ready_percent": 73.0,
+      "remaining_percent": 27.0
+    },
+    "progress_after": {
+      "ready_documents": 165,
+      "remaining_documents": 57,
+      "ready_percent": 74.3,
+      "remaining_percent": 25.7
+    },
+    "other_documents": [
+      "bench/context_tools/README.md",
+      "docs/IMPLEMENTATION_STATUS.md",
+      "docs/design-config-actions.md",
+      "docs/testing-codex-manually.md"
+    ],
+    "after_input_sha256": "660ffaec75b7aaa086db307593c67e99eb819e0a5f1f0c4927b3906246929ebc"
+  },
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted H010-e and H010-f. The lead agent drafted H010-g and checked all three against the original text and evidence.",
+  "programmatic_references": "The tracked code and configuration search found no direct reference to these three reviews.",
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}
