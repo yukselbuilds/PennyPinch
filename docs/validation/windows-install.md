@@ -77,6 +77,8 @@ Select this receipt using the project's pinned CPython.
 
 The receipt adds the first 12 characters of the installer hash to the ZIP name to avoid colliding with an older package of the same version. Extraction on Windows verified all 677 files and 676 listed SHA-256 values. The command rejected the stale notices archive and preserved the existing delivery file. Nineteen Windows packaging tests passed. This output is an unsigned local preview. GitHub Releases and the production update source have separate delivery checks. [Delivery evidence](../proofs/windows-installer-044-delivery.json)
 
+<a name="açık-kabul"></a>
+
 ## Open acceptance criteria
 
 1. **Clean Windows 10 and Windows 11 x64 desktops.** The user's available external environment at this stage was GitHub Actions. The 15 November 2026 check found that private-repository standard Windows x64 jobs use Server 2022 or 2025 and the standard Windows 11 job uses ARM64. The Windows 11 x64 desktop image is a larger-runner option for GitHub Team or Enterprise Cloud. The desktop test status is `not_tested`. [Standard images](https://github.com/actions/runner-images#available-images) · [Larger-runner images](https://docs.github.com/en/actions/reference/runners/larger-runners#runner-images) · [Plan requirements](https://docs.github.com/en/actions/how-tos/manage-runners/larger-runners/use-larger-runners)

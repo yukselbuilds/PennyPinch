@@ -1,0 +1,188 @@
+{
+  "task": "H042-k3au",
+  "date": "2026-11-22",
+  "status": "pass",
+  "base_commit": "5f8e3e217ad8f2ad7c7239e6b58e20d7a4ff2267",
+  "implementation": "The GPT-6 Luna xhigh worker drafted the targeted query and e3 handoffs. The lead translated the plan and remaining H041 handoffs and reviewed all entries.",
+  "scope": "English translation of historical H041 handoffs and the existing local work plan. Product tests, model calls, and CI did not run.",
+  "translation": {
+    "local_work_plan": "Translated in the working copy. The plan was an existing local change.",
+    "approximate_source_words": 8305,
+    "source_working_range": [
+      657,
+      972
+    ],
+    "working_source_sha256": "05849fdaad3c890f833fdb9903cba56984fe01782c0c49a3c6cbb3960e3841df",
+    "index_source_sha256": "4be1097721eb744225d2dff541da1208cf20183e3a2dbf2c66b103d2fd38f98e",
+    "working_candidate_sha256": "2c56295dc42783a32cbed78fafc464fed04dc5aafa66c192b668ff78ba195d97",
+    "index_candidate_sha256": "c84be7e2909520aedb99e73983abbfe1feba133a7ad8ec72b905b79f06beb4c3",
+    "parts": {
+      "plan.md": {
+        "source_sha256": "271f44ba77378580d6879ad5015e7f3cfec733d7599a6d8e9459565e0579a09f",
+        "reviewed_draft_sha256": "f6928a854586dfd997f25ef322e2acd211f394b04ecd68de25412ce119fa4a93"
+      },
+      "early.md": {
+        "source_sha256": "8b70122026fa55fd6b974a62c1264ead119b53852f0b88d36ef35d3d0cb41037",
+        "reviewed_draft_sha256": "1906a35be91e65d4e760abae2bdd59b560e98b456be264dec2a2ea2776d58801"
+      },
+      "late.md": {
+        "source_sha256": "f9042c56b30ed053efa33e02e06d42a86f2d67cc67d3781e5dd14cd7beb0563d",
+        "reviewed_draft_sha256": "f63a55e7d9eadbaca09e8d1712a373a9b7252442310e7e3e525ab182f9573d90"
+      }
+    },
+    "worker_draft_sha256": "2e84a8412ab629b4f6c823c0d9c1c04d831109644db58d174620bc038d759706"
+  },
+  "verified": {
+    "legacy_heading_aliases": 43,
+    "incoming_links_to_preserved_anchors": 0,
+    "outgoing_relative_links": 64,
+    "preserved_nonblank_rows": 225,
+    "plan_command_block_byte_exact": true,
+    "local_plan_headings": 3,
+    "restored_install_anchor": {
+      "path": "docs/validation/windows-install.md",
+      "anchor": "açık-kabul",
+      "heading": "Open acceptance criteria",
+      "source_sha256": "9282ddb5d014c081ae81edd1529754c569da19f9b2e2adf09b103b223da63379",
+      "candidate_sha256": "b91eade2b6cb0b9a8398c267026b3b2ad22816057ce9b7c69131de8fea9a6714",
+      "checkpoint_references": 4
+    },
+    "preserved_linewise_links_literals_and_measurements": true
+  },
+  "references_sha256": {
+    "docs/proofs/pennypinch-november-18-20-history-english.json": "37c173df83ee4980840897029ddb478f74d669cd2ed011bfd76970d4aad5c2ab",
+    "docs/proofs/targeted-query-client.json": "d4adfee7a4dbf5e2f537825c432857a82ab0e4da601448e9333ce0b8ac71bceb",
+    "docs/decisions/027-optimization-regression.md": "45a085f40f0323600f36718cba6a71e0aef9d57350e8b90292224822fe56af5e",
+    "bench/context_tools/targeted_query_client_replay.py": "e8bf5570a8af49acf9209ab7777fbf9ccded6d368cb4fe2a2c38e97b6a4ee1ea",
+    "tests/runtime/test_targeted_query_client.py": "baab5136cedab4a6896bc68c7480615f5cddc5d5569715cf3aa1121e2729f859",
+    "runtime/manifest.json": "64d3f394cb32a7040c3c6ff1b5a601392fc3f0029cd81d9c8e9d0e2b1c54583e",
+    "docs/development/WORKFLOW.md": "ae6e3791370ada5d6f7983d4633d923857832b0d253175d3c9fbbe78bc0136b7",
+    "docs/proofs/rules-json-live-pilot.json": "c3730210b65d4c1dc23e0b960185048034eb14363c6820df4b5c8753cb8fb975",
+    "docs/research/optimization-roi-review-2026-11-17.md": "4b59c23ab2b2210e289eda9d7b56441ce8ed662dbd4c91193e4058ca8cbad77a",
+    "docs/proofs/headroom-044-upgrade.json": "e58f90024ad21077c1fcbd8aa32d35a4f7bb281781599b664274544674af74ad",
+    "docs/proofs/windows-engine-clean-test-package.json": "6cdf6448c6dc5b798f16af968fead7f1210d12dc62f9d1f7075cc81e42791304",
+    "docs/validation/windows-update.md": "143031fb565ff391e3dd8c7025822eab5ec81301051a8c60edf10c6d7427556b",
+    "docs/proofs/rtk-1.2.0-preflight.json": "588a654af86e11a5262c8a1af1d81f0d7baac360aa82d6a0fa4f60c6b9dbf989",
+    "docs/proofs/rules-json-cli-adapter.json": "3575aaeec2f2e79380821869b286b676cac9ce16563299dc9d512147d2c97988",
+    "docs/proofs/rules-json-guard.json": "6ad3c46d99402252cffddb0ef4dde7f1e7c607082112d7509b4fc48f033b3b61",
+    "bench/optimization/rules-json-heldout-plan.json": "82a7e0a54615d1db158dc90716ddd77539db245f09b5bc56f4c35df86b9d2c4a",
+    "docs/proofs/rules-heldout-first-live.json": "2b36bdb1c233f53fb623baeb1ce0db1cbc20e373292629cac2bd9ab43f424099",
+    "docs/proofs/rules-heldout-runner.json": "a94b5bea0befe7670126631d77947010ff4f4235b5b63b3e5f9bd79e4936371b",
+    "docs/proofs/rules-live-pilot-acceptance.json": "3397768805bb14583e4725c922ab532fea1179339d135be08b11801dc7b0bc92",
+    "bench/optimization/rules-heldout-plan.json": "ff4b60b3e629837573b291897c95de519a80df629429459ab20a4e0b438ab9f0",
+    "docs/proofs/rules-live-programmatic-counts.json": "f38efaac3f46c9fb3066aeff77d881fadcd428d0ab6bf11e3abaf65c12e36151",
+    "docs/proofs/rules-live-canonical-pair.json": "3ea47be27c3225e5c41288c978f46cf8496f0e4e7e7175fcfc1cf6f9e60663a5",
+    "docs/proofs/rules-code-mode-recovery.json": "05363aaf81e3a1c0ac1da80f4174ff5b309510a84113462241c1a086fd0ef3e8",
+    "docs/proofs/rules-recovery-delivery.json": "9d6e5c8494901f91cdda02b26d48ee29ed208760d8c07b003ce5899814a99afa",
+    "docs/proofs/rules-live-counted-pair.json": "05ed44d3e57bb8cd930f747886903f34502d9b3f9b39c3df41a6572aec95b3f2",
+    "docs/proofs/rules-answer-contract.json": "0a44762c1b4973ec3fb8709308f5063fd040c0c4cb29a84a799228d7379e4e65",
+    "docs/proofs/responses-stream-content-type.json": "f54fb57931b9bc48b21e9927ecfb2ae446edaa9d8dc501aa1451e1ccf1d0a478",
+    "docs/proofs/responses-optional-terminal-status.json": "257993d3175df5abbe1d873b7916276bb1ccbf9aadae005d4bc18f861d511f85",
+    "docs/proofs/rules-live-luna-pair.json": "5d9b2203f6dcb40aeada3f5ae6b61c69e05d554ef0e8d9b60416911483dabe82",
+    "docs/proofs/rules-live-luna-control.json": "fac1c50094376d525f7c4f1f030f9a4e31a5f5e3a2179b86bd264fdb55e45801",
+    "docs/proofs/rules-live-account-rejection.json": "7f46d4f44fb7eaf7c477ae25a878b276b7d4fd2775a9ec61dd67a19d2aa530e7",
+    "docs/proofs/rules-live-preflight.json": "7c59c582501c2d5b8fe16891390c18b93ee80fed3ce0112f71c7c7270ed857d9",
+    "docs/proofs/responses-terminal-usage.json": "d446c489432aadc4748278c574e83d2c3f1e7ba5ebcdba38cfa1b70700c8d1b8",
+    "docs/proofs/rules-producer-comparison.json": "a2b2967a22b19ac62db5557f91ecf69882115ed04d395b53a8a60a7c524dd533",
+    "docs/proofs/rules-client-applicability.json": "fd16bded0f3bca58b7c5dfe2938e0267e914274be50325761aaf7ddc0c216934",
+    "docs/proofs/experimental-rules-replay.json": "96734bf3a3320a58f9834090f26b6b823714e4c943316ffef43379d0bba20cea",
+    "docs/proofs/experimental-rules-preview.json": "fbe4758b30a55b62c16d3532fffbb347733f6bcaa954df8de1597ffae68d9cea",
+    "docs/proofs/learn-merit-pilot.json": "82b542d6c00751e4546e04472d79bbc760fd8c6f6d5b19c6915be216197a39bb",
+    "docs/proofs/targeted-query-pilot.json": "0d66d924bd158f978c13234a60167ebc1ecf74f8a717478e7bcf3673c13d14d3",
+    "docs/proofs/anthropic-cache-markers.json": "11d399fc0778d6bb5256b7d116bfebd04b26f648020eab4e825a28184bceead4",
+    "docs/proofs/responses-repeat-safety.json": "29840fa1127e02cfd556acf709300f96db69ac8a517310d45949c088f8a889b4",
+    "docs/proofs/duplicate-tool-results.json": "1d544313cdd00f5ebed0acfcfd22dec4ff8feb5481fb976fd307c5f425317c2a",
+    "docs/proofs/chat-completions-usage.json": "0f85e098c9a8da1055b0d985b9e94a71004baf2281d8d989f7cdad986f6eb002",
+    "docs/proofs/context-tools-pilot.json": "654d2093c9e0cd8fa7943e61b5369fca69ec1eb0e1db7ca740e04611703010bc",
+    "docs/proofs/context-tools-pilot.md": "77dee0888a635960ffd4a099543826392c41d863397abba5773f7584f221ef3a",
+    "docs/proofs/websocket-usage-desktop.json": "6eb1de8d6d57da84ce81cb6f0331ced5e83810674faca1a21cd3d131ad4199b9",
+    "docs/proofs/responses-usage-desktop.json": "0a133c2c8ebcec452c455d1f649ce077fe90afd64dddea44263593b6ea1729a2",
+    "docs/proofs/headroom-044-candidate.json": "20f5a85da9e21ad49c1f06cee53a1675f812eeabe45b2e5743d6cb53e5a9d099",
+    "docs/proofs/learn-preview.json": "bdb4af53ddd1f9f286c29829a6e3fd82d5f232708be92840ec65521085823043",
+    "docs/proofs/anthropic-usage-desktop-detail.json": "c7657b051dcec2fda5130344da7510b63279a1be2a955e2b498ef98b5276c028",
+    "docs/research/headroom-serena-2026-11-15.md": "3fe50ddba4fb0623c4f9ffd3d5dfc835ee40d04c277b9cdb604534ddbb6d091e",
+    "docs/proofs/desktop-anthropic-usage.json": "711ee7a86179926973d99f3ba32806dec58b115149ed41c0f27c8ea03e7a0916",
+    "docs/validation/optimization-benefit.md": "7e5bab80ec9b889fede5e3a53a1c97055b0dcfd8fddef56911b3720496f46849",
+    "docs/proofs/anthropic-usage-coverage.json": "49a2732bff136c99660a9b6c88ffbc0b906b59420bd04fabf8c8e482f7ef5170",
+    "docs/proofs/anthropic-ccr-policy.json": "e1ce30848c5e046a99fe8cad9f91eee37665a0d6983653503cbd02ef0123c9f2"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "plan.md": {
+        "hard": 0,
+        "advisory": 1
+      },
+      "early.md": {
+        "hard": 0,
+        "advisory": 49
+      },
+      "late.md": {
+        "hard": 0,
+        "advisory": 15
+      },
+      "TASKS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/IMPLEMENTATION_STATUS.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "cc35038dbb67b69bfcfa6888b5ea3101b54e6385581de89d4cd76c8df0e245b2",
+  "inventory_scanner_sha256": "252bb7cd485828727001a1ef48de5df9eb6148573a47709d82f1f30f5014f0d2",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "8290b4439eaf9120120ad8832fd46f71cc68c96b205db891dce6eaaf546c4609",
+    "after_input_sha256": "e493240b2037a46528a85d0eb180c58948e57c63d4af1febff313712c7ef4220",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 1,
+      "counts_by_area": {
+        "other_documents": 1
+      },
+      "flagged_prose_lines": 664,
+      "approximate_source_words": 28007,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 664,
+        "approximate_words": 28007
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 1,
+      "counts_by_area": {
+        "other_documents": 1
+      },
+      "flagged_prose_lines": 449,
+      "approximate_source_words": 19702,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 449,
+        "approximate_words": 19702
+      }
+    },
+    "progress_before": {
+      "ready_documents": 221,
+      "remaining_documents": 1,
+      "ready_percent": 99.5,
+      "remaining_percent": 0.5
+    },
+    "progress_after": {
+      "ready_documents": 221,
+      "remaining_documents": 1,
+      "ready_percent": 99.5,
+      "remaining_percent": 0.5
+    }
+  }
+}
