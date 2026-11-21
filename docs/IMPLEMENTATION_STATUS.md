@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 22 November — English implementation history for 18 to 20 November
+
+H042-k3at is complete. The translation covers the dated release, optimization, and platform entries from 18 to 20 November. It preserves the historical results, acceptance limits, and evidence links. [Evidence](proofs/pennypinch-november-18-20-history-english.json) · [Task list](../TASKS.md)
+
+The scan counted about 3,700 translated words in this part. The checkpoint has about 28,000 words of Turkish prose left in the working copy. It remains the last document with untranslated prose in the inventory.
+
+### Next H042 release step
+
+Continue H042-k3 with the local slice plan and the dated H041 handoffs. Preserve the open acceptance items and the historical evidence for each run. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English toolchain, connection design, and manual Codex guide
 
 H042-k3as is complete. The English notes cover toolchain candidates, configuration actions, and the manual Codex launcher. The checks matched the version bounds, expected test markers, evidence, and heading links. [Evidence](proofs/pennypinch-toolchain-codex-guides-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 221 of 222 tracked documents (99.5%). The historical checkpoint is the one remaining document (0.5%). The estimated remaining text is about 32,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the historical implementation entries in this checkpoint. Preserve the dates, evidence links, metrics, and the scope of completed and open work in each entry. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English Headroom, Serena, and context tools notes
 
@@ -293,255 +299,363 @@ The repository owner is now yukselbuilds. SSH access at the new URL resolved to 
 H042-k1 is complete. The lead agent translated the user guide, Windows release and update instructions, and development workflow. Six focused benchmark-reference and instruction-leak guard checks passed with five matching inputs and zero provider requests. The local bulk translation pilot changed the meaning of technical statements, so the applied translations were written and reviewed against the originals. H042-k2 and H042-k3 remain open for the rest of the roadmap, decisions and historical records. [Task list](../TASKS.md) · [User guide](USER_GUIDE.md) · [Windows updates](validation/windows-update.md)
 
 17 Kasım 2026.
-## 20 Kasım — PennyPinch ürün adı
+<a name="20-kasım--pennypinch-ürün-adı"></a>
 
-Kullanıcı uygulama için PennyPinch’i seçti. Ana ajan görünen adı, Headroom motor atfını ve Windows kurulum kaydı uyumunu birlikte uyguladı. Gerçek Windows 10 x64 NSIS kurucusu PennyPinch ürün bilgisini taşıyor. 227 ön yüz, 480 Rust, 22 paketleme testi ve hedefli 60 tarayıcı denetimi geçti. **45/54 ana görev tamamlandı.** H042 üretim anahtarı ve canlı teslimi açık. Windows 11 ayrı bekliyor. [Kanıt](proofs/pennypinch-application-brand.json) · [Görev listesi](../TASKS.md)
+## 20 November — PennyPinch product name
 
-## 20 Kasım — H042 yalnız EXE güncellemesinde motor kaynakları
+The user chose PennyPinch for the application. The lead agent updated the display name, Headroom engine attribution, and Windows installation record together. The actual Windows 10 x64 NSIS installer carries the PennyPinch product metadata. The checks passed with 227 frontend tests, 480 Rust tests, 22 packaging tests, and 60 focused browser audits. **45/54 main tasks complete.** The H042 production key and live delivery are open. Windows 11 awaits separate verification. [Evidence](proofs/pennypinch-application-brand.json) · [Task list](../TASKS.md)
 
-Ana ajan imzalı güncelleme ve kaynak uyumunu üstlendi. Windows 10’da Headroom 0.44.0’lı gerçek QA EXE’siyle aynı kaynakların v3 paketi geçti. Aynı motor pini ve geçerli imzayla değişen yardımcı dosya özeti reddedildi. 479 Rust testi, paketleme testleri ve custom-protocol derlemesi geçti. **45/54 ana görev tamamlandı.** Üretim anahtarı ve canlı GitHub Pages teslimi açık. Kullanıcının isteğiyle Windows 11 ayrı açık kalıyor. [Kanıt](proofs/windows-update-runtime-resources.json) · [Görev listesi](../TASKS.md)
+<a name="20-kasım--h042-yalnız-exe-güncellemesinde-motor-kaynakları"></a>
 
-## 20 Kasım — H042 HTTPS güncelleme kaynağı
+## 20 November — H042 engine resources in an EXE-only update
 
-Ana ajan güncelleme kaynağı ve paket güvenini üstlendi. Windows 10’da gerçek Headroom 0.44.0 QA exe’si, beklenen HTTPS adresini ve geçici açık anahtarı imzadan önce ve çıkarılan pakette doğruladı. Yanlış adres, HTTP ve farklı anahtar reddedildi. 478 Rust testi, Windows paketleme testleri ve custom-protocol derlemesi geçti. Geçici özel anahtar kaldırıldı. **45/54 ana görev tamamlandı.** Üretim imzası, canlı Pages teslimi ve Windows 11 güncelleme/geri dönüş kabulü açık. [Kanıt](proofs/windows-update-release-source.json) · [Görev listesi](../TASKS.md)
+The lead agent owned the signed update and resource compatibility checks. On Windows 10, the v3 package with the same resources passed with the actual Headroom 0.44.0 QA EXE. The verifier rejected a changed helper file digest despite a matching engine pin and valid signature. 479 Rust tests, packaging tests, and the custom-protocol build passed. **45/54 main tasks complete.** The production key and live GitHub Pages delivery are open. Windows 11 stays open separately at the user's request. [Evidence](proofs/windows-update-runtime-resources.json) · [Task list](../TASKS.md)
 
-## 20 Kasım — H042 Windows 10 teslim paketi
+<a name="20-kasım--h042-https-güncelleme-kaynağı"></a>
 
-Ana ajan kurucu, lisans arşivi ve makbuz eşlemesini üstlendi. 0.44.0 Windows 10 kurucusuyla 674 bildirim girdisi paketlendi. ZIP Windows’ta çıkarıldı. 677 dosya, 676 SHA-256 değeri ve 19 paketleme testi doğrulandı. Eski bildirim arşivi reddedildi ve mevcut ZIP korundu. **45/54 ana görev tamamlandı.** H042’de gerçek imza anahtarı, GitHub Pages teslimi ve Windows 11 güncelleme/geri dönüş kabulü açık. [Kanıt](proofs/windows-installer-044-delivery.json) · [Görev listesi](../TASKS.md)
+## 20 November — H042 HTTPS update source
 
-## 20 Kasım — H041 upstream benchmark tekrarı
+The lead agent owned the update source and package trust checks. On Windows 10, the check used the actual Headroom 0.44.0 QA EXE. It verified the expected HTTPS address and temporary public key before signing and in the extracted package. The verifier rejected the wrong address, HTTP, and a different key. 478 Rust tests, Windows packaging tests, and the custom-protocol build passed. The lead removed the temporary private key. **45/54 main tasks complete.** Production signing, live Pages delivery, and Windows 11 update and rollback verification are open. [Evidence](proofs/windows-update-release-source.json) · [Task list](../TASKS.md)
 
-Ana ajan ölçüm ve karşılaştırma kapsamını doğruladı. Windows 10’da paketli Headroom 0.44.0, 33 upstream SDK senaryosunu tamamladı. Ana altı SDK örneği %56,28 azaldı. Aynı tam istek sayımında SDK %43,64 ve yönetilen proxy %43,60 azalma verdi. 181 HTML sayfasında F1 0,9168. Kod ve üç hata alanı korundu. Bulut model çağrısı 0. H041’in ana kabulü açık. **45/54 ana görev tamamlandı.** [Ölçüm](proofs/upstream-benchmarks-044.json) · [Görev listesi](../TASKS.md)
+<a name="20-kasım--h042-windows-10-teslim-paketi"></a>
 
-## 20 Kasım — H042 yayın öncesi Git geçmişi incelemesi
+## 20 November — H042 Windows 10 delivery package
 
-Ana ajan yayın ve kaynak güveni nedeniyle incelemeyi üstlendi. GitHub ana dalıyla eşleşen `fadf83a` üzerinde 266 commit ve 28 Gitleaks eşleşmesi incelendi. Özetler ilgili Git içeriğine ve sabit tokenizer kaynaklarına bağlandı. Test değerleri ve açık imza anahtarı kimliği doğrulandı. Açık eşleşme 0. **45/54 ana görev tamamlandı.** Güncel Windows kurulum adayına eşlenen üçüncü taraf bildirim paketi, üretim imza anahtarı ve GitHub Pages teslimi açık. [Kanıt](proofs/repository-history-review.json) · [Görev listesi](../TASKS.md)
+The lead agent matched the installer, license archive, and receipts. The lead packaged the Windows 10 installer for 0.44.0 with 674 notice entries. The lead extracted the ZIP on Windows. The checks verified 677 files, 676 SHA-256 values, and 19 packaging tests. The packager rejected an old notice archive and preserved the current ZIP. **45/54 main tasks complete.** The production signing key, GitHub Pages delivery, and Windows 11 update and rollback verification are open under H042. [Evidence](proofs/windows-installer-044-delivery.json) · [Task list](../TASKS.md)
 
-## 19 Kasım — H041 gerçek yerel modelde eşlenmiş log kıyası
+<a name="20-kasım--h041-upstream-benchmark-tekrarı"></a>
 
-Ana ajan token sayacı eşlemesi ve ölçüm sınırını üstlendi. Windows 10’da doğrudan ve Headroom 0.44.0 üzerinden aynı dört log aynı yerel modele gönderildi. İki doğru yanıtın sağlayıcı sayaçları eşit kaldı. Her kolda 6.647 girdi ve 10 çıktı, sıfır cache okuması. 67 girdi eşleşti ve sahipli süreçler kapandı. İş yükü başına kabul ve gerçek fatura karşılaştırması açık. **45/54 ana görev tamamlandı.** [Kıyas](validation/optimization-benefit.md#19-kasım--gerçek-yerel-modelde-eşlenmiş-chat-completions-kıyası) · [Görev listesi](../TASKS.md)
+## 20 November — H041 upstream benchmark reproduction
 
+The lead agent verified the measurement and comparison scope. Packaged Headroom 0.44.0 completed 33 upstream SDK scenarios on Windows 10. The six main SDK examples showed a 56.28% reduction. For the same full-request count, the SDK showed a 43.64% reduction and the managed proxy showed 43.60%. Across 181 HTML pages, F1 was 0.9168. The tests preserved code and three error fields. The benchmark made 0 cloud model calls. Main H041 acceptance stays open. **45/54 main tasks complete.** [Measurement](proofs/upstream-benchmarks-044.json) · [Task list](../TASKS.md)
 
-## 19 Kasım — CircleCI, Windows 10 kurulum ve güncelleme bildirimi
+<a name="20-kasım--h042-yayın-öncesi-git-geçmişi-incelemesi"></a>
 
-Ana ajan, kurulum ve güncelleme imzası ile platform testlerini üstlendi. CircleCI Free’de macOS 0.44.0 motor ve paket adımı geçti. Gerçek pencere otomasyonu −1712 zaman aşımında kaldı. Ubuntu x64 derleme ve Xvfb pencere açılışı geçti. Rust sonucu 220 başarılı, 81 başarısız, 2 atlanan test. H049, Linux istemci yapılandırması ve motor portuyla devam eder. Windows 11 ayrı doğrulanacak. [Platform testleri](validation/desktop-platforms.md)
+## 20 November — H042 pre-release Git history review
 
-Windows 10 x64’te güncel NSIS kuruldu. 0.44.0 motor yerel isteği yanıtladı. Kurulum kaynakları ve temizlik eşleşti. Son kapıda 227 frontend ve 478 Rust testi geçti. İmzalı yerel sürüm bildirimi gerçek WebView’da göründü ve yalnız manifest ile imza okundu. Tek açık GitHub deposu hedefi ve kaynak Apache-2.0 lisansı hazırlandı. Üretim güncelleme kaynağı ve yayın öncesi geçmiş incelemesi açık. **45/54 ana görev tamamlandı.** [Görevler](../TASKS.md) · [Güncellemeler](validation/windows-update.md#19-kasım-2026--açılış-bildirimi-ve-tek-depodan-dağıtım)
+The lead agent owned the review because it concerned release and source trust. At `fadf83a`, which matched the GitHub main branch, the lead reviewed 266 commits and 28 Gitleaks matches. The review matched digests to the relevant Git content and pinned tokenizer sources. It verified test values and the public signing key identity. It found 0 unresolved matches. **45/54 main tasks complete.** The third-party notice package for the current Windows installer candidate, the production key, and GitHub Pages delivery are open. [Evidence](proofs/repository-history-review.json) · [Task list](../TASKS.md)
 
-17 Kasım 2026 · **45/54 ana görev tamamlandı. Etkin yerel görev H042.** Bu belge bakımında ana ve alt görev kutuları mevcut kabul kayıtlarıyla karşılaştırıldı. Ana ajan, izin ve ölçüm sınırlarını özgün kayıtlardan kontrol etti. [Görev sayımı ve dokuz açık iş](../TASKS.md) · [17 Kasım öncelik kararı](research/optimization-roi-review-2026-11-17.md)
+<a name="19-kasım--h041-gerçek-yerel-modelde-eşlenmiş-log-kıyası"></a>
 
+## 19 November — H041 paired log comparison on a live local model
 
-## 19 Kasım — H042 güncel 0.44.0 yerel QA paketi
+The lead agent verified the token-counter mapping and measurement scope. On Windows 10, the tests sent the same four logs to the same local model directly and through Headroom 0.44.0. The provider counters matched for the two correct replies. Each arm reported 6,647 input tokens, 10 output tokens, and zero cache reads. The 67 inputs matched. The owned processes exited. Workload-specific acceptance and comparison against actual billing are open. **45/54 main tasks complete.** [Comparison](validation/optimization-benefit.md#19-kasım--gerçek-yerel-modelde-eşlenmiş-chat-completions-kıyası) · [Task list](../TASKS.md)
 
-Kullanıcının kararıyla H041 dokuz açık kabulüyle beklemede. Ana ajan imza, sürüm ve motor pini doğruluğunu üstlendi. Güncel Windows 10 release exe’si yerel test anahtarıyla paketlendi. Gerçek Rust doğrulayıcı imza ve özetleri kabul etti. Çıkarılan exe kimlik ve sürüm kontrolünü geçti. Yanlış kimlik, sürüm ve anahtar reddedildi. Yedi Python testi ve 364 eşleşen build girdisi kayıtlı. Windows 11 x64 güncelleme ve üretim teslimi açık. **45/54 ana görev tamamlandı.** [Kanıt](proofs/windows-update-044-qa.json) · [Görev listesi](../TASKS.md)
 
-## 19 Kasım — H041 kapanış koşulları
+<a name="19-kasım--circleci-windows-10-kurulum-ve-güncelleme-bildirimi"></a>
 
-Ana ajan güncel 6531cc4 adayının macOS 0.44.0 iş akışı ön kontrolünü doğruladı. 230 girdi eşleşti. GitHub CLI erişimi doğrulandı. Kullanıcı kalan kotayı 0,10 USD olarak teyit etti. 0.41.0 ile önceki gerçek paket/trafik işi 5 dakika 39 saniye sürdü. 15 dakikalık yeni iş ücretsiz kota bekliyor. CircleCI Free Apple Silicon, özel depo erişimine ayrı yetki gerektiren aday yol. **H041’de 6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü açık. 45/54 ana görev tamamlandı.** Sıradaki çalıştırılabilir adım, ücretsiz Mac ortamı teyit edilince paket ve native trafiği doğrulamak. [Koşullar](validation/optimization-benefit.md#19-kasım--kalan-kabullerin-başlatma-koşulları) · [Görev listesi](../TASKS.md)
+## 19 November — CircleCI, Windows 10 installation, and update notification
 
-## 19 Kasım — Tepside Genel Bakış yenilemesi
+The lead agent owned the installation, update signing, and platform tests. The macOS 0.44.0 engine and packaging step passed on CircleCI Free. Native window automation timed out with code −1712. The Ubuntu x64 build and the Xvfb window launch passed. The Rust results were 220 passed, 81 failed, and 2 skipped. H049 continues with Linux client configuration and the engine port. Windows 11 requires separate verification. [Platform tests](validation/desktop-platforms.md)
 
-Ana ajan native pencere yaşam döngüsü, panel sorgusu ve motor ölçümünü birlikte doğruladı. Windows 10’da yaklaşık 12 saniye tepside 0 otomatik panel sorgusu, açılışta tek sorgu ve gizliyken yeni motor ölçümü gözlendi. Son yerel kapıda 225 ön yüz ve 478 Rust testiyle derlemeler geçti. **Astra incelemesindeki üç ekran takip maddesi tamamlandı. 45/54 ana görev tamamlandı. H041’de 6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü açık.** [Kanıt](proofs/tray-lifecycle.md#19-kasım-2026--tepside-genel-bakış-yenilemesi) · [Açık H041 kabulleri](validation/optimization-benefit.md#h041-açık-kabulleri)
+The current NSIS installer ran on Windows 10 x64. The 0.44.0 engine answered a local request. The installation resources and cleanup matched expectations. The final gate passed 227 frontend and 478 Rust tests. The signed local release notification appeared in the actual WebView. The test read only the manifest and signature. The lead prepared a plan for one public GitHub repository and an Apache-2.0 source license. The production update source and pre-release history review are open. **45/54 main tasks complete.** [Tasks](../TASKS.md) · [Updates](validation/windows-update.md#19-kasım-2026--açılış-bildirimi-ve-tek-depodan-dağıtım)
 
-## 19 Kasım — Uzun oturum grafiği
+17 November 2026. **45/54 main tasks complete. H042 is the active local task.** This documentation review matched the main and subtask checkboxes to their acceptance records. The lead agent checked permissions and measurement scope against the original records. [Task count and nine open tasks](../TASKS.md) · [17 November priority decision](research/optimization-roi-review-2026-11-17.md)
 
-Ana ajan toplam, zaman aralığı ve SQLite okuma doğruluğunu birlikte doğruladı. 90 günlük saklamada 65 ölçüm günü 64 grafik noktasına sığdı. Kesirli oranı olan geçerli kaydın JSON okuması düzeltildi. Windows 10 yerel kapısında 225 ön yüz ve 478 Rust testi, biçim kontrolü ve iki derleme geçti. 24 opt-in Rust testi atlandı. Edge’de tarih aralığı iki dilde doğrulandı. **45/54 ana görev tamamlandı. H041’de 6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü açık.** Astra incelemesindeki açık ekran maddesi tepside panel yenilemesi. [Kanıt](proofs/metrics-store.md#19-kasım-2026--uzun-oturum-grafiği) · [Görev listesi](../TASKS.md)
 
-## 19 Kasım — Genel Bakış ve Etkinlik yerel gün başlangıcı
+<a name="19-kasım--h042-güncel-0440-yerel-qa-paketi"></a>
 
-Ana ajan, saat geçişinde dönem toplamı ve günlük grafiğin ortak zaman sınırını düzeltti. Üç regresyon SQLite deposunda önce başarısız oldu, sonra geçti. Son Windows 10 yerel kapısında 476 Rust testi, `test:app`, biçim kontrolü ve iki derleme geçti. 24 opt-in Rust testi atlandı. **45/54 ana görev tamamlandı. H041’de 6 doğrulama ve 3 isteğe bağlı Ar-Ge kabulü açık.** Astra incelemesinden ayrı iki ekran maddesi kaldı. Sıradaki yerel takip uzun oturum grafiği. [Kanıt](proofs/metrics-store.md#19-kasım-2026--atlanan-yerel-gece-yarısı) · [Görev listesi](../TASKS.md)
+## 19 November — H042 current local 0.44.0 QA package
 
-## 19 Kasım — Anthropic Messages yerel gerçek model sayaçları
+The user deferred H041 with nine open acceptance items. The lead agent owned signature, version, and engine pin validation. The lead packaged the current Windows 10 release EXE with a local test key. The actual Rust verifier accepted the signature and digests. The extracted EXE passed identity and version checks. The verifier rejected the wrong identity, version, and key. The record contains seven Python tests and 364 matching build inputs. The Windows 11 x64 update and production delivery are open. **45/54 main tasks complete.** [Evidence](proofs/windows-update-044-qa.json) · [Task list](../TASKS.md)
 
-Ana ajan gerçek inference ve kullanım eşlemesini doğruladı. Headroom 0.44.0 ve yerel llama.cpp ile JSON ve SSE isteklerinin her biri tek gönderimde doğru sonucu verdi. JSON 44 önbellek dışı giriş, 0 okuma ve 15 çıktı bildirdi. SSE 11 önbellek dışı giriş, 33 okuma ve 15 çıktı bildirdi. Önbellek yazma alanı iki yanıtta da eksikti. Toplam kullanım bilinmiyor kaldı. 70 girdi eşleşti ve iki sahipli süreç kapandı. **45/54 ana görev tamamlandı. H041 açık.** [Ölçüm](proofs/desktop-anthropic-usage.json) · [Görev listesi](../TASKS.md)
+<a name="19-kasım--h041-kapanış-koşulları"></a>
 
-### Sıradaki yerel dilim
+## 19 November — H041 conditions for completion
 
-H041’in canlı Anthropic ve OpenAI API-key doğrulamaları yetkili erişim bekliyor. Native Windows dosya profili, Windows 11 x64, macOS ARM64 ve fatura ölçümü için ayrı koşullar kayıtlı. Altı doğrulama ve üç Ar-Ge kabulü açık. [Açık kabuller](validation/optimization-benefit.md#h041-açık-kabulleri)
+The lead verified the macOS 0.44.0 workflow preflight for candidate 6531cc4. The 230 inputs matched. The lead verified GitHub CLI access. The user confirmed the remaining quota of USD 0.10. The previous actual package and traffic job with 0.41.0 took 5 minutes and 39 seconds. The new 15-minute job awaits free quota. CircleCI Free on Apple Silicon was a candidate that required separate authorization for private repository access. **H041 has 6 open verification items and 3 optional research items. 45/54 main tasks complete.** The next step required confirmation of a free Mac environment. It covered package and native traffic verification. [Conditions](validation/optimization-benefit.md#19-kasım--kalan-kabullerin-başlatma-koşulları) · [Task list](../TASKS.md)
 
-## 19 Kasım — Kısıtlı Codex dosya profili WSL2’de geçti
+<a name="19-kasım--tepside-genel-bakış-yenilemesi"></a>
 
-Ana ajan sandbox ve dosya sahipliğini doğruladı. Windows 10’da önceden hazırlanmış elevated sandbox dar profili komut başlamadan reddetti. Sabit Codex CLI, mevcut Ubuntu WSL2’de aynı adlandırılmış profille izinli dosyayı okudu ve dışlanan dosyaya erişimi reddetti. İki kontrol koşusunda dışlanan dosya açıldı. 5.926 özgün bayt, 48 kayıt ve 17 test girdisinin parmak izi eşleşti. **45/54 ana görev tamamlandı. H041 açık.** [Kanıt](proofs/targeted-query-comparison.json) · [Görev listesi](../TASKS.md)
+## 19 November — Overview refresh in the tray
 
-### Bu doğrulama sonrasındaki durum
+The lead agent checked the native window lifecycle, panel queries, and engine measurements together. On Windows 10, the panel made 0 automatic queries during about 12 seconds in the tray and one query when reopened. The engine recorded a new measurement while the window was hidden. The final local gate passed 225 frontend and 478 Rust tests. The builds also passed. **The three screen follow-ups from Astra's review are complete. 45/54 main tasks complete. H041 has 6 open verification items and 3 optional research items.** [Evidence](proofs/tray-lifecycle.md#19-kasım-2026--tepside-genel-bakış-yenilemesi) · [Open H041 items](validation/optimization-benefit.md#h041-açık-kabulleri)
 
-Kısıtlı dosya profili için uygun native Windows sandbox gerekiyor. H041’in diğer doğrulamaları Windows 11 x64, macOS ARM64 için teyitli ücretsiz CI kotası, canlı Anthropic ve OpenAI API-key erişimi ve karşılaştırılabilir fatura ölçümünü bekliyor. Altı doğrulama ve üç Ar-Ge kabulü açık. [Açık kabuller](validation/optimization-benefit.md#h041-açık-kabulleri)
+<a name="19-kasım--uzun-oturum-grafiği"></a>
 
-## 19 Kasım — Uzak Chat Completions sayaç doğrulaması
+## 19 November — Long session chart
 
-Ana ajan rota güvenliğini ve kullanım eşlemesini doğruladı. Windows 10’da Headroom 0.44.0 üzerinden ücretsiz anonim AI Horde’a giden JSON ve SSE istekleri normal sonlandı. Her istekte sağlayıcının 49 giriş ve 2 çıkış tokenı aynı motor kaydıyla eşleşti. Önbellek ayrıntıları bilinmiyor. SSE’nin tek hane çıktısı birebir eşleşti. JSON yanıtı tek hane biçimine uymadı. **45/54 ana görev tamamlandı. H041 açık.** [Kanıt](proofs/chat-completions-usage.json) · [Görev listesi](../TASKS.md)
+The lead agent checked totals, time ranges, and SQLite reads together. With 90-day retention, the chart fit 65 days of measurements into 64 chart points. The lead fixed JSON reads for valid records with a fractional rate. The Windows 10 local gate passed 225 frontend tests, 478 Rust tests, formatting, and both builds. The gate skipped 24 opt-in Rust tests. Edge verified date ranges in both languages. **45/54 main tasks complete. H041 has 6 open verification items and 3 optional research items.** Overview refresh in the tray was the remaining screen follow-up from Astra's review. [Evidence](proofs/metrics-store.md#19-kasım-2026--uzun-oturum-grafiği) · [Task list](../TASKS.md)
 
-### Bu doğrulama sonrasındaki açık kabuller
+<a name="19-kasım--genel-bakış-ve-etkinlik-yerel-gün-başlangıcı"></a>
 
-Altı doğrulama açık. Kısıtlı Codex dosya profili uygun sandbox, macOS ARM64 ücretsiz kota, Windows 11 x64 ayrı ortam, canlı Anthropic ve OpenAI API-key yetkili erişim, fatura kıyası karşılaştırılabilir fatura ölçümü bekliyor. Learn geniş canlı kabulü ve dondurulmuş e3 ile ona bağlı e4 kendi Ar-Ge adımlarında açık. [Açık kabuller](validation/optimization-benefit.md#h041-açık-kabulleri)
+## 19 November — Start of the local day in Overview and Activity
 
-## 18 Kasım — Headroom 0.44.0 süreli yük kabulü
+The lead agent corrected the shared time boundary for period totals and daily charts during clock changes. Three SQLite store regressions failed before the fix and passed afterward. The final Windows 10 local gate passed 476 Rust tests, `test:app`, the formatting check, and both builds. The gate skipped 24 opt-in Rust tests. **45/54 main tasks complete. H041 has 6 open verification items and 3 optional research items.** Two other screen follow-ups from Astra's review remained. The long session chart was the next local item. [Evidence](proofs/metrics-store.md#19-kasım-2026--atlanan-yerel-gece-yarısı) · [Task list](../TASKS.md)
 
-Ana ajan güncel motor pinini ve performans eşiklerini doğruladı. Önceki 0.41.0 ölçümünün planı 0.44.0 üzerinde 300 saniye çalıştı. Dört yerel yüzeyde 300 çift, 600 ölçüm isteği ve 249 birebir CCR geri alımı tamamlandı. Ek p95 46,14 ms, ısınma sonrası bellek artışı 22,96 MiB. 688 girdi eşleşti ve motor normal kapandı. **45/54 ana görev tamamlandı. H041 açık.** [Ölçüm ve açık kabuller](validation/optimization-benefit.md#headroom-0440-ile-süreli-yük) · [Görev listesi](../TASKS.md)
+<a name="19-kasım--anthropic-messages-yerel-gerçek-model-sayaçları"></a>
 
-### 18 Kasım erişim kontrolü
+## 19 November — Anthropic Messages usage on a live local model
 
-18 Kasım erişim kontrolü. Kurulu Codex ve Windows sürümleri önceki kısıtlı dosya testiyle aynı. Dosya kabulü uygun MXC veya yönetici tarafından hazırlanmış elevated sandbox bekliyor. GitHub CLI oturumu geçersiz ve tarayıcıdan dahil kota ile sıfır ücret sınırı doğrulanamadı. Uzak sağlayıcı testleri yetkili API erişimi bekliyor. H041 açık. [Erişim kaydı](validation/optimization-benefit.md#18-kasım-erişim-kontrolü).
+The lead agent verified actual inference and usage mapping. With Headroom 0.44.0 and local llama.cpp, the JSON and SSE requests each returned the correct result in one submission. JSON reported 44 uncached input tokens, 0 cache reads, and 15 output tokens. SSE reported 11 uncached input tokens, 33 cache reads, and 15 output tokens. Both replies lacked the cache-write field. Total usage stayed unknown. The 70 inputs matched and both owned processes exited. **45/54 main tasks complete. H041 is open.** [Measurement](proofs/desktop-anthropic-usage.json) · [Task list](../TASKS.md)
 
-## 18 Kasım — Learn önerisinin ilk canlı kıyası tamamlandı
+<a name="sıradaki-yerel-dilim"></a>
 
-Ana ajan izole hesap ve kullanım eşlemesini üstlendi. 0.44.0 ile sekiz yerel Learn önizlemesi yeniden geçti. ChatGPT Free ve gerçek Codex CLI’de iki kol da güncel paket raporunu okuyup kesin cevabı verdi. Mevcut çalışma kökü kuralına Learn önerisi eklendiğinde bir fazladan yol kontrolü yapıldı. Tekrar ve yanlış okuma iki kolda sıfırdı. Yedi sağlayıcı isteği kullanım kaydıyla eşleşti. Toplam kullanım 30.548 → 41.255 token (%35,05 artış). Learn isteğe bağlı yerel önizlemede kalır. **45/54 ana görev tamamlandı. H041 ve geniş Learn kabulü açık.** [Ölçüm](proofs/learn-merit-pilot.json) · [Görev listesi](../TASKS.md)
+### Next local slice
 
-## 18 Kasım — Serena proje pilotu tamamlandı
+Live Anthropic and OpenAI API-key verification for H041 awaits authorized access. Native Windows file restrictions, Windows 11 x64, macOS ARM64, and billing measurements have separate recorded conditions. Six verification items and three research items are open. [Open items](validation/optimization-benefit.md#h041-açık-kabulleri)
 
-Ana ajan Rust süreç kapsamını ve kaynak doğruluğunu denetledi. Rust 1.92.0 dil sunucusu yalıtılmış kaynak kopyasıyla çalıştı. Üç süreç çiftinde 30 araç sorgusu tamamlandı. Serena Rust referanslarında 4/4, CodeGraph’ın tek sorgusu 2/4 verdi. İki araç da seçilen Rust ve TypeScript tanımları ile dosya sembollerini gösterdi. Araç şeması, çıktı baytı, başlangıç ve özel bellek kaydedildi. Önceki TypeScript referans kanıtının girdileri eşleşti. **45/54 ana görev tamamlandı. H041 açık.** [Ölçüm](proofs/serena-codegraph-pilot.json) · [Görev listesi](../TASKS.md)
+<a name="19-kasım--kısıtlı-codex-dosya-profili-wsl2de-geçti"></a>
 
-## 18 Kasım — Serena ve CodeGraph TypeScript referansları karşılaştırıldı
+## 19 November — Restricted Codex file profile passed in WSL2
 
-Projeye ait yetkili ücretsiz Anthropic oturumu doğrulanamadı. Ana ajan Serena pilotunun kaynak doğruluğu, ölçüm ve süreç sahipliğini üstlendi. Üç eşlenmiş TypeScript koşusunda Serena 5/5 çağrıyı, CodeGraph’ın tek sorgusu 1/5 çağrıyı gösterdi. İlk sonuç 5.597 ve 17.588 bayt, süreçten ilk sonuca ortanca 3,75 ve 2,05 saniye, özel bellek 248,42 ve 384,28 MiB. Altı süreç ağacı kapandı. Serena yalıtılmış pilot klasöründe kurulu. **45/54 ana görev tamamlandı. H041 açık.** [Ölçüm](proofs/serena-codegraph-pilot.json) · [Görev listesi](../TASKS.md)
+The lead agent verified the sandbox and file ownership. On Windows 10, the prepared elevated sandbox rejected the narrow profile before the command started. In the existing Ubuntu WSL2 environment, the pinned Codex CLI used the same named profile. It read the permitted file and denied access to the excluded file. Both control runs opened the excluded file. The test matched 5,926 original bytes, 48 records, and fingerprints for 17 test inputs. **45/54 main tasks complete. H041 is open.** [Evidence](proofs/targeted-query-comparison.json) · [Task list](../TASKS.md)
 
-### Önceki Rust ve sembol sorgusu planı
+<a name="bu-doğrulama-sonrasındaki-durum"></a>
 
-Serena pilotunda önce yerel Rust dil sunucusunu ve ayrı kaynak kopyasını doğrula. Sonra Rust referansları ile sembol tanımı ve dosya özetini, bilinen kaynak sonuçları kullanarak aynı dar karşılaştırmaya ekle. Canlı Anthropic kabulü yetkili ücretsiz erişim bekliyor. [Karar](decisions/027-optimization-regression.md#typescript-referans-sorgusunda-serena-ve-codegraph)
+### Status after this check
 
-## 18 Kasım — Chat Completions gerçek yerel modelde doğrulandı
+The restricted file profile needs a suitable native Windows sandbox. H041 also awaits Windows 11 x64, confirmed free macOS ARM64 CI quota, authorized live Anthropic and OpenAI API-key access, and comparable billing measurements. Six verification items and three research items are open. [Open items](validation/optimization-benefit.md#h041-açık-kabulleri)
 
-Ana ajan rota sınırını, süreç sahipliğini ve sayaç eşlemesini üstlendi. Proje içindeki llama.cpp CPU sunucusunda tek SmolLM2 SSE isteği tamamlandı. Kısıtlı JSON ve 44 girdi, 15 çıktı motorun istek kaydıyla eşleşti. Önbellek okuması sıfır, yazma bilinmiyor. Beş odaklı test geçti ve iki süreç kapandı. Uzak Chat Completions kabulü yetkili ücretsiz erişim bekliyor. **45/54 ana görev tamamlandı. H041 açık.** [Kanıt](proofs/chat-completions-usage.json) · [Görev listesi](../TASKS.md)
+<a name="19-kasım--uzak-chat-completions-sayaç-doğrulaması"></a>
 
-### Önceki Anthropic erişimi ve Serena planı
+## 19 November — Remote Chat Completions usage verification
 
-Anthropic canlı koşusu için mevcut yetkili ücretsiz erişimi kontrol et. Erişim bulunamazsa açık kabulü koru ve aynı H041 içinde Serena ile CodeGraph karşılaştırmasına geç. İki araçta aynı küçük, salt okunur sorguyu referans doğruluğu, bağlam boyutu, açılış ve bellek açısından ölç. [Serena değerlendirmesi](research/headroom-serena-2026-11-15.md#serena)
+The lead agent verified route safety and usage mapping. On Windows 10, JSON and SSE requests completed normally through Headroom 0.44.0 to the free anonymous AI Horde route. For each request, the provider reported 49 input and 2 output tokens. The corresponding engine record matched. Cache details remain unknown. The SSE reply matched the single-digit format exactly. The JSON reply did not use that format. **45/54 main tasks complete. H041 is open.** [Evidence](proofs/chat-completions-usage.json) · [Task list](../TASKS.md)
 
-## 18 Kasım — ChatGPT Responses WebSocket canlı kullanım kaydı doğrulandı
+<a name="bu-doğrulama-sonrasındaki-açık-kabuller"></a>
 
-Ana ajan hesap kapsamını ve sayaç eşleşmesini üstlendi. Windows 10’da izole Free profilli pinli Codex tek WebSocket üretimiyle doğru yanıt verdi. Headroom ve CLI 9.784 girdi, sıfır önbellek okuması ve 8 çıktıda eşleşti. Hazırlığın 2 girdi tokenı ayrı sayıldı. Dokuz odaklı test, yerel prova ve iki normal motor kapanışı geçti. **45/54 ana görev tamamlandı. H041 açık.** [Kanıt](proofs/websocket-usage-desktop.json) · [Görev listesi](../TASKS.md)
+### Open acceptance items after this check
 
-### Önceki Chat Completions doğrulama planı
+Six verification items remain open. The restricted Codex file profile awaits a suitable sandbox. macOS ARM64 awaits free quota. Windows 11 x64 awaits a separate environment. Live Anthropic and OpenAI API-key tests await authorized access. A billing comparison awaits comparable measurements. Broader live Learn acceptance, frozen e3, and its dependent e4 remain open in their respective research stages. [Open items](validation/optimization-benefit.md#h041-açık-kabulleri)
 
-H041-d kapsamında Chat Completions için mevcut yetkili ücretsiz sağlayıcı yolunu belirle. Uygun erişim varsa tek küçük istekte protokolü ve kullanım kaydını doğrula. Anthropic ve API-key kabulü kendi erişimini bekliyor. [Karar](decisions/027-optimization-regression.md#h041-d-chat-completions-kullanım-ölçümü)
+<a name="18-kasım--headroom-0440-süreli-yük-kabulü"></a>
 
-## 18 Kasım — Zorunlu geri okumanın canlı token kıyası tamamlandı
+## 18 November — Headroom 0.44.0 sustained-load acceptance
 
-Ana ajan canlı kullanım eşlemesini ve bütünlüğü doğruladı. Aynı rapor, model ve eforla iki doğru yanıt çıktı. Her iki kolda da tam 5.926 bayt motor girişinde ve sağlayıcı isteğinde doğrulandı. Doğrudan okuma üç istekte 34.750, sorgu ve tam okuma dört istekte 45.579 token kullandı. Bu işte aday farkı 10.829 token (%31,16 artış). Yedi kullanım kaydı eşleşti ve iki motor normal kapandı. İlk cache okuması iki kolda da sıfırdı. Fatura tutarı açık. [Kanıt](proofs/targeted-query-comparison.json)
+The lead agent verified the current engine pin and performance thresholds. The plan from the earlier 0.41.0 measurement ran on 0.44.0 and lasted 300 seconds. Four local surfaces completed 300 pairs, 600 measured requests, and 249 exact CCR readbacks. The added p95 latency was 46.14 ms. Memory increased by 22.96 MiB after warm-up. The run matched 688 inputs, and the engine exited normally. **45/54 main tasks complete. H041 remains open.** [Measurements and open acceptances](validation/optimization-benefit.md#headroom-0440-ile-süreli-yük) · [Task list](../TASKS.md)
 
-23 odaklı test ve altı yerel isteğin kanıtı eşleşen girdi parmak izleriyle tekrar kullanıldı. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
+<a name="18-kasım-erişim-kontrolü"></a>
 
-### Önceki WebSocket doğrulama planı
+### 18 November access check
 
-H041-d kapsamında Responses WebSocket için mevcut yetkili ücretsiz profilin rota önkoşullarını kontrol et. Uygun canlı yol varsa tek küçük istekte bağlantıyı ve kullanım kaydını doğrula. Diğer protokol ve hesap kabulleri kendi kanıtlarını bekliyor. [Karar](decisions/027-optimization-regression.md#h041-d-responses-websocket-kullanım-ölçümü)
+On 18 November, the installed Codex and Windows versions matched those in the earlier restricted file test. File acceptance needs a suitable MXC or an administrator-prepared elevated sandbox. The GitHub CLI session is invalid. The browser check could not confirm the included quota or the zero-cost limit. Remote provider tests need authorized API access. H041 remains open. [Access record](validation/optimization-benefit.md#18-kasım-erişim-kontrolü).
 
-## 18 Kasım — Motor girişinde ve çıkışında tam rapor denetimi
+<a name="18-kasım--learn-önerisinin-ilk-canlı-kıyası-tamamlandı"></a>
 
-Ana ajan ölçüm ve motor girişini üstlendi. İkinci izole canlı çift iki doğru yanıt ve sekiz eşleşen kullanım kaydı üretti. Adayın 5.926 baytı CLI’de birebir döndü. Sağlayıcı isteğindeki özgün baytlar doğrulanamadı. Canlı tasarruf yüzdesi ve fatura tutarı açık. [Kanıt](proofs/targeted-query-comparison.json)
+## 18 November — First live comparison of Learn recommendations completed
 
-Yerel provada gerçek CLI sorgu ve tam okuma sonucunu aynı kod çıktısına yazdı. Denetim iki sonucu arşiv ve kaynak çağrısıyla eşleştirdi. İki kolun son isteğinde tam rapor hem motor girişinde hem sağlayıcıya iletilen istekte doğrulandı. 23 odaklı test ve altı yerel istek geçti. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
+The lead agent handled isolated account and usage matching. Eight local Learn previews passed again on 0.44.0. On ChatGPT Free and the real Codex CLI, both arms read the current package report and returned the exact answer. Adding a Learn recommendation to the existing working-root rule caused one extra path check. Repeats and incorrect reads were zero in both arms. Seven provider requests matched usage records. Total usage rose from 30,548 to 41,255 tokens (35.05% increase). Learn remains an optional local preview. **45/54 main tasks complete. H041 and broad Learn acceptance remain open.** [Measurement](proofs/learn-merit-pilot.json) · [Task list](../TASKS.md)
 
-### Önceki canlı doğrulama planı
+<a name="18-kasım--serena-proje-pilotu-tamamlandı"></a>
 
-Sonraki eşlenmiş koşuda aynı giriş ve çıkış denetimiyle canlı adayın özgün raporunu doğrula. İzole ücretsiz profil ve sekiz istek sınırı geçerli. Herhangi bir noktada bayt eşleşmesi eksikse kullanım sayaçlarını ve hangi aşamanın gözlendiğini kanıtta koru. [Karar](decisions/027-optimization-regression.md#zorunlu-geri-okumanın-canlı-kullanım-kıyası)
+## 18 November — Serena project pilot completed
 
-## 18 Kasım — Zorunlu geri okumalı canlı kıyas
+The lead agent checked Rust process scope and source accuracy. The Rust 1.92.0 language server ran with an isolated source copy. Three process pairs completed 30 tool queries. Serena scored 4/4 on Rust references. CodeGraph's single query scored 2/4. Both tools showed selected Rust and TypeScript definitions and file symbols. The tool schema, output bytes, startup time, and private memory were recorded. The inputs for earlier TypeScript reference evidence matched. **45/54 main tasks complete. H041 remains open.** [Measurement](proofs/serena-codegraph-pilot.json) · [Task list](../TASKS.md)
 
-Ana ajan kullanım ve bayt eşitliği denetimini üstlendi. İzole ChatGPT Free çiftinde iki doğru yanıt ve 8/8 sağlayıcı kullanım kaydı var. İki CLI geri okuması birebir. Kontrolün tam 5.926 baytı sağlayıcı isteğinde doğrulandı. Adayda bu doğrulama eksik kaldı. Geçerli token kıyası ve fatura tutarı açık. Her iki motor normal kapandı. [Kanıt](proofs/targeted-query-comparison.json)
+<a name="18-kasım--serena-ve-codegraph-typescript-referansları-karşılaştırıldı"></a>
 
-Aynı tam rapor düz metin veya JSON dizesi olarak geldiğinde denetleyicinin onu tanıyacağı yerel testle doğrulandı. Son adayda 22 odaklı test ve altı yerel istek geçti. **45/54 ana görev tamamlandı. H041 açık.** Dokuz alt kabul ve ayrı izlenen Windows 11 doğrulaması kaldı. [Görev listesi](../TASKS.md)
+## 18 November — Serena and CodeGraph TypeScript references compared
 
-### Önceki canlı doğrulama planı
+A project-authorized free Anthropic session could not be verified. The lead agent handled Serena pilot source accuracy, measurement, and process ownership. In three matched TypeScript runs, Serena showed 5/5 calls. CodeGraph's single query showed 1/5 calls. The first results were 5,597 and 17,588 bytes. Median time from process start to first result was 3.75 and 2.05 seconds. Private memory was 248.42 and 384.28 MiB. Six process trees closed. Serena is installed in an isolated pilot folder. **45/54 main tasks complete. H041 remains open.** [Measurement](proofs/serena-codegraph-pilot.json) · [Task list](../TASKS.md)
 
-Bir sonraki eşlenmiş canlı koşuda güncel denetleyiciyle adayın sağlayıcıya giden özgün raporunu doğrula. İzole ücretsiz profil ve sekiz istek sınırı geçerli. Dolar tutarı için ayrıca istek bazında ücret kanıtı gerekiyor. Diğer açık rota ve ortam kabulleri görev listesinde duruyor. [Karar](decisions/027-optimization-regression.md#zorunlu-geri-okumanın-canlı-kullanım-kıyası)
+<a name="önceki-rust-ve-sembol-sorgusu-planı"></a>
 
-## 18 Kasım — Native dosya okuması arşiv ve geri alımla doğrulandı
+### Earlier Rust and symbol-query plan
 
-Codex sandbox’ının izinli dosyadan okuduğu 5.926 bayt arşive bağlandı. 48 kayıttan kesin sorgu ve birebir tam geri alım geçti. Ayrı ACL kontrolünde Codex aynı izinli dosyayı okudu ve Windows tarafından engellenen test dosyasında erişim reddi aldı. Test dosyasının ACL’si geri yüklendi. 20 odaklı test geçti. [Kanıt](proofs/targeted-query-comparison.json)
+First, verify the local Rust language server and separate source copy in the Serena pilot. Then add Rust references, symbol definition, and file summary to the same narrow comparison with known source results. Live Anthropic acceptance awaits authorized free access. [Decision](decisions/027-optimization-regression.md#typescript-referans-sorgusunda-serena-ve-codegraph)
 
-Windows 10’daki unelevated backend kısıtlı okuma profiline sahip komutu başlamadan reddetti. MXC bu çalıştırıcıda kullanılamadı. Kısıtlı Codex profili uygun sandbox ortamında ayrı kabul bekliyor. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
+<a name="18-kasım--chat-completions-gerçek-yerel-modelde-doğrulandı"></a>
 
-### Önceki canlı kıyas planı
+## 18 November — Chat Completions verified with a real local model
 
-İzinli sabit görevde bir geri okumanın dahil olduğu canlı kullanım kıyasını mevcut ücretsiz izole profille yürüt. İki kolda kesin sonuç ve tüm sağlayıcı isteklerini eşleştir. Kısıtlı native dosya profili için uygun Windows sandbox ortamı gerektiğini takip et. [Karar](decisions/027-optimization-regression.md#native-dosya-izinleri-ve-arşiv-geri-alımı)
+The lead agent handled route boundaries, process ownership, and counter matching. One SmolLM2 SSE request completed on the project's llama.cpp CPU server. The constrained JSON, 44 input tokens, and 15 output tokens matched the engine request record. Cache reads were zero. Cache writes remain unknown. Five focused tests passed, and two processes closed. Remote Chat Completions acceptance awaits authorized free access. **45/54 main tasks complete. H041 remains open.** [Evidence](proofs/chat-completions-usage.json) · [Task list](../TASKS.md)
 
-## 18 Kasım — Gerçek Codex okuması seçici motor korumasına bağlandı
+<a name="önceki-anthropic-erişimi-ve-serena-planı"></a>
 
-Ana ajan izinli çağrı ile başarılı okuma kaydının eşlemesini üstlendi. İzole gerçek Codex ve tek paylaşımlı MCP bağlantısında iki 5.926 baytlık sonuç motor çıkışında özgün kaldı. İki çapraz arşiv okuması reddedildi. Ana ajanın aynı isteğindeki diğer çıktı sıkıştırıldı ve geri çağırmadan birebir alındı. 0.44.0 motoru 10 istek ve 10 kullanım kaydı eşledi. [Kanıt](proofs/targeted-query-comparison.json)
+### Earlier Anthropic access and Serena plan
 
-19 odaklı test, üç sentetik motor regresyon isteği ve yedi normal sorgu/geri okuma isteği geçti. Model çağrısı sıfırdı. **45/54 ana görev tamamlandı. H041 açık.** Tek test kaynağına ait yerel kanıt tamamlandı. Genel native dosya izinleri, geri okuma dahil canlı maliyet ve diğer kapanış kabulleri açık. [Görev listesi](../TASKS.md)
+Check current authorized free access for an Anthropic live run. If access is unavailable, keep the acceptance open and continue the Serena/CodeGraph comparison under the same H041 task. Measure the same small read-only query with both tools for reference accuracy, context size, startup, and memory. [Serena evaluation](research/headroom-serena-2026-11-15.md#serena)
 
-### Önceki dosya izni planı
+<a name="18-kasım--chatgpt-responses-websocket-canlı-kullanım-kaydı-doğrulandı"></a>
 
-Genel native dosya kapsamını gerçek istemci izinleriyle doğrula. İzinli kaynak ve izin dışı kaynak için özgün okuma, sorgu ve geri alım kabulünü mevcut dosya sözleşmesine bağla. [Karar](decisions/027-optimization-regression.md#gerçek-codex-mcp-okumasından-seçici-koruma)
+## 18 November — ChatGPT Responses WebSocket live usage record verified
 
-## 18 Kasım — Uzun kod kipi sonucu seçici korundu
+The lead agent handled account scope and counter matching. On Windows 10, pinned Codex with an isolated Free profile returned the correct response over one WebSocket generation. Headroom and the CLI matched 9,784 input tokens, zero cache reads, and 8 output tokens. The 2 input tokens from preparation were counted separately. Nine focused tests, a local rehearsal, and two normal engine shutdowns passed. **45/54 main tasks complete. H041 remains open.** [Evidence](proofs/websocket-usage-desktop.json) · [Task list](../TASKS.md)
 
-Ana ajan çağrı ve çıktı eşlemesini üstlendi. 0.44.0 ile yerel sentetik Responses koşusunda, izinli thread ve benzersiz çağrıya bağlanan 5.926 baytlık sonuç birebir ulaştı. Aynı isteğin diğer kod kipi çıktısı CCR’ye taşındı ve özgün metin geri alındı. Farklı thread ve farklı çağrı kimliği normal sıkıştırma yolunu izledi. Üç motor isteğinin kullanım kayıtları eşleşti. [Kanıt](proofs/targeted-query-comparison.json)
+<a name="önceki-chat-completions-doğrulama-planı"></a>
 
-18 odaklı test ile paylaşım açık gerçek Codex kapsam regresyonunun 10 isteği geçti. İki motor normal kapandı. **45/54 ana görev tamamlandı. H041 açık.** Genel dosya ve canlı maliyet kabulü, diğer sağlayıcı rotaları ve işletim sistemi kanıtları görev listesinde açık. [Görev listesi](../TASKS.md#h041--cache-bütünlük-ve-gecikmefayda-regresyonu)
+### Earlier Chat Completions validation plan
 
-### Önceki MCP bağlama planı
+Under H041-d, identify the current authorized free provider route for Chat Completions. If access is suitable, verify the protocol and usage record with one small request. Anthropic and API-key acceptance await their own access. [Decision](decisions/027-optimization-regression.md#h041-d-chat-completions-kullanım-ölçümü)
 
-Seçici koruma için çağrı ve çıktı eşlemesini gerçek Codex MCP okumasının tamamlandığı noktada oluştur. Aynı kapsamla uzun çıktıyı ve aynı istekteki diğer sonucun geri alımını doğrula. [Karar](decisions/027-optimization-regression.md#uzun-kod-kipi-çıktısında-seçici-koruma)
+<a name="18-kasım--zorunlu-geri-okumanın-canlı-token-kıyası-tamamlandı"></a>
 
-## 18 Kasım — Headroom yolunda paylaşımlı MCP arşivi ajan başına ayrıldı
+## 18 November — Live token comparison with required readback completed
 
-Ana ajan istek sahipliğini üstlendi. Pinli Codex CLI ve 0.44.0 motorunda MCP’nin kendi thread alanı motor girişindeki iki kimliğe eşleşti. Motor, Codex üst veri başlığını yerel sağlayıcıya iletmedi. Paylaşım açık ve tek bağlantı kullanılan prototipte, thread başına ayrı arşiv iki çapraz okumayı reddetti. Her ajan izinli 66 baytı birebir aldı. Bağlantıya bağlı kontrol kolunda alt ajan ana arşivi okuyabildi. [Kanıt](proofs/targeted-query-comparison.json)
+The lead agent verified live usage matching and integrity. The same report, model, and effort produced two correct responses. Both arms verified the exact 5,926 report bytes at engine ingress and in the provider request. Direct reading used 34,750 tokens in three requests. The query and full read used 45,579 tokens in four requests. The candidate difference for this task was 10,829 tokens (31.16% more). Seven usage records matched, and both engines shut down normally. Both arms recorded zero cache reads on the first request. The invoice amount remains open. [Evidence](proofs/targeted-query-comparison.json)
 
-İki başarılı kapsam koşusunda 10’ar istek ve 10’ar kullanım satırı eşleşti. Negatif kontrol altı istek kullandı ve üç motor normal kapandı. 17 odaklı test ile yedi istekli mevcut sorgu ve geri okuma regresyonu geçti. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
+Evidence from 23 focused tests and six local requests was reused with matching input fingerprints. **45/54 main tasks complete. H041 remains open.** [Task list](../TASKS.md)
 
-### Önceki seçici koruma planı
+<a name="önceki-websocket-doğrulama-planı"></a>
 
-Uzun kod kipi sonuçlarında geri çağırmaya taşınan özgün çıktıyı, doğrulanmış thread ve izinli çağrı kimliğiyle seçici olarak koru. Aynı istekteki diğer araç çıktılarının mevcut sıkıştırma yolunu ve tam geri okumayı doğrula. [Karar](decisions/027-optimization-regression.md#headroom-yolunda-ajan-sahipliği)
+### Earlier WebSocket validation plan
 
-## 18 Kasım — Codex arşivinin ajan sınırı ölçüldü
+Under H041-d, check the route prerequisites for the current authorized free Responses WebSocket profile. If a suitable live route exists, verify the connection and usage record with one small request. Other protocol and account acceptances await their own evidence. [Decision](decisions/027-optimization-regression.md#h041-d-responses-websocket-kullanım-ölçümü)
 
-Ana ajan izin ve sahipliği üstlendi. Gerçek Codex CLI ve yerel sağlayıcıyla ana ajan ve bir alt ajan açıldı. MCP paylaşımı kapalı 10 istekli koşuda ikisi de 66 baytlık izinli dosyayı kendi arşivinden birebir aldı. İki yabancı referans reddedildi. Modelin çalışma alanı dışını gösteren yol argümanı kaynak dosyayı değiştirmedi. Alt ajan tamamlanması, ayrı thread ve ana ajana gelen yerel ajan mesajı ile doğrulandı. [Kanıt](proofs/targeted-query-comparison.json)
+<a name="18-kasım--motor-girişinde-ve-çıkışında-tam-rapor-denetimi"></a>
 
-Paylaşım açık koşuda alt ajan, ana ajanın arşivini birebir okuyabildi. Koşu altıncı yerel istekte izin kabulünü geçemedi. Sorgu prototipinde ayrı bağlantı veya doğrulanmış ajan kimliği, ajan başına arşiv yetkisinin kabul koşuludur. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
+## 18 November — Full report audit at engine ingress and egress
 
-### Önceki motor sahipliği planı
+The lead agent handled measurement and engine input. A second isolated live pair produced two correct responses and eight matching usage records. The CLI returned the candidate's 5,926 bytes exactly. The original bytes in the provider request could not be verified. Live savings percentage and invoice amount remain open. [Evidence](proofs/targeted-query-comparison.json)
 
-Paylaşımlı Codex bağlantısında çağıran ajanın güvenilir kimliğini belirle. Ajan sahipliği ve izinli araç kimliğiyle sınırlandırılmış kod kipi çıktı korumasını 0.44.0 motor yolunda doğrula. [Karar](decisions/027-optimization-regression.md#codex-dosya-ve-alt-ajan-yetkisi)
+In the local rehearsal, the real CLI wrote the query and full-read results to the same code output. The audit matched both results with the archive and source call. For the last request in both arms, the full report was verified at engine ingress and in the request sent to the provider. 23 focused tests and six local requests passed. **45/54 main tasks complete. H041 remains open.** [Task list](../TASKS.md)
 
-## 18 Kasım — Canlı hedefli sorgu %7,45 daha az token kullandı
+<a name="önceki-canlı-doğrulama-planı"></a>
 
-Kod kipi yerel provasında özgün 5.926 baytlık çıktı CLI’ye ulaştı. Motor bu çıktıyı sağlayıcı isteğinde 33 baytlık CCR işaretine çevirdi. Kıyasın iki izole kolunda kod kipi çıktısı korundu. Son yanıta kadar tam okuma ve hedefli sorgu üçer, sorgu ve ek tam okuma dört yerel istek kullandı. 16 odaklı test, 10 kod kipi isteği ve 7 doğrudan araç regresyon isteği geçti. [Kanıt](proofs/targeted-query-comparison.json)
+### Earlier live verification plan
 
-ChatGPT Free profiliyle aynı model ve eforda tek eşlenmiş sentetik görev çalıştı. İki kol dörder sağlayıcı isteğinde kesin yanıt verdi ve ilk istekler sıfır cache isabetiyle başladı. Giriş ve çıkış toplamı 45.069 → 41.710 token. Fark 3.359 token, %7,45. Canlı aday tam okumaya ihtiyaç duymadı. **45/54 ana görev tamamlandı. H041 açık.** Genel dosya ve alt ajan izinleri ile gerçek maliyet kabulü bekliyor. [Görev listesi](../TASKS.md)
+In the next matched run, verify the candidate's original report with the same ingress and egress checks. The isolated free profile and eight-request limit apply. If any byte match is missing, preserve the usage counters and the observed stage in the evidence. [Decision](decisions/027-optimization-regression.md#zorunlu-geri-okumanın-canlı-kullanım-kıyası)
 
-### Önceki izin planı
+<a name="18-kasım--zorunlu-geri-okumalı-canlı-kıyas"></a>
 
-Hedefli sorgunun gerçek dosya ve alt ajan kapsamını izole istemcide tanımla. Kod kipi çıktısını izinli araç ve istek sahipliği üzerinden koruyan yolu doğrula. [Karar](decisions/027-optimization-regression.md#kod-kipinde-istek-bütçesi-ve-canlı-kıyas)
+## 18 November — Live comparison with required readback
 
-## 18 Kasım — Canlı Codex tam raporu okudu
+The lead agent handled usage and byte-equality checks. The isolated ChatGPT Free pair produced two correct responses and 8/8 provider usage records. Both CLI readbacks matched exactly. The control's exact 5,926 bytes were verified in the provider request. This verification was missing for the candidate. A valid token comparison and invoice amount remain open. Both engines shut down normally. [Evidence](proofs/targeted-query-comparison.json)
 
-Ana ajan araç ve ölçüm sözleşmesini üstlendi. İzole ChatGPT Free profiliyle rapor yakalama ve açık adlı `read_archived_report` çağrısı tamamlandı. CLI, 5.926 baytlık özgün raporu birebir aldı. Dört sağlayıcı yanıtından sonra beşinci istek yerelde sınırlandı. Nihai yanıt, aday kol ve canlı tasarruf belirlenemedi. [Kanıt](proofs/targeted-query-comparison.json)
+A local test verified that the checker recognizes the same full report when it arrives as plain text or a JSON string. The final candidate passed 22 focused tests and six local requests. **45/54 main tasks complete. H041 remains open.** Nine sub-acceptances and separate Windows 11 verification remain. [Task list](../TASKS.md)
 
-Gerçek model kataloğuyla yapılan model çağrısız yerel prova `input.additional_tools` içinde `functions.exec` taşımasını gösterdi. Tanı artık bu biçimi tanıyor ve kesin MCP çağrılarını CLI olaylarıyla doğruluyor. 14 odaklı test, yedi yerel motor isteği ve bir katalog provası geçti. **45/54 ana görev tamamlandı. H041 açık.** [Görev listesi](../TASKS.md)
+<a name="önceki-canlı-doğrulama-planı-1"></a>
 
-### Önceki bütçe planı
+### Earlier live verification plan
 
-Kod kipinde tam okumanın ve sorgunun terminal yanıt dahil normal istek sayısını model çağrısı yapmadan doğrula. Sonraki eşlenmiş ölçümün sınırını bu kanıta dayandır ve iki kolda aynı model, efor ve görev kabulünü koru. [Karar](decisions/027-optimization-regression.md#canlı-tam-okuma-ve-codex-kod-kipi)
+In the next matched live run, use the current checker to verify the candidate's original report sent to the provider. The isolated free profile and eight-request limit apply. Each request also needs separate cost evidence to confirm the dollar amount. Other open route and environment acceptances remain in the task list. [Decision](decisions/027-optimization-regression.md#zorunlu-geri-okumanın-canlı-kullanım-kıyası)
 
-## 18 Kasım — Hedefli sorgunun eşlenmiş provası geçti
+<a name="18-kasım--native-dosya-okuması-arşiv-ve-geri-alımla-doğrulandı"></a>
 
-Ana ajan araç izinlerini ve kullanım eşlemesini üstlendi. Aynı 48 satırlık raporda tam Read üç, hedefli sorgu ve ardından tam Read dört yerel istekle tamamlandı. Özgün değer, kaynak kimliği ve seçilen satır eşleşti. 12 odaklı kontrol, yedi kullanım kaydı ve iki normal motor kapanışı geçti. [Kanıt](proofs/targeted-query-comparison.json)
+## 18 November — Native file read verified with archive and recovery
 
-**45/54 ana görev tamamlandı. H041 açık.** İzole ChatGPT Free profiliyle yapılan canlı denemede ilk kol dört sağlayıcı yanıtı ve bir rapor yakalamasından sonra istek sınırına ulaştı. Tam Read, son cevap ve ikinci kol tamamlanmadığı için token ve maliyet farkı belirlenemedi. Sıradaki yerel inceleme, sağlayıcıya giden araç kataloğunda tam okumanın adı ve görünürlüğü ile CLI'nin çağrı/sonlandırma olaylarını sınırlı tanı verisiyle eşlemek. [Görev listesi](../TASKS.md)
+The Codex sandbox read 5,926 bytes from an allowed file, and the archive matched them. An exact query and byte-for-byte full readback passed across 48 records. In a separate ACL check, Codex read the same allowed file and received access denied on a test file blocked by Windows. The test file's ACL was restored. 20 focused tests passed. [Evidence](proofs/targeted-query-comparison.json)
 
-### Önceki inceleme planı
+On Windows 10, the unelevated backend rejected the restricted-read command before it started. MXC was not available in this runner. The restricted Codex profile awaits separate acceptance in a suitable sandbox environment. **45/54 main tasks complete. H041 remains open.** [Task list](../TASKS.md)
 
-**H041 · Canlı Read çağrısını incele.** Eşlenmiş provanın yerel kabulü tamamlandı. İlk canlı kolun durduğu noktayı araç adının sağlayıcıya iletimi ve CLI olaylarının sınırlı kaydı üzerinden incele. Yeni sağlayıcı denemesinden önce Read çağrısının açık adını ve çağrı sırasını yerel provada doğrula. [Son kanıt](proofs/targeted-query-comparison.json)
+<a name="önceki-canlı-kıyas-planı"></a>
 
-## 18 Kasım — Varsayılan CLI bütçesinde parçalı geri okuma geçti
+### Earlier live comparison plan
 
-Ana ajan arşiv sahipliğini ve istek ölçümünü üstlendi. Varsayılan çıktıyla izole Codex CLI ve güncel 0.44.0 motoru, 107.498 baytı 18 stdout parçası ve boş stderr kaydıyla birebir geri okudu. İzinli akış, başka oturum, kapalı Read ve gerçek çocuk süreçten alınan başarısız rapor birlikte geçti. 10 odaklı test ve 34 eşleşen yerel kullanım kaydı var. İlk koşunun 10 satırlık ham tanı listesi hatası korunur. Son koşu paneldeki 25 satırlık görünümü kullandı. [Kanıt](proofs/targeted-query-default-budget.json)
+Run the live usage comparison with one readback in an allowed fixed task and the current isolated free profile. Match the exact result and all provider requests in both arms. Track the need for a suitable Windows sandbox for the restricted native file profile. [Decision](decisions/027-optimization-regression.md#native-dosya-izinleri-ve-arşiv-geri-alımı)
 
-**H041 açık, 45/54 ana görev tamamlandı.** Aşağıdaki parçalı geri okuma planı uygulandı. Sırada hedefli sorgunun canlı kalite ve net kullanım karşılaştırması için eşlenmiş senaryo ve bütçenin belirlenmesi var. Büyük raporun tam geri okuması bu örnekte tek başına 19 araç çağrısı gerektirdi. Canlı maliyete bütün geri okumalar ve ek istekler dahildir. Yerel sayaçlardan tasarruf oranı çıkarılmaz. [Görev listesi](../TASKS.md)
+<a name="18-kasım--gerçek-codex-okuması-seçici-motor-korumasına-bağlandı"></a>
 
-## 18 Kasım — SSE token sayaçları birleşik akışta korunuyor
+## 18 November — Real Codex read linked to selective engine protection
 
-Masaüstünün kullanım gözlemcisi, ağ parçası büyüklüğü yüzünden geçerli SSE olaylarını reddediyordu. Ana ajan ölçüm sınırını olay başına uyguladı ve uygulama manifestlerinin parmak izlerini eşledi. Güncel 0.44.0 motoruyla üç protokolde altı sıkıştırılmış HTTP yanıtı birebir iletildi. Geçerli sayaçlar istek kayıtlarıyla eşleşti. Tek aşırı büyük olayda kullanım bilinmiyor kaldı. 24 Python ve 5 Rust kontrolü geçti. [Yerel kanıt](proofs/sse-usage-event-limit.json)
+The lead agent handled matching an allowed call to its successful read record. In isolated real Codex with one shared MCP connection, two 5,926-byte results remained original at engine output. Two cross-archive reads were rejected. The engine compressed the other output in the same main agent request. The test recovered that output exactly through CCR. The 0.44.0 engine matched 10 requests and 10 usage records. [Evidence](proofs/targeted-query-comparison.json)
 
-Bu ölçüm düzeltmesinden sonra yapılan parçalı geri okuma yukarıda kayıtlıdır. [Görev listesi](../TASKS.md)
+19 focused tests, three synthetic engine regression requests, and seven normal query/readback requests passed. Model calls were zero. **45/54 main tasks complete. H041 remains open.** Local evidence for one test source is complete. General native file permissions, live cost with readback, and other closing acceptances remain open. [Task list](../TASKS.md)
 
-## 18 Kasım — Geri dönüşte tercih uyumu sağlandı
+<a name="önceki-dosya-izni-planı"></a>
 
-Ana ajan, motorun okuduğu ortak tercihler ile yerel önizleme seçiminin ayrı kaydedilmesini uyguladı. Açılışta geçerli eski inline tercih taşınır. 17 tercih testi geçti. Önceki `8206da4` okuyucusu eski hatalı belgeyi reddetti ve yeni belgeyi açtı. 0.41.0 motoru aynı koruma listesiyle çalışıp korumalı çıktıyı iletti. Son eski motor koşusunda kapanış da doğrulandı. 0.44.0 iki başlangıç ve iki korumalı istekle geçti. [Kanıt](proofs/preferences-rollback.json)
+### Earlier file permission plan
 
-Bu adımı izleyen SSE düzeltmesi yukarıda kayıtlıdır. Tarih, grafik ve tepsi bulguları ayrı takip maddeleri olarak listelendi. [Görev listesi](../TASKS.md#dev002--mevcut-kodun-ilk-ponytail-denetimi)
+Verify general native file scope with real client permissions. Bind original reads, query, and readback acceptance for allowed and disallowed sources to the current file contract. [Decision](decisions/027-optimization-regression.md#gerçek-codex-mcp-okumasından-seçici-koruma)
+
+<a name="18-kasım--uzun-kod-kipi-sonucu-seçici-korundu"></a>
+
+## 18 November — Long code-mode result selectively protected
+
+The lead agent handled call and output matching. In a local synthetic Responses run on 0.44.0, the 5,926-byte result bound to an allowed thread and unique call arrived exactly. The other code-mode output from the same request went to CCR, and the original text was read back. A different thread and call ID used the normal compression path. Usage records matched three engine requests. [Evidence](proofs/targeted-query-comparison.json)
+
+18 focused tests and the 10-request shared real Codex scope regression passed. Both engines shut down normally. **45/54 main tasks complete. H041 remains open.** General file and live-cost acceptance, other provider routes, and operating-system evidence remain open in the task list. [Task list](../TASKS.md#h041--cache-bütünlük-ve-gecikmefayda-regresyonu)
+
+<a name="önceki-mcp-bağlama-planı"></a>
+
+### Earlier MCP binding plan
+
+Create call and output matching for selective protection when a real Codex MCP read completes. Verify the long output and readback of the other result in the same request with the same scope. [Decision](decisions/027-optimization-regression.md#uzun-kod-kipi-çıktısında-seçici-koruma)
+
+<a name="18-kasım--headroom-yolunda-paylaşımlı-mcp-arşivi-ajan-başına-ayrıldı"></a>
+
+## 18 November — Shared MCP archive separated per agent in the Headroom path
+
+The lead agent handled request ownership. With the pinned Codex CLI and the 0.44.0 engine, MCP's own thread field matched two identities at engine ingress. The engine kept the Codex metadata header out of the local provider request. In a prototype with sharing enabled and one connection, separate per-thread archives rejected two cross-reads. Each agent received the allowed 66 bytes exactly. In the connection-bound control arm, the subagent could read the parent archive. [Evidence](proofs/targeted-query-comparison.json)
+
+Two successful scope runs each matched 10 requests and 10 usage rows. The negative control used six requests, and three engines shut down normally. 17 focused tests and the existing seven-request query/readback regression passed. **45/54 main tasks complete. H041 remains open.** [Task list](../TASKS.md)
+
+<a name="önceki-seçici-koruma-planı"></a>
+
+### Earlier selective protection plan
+
+Selectively protect original outputs placed in readback for long code-mode results, using a verified thread and allowed call ID. Verify the existing compression path for other tool outputs in the same request and verify the full readback. [Decision](decisions/027-optimization-regression.md#headroom-yolunda-ajan-sahipliği)
+
+<a name="18-kasım--codex-arşivinin-ajan-sınırı-ölçüldü"></a>
+
+## 18 November — Codex archive agent boundary measured
+
+The lead agent handled permissions and ownership. It opened a main agent and a subagent with the real Codex CLI and local provider. In a 10-request run with MCP sharing disabled, each read the allowed 66-byte file exactly from its own archive. The system rejected two foreign references. The model supplied a path outside the workspace. The source file stayed intact. A separate thread and a local agent message to the main agent verified subagent completion. [Evidence](proofs/targeted-query-comparison.json)
+
+In the run with sharing enabled, the subagent read the main agent's archive exactly. The run failed permission acceptance on the sixth local request. For the query prototype, a separate connection or verified agent identity is an acceptance condition for per-agent archive permission. **45/54 main tasks complete. H041 remains open.** [Task list](../TASKS.md)
+
+<a name="önceki-motor-sahipliği-planı"></a>
+
+### Earlier engine ownership plan
+
+Identify the calling agent reliably in a shared Codex connection. Verify code-mode output protection in the 0.44.0 engine path, limited to agent ownership and allowed tool ID. [Decision](decisions/027-optimization-regression.md#codex-dosya-ve-alt-ajan-yetkisi)
+
+<a name="18-kasım--canlı-hedefli-sorgu-745-daha-az-token-kullandı"></a>
+
+## 18 November — Live targeted query used 7.45% fewer tokens
+
+In the local code-mode rehearsal, the CLI received the original 5,926-byte output. The engine converted it to a 33-byte CCR marker in the provider request. The comparison preserved code-mode output in both isolated arms. Full read and targeted query each used three local requests through the final answer. The query plus an additional full read used four. 16 focused tests, 10 code-mode requests, and 7 direct-tool regression requests passed. [Evidence](proofs/targeted-query-comparison.json)
+
+One matched synthetic task ran with the ChatGPT Free profile and the same model and effort. Both arms returned the exact answer in four provider requests each. Both first requests had zero cache hits. Input and output totals went from 45,069 to 41,710 tokens. The difference was 3,359 tokens, or 7.45%. The live candidate did not need a full read. **45/54 main tasks complete. H041 remains open.** General file and subagent permissions and real-cost acceptance remain open. [Task list](../TASKS.md)
+
+<a name="önceki-izin-planı"></a>
+
+### Earlier permission plan
+
+Define the real file and subagent scope for the targeted query in an isolated client. Verify the path that protects code-mode output through allowed tools and request ownership. [Decision](decisions/027-optimization-regression.md#kod-kipinde-istek-bütçesi-ve-canlı-kıyas)
+
+<a name="18-kasım--canlı-codex-tam-raporu-okudu"></a>
+
+## 18 November — Live Codex read the full report
+
+The lead agent handled tool and measurement contracts. Report capture and the explicitly named `read_archived_report` call completed with an isolated ChatGPT Free profile. The CLI received the original 5,926-byte report exactly. The local request limit stopped the fifth request after four provider responses. The final answer, candidate arm, and live savings remain undetermined. [Evidence](proofs/targeted-query-comparison.json)
+
+A local rehearsal with the real model catalog made no model calls and showed `input.additional_tools` carrying `functions.exec`. Diagnostics now recognize this form and verify exact MCP calls against CLI events. 14 focused tests, seven local engine requests, and one catalog rehearsal passed. **45/54 main tasks complete. H041 remains open.** [Task list](../TASKS.md)
+
+<a name="önceki-bütçe-planı"></a>
+
+### Earlier budget plan
+
+Verify the normal request count for full reads and queries in code mode, including the terminal response, without a model call. Set the next matched measurement limit from this evidence. Keep the same model, effort, and task acceptance in both arms. [Decision](decisions/027-optimization-regression.md#canlı-tam-okuma-ve-codex-kod-kipi)
+
+<a name="18-kasım--hedefli-sorgunun-eşlenmiş-provası-geçti"></a>
+
+## 18 November — Matched rehearsal of the targeted query passed
+
+The lead agent handled tool permissions and usage matching. On the same 48-row report, full Read completed in three local requests. The targeted query followed by full Read completed in four. The original value, source identity, and selected row matched. 12 focused checks, seven usage records, and two normal engine shutdowns passed. [Evidence](proofs/targeted-query-comparison.json)
+
+**45/54 main tasks complete. H041 remains open.** In the live trial with an isolated ChatGPT Free profile, the first arm reached the request limit after four provider responses and one report capture. Full Read, the final answer, and the second arm did not complete. Therefore, the token and cost differences could not be determined. The next local review will match the full-read name and visibility in the provider tool catalog. It will also match CLI call and terminal events using limited diagnostic data. [Task list](../TASKS.md)
+
+<a name="önceki-inceleme-planı"></a>
+
+### Earlier review plan
+
+**H041 · Review the live Read call.** The matched rehearsal passed local acceptance. Review where the first live arm stopped by checking the tool name sent to the provider and the limited CLI event record. Before another provider trial, verify the Read call's explicit name and call order in a local rehearsal. [Last evidence](proofs/targeted-query-comparison.json)
+
+<a name="18-kasım--varsayılan-cli-bütçesinde-parçalı-geri-okuma-geçti"></a>
+
+## 18 November — Chunked readback passed at the default CLI budget
+
+The lead agent handled archive ownership and request measurement. With default output, the isolated Codex CLI and current 0.44.0 engine read back 107,498 bytes exactly in 18 stdout chunks and an empty stderr record. The allowed stream, another session, disabled Read, and failed report from a real child process all passed. 10 focused tests and 34 matched local usage records are available. The first run's error with a 10-row raw diagnostic list is preserved. The final run used the panel's 25-row view. [Evidence](proofs/targeted-query-default-budget.json)
+
+**H041 remains open. 45/54 main tasks complete.** The chunked readback plan below was applied. Next, define the matched scenario and budget for a live quality and net-usage comparison of the targeted query. The full readback of the large report alone required 19 tool calls in this case. Live cost includes every readback and extra request. Do not derive a savings rate from local counters. [Task list](../TASKS.md)
+
+<a name="18-kasım--sse-token-sayaçları-birleşik-akışta-korunuyor"></a>
+
+## 18 November — SSE token counters preserved in a combined stream
+
+The desktop usage observer rejected valid SSE events because of network chunk size. The lead agent applied the limit per event and matched application manifest fingerprints. With the current 0.44.0 engine, six compressed HTTP responses across three protocols were delivered exactly. Valid counters matched request records. Usage remained unknown for the single oversized event. 24 Python and 5 Rust checks passed. [Local evidence](proofs/sse-usage-event-limit.json)
+
+The chunked readback after this measurement fix is recorded above. [Task list](../TASKS.md)
+
+<a name="18-kasım--geri-dönüşte-tercih-uyumu-sağlandı"></a>
+
+## 18 November — Preference compatibility preserved on rollback
+
+The lead agent implemented separate storage for shared preferences read by the engine and for the local preview selection. At startup, the app migrates a valid older inline preference. 17 preference tests passed. The previous `8206da4` reader rejected the malformed older document and opened the new document. The 0.41.0 engine ran with the same protection list and delivered protected output. The last old-engine run also verified shutdown. Version 0.44.0 passed with two starts and two protected requests. [Evidence](proofs/preferences-rollback.json)
+
+The SSE fix that followed this step is recorded above. Date, graph, and tray findings remain separate tracking items. [Task list](../TASKS.md#dev002--mevcut-kodun-ilk-ponytail-denetimi)
 
 ## H041 — hedefli sorgu CLI oturum/araç önkontrolü tamamlandı
 

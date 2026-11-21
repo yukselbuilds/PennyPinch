@@ -1,0 +1,140 @@
+{
+  "task": "H042-k3at",
+  "date": "2026-11-22",
+  "status": "pass",
+  "base_commit": "441ea7793a6ec199b976736b58a9957cb6705342",
+  "implementation": "The GPT-6 Luna xhigh worker drafted the 18 November entries. The lead translated 19 to 20 November and reviewed all entries.",
+  "scope": "English translation of existing dated records. Product tests, model calls, and CI did not run.",
+  "translation": {
+    "date_range": "18 to 20 November 2026",
+    "approximate_source_words": 3682,
+    "source_working_range": [
+      295,
+      542
+    ],
+    "working_source_sha256": "279c3746830b712987046779927382a80240d49d1d3d07c8df5b0c01e267797f",
+    "index_source_sha256": "ef0f4a3c265c238336ee4342cc86f4c5d85315f1c92c64a1fd77544685d97e55",
+    "working_candidate_sha256": "05849fdaad3c890f833fdb9903cba56984fe01782c0c49a3c6cbb3960e3841df",
+    "index_candidate_sha256": "4be1097721eb744225d2dff541da1208cf20183e3a2dbf2c66b103d2fd38f98e",
+    "parts": {
+      "nov19-20.md": {
+        "source_sha256": "c5d28e3192b818a8e46385dd0dc54149e348367bf78fd569359cfac8c62846e8",
+        "reviewed_draft_sha256": "c760ab684ead0abc063597efbe3fba9f06908051e59c342ba8ce64b688b8fa45"
+      },
+      "nov18.md": {
+        "source_sha256": "b1e61656214643ac1c3cd31302274ae7b0b2a1fc10bb5a26cba58e34ce88c391",
+        "reviewed_draft_sha256": "a7053f1b188ea04857b5f8ffe90f0360e34d56b52182f0cfb0aeaf34db7b2118"
+      }
+    },
+    "worker_draft_sha256": "484cfe94ba87e0192e25f5172a34dd93437c682e71acbc29d414d5075c312176"
+  },
+  "verified": {
+    "legacy_heading_aliases": 54,
+    "incoming_links_to_preserved_anchors": 2,
+    "outgoing_relative_links": 93,
+    "preserved_nonblank_rows": 124,
+    "preserved_linewise_links_literals_and_measurements": true
+  },
+  "references_sha256": {
+    "docs/proofs/pennypinch-toolchain-codex-guides-english.json": "7f689ac38c576a503854015d32b0feecc4b055978d6f65ac281641067fd6e2ba",
+    "docs/proofs/pennypinch-application-brand.json": "e0b66376c5f42f2b41f2904d1660c538833a099f3b720daab68edb5a20bfa6c7",
+    "docs/proofs/windows-update-runtime-resources.json": "476e795b066ecec53b42c6127a57d44d9e72fdbba47221d1aea81fac8f95ea7f",
+    "docs/proofs/windows-update-release-source.json": "d043657c25b0e720a1530f73844f495fd2ddceef3e92dca2510c2b8a3a41661d",
+    "docs/proofs/windows-installer-044-delivery.json": "c178588ce4d4b6bd34b43ab0819ba1fb81951dcd1c0b4a9854f03e9e7aaa0b82",
+    "docs/proofs/upstream-benchmarks-044.json": "1f1f6f992b955fc714955ddade9ecc4e2c54187b2dfb727aa064d537e1986d74",
+    "docs/proofs/repository-history-review.json": "095439aab674f1234d7e0443af377ae44c00c8e75362f0cba47b5500dabacbb1",
+    "docs/validation/optimization-benefit.md": "7e5bab80ec9b889fede5e3a53a1c97055b0dcfd8fddef56911b3720496f46849",
+    "docs/validation/desktop-platforms.md": "84ac83d0f3ac98161d7602ca8e5d117ebf4629091f8b444430ec9566c1f6c32c",
+    "docs/validation/windows-update.md": "143031fb565ff391e3dd8c7025822eab5ec81301051a8c60edf10c6d7427556b",
+    "docs/research/optimization-roi-review-2026-11-17.md": "4b59c23ab2b2210e289eda9d7b56441ce8ed662dbd4c91193e4058ca8cbad77a",
+    "docs/proofs/windows-update-044-qa.json": "1adec28b68e4b8389dab146cc7ad9e99aa29f1e4f73eec9cd529ad2ce49af896",
+    "docs/proofs/tray-lifecycle.md": "01998b072befb19f6d5cd4396df5964cae6f5818c76ac332e6fc17de8a088541",
+    "docs/proofs/metrics-store.md": "7462ba3d613a0bb7cdb6e6bcf361e3f64975205bceecbcd697abf7116dcd76a2",
+    "docs/proofs/desktop-anthropic-usage.json": "711ee7a86179926973d99f3ba32806dec58b115149ed41c0f27c8ea03e7a0916",
+    "docs/proofs/targeted-query-comparison.json": "7ec330175f2a17dca8616920681df95941c84cb71a93a6a25252e4b5056807f6",
+    "docs/proofs/chat-completions-usage.json": "0f85e098c9a8da1055b0d985b9e94a71004baf2281d8d989f7cdad986f6eb002",
+    "docs/proofs/learn-merit-pilot.json": "82b542d6c00751e4546e04472d79bbc760fd8c6f6d5b19c6915be216197a39bb",
+    "docs/proofs/serena-codegraph-pilot.json": "18e72f887a0eb8eb3358ecfec83365fa0bd8aadcbf2d8c3cc6a73d9e8e23ee44",
+    "docs/decisions/027-optimization-regression.md": "45a085f40f0323600f36718cba6a71e0aef9d57350e8b90292224822fe56af5e",
+    "docs/research/headroom-serena-2026-11-15.md": "3fe50ddba4fb0623c4f9ffd3d5dfc835ee40d04c277b9cdb604534ddbb6d091e",
+    "docs/proofs/websocket-usage-desktop.json": "6eb1de8d6d57da84ce81cb6f0331ced5e83810674faca1a21cd3d131ad4199b9",
+    "docs/proofs/targeted-query-default-budget.json": "997662c6ebb052dbe685c61436d9225acfad563650c5a4ecc4aaf0224e126910",
+    "docs/proofs/sse-usage-event-limit.json": "bff3f0db6af67b0f917c49643552960cd4310155a1ff9ceddb5a905a7d284862",
+    "docs/proofs/preferences-rollback.json": "f90b30d48b1de765cf19a8ad5d2fcb1d1a18533c5bb457a0cbc39b35105cf603"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "nov19-20.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "nov18.md": {
+        "hard": 0,
+        "advisory": 14
+      },
+      "TASKS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/IMPLEMENTATION_STATUS.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "9bddf70a045873a531d1691e8c6c8112beaccb215157e5a1db2f4f3d364e3d6a",
+  "inventory_scanner_sha256": "252bb7cd485828727001a1ef48de5df9eb6148573a47709d82f1f30f5014f0d2",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "57ac8929707be949cb651a233a8f21dee4507e76ea8a6866ccc128f11da273aa",
+    "after_input_sha256": "8290b4439eaf9120120ad8832fd46f71cc68c96b205db891dce6eaaf546c4609",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 1,
+      "counts_by_area": {
+        "other_documents": 1
+      },
+      "flagged_prose_lines": 788,
+      "approximate_source_words": 31689,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 1,
+      "counts_by_area": {
+        "other_documents": 1
+      },
+      "flagged_prose_lines": 664,
+      "approximate_source_words": 28007,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 664,
+        "approximate_words": 28007
+      }
+    },
+    "progress_before": {
+      "ready_documents": 221,
+      "remaining_documents": 1,
+      "ready_percent": 99.5,
+      "remaining_percent": 0.5
+    },
+    "progress_after": {
+      "ready_documents": 221,
+      "remaining_documents": 1,
+      "ready_percent": 99.5,
+      "remaining_percent": 0.5
+    }
+  }
+}
