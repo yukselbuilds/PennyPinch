@@ -1,0 +1,114 @@
+{
+  "task": "H042-k3z",
+  "status": "pass",
+  "base_commit": "329c416b49448f02c31c08a2a3c5746a41133a8b",
+  "verified": {
+    "translated_records": 1,
+    "legacy_heading_aliases": 1,
+    "incoming_links": 3,
+    "incoming_heading_links": 0,
+    "outgoing_links": 1,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/reviews/H010.md": {
+      "original_sha256": "2f2d09de390cb36a6399efe78b35ef961baffdcf99ea1b777568f61bb961e71c",
+      "draft_sha256": "02fe7fcae33a9a690bed6a34e6ceb257cfda161426cf688c4579cf171316b1da",
+      "candidate_sha256": "b6cf4f008b393c4254f9f51885ff023d709509da6d5f128deddbf0b02567b60a"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "cb41dbce0a3fb882ca4a013429d1ea78d9246942f7a29dadce27ee8b8dfe1d40",
+    "docs/IMPLEMENTATION_STATUS.md": "76933a8333926d3035d5501a6af35651714b6c3863f62ed61fd0435e15ad1ab9",
+    "docs/proofs/opencode-acceptance.md": "2c4acb2d4bcb47ad59b224244bfa8523d0f40f95ea6d16673838824c6925e910",
+    "docs/proofs/opencode-acceptance.json": "d441b77c9589a1372cf918d1089d52a18559cd23cdb51a9317a8a2ac64a0090f",
+    "docs/decisions/009-opencode-provider-routes.md": "910dfd50f0cfb73c224318ab34a7c1f2d295b1519ed9186040133c1bfee08dc7"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H010.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "historical_evidence": {
+    "docs/proofs/opencode-acceptance.json": {
+      "sha256": "d441b77c9589a1372cf918d1089d52a18559cd23cdb51a9317a8a2ac64a0090f"
+    },
+    "docs/proofs/opencode-acceptance.md": {
+      "sha256": "2c4acb2d4bcb47ad59b224244bfa8523d0f40f95ea6d16673838824c6925e910"
+    },
+    "docs/decisions/009-opencode-provider-routes.md": {
+      "sha256": "910dfd50f0cfb73c224318ab34a7c1f2d295b1519ed9186040133c1bfee08dc7"
+    }
+  },
+  "verifier_sha256": "414128f2fdcbb8bc16f109fc8a64ad9cbf21c022a91f57efb5271888d3698057",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "89b23dd4bb35a58ef5bae3d80a7f82b75d2b84e95b96712bb76f6ab6dcf9aed0",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 54,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 43
+      },
+      "flagged_prose_lines": 1590,
+      "approximate_source_words": 60052,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 53,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 42
+      },
+      "flagged_prose_lines": 1584,
+      "approximate_source_words": 59846,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 168,
+      "remaining_documents": 54,
+      "ready_percent": 75.7,
+      "remaining_percent": 24.3
+    },
+    "progress_after": {
+      "ready_documents": 169,
+      "remaining_documents": 53,
+      "ready_percent": 76.1,
+      "remaining_percent": 23.9
+    },
+    "other_documents": [
+      "bench/context_tools/README.md",
+      "docs/IMPLEMENTATION_STATUS.md",
+      "docs/design-config-actions.md",
+      "docs/testing-codex-manually.md"
+    ],
+    "after_input_sha256": "b670a012f93eab86fab123d714fefec02a761828fc995225e52eea11a5b305aa"
+  },
+  "date": "2026-11-21",
+  "implementation": "The lead agent translated and checked the short closing review against the recorded acceptance scope.",
+  "programmatic_references": "The tracked code and configuration search found no direct reference to the closing review.",
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}
