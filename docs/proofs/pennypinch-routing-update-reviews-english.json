@@ -1,0 +1,143 @@
+{
+  "task": "H042-k3al",
+  "date": "2026-11-21",
+  "status": "pass",
+  "base_commit": "11f184622572bea5d18fd4361c60682c14b49de2",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted H041 and H042. The lead drafted H040 and verified all three against the originals and acceptance records.",
+  "verified": {
+    "translated_records": 3,
+    "legacy_heading_aliases": 7,
+    "incoming_links": 7,
+    "incoming_heading_links": 0,
+    "outgoing_links": 8,
+    "local_receipt_paths": [
+      "work/proofs/connection-ingress/review-a2-notes.md",
+      "work/proofs/connection-ingress/final-quality.json",
+      "work/proofs/connection-ingress/native-proof.json"
+    ],
+    "unchanged_historical_evidence": [
+      "docs/decisions/003-connection-ingress.md",
+      "docs/proofs/connection-ingress.md",
+      "docs/proofs/optimization-local-acceptance.json",
+      "docs/proofs/windows-update-install.json",
+      "docs/proofs/windows-update-faults.json",
+      "docs/proofs/windows-update-release-preparation.json",
+      "docs/proofs/windows-update-real-application.json"
+    ]
+  },
+  "documents": {
+    "docs/reviews/H040.md": {
+      "original_sha256": "f1f118720db548b6b9dd2899ba386f45f5a68912161ab96ddd8406d84347c48b",
+      "draft_sha256": "561e3e7ae9d10f111f08c7209f07f8ab28e16f2596490b0e2a9a28886b300fa9",
+      "candidate_sha256": "8ec9f04c1715286aca7a9643826a2083caaa2fb015643dd2245c356ea2eb7191"
+    },
+    "docs/reviews/H041.md": {
+      "original_sha256": "b05abc115fd1f59eb367faf044136b27fc2b3f3e5b5b0912aa96222a78a03663",
+      "draft_sha256": "911d2bbec74268e5888dfea690717d533e58955170f07d8e620302ebc4ac04b2",
+      "candidate_sha256": "49a8a2f112a45a67b1e21475a2fed12ce5a1a1e8b423f2c2058dfe5821ef6f57"
+    },
+    "docs/reviews/H042.md": {
+      "original_sha256": "763f8da28532fb1cbe3ab63211615111dacfda8756a5f6c3eddeedbd37772a97",
+      "draft_sha256": "0a69dc814a2293d8dec4cbf4bf65951986432bdc507521f4de4c4fdd20af7eef",
+      "candidate_sha256": "30cfbd46d01ca6f3e0450ac5267a9730414be6f079c52c2f4069c8c15f16a911"
+    }
+  },
+  "worker_drafts_sha256": {
+    "H041.md": "6308ed0b4190cf4588835ac48e2832872741cb5379a9e1c136771183ef28ef20",
+    "H042.md": "e7c5abef303dfb5a004393abc71cc3d1c1e688d61eed01c2cac6ead826996544"
+  },
+  "references_sha256": {
+    "docs/decisions/003-connection-ingress.md": "ac3e4ebffeb98b0015c1f4b9ae5ec696ea7a220fa8d9dff3898bc92cec9afe2f",
+    "docs/proofs/connection-ingress.md": "a36c58ffaef6d698accea3dab028fa26274fc2b7b6b17cf07e02890b1e10fb8f",
+    "docs/proofs/optimization-local-acceptance.json": "5bd7e3d7c5c57ae2e24bf866a6e3e4f7c3e28a7442a7914857e2934883617fbc",
+    "docs/proofs/windows-update-install.json": "40cbf7df959a4f24e51cc4bf457ea44024c6dfe71d5b5af63b6c370b841cd250",
+    "docs/proofs/windows-update-faults.json": "8759cf4a792ba79d8b009f2c388d1663c526808b06f9042a52467390b18b37a1",
+    "docs/proofs/windows-update-release-preparation.json": "60766d299d84660865c51231e349407d517d131252e44eba95adaf9a1f595623",
+    "docs/proofs/windows-update-real-application.json": "37a49eeff56116caa46ddc33dd4fa606773af1e4cca4591375e10c72161a0614",
+    "docs/validation/windows-update.md": "143031fb565ff391e3dd8c7025822eab5ec81301051a8c60edf10c6d7427556b"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H040.md": {
+        "hard": 0,
+        "advisory": 1
+      },
+      "docs/reviews/H041.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H042.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "TASKS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/IMPLEMENTATION_STATUS.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "99f770f46a0655f3bf70743f9865beccfb87478c2c9c346b0effac6fabc3e181",
+  "inventory_scanner_sha256": "252bb7cd485828727001a1ef48de5df9eb6148573a47709d82f1f30f5014f0d2",
+  "development_token_savings": "not_measured",
+  "engine_provider_and_ci_tests": "not_run_documentation_only",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "42a9a8c10402f6eae84e965f78640dbe31629a4ce9b0de470f21477534f56100",
+    "after_input_sha256": "d2f87bdd96be627e131353f3b17aa1302fb179744eac05c4612f908d3590a037",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 20,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 9
+      },
+      "flagged_prose_lines": 1227,
+      "approximate_source_words": 46600,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 17,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 6
+      },
+      "flagged_prose_lines": 1181,
+      "approximate_source_words": 44752,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 202,
+      "remaining_documents": 20,
+      "ready_percent": 91.0,
+      "remaining_percent": 9.0
+    },
+    "progress_after": {
+      "ready_documents": 205,
+      "remaining_documents": 17,
+      "ready_percent": 92.3,
+      "remaining_percent": 7.7
+    }
+  }
+}
