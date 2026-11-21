@@ -1,20 +1,22 @@
-# DEV001 — araçlar ve kabul düzeni
+<a name="dev001--araçlar-ve-kabul-düzeni"></a>
 
-26 Ekim 2026. **Kabul edildi.** Ürün kodu değiştirilmedi; ürün sayımı 18/51, H022 başlamadı. Sonraki geliştirme işi DEV002 mevcut kod denetimidir.
+# DEV001 — Development tools and task acceptance
 
-| Kontrol | Sonuç ve sınır |
+26 October 2026. **Accepted.** No product code changed. At that checkpoint, the product task count was 18/51. H022 had yet to start. DEV002, the audit of existing code, came next.
+
+| Check | Result and limit |
 | --- | --- |
-| Ponytail kurulumu | Kodlama, audit ve review skill'leri yalnız `.agents/skills` altında. Commit `09c434ab73ca43761c5d8b0c5d341926c2fba710`; üç dosya kaynak Git blob'larıyla byte-exact. MIT lisansı korunuyor. |
-| Kaynak kaydı | `docs/development/ponytail-source.json` taşınabilir pin/hash/argv kaydı. Makineye özel kurulum ayrıntıları ignored kanıtta. |
-| CodeGraph | Sabit 1.6.2 runtime/launcher/MCP kaydı korundu; `.agents/` ile 59 dışlama. Config değişimi sonrası sync/status/files PASS: 76 kaynak girdisi, sıfır `.agents` girdisi; Rust ve TS hedefleri mevcut. Son girinti düzeltmesinde parse edilmiş config aynı olduğundan bu kontroller tekrarlanmadı. |
-| Canlı MCP | Bu sohbetin gerçek `codegraph_explore` aracı `undo_owned_endpoint`, `maxFiles: 1` sorgusunu başarıyla yanıtladı; sembol ve `transaction.rs` bulundu. Yanıt 15.331 karakter; yalnız sonuç metadata'sı kaydedildi. |
-| Görev kabulü | Ortak beş koşul, kısa çalışan devri, mevcut komutlar ve kanıt tekrar kullanımı WORKFLOW'a bağlandı. H022 senaryoları somutlaştırıldı; H039'daki henüz mevcut olmayan scriptler PASS yolu olmaktan çıkarıldı. |
-| Ürün testleri | Önceki H021 gate'inin 73 kaynak/config girdisi aynı. Araç/skill/belge değişimi için ürün testleri yeniden çalıştırılmadı; tarihsel gate yeni çalıştırılmış gibi sunulmadı. |
+| Ponytail installation | The team installed the coding, audit, and review skills only under `.agents/skills` at commit `09c434ab73ca43761c5d8b0c5d341926c2fba710`. The three files matched the source Git blobs byte for byte. The installation preserved the MIT license. |
+| Source record | `docs/development/ponytail-source.json` records the source pin, hashes, and command arguments. Local receipts contain machine-specific installation details. |
+| CodeGraph | The project kept the pinned 1.6.2 runtime, launcher, and MCP registration. The exclusion list included `.agents/` and had 59 entries. After the config change, sync, status, and file list checks passed. They showed 76 source entries and zero `.agents` entries. Rust and TypeScript targets were present. The final indentation fix left the parsed config intact, so the previous results still applied. |
+| Live MCP | The actual `codegraph_explore` tool in this chat answered the `undo_owned_endpoint`, `maxFiles: 1` query successfully. It found the symbol and `transaction.rs`. The response had 15,331 characters. Only result metadata was saved. |
+| Task acceptance | The workflow linked the five shared acceptance conditions, short worker handoff, existing commands, and evidence reuse. The team specified observable scenarios for H022. It removed missing scripts from H039's acceptance steps. |
+| Product tests | All 73 source and config inputs still matched the previous H021 gate. The tool, skill, and document changes relied on that historical test result. |
 
-Ana ajan `ponytail-review` dosyasını okuyarak değişiklikleri ve bağlı kuralları inceledi. Somut inceleme düzeltmeleri: taşınabilir kaynak manifesti, yeniden kullanılabilir gerçek argv ve gereksiz config girinti farkı. Kodlama seviyesi `full`, rapor dili Türkçe; güvenlik/rollback/test hükümleri ve tek çalışan düzeni korunur.
+The lead agent read `ponytail-review` to inspect the changes and related rules. The review made the source manifest portable, preserved the actual arguments for reuse, and removed an unnecessary config indentation change. At that checkpoint, the coding level was `full` and reports used Turkish. The workflow kept the security, rollback, and test rules and the single worker.
 
-Skill dosyalarının konumu, metadata'sı ve kaynak eşleşmesi doğrulandı. Çalışmakta olan host'un yeni skill'i otomatik seçmesi ayrı gözlemlenmedi; bu tur review dosyası doğrudan okunarak kullanıldı. Sonraki tur skill keşfi beklenir. Bu durum CodeGraph MCP canlı sorgusundan ayrıdır. Global ayar, provider/model testi, CI veya push yapılmadı; token tasarrufu ölçülmedi.
+The lead agent verified the skill file locations, metadata, and source matches. The lead agent read the review file directly. Automatic discovery by the running host remained unverified. The team expected discovery in the next turn. The live CodeGraph MCP query had its own evidence. The work left global settings untouched. It included no provider or model test, CI run, or push. Token savings were unmeasured.
 
-Makineye özel kısa kanıtlar `work/proofs/dev-tools/` altında: `ponytail-install-v1.json`, `mcp-live-root.json`, `root-acceptance.json`. Sonuncusu belge bağlantıları, görev sayımı, protected checkpoint sınırı ve son dosya fingerprint'lerini taşır. Ham sorgu, kaynak veya hata dökümü tutulmaz.
+The `work/proofs/dev-tools/` directory contains local receipts `ponytail-install-v1.json`, `mcp-live-root.json`, and `root-acceptance.json`. The last file records document links, the task count, the protected checkpoint boundary, and final file fingerprints. The run retained no raw query, source, or error dump.
 
-[Ortak akış ve bitiş kabulü](../development/WORKFLOW.md) · [Ponytail](../development/ponytail.md) · [CodeGraph](../development/codegraph.md)
+[Shared workflow and completion acceptance](../development/WORKFLOW.md) · [Ponytail](../development/ponytail.md) · [CodeGraph](../development/codegraph.md)

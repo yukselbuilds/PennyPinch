@@ -1,23 +1,27 @@
-# UX001 — yeni görsel dilin yerel kabulü
+<a name="ux001--yeni-görsel-dilin-yerel-kabulü"></a>
 
-Başlangıç5 Kasım, son kabul6 Kasım2026. [Tasarım sözleşmesi](../../DESIGN.md), [inceleme](../reviews/UX001.md). Graphite/mint ailesinde dört ekranın ortak hiyerarşi, tipografi, boşluk, SVG ikon ve boş durum sunumu yenilendi. Yeni ürün işlevi eklenmedi; H029 başlamadı.
+# UX001 — Local acceptance of the visual refresh
 
-## Kaynak ve kurulum
+Work began on 5 November and passed local acceptance on 6 November 2026. The Graphite and mint refresh gave four screens a shared hierarchy, typography, spacing, SVG icons, and empty states. The refresh covered existing functions. H029 had yet to start. [Design contract](../../DESIGN.md) · [Review](../reviews/UX001.md)
 
-Kullanıcının verdiği dört kaynak birincil GitHub kaynaklarından okundu. Günlük ürün arayüzü için [Emil design engineering](https://github.com/emilkowalski/skills/tree/c8a79627b59d72d764d6ab6f2c87c09a48169833/skills/emil-design-eng) seçildi. Resmî skill-installer ile yalnız `.agents/skills/emil-design-eng` kuruldu; MIT lisansı ve immutable commit/hash `UPSTREAM.json` içindedir. Global ayar/model değişimi ve yeni UI/motion bağımlılığı yoktur. Diğer üç kaynak kurulmadı; inceleme metadata'sı `work/references/design-skills/` altındadır.
+<a name="kaynak-ve-kurulum"></a>
 
-| Kontrol | Gözlenen | Kanıt |
+## Sources and installation
+
+The lead agent read the four sources from the user in their primary GitHub repositories. The project selected Emil design engineering for regular work on the product UI. It installed only `.agents/skills/emil-design-eng` with the official skill-installer. The MIT license, pinned commit, and hashes are in `UPSTREAM.json`. Global settings and model settings stayed the same. The project added no UI or motion dependency. It reviewed the other three sources without installing them. Their review metadata is under `work/references/design-skills/`. [Emil design engineering](https://github.com/emilkowalski/skills/tree/c8a79627b59d72d764d6ab6f2c87c09a48169833/skills/emil-design-eng)
+
+| Check | Observed | Evidence |
 | --- | --- | --- |
-| Gerçek native kontroller | UI Start/Pause/Resume aynı nesil/endpoint; ayrı Stop ve yeni nesille restart. Dört gerçek ekran: Genel bakış/Uygulamalar/Etkinlik/Ayarlar. Model çağrısı0. | `work/proofs/taste/ui-runs/b6f83419-3f3a-4833-a6e7-6d8071cb1224/result.json` |
-| Pending ve hata | Aynı gerçek App, native IPC'siz iframe'de ack öncesi başarı göstermedi, ikinci eylemi kilitledi; başarısız ack+read unknown oldu, taze okuma toparlandı. | Aynı native koşu, izole full-App fixture |
-| Veriler ve görsel durum | Strict client'tan geçen normal/0/negatif/mixed; stale önceki veriyi korur, ilk okuma hatası ayrı görünür.16 gerçek fixture kovası,2 model grubu; üretimde örnek veri yok. | Aynı native koşu; `data-validation-1.json` dört dataset doğrulaması |
-| Dil/tema/ölçek | TR/EN, açık/koyu,1024/819/683 frame genişlikleri; gerçek WebView125/150/100, reset; Enter/Space/Escape ve activity dialog; reduced-motion. | Aynı native koşu;10 kontrol grubu,0 page error |
-| Kontrast | Dört kritik metin/kontrol seçicisi, iki dil/iki temada ölçüldü; en düşük4.68:1. Bu sınırlı kontrol tam WCAG sertifikası değildir. | Native koşunun `contrasts` dizisi |
-| Görsel inceleme | Gerçek boş ekranlar ile açıkça işaretlenmiş örnek ölçüm ekranları gözle incelendi. Tam yüzey örnekleri, arka native pencereyi karıştırmayan genişletilmiş izole frame'de alındı. | `visual-runs/f392ab84-2f92-4177-8818-4369ba11f221/result.json`, `sample-dark.png`, `sample-light.png` |
-| Yerel ürün kapısı |138 frontend/349 Rust PASS,6 mevcut opt-in ignored; TypeScript/Vite,fmt ve offline custom-protocol build PASS. | `render-build-2.json` ilk iki ürün derlemesi + `final-checks-1.json`;152 girdi aynı son adaya aittir |
+| Real native controls | Start, Pause, and Resume used the same generation and endpoint. A separate Stop ended that generation. Restart used a new generation. The run exercised Overview, Applications, Activity, and Settings. The model call count was 0. | `work/proofs/taste/ui-runs/b6f83419-3f3a-4833-a6e7-6d8071cb1224/result.json` |
+| Pending and error | The same app ran in an iframe without native IPC. It withheld success until acknowledgment and blocked a second action. The state became unknown when the acknowledgment and read both failed. A fresh read restored the state. | Same native run, isolated full-app fixture |
+| Data and visual state | The strict client processed normal, 0, negative, and mixed values. Stale state preserved prior data. A failed initial read had a separate error state. The fixture used 16 actual buckets and 2 model groups. Sample data stayed in the test fixture. | Same native run. Four dataset checks in `data-validation-1.json` |
+| Language, theme, and scale | The run covered Turkish and English, light and dark themes, and frame widths of 1024/819/683. The WebView used zoom levels 125/150/100 and reset. The run checked Enter, Space, Escape, the Activity dialog, and reduced motion. | Same native run. 10 control groups and 0 page errors |
+| Contrast | The test measured four critical text and control selectors in two languages and two themes. The lowest ratio was 4.68:1. Full WCAG certification was outside the scope of this check. | The native run's `contrasts` array |
+| Visual review | The lead agent checked real empty screens and clearly marked screens with sample measurements. The full-surface captures used an expanded, isolated frame. The background native window stayed outside the captures. | `visual-runs/f392ab84-2f92-4177-8818-4369ba11f221/result.json`, `sample-dark.png`, `sample-light.png` |
+| Local product gate | 138 frontend and 349 Rust tests passed. The gate ignored 6 existing opt-in tests. TypeScript, Vite, formatting, and the offline custom-protocol build also passed. | The first two product builds in `render-build-2.json` plus `final-checks-1.json`. All 152 inputs match the same final candidate. |
 
-Tüm work yolları `work/proofs/taste/` altındadır. `acceptance.json` sonuç ile kaynak/config, araç/ortam, native EXE/dist/fixture/runner, tasarım rehberi/lisans ve devir kayıtlarını güncel baytlarla karşılaştırır. Son aday değişmediği için başarılı ürün derlemeleri tekrar çalıştırılmadı; iki ölçüm bloğu aynı fingerprint ile birleştirildi. Örnek dataset düzeltmesi yalnız QA bundle'ını yeniledi; üretim kodu ve EXE değişmedi.
+All work paths are under `work/proofs/taste/`. The `acceptance.json` receipt compares the result with the current files. It checks source, config, tools, environment, native EXE, dist, fixture, runner, design guide, license, and handoff records. The final candidate kept the same inputs, so the successful builds still applied. The team combined two measurement blocks with the same fingerprint. The sample dataset correction refreshed only the QA bundle. Production code and the EXE stayed the same.
 
-Test pencereleri exit0 ile kapandı; sahipli debug portları kapalı, mevcut Codex config/preferences/onboarding/ownership fingerprint'leri aynı. Ham provider içeriği, auth veya exception dökümü tutulmadı. UI screenshot'ları bu görevin uygulamasına/etiketli fixture'ına aittir.
+Test windows exited with code 0. The owned debug ports closed. The fingerprints for Codex config, preferences, onboarding, and ownership matched. The run retained no raw provider content, authentication data, or exception dump. The UI screenshots show this task's app or its labeled fixture.
 
-Bu Windows10 22H2/build19045 geliştirme kabulüdür. Native motorun soğuk başlangıcı bazı40s test beklemelerini aştı; üretimin mevcut100s/90s sözleşmesiyle kontrol geçti. Bu, başlatma performansı/uzun yük kabulü değildir. Windows11/macOS/Linux/installer ve canlı sağlayıcı bu işte sınanmadı. Örnek yüzde kullanıcı veya geliştirme tasarrufu sayılmaz.27/51 işlevsel ürün kabulü aynı; UX001 sunum yenilemesidir.
+This development acceptance covered Windows 10 22H2, build 19045. The native engine cold start exceeded some 40 s test waits. The check passed under the existing 100 s native and 90 s helper limits. Startup performance and sustained load require separate checks. Windows 11, macOS, Linux, installers, and live providers were outside this run. Sample percentages describe fixture data. User and development savings require measured usage. At that checkpoint, functional product acceptance stayed at 27/51. UX001 refreshed presentation.

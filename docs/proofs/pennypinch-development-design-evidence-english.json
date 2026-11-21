@@ -1,0 +1,68 @@
+{
+  "task": "H042-k3p",
+  "status": "pass",
+  "base_commit": "c35a7f1acc5d8ef3be9361116ba8b66d59b98b34",
+  "verified": {
+    "translated_records": 3,
+    "legacy_heading_aliases": 4,
+    "incoming_links": 8,
+    "incoming_heading_links": 0,
+    "outgoing_links": 6,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/proofs/dev-tools.md": {
+      "original_sha256": "494bea35e6e64189135b9776b3909450c84031e006b32ae9a0242aca320488ef",
+      "draft_sha256": "0ffbbcaf881d5fe9e634f23b5dd1cf420d893773ae238e766b9de9950e94e000",
+      "candidate_sha256": "8a8c31ac102b73bb1d1bac390f48fe0770d0bdc91542e39ed98071c0c5b3e8f6"
+    },
+    "docs/proofs/roadmap-comparison.md": {
+      "original_sha256": "b6346191652d297fc034997e689c0e447520dd918c9bb3a13304f4f9fe8a1bbc",
+      "draft_sha256": "574ce35734b11e6811e27a0585d5da21ae101bb65cb2584b48a1a69c384a1b6a",
+      "candidate_sha256": "2664f1f160d18c649ea2c367056d2975cfe338031e285c17b97d38f6b8569500"
+    },
+    "docs/proofs/ui-taste.md": {
+      "original_sha256": "ee09ce7b4c0b9c036437fd08708d3201ca1c4a057a7406af139c74103098d5c1",
+      "draft_sha256": "bb6c5aebe53a7fc059a0020da4b8774a013e2656b419c4938efcd2ac3ae3caea",
+      "candidate_sha256": "1141b53eda345191872ccf54a0283c3ddb0829fc8fef9cf8f0d8e5849cd12b91"
+    }
+  },
+  "references_sha256": {
+    "DESIGN.md": "a7bf3c4699d9e33c192005383824ad1875475836470db3bab218cbcb0561355d",
+    "TASKS.md": "8b370bb7c5afbe492e3b00ca1f477549c839b11633e3fb92fff97e05462784f1",
+    "docs/IMPLEMENTATION_STATUS.md": "531620c66af5556f2e791d160a5f438213bffacc709f56375db6ee19926d333a",
+    "docs/development/codegraph.md": "dbef416a719f9e68d03abbdb9a33f84bf1b5f9d2fca6de2ebb28c5d0b5ec83cc",
+    "docs/development/WORKFLOW.md": "ae6e3791370ada5d6f7983d4633d923857832b0d253175d3c9fbbe78bc0136b7",
+    "docs/development/ponytail.md": "e1383a54154384e20a299548439dee0240f67dbbe888e7f75c174a3c18b2cd47",
+    "docs/reviews/UX001.md": "eeaecbfc8fa351f5cf7832fda806545bbd32e78e234ae6cfa00a0bcae1ae9f38"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/dev-tools.md": {
+        "hard": 0,
+        "advisory": 2
+      },
+      "docs/proofs/roadmap-comparison.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/ui-taste.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "verifier_sha256": "dfab819c0e6f2646894985cce9b257ff74d76e10beebc6a740fb5a57050e0222",
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the three English records. The lead agent verified the translations against the source.",
+  "programmatic_references": "No tracked code or configuration references the three records.",
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}

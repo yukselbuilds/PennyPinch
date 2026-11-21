@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 21 November — English client-use and model scope evidence
+## 21 November — English development, roadmap, and design evidence
 
-H042-k3o is complete. Four English records describe model and subagent scope, historical use and local checks, and macOS Desktop coverage. The checks kept the recorded results, limits, and heading links. The catalog evidence test passed. [Evidence](proofs/pennypinch-client-use-scope-english.json) · [Task list](../TASKS.md)
+H042-k3p is complete. Three English records describe development tools, the roadmap comparison, and the UX001 visual refresh. The checks preserved measurements, test limits, dependency edges, and heading links. [Evidence](proofs/pennypinch-development-design-evidence-english.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue H042-k3 with development tooling, roadmap, and visual design evidence. Other historical proof and review documents are still open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+Continue H042-k3 with the Windows GUI crash evidence and its related H006 review. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
+## 21 November — English client-use and model scope evidence
+
+H042-k3o is complete. Four English records describe model and subagent scope, historical use and local checks, and macOS Desktop coverage. The checks kept the recorded results, limits, and heading links. The catalog evidence test passed. [Evidence](proofs/pennypinch-client-use-scope-english.json) · [Task list](../TASKS.md)
 
 ## 21 November — English architecture and configuration evidence
 

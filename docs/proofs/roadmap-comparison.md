@@ -1,14 +1,20 @@
-# Karşılaştırma sonrası yol haritası doğrulaması
+<a name="karşılaştırma-sonrası-yol-haritası-doğrulaması"></a>
 
-20 Ekim2026. Yalnız araştırma/spec/görev listesi değişikliği; ürün kaynakları ve dependency/config dosyaları değişmedi. Mevcut engine/manager/UI PASS'leri tekrarlanmadı.
+# Roadmap validation after the comparison
 
-Komut: `node work/research/gglucass-headroom-desktop/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/validate-roadmap.cjs`
+20 October 2026. The changes covered research, the specification, and the task list. Product sources, dependencies, and config stayed the same. The check reused the existing engine, manager, and UI results.
 
-Sonuç: **PASS**. İnceleme kapsamı açıklaması ve bir yazım düzeltmesi nedeniyle kaynak fingerprint değişince son doküman adayı için kontrol yenilendi; uygulama testleri tekrarlanmadı. H001–H045 tekil ve eksiksiz;45 ana görev/9 tamam. Tamamlanan kimlikler H001–H005,H007,H013–H015. Bağımlılık hedefleri mevcut, döngü yok; H017→H040 ve H039→H040/H041/H042 kapıları yerinde. Opsiyonel H043–H045 H039'u kilitlemiyor.37 yerel Markdown hedefi mevcut. Spec0.4. H016 ve yeni uygulama görevleri başlamadı.
+The check used `node work/research/gglucass-headroom-desktop/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/validate-roadmap.cjs`.
 
-Ortama yeni araç kurulmadı; mevcut proje Node.js v25.2.1 ile salt okunur doküman kontrolü. İncelenen dış kaynak sabit commit49a6161,34 dosyanın ayrı SHA256 manifesti research çalışma kökünde. Dış kaynak kodu çalıştırılmadı; kaynakta test/CI bulunması yerel PASS sayılmadı.
+The roadmap check returned **PASS**. A change to the review scope text and a wording fix changed the source fingerprint. The team checked the final documents again and reused the prior application test results.
 
-| Girdi | SHA-256 |
+The list contained one entry for each ID in H001–H045. Of the 45 main tasks, 9 were complete. The completed IDs were H001–H005, H007, and H013–H015.
+
+The check found all dependency targets and zero cycles. The H017→H040 and H039→H040/H041/H042 gates stayed in place. Optional H043–H045 were outside the H039 prerequisites. The check found 37 local Markdown targets. The specification version was 0.4. H016 and the new implementation tasks had yet to start.
+
+The read-only document check used the project's existing Node.js v25.2.1. It required no new tool. The team reviewed the external source at pinned commit 49a6161 without running it. The research directory contains a separate SHA-256 manifest for 34 files. The pass covers the local document check. Tests and CI in the external source were outside its scope.
+
+| Input | SHA-256 |
 | --- | --- |
 | `TASKS.md` | `5b32c6cd2a311f0bfa208a9d42dfef9e5fa5f893968f3009ceddb1712f51b369` |
 | `HEADROOM_DESKTOP_SPEC.md` | `4fde9099e84c5ff3010f1aa42e95522a87e03f493f499118d44d74d1641a22fc` |
