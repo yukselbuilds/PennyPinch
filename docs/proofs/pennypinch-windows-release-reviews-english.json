@@ -1,0 +1,143 @@
+{
+  "task": "H042-k3ak",
+  "date": "2026-11-21",
+  "status": "pass",
+  "base_commit": "d3ea4f5608082e24ddb056b9f5fcd746b98cfb44",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted H038 and H039. The lead drafted H037 and verified the three reviews against the originals and local acceptance records.",
+  "verified": {
+    "translated_records": 3,
+    "legacy_heading_aliases": 6,
+    "incoming_links": 7,
+    "incoming_heading_links": 0,
+    "outgoing_links": 9,
+    "unchanged_historical_evidence": [
+      "docs/proofs/windows-installer.json",
+      "docs/proofs/windows-installer-repair.json",
+      "docs/proofs/windows-installer-tray.json",
+      "docs/proofs/windows-installer-components.json",
+      "docs/proofs/windows-installer-notices.json",
+      "docs/proofs/windows-installer-delivery.json",
+      "docs/proofs/uninstall.json",
+      "docs/proofs/release-candidate.json",
+      "docs/validation/uninstall.md"
+    ]
+  },
+  "documents": {
+    "docs/reviews/H037.md": {
+      "original_sha256": "6a48ed38dfc3f4cc61bc66bbd0bb420e8301c5898ee7943edda381eeb780447e",
+      "draft_sha256": "7a864f6873eeb7ac48fd890b17d17ce230e27df8a149680609b4068d669db81d",
+      "candidate_sha256": "d637ddb26787b3c5262cebf14307c0e21ac00e172329505995cfe66765cf3a3f"
+    },
+    "docs/reviews/H038.md": {
+      "original_sha256": "ee615f2a1f63ca0b4915bf7979f97f5acbe26130ead2db5b1f2fff47c9632267",
+      "draft_sha256": "601047df6b90c8a7da4bbf80847489323dfbf516e5fc853dc2e3edade870d8b0",
+      "candidate_sha256": "c2bea6c46c3dd95ea636d676b6e97b30b644fb2e7baae1e34b930132e53f38e0"
+    },
+    "docs/reviews/H039.md": {
+      "original_sha256": "a460b98460e41ab49fb174f8d9ef501a0279216cf9e4a4aa002615852a32df4e",
+      "draft_sha256": "2841ca9eecbca739c094eea1b5604d2a8e6d5c62fb5b92ef5e96c32b656ed5fa",
+      "candidate_sha256": "f36d6bff86bbb524273b8a34ee98646ddb6bbf772d0cf6e04e0b501b193c70fd"
+    }
+  },
+  "worker_drafts_sha256": {
+    "H038.md": "9cd3439067a867f147d1ef61bd2fced383d9aa415c72fee2dea88edc0a9b2003",
+    "H039.md": "25b71f814b7ed3f0845ed8f4d19e77da430248e75db19cb96c7ea0bab9857db2"
+  },
+  "references_sha256": {
+    "docs/proofs/windows-installer.json": "cebb9fdfb8cf795224b8175cf1b7f0e57e16092475f514821ea9af437d44b9f6",
+    "docs/proofs/windows-installer-repair.json": "d7035ddc01910f839a42c8d297ef39b3e3993e6b88c568a2312336db56bff2a3",
+    "docs/proofs/windows-installer-tray.json": "afe6a6a8ae349e58d77e1b9cad1cb0f30d3e6cacc487accb857df14d0cea48c1",
+    "docs/proofs/windows-installer-components.json": "e12d1bea9dda5b4cf135793e715b91fb9f7ed915674172dbe04e9a5782f39ff5",
+    "docs/proofs/windows-installer-notices.json": "36419201d206134c5cdf4fd5d6f604413b08ac842b37f601dfc0a0dc304023ed",
+    "docs/proofs/windows-installer-delivery.json": "7d3e418ea63b68487da1218b3938cc487d5faed51a3efbdf7ab8aa73e1a47e1d",
+    "docs/proofs/uninstall.json": "7eb3211dbe209e0d8799b81dfd9a5a372c834b5211594a2acdf8770763a05dee",
+    "docs/proofs/release-candidate.json": "da9b44cdd82eb68350c90fdc83ff08d64a0b03632b3d05c71195436e549b75b1",
+    "docs/validation/uninstall.md": "0cf4f145386019f819795b9904ecd7006952d9899090a7a22f74872e6d199908",
+    "docs/validation/windows-install.md": "9282ddb5d014c081ae81edd1529754c569da19f9b2e2adf09b103b223da63379",
+    "docs/validation/release-candidate.md": "4c3c34fc7da16660356a6ce2b2faf4e67a045e4ad9e928df9044372fcf46723f"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H037.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H038.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H039.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "TASKS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/IMPLEMENTATION_STATUS.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "e1cfa558f85fb52c8a08e44ba1c4611bc5cf426621a82b18b8d08dbe54d44f32",
+  "inventory_scanner_sha256": "252bb7cd485828727001a1ef48de5df9eb6148573a47709d82f1f30f5014f0d2",
+  "development_token_savings": "not_measured",
+  "engine_provider_and_ci_tests": "not_run_documentation_only",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "601f25c03d8fdf037902550bc3942c97d1fe20e5d895d7af6ac91ec0d024f712",
+    "after_input_sha256": "42a9a8c10402f6eae84e965f78640dbe31629a4ce9b0de470f21477534f56100",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 23,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 12
+      },
+      "flagged_prose_lines": 1259,
+      "approximate_source_words": 48103,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 20,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 9
+      },
+      "flagged_prose_lines": 1227,
+      "approximate_source_words": 46600,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 199,
+      "remaining_documents": 23,
+      "ready_percent": 89.6,
+      "remaining_percent": 10.4
+    },
+    "progress_after": {
+      "ready_documents": 202,
+      "remaining_documents": 20,
+      "ready_percent": 91.0,
+      "remaining_percent": 9.0
+    }
+  }
+}

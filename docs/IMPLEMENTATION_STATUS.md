@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English Windows installation and release candidate reviews
+
+H042-k3ak is complete. The English reviews cover Windows installation, uninstall, and the local release candidate. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-windows-release-reviews-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 202 of 222 tracked documents (91.0%). It flagged 20 documents (9.0%) with remaining Turkish prose. The estimated remaining text is about 47,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the H040 through H042 reviews. These cover stable client routing, optimization verification, and update recovery. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English recovery, accessibility, and compatibility reviews
 
 H042-k3aj is complete. The English reviews cover recovery, accessibility, local performance, and compatibility. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-recovery-compatibility-reviews-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 199 of 222 tracked documents (89.6%). It flagged 23 documents (10.4%) with remaining Turkish prose. The estimated remaining text is about 48,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the H037 through H039 reviews. These cover Windows installation, uninstall and data choices, and local candidate acceptance. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English settings, appearance, and export reviews
 
