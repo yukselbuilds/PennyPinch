@@ -1,0 +1,134 @@
+{
+  "task": "H042-k3ar",
+  "date": "2026-11-21",
+  "status": "pass",
+  "base_commit": "317ba5f998874ba36983b2502c94537c0fcdf3d5",
+  "implementation": "The GPT-6 Luna xhigh worker drafted the Headroom and Serena review. The lead translated the benchmark guide and verified both documents.",
+  "verified": {
+    "translated_records": 2,
+    "legacy_heading_aliases": 6,
+    "incoming_links": 8,
+    "incoming_heading_links": 5,
+    "outgoing_links": 3,
+    "benchmark_commands_preserved": [
+      "bench/context_tools/prepare.py",
+      "bench/context_tools/pilot.py"
+    ],
+    "outbound_link_targets": [
+      "docs/decisions/027-optimization-regression.md",
+      "docs/development/WORKFLOW.md",
+      "docs/development/codegraph.md"
+    ],
+    "unchanged_historical_evidence": [
+      "docs/proofs/context-tools-pilot.json",
+      "docs/proofs/context-tools-pilot.md"
+    ]
+  },
+  "documents": {
+    "docs/research/headroom-serena-2026-11-15.md": {
+      "original_sha256": "50a849125993b81f35d865b514924ce50f33fc525636a632ecfee1909910cc66",
+      "draft_sha256": "78b515bc2b5d43fbfb7ee76b668093bd0a253e338f1f46e79baae6bff2adcab3",
+      "candidate_sha256": "3fe50ddba4fb0623c4f9ffd3d5dfc835ee40d04c277b9cdb604534ddbb6d091e"
+    },
+    "bench/context_tools/README.md": {
+      "original_sha256": "ec87dbb1ed5d6278caf4fd516729c7ed8e534bcfdca0e03c0f303d5fce1baa6f",
+      "draft_sha256": "a2edbbb653ed37e6610c5c9eacc62d823c29fd5f682dd24afa88abe991db1d9a",
+      "candidate_sha256": "30da8106c761f1557cf7c4fed01056be81ec816da3fe7114cd00499d54891aa8"
+    }
+  },
+  "worker_draft_sha256": "e4948e6656604d595caf7aabbad2cc85ef5e1a5deaa68adf61b16b4bcec08a2e",
+  "lead_draft_sha256": "a2edbbb653ed37e6610c5c9eacc62d823c29fd5f682dd24afa88abe991db1d9a",
+  "pilot_evidence": "Historical. The pilot includes its README in the original input fingerprints. This change only checks the translated guide, pinned evidence, and command references.",
+  "references_sha256": {
+    "docs/proofs/context-tools-pilot.json": "654d2093c9e0cd8fa7943e61b5369fca69ec1eb0e1db7ca740e04611703010bc",
+    "docs/proofs/context-tools-pilot.md": "77dee0888a635960ffd4a099543826392c41d863397abba5773f7584f221ef3a",
+    "docs/proofs/pennypinch-rtk-context-evidence-english.json": "1a7885c4969477e091fbd8d7dbecefe756659dfa6d0387832e20df20faf730cf",
+    "docs/proofs/pennypinch-optimization-decision-english.json": "3455094f2ad6f30e550c5449ed628b7fdadc9eb4c03de89ad6db83ef42532f71",
+    "bench/context_tools/prepare.py": "6c0362a3e70e457dfddf1985edf66d7f7c130aed3096c8bf31bb70d303912685",
+    "bench/context_tools/pilot.py": "859f7acf7224ef88bc45de21f53f4aea0e3f05dace18fa66bb7efd2dfc7d6ebb",
+    "bench/context_tools/diet.mjs": "2195b05bbd57563a659ba35b80454f3fc16cf40cdfdbc291ef111cdd35f20d3d",
+    "runtime/manifest.json": "64d3f394cb32a7040c3c6ff1b5a601392fc3f0029cd81d9c8e9d0e2b1c54583e",
+    "HEADROOM_DESKTOP_SPEC.md": "ea27bac072717f207dfa1ac4cdd5261568431ca39aec113739b4ee7c88c10b38",
+    "docs/decisions/027-optimization-regression.md": "45a085f40f0323600f36718cba6a71e0aef9d57350e8b90292224822fe56af5e",
+    "docs/development/WORKFLOW.md": "ae6e3791370ada5d6f7983d4633d923857832b0d253175d3c9fbbe78bc0136b7",
+    "docs/development/codegraph.md": "dbef416a719f9e68d03abbdb9a33f84bf1b5f9d2fca6de2ebb28c5d0b5ec83cc"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/research/headroom-serena-2026-11-15.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "bench/context_tools/README.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "TASKS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/IMPLEMENTATION_STATUS.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "462645c835d4a858a02ac8591d2234a5a34d4e89c830bd41627f63002cb7f956",
+  "inventory_scanner_sha256": "252bb7cd485828727001a1ef48de5df9eb6148573a47709d82f1f30f5014f0d2",
+  "development_token_savings": "not_measured",
+  "engine_provider_and_ci_tests": "not_run_documentation_only",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "b54c9ec9f0cc0cfb93dfaf40e553ab7348aa2f69afdda7b9ae17ab5c787ee5b4",
+    "after_input_sha256": "79ee7e3f240b38d321b670ae8623b629586e472581366532864a6accdfb55b85",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 6,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 2
+      },
+      "flagged_prose_lines": 866,
+      "approximate_source_words": 34614,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 4,
+      "counts_by_area": {
+        "other_documents": 3,
+        "research_notes": 1
+      },
+      "flagged_prose_lines": 829,
+      "approximate_source_words": 33069,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 216,
+      "remaining_documents": 6,
+      "ready_percent": 97.3,
+      "remaining_percent": 2.7
+    },
+    "progress_after": {
+      "ready_documents": 218,
+      "remaining_documents": 4,
+      "ready_percent": 98.2,
+      "remaining_percent": 1.8
+    }
+  }
+}

@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English Headroom, Serena, and context tools notes
+
+H042-k3ar is complete. The English notes cover the pinned Headroom and Serena review and the local Context Diet and Context Mode pilot. The checks matched the recorded criteria, commands, evidence, and heading links. [Evidence](proofs/pennypinch-context-research-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 218 of 222 tracked documents (98.2%). It flagged 4 documents (1.8%) with remaining Turkish prose. The estimated remaining text is about 33,000 words. Most of that text is in the historical checkpoint.
+
+### Next H042 release step
+
+Continue H042-k3 with the toolchain notes, configuration action design, and manual Codex test guide. The historical checkpoint remains open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English metrics and optimization research
 
 H042-k3aq is complete. The English notes cover token measurement, optimization targets, and return on investment. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-metrics-optimization-research-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 216 of 222 tracked documents (97.3%). It flagged 6 documents (2.7%) with remaining Turkish prose. The estimated remaining text is about 35,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the Headroom and Serena research and the context tools benchmark notes. Other project documents, research notes, and historical checkpoints remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English October research notes
 

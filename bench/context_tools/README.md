@@ -1,32 +1,42 @@
-# H041 — Context Diet / Context Mode yerel pilotu
+<a name="h041--context-diet--context-mode-yerel-pilotu"></a>
 
-16 Kasım 2026. Uygulayıcı ana ajan: ölçüm temeli ve hata/özgün çıktı sözleşmesi karar gerektiriyor. Billion Context kullanıcı kararıyla kapsam dışında.
+# H041 — Local pilot for Context Diet and Context Mode
 
-Amaç, iki adayın Headroom 0.44.0'a **ek** katkısını model çağrısı yapmadan belirlemek. Bu pilot istemciye otomatik entegrasyon, görev kalitesi, sağlayıcı faturası veya yeni OS desteği kanıtlamaz. Ürün ve gerçek istemci ayarları değişmez; paket, süreç ve state yalnız `work/proofs/context-tools/` altında tutulur. İndirmeler sabit commit/sürüm ve programatik hash ile kaydedilir. Context Mode'un yerel MCP paketi kullanılır; Gateway, setup ve global hook kurulmaz. Context Diet'in değiştirilmeyen saf filtreleri mevcut TypeScript derleyicisiyle çalıştırılır; MCP kurulumu iddia edilmez.
+16 November 2026. The lead agent owned the pilot because the measurement basis and the handling of failures and original output required decisions. The user excluded Billion Context.
 
-## Önceden belirlenen kabul
+The pilot measures what both candidates add to Headroom 0.44.0 without model calls. Its evidence covers the local pilot. Automatic client integration, task quality, provider billing, and support for other operating systems require separate evidence. The pilot keeps product and live client settings intact. It keeps packages, processes, and state under `work/proofs/context-tools/`. The download record includes pinned commits or versions and programmatically calculated hashes.
 
-1. **Normal:** Sabit tekrarlı log, benzersiz satırlı test çıktısı ve hedef kaydı olan büyük JSON; ham çıktı, Headroom, Diet → Headroom ve Mode → Headroom karşılaştırılır. İlk araç yanıtı ve gerektiğinde arama yanıtı ayrı sayılır. JSON alt kümesi hesaplaması tam JSON sıkıştırmasıyla aynı iş sayılmaz.
-2. **Hata:** stdout üzerinden başarısız test, stderr uyarısı ve sıfır olmayan çıkış; hata kimliği/sayıları ve çıkış durumu korunmalı. Başarılı süreçte stderr de kontrol edilir. Kayıp, düşük token sayısıyla başarıya çevrilmez. Diet korumalı satırı sığdıramazsa açık hata vermeli. Mode özgün çıktısı ve arama sonucu sentetik beklenen içerikle karşılaştırılır.
-3. **Sınır:** Kısa çıktı, Türkçe/Unicode, uzun kesin tamsayı/ondalık ve kaynak dosyası. Kaynak ve sayısal tam-okuma girdileri ürün entegrasyonunda geçiş gerektirir. Filtrenin doğrudan sonucu ayrıca gözlenir; pilot bunu sessizce geçişle gizlemez.
+The pilot uses Context Mode's local MCP package. Gateway, setup, and global hooks are outside the pilot. The pilot runs the unchanged Context Diet filters with the existing TypeScript compiler. This test covers the filters without an MCP installation.
 
-Her fixture en fazla 1 MiB; araç çağrısı en fazla 30 saniye; aynı anda tek sahipli Mode ve Headroom süreciyle sıralı çağrılar. Her fixture üç tekrar; her tekrar ayrı süreç/state ile başlar ve açılış ayrıca ölçülür. Her motorda 44 proxy isteği vardır: ürünün 60 istek/dakika varsayılan sınırı değiştirilmez. Önceki tek-motor denemesi 64. hızlı istekte yerel HTTP 429 aldı; bu araç sıkıştırma hatası değildir. Token ve kabul sonuçları tekrarlarda eşleşmeli. Kaynak/toolchain/config fingerprint'i doğrulama öncesi ve sonrası eşleşmeli. Performans için üretim SLA'sı koyulmaz; süreler bu küçük koşunun gözlemidir.
+<a name="önceden-belirlenen-kabul"></a>
 
-Ölçüm `o200k_base` yerel tokenizer'ıyla tam UTF-8 araç metni ve aynı Responses istek zarfı üzerinden yapılır. Diet'in karakter/4 tahmini yüzde hesabında kullanılmaz. Araç şeması/çağrı argümanı ve ek arama yanıtı maliyetleri ayrıca tutulur; seçilen çıktının küçülmesi bütün sohbetin/faturanın tasarrufu değildir. Model/auth/reasoning/araç kimliği Headroom kollarında aynı kalır. Özgün arşiv geri getirilemezse veya hata kaybolursa aday otomatik genel filtre olarak kabul edilmez.
+## Acceptance criteria set before the pilot
 
-Sonuçlar `docs/proofs/context-tools-pilot.json` ve kısa Türkçe değerlendirmeye bağlanır. Ürün kodu değişmediyse uygulamanın tam kalite kapısı tekrarlanmaz; pilotun gerçek MCP/filtre/Headroom yolu ve kendi hata kontrolleri çalıştırılır. H041 ana kabulü açık kalır.
+1. **Normal operation.** Use fixed logs with repeats, test output with unique lines, and large JSON with a target record. Compare raw output, Headroom, Diet → Headroom, and Mode → Headroom. Count the initial tool response and any required search response separately. Treat a query for a JSON subset as a different operation from compression of the full JSON.
+2. **Errors.** Test a failure on stdout, a warning on stderr, and a nonzero exit status. Preserve the error identifiers, numbers, and exit status. Check stderr from a successful process too. A lower token count cannot compensate for lost information. Diet must report an error if its output limit cannot fit a protected line. Compare the original Mode output and search result with the expected synthetic content.
+3. **Boundary cases.** Test short output, Turkish and other Unicode text, long exact integers and decimals, and a source file. Product integration must pass source and numeric inputs through when they require a complete read. Check the filter result directly. The pilot must expose errors that a pass-through could hide.
 
-## Yeniden üretme
+Limit each fixture to 1 MiB. Limit each tool call to 30 seconds. Run calls in sequence with one owned Mode process and one owned Headroom process at a time. Run each fixture three times. Start new processes and state for each repeat. Measure startup separately.
 
-Yeni ve henüz bulunmayan bir çalışma diziniyle, proje kökünde:
+Each engine processes 44 proxy requests. Keep the product's default limit of 60 requests per minute. The previous test with a single engine received a local HTTP 429 on its 64th rapid request. The rate limit caused that response. Each repeat must yield the same token counts and acceptance outcomes. The source, toolchain, and configuration fingerprints must match before and after verification. The timing results describe this small run. The pilot sets no production service-level agreement.
+
+The pilot uses the local `o200k_base` tokenizer for the full UTF-8 tool text and the same Responses request envelope. Exclude Diet's characters/4 estimate from the percentage calculation. Account for tool schemas, call arguments, and extra search responses separately. A reduction in the selected output alone measures that output. Keep the model, authentication method, reasoning level, and tool identity the same in all Headroom arms. Reject a candidate as an automatic general filter if it loses an error or cannot retrieve the original archive.
+
+The pilot links results to `docs/proofs/context-tools-pilot.json` and the original short assessment in Turkish. Repeat the full product quality gate only if product code changes. Run the pilot through the actual MCP, filter, and Headroom paths. Run the pilot's error checks. The main H041 acceptance stays open.
+
+<a name="yeniden-üretme"></a>
+
+## Reproduce the pilot
+
+Use a work directory that does not exist. Run the commands from the project root.
 
 ```powershell
 python -B bench/context_tools/prepare.py work/proofs/context-tools/yeni-kosu
 & 'work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime/python.exe' -I -B bench/context_tools/pilot.py work/proofs/context-tools/yeni-kosu
 ```
 
-Hazırlık yalnız sabit kaynak/paketi indirir ve mevcut proje TypeScript 7.0.2 derleyicisiyle Diet'i JavaScript'e çevirir; bağımlılık veya global araç kurmaz. Transpilasyon typecheck değildir. Filtre/CLI davranışı altı upstream test dosyasıyla ayrıca doğrulanır. Eşleşen test kaynakları ve Node fingerprint'i bulunan önceki başarılı filtre kabulü `--reuse-diet-proof <result.json>` ile kullanılabilir; tüm pilotun başarılı olduğu varsayılmaz.
+The preparation step downloads only the pinned source and package. It transpiles Diet to JavaScript with the existing TypeScript 7.0.2 compiler. It installs no dependencies or global tools. Transpilation does not check types. Six upstream test files verify filter and CLI behavior separately. Reuse a prior passing filter result with `--reuse-diet-proof <result.json>` only if the test sources and Node fingerprint match. This reuse covers the filter checks only.
 
-Küçülen her çıktı kabul edilmiş sayılmaz. Rapor; doğrudan görünür hata, tam-okuma gereği, tekrar sayısı, Mode arşivinin normalleştirmesi ve Headroom'un kendi kayıpsız çözücüsüyle/CCR ile birebir geri açılmayı ayrı alanlarda tutar. `evaluation_completed` deneyin bittiğini belirtir; otomatik ürün entegrasyonu onayı değildir.
+A smaller output must still pass the acceptance checks. The report records visible errors, the need for a complete read, and the repeat count in separate fields. It also records Mode archive normalization and exact recovery with Headroom's lossless decoder or CCR in separate fields. `evaluation_completed` means the experiment finished. Automatic product integration requires separate acceptance.
 
-Arama oracle'ı, beklenen tam hata satırını `intent` veya `queries` içinde göndermez. Araç sıfır sonuçta bile sorguyu yankılayabilir. Sorgu yalnız kısa anahtar sözcüktür; başarılı sayılan yanıt beklenen tam satırı dosya/indeksten getirmelidir. Özellikle kayıp stderr uyarısının sorgu yankısıyla bulunmuş görünmesi reddedilir.
+Keep the full expected error line out of `intent` and `queries` in the search check. The tool can echo the query even when it finds no results. Use a short keyword as the query. Accept the response only if the tool retrieves the full expected line from the file or index. Reject a query echo that appears to recover a missing stderr warning.
