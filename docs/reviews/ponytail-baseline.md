@@ -1,59 +1,85 @@
-# DEV002 — mevcut kodun ilk Ponytail denetimi
+<a name="dev002--mevcut-kodun-ilk-ponytail-denetimi"></a>
 
-26 Ekim 2026. Kaynak başlangıcı `0a031d2`. İnceleme, `ponytail-audit` ve proje kabul sözleşmesine göre ana ajan ile mevcut tek Luna çalışan tarafından yapıldı. Ürün kaynağı, ayarlar ve testler değiştirilmedi.
+# DEV002 — Initial Ponytail code audit
 
-## Bu depo ne yapıyor?
+26 October 2026. The source baseline was `0a031d2`. The lead agent and the existing single Luna worker applied `ponytail-audit` and the project acceptance criteria. Product source, settings, and tests stayed the same.
 
-Headroom Desktop, yerel bir motorun yaşam döngüsünü ve desteklenen kodlama istemcilerinin proxy bağlantılarını yönetiyor. Yapılandırmayı önizleyip uyguluyor; kendi değişikliğini sahiplik kaydı üzerinden geri alıyor. Varsayılan yük tek bilgisayardaki tek kullanıcıdır; eşzamanlı istemci/alt ajan bağlantıları, birden fazla uygulama süreci ve istemcinin ayarını sonradan değiştirmesi değerlendirmeye dahildir. Relay varsayılanı 32 eşzamanlı TCP bağlantısıdır; bu sınır HTTP istek sayısı değildir.
+<a name="bu-depo-ne-yapıyor"></a>
 
-## Bulgular — düşük öncelikli belge düzeltmesi
+## Repository scope
 
-### 1. DEV002-D01 — README güncel geliştirme durumunu anlatmıyor
+Headroom Desktop manages a local engine and proxy connections for supported coding clients. It previews and applies configuration. It uses its ownership record to undo its own changes.
 
-**Kaynak:** `README.md:7`, `README.md:17`; karşılaştırma `TASKS.md` durum satırı ve `package.json` içindeki `scripts.test:app`.
+The audit assumed one user on one computer. It considered concurrent client and subagent connections, multiple app processes, and later changes to client settings. The relay defaults to 32 concurrent TCP connections. This limit applies to connections. HTTP request counts have a separate scope.
 
-- **Ne yapıyor:** Yeni geliştiriciye mevcut ürün durumunu ve çalıştıracağı kaynak kontrollerini anlatıyor.
-- **Sorun:** Current state bölümü 22 Ekim'in tarihsel H018/H019 görüntüsünde kalmış; bugün H021 kabul edilmiş durumda. Ayrıca “all six app test files” diyor, mevcut komut dokuz `.test.mjs` dosyası içeriyor. Eski tarih açıkça yazılı olduğu için tarihsel kayıt yanlış değil; güncel giriş özeti eskimiş.
-- **En küçük çözüm:** H022'nin belge güncellemesinde güncel durumu TASKS/checkpoint'e bağla. H019'un sınırlı/amber sonucunu temiz sağlayıcı başarısına dönüştürme. Test sayısını sabitlemek yerine komutun kapsamını anlat. İlk CI koşusunun tarihsel 49-test sonucu ayrı korunmalı.
-- **Atlanırsa:** Yeni geliştirici tamamlanan işi başlamamış sanabilir ve kaynak kapısının kapsamını yanlış anlayabilir. Üründe veri kaybı veya çökme kanıtı değildir.
+<a name="bulgular--düşük-öncelikli-belge-düzeltmesi"></a>
 
-**Güven:** Yüksek; dosya içerikleri ve komuttaki mevcut dokuz dosya doğrudan karşılaştırıldı. **Takip:** H022'ye bağlandı; bu denetimde düzeltilmedi.
+## Findings
 
-İncelenen öncelikli akışlarda yeniden üretilebilir veya kaynakta kesinleşmiş yeni bir çökme, veri kaybı ya da sahiplik ihlali doğrulanmadı. Bu, ürünün hatasız veya yayına hazır olduğu anlamına gelmez.
+<a name="1-dev002-d01--readme-güncel-geliştirme-durumunu-anlatmıyor"></a>
 
-## İzlenen akışlar ve doğrulama düzeyi
+### 1. DEV002-D01 — Outdated README summary
 
-| Alan | Gerçekte incelenen yol | Sonuç / sınır |
+**Source.** The review compared `README.md:7` and `README.md:17` with the status in `TASKS.md` and `scripts.test:app` in `package.json`.
+
+- **Purpose.** The README gives new developers the current product state and the checks to run.
+- **Condition.** The Current state section described H018 and H019 as of 22 October. The team accepted H021 before this audit. The README also said “all six app test files”. The command listed nine `.test.mjs` files. The date made the old entry valid as a historical record. The current summary needed an update.
+- **Smallest fix.** Link the H022 documentation update to TASKS and the checkpoint. Keep the limited amber result for H019. Describe the command's scope. Let the command define the current test count. Keep the first CI run's historical result of 49 tests separate.
+- **Impact.** A new developer could mistake completed work for planned work. The developer could also misunderstand the source gate. This finding concerns the documentation.
+
+**Confidence.** High. The review compared the files and the nine entries in the command directly. **Follow-up.** H022 tracks the fix. This audit left it open.
+
+The priority paths yielded no confirmed new crash, data loss, or ownership violation. The audit covered the inspected paths. Release readiness needs its own acceptance.
+
+<a name="izlenen-akışlar-ve-doğrulama-düzeyi"></a>
+
+## Inspected paths and verification scope
+
+| Area | Path reviewed | Result and limit |
 | --- | --- | --- |
-| Config Apply | `ConnectDialog.applyPlan` → TS action client → Tauri `apply_connection_plan` → `PlanManager` → config + ownership transaction | UI plan kimliği/fingerprint gönderiyor; native önkoşullar ve transaction sahiplik sınırları incelendi. Gerçek kullanıcı config'i açılmadı. |
-| Undo ve sahiplik | `undoOwnership` → `undo_connection` → sahiplik revizyon/fingerprint kontrolü → transaction seal/commit | Config ve sahiplik birlikte ele alınıyor. `connection_actions.rs:879` ve `transaction_fs.rs:350` çevresindeki yeniden doğrulamalar okundu; yanlış başarıya giden somut yol bulunmadı. |
-| Tercihler | `App.changePreferences` → preference komutu → `PreferenceStore` / `save_document` | Revizyon ve içerik fingerprint'i, eşgüdümlü süreç kilidi, sınırlı dosya okuma ve temp/replace yolu incelendi. Kilide uymayan dış yazıcı için atomik CAS garantisi yok; aşağıdaki sınır geçerli. |
-| Runtime | Tauri start/stop/exit → `RuntimeManager` actor → `ManagedIngress` route/drain | Aktif nesil, cleanup-belirsizliği, kapanış ve yeniden başlatma akışları okundu. Windows süreç/Job Object/manifest-launch yardımcılarının tamamı yeniden denetlenmedi. |
-| Relay | accept/register → değişmez backend hedefi → peer kontrolü → iki yönlü sınırlı buffer → drain/shutdown | Bağlantı sınırı, backpressure, half-close, zaman aşımı ve payload replay yapılmaması incelendi. Yeni trafik/performans testi çalıştırılmadı. |
-| Arayüz | `App`, `Applications`, `ConnectDialog`, `ConnectionStatus` eylem/sequence/mutation yolları → TS köprüleri → native kayıtları | Geciken yanıt ve mutation kilitleri okundu. Görsel tasarım, tüm JSX/copy satırları veya bütün decoder kombinasyonları için eksiksiz UI denetimi iddiası yok. |
+| Config Apply | `ConnectDialog.applyPlan` → TS action client → Tauri `apply_connection_plan` → `PlanManager` → config and ownership transaction | The UI sends the plan ID and fingerprint. The audit checked the native preconditions and the transaction ownership boundary. Real user config remained outside the review. |
+| Undo and ownership | `undoOwnership` → `undo_connection` → ownership revision and fingerprint check → transaction seal and commit | The transaction handles config and ownership together. The audit checked the revalidation around `connection_actions.rs:879` and `transaction_fs.rs:350`. It found no confirmed path to false success. |
+| Preferences | `App.changePreferences` → preferences command → `PreferenceStore` and `save_document` | The audit checked revision and content fingerprints, the cooperative process lock, bounded file reads, and temporary file replacement. Atomic CAS covers writers that use the lock. |
+| Runtime | Tauri start, stop, and exit → `RuntimeManager` actor → `ManagedIngress` routing and drain | The audit checked active generation, uncertain cleanup, shutdown, and restart. A full review of the Windows process, Job Object, and manifest launch helpers remained outside this scope. |
+| Relay | Accept and register → fixed backend target → peer check → bounded two-way buffer → drain and shutdown | The audit checked connection limits, backpressure, half-close, timeouts, and the guard against payload replay. This review used source evidence for traffic and performance paths. |
+| Interface | `App`, `Applications`, `ConnectDialog`, and `ConnectionStatus` action, sequencing, and mutation paths → TypeScript bridges → native records | The audit checked late replies and mutation locks. Visual design, all JSX and copy, and every decoder combination needed their own review. |
 
-CodeGraph `ManagedIngress`, `RuntimeManager.stop_engine` ve çağıranları keşfetmek için kullanıldı. İlişkiler kaynakta okundu; grafın “test yok” özeti test yokluğu kanıtı olarak alınmadı. Bilinen dosyalarda `rg` ve dar kaynak okuması kullanıldı.
+The lead used CodeGraph to find `ManagedIngress`, `RuntimeManager.stop_engine`, and their callers. The audit checked the relationships in source. A graph summary that says it found no tests supplies no evidence of test coverage. The lead used `rg` and narrow source reads for known files.
 
-## Var olan görevlerde kalan konular
+<a name="var-olan-görevlerde-kalan-konular"></a>
 
-- **H022:** Claude proje klasörünü güvenli oluşturma, proje seçimini hatırlama ve seçici başlangıç/fallback senaryoları zaten planlıdır. Yeni denetim hatası olarak tekrar sayılmadı. DEV002-D01 belge güncellemesi bu göreve bağlandı.
-- **H023 / H025 / H026:** Önceki H021 Chat fixture'ındaki `original=2306` ile sağlayıcının sentetik `optimized=12` değeri aynı ölçüm temeli değildir. Metrik normalizasyonu ve gerçek platform/model/ajan gösterimi mevcut görevlerde kalır; bu denetimde tasarruf türetilmedi.
-- **H008:** H019'un gerçek cevapla birlikte sınıflandırılmamış ek CLI hatası verdiği tarihsel amber sonuç açık kalır. Burada yeni sağlayıcı denemesi yapılmadı ve sonuç temiz PASS'a çevrilmedi.
+## Issues on existing tasks
 
-## Bulgulaştırılmayan sınırlar
+- **H022.** The task already covers safe Claude project folder creation, remembered selection, and picker start and fallback scenarios. The audit kept those scenarios under the existing task. It also tracks the DEV002-D01 documentation fix.
+- **H023, H025, and H026.** In the earlier H021 Chat fixture, `original=2306` and the synthetic provider value `optimized=12` use different measurement bases. The existing tasks own normalization and real platform, model, and agent display. A saving requires comparable measurements.
+- **H008.** The historical amber result for H019 remains open. The CLI returned a real reply and an additional unclassified error. The audit retained that result. A new provider attempt remained outside this audit.
 
-`state/store.rs:547` son fingerprint kontrolü ile `:566` replace arasında kilide katılmayan bir dış yazıcı için teorik bir aralık vardır. Ancak `docs/proofs/preferences-store.md:7` garantiyi açıkça eşgüdümlü süreçlerle sınırlar. Mevcut dış-edit testi değişikliği save başlamadan önce yapar (`store_tests.rs:350`). Bu nedenle normal tema/dil kullanımında doğrulanmış kayıp veya güvenlik açığı diye raporlanmadı. Garanti ileride genişletilirse ayrı tehdit modeli ve gerçek yarış testi gerekir.
+<a name="bulgulaştırılmayan-sınırlar"></a>
 
-Benzer şekilde path/reparse kontrollerinden yalnız genel bir yarış hipotezi çıkarmak, kanıtlanmış proje dışına yazım bulgusu sayılmadı. Güvenlik kontrollerini silerek satır azaltma önerisi yapılmadı. Somut gereksiz bağımlılık veya güvenle silinebilecek kod saptanmadığı için satır/bağımlılık tasarrufu tahmini verilmedi.
+## Limits outside the findings
 
-## Kanıt ve kontrol kapsamı
+A writer that bypasses the cooperative lock could theoretically write between the final fingerprint check in `state/store.rs:547` and replacement at `:566`. The contract in `docs/proofs/preferences-store.md:7` covers cooperating processes. The external edit test at `store_tests.rs:350` changes the file before save starts. Normal theme and language use yielded no confirmed loss or security issue. A broader guarantee would need a separate threat model and a real race test.
 
-Config/state incelemesinin ana dosyaları: `transaction.rs`, `transaction_fs.rs`, `connection_actions.rs`, `config_io.rs`, `config_document.rs`, `state/ownership.rs`, `state/store.rs`. İlgili transaction/action/config/ownership testlerinin sözleşmeleri ve tercih deposunun ilgili test bölümleri incelendi; tüm test gövdeleri satır satır yeniden okunmadı.
+The general race hypothesis around path and reparse checks needs concrete evidence of a write outside the project. The audit kept the security checks. It found no dependency or code that it could safely remove. It made no estimate of line or dependency savings.
 
-Ana ajan runtime tarafında özellikle `ingress_relay.rs` accept/forward/drain yollarını ve `manager.rs` içindeki ManagedIngress/RuntimeManager ve actor bölümlerini (2963–3314, 3338–3632, 3722–4111); UI tarafında bileşenlerin eylem ve effect bölümlerini okudu. Manager ownership/cleanup, relay generation/half-close/drain ve TS sequence testlerinden ilgili bölümler kontrol edildi. Kaynak okumaları yeni test çalıştırması değildir.
+<a name="kanıt-ve-kontrol-kapsamı"></a>
 
-Yerel metadata: `work/proofs/ponytail-baseline/audit.json`; kaynak/test/config fingerprint'leri, README karşılaştırması ve önceki gate girdisi eşleşmeleri burada kayıtlıdır. Ürün kodu değişmediğinden önceki başarılı testler ve tam ürün gate'i tekrarlanmadı. Yeni native/UI/sağlayıcı başarısı iddia edilmiyor.
+## Evidence and check scope
 
-**Karar:** DEV002 denetim raporu tamamlandı. Mevcut H008/H022/H023 takipleri korunarak H022'ye geçilebilir; DEV002-D01 küçük belge düzeltmesi H022'dedir. Görev sonrası durma kuralı geçerlidir.
+The config and state review covered `transaction.rs`, `transaction_fs.rs`, `connection_actions.rs`, `config_io.rs`, `config_document.rs`, `state/ownership.rs`, and `state/store.rs`. The audit checked the transaction, action, config, and ownership test contracts. It sampled the relevant preference store test bodies.
 
-**Kontrol edilmedi:** Yeni canlı OAuth/API-key sağlayıcı çağrısı, gerçek başka sohbet/alt ajan trafiği, yeni native GUI oturumu, temiz kurulum ve installer/uninstaller, Windows 11/macOS/Linux, tüm paketleme/CLI helper'ları, üçüncü taraf motor/bağımlılık kaynaklarının tamamı veya güncel güvenlik duyuruları. İnceleme öncelikli yerel akışların kaynak denetimidir; bütün bu alanların kabulü değildir. Geliştirme token tasarrufu ölçülmedi.
+For runtime, the lead checked accept, forward, and drain in `ingress_relay.rs`. The ManagedIngress, RuntimeManager, and actor sections in `manager.rs` were at 2963–3314, 3338–3632, and 3722–4111. The UI review checked component actions and effects. The audit also checked relevant manager ownership and cleanup, relay generation and drain, half-close, and TypeScript sequencing tests.
+
+The local receipt `work/proofs/ponytail-baseline/audit.json` records the source, test and config fingerprints, README comparison, and matching inputs for the earlier gate. The audit reused prior gate evidence because product code stayed the same. This review reports source checks. Native, UI, and provider behaviors retain their separate evidence.
+
+**Decision. The DEV002 audit report is complete.** H022 is next, with H008, H022, and H023 follow-ups preserved. H022 owns the small DEV002-D01 documentation fix. Work stopped at the end of the task.
+
+The following remained outside the review scope.
+
+- New live OAuth and API-key provider calls.
+- Actual traffic from other chats or subagents.
+- A new native GUI session.
+- Clean install, installer and uninstaller, Windows 11, macOS, and Linux.
+- All packaging and CLI helpers, all third-party engine and dependency source, and current security advisories.
+
+Development token savings remained unmeasured.

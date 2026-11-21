@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English UX and baseline reviews
+
+H042-k3ao is complete. The English reviews cover daily use, the visual refresh, and the first DEV002 audit. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-ux-baseline-reviews-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 211 of 222 tracked documents (95.0%). It flagged 11 documents (5.0%) with remaining Turkish prose. The estimated remaining text is about 38,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the October desktop comparison and computer-use research notes. Other project documents, research notes, and historical checkpoints remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English account and chat reviews
 
 H042-k3an is complete. The English reviews cover account connections and the Sessions screen. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-account-chat-reviews-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 208 of 222 tracked documents (93.7%). It flagged 14 documents (6.3%) with remaining Turkish prose. The estimated remaining text is about 40,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the UX and DEV002 baseline reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English macOS port review
 
