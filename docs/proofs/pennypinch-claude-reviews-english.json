@@ -1,0 +1,133 @@
+{
+  "task": "H042-k3u",
+  "status": "pass",
+  "base_commit": "61d9d7181f0f6b6d6dc44e8a4abb7dae1be8c5af",
+  "verified": {
+    "translated_records": 3,
+    "legacy_heading_aliases": 3,
+    "incoming_links": 8,
+    "incoming_heading_links": 0,
+    "outgoing_links": 3,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/reviews/H009-a.md": {
+      "original_sha256": "9dc18fc84aba3522ae93979e7aa63f37e182dedaa4d41b2aa86dc0c08c00b20c",
+      "draft_sha256": "1bc9902eb0a642dde5e673db774d69c1ced1208274c79d96ac424732bf5bea47",
+      "candidate_sha256": "1f2ece27abd22da8e7927b7d7a315f1e493c84da46ecbaedc0056cdd596bea58"
+    },
+    "docs/reviews/H009-b.md": {
+      "original_sha256": "19a97349982f7ecd30c4093ef749d338c1593eda16664eb9ba85ee7ba52f8446",
+      "draft_sha256": "e87d3a1325f1862994b547cc618c0a1e986c4b1fc5e2e0bda66fadd1a4aea325",
+      "candidate_sha256": "5bd91d6eb1ecae528e799b6470c12f19030ef5dc745ba1f5db1158ba24aaa1b7"
+    },
+    "docs/reviews/H009.md": {
+      "original_sha256": "31c0c560044c1137353554d0f7625af61662f44bb0e40516171765f18f53ef81",
+      "draft_sha256": "ce88081ec09f2cc68ca1605ad4ba44090a223db9e8785655d94d2f1d12f6aeb5",
+      "candidate_sha256": "801947d2cee9a18d63bee9ad4e94c2c9820d826318b4746eea812a306ea23bdb"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "17d99036b1956f89ec4831caefae1061631a01441267144ef81a02a49df855fa",
+    "docs/IMPLEMENTATION_STATUS.md": "956bbbf0f55e5c82615c19666b61e5091e238ae03c87c266e6822dbd290c6264",
+    "docs/proofs/claude-acceptance.md": "5fed248746ff2ebe8f2d41ec80f13c5e62cb1f752bdf6e3153c3a8da5b122cb3",
+    "docs/proofs/claude.md": "065a14ac7bf24ca1a86c610846db2f25e0bdac56f38cda43ab98f7f57d61aa0d",
+    "docs/proofs/claude-tools.json": "d8d26d72ea8c6ca9cb04cb10651ce70a317b55a37218e740ed48781a9640838e",
+    "docs/proofs/claude-acceptance.json": "26182c1ef0e4a2b0d97cac2d2f41c293875bb884833a6040ddc14d032dc3180b"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H009-a.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H009-b.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H009.md": {
+        "hard": 0,
+        "advisory": 3
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "historical_evidence": {
+    "docs/proofs/claude.md": {
+      "sha256": "065a14ac7bf24ca1a86c610846db2f25e0bdac56f38cda43ab98f7f57d61aa0d"
+    },
+    "docs/proofs/claude-tools.json": {
+      "sha256": "d8d26d72ea8c6ca9cb04cb10651ce70a317b55a37218e740ed48781a9640838e"
+    },
+    "docs/proofs/claude-acceptance.json": {
+      "sha256": "26182c1ef0e4a2b0d97cac2d2f41c293875bb884833a6040ddc14d032dc3180b"
+    }
+  },
+  "verifier_sha256": "6fd19f1e05ce10c5a7ca480df1e4d6bf1198737a6f6db34fa6e32cdb3493519e",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "399393e0fdbd21357e2763e2a4a74294b3301def3598488fbd3b630c59981fd7",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 68,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 57
+      },
+      "flagged_prose_lines": 1708,
+      "approximate_source_words": 64312,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 65,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 54
+      },
+      "flagged_prose_lines": 1688,
+      "approximate_source_words": 63436,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 154,
+      "remaining_documents": 68,
+      "ready_percent": 69.4,
+      "remaining_percent": 30.6
+    },
+    "progress_after": {
+      "ready_documents": 157,
+      "remaining_documents": 65,
+      "ready_percent": 70.7,
+      "remaining_percent": 29.3
+    },
+    "other_documents": [
+      "bench/context_tools/README.md",
+      "docs/IMPLEMENTATION_STATUS.md",
+      "docs/design-config-actions.md",
+      "docs/testing-codex-manually.md"
+    ],
+    "after_input_sha256": "f943b6e9d2072bf543ad4fd58b623aa6dfeaad9817d200b6ce600627764477b5"
+  },
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted H009-a and H009-b. The lead agent drafted the main review and checked all three against the original text and evidence.",
+  "programmatic_references": "The tracked code and configuration search found no direct reference to these three reviews.",
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}

@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English Claude Code reviews
+
+H042-k3u is complete. The three English H009 reviews cover local streaming, one isolated tool and CCR loop, and the main acceptance. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-claude-reviews-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 157 of 222 tracked documents (70.7%). It flagged 65 documents (29.3%) with remaining Turkish prose. The estimated remaining text is about 63,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the first H010 OpenCode reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English Codex reviews
 
 H042-k3t is complete. The two English H008 reviews cover the local API fixture and a later live CLI response. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-codex-reviews-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 154 of 222 tracked documents (69.4%). It flagged 68 documents (30.6%) with remaining Turkish prose. The estimated remaining text is about 64,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the H009 Claude Code reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English early engine and protocol reviews
 
