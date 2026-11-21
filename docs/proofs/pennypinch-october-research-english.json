@@ -1,0 +1,115 @@
+{
+  "task": "H042-k3ap",
+  "date": "2026-11-21",
+  "status": "pass",
+  "base_commit": "8392a4896e064c10f53fd6b21c0c512cdccb5324",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the desktop comparison. The lead drafted the Computer Use note and verified both against the original records.",
+  "verified": {
+    "translated_records": 2,
+    "legacy_heading_aliases": 14,
+    "incoming_links": 6,
+    "incoming_heading_links": 0,
+    "outgoing_links": 0,
+    "unchanged_historical_evidence": []
+  },
+  "documents": {
+    "docs/research/computer-use-2026-10-20.md": {
+      "original_sha256": "30fbb88bb22267b1f11924c003a942da2a857677c45dbec20d253e0771588eb1",
+      "draft_sha256": "b7504335f73b930445ca8ab71412cdf54717830bcb06c9fcc492ad7b28ba01e0",
+      "candidate_sha256": "b9e66e991e1364bb89567179fd90aab6f0ecbf9eeb626ae33e37034df90aa86e"
+    },
+    "docs/research/desktop-comparison-2026-10-20.md": {
+      "original_sha256": "22b1f7a8274f343a716c45e0710314e66a2dd56d267cb6eb285c547d79f4a32a",
+      "draft_sha256": "02520580a0aeba1d428ebc8dab2f55e8d2abfc061c42800d79e696f60ccd910b",
+      "candidate_sha256": "fcec5892504a4ea1102ddb9814acfcc5cd6ddae10151e9fd55a1372601dd84b6"
+    }
+  },
+  "worker_draft_sha256": "33a6b815e6c05381274d2523b443c8c454b7ed718e1860ed762c577965e626bc",
+  "lead_draft_sha256": "b7504335f73b930445ca8ab71412cdf54717830bcb06c9fcc492ad7b28ba01e0",
+  "references_sha256": {
+    "docs/proofs/roadmap-comparison.md": "2664f1f160d18c649ea2c367056d2975cfe338031e285c17b97d38f6b8569500",
+    "docs/proofs/discovery-desktop.md": "73ba9114b174af1a36fa08c23d19683f171f4a8a7afd82365c54309b02848ae2",
+    "docs/proofs/discovery-native-diagnosis.md": "ba16fecd11d7177f769bcdc27eb1d6bf8d08465d9b6819b8ec71da200bec3062",
+    "docs/proofs/pennypinch-connection-lifecycle-english.json": "9269a1288adb679c8bd4b6cd740f5892f2b6c30b42e5fdf68bdfd476d74d3bcd",
+    "HEADROOM_DESKTOP_SPEC.md": "ea27bac072717f207dfa1ac4cdd5261568431ca39aec113739b4ee7c88c10b38",
+    "docs/research/optimization-targets-2026-11-04.md": "b4ffc3f10467361aedd5a6ac931f85878ec39516e907b3a11101897025daece7"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/research/computer-use-2026-10-20.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/research/desktop-comparison-2026-10-20.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "TASKS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/IMPLEMENTATION_STATUS.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "f793916a82be4cc2a60d108bb8a6cdbb955494ff412c6e8a2469f446f42cdbdb",
+  "inventory_scanner_sha256": "252bb7cd485828727001a1ef48de5df9eb6148573a47709d82f1f30f5014f0d2",
+  "development_token_savings": "not_measured",
+  "engine_provider_and_ci_tests": "not_run_documentation_only",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "5ee7cc393e6548370954138590e7dfb26f1e5e3b53714bd8c9c421d241b7fb3c",
+    "after_input_sha256": "94dbcca52404ea6431f3b571d7c2d292893db95d34450cbdea57ca4cb350f82f",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 11,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7
+      },
+      "flagged_prose_lines": 996,
+      "approximate_source_words": 38228,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 9,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 5
+      },
+      "flagged_prose_lines": 930,
+      "approximate_source_words": 36441,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 211,
+      "remaining_documents": 11,
+      "ready_percent": 95.0,
+      "remaining_percent": 5.0
+    },
+    "progress_after": {
+      "ready_documents": 213,
+      "remaining_documents": 9,
+      "ready_percent": 95.9,
+      "remaining_percent": 4.1
+    }
+  }
+}

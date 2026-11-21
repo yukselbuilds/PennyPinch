@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English October research notes
+
+H042-k3ap is complete. The English notes cover the desktop comparison and the local Computer Use diagnosis and follow-up. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-october-research-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 213 of 222 tracked documents (95.9%). It flagged 9 documents (4.1%) with remaining Turkish prose. The estimated remaining text is about 36,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the research notes on metrics, optimization targets, and return on investment. Other project documents, research notes, and historical checkpoints remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English UX and baseline reviews
 
 H042-k3ao is complete. The English reviews cover daily use, the visual refresh, and the first DEV002 audit. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-ux-baseline-reviews-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 211 of 222 tracked documents (95.0%). It flagged 11 documents (5.0%) with remaining Turkish prose. The estimated remaining text is about 38,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the October desktop comparison and computer-use research notes. Other project documents, research notes, and historical checkpoints remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English account and chat reviews
 

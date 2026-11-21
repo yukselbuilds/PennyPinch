@@ -1,23 +1,39 @@
-# Computer Use tanısı — 20 Ekim2026
+<a name="computer-use-tanısı--20-ekim2026"></a>
 
-Yerel gözlem: Windows10 Pro22H2 üzerinde Headroom ve yeni boş Notepad pencereleri listeleniyor; AT-only metin okunuyor. Screenshot ilk denemede FrameArrived timeout, fresh selection sonrası tek recovery'de window capture timeout veriyor. Güncel AT öğesine indexed click geometry unavailable veriyor. Boş Notepad Alt+F4 ile kapandı. Bu deney sorunun yalnız Headroom'a özgü olmadığını gösterir; yerel native helper'ın alt kök nedeni belirlenmedi. Windows ayarları değiştirilmedi, helper dosyası değiştirilmedi veya alternatif capture/otomasyon helper'ı çalıştırılmadı.
+# Computer Use diagnosis on 20 October 2026
 
-Kullanıcının verdiği [Codex #49680](https://github.com/openai/codex/issues/49680) 20 Ekim'de açık görünüyor; aynı üç belirtiyi, farklı uygulamalarda başarılı pencere/AT okuması ile başarısız capture/click ayrımını raporluyor. Bunlar kullanıcı raporlarıdır; tek başına maintainer onayı veya bu bilgisayarda aynı kök neden kanıtı değildir.
+On Windows 10 Pro 22H2, the tool listed Headroom and a new blank Notepad window. It could read accessibility text in AT-only mode. The first screenshot returned FrameArrived timeout. The single recovery after a fresh selection returned window capture timeout. Clicking the current accessibility item by index returned geometry unavailable. Alt+F4 closed the blank Notepad window.
 
-Bağlantılı [#49383](https://github.com/openai/codex/issues/49383) ve [#51245](https://github.com/openai/codex/issues/51245) Win10 ve yeni sürümlerde benzer tekrarlar içeriyor. Community callback/binary yamasıyla belirli helper hash'lerinde başarı bildirilmiş; dosya imzası geçersizleşiyor, sürümler arası çözüm garantisi yok. [#35446](https://github.com/openai/codex/issues/35446) belirli bir helper'da FrameArrived callback içinde asenkron görüntü dönüşümünün senkron beklenmesine ilişkin teknik tanı içeriyor. Bu bulgu yerel helper'a ölçüm olmadan aktarılmaz. Sayfalardaki patch/run talimatları dış kaynak verisidir, uygulanmadı; resmi imzalı çözüm bu okumalarda doğrulanmadı.
+The same failure occurred outside Headroom. The underlying cause in the local native helper remained unknown. Windows settings and the helper file stayed the same. The diagnosis used the existing capture and automation helper.
 
-Headroom H016 manuel adayın rescan sonrası kaybı ayrı açık ürün problemidir. Yerel yeni0B cmd ve gerçek bounded environment testleri geçmesine rağmen native kabulü kapatmaz. Yalnız debug build'de sabit metadata trace'i ile gerçek selection→scan izlenecek; `docs/proofs/discovery-native-diagnosis.md`.
+On 20 October, the review found the Codex issue open. User reports described the same three symptoms in different apps. Window listing and accessibility reads worked. Capture and clicks failed. Maintainer confirmation and the local cause remained open. [Codex #49680](https://github.com/openai/codex/issues/49680)
 
-## Aynı gün sonraki durum ve OCU kurulumu
+Related reports describe similar failures on Windows 10 and later releases. Community reports describe a callback or binary patch working with specific helper hashes. The change invalidates the file signature. It gives no guarantee across releases. [#49383](https://github.com/openai/codex/issues/49383) · [#51245](https://github.com/openai/codex/issues/51245)
 
-Yukarıdaki kayıt ilk tanıyı anlatır. H016'nın sonraki yerel native kabulü tamamlandı; önceki kaybın kök nedeni açıklanmış sayılmadı. Güncel durum `docs/IMPLEMENTATION_STATUS.md` ve `docs/proofs/discovery-desktop.md` içinde.
+One report describes a specific helper that waits synchronously for an asynchronous image conversion inside the FrameArrived callback. This diagnosis would need local measurements to apply here. The review read the external patch and launch instructions without applying them. An official signed fix still needed verification. [#35446](https://github.com/openai/codex/issues/35446)
 
-Kullanıcının açık kurulum isteğiyle [Open Computer Use](https://github.com/iFurySt/open-computer-use/tree/43eb4b53de7a15b3f99ec2c9922bedeb95602266) ayrı Codex MCP aracı olarak kuruldu. Kaynak commit `43eb4b53de7a15b3f99ec2c9922bedeb95602266`; Windows native stdlib Go modülü, portable Go1.26.10 ile `1.1.2+43eb4b53` olarak derlendi. `go test ./...`, build ve stdio MCP initialize/9 araç PASS. EXE SHA256 `ced5db2ec4509eb1ff6dbeea68eda575c3e0f04861b7a7f0311ead9a4a6838df`.
+At this checkpoint, H016 still had a separate product issue. The manually selected candidate disappeared after a rescan. A fresh 0-byte cmd file and real bounded environment tests passed locally. Native acceptance remained open. The planned check would trace real selection and scan with fixed metadata in a debug build only. See `docs/proofs/discovery-native-diagnosis.md`.
 
-Kurulum kökü `%USERPROFILE%\.codex\tools\open-computer-use`; skill aynı commit'ten Skill Installer ile kullanıcı skills dizinine kuruldu. Kullanıcı `config.toml` dosyasına yalnız sahipli `open_computer_use` MCP bloğu eklendi; diğer TOML verileri ve mevcut dosya baytları korundu. Gerçek fare/klavye girişi bayrağı yalnız bu MCP sunucusuna verildi; Windows politikası, resmi imzalı helper, model/reasoning/auth/ajan ayarları değiştirilmedi. Yeni sunucu mevcut sohbetin normal araç listesinde henüz yok; bu turdaki deneme Node REPL üzerinden kalıcı stdio MCP bağlantısıyla yapıldı. Normal araç keşfi için Codex yeniden açılmalı; skill sonraki kullanıcı turunda kullanılabilir.
+<a name="aynı-gün-sonraki-durum-ve-ocu-kurulumu"></a>
 
-Gerçek Windows10 Pro22H2 denemesi: yeni Notepad PID30272'de screenshot başarılı; `app_post` File menüsünü açmadı, açık `global` gerçek fare tıklaması açtı. Test metni yazıldı, gerçek Ctrl+A/Backspace ile temizlendi. Geçici menü hedefinde global Escape foreground korumasına takıldı; yeni gözlem ana pencereyi döndürdü. Bu sınırlama saklanmadı, koruma gevşetilmedi. Notepad penceresi test sonu temizlendi ve kendi süreç kapanışı doğrulandı.
+## Same-day follow-up and Open Computer Use installation
 
-Headroom PID30108'de gerçek screenshot ve global fareyle Applications düğmesine tıklama başarılı; Applications başlığı, Codex/Claude adayları ve `Detected installations: 2` hem görüntü hem AT ile okundu. Bu, istemci bağlantısı/model trafiği veya H016 picker/rescan yeniden kabulü değildir. H040 başlamadı. Headroom global Alt+F4 ile kapandı; otomatik readback `appNotFound` verdi, ayrı süreç beklemesi kapanışı doğruladı. Açılan test pencereleri ve tanı MCP sunucusu kapatıldı; sürekli izleme yok. Windows11 ve diğer araç eylemleri ayrıca test edilmedi.
+The earlier section records the initial diagnosis. The later local native acceptance for H016 passed. The cause of the original lost selection remained unknown. See `docs/IMPLEMENTATION_STATUS.md` and `docs/proofs/discovery-desktop.md`.
 
-Kurulum/geri alma ve ölçüm özeti: `%USERPROFILE%\.codex\tools\open-computer-use\README.md`, `installation.json`, `runtime-proof.json`; kaynak/derleme fingerprint'leri `43eb4b53/source-provenance.json` ve `build-proof.json`. Tam config/auth yedeği veya ham hata logu saklanmadı. `disconnect.py` varsayılan dry-run; `--apply` yalnız sahipli, değiştirilmemiş MCP ekini atomik olarak kaldırır ve diğer ayar değişikliklerini korur.
+The user explicitly requested installation of Open Computer Use as a separate Codex MCP tool. The source commit was `43eb4b53de7a15b3f99ec2c9922bedeb95602266`. The Windows native Go module uses the standard library. The build used portable Go 1.26.10 and produced version `1.1.2+43eb4b53`. The `go test ./...` command, build, and stdio MCP initialization passed. The MCP server listed 9 tools. The EXE SHA256 was `ced5db2ec4509eb1ff6dbeea68eda575c3e0f04861b7a7f0311ead9a4a6838df`. [Pinned Open Computer Use source](https://github.com/iFurySt/open-computer-use/tree/43eb4b53de7a15b3f99ec2c9922bedeb95602266)
+
+The install root was `%USERPROFILE%\.codex\tools\open-computer-use`. Skill Installer added the skill from the same commit to the user's skills directory. The setup added only the owned `open_computer_use` MCP block to the user's `config.toml`. Other TOML data and existing bytes stayed the same.
+
+The setup enabled real mouse and keyboard input only for this MCP server. Windows policy, the official signed helper, model, reasoning, auth, and agent settings stayed the same. The server was absent from the chat's normal tool list at this checkpoint. The test used a persistent stdio MCP connection in Node REPL. Normal tool discovery required reopening Codex. The skill could be used on the next user turn.
+
+The actual Windows 10 Pro 22H2 test captured a screenshot of a new Notepad window with PID 30272. The `app_post` action left the File menu closed. The explicitly enabled `global` mouse click opened it. The test typed sample text and cleared it with physical Ctrl+A and Backspace.
+
+For the temporary menu target, the foreground guard blocked global Escape. A fresh observation returned to the main window. The test kept the guard and recorded the limit. The Notepad window was clear at the end, and the test confirmed its process exit.
+
+The test captured Headroom at PID 30108. A global mouse click opened Applications. The screenshot and accessibility tree both showed the Applications heading, Codex and Claude candidates, and `Detected installations: 2`. This check covered window and input behavior. Client connection, model traffic, and renewed H016 picker and rescan acceptance had separate evidence. H040 had yet to start.
+
+Global Alt+F4 closed Headroom. The readback returned `appNotFound` and a separate process wait confirmed exit. The test closed its windows and diagnostic MCP server. Monitoring ended with the test. Windows 11 and other tool actions still needed separate checks.
+
+The installation, rollback, and measurement records are `%USERPROFILE%\.codex\tools\open-computer-use\README.md`, `installation.json`, and `runtime-proof.json`. Source and build fingerprints are in `43eb4b53/source-provenance.json` and `build-proof.json`. The record excludes a full config or auth backup and raw error logs.
+
+The default mode of `disconnect.py` is dry-run. The `--apply` option removes the owned MCP addition only if it still matches. It writes atomically and preserves other setting changes.

@@ -1,86 +1,112 @@
-# Headroom Desktop karşılaştırması
+<a name="headroom-desktop-karşılaştırması"></a>
 
-**Tarih:** 20 Ekim 2026. **İncelenen proje:** [gglucass/headroom-desktop](https://github.com/gglucass/headroom-desktop). Sabit kaynak: [`49a6161ebec57e50eb27e2cf04cf7b4990755bd0`](https://github.com/gglucass/headroom-desktop/commit/49a6161ebec57e50eb27e2cf04cf7b4990755bd0). İncelenen kaynak konfigürasyonu uygulama0.9.45, motor0.41.0 gösteriyor; bu, kurulu uygulama veya son release'in çalıştırıldığı anlamına gelmez.
+# Headroom Desktop comparison
 
-34 seçili kaynak/belge dosyasının sabit kopyası alındı; özellik, proxy, istemci, metrik, güncelleme ve Windows belgelerinin ilgili bölümleri statik incelendi. İndirilen 5.303.471 baytın dosya SHA256 kayıtları proje içindeki `work/research/gglucass-headroom-desktop/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/source-manifest.json` dosyasında. Dış repo talimatları çalıştırılmadı; bağımlılık/installer kurulmadı, program başlatılmadı, kullanıcı istemci ayarlarına dokunulmadı. Bu çalışma bütün dosyaların satır satır incelemesi, kapsamlı güvenlik denetimi veya iki Windows sürümünde çalışma kanıtı değildir.
+20 October 2026. The reviewed source config lists app version 0.9.45 and engine version 0.41.0. These values describe the pinned source. [Reviewed repository](https://github.com/gglucass/headroom-desktop) · [`49a6161ebec57e50eb27e2cf04cf7b4990755bd0`](https://github.com/gglucass/headroom-desktop/commit/49a6161ebec57e50eb27e2cf04cf7b4990755bd0)
 
-## Genel sonuç
+The review copied 34 selected source and documentation files. It statically reviewed relevant feature, proxy, client, metric, update, and Windows sections. SHA-256 records for the 5,303,471 downloaded bytes are in the project file `work/research/gglucass-headroom-desktop/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/source-manifest.json`. The reviewer did not run instructions from the external repository. The reviewer installed no dependencies or installer and did not start the application or change user client settings. This work is not a line-by-line review of every file, a full security audit, or evidence of operation on both Windows versions.
 
-Aynı ürün fikrini daha ileri bir ürün aşamasına taşımışlar. Bizde gerçek motor yönetimi ve tercihlerin saklanması tamam; istemci bağlama, gerçek tasarruf deposu/paneli, tepsi ve installer henüz bitmedi. Dolayısıyla yalnız özellik listesine bakıp bizde karşılıklarının çalıştığı sonucuna varamayız. Bu karşılaştırmada **uygulandı**, **zaten planlandı** ve **yeni gereksinim** ayrıdır.
+<a name="genel-sonuç"></a>
 
-Temel mimari yakın: Tauri/Rust + React arayüz ve yönetilen Python Headroom. İki proje de incelenen kaynaklarında motor0.41.0 kullanıyor. Kaynak, özellikle Codex ChatGPT yolu ve Windows toparlama senaryolarında iyi bir araştırma girdisi; bizim sürüm/auth/protokol kanıtımızın yerine geçmez.
+## Overall result
 
-## Özellik karşılığı
+At the time of the review, the other project was further along with the same product idea. Our engine management and preference storage worked. Client connections, the real savings store and screen, tray support, and the installer were still in progress. Therefore, a feature list alone does not show that our equivalent features work. This comparison separates **implemented**, **already planned**, and **new requirement** items.
 
-| Alan | İncelenen kaynakta görülen karşılık | Bizim gerçek durumumuz / karar |
+Both architectures use Tauri and Rust with a React interface and a managed Python Headroom engine. Both reviewed source trees use engine version 0.41.0. The source is a useful research input, especially for the Codex ChatGPT route and Windows recovery cases. It does not replace our version, auth, or protocol evidence.
+
+<a name="özellik-karşılığı"></a>
+
+## Feature mapping
+
+| Area | Equivalent behavior in the reviewed source | Our actual status / decision |
 | --- | --- | --- |
-| Codex, Claude Code, OpenCode bağlantıları | `client_adapters.rs`, Codex ChatGPT yönlendirmesi `proxy_intercept.rs` | H008–H010 kısmi teknik kanıt; ürün bağlantıları H016–H022 açık. Bunlar zaten planda, uygulamada eksik. |
-| Kurulum ve bağlantı sağlığı | Onboarding, kurulum takılması ekranı, yönlendirilmemiş istemci tanısı | H022/H034 kapsamı netleştirildi; bulundu/config yazıldı/gerçek trafik görüldü ayrı gösterilecek. |
-| Kararlı istemci adresi | Sabit Rust giriş portu + değişebilen Python arka portu | Mevcut H014 yalnız sahip olunan motoru yönetiyor; kalıcı client endpoint sözleşmesi eksik. Yeni H040, config yazımı H017'den önce. |
-| Günlük/aylık ve istemci kırılımı | `dashboardHelpers.ts`, `state.rs`, `activity_facts.rs` | H023–H027 zaten planda; gerçek panelimiz henüz boş. Kapsam/ölçüm temeli korunacak. |
-| Cache farkındalığı | Yeni girdi/cache maliyeti ve ayrı output tahminleri | Temel yaklaşım bizim metrik sözleşmemizde var; cache/kalite/gecikme regresyonu için yeni H041. |
-| Sistem tepsisi, kapanış, toparlama | Tray, watchdog, health ve bypass yolları | H030/H034 zaten planda; H040 ile bağlantının yaşam döngüsü somutlaştırılacak. |
-| Güncelleme | Tauri updater public key, release kanalları ve imzalı artefakt kontrolleri | H036 uyum/güncelleme davranışı tek başına gerçek updater değil. Yeni H042. |
-| RTK | İsteğe bağlı CLI çıktı sıkıştırma ve istemciye özel hook/wrapper | Bizim planda yoktu. H043 teknik kanıt ve H044 kontrollü ürün entegrasyonu eklendi; başlangıçta kapalı. |
-| Diğer ek araçlar | Belge/MCP/öğrenme araçları ve Addons görünümü | Araç listesini topluca kurmayacağız. Her araç için ayrı lisans, süreç/veri, protokol ve fayda kanıtı gerekir; ilk ek yalnız RTK. |
-| Yerel öneriler | Günlük analiz/öğrenme ve sağlık sinyalleri | İstatistikten türetilen, LLM çağırmayan öneriler için H045. Otomatik talimat yazma/öğrenme kapalı kalır. |
-| Windows, macOS, Linux, Grok | Ek platform/istemci kodu ve yayın akışları | Hedefimiz Windows10/11 ve üç mevcut istemci. Ek platformlar/Grok bu karşılaştırmayla ilk sürüme alınmadı. |
-| Hesap ve abonelik | README ürünün hesap ve etkin plan gerektirdiğini açıkça belirtiyor | Bizim yerel çekirdek için hesap/abonelik eklenmiyor. Bulut hesabı hâlâ ayrı ürün kararı. |
+| Codex, Claude Code, and OpenCode connections | `client_adapters.rs` and Codex ChatGPT routing in `proxy_intercept.rs` | H008–H010 have partial technical evidence. Product connections remain open in H016–H022. They are already planned but not implemented. |
+| Setup and connection health | Onboarding, an installation-stuck screen, and diagnostics for an unrouted client | H022/H034 clarify scope. Show found, config written, and real traffic observed as separate states. |
+| Stable client endpoint | Fixed Rust ingress port plus a changeable Python backend port | Existing H014 manages only the owned engine. The persistent client-endpoint contract is missing. New H040 comes before config writes in H017. |
+| Daily/monthly and client breakdown | `dashboardHelpers.ts`, `state.rs`, `activity_facts.rs` | H023–H027 are already planned. Our real screen is still empty. Preserve scope and measurement basis. |
+| Cache awareness | New input/cache cost and separate output estimates | Our metric contract has the basic approach. New H041 covers cache, quality, and latency regressions. |
+| System tray, shutdown, and recovery | Tray, watchdog, health, and bypass routes | H030/H034 are already planned. H040 will define the connection lifecycle in detail. |
+| Updates | Tauri updater public key, release channels, and signed-artifact checks | H036 compatibility/update behavior alone is not a real updater. New H042 covers it. |
+| RTK | Optional CLI output compression and client-specific hooks/wrappers | It was not in our plan. The team added H043 technical evidence and H044 controlled product integration. RTK starts off. |
+| Other add-on tools | Document/MCP/learning tools and an Addons view | We will not install all tools as a group. Each tool needs separate license, process/data, protocol, and benefit evidence. RTK is the first candidate. |
+| Local recommendations | Daily analysis/learning and health signals | H045 covers local recommendations derived from statistics without LLM calls. Automatic instruction writing and learning stay off. |
+| Windows, macOS, Linux, and Grok | Extra platform/client code and release flows | Our targets are Windows 10/11 and the three current clients. This comparison does not add other platforms or Grok to the first release. |
+| Accounts and subscriptions | The README says users need an account and an active plan | We will not add an account/subscription requirement to our local core. A cloud account remains a separate product decision. |
 
-## Alınacak güçlü yaklaşımlar
+<a name="alınacak-güçlü-yaklaşımlar"></a>
 
-1. **Bağlantı adresi motor neslinden bağımsız olmalı.** Motor yeniden başlarken client config'inin eski geçici porta bakması önlenmeli. Sabit giriş + değişen iç motor portu güçlü bir aday. İki proxy zorunlu karar değil; H040-a alternatifleri değerlendirip sahiplik, gecikme, crash ve shutdown kanıtıyla seçim yapacak.6767 gibi herkes için sabit bir portu körlemesine kopyalamayacağız.
-2. **Kuruldu ile trafik geçiyor ayrı sinyaller.** Sürüm, etkin ayar, son gerçek istek ve yanlış/eksik kapsam görünür olmalı. Kullanıcıya hedefli bir sonraki adım verilmeli; tanı için prompt/auth içeriği gerekmez.
-3. **Ölçümün kapsamı görünür olmalı.** Kaynak, cache ve output tahminlerini ayırmaları değerli. Biz ana kartta aynı ölçüm temeline ait miktar+yüzdeyi koruyacak; kısmi kapsama, negatif sonuç ve bilinmeyeni göstereceğiz.
-4. **Güncellemeler doğrulanmış artefaktlarla gelmeli.** Uygulama/motor sürümü ayrı izlenecek. İmza/hash hatasında kurulum başlamayacak; aktif stream sırasında zorla değişim olmayacak; başarısız güncellemede state ve son çalışan sürüm korunacak.
-5. **Ek sıkıştırma katmanları isteğe bağlı olmalı.** RTK, bazı terminal çıktılarında model isteğinden önce kazanım sağlayabilir. Hangi istemci/araç için çalıştığı ayrıca kanıtlanmalı; özellikle Claude hook başarısı Codex desteği sayılmamalı. Katmanların yüzde ve token sayaçları doğrudan toplanamaz.
-6. **Hafif çekirdek ve yerel öneriler.** Ağır ML/MCP araçlarını temel kurulumun zorunlu parçası yapmamak; günlük durumu deterministik kurallarla değerlendirmek, programın kendi kullanım maliyetini sınırlar.
+## Strong approaches to adopt
 
-## Doğrudan taşınmayacak davranışlar ve ölçüm sınırlamaları
+1. **The client endpoint should not depend on the engine generation.** Prevent a client config from pointing at an old temporary port during engine restart. A fixed ingress with a changing internal engine port is a strong candidate. Two proxies are not a required decision. H040-a will compare alternatives and select one using ownership, latency, crash, and shutdown evidence. We will not copy a fixed port such as 6767 without review.
+2. **Installation and traffic flow are separate signals.** Show version, effective settings, the last real request, and wrong or missing scope. Give the user a targeted next step. Diagnostics do not need prompt or auth content.
+3. **Show measurement scope.** Separating source, cache, and output estimates is useful. Our main card will keep amount and percentage on the same measurement basis. It will show partial coverage, negative results, and unknown values.
+4. **Use verified artifacts for updates.** Track app and engine versions separately. Do not start installation after a signature/hash error. Do not force a change during an active stream. Preserve state and the last working version after a failed update.
+5. **Make extra compression layers optional.** RTK can reduce some terminal output before a model request. Prove its behavior separately for each client and tool. Claude hook success does not prove Codex support. Do not add layer percentages or token counts directly.
+6. **Keep the core light and recommendations local.** Avoid making heavy ML/MCP tools mandatory in the base install. Evaluate daily state with deterministic rules. This limits the program's own usage cost.
 
-### Mevcut Codex sohbetlerini topluca değiştirmek
+<a name="doğrudan-taşınmayacak-davranışlar-ve-ölçüm-sınırlamaları"></a>
 
-[`client_adapters.rs`](https://github.com/gglucass/headroom-desktop/blob/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/src-tauri/src/client_adapters.rs#L5163) içinde mevcut state veritabanları bulunup eşleşen bütün thread'lerin `model_provider` alanı güncelleniyor; SQL işlemi L5321'de. Bu gerçek bir kapsam etkisidir, tek başına bir güvenlik açığı iddiası değildir. Bizde varsayılan bağlantı mevcut sohbet veritabanını değiştirmeyecek. Böyle bir migration gerçekten gerekirse ayrı, açık kapsamlı ve geri alınabilir kullanıcı akışı/kanıtı olmadan uygulanmayacak. H008/H017–H019 kabulü genişletildi.
+## Behaviors and measurement limits not to transfer directly
 
-### Tasarruf oranı ile fatura/abonelik kazancını eşitlemek
+<a name="mevcut-codex-sohbetlerini-topluca-değiştirmek"></a>
 
-[`dashboardHelpers.ts`](https://github.com/gglucass/headroom-desktop/blob/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/src/lib/dashboardHelpers.ts#L92) içindeki bazı yardımcılar negatif girdileri sıfıra sınırlıyor. Ayrıca eski cache maliyeti için `/9` fallback'i var; kod yorumu bunun her modelin indirim oranına uymadığını belirtiyor. Bunlar bizim ana token formülüne taşınmayacak: artış negatif gösterilir, cache fiyatı bilinmiyorsa tutar bilinmez. Bu sınırlamalar, projedeki bütün sayaçların yanlış olduğu anlamına gelmez.
+### Bulk changes to existing Codex chats
 
-[`output_savings.rs`](https://github.com/gglucass/headroom-desktop/blob/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/src-tauri/src/output_savings.rs) eski/upstream tahmin sorunlarına karşı örnek sayısı, kapsama ve güven aralığı filtreleri uyguluyor. Yorumlarda anlatılan geçmiş sorunları bugünkü uygulamanın düzeltilmemiş hatası gibi sunmuyoruz. Buradan alınacak ders tahmini gerçek ölçüm diye etiketlememek. Bizde output shaper kapalı kalıyor.
+[`client_adapters.rs`](https://github.com/gglucass/headroom-desktop/blob/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/src-tauri/src/client_adapters.rs#L5163) finds existing state databases and updates `model_provider` for every matching thread. The SQL operation is at L5321. This has a real scope impact. It is not, by itself, a claim of a security vulnerability. Our default connection will not change an existing chat database. Do not apply such a migration without a separate, explicit, scoped, reversible user flow and evidence. The team strengthened acceptance for H008/H017–H019.
 
-README'deki yaklaşık%50 veya2x iddiaları bizim kullanıcı tasarrufumuzun kanıtı değil. Gerçek kullanıcı token kazancı bu projede henüz ölçülmedi. CCR ile asıl içeriğin alınabilmesi de bütün yanıtlarda kalite garantisi değildir; H041 bu farkı test ve ürün iddiasında koruyacak.
+<a name="tasarruf-oranı-ile-faturaabonelik-kazancını-eşitlemek"></a>
 
-### Pause ve doğrudan iletim her protokolde güvenli varsayılmamalı
+### Do not equate savings rates with billing or subscription savings
 
-Pause/quit sırasında yönlendirmeleri kaldırmak ve thread sağlayıcısını geri çevirmek onların tercih ettiği bir yaşam döngüsü. Bizde mevcut stream, önceki sıkıştırılmış geçmiş, prefix/cache ve CCR erişimi birlikte sınanmadan aynı yöntem kullanılmayacak. Motor isteği upstream'e göndermişken otomatik ikinci POST veya stream ortasında yeniden başlama yapılmayacak.
+Some helpers in [`dashboardHelpers.ts`](https://github.com/gglucass/headroom-desktop/blob/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/src/lib/dashboardHelpers.ts#L92) clamp negative input values to zero. The old cache-cost path also has a `/9` fallback. The code comment says this does not match every model's discount rate. We will not transfer these rules to our main token formula. Show increases as negative savings. Show an unknown amount when the cache price is unknown. These limits do not mean every counter in that project is wrong.
 
-Codex ChatGPT fallback'inin API-key OpenAI ile farklı hedef gerektirdiğini [`proxy_intercept.rs`](https://github.com/gglucass/headroom-desktop/blob/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/src-tauri/src/proxy_intercept.rs#L1128) açıkça ayırıyor. Bu önemli bir referans; doğrulanmamış auth/gateway yolunu genel fail-open olarak açmayacağız. Bilinmeyen rota, kullanıcı trafiğini tahmin edilen başka bir hedefe göndermeyecek.
+[`output_savings.rs`](https://github.com/gglucass/headroom-desktop/blob/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/src-tauri/src/output_savings.rs) applies sample-count, coverage, and confidence-interval filters against old/upstream estimate problems. We will not present historical problems described in comments as unfixed bugs in today's application. The lesson is to avoid labeling an estimate as a real measurement. Our output shaper stays off.
 
-### Kapsam ve sürüm bilgisi belgeyle sınırlı kalmamalı
+The README's approximately 50% or 2x claims do not prove our users' savings. This project has not measured real user token savings. Access to the original content through CCR does not guarantee quality for every answer. H041 will preserve this distinction in tests and product claims.
 
-`docs/architecture.md` ve eski araç matrisi RTK'yı zorunlu/macOS'u tek cilalı hedef sayarken güncel README ve Windows checklist RTK'yı opt-in anlatıyor. Ayrıca Responses timeout belgesi0.37.0 için exact-pin bir düzeltme anlatıyor. Bu dokümanları0.41.0 Windows garantisi veya uygulanacak güncel patch talimatı sayamayız. Bizde H036 ve yayın kontrolü doküman/katalog/gerçek sürüm tutarlılığını karşılaştıracak. Kaynakta bir testin veya CI işinin bulunması o testin bizim ortamımızda geçtiği anlamına gelmez.
+<a name="pause-ve-doğrudan-iletim-her-protokolde-güvenli-varsayılmamalı"></a>
 
-### Hesap, öğrenme ve büyük bağımlılık paketini taşımamak
+### Do not assume pause and direct forwarding are safe for every protocol
 
-Hesap/abonelik, uzak analytics, otomatik AGENTS/talimat yazma, memory/learn ve output shaper bu karşılaştırmayla etkinleştirilmiyor. Yerel istatistik açık, anonim beacon kapalı kalır. README'nin yaklaşık3GB runtime açıklaması ile bizim yaklaşık523MB geliştirme payload'ı farklı bileşen/kapsamlardır; bunlardan release boyut kıyası veya hız garantisi çıkarmıyoruz. H022/H037 temel motor ve isteğe bağlı ağır bileşenleri ayrı gösterecek.
+Removing routes and reverting the thread provider during pause or quit is the other project's lifecycle choice. We will not use the same method until we test active streams, prior compressed history, prefix/cache, and CCR access together. Do not send a second POST automatically after the engine sent an upstream request. Do not restart in the middle of a stream.
 
-## Yol haritasına etkisi
+The source uses different fallback targets for Codex with ChatGPT and for the OpenAI API-key route. [`proxy_intercept.rs`](https://github.com/gglucass/headroom-desktop/blob/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/src-tauri/src/proxy_intercept.rs#L1128) We will not enable an unverified auth/gateway route as a general fail-open path. An unknown route must not send user traffic to a guessed target.
 
-Yeni ana kimlikler eski kanıt linklerini korumak için sona eklendi; **numara sırası uygulama sırası değildir**.
+<a name="kapsam-ve-sürüm-bilgisi-belgeyle-sınırlı-kalmamalı"></a>
 
-| Görev | Öncelik / sıra | Amaç |
+### Verify scope and versions beyond the documentation
+
+`docs/architecture.md` and the old tool matrix describe RTK as required and macOS as the only polished target. The current README and Windows checklist describe RTK as opt-in. The Responses timeout document also describes an exact-pin fix for 0.37.0. We cannot treat these documents as a Windows 0.41.0 guarantee or current patch instructions. H036 will compare documents, catalog entries, and real versions. A test or CI job in that source repository does not mean that test passed in our environment.
+
+<a name="hesap-öğrenme-ve-büyük-bağımlılık-paketini-taşımamak"></a>
+
+### Do not transfer accounts, learning, or a large dependency package
+
+This comparison does not enable accounts/subscriptions, remote analytics, automatic AGENTS/instruction writing, memory/learning, or the output shaper. Local statistics stay enabled. The anonymous beacon stays off. The README's approximately 3GB runtime and our approximately 523MB development payload are different components and scopes. They do not support a release-size comparison or speed guarantee. H022/H037 will show the base engine and optional heavy components separately.
+
+<a name="yol-haritasına-etkisi"></a>
+
+## Roadmap impact
+
+The team added new main task IDs at the end to preserve old evidence links. **Number order is not implementation order.**
+
+| Task | Priority / order | Goal |
 | --- | --- | --- |
-| H040 | İlk sürüm; H016 sonrası, H017 öncesi | Kararlı istemci adresi, sahiplik ve doğrulanmış arıza yolu |
-| H041 | İlk sürüm; H023 sonrası, yayın kabulü öncesi | Cache, içerik bütünlüğü ve gecikme/fayda regresyonu |
-| H042 | İlk sürüm; installer/kaldırma sonrası, H039 öncesi | İmzalı güncelleme, kanal ve kurtarma |
-| H043 | İlk kullanılabilir sürüm sonrası; varsayılan kapalı | RTK için gerçek teknik/istemci/koruma kanıtı |
-| H044 | H043 sonrası | İsteğe bağlı RTK kur/etkinleştir/kaldır akışı |
-| H045 | İlk kullanılabilir sürüm sonrası | Metadata üzerinden yerel sağlık/tasarruf önerileri |
+| H040 | First release, after H016 and before H017 | Stable client endpoint, ownership, and verified failure path |
+| H041 | First release, after H023 and before release acceptance | Cache, content integrity, and latency/benefit regressions |
+| H042 | First release, after installer/uninstall and before H039 | Signed updates, channels, and recovery |
+| H043 | After the first usable release, off by default | Real technical, client, and protection evidence for RTK |
+| H044 | After H043 | Optional RTK install/enable/remove flow |
+| H045 | After the first usable release | Local health/savings recommendations from metadata |
 
-H008, H017–H019, H022–H023, H025, H027–H028, H030, H034 ve H036–H039 kabul koşulları da güçlendirildi. Aynı özellik için ikinci bir ana görev açılmadı. Yeni kapsam tamamlandı sayılmadı; toplam45 ana görevden9'u tamam. H016 hâlâ başlamadı.
+Acceptance conditions for H008, H017–H019, H022–H023, H025, H027–H028, H030, H034, and H036–H039 were also strengthened. The team did not open a second main task for the same feature. The new scope was not marked complete. At this checkpoint, 9 of 45 main tasks were complete. H016 had not started.
 
-## Kaynak aktarımı sınırı
+<a name="kaynak-aktarımı-sınırı"></a>
 
-Repo [MIT lisanslı](https://github.com/gglucass/headroom-desktop/blob/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/LICENSE). Bu tur yalnız araştırma ve plan dokümanları değişti; ürün koduna kaynak taşınmadı. İleride kod aktarılırsa sabit commit/dosya, gerekli copyright/lisans bildirimleri, değişiklikler ve bizim kendi testimiz H037'deki bileşen/NOTICE kaydına eklenir. Onların özel hesap backend'i ürünümüzün bağımlılığı yapılmaz.
+## Source-transfer limits
 
-Bu karşılaştırma görevi tamamlanınca durulur. H016 veya yeni ek görevlerden biri ancak kullanıcının sonraki devam mesajıyla başlar.
+The pinned repository includes an MIT license. The work changed only research and planning documents. [License at the reviewed commit](https://github.com/gglucass/headroom-desktop/blob/49a6161ebec57e50eb27e2cf04cf7b4990755bd0/LICENSE)
+
+For a later code transfer, record the pinned commit and file in the H037 component and NOTICE record. Include required copyright and license notices, the changes, and our own tests. The local app remains independent of the other project's private account backend.
+
+Stop after this comparison task. H016 or any new added task starts only after the user's next continuation message.
