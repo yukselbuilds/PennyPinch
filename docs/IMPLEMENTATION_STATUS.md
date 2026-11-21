@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English OpenCode V1 transport and retrieval reviews
+
+H042-k3v is complete. The three English H010 reviews cover isolated transport, conditional MCP and CCR testing, and local product retrieval. The checks matched the recorded results, historical scope, and heading links. The review corrected one abbreviated runner hash against the original file. [Evidence](proofs/pennypinch-opencode-v1-reviews-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 160 of 222 tracked documents (72.1%). It flagged 62 documents (27.9%) with remaining Turkish prose. The estimated remaining text is about 62,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the H010-c and H010-d OpenCode V1 reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English Claude Code reviews
 
 H042-k3u is complete. The three English H009 reviews cover local streaming, one isolated tool and CCR loop, and the main acceptance. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-claude-reviews-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 157 of 222 tracked documents (70.7%). It flagged 65 documents (29.3%) with remaining Turkish prose. The estimated remaining text is about 63,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the first H010 OpenCode reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English Codex reviews
 
