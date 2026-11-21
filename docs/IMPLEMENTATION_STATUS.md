@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 21 November — English Windows GUI crash evidence
+## 21 November — English Windows runtime reviews
 
-H042-k3q is complete. The H006-c Windows GUI crash evidence and review are in English. The canonical result confirms process closure at 57.429 ms and port closure at 58.299 ms. The English task entry now uses those decimal marks. The acceptance still covers the historical Windows 10 run. [Evidence](proofs/pennypinch-windows-gui-crash-evidence-english.json) · [Task list](../TASKS.md)
+H042-k3r is complete. The three English reviews cover the portable runtime, owner loss with the controller ready, and owner loss before Job assignment. The checks matched the recorded results, limits, and heading links. [Evidence](proofs/pennypinch-windows-runtime-reviews-english.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue H042-k3 with the remaining H006 runtime reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+Continue H042-k3 with the early engine and protocol reviews for H005 and H007. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
+## 21 November — English Windows GUI crash evidence
+
+H042-k3q is complete. The H006-c Windows GUI crash evidence and review are in English. The canonical result confirms process closure at 57.429 ms and port closure at 58.299 ms. The English task entry now uses those decimal marks. The acceptance still covers the historical Windows 10 run. [Evidence](proofs/pennypinch-windows-gui-crash-evidence-english.json) · [Task list](../TASKS.md)
 
 ## 21 November — English development, roadmap, and design evidence
 

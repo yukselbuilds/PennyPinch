@@ -1,0 +1,92 @@
+{
+  "task": "H042-k3r",
+  "status": "pass",
+  "base_commit": "26c61178240b427e66e5e1bf298dc3e535e59ca9",
+  "verified": {
+    "translated_records": 3,
+    "legacy_heading_aliases": 3,
+    "incoming_links": 7,
+    "incoming_heading_links": 0,
+    "outgoing_links": 3,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/reviews/H006-a.md": {
+      "original_sha256": "e55ace56b9dd09dbc2ad68e1984c0d48454f49bd2c746287f48833a42fddf29f",
+      "draft_sha256": "4bc43245be2c3049409d3333efbe8d05c2b84562086373316377b1c14c30ebb4",
+      "candidate_sha256": "57e9ac14a105abbec9096dbc628ae7f8a92e2d290df5b615a6bf077db7b60f00"
+    },
+    "docs/reviews/H006-b.md": {
+      "original_sha256": "42f2868a5bcb35340dccb9d444f76fd00bb377daa9f222369c6656e78bf8ea06",
+      "draft_sha256": "7f1374b01ec398c632b508deb914e6e2e88cb671c5f47c47ecc74a65ce445907",
+      "candidate_sha256": "6028cccf8bd35e464c6bf317a78a9c1f81ac75c93ad0d517e6738acc30c8eaf9"
+    },
+    "docs/reviews/H006-d.md": {
+      "original_sha256": "8bb99957096e972355b8083ecb221af6cc121b27ff5d567237de2b9d1d31cc8d",
+      "draft_sha256": "4cde74cfe9ae179edfe6209b5fac084222035b1c66aa6fa58a7f53b6cb42d7a7",
+      "candidate_sha256": "bc84c1eba464a705c2bc11efdb67dd3be2b6e4a30ee4adb7d21cd23173cd58d7"
+    }
+  },
+  "references_sha256": {
+    "TASKS.md": "00be62c50bb3bbedef032a7484ce1aff5197df7dfc6cb9bd8aa5ac11acb93cd7",
+    "docs/IMPLEMENTATION_STATUS.md": "a2f45644be6a63918a23105a2d959d820a0b1c07642816a6c5f454963487581c",
+    "docs/proofs/windows-engine.md": "154f8028558fe464beadb742f1cc5821da72091cf2b962468788ab68e27ae23d",
+    "docs/proofs/windows-engine-crash.json": "b656dcce34dccd7c0097f9e067c1690021aa35f3fedbfd2d3f93df18cae148e8",
+    "docs/proofs/windows-engine-startup-crash.json": "34f5bb21445d545121e4af66f95a5d54ec42501d2f11b8dbbc37c8bde8bdce03"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H006-a.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H006-b.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H006-d.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "historical_receipts": {
+    "H006-a": {
+      "path": "docs/proofs/windows-engine.md",
+      "integration_seconds": "33.669",
+      "payload_files": 22225,
+      "payload_bytes": 523394231
+    },
+    "H006-b": {
+      "path": "docs/proofs/windows-engine-crash.json",
+      "package_files": 22333,
+      "retained_job_minimum_survival_ms": 1000,
+      "status": "accepted_local_windows_10",
+      "historical_task_count": "42/54"
+    },
+    "H006-d": {
+      "path": "docs/proofs/windows-engine-startup-crash.json",
+      "exit_codes": [
+        2,
+        2
+      ],
+      "additional_processes": [
+        0,
+        0
+      ]
+    }
+  },
+  "verifier_sha256": "da8f2434ebb6f307ad2b2def55e635dc820ff51ac9cb5375f57d0e1746c0c735",
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The lead agent drafted the portable runtime review. The single GPT-6 Luna xhigh worker drafted both owner loss reviews. The lead agent checked all three against the original text and recorded evidence.",
+  "programmatic_references": "The tracked code and configuration search found no direct reference to these three reviews.",
+  "engine_provider_and_ci_tests": "not_run_documentation_only"
+}
