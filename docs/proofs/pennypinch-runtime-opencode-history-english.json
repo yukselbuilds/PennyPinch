@@ -1,0 +1,173 @@
+{
+  "task": "H042-k3av",
+  "date": "2026-11-22",
+  "status": "pass",
+  "base_commit": "7b69282b8fd4849286737fdf4611aac0776c67dc",
+  "implementation": "The GPT-6 Luna xhigh worker drafted the earlier OpenCode and local acceptance handoffs. The lead drafted engine, main-task and V2 service handoffs and reviewed all entries.",
+  "review_handoff": "After the drafts passed the value and link checks, the lead stopped the worker, retained its draft, and completed the final wording and lint corrections.",
+  "scope": "English translation of H006, H009, H012, and H010 historical handoffs. Product tests, model calls, and CI did not run.",
+  "translation": {
+    "approximate_source_words": 5245,
+    "source_working_range": [
+      1065,
+      1223
+    ],
+    "working_source_sha256": "2c56295dc42783a32cbed78fafc464fed04dc5aafa66c192b668ff78ba195d97",
+    "index_source_sha256": "c84be7e2909520aedb99e73983abbfe1feba133a7ad8ec72b905b79f06beb4c3",
+    "working_candidate_sha256": "a41276e6c1cb5c093a3439fe651738e755b72a7b7ee30b6bb5a8fb6d5758d60c",
+    "index_candidate_sha256": "e23ed3a32b6bfcd6f188618a2ee439cdec81da870f84d8b9165738fbc6394494",
+    "parts": {
+      "earlier.md": {
+        "source_sha256": "44196d5f16070e66c24d69f450b37a897abaeadf1bc400e5104dfc6ddce52713",
+        "reviewed_draft_sha256": "803702dabdad43190292c6544519596b52a883f6278b43179b3d7614920a63de"
+      },
+      "later.md": {
+        "source_sha256": "373cb7e9dc8872ab27c5087ef6164e1d6a819256e7c7587fe01818c949f7368c",
+        "reviewed_draft_sha256": "2069f045953be2cf4b6b48afe478962743520c7a9ec9ffcbd67e27995e2d8748"
+      }
+    },
+    "worker_draft_sha256": "a5469b32709e5d300bf65ca7388e33b835d6aff55b1df84c44a0111e8cf752c5"
+  },
+  "verified": {
+    "legacy_heading_aliases": 20,
+    "incoming_links_to_preserved_anchors": 0,
+    "outgoing_relative_links": 60,
+    "preserved_nonblank_rows": 115
+  },
+  "references_sha256": {
+    "docs/proofs/pennypinch-h041-handoff-history-english.json": "9c867b4d55594fbdbd757f5c83c5a549a83ae363217099d2fc07eb510a3e1bc0",
+    "docs/proofs/windows-engine-clean-test-package.json": "6cdf6448c6dc5b798f16af968fead7f1210d12dc62f9d1f7075cc81e42791304",
+    "docs/proofs/rtk.md": "195ddc4b1e31767241dbf83b23e8c8882cd1fd7a9fff3b0ea1ecfddee3717c2f",
+    "docs/proofs/rtk-1.2.0-preflight.json": "588a654af86e11a5262c8a1af1d81f0d7baac360aa82d6a0fa4f60c6b9dbf989",
+    "docs/proofs/windows-engine.md": "154f8028558fe464beadb742f1cc5821da72091cf2b962468788ab68e27ae23d",
+    "docs/proofs/windows-engine-startup-crash.json": "34f5bb21445d545121e4af66f95a5d54ec42501d2f11b8dbbc37c8bde8bdce03",
+    "docs/reviews/H006-d.md": "bc84c1eba464a705c2bc11efdb67dd3be2b6e4a30ee4adb7d21cd23173cd58d7",
+    "docs/validation/windows-install.md": "b91eade2b6cb0b9a8398c267026b3b2ad22816057ce9b7c69131de8fea9a6714",
+    "docs/proofs/windows-gui-crash.md": "c68e4e27553fa6993ec2cf056384a10df2ba4d3b4702735fa63e8da667bfe6a6",
+    "docs/reviews/H006-c.md": "ec763be09fb9a135dd831d002fd9b1818bc9280e9b702ae9cd62458c42ce8652",
+    "docs/proofs/windows-gui-crash.json": "9a8fc9476212d33fdce4bff7b3bd85dd2571e9c3c3c96a4b36caf420ccb0e5a6",
+    "bench/windows/gui_crash.py": "9bb050fa426d15d23828592870c4cee7a38360120d87f48bbd4ac5fbc0e78c53",
+    "docs/proofs/claude-acceptance.md": "5fed248746ff2ebe8f2d41ec80f13c5e62cb1f752bdf6e3153c3a8da5b122cb3",
+    "docs/reviews/H009.md": "801947d2cee9a18d63bee9ad4e94c2c9820d826318b4746eea812a306ea23bdb",
+    "docs/proofs/claude-acceptance.json": "26182c1ef0e4a2b0d97cac2d2f41c293875bb884833a6040ddc14d032dc3180b",
+    "docs/proofs/architecture-acceptance.md": "710212b61e22901c20bb08ba4e165ffecd4b17a018b5916206b6a40ece484b4e",
+    "docs/reviews/H012.md": "3004ed373e78d0a7af34367e704e52ba66b6a11edea487cea0e6ac003f9fa57b",
+    "docs/proofs/architecture-acceptance.json": "a90d9e19ce733f59ad9eb17637aadee0149bf932d00c17a007ee159f00cea562",
+    "docs/proofs/opencode-acceptance.md": "2c4acb2d4bcb47ad59b224244bfa8523d0f40f95ea6d16673838824c6925e910",
+    "docs/reviews/H010.md": "b6cf4f008b393c4254f9f51885ff023d709509da6d5f128deddbf0b02567b60a",
+    "docs/proofs/opencode-acceptance.json": "d441b77c9589a1372cf918d1089d52a18559cd23cdb51a9317a8a2ac64a0090f",
+    "docs/proofs/opencode-v2-desktop.md": "890fc8ce122c117ba43c2ad279cec0ccbd6b884163bd0ed9dcbcaf12283ab2dd",
+    "docs/proofs/opencode-v2-desktop.json": "dbbcacd339acb561be63b8616f77895330ac853e791e4588f7517730fdbdc578",
+    "docs/reviews/H010-j.md": "4bba9d639e0c8cda45bd92e1661010dad36b251b084ab9568064fe67ce23db7b",
+    "docs/proofs/opencode-v2-subagents.md": "266a182de514bbc3bd9ae90d897c99b56cca05d6abf6ded1af76088c5a7ce094",
+    "docs/proofs/opencode-v2-subagents.json": "3e67972daca6cd7953ccca3f78a0f5b64c995ed314a124d10f507b3b75917e6f",
+    "docs/reviews/H010-i.md": "735b11de66e2f488c8d21f98b50ec0bd3266ab1940feae05c5969a71cd52a731",
+    "docs/proofs/opencode-v2-service.md": "03a028cf902ef010aed8de50dff7c4e0b2c0457341e470d485924acb9367c874",
+    "docs/proofs/opencode-v2-service.json": "e27e288ea86a2ca84141121989c5e9bbb2b718252ab6bb7c8987232b32a838c4",
+    "docs/reviews/H010-h.md": "378ffe75d079fa37e4a9c6cb0a544439db476ba653ba22363bdd5359a4bc2153",
+    "docs/decisions/009-opencode-provider-routes.md": "910dfd50f0cfb73c224318ab34a7c1f2d295b1519ed9186040133c1bfee08dc7",
+    "docs/proofs/opencode-v2-binding.md": "a31f81f1a53046503c1436440818d7aff9a76c013adc061bbbb11308ff45ddb6",
+    "docs/proofs/opencode-v2-binding.json": "301514f3148f4b800cb8a8f0b3dcb8098388c04b7fa62753c2a8b27573bb976e",
+    "docs/reviews/H010-g.md": "fc8b9c4e569e8381cad8d630c1992a1aaadee939ee38cdcdb9fcea24cca03f34",
+    "docs/proofs/opencode-v2-discovery.json": "3bed32362775d7ab8406c899ede18627aae7405a21e146afa5f41d9d94e96cf7",
+    "docs/proofs/opencode-v2-discovery.md": "e195e012ff873d932226f30ae92ac7e727d5fafb133a565dfe3ebe9ba3028353",
+    "docs/reviews/H010-f.md": "be4d62414b0334ff8e2739f575a345f7a9be17baaea4effb689d06f69520b29b",
+    "docs/proofs/opencode-v2.json": "445d270449a104e994594d60e4c42e72a7105125ae9cf05e4cc3a581279ed5b3",
+    "docs/proofs/opencode-v2.md": "3a7a827d29ab6e10452808fb6a2c873eb37323dd62df222c0ea449fb2552cf92",
+    "docs/reviews/H010-e.md": "a02ae38fe542805daae36646b67799aa2eef94a429b2d95973ef2d16fd65cc8a",
+    "docs/proofs/opencode-tui.json": "896d561aae8ab6bf3772a293fdda090f2299b2310cc0fd30582c64619333784d",
+    "docs/proofs/opencode-tui.md": "d8f0c61094b5a0e2e5b7fbeed02c7623d5ee42d350a67e86422f6f0d2abee49d",
+    "docs/reviews/H010-d.md": "3ff9e0d76595dcbbee913d85b99e3434621c95dbaddbe90715b272cece111a89",
+    "docs/proofs/opencode-subagents.json": "7d8cafb4ee632906d5b269190b8bf2221e97f2ebdc48bc63d7c4d3a1eca7a92e",
+    "docs/proofs/opencode-subagents.md": "01dba1e7c1c26d0513bbac2d1d118b1c8325e11235b10924611a495e44450cfd",
+    "docs/reviews/H010-c.md": "ca8db312df40ee09f9ad8660002a4c8ffdab18cc0e57757d52833be9900ef7fc",
+    "docs/proofs/opencode-retrieval.json": "67c32859614791ddb80100ac60e6b772387dc179980252d8a3ecb9dc9b773f73",
+    "docs/proofs/opencode-retrieval.md": "0402b2beef790d2ff3524f38dcb49119c0468fd61ae3d84d779e6ab58e98911b",
+    "docs/reviews/H010-b3.md": "6c55c4e8b75da1973329336f9fe9b41e2e6eec12a4d1372049c4f9c99583dd38",
+    "docs/proofs/opencode-tools.json": "2eab6e82ed19d3c9484c10f67dc97812ff5945f03b205664da45660208aae881",
+    "docs/proofs/opencode.md": "515f3d9e5a5a8004206fba93b71ecfdef2639f8cde58a638540080b25b664bf8",
+    "docs/reviews/H010-b.md": "20905ca86f52a235fe24e6f212f8cdf9daeb5033a6c47a74cb493b276a66dd80",
+    "docs/proofs/claude-tools.json": "d8d26d72ea8c6ca9cb04cb10651ce70a317b55a37218e740ed48781a9640838e",
+    "docs/proofs/claude.md": "065a14ac7bf24ca1a86c610846db2f25e0bdac56f38cda43ab98f7f57d61aa0d",
+    "docs/reviews/H009-b.md": "5bd91d6eb1ecae528e799b6470c12f19030ef5dc745ba1f5db1158ba24aaa1b7",
+    "docs/proofs/architecture-contracts.json": "f03fea19c23b094a17bd72283d6d17f1d1125caca713951f272fe02215e2ee77",
+    "docs/reviews/H012-b.md": "3619fc162b15cad48296692df4b6d592407e9e635cdf900c28a4646cd169bbf0",
+    "docs/proofs/windows-engine-crash.json": "b656dcce34dccd7c0097f9e067c1690021aa35f3fedbfd2d3f93df18cae148e8",
+    "docs/reviews/H006-b.md": "6028cccf8bd35e464c6bf317a78a9c1f81ac75c93ad0d517e6738acc30c8eaf9"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "earlier.md": {
+        "hard": 0,
+        "advisory": 6
+      },
+      "later.md": {
+        "hard": 0,
+        "advisory": 72
+      },
+      "TASKS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/IMPLEMENTATION_STATUS.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "9c45ab6892c6dc6b37c8620f9721ad3ca3442e520ab26fa04e6ce60d96c17c97",
+  "inventory_scanner_sha256": "252bb7cd485828727001a1ef48de5df9eb6148573a47709d82f1f30f5014f0d2",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "e493240b2037a46528a85d0eb180c58948e57c63d4af1febff313712c7ef4220",
+    "after_input_sha256": "97300f617528a09a1828280dc52cab1de347efeb832cb9c44f4221ff395f77bb",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 1,
+      "counts_by_area": {
+        "other_documents": 1
+      },
+      "flagged_prose_lines": 449,
+      "approximate_source_words": 19702,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 449,
+        "approximate_words": 19702
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 1,
+      "counts_by_area": {
+        "other_documents": 1
+      },
+      "flagged_prose_lines": 334,
+      "approximate_source_words": 14457,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 334,
+        "approximate_words": 14457
+      }
+    },
+    "progress_before": {
+      "ready_documents": 221,
+      "remaining_documents": 1,
+      "ready_percent": 99.5,
+      "remaining_percent": 0.5
+    },
+    "progress_after": {
+      "ready_documents": 221,
+      "remaining_documents": 1,
+      "ready_percent": 99.5,
+      "remaining_percent": 0.5
+    }
+  }
+}
