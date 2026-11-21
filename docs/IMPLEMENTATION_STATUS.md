@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 21 November — English RTK and context tool evidence
+## 21 November — English architecture and configuration evidence
 
-H042-k3m is complete. Three English records describe the RTK benchmark and client hook tests and the Context Mode and Context Diet pilot. The checks kept the recorded results, limits, and heading links. [Evidence](proofs/pennypinch-rtk-context-evidence-english.json) · [Task list](../TASKS.md)
+H042-k3n is complete. Three English records describe the architecture contract, early client inventory, and configuration transaction tests. The checks kept the recorded results, limits, and heading links. [Evidence](proofs/pennypinch-architecture-configuration-english.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue H042-k3 with architecture, client inventory, and configuration transaction evidence. Other historical proof and review documents are still open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+Continue H042-k3 with model and subagent scope and the remaining client-use checks. Other historical proof and review documents are still open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
+## 21 November — English RTK and context tool evidence
+
+H042-k3m is complete. Three English records describe the RTK benchmark and client hook tests and the Context Mode and Context Diet pilot. The checks kept the recorded results, limits, and heading links. [Evidence](proofs/pennypinch-rtk-context-evidence-english.json) · [Task list](../TASKS.md)
 
 ## 21 November — English recommendations, accounts, and sessions evidence
 

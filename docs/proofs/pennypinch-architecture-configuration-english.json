@@ -1,0 +1,92 @@
+{
+  "task": "H042-k3n",
+  "status": "pass",
+  "base_commit": "65a69df0155e47264226d351af5d33751fb27431",
+  "verified": {
+    "translated_records": 3,
+    "legacy_heading_aliases": 13,
+    "incoming_heading_links": 0,
+    "outgoing_links": 15,
+    "local_receipts": [
+      "work/proofs/config-transaction/a4c651f3-0407-475f-b71c-3d6bafd51782/proof.json",
+      "work/proofs/config-transaction/actions-c1.md",
+      "work/proofs/config-transaction/e8a6f67c-8269-4339-9e02-94e20d1f1deb/probe_isolation.py",
+      "work/proofs/config-transaction/e8a6f67c-8269-4339-9e02-94e20d1f1deb/proof-parent-only.json",
+      "work/proofs/config-transaction/final-quality.json",
+      "work/proofs/config-transaction/format-pass.json",
+      "work/proofs/config-transaction/frontend-quality.json",
+      "work/proofs/config-transaction/native-checks.json",
+      "work/proofs/config-transaction/native-fixture.json",
+      "work/proofs/config-transaction/native-proof.json",
+      "work/proofs/config-transaction/native-run-a.json",
+      "work/proofs/config-transaction/native-run-b.json",
+      "work/proofs/config-transaction/ownership-b2.md",
+      "work/proofs/config-transaction/patcher-b1.md",
+      "work/proofs/config-transaction/txf-runs/47e7b5c5-8a14-4bbf-972a-f13ad832a6c0/proof.json",
+      "work/proofs/config-transaction/txf-runs/96150dc7-6c9f-4a9b-b7e3-0083a6bef9d6/proof.json",
+      "work/proofs/config-transaction/txf-runs/f0d6431c-a2bc-49c2-bb1a-93548fa5f2fc/proof.json",
+      "work/proofs/config-transaction/txf_absence_guard.py",
+      "work/proofs/config-transaction/txf_crash_matrix.py",
+      "work/proofs/config-transaction/txf_probe.py",
+      "work/proofs/config-transaction/typed-actions-c2.md",
+      "work/proofs/config-transaction/ui-review/summary.json",
+      "work/proofs/config-transaction/writer-a2.md"
+    ]
+  },
+  "documents": {
+    "docs/proofs/architecture-acceptance.md": {
+      "original_sha256": "b7776bf01d17e7e9e70346fd4fcdea4e84c497772d9fb6069b1ccd977d2e658d",
+      "draft_sha256": "1e80c62ab0675a0770ed212cb1c7a0f3c7744f827a8c7abb2d8d6e71f62b75b8",
+      "candidate_sha256": "710212b61e22901c20bb08ba4e165ffecd4b17a018b5916206b6a40ece484b4e"
+    },
+    "docs/proofs/client-inventory.md": {
+      "original_sha256": "bc59ff673e4fc61d838e070f1bf91728cb6f46999081772b1b55bb8630286c9e",
+      "draft_sha256": "aa123adeabff669b394c81490b3f78506ccff44fe5b04ee70d51300f77594baf",
+      "candidate_sha256": "910d2e6373d324c5fa559ac925f6d8896d25b73dca4dae61432894241fe4a5c0"
+    },
+    "docs/proofs/config-transaction.md": {
+      "original_sha256": "27ead516bfe8d2cbb9290f5e677410c09ea775d9d16e60bee99a77d436ddab1a",
+      "draft_sha256": "76599f5b85fe5e7e9f8ab2e804ee525716dfbbbef5c1eda3c8d60aaafc7f9e64",
+      "candidate_sha256": "0c0666d5e64d4358ea042f0bcbba00e50d8fbaa2fe9cf26772c63e8937673475"
+    }
+  },
+  "references_sha256": {
+    "docs/proofs/architecture-acceptance.json": "a90d9e19ce733f59ad9eb17637aadee0149bf932d00c17a007ee159f00cea562",
+    "docs/reviews/H012.md": "7c47ad0db6f1b0e2b004953545e48357db88cf24afe8def39e380d0253a9ab41",
+    "docs/decisions/002-runtime.md": "a5934a6b27b608b6fd504d1e1a335e819abd3e72c43b89ca5a47dbb7fe1f67df",
+    "docs/contracts.md": "ac7df4476c07e801537062505abe61934442a60027cdd2e5676cbc94d2c4d8ed",
+    "docs/decisions/005-config-transaction.md": "98c0399fefcf50972b3b341657fa088e446178f4eeb735efa81e8705ee52f902",
+    "docs/validation/config-transaction-matrix.md": "a96901480d94b29680252e02f3f2ad78ecf1167254bed9992cfcc705b08c7fea"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/architecture-acceptance.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/client-inventory.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/config-transaction.md": {
+        "hard": 0,
+        "advisory": 1
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the architecture and inventory reports. The lead agent drafted the configuration transaction report and checked all three against the source.",
+  "compatibility_catalog": {
+    "affected_references": 0,
+    "sha256": "c373dfcf90687ecf99923b98f168b884eef8a6b651f4879df9ff031437f2762a"
+  },
+  "product_tests": "not_run_documentation_only"
+}
