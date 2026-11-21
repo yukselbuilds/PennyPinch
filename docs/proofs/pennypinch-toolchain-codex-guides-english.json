@@ -1,0 +1,168 @@
+{
+  "task": "H042-k3as",
+  "date": "2026-11-21",
+  "status": "pass",
+  "base_commit": "583ae991788b5fdf3a692af105f74cdaa9b74400",
+  "implementation": "The GPT-6 Luna xhigh worker drafted the toolchain and configuration design notes. The lead translated the manual Codex guide and verified all three documents.",
+  "verified": {
+    "translated_records": 3,
+    "legacy_heading_aliases": 9,
+    "incoming_links": 2,
+    "incoming_heading_links": 0,
+    "outgoing_links": 7,
+    "manual_example_response_markers_preserved": [
+      "HEADROOM_MAIN_OK",
+      "HEADROOM_MODEL_CHANGED_OK",
+      "HEADROOM_CHILD_OK"
+    ],
+    "manual_example_prompts_translated": 3,
+    "local_quality_gate_receipt": "work/proofs/config-transaction/final-quality.json",
+    "outbound_link_targets": [
+      "docs/contracts.md",
+      "docs/decisions/005-config-transaction.md",
+      "docs/proofs/codex-existing-auth.md",
+      "docs/proofs/codex-user-manual-test.md",
+      "docs/proofs/manual-codex-launcher.md",
+      "docs/validation/config-transaction-matrix.md",
+      "work/proofs/config-transaction/final-quality.json"
+    ],
+    "unchanged_historical_evidence": [
+      "docs/proofs/config-transaction.md",
+      "docs/proofs/codex-existing-auth.md",
+      "docs/proofs/manual-codex-launcher.md",
+      "docs/proofs/codex-user-manual-test.md"
+    ]
+  },
+  "documents": {
+    "docs/research/toolchain-candidates.md": {
+      "original_sha256": "4dfc66163856752b78257fda333d5f0b1f1d3c042868e8a008b991ca96f6e9c3",
+      "draft_sha256": "ed056d5882bab8e0a3bddd89c7764c12d1612133af1ddb812417c6b99a6cbe32",
+      "candidate_sha256": "026f40cf2e5bf95fea8bb9e0d1e30aa5cd76247067af64e7513d6128d48b3e06"
+    },
+    "docs/design-config-actions.md": {
+      "original_sha256": "794a009405ea71f1a55754f9504dadfb0767a04647737ce35f42b923114aa710",
+      "draft_sha256": "35115da67283ff5911628e8480f3af6d2d00243b7bc6bef55ba00baca04507a8",
+      "candidate_sha256": "7f3ffe63cc8c4e35fee9ab0ddd7e4ab864adbb30b48279e06440a32912b42484"
+    },
+    "docs/testing-codex-manually.md": {
+      "original_sha256": "e7c7ec3579d766f2256bc888501844096e11abd24c7ea5f1e266a55897c5b5e2",
+      "draft_sha256": "b3be4881c7ce8f651a79e8ed5bcb4c1af36a23bed0f31ba707b50b4c42990ec1",
+      "candidate_sha256": "de00c8d3009dd53058c7572e32891c145ae76c2fefa96c128b105c3025e08e3c"
+    }
+  },
+  "worker_drafts_sha256": {
+    "docs/research/toolchain-candidates.md": "e9438ce6613c510a6a679072b6b2a8036e539943f1f4711eaa0390d8ffaf4edd",
+    "docs/design-config-actions.md": "34f6165802acdd4373d5ec9690017eb8eb88dd667a9d133423ec9a00b47f402f"
+  },
+  "lead_draft_sha256": "b3be4881c7ce8f651a79e8ed5bcb4c1af36a23bed0f31ba707b50b4c42990ec1",
+  "launcher_evidence": {
+    "scope": "Historical tests and current static source review. No CLI, login, or model traffic ran for the English prompts.",
+    "changed_source_since_historical_receipt": [
+      "scripts/manual-codex.ps1",
+      "scripts/manual-codex-core.psm1",
+      "tests/runtime/test_manual_codex_launcher.ps1"
+    ],
+    "current_input_sha256": {
+      "scripts/manual-codex.cmd": "b16df088957b97c38f337638a98135ac9c42990742a2ea6660969be2c14b7ec6",
+      "scripts/manual-codex.ps1": "2502847cdc036e9419c330e0ff99a9f2e9e4eb969cda4852959596b4a1397104",
+      "scripts/manual-codex-core.psm1": "4bb5d8fcf9142e4866dfc4a939bfe0214580d8db7b631119afedefbe8e3d2fca",
+      "tests/runtime/test_manual_codex_launcher.ps1": "eb14bcefb974b3d2b4ad62f51bc076be6dbdbdd5261e637025882cdd638383d7"
+    }
+  },
+  "references_sha256": {
+    "docs/proofs/config-transaction.md": "0c0666d5e64d4358ea042f0bcbba00e50d8fbaa2fe9cf26772c63e8937673475",
+    "docs/proofs/codex-existing-auth.md": "b8da663bd5e93530679bc72b0b4f0fdfd4a592a3cfacba231872a270433a696c",
+    "docs/proofs/manual-codex-launcher.md": "93ab32a196386d0f2b2bdc2a63c594d98637b2b5790b3982015a296e8691e046",
+    "docs/proofs/codex-user-manual-test.md": "7b338352bafb0a3557a08042ca309c6b50a6234712c9df8dd494054aa1b7ab89",
+    "scripts/manual-codex.cmd": "b16df088957b97c38f337638a98135ac9c42990742a2ea6660969be2c14b7ec6",
+    "scripts/manual-codex.ps1": "2502847cdc036e9419c330e0ff99a9f2e9e4eb969cda4852959596b4a1397104",
+    "scripts/manual-codex-core.psm1": "4bb5d8fcf9142e4866dfc4a939bfe0214580d8db7b631119afedefbe8e3d2fca",
+    "tests/runtime/test_manual_codex_launcher.ps1": "eb14bcefb974b3d2b4ad62f51bc076be6dbdbdd5261e637025882cdd638383d7",
+    "work/proofs/config-transaction/final-quality.json": "1f571390f7bae3209aa37b4439cb7dc62bdbfdf8f405ecfe35aef6349445724a",
+    "HEADROOM_DESKTOP_SPEC.md": "ea27bac072717f207dfa1ac4cdd5261568431ca39aec113739b4ee7c88c10b38",
+    "docs/contracts.md": "ac7df4476c07e801537062505abe61934442a60027cdd2e5676cbc94d2c4d8ed",
+    "docs/decisions/005-config-transaction.md": "98c0399fefcf50972b3b341657fa088e446178f4eeb735efa81e8705ee52f902",
+    "docs/validation/config-transaction-matrix.md": "a96901480d94b29680252e02f3f2ad78ecf1167254bed9992cfcc705b08c7fea"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/research/toolchain-candidates.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/design-config-actions.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/testing-codex-manually.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "TASKS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/IMPLEMENTATION_STATUS.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "00eb0013a447142fd67f38d68fca434827ba265657e57b327cf03dd7e586ff05",
+  "inventory_scanner_sha256": "252bb7cd485828727001a1ef48de5df9eb6148573a47709d82f1f30f5014f0d2",
+  "development_token_savings": "not_measured",
+  "engine_provider_and_ci_tests": "not_run_documentation_only",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "79ee7e3f240b38d321b670ae8623b629586e472581366532864a6accdfb55b85",
+    "after_input_sha256": "57ac8929707be949cb651a233a8f21dee4507e76ea8a6866ccc128f11da273aa",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 4,
+      "counts_by_area": {
+        "other_documents": 3,
+        "research_notes": 1
+      },
+      "flagged_prose_lines": 829,
+      "approximate_source_words": 33069,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 1,
+      "counts_by_area": {
+        "other_documents": 1
+      },
+      "flagged_prose_lines": 788,
+      "approximate_source_words": 31689,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 218,
+      "remaining_documents": 4,
+      "ready_percent": 98.2,
+      "remaining_percent": 1.8
+    },
+    "progress_after": {
+      "ready_documents": 221,
+      "remaining_documents": 1,
+      "ready_percent": 99.5,
+      "remaining_percent": 0.5
+    }
+  }
+}
