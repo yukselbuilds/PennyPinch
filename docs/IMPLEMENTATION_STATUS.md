@@ -1,12 +1,16 @@
 # PennyPinch implementation status
 
-## 21 November — English desktop preferences and lifecycle evidence
+## 21 November — English desktop validation evidence
 
-H042-k3i is complete. Four English records describe operating preferences, theme and language, the tray lifecycle, and recovery. The checks kept the recorded results, limits, and heading links. [Evidence](proofs/pennypinch-desktop-lifecycle-english.json) · [Task list](../TASKS.md)
+H042-k3j is complete. Three English records describe export, accessibility and performance, and compatibility. The checks kept the recorded results, limits, and heading links. [Evidence](proofs/pennypinch-desktop-validation-english.json) · [Task list](../TASKS.md)
 
 ### Next H042 release step
 
-Continue H042-k3 with export, accessibility, and compatibility evidence. Other historical proof and review documents are still open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+Continue H042-k3 with the measurement, storage, and reporting evidence. Other historical proof and review documents are still open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
+## 21 November — English desktop preferences and lifecycle evidence
+
+H042-k3i is complete. Four English records describe operating preferences, theme and language, the tray lifecycle, and recovery. The checks kept the recorded results, limits, and heading links. [Evidence](proofs/pennypinch-desktop-lifecycle-english.json) · [Task list](../TASKS.md)
 
 ## 21 November — English client discovery and connection lifecycle evidence
 

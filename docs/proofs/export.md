@@ -1,29 +1,37 @@
-# H033 — istatistik ve tanı dışa aktarma kabulü
+<a name="h033--istatistik-ve-tanı-dışa-aktarma-kabulü"></a>
 
-8 Kasım 2026; **tamamlandı, 32/51**. [Plan 021](../decisions/021-export.md), [inceleme](../reviews/H033.md). Ana ajan ölçüm anı, kayıt/dosya güvenliği, entegrasyon ve kabul sahibi; mevcut tek Luna frontend/client/test dilimini tamamladı. H034 başlamadı.
+# H033 — Statistics and diagnostics export acceptance
 
-Genel bakıştaki Dışa aktar menüsünden seçili dönem özeti JSON/CSV veya ayıklanmış tanı JSON alınır. Rapor, tıklamada görünen native ölçüm anını kullanır; kaydetme penceresinde beklerken gelen yeni ölçüm dosyanın toplamlarını değiştirmez. RAM cache'i8 aggregate kayıtla sınırlıdır. Özet istek/model listesi veya ücret hesabı değildir; bilinmeyen değer null/boş, gerçek0 ve signed artış ayrı kalır. Tanı, ölçüm okunamasa da kamuya açık durum/kategorileri kaydedebilir.
+8 November 2026. **Complete, 32/51.** [Plan 021](../decisions/021-export.md), [review](../reviews/H033.md). The lead agent owns capture timing, record and file security, integration, and acceptance. The current single Luna worker completed the frontend/client/test slice. H034 did not start.
 
-Yalnız kullanıcının Save As ile seçtiği yeni dosyaya yazılır. Mevcut hedef, güvensiz/linkli dizin, yanlış uzantı, meşguliyet veya expired capture başarı sayılmaz. Dosya tamamlanıp sync edildikten sonra aynı açık handle üzerinden replace etmeyen rename yapılır; parent pin ve yarış koruması korunur. [Microsoft API sözleşmesi](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_rename_info), pinned SDK kaynağı ve gerçek FS testleriyle kontrol edildi. Güç kesintisi dayanıklılığı veya yeni OS desteği iddiası yoktur.
+The Export menu in Overview provides a selected-period summary in JSON or CSV, or a sanitized diagnostics JSON file. The report uses the native metrics snapshot shown at the time of the click. New metrics that arrive while the Save As dialog is open do not change the totals in the file.
 
-## Son adayın kanıtı
+The RAM cache holds up to 8 aggregate records. The summary covers aggregate period metrics only. Request and model lists and billing calculations remain outside this report. Unknown values use null in JSON and an empty field in CSV. The report keeps actual 0 values and signed increases distinct. Diagnostics can record public status and categories even when metrics cannot be read.
 
-Kayıtlar `work/proofs/export/` altında. `acceptance.json`,16 kontrolle180 güncel kaynak/config girdisini, binary/dist/UI bundle'ını ve araç/OS ortamını bağlar. Sonuç ve önce/sonra fingerprint'ler aynı adımlarda programatik tutulur. Ham auth, prompt, HTTP gövdesi veya hata dökümü kalıcılaştırılmadı.
+The app writes only to a new file selected by the user through Save As. An existing target, unsafe or linked directory, wrong extension, busy state, or expired capture is not a success. The app completes and syncs the file before it performs a non-replacing rename through the same open handle. It preserves parent pinning and race protection. The review checked the pinned SDK source and real filesystem tests. [Microsoft API contract](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_rename_info) No power-loss durability or new OS support is claimed.
 
-| Senaryo | Gözlenen | Kanıt / sınır |
+<a name="son-adayın-kanıtı"></a>
+
+## Final candidate evidence
+
+Records are under `work/proofs/export/`. `acceptance.json` binds 16 checks to 180 current source/config inputs, the final binary/dist, the UI bundle, and the tool/OS environment. The run recorded results and before/after fingerprints programmatically in the same steps. No raw auth, prompt, HTTP body, or error dump was kept.
+
+| Scenario | Observed result | Evidence / limit |
 | --- | --- | --- |
-| Strict client zarfı, korelasyon, byte sınırı, single-flight, cancel/error |8 yeni client testi PASS | `worker-f8c322f6-68da-47e2-9b2d-01a6f1e668e5.json`; root wire düzeltmesini inceledi, son tam Node kapısı aynı testi içerir. |
-| Capture sabitleme/8 kayıt/expired, JSON ve TR/EN CSV0-negatif-null, canary/formül, cancel/busy/exit rollback |5 report +3 gerçek FS testi PASS | `focused-3.json`; yeni/racing hedef, Unicode filename, uzantı ve kapasite; eski dosya değişmedi. Gerçek disk doldurulmadı. |
-| Son yerel kalite kapısı |161 frontend/371 Rust PASS,8 opt-in ignored; fmt PASS | `final-1.json`; `build-1.json` TS/Vite/custom-protocol PASS'i aynı source/config/araç fingerprint'iyle bağlı. Aynı başarılı build gereksiz tekrarlanmadı. |
-| TR/EN/açık-koyu ×1280/1024/819/683/507, ESC/focus/pending/error/period/unmount |20 birleşim,6 davranış grubu PASS; taşma/page error yok | `ui-c2cbe56d-dfbc-445f-8ef4-531837db18de/result.json`; gerçek App + açıkça izole örnek transport. TR-dark ve EN-light görüntüleri ana ajan tarafından incelendi. |
-| Native Save As ile JSON/CSV/tanı + Cancel | Gerçek mouse/keyboard ile3 dosya; tıklamadaki committed UI capture ile eşleşme | Run `b90930b8-1015-4bab-b182-143d2738f541`, `files-acceptance.json`:18 kontrol. Salt okunur/passive observer sonuç değiştirmedi; native invoke immutable kaldı. |
-| Dönem/source/coverage/yüzde/miktar, beklerken yeni snapshot | JSON/CSV aynı tıklama anını korudu; dosya zamanı daha yeni UI zamanına kaymadı | Aynı run. Yerel SQLite fixture100→50/%50; bu örnek veri canlı sağlayıcı veya geliştirme tasarrufu değildir. |
-| CSV kodlama/locale ve tanı allowlist | UTF-8 BOM/CRLF/TR delimiter ve sayılar; credential/content/path/kimlik alanı yok | Aynı18 kontrol + renderer/client testleri. Native dialog TR; EN UI/client/renderer kapsamındadır. |
-| Cancel | Üç mevcut raporun fingerprint'i aynı, dördüncü dosya yok | `cancel-before.json`, `cancelled-final.json`, `files-acceptance.json`. |
-| Kapanış/state | UI çıkış onayı sonrası process yok, owned debug/stable port kapalı; runtime/metrics/preferences baseline baytları ve protected state/Run aynı | `baseline.json`, `cleanup-recovery.json`. Yardımcı betik SQLite handle kilidi nedeniyle klasör restore'unda hata aldı; ayrı güvenli recovery tamamlandı. Native application exit code kaydı yoktur;0 diye yazılmadı. |
+| Strict client envelope, correlation, byte limit, single-flight, cancel/error | 8 new client tests PASS | `worker-f8c322f6-68da-47e2-9b2d-01a6f1e668e5.json`. The lead agent reviewed the wire correction. The final full Node gate includes the same test. |
+| Capture pinning/8 records/expired, JSON and TR/EN CSV 0-negative-null, canary/formula, cancel/busy/exit rollback | 5 report + 3 real FS tests PASS | `focused-3.json`. A new/racing target, Unicode filename, extension, and capacity were checked. The old file did not change. The test did not fill the real disk. |
+| Final local quality gate | 161 frontend/371 Rust PASS, 8 opt-in ignored. Fmt PASS | `final-1.json`. `build-1.json` binds the TS/Vite/custom-protocol PASS to the same source/config/tool fingerprint. The successful build was not repeated without a change. |
+| TR/EN/light/dark ×1280/1024/819/683/507, ESC/focus/pending/error/period/unmount | 20 combinations, 6 behavior groups PASS. No overflow or page error. | `ui-c2cbe56d-dfbc-445f-8ef4-531837db18de/result.json`. It used the real App and an explicitly isolated sample transport. The lead agent reviewed the TR-dark and EN-light images. |
+| JSON/CSV/diagnostics through native Save As and Cancel | The real mouse and keyboard produced 3 files. Their contents matched the committed UI capture at click time. | Run `b90930b8-1015-4bab-b182-143d2738f541`, `files-acceptance.json`: 18 checks. The read-only/passive observer did not change results. The native invoke remained immutable. |
+| Period/source/coverage/percentage/amount, new snapshot arriving while waiting | JSON/CSV kept the snapshot from the same click. The report kept that snapshot timestamp when a newer UI snapshot arrived. | Same run. A local SQLite fixture used 100 to 50 (50%). This sample is not live provider evidence or development savings. |
+| CSV encoding/locale and diagnostics allowlist | UTF-8 BOM/CRLF/TR delimiter and numbers. No credential/content/path/identity fields. | Same 18 checks plus renderer/client tests. The native dialog used TR. The EN UI/client/renderer are covered. |
+| Cancel | The fingerprints of three existing reports were unchanged. No fourth file appeared. | `cancel-before.json`, `cancelled-final.json`, `files-acceptance.json`. |
+| Exit/state | After UI exit confirmation, no process remained and owned debug/stable ports were closed. Runtime/metrics/preferences baseline bytes, protected state, and Run were unchanged. | `baseline.json`, `cleanup-recovery.json`. A helper script failed to restore a directory because its SQLite context manager left the connection open. A separate safe recovery completed. The native application exit code remains unknown. The record supplies no evidence for exit code 0. |
 
-İlk `0c93ba02-1869-4b00-90b5-9969bb50e96f` koşusu kredi/oturum kesintisinde kaldı; PASS sayılmadı. `interruption-recovery.json` orijinalleri geri yükledi, o anda bulunan test state'i ayrı klasörlerde korudu. Son run'ın recovery kaydı aynı orijinal state zincirini doğrular. Helper'ın sorunu Python SQLite context manager'ının bağlantıyı kapatmamasıydı: eski artefact değişmeden `seed_closed.py` ve `native-safe.py` üretildi; `seed-smoke-c0df9be9-738e-4410-9710-b7c0026432c6/result.json` bağlantı kapandıktan sonra dizin taşımanın çalıştığını doğruladı. Bu QA düzeltmesi ürün testinin yerine sayılmadı.
+The first run, `0c93ba02-1869-4b00-90b5-9969bb50e96f`, stopped during a credit/session interruption. It did not count as PASS. `interruption-recovery.json` restored the originals and kept the test state found at that time in separate directories. The final run's recovery record confirmed the same original-state chain.
 
-Ortam Windows10 x64 build19045; Rust/Cargo1.92.0, Node25.2.1, pnpm11.25.0, Python3.14.0. Windows11 H047/karar006 ücretsiz istisnasıyla not_tested; diğer OS/installer/yayın/canlı sağlayıcı/uzun yük/gerçek disk dolması doğrulanmadı. İstemci/auth/model/başlangıç ayarları değiştirilmedi. Geliştirme token tasarrufu ölçülmedi.
+The helper problem occurred because Python's SQLite context manager did not close the connection. The old artifact stayed unchanged. The helper produced `seed_closed.py` and `native-safe.py`. `seed-smoke-c0df9be9-738e-4410-9710-b7c0026432c6/result.json` confirmed that the directory could be moved after the connection closed. This QA correction did not replace a product test.
 
-H033 kapatıldı; sıradaki H034 hata ve toparlama akışları başlamadı. Ana görev sonunda duruldu.
+Environment: Windows 10 x64 build19045, Rust/Cargo1.92.0, Node25.2.1, pnpm11.25.0, Python3.14.0. Windows 11 was not_tested under the H047/decision 006 free-use exception. Other OS, installer/release, live provider, long-load, and real disk-full behavior were not verified. No client/auth/model/startup settings changed. Development token savings were not measured.
+
+H033 closed. The next task, H034 error and recovery flows, did not start. Work stopped at the end of the main task.

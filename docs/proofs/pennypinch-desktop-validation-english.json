@@ -1,0 +1,69 @@
+{
+  "task": "H042-k3j",
+  "status": "pass",
+  "base_commit": "6b39030cd09e350f98327c01cae12fc33e178217",
+  "verified": {
+    "translated_records": 3,
+    "legacy_heading_aliases": 9,
+    "incoming_heading_links": 0,
+    "outgoing_links": 8,
+    "local_receipts": []
+  },
+  "documents": {
+    "docs/proofs/accessibility-performance.md": {
+      "original_sha256": "306299151dbf63f5c200932b892c0d71e59fa77a596d6c134fc5ae80a851309d",
+      "draft_sha256": "fe4b5be296646d00fb0d54777cde85da1fb5db1369eb723280cb282fe7774792",
+      "candidate_sha256": "25f875578cd9ef3201f115205d2ea0578844afdc2e1c252bcc912f2392d4d65f"
+    },
+    "docs/proofs/compatibility.md": {
+      "original_sha256": "d699929e0f7645b2ba8b8eea5a656c65f106d5328ec620931634b518b66d3415",
+      "draft_sha256": "70fb7f58a687f4e9b36e168c57cec92cbbd4c87bc16edc48630b44db79ee7558",
+      "candidate_sha256": "43410a7828b1d67ad6b17572ae6cd22bce551a7125c819ca940d821308a11606"
+    },
+    "docs/proofs/export.md": {
+      "original_sha256": "a27a1c7fe3284d808208e765cf38f92b67ba244c8bd98533afa33b676ab056cd",
+      "draft_sha256": "a26a751767d3d2452595aa12ce95651e1bad644bc7c3b9052b9723c43023df60",
+      "candidate_sha256": "07fd707593603e45ecfdcc0f645a8b95734a2f1f856d809ea86b7b9b4428c955"
+    }
+  },
+  "references_sha256": {
+    "docs/decisions/023-accessibility-performance.md": "c8d28a02614e98c9704c46d5013c732336f907bf34fcb91a0117f544ebef9fd5",
+    "docs/validation/performance.md": "90cf592f83e44196b31d28964045e78e012fd9e7d90543053fe99fb7c6a96e1a",
+    "docs/reviews/H035.md": "c27e70f17bef3737f3b76cc7df00621444915606a4861ec04e72b4d819fc6277",
+    "docs/decisions/024-compatibility-catalog.md": "b262628bd7b53a12c2fd9145d46c46900858294b359cb99d501c5112064ab298",
+    "docs/reviews/H036.md": "b7f38d83f309b7cc60818ed8fee72c88d0d528214ab5691528926a7ebe3ec76f",
+    "docs/decisions/021-export.md": "8867e25622e1e85b27f7e066a1566565eb4ba760f9f5be16dcfb8976485f04f2",
+    "docs/reviews/H033.md": "b5e85eb41400723c53f3074663f43eafdbee5c1f55748b99b2afb3c39d787a7e"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/proofs/accessibility-performance.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/compatibility.md": {
+        "hard": 0,
+        "advisory": 8
+      },
+      "docs/proofs/export.md": {
+        "hard": 0,
+        "advisory": 8
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "git": "git version 2.53.0.windows.1"
+  },
+  "development_token_savings": "not_measured",
+  "date": "2026-11-21",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted the export and compatibility reports. The lead agent drafted the accessibility and performance report, checked all three against the source, and ran the final checks.",
+  "compatibility_catalog": {
+    "affected_references": 0,
+    "sha256": "c373dfcf90687ecf99923b98f168b884eef8a6b651f4879df9ff031437f2762a"
+  },
+  "product_tests": "not_run_documentation_only"
+}
