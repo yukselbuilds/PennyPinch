@@ -1,0 +1,133 @@
+{
+  "task": "H042-k3ah",
+  "date": "2026-11-21",
+  "status": "pass",
+  "base_commit": "a74634333ef8396a07817e9919db8b495fcda429",
+  "implementation": "The single GPT-6 Luna xhigh worker drafted H029 and H030. The lead agent drafted H028 and checked all three against the original and acceptance records.",
+  "verified": {
+    "translated_records": 3,
+    "legacy_heading_aliases": 6,
+    "incoming_links": 10,
+    "incoming_heading_links": 0,
+    "outgoing_links": 3,
+    "compatibility_catalog_review_paths": [
+      "docs/reviews/H028.md"
+    ],
+    "compatibility_catalog_environment_gate": "tauri-native-helper-wiring",
+    "compatibility_catalog_status": "local_fixture_pass",
+    "unchanged_historical_evidence": [
+      "docs/proofs/safe-pause.md",
+      "docs/proofs/safe-disconnect.md",
+      "docs/proofs/tray-lifecycle.md"
+    ]
+  },
+  "documents": {
+    "docs/reviews/H028.md": {
+      "original_sha256": "9f3ebe867fbc2a0adc5da250eef6738bde04e0ef4abed26b3a20761decee6b23",
+      "draft_sha256": "263042e75a00df2eb22d9a8ca385f04f4215dd1242208ee80982a222f2d04270",
+      "candidate_sha256": "b3f1bb48e6472edc2630a8c431a80b3743f9664c8b7f2f26c9278ded47c48f4b"
+    },
+    "docs/reviews/H029.md": {
+      "original_sha256": "a162c58d9c701ad625c8dc99a0d6d47d777c12a186d5f29ada7adc3656124d55",
+      "draft_sha256": "ee0f1450ed13dfea2613e35b1693f616f2cd59da3d51341f37476017860c3e6a",
+      "candidate_sha256": "1a55963d5bcbbd8376cb2a5604a1f6b005b89c91ef498c6b6e49d3153a4c80a6"
+    },
+    "docs/reviews/H030.md": {
+      "original_sha256": "0030f2b984f7862bffedd856518206b2c9221b3165116e90cefed1919e9a6bff",
+      "draft_sha256": "6ecb95fc6c2658ac24eeb5a5d002f8b76eb25f018769ecac1202f1dec08f146b",
+      "candidate_sha256": "83ab327809d0a3b51bb5c850afaea6492f1919ac716cd1db276f7f9f4f95c04d"
+    }
+  },
+  "references_sha256": {
+    "docs/proofs/safe-pause.md": "555186d7b2831b32f9ab4b5ca6d5f19d5cb458f7cf337ef2b26be32b55f66e9d",
+    "docs/proofs/safe-disconnect.md": "768353bc6fddc1a3824e7e720217761270bb9ecdf15381df2054edd44e5f1af9",
+    "docs/proofs/tray-lifecycle.md": "01998b072befb19f6d5cd4396df5964cae6f5818c76ac332e6fc17de8a088541",
+    "docs/decisions/017-safe-disconnect.md": "75e09ce4722d167b18f645ba832a020d2d3f499e6efbd089e10db5d830658e52",
+    "compatibility/clients.json": "c373dfcf90687ecf99923b98f168b884eef8a6b651f4879df9ff031437f2762a",
+    "src-tauri/src/compatibility/catalog_tests.rs": "a8825aeb81cee18d3f7d72d264d51cfdd3ec34e69becc0e579541777aa66891b"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "docs/reviews/H028.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/reviews/H029.md": {
+        "hard": 0,
+        "advisory": 1
+      },
+      "docs/reviews/H030.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "TASKS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/IMPLEMENTATION_STATUS.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "f092104d108a7ca2d5dc72b7afaa4db4f704f119b1f64bdf49589c6b0467702e",
+  "inventory_scanner_sha256": "252bb7cd485828727001a1ef48de5df9eb6148573a47709d82f1f30f5014f0d2",
+  "development_token_savings": "not_measured",
+  "engine_provider_and_ci_tests": "not_run_documentation_only",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "a4713077715a60f652522913e571a985c47bf1303a582fc53a2378a0a524ae0d",
+    "after_input_sha256": "fad8ab308a9bf4f7364dc9f77e30fd4c8412aac1f4ab1947e680a5ea7a3e9ad3",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 32,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 21
+      },
+      "flagged_prose_lines": 1378,
+      "approximate_source_words": 52011,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 29,
+      "counts_by_area": {
+        "other_documents": 4,
+        "research_notes": 7,
+        "historical_reviews": 18
+      },
+      "flagged_prose_lines": 1335,
+      "approximate_source_words": 50660,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 788,
+        "approximate_words": 31689
+      }
+    },
+    "progress_before": {
+      "ready_documents": 190,
+      "remaining_documents": 32,
+      "ready_percent": 85.6,
+      "remaining_percent": 14.4
+    },
+    "progress_after": {
+      "ready_documents": 193,
+      "remaining_documents": 29,
+      "ready_percent": 86.9,
+      "remaining_percent": 13.1
+    }
+  }
+}

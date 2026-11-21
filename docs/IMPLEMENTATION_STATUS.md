@@ -1,14 +1,20 @@
 # PennyPinch implementation status
 
+## 21 November — English runtime control and disconnect reviews
+
+H042-k3ah is complete. The three English reviews cover safe pause, disconnect, and tray shutdown. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-runtime-control-reviews-english.json) · [Task list](../TASKS.md)
+
+The scan found no untranslated prose in 193 of 222 tracked documents (86.9%). It flagged 29 documents (13.1%) with remaining Turkish prose. The estimated remaining text is about 51,000 words.
+
+### Next H042 release step
+
+Continue H042-k3 with the H031 through H033 reviews. These cover settings, themes and languages, and statistics and diagnostics export. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
+
 ## 21 November — English Overview, attribution, and activity reviews
 
 H042-k3ag is complete. The three English reviews cover the live Overview, model and agent attribution, and content-free activity. The checks matched the recorded results, historical scope, and heading links. [Evidence](proofs/pennypinch-overview-activity-reviews-english.json) · [Task list](../TASKS.md)
 
 The scan found no untranslated prose in 190 of 222 tracked documents (85.6%). It flagged 32 documents (14.4%) with remaining Turkish prose. The estimated remaining text is about 52,000 words.
-
-### Next H042 release step
-
-Continue H042-k3 with the H028 safe start and pause, H029 disconnect, and H030 system tray and shutdown reviews. Other research and review documents remain open. Production signing, hosted delivery, clean-host installation, and Windows 11 have separate acceptance. H041 remains deferred.
 
 ## 21 November — English onboarding and metrics reviews
 
