@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "task": "H042-u",
+  "date": "2026-11-22",
+  "status": "pass",
+  "scope": "Public source and HTTPS update hosting in the existing GitHub repository.",
+  "repository": {
+    "name": "yukselbuilds/headroom-desktop",
+    "id": 1429516480,
+    "prior_owner_alias": "Protocol272",
+    "cli_administrator_verified": true,
+    "visibility_before": "private",
+    "visibility_after": "public",
+    "source_commit_at_visibility_change": "b1817b9f69a0db5a3dc92ca405ffbb16e7f54f37"
+  },
+  "history_check": {
+    "prior_review": "docs/proofs/repository-history-review.json",
+    "prior_revision": "fadf83acd59a9c1f109a68fde0d1416a1c152c8e",
+    "new_commits": 76,
+    "scanner": "Gitleaks 8.30.1",
+    "findings_classified_as_source_sha256": 5,
+    "unresolved_findings": 0,
+    "actions_log_attempts_scanned": 71,
+    "actions_log_files_scanned": 142,
+    "actions_log_findings": 0,
+    "existing_action_artifacts": 0
+  },
+  "pages": {
+    "pages_url": "https://yukselbuilds.github.io/headroom-desktop/",
+    "updates_base_url": "https://yukselbuilds.github.io/headroom-desktop/updates/",
+    "https_enforced": true,
+    "source": {
+      "branch": "gh-pages",
+      "path": "/"
+    },
+    "pages_commit": "49f5decaf6934c4fb6c13da8c10c9b9dc7a5f8c8",
+    "pages_run": 45040111222,
+    "pages_jobs": [
+      {
+        "name": "build",
+        "conclusion": "success",
+        "labels": [
+          "ubuntu-latest"
+        ]
+      },
+      {
+        "name": "report-build-status",
+        "conclusion": "success",
+        "labels": [
+          "ubuntu-latest"
+        ]
+      },
+      {
+        "name": "deploy",
+        "conclusion": "success",
+        "labels": [
+          "ubuntu-latest"
+        ]
+      }
+    ],
+    "anonymous_https": {
+      "repository": 200,
+      "home": 200,
+      "update_base": 200,
+      "published_page_hashes_matched": true,
+      "signed_feed": {
+        "updates/stable/manifest.json": 404,
+        "updates/stable/manifest.json.sig": 404,
+        "updates/preview/manifest.json": 404,
+        "updates/preview/manifest.json.sig": 404
+      }
+    }
+  },
+  "pages_file_sha256": {
+    ".nojekyll": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index.html": "83c23200b603db7c7f5d8590cacb6abe5aa86f3385b9ee42a45049f599b4385d",
+    "updates/index.html": "6819b935ee97496fec130d69cc3846a76d9930e683b5288b434c21e85610f09e"
+  },
+  "fingerprints": {
+    "scan.json": "f40267a8ccdca58a8db82efecf2599699506664e4ba102579bf2f006eaf546b7",
+    "prepared.json": "ea4f9c249a3f6016d9bfe4c87263b7d92a836772c08e22bbaa3f3f434157af3b",
+    "verified.json": "c04f9efc4baa41266d9c6f4444ffd519b0a600e41aa93aa15e609a26bbb63c11",
+    "publish_pages.py": "b9080376b2e2d9d06cd477359d35b05302db4343590b38520f2e11535e9bf6c9",
+    "verify_pages.py": "10d10a96651274181c250bac80b456451262aadefebd714e5a1edd996d1594f5"
+  },
+  "implementation": {
+    "owner": "lead agent"
+  },
+  "github_releases": 0,
+  "production_signing": "pending",
+  "remaining": [
+    "Set the permanent update signing key.",
+    "Build the first Windows installer with the public key and the HTTPS URL.",
+    "Publish and verify the signed feed.",
+    "Verify Windows 11 x64 update and rollback."
+  ],
+  "development_token_savings": "not_measured"
+}
