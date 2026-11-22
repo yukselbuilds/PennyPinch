@@ -175,6 +175,51 @@ fn check(flow: &UpdateFlow, channel: UpdateChannel) -> CandidateView {
 }
 
 #[test]
+#[ignore = "requires a live preview feed and build-bound update trust"]
+fn verifies_live_preview_download() {
+    use sha2::{Digest, Sha256};
+    use std::io::{Read, Seek};
+
+    let installed = std::env::var("PENNYPINCH_LIVE_UPDATE_FROM_VERSION").unwrap();
+    let expected_version = std::env::var("PENNYPINCH_LIVE_UPDATE_VERSION").unwrap();
+    let expected_digest = std::env::var("PENNYPINCH_LIVE_UPDATE_APPLICATION_SHA256").unwrap();
+    let source = ReleaseSource::configured().expect("build-bound update trust required");
+    let root = test_root().join("app-data");
+    let flow = UpdateFlow::with_source(
+        "dev.headroom.desktop".into(),
+        installed.parse().unwrap(),
+        Some(root.clone()),
+        Some(source),
+    );
+    let candidate = check(&flow, UpdateChannel::Preview);
+    assert_eq!(candidate.version, expected_version);
+    let reply = request(
+        &flow,
+        Action::Download {
+            candidate_id: candidate.id,
+        },
+        true,
+    );
+    assert_eq!(reply.status, Status::Ready, "{:?}", reply.error);
+    let mut application = Vec::new();
+    {
+        let mut phase = flow.0.phase.lock().unwrap();
+        let Phase::Candidate(candidate) = &mut *phase else {
+            panic!("expected a verified candidate")
+        };
+        let staged = candidate.staged.as_mut().unwrap();
+        staged.rewind().unwrap();
+        staged.read_to_end(&mut application).unwrap();
+    }
+    assert_eq!(
+        format!("{:x}", Sha256::digest(&application)),
+        expected_digest
+    );
+    drop(flow);
+    assert_eq!(fs::read_dir(&root).unwrap().count(), 0);
+}
+
+#[test]
 fn verifies_a_download_on_disk_and_waits_for_the_engine() {
     let feed = Feed::start(Mode::Normal);
     let root = test_root().join("app-data");

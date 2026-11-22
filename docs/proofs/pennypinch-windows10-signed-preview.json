@@ -1,0 +1,125 @@
+{
+  "task": "H042-z",
+  "status": "pass",
+  "date": "2026-11-22",
+  "scope": "Local trust-bound Windows build and verified live preview download by the actual update manager.",
+  "owner": "lead agent",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "source_commit": "4d8e0238e113bb34e9a142b149933e28599a74bc",
+  "versions": [
+    "0.1.1-preview.1",
+    "0.1.1-preview.2"
+  ],
+  "installer_authenticode": "NotSigned",
+  "full_installer_published": false,
+  "build_outputs": {
+    "PennyPinch_0.1.1-preview.1_x64.exe": {
+      "bytes": 12417536,
+      "sha256": "480f5641ece6d68bde0e6021b9f26be0b50b942f33bd9982e1d16dc7fd93c6d5"
+    },
+    "PennyPinch_0.1.1-preview.2_x64.exe": {
+      "bytes": 12414976,
+      "sha256": "7fee64123fa18734ba46c6e89f8abaa05439cd7f431d75c07eda5397febf209a"
+    },
+    "PennyPinch_0.1.1-preview.1_x64-setup.exe": {
+      "bytes": 125235092,
+      "sha256": "24539971538147e19769e4c35900c0158551aace72ebbbe0ea6f19d4289a7147"
+    }
+  },
+  "matched_build_input_count": 429,
+  "build_input_fingerprint": "da3fb72950172c377b46d04776a8c05d20eaf1086f30a9c3ddb85bfcce24fec5",
+  "runtime_resources": {
+    "engine": "0.44.0",
+    "staged_files": 19484,
+    "resource_pin_sha256": "02af2411184956207d3440b138de4e9c1bfbf0b061b7ef531e3ccca720558bc0"
+  },
+  "signer": {
+    "key_type": "password-protected Tauri signing key",
+    "public_key_sha256": "c32e894d22af6146ee736e04ec06454aaf740912aed00e65aa7a116cc7d0b52c",
+    "wrong_password_rejected": true,
+    "backup_signing_verified": true,
+    "backup_scope": "same Windows user profile and workspace disk",
+    "portable_backup": "not_configured"
+  },
+  "local_signature_and_nsis_verification": {
+    "matched_inputs": 248,
+    "check": "signature_manifest_package_extraction_and_application_probe"
+  },
+  "https": {
+    "source_commit": "ea6c732da897bea1aa63ae2e97a74a1d87bb62b1",
+    "url": "https://yukselbuilds.github.io/PennyPinch/updates/",
+    "channel": "preview",
+    "version": "0.1.1-preview.2",
+    "status": "pass",
+    "live_files": [
+      {
+        "name": "manifest.json",
+        "http_status": 200,
+        "bytes": 822,
+        "sha256": "413ddd1db7d4c7733b7aeed980f8fd915312985eb2f00e571c4f92d366c7f598",
+        "followed_redirects": false
+      },
+      {
+        "name": "manifest.json.sig",
+        "http_status": 200,
+        "bytes": 432,
+        "sha256": "8f9ab96f0e27d6f590d3a8f374158ab3a9f4d9a07f330f5d9327c4e70fa4900d",
+        "followed_redirects": false
+      },
+      {
+        "name": "Headroom_0.1.1-preview.2_x64-update.exe",
+        "http_status": 200,
+        "bytes": 5007456,
+        "sha256": "15708a3d73f2cf1da8612fc05b8eb832c89d8fe9073c2724b0672b5ed7daf567",
+        "followed_redirects": false
+      }
+    ]
+  },
+  "update_manager_checks": {
+    "scope": "actual Windows update manager on isolated staging data; live HTTPS preview",
+    "from_version": "0.1.1-preview.1",
+    "to_version": "0.1.1-preview.2",
+    "app_sha256": "7fee64123fa18734ba46c6e89f8abaa05439cd7f431d75c07eda5397febf209a",
+    "signed_metadata_hash_and_extraction": "pass",
+    "download_and_staging_cleanup": "pass",
+    "windows10_live_manager": 1,
+    "fixture_tests_passed": 5,
+    "formatting": "pass",
+    "installed_apply_or_rollback": "not_tested_in_this_run",
+    "receipt_input_digests_before_and_after": {
+      "work/releases/h042z-d1f552cd/build-receipt.json": "85652b8455b8e5344452ef2e2039e9c9feda553ff79ca0c1274c3f5f00cd87d1",
+      "work/releases/h042z-d1f552cd/live/result.json": "3c858dddb95383fc8a20ae1eb3c23c8916c22466e04580a8c680131a9f1b0b41",
+      "src-tauri/src/desktop/update_flow.rs": "aad2b8d17cb42dcacbc632923c0ad4fa1a057d05a90a6a167e2098f7f40e4291",
+      "src-tauri/src/desktop/update_flow_tests.rs": "8dc50daa6ac248cd1dd44680e312bff42baf83695de8092b68e09e1aa1dc62a8",
+      "src-tauri/Cargo.lock": "4d38badcab3da0d8a9aac3a0fe13c1a175a3d6862ebf5432bb9b65f080486bda",
+      "src-tauri/src/desktop/update_source.rs": "c8efd97fab3845e65ef189ac701f2799f80323ec052a2fd760bc6918abaea276",
+      "src-tauri/src/desktop/update.rs": "22ad3ed18cb50e0e3f39005c9fb1dc5f25a5858dc6b48c049776888eea012af6"
+    },
+    "elapsed_seconds": 16.296
+  },
+  "profile_override_check": {
+    "scope": "release executable with explicit app directory override",
+    "startup_exit": 12,
+    "window": "not_started",
+    "default_product_data_used": false
+  },
+  "receipt_sha256": {
+    "build": "85652b8455b8e5344452ef2e2039e9c9feda553ff79ca0c1274c3f5f00cd87d1",
+    "signed_package": "fc0b71c8da02d33773d6dfa4e1614ea28ad480a7d9a57a41401f8cdb59eace65",
+    "live_https": "3c858dddb95383fc8a20ae1eb3c23c8916c22466e04580a8c680131a9f1b0b41",
+    "update_manager": "bb95b7fed564679f2ea64cabcb45a1e70137c49e86054c13c6279872032e35a7",
+    "key_preparation": "62575035d3dd9c6906298fae4832a85709d03bca21510853a559213c7987c2b3"
+  },
+  "remaining": [
+    "Full Windows 10 installed transition and rollback with the published source.",
+    "First public update-enabled installer.",
+    "Windows 11 x64 update and rollback."
+  ],
+  "provider_requests": 0,
+  "ci_workflow_dispatches": 0,
+  "development_token_savings": "not_measured"
+}

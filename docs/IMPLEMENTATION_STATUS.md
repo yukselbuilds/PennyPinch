@@ -24,9 +24,9 @@ The public repository is named PennyPinch. Its Pages site serves the new update 
 
 The public README and project site show the benchmark results and measurement scopes. The repository description and topics identify PennyPinch and its client coverage. [Presentation checks](proofs/pennypinch-public-showcase.json)
 
-The local signing key and same-profile encrypted backup passed a signing check. Build and verify the first update-enabled installer and its matching signed preview update. Full Windows 11 update and rollback and clean-host installation have separate acceptance.
+The local signing key and same-profile encrypted backup passed a signing check. The signed preview channel serves v0.1.1-preview.2. The Windows 10 update manager verified its signature, download, and extracted application. [Signed preview evidence](proofs/pennypinch-windows10-signed-preview.json)
 
-The signed HTTPS feed and installed update check remain open. [Update acceptance](validation/windows-update.md)
+Next, run an installed update and rollback from the local trust-bound Windows 10 installer in an isolated profile. Then prepare that installer for public delivery. The Windows 11 x64 update and rollback check remains open. [Update acceptance](validation/windows-update.md)
 
 ## History
 

@@ -138,3 +138,17 @@ The run passed 478 Rust tests, Windows packaging tests and the custom-protocol b
 The release script sorts the SHA-256 values of six helper files and two Windows manifests and produces a combined digest. In a v3 update prepared with `--release-base-url`, the signed manifest includes that digest. Verification covers the input and extracted executable. The installed app offers the package when the signed digest matches its build. Use the full Windows installer when the resources change. [Contract](../decisions/028-update-trust.md#h042-c1--imzalı-uygulama-paketi)
 
 The Windows 10 x64 check used a real QA executable and temporary key. The compatible 0.44.0 package passed signature, NSIS extraction and executable verification. A fixture re-signed with a different digest for `desktop_helper.py` returned `RuntimeResourcesMismatch`, even with the same engine manifest and package bytes. The run passed 479 Rust tests, the package tests and custom-protocol build. It skipped 24 opt-in Rust tests. The 227 frontend tests and three production files were reused after their inputs matched. [Programmatic evidence](../proofs/windows-update-runtime-resources.json)
+
+## 22 November 2026 — Public preview and live signed download
+
+GitHub Releases serves the v0.1.0 Windows 10 preview for manual installation. Both anonymous downloads matched their recorded SHA-256 digests. [Publication evidence](../proofs/pennypinch-windows10-preview-publication.json)
+
+The v0.1.1-preview.1 installer embeds the HTTPS source and public key. The preview channel serves a signed v0.1.1-preview.2 manifest and app package. The Windows 10 update manager accepted the live manifest, downloaded the signed package, and extracted the executable. The staged digest matched the release build. The manager deleted the staged file when the test ended. Five local flow tests also passed. [Preview evidence](../proofs/pennypinch-windows10-signed-preview.json)
+
+The live test uses the same check and download methods as Settings. It uses a test state directory. The installed transition and rollback for these builds still need evidence. The standard Windows 11 desktop check also remains open.
+
+For a live preview check, set the build-time update URL and public key described above. Set `PENNYPINCH_LIVE_UPDATE_FROM_VERSION` to the installed version. Set `PENNYPINCH_LIVE_UPDATE_VERSION` to the published preview version. Set `PENNYPINCH_LIVE_UPDATE_APPLICATION_SHA256` to the application digest from the verified build. Run the following command from the project root.
+
+```powershell
+cargo test --offline --locked --manifest-path src-tauri/Cargo.toml desktop::update_flow::tests::verifies_live_preview_download -- --ignored --exact
+```
