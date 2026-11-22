@@ -28,7 +28,7 @@ The local signing key and same-profile encrypted backup passed a signing check. 
 
 On Windows 10, the real installation upgraded from v0.1.0 with the full installer. Settings then applied the signed v0.1.1-preview.2 package. Rollback restored the previous executable and Windows registration. The test preferences matched across both restarts. The 19,484 recorded resource files matched after rollback. [Installed acceptance](proofs/pennypinch-windows10-installed-update-and-release.json)
 
-The RTK-OSS v1.2.1 pre-screen rejected all eight Windows 10 cases under the existing H043 checks. H044 awaits an eligible command path. H052 still needs the authorized report service. H053 and H054 depend on H052. [RTK pre-screen evidence](proofs/rtk-1.2.1-preflight.json) · [Task list](../TASKS.md)
+The RTK-OSS v1.2.1 follow-up recovered all native stdout bytes for one ripgrep search. H044 needs the paired Headroom comparison and isolated client checks for this command. H052 still needs the authorized report service. H053 and H054 depend on H052. [RTK follow-up evidence](proofs/rtk-1.2.1-recovery-followup.json) · [Task list](../TASKS.md)
 
 ## History
 

@@ -1,0 +1,72 @@
+{
+  "task": "H044",
+  "status": "follow_up_measured",
+  "date": "2026-11-22",
+  "scope": "Real rg and Cargo commands on deterministic project-local fixtures using the default RTK filter settings.",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "version": "1.2.1",
+  "edition": "rtk-oss",
+  "upstream_commit": "d0f0399a5ff8cd1d81325a033f0b2d8864d665f6",
+  "executable_sha256": "114d4548964528494ad5f9cda2f203677292fd34006c6a0fb3ac5458bee3f7c1",
+  "repository_snapshot": {
+    "forks_count": 5617,
+    "html_url": "https://github.com/rtk-ai/rtk",
+    "stargazers_count": 87497
+  },
+  "cargo_test_success": {
+    "native_bytes": 1795,
+    "rtk_bytes": 118,
+    "byte_reduction_pct": 93.43,
+    "native_names": 48,
+    "filtered_names": 0,
+    "recall_hints": 0,
+    "recall_database_records": 0,
+    "exit_code": 0,
+    "passed_tests": 48
+  },
+  "rg_with_hidden_matches": {
+    "native_bytes": 19184,
+    "rtk_bytes": 4947,
+    "byte_reduction_pct": 74.21,
+    "native_matches": 200,
+    "visible_matches": 50,
+    "recall_references": 2,
+    "recovered_matches": 200,
+    "all_matching_text_recovered": true,
+    "native_stderr": 0,
+    "rtk_stderr": 0,
+    "exit_code": 0,
+    "all_files_line_numbers_and_contents_match": true,
+    "raw_stdout_matched_after_joining_both_recall_outputs": true,
+    "full_recall_bytes": 19184
+  },
+  "verification": {
+    "primary_command_inputs": 13,
+    "primary_inputs_sha256_before_and_after": "f58cf9f72c5f92021bd8c963bb771221643f6b1f1acd2b2d52164af15df03edf",
+    "match_record_inputs_sha256_before_and_after": "486127046666cbf3e8908709409459a821df69c6f623ca3a4d5b24e1183c5962",
+    "byte_comparison_inputs_sha256_before_and_after": "b391fbf0b296c20d761b6101981c304db7881e90a8b5e0dfc68cef027fdfaed0",
+    "model_calls": 0,
+    "development_token_savings": "not_measured"
+  },
+  "sources": [
+    "https://github.com/rtk-ai/rtk/blob/v1.2.1/docs/contributing/TECHNICAL.md#37-output-recovery-recall-store",
+    "https://github.com/rtk-ai/rtk/issues/1313",
+    "https://github.com/rtk-ai/rtk/issues/4098",
+    "https://github.com/rtk-ai/rtk/issues/1282",
+    "https://github.com/alpertarhan/pi-smart-compact/blob/main/ARCHITECTURE.md#command-hygiene-optional-rtk-companion"
+  ],
+  "next_scope": "Evaluate simple rg search with the paired Headroom benchmark and an isolated real client.",
+  "h044_complete": false,
+  "implementation_owner": "lead agent",
+  "receipt_sha256": {
+    "commands": "4fc46f90f840959dba14b3e7b1d66a9fa1720f14367952731d4a1bd72aec71a0",
+    "full_match_records": "aec11539ec7686b3d49558bd7e3e5658e3208d9991efb17fd97d97f915d5a606",
+    "recovered_stdout_bytes": "3d975cbdf253c9bb176a47ad7098f75c8b7a31393de48f9315314814f2fe03ba",
+    "repository_snapshot": "f620ded522e08b8d1266becaf73c308cb34e79e72881b01ae9ef52c6f4b1caba",
+    "earlier_screen": "4ddb0d62b3ea2be41f57f6d850deac5a037f18506a66131a9d6d2e4453c410de"
+  }
+}

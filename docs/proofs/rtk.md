@@ -76,4 +76,15 @@ This single-round command pre-screen stops when it finds no eligible candidate. 
 
 All eight cases had the same byte reductions and rejection reasons as v1.2.0. The successful test output fell 93.09%. The original output had no recall reference. The failed test's stderr fell from 80 bytes to zero. Three recall calls returned stdout and stderr as one stream. The JSON filter also broke JSON structure. All eight bypass calls reran the commands and returned the original streams and exit codes.
 
-The older file-based recovery mode can save successful output. The pinned Windows binary reads that setting from the user's shared RTK config path. The pre-screen used the default mode and project-local data. It measured command bytes. H044 awaits a command path that preserves output integrity and passes the recovery and benefit checks. [Recovery modes](https://github.com/rtk-ai/rtk/blob/d0f0399a5ff8cd1d81325a033f0b2d8864d665f6/src/core/tee.rs) · [Windows config location](https://github.com/rtk-ai/rtk/blob/d0f0399a5ff8cd1d81325a033f0b2d8864d665f6/src/core/user_dirs.rs)
+The older file-based recovery mode can save successful output. The pinned Windows binary reads that setting from the user's shared RTK config path. The pre-screen used the default recovery mode and project-local data. It disabled TOML filters for the run. It measured command bytes. H044 awaits a command path that preserves output integrity and passes the recovery and benefit checks. [Recovery modes](https://github.com/rtk-ai/rtk/blob/d0f0399a5ff8cd1d81325a033f0b2d8864d665f6/src/core/tee.rs) · [Windows config location](https://github.com/rtk-ai/rtk/blob/d0f0399a5ff8cd1d81325a033f0b2d8864d665f6/src/core/user_dirs.rs)
+
+## RTK-OSS 1.2.1 — Command recovery follow-up
+
+22 November 2026. RTK documents recall for failures and for filters that store omitted matches. The open lossless-mode request and the flat-list cap report cover gaps in those paths. Pi Smart Compact documents a separate optional RTK integration for three selected commands. These reports describe their own versions and workloads. [RTK recall design](https://github.com/rtk-ai/rtk/blob/v1.2.1/docs/contributing/TECHNICAL.md#37-output-recovery-recall-store) · [Lossless request](https://github.com/rtk-ai/rtk/issues/1313) · [Flat-list cap report](https://github.com/rtk-ai/rtk/issues/4098) · [Pi Smart Compact integration](https://github.com/alpertarhan/pi-smart-compact/blob/main/ARCHITECTURE.md#command-hygiene-optional-rtk-companion)
+
+The follow-up used the official Windows x64 RTK-OSS binary with the default filter settings. It ran real Cargo and ripgrep commands against project-local fixtures. [Follow-up evidence](rtk-1.2.1-recovery-followup.json)
+
+- **Successful Cargo tests.** RTK showed the count of 48 passes. It omitted the test names and created zero recall entries. Output fell from 1,795 to 118 bytes.
+- **Ripgrep search.** RTK showed 50 of 200 matches from two files. It supplied two recall references. The joined recall output matched all 19,184 native stdout bytes. Output before recall fell to 4,947 bytes.
+
+Simple ripgrep search is a candidate for paired Headroom measurement and isolated client tests. The earlier eight pre-screen cases retain their recorded scope. H044 installation remains open.
