@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "task": "H042-w",
+  "status": "pass",
+  "date": "2026-11-22",
+  "scope": "Repository rename, local Git origin, and GitHub Pages route migration.",
+  "repository_id": 1429516480,
+  "old_repository": "https://github.com/yukselbuilds/headroom-desktop",
+  "new_repository": "https://github.com/yukselbuilds/PennyPinch",
+  "origin": "git@github.com:yukselbuilds/PennyPinch.git",
+  "public": true,
+  "previous_github_url": {
+    "status": 301,
+    "location": "https://github.com/yukselbuilds/PennyPinch"
+  },
+  "previous_pages_url": {
+    "status": 404,
+    "location": null
+  },
+  "main_commit": "ba23c3e40fc824b9f71b9105ad5cb62bdfa2e33a",
+  "pages_commit": "0c0d09a29dee03db0d0bf01446722dfe1fdeef44",
+  "pages_run": 45044028038,
+  "pages_url": "https://yukselbuilds.github.io/PennyPinch/",
+  "update_base_url": "https://yukselbuilds.github.io/PennyPinch/updates/",
+  "verified_browsers": {
+    "pages": [
+      {
+        "width": 320,
+        "height": 780,
+        "accessibility_violations": 0,
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "accessibility_violations": 0,
+        "overflow": false
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "accessibility_violations": 0,
+        "overflow": false
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "accessibility_violations": 0,
+        "overflow": false
+      },
+      {
+        "width": 1440,
+        "height": 1100,
+        "accessibility_violations": 0,
+        "overflow": false
+      }
+    ],
+    "readme_themes": [
+      {
+        "color_scheme": "dark",
+        "five_images_loaded": true,
+        "theme_logo": true,
+        "benchmarks_link": true,
+        "collapsed_contributor_notes": true
+      },
+      {
+        "color_scheme": "light",
+        "five_images_loaded": true,
+        "theme_logo": true,
+        "benchmarks_link": true,
+        "collapsed_contributor_notes": true
+      }
+    ]
+  },
+  "changed_files": {
+    "before": {
+      "README.md": "8a1c64b4ddc7f17caad06da4da86b248aa9ffc6eefdbd216d4534bb2663f6e30",
+      "docs/validation/windows-update.md": "143031fb565ff391e3dd8c7025822eab5ec81301051a8c60edf10c6d7427556b",
+      "work/public-showcase/site/index.html": "9ba97f1899d80a93c809324c03bd7da9675a86eb0a5829eed3b796259a7a3d14",
+      "work/public-showcase/site/updates/index.html": "549a1cd1738e88745b5eb8c2f8690bb52dabf3cda25bcc2b21eaad6bd764f0a4",
+      "work/public-showcase/site/sitemap.xml": "c5cffbcdb55a7ef201e776f6e53383e3fa3d817dd12a785f9adef4bdda52ca83"
+    },
+    "after": {
+      "README.md": "e2bd8ca039215527707d8343196100e3bfefadf454d547e1ed5f0588413fa50e",
+      "docs/validation/windows-update.md": "ff4e664c2fe3df81a2b26eb1ba6df775c7ec53b0a08cfcf99be2e04b7e83b266",
+      "work/public-showcase/site/index.html": "ede2af0aca9c50b7ecde7c8430047e6e121dadc7fe133edfcc309b2c97daec77",
+      "work/public-showcase/site/updates/index.html": "8f8b034c268c7f068bcb4d2bd9b6d62dc07dbf4808b64477cba33fbe428cf394",
+      "work/public-showcase/site/sitemap.xml": "7505db87875628aa07b0111157fd43e05fa7f5d6a62607037d056591f93fe40b"
+    }
+  },
+  "published_files_sha256": {
+    "index.html": "ede2af0aca9c50b7ecde7c8430047e6e121dadc7fe133edfcc309b2c97daec77",
+    "styles.css": "d2ab2e3d81215ddaf197d6bc9a4a6dfc4e9f404c54d0a00ca7cd75d34bfb9650",
+    "updates/index.html": "8f8b034c268c7f068bcb4d2bd9b6d62dc07dbf4808b64477cba33fbe428cf394",
+    "sitemap.xml": "7505db87875628aa07b0111157fd43e05fa7f5d6a62607037d056591f93fe40b",
+    "assets/favicon.png": "00d8e0c3ab813a48a8de8b9c56fc234690435cf2d2a97d650017d90aef852d9e",
+    "assets/pennypinch-mark.png": "792c1d181f2cce6381daf33ba8fcd23bb0a7a86cef815389089caf0947f90dad",
+    "assets/pennypinch-share.png": "d2647393ce262da990be19bd82fe6c82c4277337e27a399a46976aba851804d4"
+  },
+  "release_count": 0,
+  "production_update_feed": "pending",
+  "implementation": {
+    "owner": "lead agent"
+  },
+  "development_token_savings": "not_measured"
+}

@@ -20,7 +20,7 @@ The lead agent prepared the delivery ZIP and verified extraction on Windows 10. 
 
 The current Windows 10 release code verified a local signed update with a temporary key. The verifier rejected the earlier preview's runtime resource digest. The live update URLs returned HTTP 404. [Preflight record](proofs/pennypinch-windows10-update-preflight.json)
 
-The existing GitHub repository is public. GitHub Pages serves the update base over HTTPS. The signed feed is pending. [Publication evidence](proofs/pennypinch-github-pages-publication.json)
+The public repository is named PennyPinch. Its Pages site serves the new update address over HTTPS. The signed feed is pending. [Repository](https://github.com/yukselbuilds/PennyPinch) · [Update address](https://yukselbuilds.github.io/PennyPinch/updates/) · [Rename checks](proofs/pennypinch-repository-rename.json)
 
 The public README and project site show the benchmark results and measurement scopes. The repository description and topics identify PennyPinch and its client coverage. [Presentation checks](proofs/pennypinch-public-showcase.json)
 
