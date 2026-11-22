@@ -8,15 +8,15 @@
 <p align="center"><strong>Local context compression and token tracking for Codex, Claude Code, and OpenCode.</strong></p>
 
 <p align="center">
-  <a href="https://yukselbuilds.github.io/headroom-desktop/"><img src="docs/branding/readme-site.png" width="126" height="38" alt="Project site"></a>
+  <a href="https://yukselbuilds.github.io/PennyPinch/"><img src="docs/branding/readme-site.png" width="126" height="38" alt="Project site"></a>
   <a href="#benchmarks"><img src="docs/branding/readme-benchmarks.png" width="130" height="38" alt="Benchmarks"></a>
-  <a href="https://yukselbuilds.github.io/headroom-desktop/updates/"><img src="docs/branding/readme-releases.png" width="147" height="38" alt="Release status"></a>
+  <a href="https://yukselbuilds.github.io/PennyPinch/updates/"><img src="docs/branding/readme-releases.png" width="147" height="38" alt="Release status"></a>
 </p>
 
 <p align="center">Windows 10 22H2 x64 development preview · Headroom 0.44.0 · Apache 2.0</p>
 
 <p align="center">
-  <a href="https://yukselbuilds.github.io/headroom-desktop/#benchmarks"><img src="docs/branding/pennypinch-benchmarks.png" alt="Local proxy benchmark. Six synthetic requests fell from 122,922 to 69,328 input tokens, a 43.60% reduction." width="100%"></a>
+  <a href="https://yukselbuilds.github.io/PennyPinch/#benchmarks"><img src="docs/branding/pennypinch-benchmarks.png" alt="Local proxy benchmark. Six synthetic requests fell from 122,922 to 69,328 input tokens, a 43.60% reduction." width="100%"></a>
 </p>
 
 ## Benchmarks
@@ -30,7 +30,7 @@ The measurements below came from Windows 10 tests. Each row uses the input scope
 | Six Headroom SDK examples, rerun locally | 126,289 → 55,209 | **56.28% less** | [SDK counts](docs/validation/optimization-benefit.md#20-kas%C4%B1m--headroom-benchmark-tekrarlar%C4%B1) |
 | One paired local model log task | 6,647 → 6,647 | **0%** | [Model server counts](docs/validation/optimization-benefit.md#19-kas%C4%B1m--ger%C3%A7ek-yerel-modelde-e%C5%9Flenmi%C5%9F-chat-completions-k%C4%B1yas%C4%B1) |
 
-The proxy test counts full request JSON with `o200k_base`. The live Codex result uses a local estimate. Providers report usage and billing separately. [Workload charts](https://yukselbuilds.github.io/headroom-desktop/#benchmarks) · [Pinned Headroom benchmark](https://github.com/headroomlabs-ai/headroom/blob/b21479e0fa84db5f3e46bb79f96c962de4d5fdc6/docs/content/docs/benchmarks.mdx)
+The proxy test counts full request JSON with `o200k_base`. The live Codex result uses a local estimate. Providers report usage and billing separately. [Workload charts](https://yukselbuilds.github.io/PennyPinch/#benchmarks) · [Pinned Headroom benchmark](https://github.com/headroomlabs-ai/headroom/blob/b21479e0fa84db5f3e46bb79f96c962de4d5fdc6/docs/content/docs/benchmarks.mdx)
 
 ## What PennyPinch does
 
@@ -48,7 +48,7 @@ The proxy test counts full request JSON with `o200k_base`. The live Codex result
 | Claude Code | Windows 10 routing checks with synthetic credentials and a local provider. [Evidence](docs/proofs/claude-acceptance.md) |
 | OpenCode | Selected CLI, TUI, and Desktop routes with synthetic credentials and local providers. [Evidence](docs/proofs/opencode-acceptance.md) |
 
-The first public Windows installer is pending. Windows 11, macOS, and Linux release checks have separate acceptance. [Release list](https://github.com/yukselbuilds/headroom-desktop/releases) · [Platform validation](docs/validation/desktop-platforms.md) · [Versioned client catalog](compatibility/clients.json)
+The first public Windows installer is pending. Windows 11, macOS, and Linux release checks have separate acceptance. [Release list](https://github.com/yukselbuilds/PennyPinch/releases) · [Platform validation](docs/validation/desktop-platforms.md) · [Versioned client catalog](compatibility/clients.json)
 
 <details>
 <summary>Developer setup and verification history</summary>
@@ -95,7 +95,7 @@ The Windows package uses bundled `runtime/payload` and stores mutable applicatio
 
 ### GitHub and evidence
 
-The project is maintained in the [yukselbuilds/headroom-desktop](https://github.com/yukselbuilds/headroom-desktop) repository. The first import was published through GitHub Desktop; [H046 evidence](docs/proofs/repository-import.md) records the scope. H047-a observed the GitHub Free plan and an account usage hard stop. The manual source-only [first CI run](https://github.com/yukselbuilds/headroom-desktop/actions/runs/39759872053) passed 49 app tests and the frontend build on a standard Ubuntu runner. [H047 evidence](docs/proofs/free-ci.md) records the fresh-source check, account hard stop and observed $0 billable usage; native platform support remains separate. The free-only CI decision and gates are recorded in [decision 006](docs/decisions/006-free-ci.md), and the workflow's scope and dispatch requirements are documented in [source checks](docs/validation/source-checks.md).
+The project is maintained in the [yukselbuilds/PennyPinch](https://github.com/yukselbuilds/PennyPinch) repository. The first import was published through GitHub Desktop; [H046 evidence](docs/proofs/repository-import.md) records the scope. H047-a observed the GitHub Free plan and an account usage hard stop. The manual source-only [first CI run](https://github.com/yukselbuilds/PennyPinch/actions/runs/39759872053) passed 49 app tests and the frontend build on a standard Ubuntu runner. [H047 evidence](docs/proofs/free-ci.md) records the fresh-source check, account hard stop and observed $0 billable usage; native platform support remains separate. The free-only CI decision and gates are recorded in [decision 006](docs/decisions/006-free-ci.md), and the workflow's scope and dispatch requirements are documented in [source checks](docs/validation/source-checks.md).
 
 Some proof documents link to files beneath `work/`. Those paths refer to local development evidence and are intentionally ignored; the evidence files themselves are not part of the initial source import. Generated builds, downloaded engine payloads, temporary runs, and visual outputs are excluded from Git.
 

@@ -94,7 +94,7 @@ The paths below are examples. Provide the actual release inputs after selecting 
   --private-key .\work\releases\keys\release.key `
   --notes .\work\releases\inputs\notes.md `
   --channel stable --from-version 0.1.0 `
-  --release-base-url 'https://yukselbuilds.github.io/headroom-desktop/updates/'
+  --release-base-url 'https://yukselbuilds.github.io/PennyPinch/updates/'
 ```
 
 For release preparation, provide the same exact HTTPS base to `--release-base-url` and `HEADROOM_DESKTOP_UPDATE_BASE_URL`. The script verifies the URL and public key in the input executable before signing and again in the extracted executable. Local QA commands can use the existing identifier, version and data-format checks.
