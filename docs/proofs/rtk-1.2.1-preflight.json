@@ -1,0 +1,319 @@
+{
+  "schema_version": 1,
+  "task": "H044",
+  "status": "candidate_screen_complete",
+  "edition": "rtk-oss",
+  "version": "1.2.1",
+  "upstream_commit": "d0f0399a5ff8cd1d81325a033f0b2d8864d665f6",
+  "archive_sha256": "43124168ec0733b50f7e9e1f1b994ced9b0693b9e92281428f64990c308bf1c8",
+  "executable_sha256": "114d4548964528494ad5f9cda2f203677292fd34006c6a0fb3ac5458bee3f7c1",
+  "executable_authenticode": "NotSigned",
+  "acquisition": "Pinned release API digest and publisher checksum file, HTTPS",
+  "recorded_at_utc": "2026-11-22T18:11:30.265472+00:00",
+  "scope": {
+    "purpose": "H044 candidate screening",
+    "profile": "single command pass per H043 fixture",
+    "version": "v1.2.1",
+    "cases": [
+      "git_status",
+      "git_diff",
+      "test_pass",
+      "test_fail",
+      "build_fail",
+      "json_exact",
+      "source_read",
+      "stderr_exit"
+    ],
+    "thresholds": {
+      "command_timeout_seconds": 30,
+      "startup_timeout_seconds": 100,
+      "request_timeout_seconds": 30,
+      "warm_command_added_p95_ms": 250,
+      "warm_combined_added_p95_ms": 1000,
+      "minimum_command_saved_fraction": 0.1
+    },
+    "reject_filter_when": [
+      "existing integrity check fails",
+      "bypass changes raw output",
+      "byte saving below 10 percent"
+    ],
+    "command_profile_runs": 1,
+    "model_tokens": "not_measured",
+    "provider_calls": 0
+  },
+  "eligible_cases": [],
+  "exact_bypasses": 8,
+  "cases": [
+    {
+      "case": "git_status",
+      "control": {
+        "exit_code": 0,
+        "total_ms": 54.81110000073386,
+        "stdout_bytes": 2279,
+        "stdout_sha256": "aecb9c2994e916a0ba67464bab4762be1f11832ce980466337597d42bcae0f2c",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "filtered": {
+        "exit_code": 0,
+        "total_ms": 129.06180000027234,
+        "stdout_bytes": 2151,
+        "stdout_sha256": "74b9e64efa45be2ce40ce5c3c159e4d4ba3f713429f97e4fd3a523a007c1f4c3",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "bypass_byte_exact": true,
+      "recall": [],
+      "byte_saved_percent": 5.6165,
+      "rejection_reasons": [
+        "original_stdout_not_recoverable",
+        "below_minimum_byte_saving"
+      ]
+    },
+    {
+      "case": "git_diff",
+      "control": {
+        "exit_code": 0,
+        "total_ms": 44.03169999932288,
+        "stdout_bytes": 333,
+        "stdout_sha256": "62c5b2312e2c72112ab5bc921bc5b466e74434a466a3c7cbeb0186c96ee2234b",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "filtered": {
+        "exit_code": 0,
+        "total_ms": 96.28900000097929,
+        "stdout_bytes": 329,
+        "stdout_sha256": "85f59f0e9e013ca8deecf03c00601195b56cfa5519b5742c696862cf9aa35a5b",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "bypass_byte_exact": true,
+      "recall": [],
+      "byte_saved_percent": 1.2012,
+      "rejection_reasons": [
+        "source_bytes_changed",
+        "original_stdout_not_recoverable",
+        "below_minimum_byte_saving"
+      ]
+    },
+    {
+      "case": "test_pass",
+      "control": {
+        "exit_code": 0,
+        "total_ms": 109.38519999945129,
+        "stdout_bytes": 2749,
+        "stdout_sha256": "5e6908ddc0ac8ca7dc9e408d5a289535071b211eae6f3b341c32aab96e03bfb7",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "filtered": {
+        "exit_code": 0,
+        "total_ms": 133.22489999882237,
+        "stdout_bytes": 190,
+        "stdout_sha256": "002a704780fbf9f48e381dbb0fefd6e4d864ddf26ea5bd9278e5e1eae6ac1b4e",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "bypass_byte_exact": true,
+      "recall": [],
+      "byte_saved_percent": 93.0884,
+      "rejection_reasons": [
+        "original_stdout_not_recoverable"
+      ]
+    },
+    {
+      "case": "test_fail",
+      "control": {
+        "exit_code": 1,
+        "total_ms": 119.34929999915767,
+        "stdout_bytes": 2788,
+        "stdout_sha256": "7e441524ec3aad14b56b6c4845d4e35dfb30342303b4f8ce29755d3a9963b5e3",
+        "stderr_bytes": 80,
+        "stderr_sha256": "89769898f73acff5781e60110d506ff009744657ab84fc2b037327d5f69bd1bd"
+      },
+      "filtered": {
+        "exit_code": 1,
+        "total_ms": 142.95959999981278,
+        "stdout_bytes": 298,
+        "stdout_sha256": "e50c331953b84d84ae82341b00fe5a85abd026dcfdb441a351606e2264c55ba5",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "bypass_byte_exact": true,
+      "recall": [
+        {
+          "exit_code": 0,
+          "exact_stdout": false,
+          "merged_streams": true
+        }
+      ],
+      "byte_saved_percent": 89.6095,
+      "rejection_reasons": [
+        "stderr_changed_or_moved",
+        "original_stdout_not_recoverable"
+      ]
+    },
+    {
+      "case": "build_fail",
+      "control": {
+        "exit_code": 2,
+        "total_ms": 131.95100000120874,
+        "stdout_bytes": 2900,
+        "stdout_sha256": "50e8328ee9234829b5a51695924a748d0d22c7399c9a1e3a1be13efcd0e4b7b5",
+        "stderr_bytes": 66,
+        "stderr_sha256": "a0cf29be3e7a28a472c85f9cc47635f1439933de2e6a7b40434b5668591f77ac"
+      },
+      "filtered": {
+        "exit_code": 2,
+        "total_ms": 158.82160000001022,
+        "stdout_bytes": 43,
+        "stdout_sha256": "49bea3fb4f7c07c94925b0dac8b2d543b5224bd11b85683e75d3908e372f8ed0",
+        "stderr_bytes": 66,
+        "stderr_sha256": "a0cf29be3e7a28a472c85f9cc47635f1439933de2e6a7b40434b5668591f77ac"
+      },
+      "bypass_byte_exact": true,
+      "recall": [
+        {
+          "exit_code": 0,
+          "exact_stdout": false,
+          "merged_streams": true
+        }
+      ],
+      "byte_saved_percent": 96.325,
+      "rejection_reasons": [
+        "original_stdout_not_recoverable"
+      ]
+    },
+    {
+      "case": "json_exact",
+      "control": {
+        "exit_code": 0,
+        "total_ms": 111.52469999979076,
+        "stdout_bytes": 4193,
+        "stdout_sha256": "33437dbae866ca606cb97b2703db3039ed4177f9dc7b815b731adb88422760d1",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "filtered": {
+        "exit_code": 0,
+        "total_ms": 32.572500000242144,
+        "stdout_bytes": 125,
+        "stdout_sha256": "c07a091a72d59677d4cea977027132f81999ae0e4afc0eeb1109cb934263e0d8",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "bypass_byte_exact": true,
+      "recall": [],
+      "byte_saved_percent": 97.0188,
+      "rejection_reasons": [
+        "filtered_output_not_json",
+        "original_stdout_not_recoverable"
+      ]
+    },
+    {
+      "case": "source_read",
+      "control": {
+        "exit_code": 0,
+        "total_ms": 109.51260000001639,
+        "stdout_bytes": 5720,
+        "stdout_sha256": "1888b319e51afc81ee7f85c387ea4c708f7519334a72aa35f82f64aa2d991adc",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "filtered": {
+        "exit_code": 0,
+        "total_ms": 31.930400000419468,
+        "stdout_bytes": 5720,
+        "stdout_sha256": "1888b319e51afc81ee7f85c387ea4c708f7519334a72aa35f82f64aa2d991adc",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "bypass_byte_exact": true,
+      "recall": [],
+      "byte_saved_percent": 0.0,
+      "rejection_reasons": [
+        "below_minimum_byte_saving"
+      ]
+    },
+    {
+      "case": "stderr_exit",
+      "control": {
+        "exit_code": 23,
+        "total_ms": 105.45579999961774,
+        "stdout_bytes": 12600,
+        "stdout_sha256": "91fcaf00f0215851635e54821dc0ca2e5388301f5bd8daffac01682ae5dff8ff",
+        "stderr_bytes": 55,
+        "stderr_sha256": "afc9ebbc727d0562a51dff4ff84b488fc3da1818504a46ccad7b474604c346f6"
+      },
+      "filtered": {
+        "exit_code": 23,
+        "total_ms": 131.59909999922093,
+        "stdout_bytes": 43,
+        "stdout_sha256": "8d7df93d862a8e06f5844a7a4abd360b93a910024cda59d88cd32321d3aa1b0a",
+        "stderr_bytes": 55,
+        "stderr_sha256": "afc9ebbc727d0562a51dff4ff84b488fc3da1818504a46ccad7b474604c346f6"
+      },
+      "bypass_byte_exact": true,
+      "recall": [
+        {
+          "exit_code": 0,
+          "exact_stdout": false,
+          "merged_streams": true
+        }
+      ],
+      "byte_saved_percent": 99.2256,
+      "rejection_reasons": [
+        "original_stdout_not_recoverable"
+      ]
+    }
+  ],
+  "same_byte_reductions_and_rejections_as_1_2_0": true,
+  "merged_stream_recalls": 3,
+  "upstream_source_comparison": {
+    "src/core/retriever.rs": {
+      "unchanged": false,
+      "sha256": "8a72cef094d7b3e6a80b8a6c9d7c3970551a85cebb631dce4287c4411c3f7904"
+    },
+    "src/core/runner.rs": {
+      "unchanged": false,
+      "sha256": "885a6b4df25cdce64634449331ef7693c2a79ae7ecfc9512aeadd580ff6c7302"
+    },
+    "src/core/user_dirs.rs": {
+      "unchanged": true,
+      "sha256": "949dac151e612f783741790c3e82d3d6aadfeb74551d3aea91e61d0bfada9413"
+    },
+    "src/core/config.rs": {
+      "unchanged": false,
+      "sha256": "9ee906aacc164abfc8e0c3ed825c0249a5805a922894636333c444cf165bcc49"
+    }
+  },
+  "input_fingerprints": {
+    "count": 129,
+    "before_and_after_sha256": "562ff30613077f80486f80f52de8d05e494b15ccb19c491e7672978c263baecf"
+  },
+  "environment": {
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "machine": "AMD64",
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "logical_cpus": 16
+  },
+  "original_rtk_user_folders_absent_before_and_after": true,
+  "privacy": "Only synthetic outputs reached the command and recall fixtures. The report contains no raw command outputs.",
+  "next": "H044 installation requires an eligible command path with output integrity, exact recovery, and sufficient benefit.",
+  "product_changed": false,
+  "h044_implementation_started": false,
+  "implementation": {
+    "owner": "lead agent",
+    "development_token_savings": "not_measured"
+  },
+  "receipts_sha256": {
+    "candidate": "05a9faf0ccbc3172c0de8f8ba8ccda048db12c57d03bfc5fde8bab2377585ec7",
+    "run": "d68143d63ebc027957345053ec0d179c3f87f4a34dca8406b70f9765e5033eaa",
+    "previous": "588a654af86e11a5262c8a1af1d81f0d7baac360aa82d6a0fa4f60c6b9dbf989"
+  }
+}

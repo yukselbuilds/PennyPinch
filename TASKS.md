@@ -13,8 +13,8 @@
 | --- | --- |
 | H041 · Windows 10 evidence | The team recorded a sustained 0.44.0 workload, retrieval of original content in chunks and an initial live Learn comparison. [Measurements and open acceptance criteria](docs/validation/optimization-benefit.md#headroom-0440-ile-süreli-yük) |
 | H041 · Additional acceptance | Other live protocols and API-key checks need authorized access. The 0.44.0 macOS ARM64 engine and package passed. Native window acceptance remains open. Windows 11 verification was deferred. The Serena pilot is complete. Broader Learn acceptance remains open. Experimental e3 is on hold, and e4 depends on e3 acceptance. [Platform tests](docs/validation/desktop-platforms.md) · [Open work items](#h041--cache-bütünlük-ve-gecikmefayda-regresyonu) |
-| H006, H037 and H042 · External environments and release | H006 needs clean Windows 10 and Windows 11 x64 environments. H037 also needs installation without WebView2 and download from the release URL. H042 needs Windows 11 update and rollback acceptance, a production signing key and a live update source. |
-| H044 · Waiting for an eligible candidate | RTK-OSS 1.1.0 fell short in H043, and 1.2.0 fell short in the next preflight. Installation requires a candidate that meets the existing integrity, rollback and benefit criteria. |
+| H006, H037 and H042 · External environments and release | H006 needs clean Windows 10 and Windows 11 x64 environments. H037 also needs installation without WebView2 and an interrupted download from the release URL. H042 needs Windows 11 x64 update and rollback acceptance. |
+| H044 · Waiting for an eligible candidate | RTK-OSS v1.2.1 repeated the eight rejections from v1.2.0. [Pre-screen evidence](docs/proofs/rtk-1.2.1-preflight.json) |
 | H049 · Resumed | The Ubuntu x64 build opened a window on CircleCI Free. The Rust suite recorded 220 passes, 81 failures and 2 skipped tests. Linux adaptation and package acceptance remain open. [Platform tests](docs/validation/desktop-platforms.md) |
 | H052, H053 and H054 · Deferred | The dedicated Workers/D1 service in H052 needs a Cloudflare account. The feedback form and daily sharing depend on the live service. The local prototype is also deferred. |
 
@@ -977,7 +977,8 @@ These three tasks do not expand the required installation for the first release.
 
 ### H044 — Optional RTK installation and management
 - [ ] Offer an install/enable/disable/remove flow in Settings only for scope verified in H043.
-- **Status:** Pending. RTK-OSS 1.1.0 was rejected under H043 acceptance. On 15 November, stable 1.2.0 was also rejected in all eight samples at preflight for original-output preservation, rollback, and minimum byte benefit. All eight bypasses returned exact results. Open installation scope when a suitable candidate is verified against the same criteria. [1.2.0 preflight evidence](docs/proofs/rtk-1.2.0-preflight.json).
+- **Status:** Waiting for an eligible RTK path. A command must meet the H043 integrity, recovery, and benefit checks.
+- [x] **H044-a Stable v1.2.1 pre-screen.** Eight command cases matched the v1.2.0 result on Windows 10. All eight bypasses preserved the output streams and exit codes. [v1.2.1 evidence](docs/proofs/rtk-1.2.1-preflight.json) · [v1.2.0 evidence](docs/proofs/rtk-1.2.0-preflight.json)
 - **Acceptance:** Preview the added tool's version/license/size/affected-client scope. Default is off. Manage download hash/signature and only application-owned processes/files. If a hook/wrapper is required, apply H018 ownership and conflict/rollback rules. No silent global PATH/hook changes. Keep layer counters separate and do not show unmeasured gains.
 - **Distribution boundary:** Do not automatically download, package, or treat as distributed the RTK engine or separate BUSL-1.1 proxy outside the Apache-2.0 filter component evidenced in H043. Those require a separate explicit decision.
 - **Verification:** Installation error/cancellation, reopen, conflict with an existing hook, and removal that preserves later user edits. Verify the UI → adapter → real tool path on a supported client. A general plugin marketplace or automatic installation of other tools is out of scope.
