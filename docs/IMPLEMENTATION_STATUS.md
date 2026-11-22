@@ -30,7 +30,9 @@ On Windows 10, the real installation upgraded from v0.1.0 with the full installe
 
 The lead agent ran the H044 ripgrep comparison on Windows 10 in 136.4 seconds. The combined route saved two more tokens than Headroom on the first request. Full readback required Headroom recovery and two RTK recalls. H044 waits for a candidate with a useful gain and a verified client recovery path. [Paired evidence](proofs/rtk-1.2.1-rg-paired.json)
 
-H052 now specifies how to include voluntary usage summaries in field benchmark results. An authorized Cloudflare Free deployment is pending. H053 and H054 depend on the live report service. [Task list](../TASKS.md)
+The 23 November check found RTK-OSS v1.2.1 is still the latest stable release. The paired evidence applies to that release. [Upstream release](https://github.com/rtk-ai/rtk/releases/tag/v1.2.1)
+
+The lead agent documented the H052–H054 privacy design. The next H052 step is to confirm the operator and authorized hosting account. Verify the actual processing terms and any transfer mechanism before a live pilot. H053 and H054 depend on the live report service. [Privacy decision](decisions/032-usage-sharing-privacy.md)
 
 ## History
 
