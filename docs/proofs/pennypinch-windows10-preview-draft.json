@@ -1,0 +1,99 @@
+{
+  "task": "H042-x",
+  "status": "pass",
+  "date": "2026-11-22",
+  "installer": {
+    "path": "work/w42r/b04d1de1/PennyPinch_0.1.0_x64-setup.exe",
+    "sha256": "f911b3871631aceb4fefd3493e87c25778b486099a84551f11c4badd762b32b6",
+    "bytes": 125243786
+  },
+  "installer_authenticode": "NotSigned",
+  "engine": "0.44.0",
+  "source_build": "2757d73d134ff58020112c080c7f86b9944cf259",
+  "previous_delivery_proof": "docs/proofs/pennypinch-windows10-activity-delivery.json",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "delivery": {
+    "path": "work/releases/0.1.0-windows10/PennyPinch_0.1.0_Windows_x64_preview.zip",
+    "sha256": "e420941377d556ee1371d89a14a443d6a72df1edb79fc9382f1f8b6f6c6b69f6",
+    "bytes": 126684972,
+    "verified_files": 678,
+    "internal_listed_checksums": 677,
+    "unchanged_notice_entries": 674,
+    "project_license_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "checksums_file_sha256": "d26e9ecb04ddf6e933bb957d0e78569898a374975dbb3376bbb5155770ac68bb"
+  },
+  "recorded_build_inputs_matched": 422,
+  "verified_input_count": 429,
+  "before_and_after_sha256": "acab6e9a34330a53b67c31caee6c22512026fb183e37b65d5a7cb3be0ea1cab7",
+  "release_notes_sha256": "10f00bb2e591d9a5af7c7333389f2d4c154166345f06017f07264ba2212a6e7f",
+  "toolchain": {
+    "python_version": "3.13.13",
+    "python_sha256": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+    "git": "git version 2.53.0.windows.1",
+    "gh": "gh version 2.92.0 (2026-04-28)"
+  },
+  "implementation": {
+    "owner": "lead agent",
+    "local_preparation_seconds": 3.139
+  },
+  "development_token_savings": "not_measured",
+  "scope": "First manual-download Windows 10 x64 preview, staged as a GitHub draft.",
+  "source_target": {
+    "release_target_commit": "c7a9a2f3af74e9270cd4ba36f1adffde7b29456e",
+    "tracked_build_inputs_matched": 404,
+    "local_runtime_and_build_inputs": 18
+  },
+  "windows_extraction": {
+    "files": 678,
+    "matched_checksums": 677,
+    "powershell": "7.6.9",
+    "archive_module": "1.2.6",
+    "archive_before_and_after_sha256": "e420941377d556ee1371d89a14a443d6a72df1edb79fc9382f1f8b6f6c6b69f6",
+    "authenticode": "NotSigned",
+    "path_has_spaces_and_unicode": true,
+    "verification_seconds": 5.732
+  },
+  "github": {
+    "repository": "yukselbuilds/PennyPinch",
+    "draft_id": 454590703,
+    "tag": "v0.1.0",
+    "draft_url": "https://github.com/yukselbuilds/PennyPinch/releases/tag/untagged-5a9b2ff7026705452a53",
+    "draft": true,
+    "prerelease": true,
+    "published": false,
+    "tag_created": false,
+    "anonymous_release_count": 0,
+    "anonymous_download_http_status": 404,
+    "release_notes_match": true,
+    "assets": [
+      {
+        "digest": "sha256:e420941377d556ee1371d89a14a443d6a72df1edb79fc9382f1f8b6f6c6b69f6",
+        "name": "PennyPinch_0.1.0_Windows_x64_preview.zip",
+        "size": 126684972,
+        "state": "uploaded"
+      },
+      {
+        "digest": "sha256:d26e9ecb04ddf6e933bb957d0e78569898a374975dbb3376bbb5155770ac68bb",
+        "name": "SHA256SUMS.txt",
+        "size": 107,
+        "state": "uploaded"
+      }
+    ]
+  },
+  "github_file_sha256_before_and_after": {
+    "PennyPinch_0.1.0_Windows_x64_preview.zip": "e420941377d556ee1371d89a14a443d6a72df1edb79fc9382f1f8b6f6c6b69f6",
+    "SHA256SUMS.txt": "d26e9ecb04ddf6e933bb957d0e78569898a374975dbb3376bbb5155770ac68bb",
+    "0.1.0-windows10-preview.md": "10f00bb2e591d9a5af7c7333389f2d4c154166345f06017f07264ba2212a6e7f"
+  },
+  "remaining": [
+    "Owner approval to publish the draft, followed by anonymous download verification.",
+    "Durable update signing key, a trust-bound installer, and live HTTPS update acceptance.",
+    "Clean-host installation and Windows 11 acceptance."
+  ],
+  "provider_requests": 0,
+  "ci_runs_started": 0
+}
