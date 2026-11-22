@@ -9,6 +9,7 @@ use uuid::Uuid;
 pub const MAX_TOKEN_COUNT: u64 = 9_007_199_254_740_991;
 pub const MAX_OBSERVATIONS: usize = 10_000;
 pub const MAX_SNAPSHOT_BYTES: usize = 2 * 1024 * 1024;
+const WS_INPUT_BASIS_PREFIX: &str = "headroom-0.44.0-ws-json-v1:";
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -387,6 +388,8 @@ pub fn normalize(observations: &[Observation]) -> Result<NormalizedBatch, Normal
 
 pub(crate) fn merge_event(current: &mut NormalizedEvent, incoming: &NormalizedEvent) -> bool {
     let mut comparison = incoming.clone();
+    preserve_owned_ws_input(current, incoming);
+    preserve_owned_ws_input(&mut comparison, current);
     comparison.observed_via = current.observed_via.clone();
     comparison.attribution = current.attribution.clone();
     comparison.metadata = current.metadata.clone();
@@ -421,6 +424,37 @@ pub(crate) fn merge_event(current: &mut NormalizedEvent, incoming: &NormalizedEv
         Source::Mcp => 1,
     });
     new_conflict
+}
+
+fn preserve_owned_ws_input(target: &mut NormalizedEvent, source: &NormalizedEvent) {
+    // The stats and private usage snapshots are read separately. A legacy row
+    // for this event can arrive before attribution or after the sidecar expires.
+    if target.observed_via == [Source::Proxy]
+        && !target.provider_usage.conflicted
+        && matches!(
+            target.status,
+            MeasurementStatus::UnknownBasis | MeasurementStatus::MissingCounter
+        )
+        && target.before == unverified_reading(target.before.tokens)
+        && target.after == unverified_reading(target.after.tokens)
+        && source.main_metric_eligible
+        && source.observed_via.contains(&Source::Proxy)
+        && source.before.component == Component::WholeInput
+        && source.before.basis.kind == CounterKind::LocalEstimate
+        && source
+            .before
+            .basis
+            .tokenizer
+            .as_deref()
+            .is_some_and(|id| id.starts_with(WS_INPUT_BASIS_PREFIX))
+    {
+        target.before = source.before.clone();
+        target.after = source.after.clone();
+        target.status = source.status;
+        target.saved_tokens = source.saved_tokens;
+        target.saved_percent = source.saved_percent;
+        target.main_metric_eligible = true;
+    }
 }
 
 /// Revalidate the bounded schema at the persistent-store trust boundary.
@@ -518,6 +552,42 @@ struct UsageRecord {
     request_id: String,
     truncated: bool,
     attempts: Vec<UsageAttempt>,
+    local_input: Option<LocalInputPair>,
+}
+
+#[derive(Deserialize)]
+struct LocalInputPair {
+    before: u64,
+    after: u64,
+    counter: String,
+}
+
+impl LocalInputPair {
+    fn readings(&self) -> Option<(Reading, Reading)> {
+        if self.before > MAX_TOKEN_COUNT
+            || self.after > MAX_TOKEN_COUNT
+            || !matches!(
+                self.counter.as_str(),
+                "headroom_estimator"
+                    | "o200k_base"
+                    | "cl100k_base"
+                    | "p50k_base"
+                    | "r50k_base"
+                    | "gpt2"
+            )
+        {
+            return None;
+        }
+        let reading = |tokens| Reading {
+            tokens: Some(tokens),
+            basis: Basis {
+                kind: CounterKind::LocalEstimate,
+                tokenizer: Some(format!("{WS_INPUT_BASIS_PREFIX}{}", self.counter)),
+            },
+            component: Component::WholeInput,
+        };
+        Some((reading(self.before), reading(self.after)))
+    }
 }
 
 #[derive(Deserialize)]
@@ -538,6 +608,7 @@ struct AttemptCounters {
 struct CapturedUsage {
     counters: ProviderUsage,
     failed: bool,
+    local_input: Option<LocalInputPair>,
 }
 
 impl UsageRecord {
@@ -712,15 +783,28 @@ pub(crate) fn project_owned_headroom_041(
                 .client_status
                 .is_some_and(|status| (400..600).contains(&status))
                 || surface == "openai_responses_ws" && record.failed == Some(true);
+            let local_input = if surface == "openai_responses_ws"
+                && record.client_status.is_none()
+                && record.failed == Some(false)
+                && totals.upstream_attempts == Some(1)
+                && totals.input.is_some_and(|input| input > 0)
+                && totals.output.is_some()
+            {
+                record.local_input
+            } else {
+                None
+            };
             usage
                 .entry(record.request_id)
                 .and_modify(|entry: &mut CapturedUsage| {
                     entry.counters = ProviderUsage::conflict();
                     entry.failed |= failed;
+                    entry.local_input = None;
                 })
                 .or_insert(CapturedUsage {
                     counters: totals,
                     failed,
+                    local_input,
                 });
         }
     }
@@ -795,9 +879,19 @@ fn project_headroom(
                 }
             }
         }
-        if !metadata.conflicted && usage.get(request_id).is_some_and(|capture| capture.failed) {
+        let capture = usage.get(request_id);
+        if !metadata.conflicted && capture.is_some_and(|capture| capture.failed) {
             metadata.outcome = super::request_metadata::Outcome::ErrorReported;
         }
+        let (before, after) = capture
+            .and_then(|capture| capture.local_input.as_ref())
+            .and_then(LocalInputPair::readings)
+            .unwrap_or_else(|| {
+                (
+                    unverified_reading(row.input_tokens_original),
+                    unverified_reading(row.input_tokens_optimized),
+                )
+            });
         observations.push(Observation {
             metadata,
             attribution: Attribution::observed(row.model.as_deref(), row.provider.as_deref()),
@@ -808,10 +902,9 @@ fn project_headroom(
             proxy_request_id: None,
             timestamp_utc: row.timestamp.clone(),
             optimizer: Optimizer::Headroom,
-            before: unverified_reading(row.input_tokens_original),
-            after: unverified_reading(row.input_tokens_optimized),
-            provider_usage: usage
-                .get(request_id)
+            before,
+            after,
+            provider_usage: capture
                 .map(|capture| capture.counters.clone())
                 .unwrap_or_default(),
         });

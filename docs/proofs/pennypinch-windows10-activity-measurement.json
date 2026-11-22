@@ -1,0 +1,100 @@
+{
+  "task": "H042-r",
+  "status": "pass",
+  "date": "2026-11-22",
+  "base_commit": "b2fba84a162e88a8537437bbd76a04368303b4a7",
+  "scope": "Windows 10 22H2 x64 installed preview, one isolated Codex CLI turn over Responses WebSocket.",
+  "implementation": {
+    "owner": "lead agent",
+    "reason": "The change defines the basis for the input savings measurement.",
+    "installed_candidate_runs": 2
+  },
+  "earlier_build": {
+    "issue": "The legacy original count adds a local delta to provider input. The app correctly left its basis unknown.",
+    "collector_samples_after_response": 3,
+    "receipt_sha256": "b7446fc056a4f9366116813fd89fc09cbd26384020f9e98d88ece3e73bd03fce"
+  },
+  "first_candidate": {
+    "issue": "The runtime omitted the local pair when Codex referred to its empty warm-up response.",
+    "receipt_sha256": "450126d1c50a67dfb85ff9160b69734b48f69047460cca675c70931b8757a503"
+  },
+  "input_measurement": {
+    "before": 18081,
+    "after": 17870,
+    "saved": 211,
+    "percent": 1.1669708533820031,
+    "basis": "local_estimate",
+    "provider_input": 10780,
+    "provider_output": 16,
+    "counter": "headroom-0.44.0-ws-json-v1:headroom_estimator",
+    "display": {
+      "label": "211 azalma \u00b7 %1,2",
+      "percent": "%1,2",
+      "before": "18.081",
+      "after": "17.870"
+    }
+  },
+  "checks": {
+    "focused_python_tests": 28,
+    "native_fixture_scenarios": 13,
+    "fixture_compression": {
+      "original_retrieved_and_forwarded": true,
+      "requests": 2,
+      "verified_local_pair": {
+        "after": 733,
+        "before": 32101,
+        "counter": "headroom_estimator"
+      },
+      "fixture_provider_input": 1100
+    },
+    "fixture_warm_turn": {
+      "verified_local_pair": {
+        "after": 746,
+        "before": 32114,
+        "counter": "headroom_estimator"
+      },
+      "fixture_provider_input": 1600
+    },
+    "local_product_gate": {
+      "frontend_passed": 227,
+      "rust_passed": 481,
+      "rust_ignored": 24,
+      "embedded_build": "pass"
+    },
+    "build_inputs_matched": 422,
+    "installed_resources_verified": 19484,
+    "cli_route": "saved test profile; no endpoint override",
+    "model_and_effort": "test account defaults",
+    "activity_list_and_detail": "pass",
+    "sqlite_comparable_pair": "pass",
+    "disconnect_config_restore_and_owned_cleanup": "pass",
+    "release_executable": "pass"
+  },
+  "proof_sha256": {
+    "build": "bab60ffca994f86116cf54a514da963887f0f48f240927b0c41a6d7c3fc7d743",
+    "fixture": "2ec97338cd129effdac0e2805bcf074db76015582201b5314549261111503286",
+    "native_client_fixture": "3a0d9ff6bdb7745159a7e862e9966889bc8a6e57003849ac1d4a5fafd3ac233d",
+    "installed": "67f8d49a457ed72d393148e3c8f83e756565e876fe8d207d19f00a5b7210311d",
+    "metrics_database": "dbacd77752a42429abe522984f722638bfae5a42bc230c8620804415e0181d27"
+  },
+  "package": {
+    "installer_path": "work/w42r/b04d1de1/PennyPinch_0.1.0_x64-setup.exe",
+    "installer_sha256": "f911b3871631aceb4fefd3493e87c25778b486099a84551f11c4badd762b32b6",
+    "installed_app_sha256": "9529755d4bd112f2d086cc619bb1240122a754ac9e2434546773feb907d9a41e",
+    "receipt_sha256": "4aa6439e2facce4cf4cc34867b631a54b8e77dd922838c96ee92389d12ad1729"
+  },
+  "toolchain": {
+    "node": "v25.2.1",
+    "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+    "pnpm": "11.25.0",
+    "python": "3.14.0",
+    "windows": "Windows-10-10.0.19045-SP0"
+  },
+  "limitations": [
+    "The estimate describes one matched compression payload.",
+    "The provider reports its own usage. Billing and quota savings were not measured.",
+    "The delivery ZIP, other providers, clean-host installation and Windows 11 have separate acceptance."
+  ],
+  "development_token_savings": "not_measured"
+}

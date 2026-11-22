@@ -379,6 +379,12 @@ mod tests {
             generation: String,
             secret: String,
             directory: PathBuf,
+            local_input: Option<ProofPair>,
+        }
+        #[derive(Deserialize)]
+        struct ProofPair {
+            before: u64,
+            after: u64,
         }
         let mut frame = Vec::new();
         std::io::stdin().take(4097).read_to_end(&mut frame).unwrap();
@@ -424,8 +430,18 @@ mod tests {
             row.provider_usage.upstream_attempts,
             Some(expected_attempts)
         );
-        assert!(!row.main_metric_eligible);
-        assert!(row.saved_tokens.is_none());
+        if let Some(pair) = input.local_input {
+            assert!(row.main_metric_eligible);
+            assert_eq!(row.before.tokens, Some(pair.before));
+            assert_eq!(row.after.tokens, Some(pair.after));
+            assert_eq!(
+                row.saved_tokens,
+                Some(pair.before as i64 - pair.after as i64)
+            );
+        } else {
+            assert!(!row.main_metric_eligible);
+            assert!(row.saved_tokens.is_none());
+        }
         assert!(!serde_json::to_string(&detail)
             .unwrap()
             .contains(&input.secret));

@@ -116,6 +116,8 @@ class Fixture(surface["SurfaceHandler"]):
                     self.emit(request, "resp-shared", (100, 0, 0, 1) if self.case.endswith("a") else (200, 0, 0, 2))
                 elif self.case == "handshake_retry":
                     self.emit(request, identity, (400, 300, 0, 4))
+                elif self.case == "warm_turn":
+                    self.emit(request, identity, (2, 0, 0, 0) if index == 1 else (1600, 1200, 0, 16))
                 elif self.case == "cut":
                     surface["ws_write"](self.wfile, 1, {"type": "response.created", "response": {
                         **http["response"](request, None), "id": identity, "status": "in_progress"}})
@@ -203,11 +205,12 @@ def exercise(engine, server, binary, run, result):
             connection.send(replay.encoded(request).decode())
             require(terminal(connection)["type"] == "response.completed", "ws_client_complete")
             rows = new_rows(engine, seen)
-            check_one(rows, (2400, 700, 0)[index - 1])
+            observed_row = check_one(rows, (2400, 700, 0)[index - 1])
             result[f"sequence_{index}"] = summary(rows)
             if index == 1:
                 frame = {"port": engine.port, "pid": engine.pids[-1], "generation": engine.generation,
-                         "secret": engine.control_token, "directory": str(run)}
+                         "secret": engine.control_token, "directory": str(run),
+                         "local_input": observed_row.get("local_input")}
                 observed = subprocess.run([str(binary), "--exact", "runtime::metrics_read::tests::owned_websocket_usage_reaches_activity_detail",
                     "--ignored", "--test-threads=1"], input=replay.encoded(frame), capture_output=True, cwd=ROOT, timeout=30,
                     creationflags=subprocess.CREATE_NO_WINDOW)
@@ -222,6 +225,7 @@ def exercise(engine, server, binary, run, result):
         terminal(connection)
         rows = new_rows(engine, seen)
         check_one(rows, None)
+        require(all("local_input" not in row for row in rows.values()), "missing_usage_counted_as_local_savings")
         require(all(value is None for value in next(iter(rows.values()))["usage"].values()), "ws_missing_is_zero")
         result["missing"] = summary(rows)
     with ws(engine, "failed") as connection:
@@ -244,6 +248,7 @@ def exercise(engine, server, binary, run, result):
         rows = new_rows(engine, seen, 2)
         require(len(rows) == 2 and sorted(row["usage"]["input_tokens"] for row in rows.values()) == [800, 900]
                 and all(not row["truncated"] and len(row["attempts"]) == 1 for row in rows.values()), "ws_interleaved_counters")
+        require(all("local_input" not in row for row in rows.values()), "interleaved_local_savings_guessed")
         result["interleaved"] = summary(rows)
     def parallel(case):
         with ws(engine, case) as connection:
@@ -268,11 +273,21 @@ def exercise(engine, server, binary, run, result):
         require(server.handshakes[case] > 1 and len(server.calls[case]) == 1, "ws_handshakes_counted_as_inference")
         result[case] = summary(rows)
     with ws(engine, "ccr") as connection:
+        from headroom.tokenizers.estimator import EstimatingTokenCounter
+
+        observed = set(probe["request_logs"](engine))
         request = replay.fixtures.conversation("repetitive_logs", "gpt-6.1-sol", "xhigh", 1)[-1]
         request.pop("stream")
         request["type"] = "response.create"
         connection.send(replay.encoded(request).decode())
         first = terminal(connection)
+        row = check_one(new_rows(engine, observed), 1100)
+        counter = EstimatingTokenCounter()
+        before = counter.count_text(replay.encoded(request).decode())
+        after = counter.count_text(replay.encoded(server.calls["ccr"][0]).decode())
+        require(before > after and row.get("local_input") == {
+            "before": before, "after": after, "counter": "headroom_estimator"},
+            "ws_local_pair_does_not_match_compressed_input")
         status, _, raw = probe["exchange"](engine.port, "POST", "/v1/retrieve", {"Content-Type": "application/json"},
             replay.encoded({"hash": server.marker}))
         original = json.loads(raw)
@@ -280,7 +295,34 @@ def exercise(engine, server, binary, run, result):
         connection.send(replay.encoded(body(previous_response_id=first["response"]["id"], input=[{
             "type": "function_call_output", "call_id": "call-retrieve", "output": json.dumps(original)}])).decode())
         require(terminal(connection)["type"] == "response.completed" and server.original_forwarded, "ws_ccr_continuation")
-        result["ccr"] = {"original_retrieved_and_forwarded": True, "requests": len(server.calls["ccr"])}
+        result["ccr"] = {"original_retrieved_and_forwarded": True, "requests": len(server.calls["ccr"]),
+                         "verified_local_pair": row["local_input"], "fixture_provider_input": 1100}
+    with ws(engine, "warm_turn") as connection:
+        observed = set(probe["request_logs"](engine))
+        connection.send(replay.encoded(body(generate=False, input=[])).decode())
+        warmup = terminal(connection)
+        warm_rows = new_rows(engine, observed)
+        require(check_one(warm_rows, 2).get("local_input") is None, "ws_warmup_claimed_measurement")
+
+        request = replay.fixtures.conversation("repetitive_logs", "gpt-6.1-sol", "xhigh", 1)[-1]
+        request.pop("stream")
+        request.update(type="response.create", previous_response_id=warmup["response"]["id"])
+        request["input"].insert(0, {"type": "additional_tools", "tools": request.pop("tools")})
+        connection.send(replay.encoded(request).decode())
+        require(terminal(connection)["type"] == "response.completed", "ws_warm_turn_not_completed")
+        row = check_one(new_rows(engine, observed | warm_rows.keys()), 1600)
+
+        def count_normalized(value):
+            carrier, *items = value["input"]
+            require(carrier["type"] == "additional_tools" and "tools" not in value, "ws_carrier_not_restored")
+            return counter.count_text(replay.encoded({**value, "input": items, "tools": carrier["tools"]}).decode())
+
+        before = count_normalized(request)
+        after = count_normalized(server.calls["warm_turn"][1])
+        require(before > after and row.get("local_input") == {
+            "before": before, "after": after, "counter": "headroom_estimator"},
+            "ws_warm_turn_local_pair")
+        result["warm_turn"] = {"verified_local_pair": row["local_input"], "fixture_provider_input": 1600}
     seen = set(capture["records"](engine))
     with ws(engine, "cut") as connection:
         connection.send(replay.encoded(body()).decode())

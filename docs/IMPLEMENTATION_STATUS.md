@@ -14,7 +14,9 @@ The extracted Windows 10 x64 payload passed a live Codex CLI turn. The provider 
 
 The current Windows 10 preview installed on this host. PennyPinch saved the test route. A new ChatGPT CLI used it. Activity showed an earlier record from the run. The built-in verifier stopped at the ancestor configuration guard for this profile. Disconnect restored the test configuration. The application closed normally. [Installed flow](proofs/pennypinch-windows10-installed-codex.json)
 
-Next, let the collector sample a completed Codex response. Match its entry and savings in Activity to the engine ledger. The current run established the route and the engine measurement. [Measurement contract](decisions/010-metrics-normalization.md)
+The updated Windows 10 installer passed live Codex savings verification in Activity. The local pair and the provider count were verified separately. The original WebSocket feed uses the provider count plus a local delta, so its ratio is historical only. [Measurement](proofs/pennypinch-windows10-activity-measurement.json)
+
+Next, bind the Windows 10 delivery ZIP and notices to the updated installer. [Measurement contract](decisions/010-metrics-normalization.md)
 
 Production updates require the release key and the live HTTPS update source. Windows 11 update and rollback and clean-host installation have separate acceptance. [Update acceptance](validation/windows-update.md) · [Installer acceptance](validation/windows-install.md#open-acceptance-criteria)
 

@@ -24,6 +24,18 @@ These legacy rows do not carry tokenizer identity or trusted component/provenanc
 
 The recent window is not complete history or all traffic. Aggregate-only and unidentified rows are visible metadata. A source reset/restart remains a new generation and separate count. A snapshot difference is not additional savings. H024 owns carrying buffer gaps/partial coverage into stored periods. Legacy lifetime values of 51 requests/4471 saved are not imported as current data.
 
+## Owned 0.44.0 Responses WebSocket compression estimate
+
+The legacy WebSocket feed reports the provider input count plus Headroom's local reduction in its original column. This pair has an unknown basis. Keep the provider counters separate from the compression estimate.
+
+The pinned runtime can report a local pair for a single completed WebSocket response. It counts the same JSON scope before and after compression with one supported local counter. The comparison covers the normalized compression payload. The provider can count a different input size.
+
+The runtime matches the executor's result to the frame it sends. This check accounts for the restored Codex tool carrier. The runtime confirms one terminal response and attaches the pair to its engine request ID. It keeps the pair in the private usage snapshot for the current runtime generation. Only the counts and counter name leave this in-memory check.
+
+A generated request can refer to the immediately preceding warm-up on the same connection. The warm-up must have no input content, instructions, tools, or output. Requests that refer to earlier conversation content keep an unknown basis. Warm-up frames, failed or overlapping requests, unsupported counters, and uncertain joins also keep their earlier measurement state.
+
+A later legacy observation of the same event cannot erase a verified local pair. Two conflicting local pairs still produce a conflict.
+
 <a name="kabul"></a>
 
 ## Acceptance

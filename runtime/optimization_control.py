@@ -10,7 +10,7 @@ import json
 import re
 import threading
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +27,7 @@ MAX_USAGE_ATTEMPTS = 16
 MAX_USAGE_EVENT_BYTES = 128 * 1024
 MAX_TOKEN_COUNT = (1 << 53) - 1
 USAGE_FIELDS = ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens", "output_tokens")
+LOCAL_OPENAI_ENCODINGS = frozenset({"o200k_base", "cl100k_base", "p50k_base", "r50k_base", "gpt2"})
 REPEAT_ID = re.compile(r"[A-Za-z0-9_-]{1,96}")
 REPEAT_START = "[Identical to the complete tool result above (call_id: "
 REPEAT_END = ").]"
@@ -38,6 +39,13 @@ _request = contextvars.ContextVar("headroom_desktop_request", default=None)
 
 class ReplayUnavailable(BaseException):
     """Caught only by our outer ASGI boundary, never a vendor fail-open handler."""
+
+
+@dataclass(frozen=True)
+class LocalInputPair:
+    before: int
+    after: int
+    counter: str
 
 
 @dataclass
@@ -54,6 +62,8 @@ class RequestState:
     ws_usage: WebSocketUsage | None = None
     explicit_session: bool = False
     skip_anthropic_generated_marker: bool = False
+    ws_local_input: LocalInputPair | None = None
+    ws_candidate: tuple[str, LocalInputPair] | None = None
 
 
 def _token_count(value):
@@ -72,6 +82,7 @@ class UsageTrace:
     attempts: list[dict] = field(default_factory=list)
     truncated: bool = False
     failed: bool = False
+    local_input: LocalInputPair | None = None
 
     def begin_attempt(self) -> dict | None:
         if len(self.attempts) >= MAX_USAGE_ATTEMPTS:
@@ -372,8 +383,12 @@ def _install_usage(proxy, gate, parse_events, response_not_read):
         if trace is None:
             return
         if websocket and trace.request_id and not trace.conflicting_ids:
+            record = trace.snapshot(None)
+            local_input = _completed_ws_input(trace, outcome)
+            if local_input is not None:
+                record["local_input"] = asdict(local_input)
             with gate.lock:
-                gate.usage_records.append(trace.snapshot(None))
+                gate.usage_records.append(record)
 
     proxy.startup = start
     proxy._record_request_outcome = record
@@ -404,6 +419,21 @@ class WebSocketUsage:
         self.pending_failed = []
         self.failed = False
         self.uncertain = False
+        self.awaiting_created = False
+        self.input_ambiguous = False
+        self.local_input = None
+        self.empty_warmup = False
+        self.empty_warmup_id = None
+
+    def forwarded(self, pair, empty_warmup):
+        # The transport can pipeline requests. Usage can still join by response ID,
+        # but overlapping sends cannot attest which compression pair reached which ID.
+        if self.awaiting_created or self.active:
+            self.input_ambiguous = True
+        self.awaiting_created = True
+        self.local_input = pair
+        self.empty_warmup = empty_warmup
+        self.empty_warmup_id = None
 
     def observe(self, event):
         kind = event.get("type") if isinstance(event, dict) else None
@@ -421,6 +451,9 @@ class WebSocketUsage:
             self.uncertain = True
             return
         if kind == "response.created":
+            if not self.awaiting_created or self.active:
+                self.input_ambiguous = True
+            self.awaiting_created = False
             if identity in self.active or identity in self.seen or len(self.active) >= MAX_USAGE_ATTEMPTS:
                 self.uncertain = True
             else:
@@ -435,6 +468,13 @@ class WebSocketUsage:
                 attempt.update(completed=True, usage=_responses_usage(response))
             trace = UsageTrace(surface="openai_responses_ws", truncated=self.uncertain or bool(self.pending_failed), failed=self.failed)
             trace.attempts = (self.pending_failed + ([attempt] if attempt is not None else []))[:MAX_USAGE_ATTEMPTS]
+            if attempt is not None and not self.input_ambiguous and not trace.truncated and not trace.failed:
+                trace.local_input = self.local_input
+                if (self.empty_warmup and response.get("output") == []
+                        and (attempt["usage"] or {}).get("output_tokens") == 0):
+                    self.empty_warmup_id = identity
+            self.local_input = None
+            self.empty_warmup = False
             self.pending_failed = []
             self.failed = False
             if len(self.ready) >= MAX_USAGE_ATTEMPTS:
@@ -442,6 +482,8 @@ class WebSocketUsage:
                 self.ready.clear()
             self.ready.append(trace)
         else:
+            self.input_ambiguous = True
+            self.local_input = None
             self.failed |= kind == "response.failed"
             if attempt is not None and len(self.pending_failed) < MAX_USAGE_ATTEMPTS:
                 self.pending_failed.append(attempt)
@@ -460,7 +502,55 @@ class WebSocketUsage:
         self.active.clear()
         self.pending_failed = []
         self.failed = False
+        self.input_ambiguous = True
+        self.local_input = None
         return trace
+
+
+def _completed_ws_input(trace, outcome):
+    pair = trace.local_input
+    if pair is None or trace.truncated or trace.failed or len(trace.attempts) != 1:
+        return None
+    attempt = trace.attempts[0]
+    usage = attempt["usage"] or {}
+    if (attempt["completed"] and outcome.provider_input_tokens > 0
+            and usage.get("input_tokens") == outcome.provider_input_tokens
+            and usage.get("output_tokens") == outcome.output_tokens
+            and outcome.tokens_saved == max(0, pair.before - pair.after)):
+        return pair
+    return None
+
+
+def _ws_payload_fingerprint(payload):
+    # Flattening can move the WebSocket transport type into this dictionary.
+    if payload.get("type") == "response.create":
+        payload = {key: value for key, value in payload.items() if key != "type"}
+    return _digest(payload)
+
+
+def _observe_ws_forward(ledger, raw, candidate):
+    pair = None
+    empty_warmup = False
+    if len(raw) <= MAX_PAYLOAD:
+        try:
+            frame = json.loads(raw)
+            if isinstance(frame, dict) and frame.get("type", "response.create") == "response.create":
+                payload = frame.get("response", frame)
+                if isinstance(payload, dict) and payload.get("conversation") is None:
+                    previous = payload.get("previous_response_id")
+                    generate = payload.get("generate", frame.get("generate", True))
+                    if generate is False:
+                        empty_warmup = (previous is None and payload.get("input") == []
+                                        and payload.get("instructions") in (None, "")
+                                        and payload.get("tools") in (None, [])
+                                        and payload.get("prompt") is None)
+                    elif (generate is True and candidate is not None
+                          and previous in (None, ledger.empty_warmup_id)
+                          and _ws_payload_fingerprint(payload) == candidate[0]):
+                        pair = candidate[1]
+        except (ValueError, TypeError, RecursionError):
+            pass
+    ledger.forwarded(pair, empty_warmup)
 
 
 def _install_ws_fallback_usage(proxy, gate):
@@ -816,6 +906,9 @@ def install(generation: str, secret: str) -> dict[str, str]:
     from cache_control_shim import _has_client_markers
     from headroom.config import DEFAULT_BYTE_EXACT_EXCLUDE_TOOLS, DEFAULT_EXCLUDE_TOOLS, DEFAULT_VERBATIM_EXCLUDE_TOOLS, is_tool_excluded
     from headroom.proxy.sse_byte_buffer_policy import parse_sse_events_from_byte_buffer
+    from headroom.providers.openai import OpenAITokenCounter
+    from headroom.tokenizers.estimator import EstimatingTokenCounter
+    from headroom.tokenizers.tiktoken_counter import TiktokenCounter
 
     root = Path(server.__file__).resolve().parents[1]
     expected = json.loads(Path(__file__).with_name("optimization-sources.json").read_text(encoding="utf-8"))
@@ -832,6 +925,7 @@ def install(generation: str, secret: str) -> dict[str, str]:
     original_payload = openai.OpenAIHandlerMixin._compress_openai_responses_payload
     original_executor = openai.OpenAIHandlerMixin._compress_openai_responses_payload_in_executor
     original_ws_usage = openai._extract_responses_usage
+    original_ws_strip = openai._strip_codex_lite_metadata
     repeat_protection = contextvars.ContextVar("headroom_desktop_repeat_protection", default=None)
     protected_tools = DEFAULT_EXCLUDE_TOOLS | DEFAULT_VERBATIM_EXCLUDE_TOOLS | DEFAULT_BYTE_EXACT_EXCLUDE_TOOLS
 
@@ -848,6 +942,16 @@ def install(generation: str, secret: str) -> dict[str, str]:
         if state is not None and state.kind == "responses_ws" and state.ws_usage is not None:
             state.ws_usage.observe(event)
         return result
+
+    def websocket_strip(raw):
+        forwarded = original_ws_strip(raw)
+        state = _request.get()
+        if state is not None and state.ws_usage is not None:
+            # The pinned call sites use this helper immediately before upstream send.
+            # Its known metadata-only rewrite is outside the compression comparison.
+            _observe_ws_forward(state.ws_usage, raw, state.ws_candidate)
+            state.ws_candidate = None
+        return forwarded
 
     def resolve(store, *args, **kwargs):
         tracker = original_resolve(store, *args, **kwargs)
@@ -946,6 +1050,16 @@ def install(generation: str, secret: str) -> dict[str, str]:
                 # Optional repeat detection can leave the previously validated payload in place.
                 pass
         gate.record(tracker, original_items, forwarded, candidate.get("tools"), state)
+        if state.kind == "responses_ws" and state.enabled and body.get("generate", True) is True:
+            counter = None
+            if type(tokenizer) is EstimatingTokenCounter and tokenizer._fixed_ratio is None:
+                counter = "headroom_estimator"
+            elif type(tokenizer) in (OpenAITokenCounter, TiktokenCounter):
+                encoding = getattr(tokenizer._encoding, "name", None)
+                if encoding in LOCAL_OPENAI_ENCODINGS:
+                    counter = encoding
+            if counter is not None and all(_token_count(n) is not None for n in (before_tokens, after_tokens)):
+                state.ws_local_input = LocalInputPair(before_tokens, after_tokens, counter)
         return candidate, candidate != body, before_tokens - after_tokens, transforms, reason, len(before), len(after), attempted
 
     async def executor(proxy, body, **kwargs):
@@ -953,8 +1067,18 @@ def install(generation: str, secret: str) -> dict[str, str]:
         if state is None: return await original_executor(proxy, body, **kwargs)
         frame = RequestState(state.gate, state.gate.enabled, state.kind, state.bypass, state.scope_key,
                              explicit_session=state.explicit_session) if state.kind == "responses_ws" else state
+        if frame is not state:
+            state.ws_candidate = None
         token = _request.set(frame)
-        try: return await original_executor(proxy, body, **kwargs)
+        try:
+            result = await original_executor(proxy, body, **kwargs)
+            if frame is not state and frame.ws_local_input is not None:
+                # The executor restores the Codex additional_tools carrier before returning.
+                try:
+                    state.ws_candidate = (_ws_payload_fingerprint(result[0]), frame.ws_local_input)
+                except (ValueError, TypeError, RecursionError):
+                    pass
+            return result
         except Exception:
             # A timed-out worker can finish later; its prepared bytes were not acknowledged for forwarding.
             frame.gate.fail_replay(frame)
@@ -987,6 +1111,7 @@ def install(generation: str, secret: str) -> dict[str, str]:
     openai.OpenAIHandlerMixin._compress_openai_responses_payload_in_executor = executor
     openai._dedup_responses_output_items = defer_responses_repeat
     openai._extract_responses_usage = websocket_usage
+    openai._strip_codex_lite_metadata = websocket_strip
     server.create_app = create
     return {"active": "true", "version": "0.44.0", "source_sha256": hashlib.sha256(_encoded(expected)).hexdigest(),
             "module_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),

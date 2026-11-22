@@ -50,6 +50,92 @@ fn current_and_previous_engine_stats_preserve_the_same_measurement_basis() {
 }
 
 #[test]
+fn owned_websocket_pair_upgrades_only_the_matching_legacy_row() {
+    use serde_json::json;
+    let stats = json!({"recent_requests":[
+        {"request_id":"hr_1_000001","timestamp":"2026-11-22T12:00:00Z","model":"same-model",
+         "input_tokens_original":11010,"input_tokens_optimized":10799},
+        {"request_id":"hr_1_000002","timestamp":"2026-11-22T12:00:00Z","model":"same-model",
+         "input_tokens_original":11010,"input_tokens_optimized":10799}
+    ]});
+    let mut owned = json!({
+        "schema_version":2,"runtime_generation":GENERATION,"surface":"provider_usage",
+        "records":[{"request_id":"hr_1_000001","surface":"openai_responses_ws","client_status":null,"failed":false,
+         "truncated":false,"attempts":[{"completed":true,"usage":{"input_tokens":10799,"output_tokens":15}}],
+         "local_input":{"before":1000,"after":789,"counter":"headroom_estimator"}}]
+    });
+    let raw = stats.to_string();
+    let projected = |owned: &serde_json::Value| {
+        project_owned_headroom_041(
+            raw.as_bytes(),
+            Some(owned.to_string().as_bytes()),
+            GENERATION,
+        )
+        .unwrap()
+        .batch
+        .events
+    };
+    let measured = projected(&owned);
+    let pair = measured
+        .iter()
+        .find(|event| event.saved_tokens == Some(211))
+        .unwrap();
+    assert_eq!(pair.before.tokens, Some(1000));
+    assert_eq!(pair.after.tokens, Some(789));
+    assert_eq!(pair.saved_percent, Some(21.1));
+    assert_eq!(pair.before.basis.kind, CounterKind::LocalEstimate);
+    assert_eq!(pair.before.component, Component::WholeInput);
+    assert_eq!(pair.provider_usage.input, Some(10799));
+    assert_eq!(
+        measured
+            .iter()
+            .filter(|event| event.main_metric_eligible)
+            .count(),
+        1
+    );
+    let plain = project_owned_headroom_041(raw.as_bytes(), None, GENERATION).unwrap();
+    let raw_row = plain
+        .batch
+        .events
+        .iter()
+        .find(|event| event.event_id == pair.event_id)
+        .unwrap();
+    let mut stored = raw_row.clone();
+    assert!(!merge_event(&mut stored, pair));
+    assert_eq!(&stored, pair);
+    assert!(!merge_event(&mut stored, raw_row));
+    assert_eq!(&stored, pair);
+
+    owned["records"][0]["local_input"]["after"] = json!(1001);
+    let changed = projected(&owned);
+    assert!(merge_event(
+        &mut stored,
+        changed
+            .iter()
+            .find(|event| event.event_id == pair.event_id)
+            .unwrap()
+    ));
+    assert_eq!(stored.status, MeasurementStatus::Conflict);
+    for (field, bad) in [
+        ("truncated", json!(true)),
+        ("failed", json!(true)),
+        ("surface", json!("openai_responses")),
+        ("request_id", json!("mismatched")),
+    ] {
+        let mut unsafe_record = owned.clone();
+        unsafe_record["records"][0][field] = bad;
+        assert!(projected(&unsafe_record)
+            .iter()
+            .all(|event| event.saved_tokens.is_none()));
+    }
+    let duplicate = owned["records"][0].clone();
+    owned["records"].as_array_mut().unwrap().push(duplicate);
+    assert!(projected(&owned)
+        .iter()
+        .all(|event| event.saved_tokens.is_none()));
+}
+
+#[test]
 fn owned_provider_usage_requires_exact_identity_and_sums_every_successful_attempt() {
     use serde_json::json;
     let stats = json!({"recent_requests":[

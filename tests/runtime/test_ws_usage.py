@@ -60,6 +60,58 @@ class LiveWebSocketSmokeTests(unittest.TestCase):
 
 
 class WebSocketUsageTests(unittest.IsolatedAsyncioTestCase):
+    def test_local_input_pair_requires_one_forwarded_payload_and_terminal(self):
+        pair = control.LocalInputPair(1000, 789, "o200k_base")
+        candidate = {"model": "fixture", "input": [{"role": "user", "content": "content-canary"}]}
+        prepared = (control._digest(candidate), pair)
+
+        def send(ledger, body=candidate, estimate=prepared):
+            control._observe_ws_forward(ledger, control._encoded({"type": "response.create", **body}), estimate)
+
+        for warmup_input, reference, expected in (
+            ([], "warmup", pair),
+            ([], "another-response", None),
+            (candidate["input"], "warmup", None),
+        ):
+            with self.subTest(warmup_input=warmup_input, reference=reference):
+                ledger = control.WebSocketUsage()
+                send(ledger, {**candidate, "input": warmup_input, "generate": False}, estimate=None)
+                created(ledger, "warmup")
+                ledger.observe({"type": "response.completed", "response": response(
+                    id="warmup", output=[], usage={"input_tokens": 2, "output_tokens": 0})})
+                self.assertIsNone(ledger.take().local_input)
+                continuation = {**candidate, "previous_response_id": reference}
+                estimate = (control._digest(continuation), pair)
+                send(ledger, continuation, estimate)
+                created(ledger, "turn")
+                completed(ledger, "turn")
+                trace = ledger.take()
+                outcome = SimpleNamespace(provider_input_tokens=2400, output_tokens=29, tokens_saved=211)
+                self.assertEqual(control._completed_ws_input(trace, outcome), expected)
+                outcome.tokens_saved = 212
+                self.assertIsNone(control._completed_ws_input(trace, outcome))
+                send(ledger, continuation, estimate)
+                created(ledger, "later")
+                completed(ledger, "later")
+                self.assertIsNone(ledger.take().local_input)
+        for scenario in ("changed_payload", "overlap", "failed", "completion_without_create"):
+            with self.subTest(scenario=scenario):
+                ledger = control.WebSocketUsage()
+                send(ledger, candidate if scenario != "changed_payload" else {**candidate, "input": []})
+                if scenario != "completion_without_create":
+                    created(ledger, "one")
+                if scenario == "overlap":
+                    send(ledger)
+                    created(ledger, "two")
+                if scenario == "failed":
+                    ledger.observe({"type": "response.failed", "response": response(id="one", status="failed")})
+                    send(ledger)
+                    created(ledger, "two")
+                    completed(ledger, "two")
+                else:
+                    completed(ledger, "one")
+                self.assertIsNone(ledger.take().local_input)
+
     def test_sequential_zero_missing_and_unfinished_responses(self):
         ledger = control.WebSocketUsage()
         created(ledger, "one")
