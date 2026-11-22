@@ -4,7 +4,9 @@
 **Scope:** Visual direction and interaction previews. All counters are sample data; no client settings or real model traffic are changed.
 **Related tasks:** [H003 / H004](TASKS.md). A production design had not yet been selected.
 
-[Open all three concepts together](outputs/ui-concepts/index.html)
+The gallery contains all three concepts. Preview files were local to the design workspace.
+
+Gallery (`outputs/ui-concepts/index.html`)
 
 ## 01 — Graphite
 
@@ -15,7 +17,7 @@
 - Strength: primary action and status are easy to find; room to grow across four screens.
 - Watch item: balance the prominence of the top summary in a small window.
 
-[Interactive Graphite](outputs/ui-concepts/graphite.html) · [Screenshot](outputs/ui-concepts/graphite.png)
+Interactive Graphite (`outputs/ui-concepts/graphite.html`) · Screenshot (`outputs/ui-concepts/graphite.png`)
 
 ## 02 — Ivory
 
@@ -26,7 +28,7 @@ Warm light background, forest green, and large serif numerals. Top navigation op
 - Strength: numerals and primary actions stand out; the light theme is strong.
 - Watch item: keep top navigation from becoming crowded as advanced filters grow; design its dark counterpart separately.
 
-[Interactive Ivory](outputs/ui-concepts/ivory.html) · [Screenshot](outputs/ui-concepts/ivory.png)
+Interactive Ivory (`outputs/ui-concepts/ivory.html`) · Screenshot (`outputs/ui-concepts/ivory.png`)
 
 ## 03 — Signal
 
@@ -37,7 +39,7 @@ Midnight blue surfaces, ice-blue accents, and a narrow icon rail. Summary and ch
 - Strength: connection status stays in view; uses wide windows well.
 - Watch item: accessible names and, in the final product, tooltips must support icon meaning; simplify the layout in narrow windows.
 
-[Interactive Signal](outputs/ui-concepts/signal.html) · [Screenshot](outputs/ui-concepts/signal.png)
+Interactive Signal (`outputs/ui-concepts/signal.html`) · Screenshot (`outputs/ui-concepts/signal.png`)
 
 ## Comparison
 

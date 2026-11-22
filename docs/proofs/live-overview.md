@@ -39,7 +39,7 @@ Current native evidence is `ui-latest.json`, `live-latest.json`, and `zoom-lates
 
 ## Environment event and limits
 
-The Windows reserved port range 51717–51816 blocked the old development endpoint at 10013. The OS reservation did not change. No active owner existed, and the known configs did not use the old port. Only the development app-state endpoint was changed to 52175 with backup, atomic write, and fingerprint checks. Three released ownership records were preserved.
+Windows reserved ports 51717–51816. The old development endpoint returned WinError 10013. The OS reservation did not change. No active owner existed, and the known configs did not use the old port. Only the development app-state endpoint was changed to 52175 with backup, atomic write, and fingerprint checks. Three released ownership records were preserved.
 
 The helper's initial revision increment was corrected to the fixed 1 contract. The native validator was not weakened. Evidence: `work/proofs/overview/endpoint-refresh/0ae1a8d8-3ff5-4680-8bb9-d3753d720d3a/`.
 

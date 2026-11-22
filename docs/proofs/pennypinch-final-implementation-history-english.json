@@ -1,0 +1,272 @@
+{
+  "task": "H042-k3ax",
+  "date": "2026-11-22",
+  "status": "pass",
+  "base_commit": "178bf7dc6fcb65f0e68a386558146d920b1f7095",
+  "implementation": "The GPT-6 Luna xhigh worker drafted the Codex and earlier desktop history. The lead preserved that draft after the worker stopped and resolved the remaining corrections. The lead drafted Windows release, runtime and UI acceptance history and reviewed all entries.",
+  "scope": "English translation of historical records. Product tests, model calls, and CI did not run.",
+  "translation": {
+    "approximate_source_words": 10300,
+    "source_working_range": [
+      1382,
+      1712
+    ],
+    "working_source_sha256": "46243742566d6de2565c8f7f9b16016ce7d873a88642d90898578d27868d2d71",
+    "index_source_sha256": "f25d5ecac590d97e187aade24a5436c3dc53be55585709b46d4eb0a0e092d77e",
+    "working_candidate_sha256": "4710f47f46736df49194b21a01d9ddff8569dec16e010128739349718b06b4b1",
+    "index_candidate_sha256": "e69ae81eeca0480f5365cc371795a7569ade2e1a411118eca6e8f21363a9de54",
+    "parts": {
+      "updates.md": {
+        "source_sha256": "a99d723eab9e8a56488fc88816a93027b050a5001c1704d988b09e0b4aac34f3",
+        "reviewed_draft_sha256": "7d6cbba5f60cc83627d32f60ee67f556276f25c904e8c1cb4755e3b5eab19162"
+      },
+      "validation.md": {
+        "source_sha256": "7080d969448ca1da6a6c7d6a11700c4c67a5e3673c2580391e0a22c457c7a233",
+        "reviewed_draft_sha256": "799b94075798397ca2c25d44dd833a9820278b555599f85fc0509fb9be5b9659"
+      },
+      "ui.md": {
+        "source_sha256": "41edd1f33dd0c2fb5577c4e4341d5914b2a55a5658c5d3267c3f93f4f01bb7c8",
+        "reviewed_draft_sha256": "53f49b749ed98c54ab77a57197e627f6a1855dd8fc04234d01b50de585caf768"
+      },
+      "later.md": {
+        "source_sha256": "7c2cf33a22ea90f6b56a13b7a9c05692a971c3dc7bc569a7f9f5688358b8f971",
+        "reviewed_draft_sha256": "0f27454e305706521052b2021582f211017e4fa55631222c82bc99222ca62f51"
+      }
+    },
+    "worker_draft_sha256": "c08512bccd5fdf2def503cc4034d5f72203a5028054c269c4b68afbe818ba0f2"
+  },
+  "verified": {
+    "legacy_heading_aliases": 45,
+    "incoming_links_to_preserved_anchors": 0,
+    "outgoing_relative_links": 113,
+    "preserved_actions_urls": 0,
+    "relative_link_inventory": {
+      "before": {
+        "relative_links_resolved": 1631,
+        "local_work_receipt_links": 23
+      },
+      "working_copy_after": {
+        "relative_links_resolved": 1635,
+        "local_work_receipt_links": 23
+      },
+      "staged_after": {
+        "relative_links_resolved": 1603,
+        "local_work_receipt_links": 23
+      }
+    },
+    "restored_webview2_repair_anchor": "yerel-onarım-ve-webview2-ön-koşulu",
+    "local_design_preview_paths": [
+      "outputs/ui-concepts/index.html",
+      "outputs/ui-concepts/graphite.html",
+      "outputs/ui-concepts/graphite.png",
+      "outputs/ui-concepts/ivory.html",
+      "outputs/ui-concepts/ivory.png",
+      "outputs/ui-concepts/signal.html",
+      "outputs/ui-concepts/signal.png"
+    ],
+    "overview_endpoint_error_reference": "docs/proofs/live-overview.md",
+    "duplicate_november_17_date_removed_from_index": 1,
+    "preserved_localization_and_test_examples": [
+      "src/App.tsx",
+      "src/features/settings/Settings.tsx",
+      "src-tauri/src/desktop/tray.rs",
+      "tests/e2e/accessibility.spec.ts",
+      "tests/fixtures/update/stable.json",
+      "tests/runtime/test_targeted_query_client.py",
+      "scripts/prepare-tokenizers.py"
+    ],
+    "tracked_code_and_workflow_prose_path_consumers": [],
+    "task_snapshot_reader": "bench/context_tools/prepare.py",
+    "preserved_nonblank_rows": 267
+  },
+  "references_sha256": {
+    "docs/proofs/pennypinch-accounts-platforms-history-english.json": "e7d94819214505b907e2455c2ff5313b56c018c3213567c27462d2c3bce196b1",
+    "bench/context_tools/prepare.py": "6c0362a3e70e457dfddf1985edf66d7f7c130aed3096c8bf31bb70d303912685",
+    "work/proofs/overview/endpoint-refresh/0ae1a8d8-3ff5-4680-8bb9-d3753d720d3a/result.json": "8ffdb85dc0adfb03a4088dfab4d42d6479c2c37df11ebb5c7e2c71cce333f8d7",
+    "src/App.tsx": "d9f39358279fc846e8122c6f64b5bc9d5d234f1024e8682a25abe9dfa93aa7ec",
+    "src/features/settings/Settings.tsx": "df53c5ca5202fe380cbb71964177f589c8b28380837c4f8d0d7d9e78cae4d9ed",
+    "src-tauri/src/desktop/tray.rs": "cfddc7e6fd15fe0410bf8bfe29386ec003d284b8b10c649599afef7ef39e9184",
+    "tests/e2e/accessibility.spec.ts": "b1bff1a47af6f7f7429fca3665eda1b83e69731a485b43c4204986dbaed2998f",
+    "tests/fixtures/update/stable.json": "a3f4ac5697c3eb63276c92ed975339849f5ef8286536ae3f357d2936be63b1fe",
+    "tests/runtime/test_targeted_query_client.py": "baab5136cedab4a6896bc68c7480615f5cddc5d5569715cf3aa1121e2729f859",
+    "scripts/prepare-tokenizers.py": "aa0d4f9d1b5b3d25d29e3afedd3cb3b4f36162ed9986424e8331359ce39e3a11",
+    "docs/proofs/windows-update-real-application.json": "37a49eeff56116caa46ddc33dd4fa606773af1e4cca4591375e10c72161a0614",
+    "docs/proofs/windows-update-release-preparation.json": "60766d299d84660865c51231e349407d517d131252e44eba95adaf9a1f595623",
+    "docs/validation/windows-update.md": "143031fb565ff391e3dd8c7025822eab5ec81301051a8c60edf10c6d7427556b",
+    "docs/reviews/H042.md": "30cfbd46d01ca6f3e0450ac5267a9730414be6f079c52c2f4069c8c15f16a911",
+    "docs/proofs/windows-update-faults.json": "8759cf4a792ba79d8b009f2c388d1663c526808b06f9042a52467390b18b37a1",
+    "docs/proofs/windows-update-install.json": "40cbf7df959a4f24e51cc4bf457ea44024c6dfe71d5b5af63b6c370b841cd250",
+    "docs/decisions/028-update-trust.md": "0dd2bd309059eef8b867211752191cb5af82b8180c40a11ea81f2bd506daac83",
+    "docs/proofs/windows-update-package.json": "6d0b44995607b8873c07011543e7ed511836957853a7285cbe75519fedf8a0cf",
+    "docs/proofs/windows-update-flow.json": "88256c5c5c11b800851a93b8dcee32b3b20d7252be7e8017a8b2bb6b187e932b",
+    "docs/proofs/windows-update-trust.json": "79f9ae1bdfab257a7f017e458ba479ae6b4d20055eda53824176c9066e54cc6f",
+    "docs/decisions/027-optimization-regression.md": "45a085f40f0323600f36718cba6a71e0aef9d57350e8b90292224822fe56af5e",
+    "docs/proofs/optimization-benefit.json": "1fb3718d1fb55ee142e5ab8c451d29a59892e6164130992a4a9447ac9643ab85",
+    "docs/proofs/relay-backpressure.json": "1195c4523ac2757ad8dfb5a4c75ce7077a2d6803e9677794664925d5f90899d3",
+    "docs/proofs/optimization-surfaces.json": "2907b9f992877e79dd69d895020732ece5658b031378d6a2671503e717bbc4e2",
+    "docs/proofs/optimization-stability-failure.json": "88e4d3f4802d4f028b01d83c470b11994106b54d2c2b230148c26be4b8e7b3b2",
+    "docs/proofs/optimization-stability.json": "fd0928f48f9cdf88f41fff9691f489793502d00d13e1ced8eeb0560933972110",
+    "docs/proofs/optimization-local-acceptance.json": "5bd7e3d7c5c57ae2e24bf866a6e3e4f7c3e28a7442a7914857e2934883617fbc",
+    "docs/reviews/H041.md": "49a8a2f112a45a67b1e21475a2fed12ce5a1a1e8b423f2c2058dfe5821ef6f57",
+    "docs/proofs/anthropic-request-overhead.json": "d280d3994c712da4d2f1c35c60ed7f6c8bb692c724de6d1d709b052c6964e3ec",
+    "docs/decisions/026-windows-uninstall.md": "8aa1539c317304b864a5a286c137363a4bf37e2193e7088620a5a3150eaaa325",
+    "docs/proofs/uninstall.json": "7eb3211dbe209e0d8799b81dfd9a5a372c834b5211594a2acdf8770763a05dee",
+    "docs/reviews/H038.md": "c2bea6c46c3dd95ea636d676b6e97b30b644fb2e7baae1e34b930132e53f38e0",
+    "docs/validation/uninstall.md": "0cf4f145386019f819795b9904ecd7006952d9899090a7a22f74872e6d199908",
+    "docs/decisions/025-windows-installer.md": "4588b64d8d4d8a22770a83668f0ca4f865db2722b4206330efaa6515d33e6678",
+    "docs/proofs/windows-installer.json": "cebb9fdfb8cf795224b8175cf1b7f0e57e16092475f514821ea9af437d44b9f6",
+    "docs/reviews/H037.md": "d637ddb26787b3c5262cebf14307c0e21ac00e172329505995cfe66765cf3a3f",
+    "docs/proofs/windows-installer-repair.json": "d7035ddc01910f839a42c8d297ef39b3e3993e6b88c568a2312336db56bff2a3",
+    "docs/proofs/windows-installer-tray.json": "afe6a6a8ae349e58d77e1b9cad1cb0f30d3e6cacc487accb857df14d0cea48c1",
+    "docs/proofs/windows-installer-components.json": "e12d1bea9dda5b4cf135793e715b91fb9f7ed915674172dbe04e9a5782f39ff5",
+    "docs/proofs/windows-installer-notices.json": "36419201d206134c5cdf4fd5d6f604413b08ac842b37f601dfc0a0dc304023ed",
+    "docs/proofs/windows-installer-delivery.json": "7d3e418ea63b68487da1218b3938cc487d5faed51a3efbdf7ab8aa73e1a47e1d",
+    "docs/decisions/023-accessibility-performance.md": "c8d28a02614e98c9704c46d5013c732336f907bf34fcb91a0117f544ebef9fd5",
+    "docs/proofs/accessibility-performance.md": "25f875578cd9ef3201f115205d2ea0578844afdc2e1c252bcc912f2392d4d65f",
+    "docs/reviews/H035.md": "b25ed3803cbc4500430c8dcdbeb567f6ea541402ef3bbe8245314cdb1a7e35e0",
+    "docs/validation/performance.md": "90cf592f83e44196b31d28964045e78e012fd9e7d90543053fe99fb7c6a96e1a",
+    "docs/decisions/024-compatibility-catalog.md": "b262628bd7b53a12c2fd9145d46c46900858294b359cb99d501c5112064ab298",
+    "docs/proofs/compatibility.md": "43410a7828b1d67ad6b17572ae6cd22bce551a7125c819ca940d821308a11606",
+    "docs/reviews/H036.md": "5c29d3e196516ad6f9c78fe076f755946db73ca116d48a78388c4a21a38cc310",
+    "docs/decisions/006-free-ci.md": "eb081d0193215c7505f8a3355266935202ad3f0a754f98069600add4cd9df6d9",
+    "docs/decisions/022-recovery.md": "626f189efd56898181642d18cddd61340f97db996b8354ae1d7e0d955a5ed35c",
+    "docs/proofs/recovery.md": "855ba7f5bdadc865e77e20d1311a3fcdecb599c02dff8086269e4022883a8540",
+    "docs/reviews/H034.md": "146f35cb2a7e1370569c81ac6f22927a3c4c54dae0b3f7ed1b3077c81254d661",
+    "docs/decisions/021-export.md": "8867e25622e1e85b27f7e066a1566565eb4ba760f9f5be16dcfb8976485f04f2",
+    "docs/proofs/export.md": "07fd707593603e45ecfdcc0f645a8b95734a2f1f856d809ea86b7b9b4428c955",
+    "docs/reviews/H033.md": "3857e2bdf98a6e4a56f40568eb38ffc1f17a59fa756d5efe0d80c315e7aebf33",
+    "docs/decisions/020-theme-language.md": "3ad57a282a4976f1c64c9927f5219f05993aebbb43330e19f60af17ab244e0a7",
+    "docs/proofs/theme-language.md": "c9f69d83a1460fbc5ce2b73e22eee2d7e5e879edecc4e451293e19397ec7d25e",
+    "docs/reviews/H032.md": "b7d38af6cae9b6abba20cd4d316e71956232ad9ccc4cad7b2a41df9303aa10de",
+    "docs/decisions/019-operating-preferences.md": "8ca6a3fca4cd5857a0e0c4fb60bb8243944bc85b5501b4fc12485ed81193e089",
+    "docs/proofs/operating-preferences.md": "9c07d65626278b92f1f6cfb7d64e56c988bafc3c667ee88ffafcd76e27422a85",
+    "docs/reviews/H031.md": "fd1e0d1febad14ab65272bd4a502244487f35a3ee46a88413df4430ea2638dd5",
+    "docs/decisions/018-tray-lifecycle.md": "4126f6d67ec7c870dc9ef0231557c06de9f29c8d0589c3f6c6cc90dd5efa2e67",
+    "docs/proofs/tray-lifecycle.md": "01998b072befb19f6d5cd4396df5964cae6f5818c76ac332e6fc17de8a088541",
+    "docs/reviews/H030.md": "83ab327809d0a3b51bb5c850afaea6492f1919ac716cd1db276f7f9f4f95c04d",
+    "docs/decisions/017-safe-disconnect.md": "75e09ce4722d167b18f645ba832a020d2d3f499e6efbd089e10db5d830658e52",
+    "docs/proofs/safe-disconnect.md": "768353bc6fddc1a3824e7e720217761270bb9ecdf15381df2054edd44e5f1af9",
+    "docs/reviews/H029.md": "1a55963d5bcbbd8376cb2a5604a1f6b005b89c91ef498c6b6e49d3153a4c80a6",
+    "docs/development/tokenizers.md": "1c07831a70bad39c36f2de0c122e5379210a769638f8cbe8d959f4278f8bd5f1",
+    "DESIGN.md": "a7bf3c4699d9e33c192005383824ad1875475836470db3bab218cbcb0561355d",
+    "docs/proofs/ui-taste.md": "1141b53eda345191872ccf54a0283c3ddb0829fc8fef9cf8f0d8e5849cd12b91",
+    "docs/reviews/UX001.md": "0f076dc57f65e4e62d2a4b224bdb46c4cb50ed5fd3300a792ca7fcf76fa8c452",
+    "docs/decisions/016-safe-pause.md": "bb6b8a3b817b5bc423bd5e80c278dee4095ca94514f552e92b9d067221e94865",
+    "docs/proofs/safe-pause.md": "555186d7b2831b32f9ab4b5ca6d5f19d5cb458f7cf337ef2b26be32b55f66e9d",
+    "docs/reviews/H028.md": "b3f1bb48e6472edc2630a8c431a80b3743f9664c8b7f2f26c9278ded47c48f4b",
+    "docs/proofs/activity.md": "16e078e6200678c1820380aff84fa86a0c0493790c37b22a2900158d7a963e81",
+    "docs/reviews/H027.md": "f171158ceedb9d1d6211dfac9e735f514fdea505609ee8e38e912c78fe4dcd4f",
+    "docs/decisions/015-activity.md": "aa381fc3d126d64ee424858e9d0f12129c5227b076b667e6fd174110abba8367",
+    "docs/proofs/attribution.md": "fe29f53f14398be17b72654a23821c2f86eaa8f9b46174a1d448c3e1bb0afda7",
+    "docs/reviews/H026.md": "2d58bc64389bcce459ee65c27ffc439f6e476dda7f370b417c7f7bb2af1f4102",
+    "docs/decisions/014-attribution.md": "34495af6ba516d4c55a8b1f4d700321cc6f848400e921aef36609315c5290fa6",
+    "docs/reviews/H025.md": "65c17b6c63c1800320e07c59647ab1e3b76b0931f8094d5ff5142aee0bbfcd72",
+    "docs/decisions/013-live-overview.md": "c8338ed2430e1907c52b8e29a90b030d781191b47f15cef260022fef02a2ad06",
+    "docs/proofs/metrics-store.md": "7462ba3d613a0bb7cdb6e6bcf361e3f64975205bceecbcd697abf7116dcd76a2",
+    "docs/decisions/012-metrics-store.md": "e2d1562ba27e4861c014c8e45900c05ecdcd2d25b5dcc7041bd5540db1a1942e",
+    "docs/reviews/H024.md": "648e631cac8bce4ead2a8b30750fdadc762ce60b40c04099a19bcd78ead25279",
+    "docs/proofs/codex-native-wait.md": "1bec61ff6875cae6cbad11175fd0a5e22a190a13ffb786cee9fd80503484f8b1",
+    "docs/research/optimization-targets-2026-11-04.md": "f13b54ea2a33899ff422d33e616359ae0c1547bb0ae0c114342627a5e30d8d75",
+    "docs/proofs/codex-desktop-live.md": "5778c46b1b788423dc5c9fd315da342c4b1a531a830f603261389d7021f14aa6",
+    "docs/proofs/codex-current-diagnostics.md": "110de091f7c442da47df46ed21ec49b5f92ee8a30681a2060fd8ce89142fecb7",
+    "docs/reviews/UX-2026-11-03.md": "e54f8d45e03854441ba825fb837ffee8acf97f6a2b65faa20a2dcd25f48ca03d",
+    "docs/decisions/011-current-codex.md": "dacbf72768f4579ee6352fba7a1bde8b566ccf8081f71480633e07be45d52011",
+    "docs/proofs/codex-current.md": "b565a30e3748da99ecef101be4eceb0ed6514804b81ffe975ebd2f5bbdb79e1d",
+    "docs/reviews/H008-current.md": "e7a926e71bbc37eddbd6c2c4e7a28f04beba75c701564274253a1bd5e55a71f4",
+    "docs/proofs/live-use-2026-11-02.md": "a75a85117dff279a2fc711a18046f859a826692badd2fd78b9d4dbcb9a43f2ff",
+    "docs/proofs/quick-local-check-2026-11-03.md": "db9e73ac05d3bbc676d85f9fd83ff50050ffc49bf8e047ec04d10bc210441d28",
+    "docs/decisions/010-metrics-normalization.md": "bb71f8a14a3b4b0f09c64c2b457012a741a4599627cdc78a6aac16d881c408e5",
+    "docs/proofs/metrics-normalization.md": "4ca2045b9fd1c4909e79bb839eb741ee02388ef72b0dfb3bf826f4ce2b1fff88",
+    "docs/reviews/H023.md": "20bb6a33885aba082c89ea353c32af4fcef899337fa19f88ac5c3c4a832200aa",
+    "docs/development/WORKFLOW.md": "ae6e3791370ada5d6f7983d4633d923857832b0d253175d3c9fbbe78bc0136b7",
+    "docs/proofs/dev-tools.md": "8a8c31ac102b73bb1d1bac390f48fe0770d0bdc91542e39ed98071c0c5b3e8f6",
+    "docs/reviews/ponytail-baseline.md": "c33007ca6fff4219a9c221bb9b94035d5d7ee27d1d2d53b670292a1b417fcdcb",
+    "docs/proofs/opencode-product.md": "e7b776a3e416339509e8c6a5c19283d7de7d021e629043ea6ebe2d8db76c907d"
+  },
+  "structural_lint": {
+    "skill_commit": "65c8ab6ef5fcb3619c8e6daca43e68627f3d7b4a",
+    "linter_sha256": "66c454b94dea0f81334f36b222775b62b6ec24e25c0e62308f23c550ef3eaa3d",
+    "documents": {
+      "updates.md": {
+        "hard": 0,
+        "advisory": 7
+      },
+      "validation.md": {
+        "hard": 0,
+        "advisory": 5
+      },
+      "ui.md": {
+        "hard": 0,
+        "advisory": 13
+      },
+      "later.md": {
+        "hard": 0,
+        "advisory": 117
+      },
+      "TASKS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/IMPLEMENTATION_STATUS.md": {
+        "hard": 0,
+        "advisory": 0
+      },
+      "docs/proofs/live-overview.md": {
+        "hard": 0,
+        "advisory": 0
+      }
+    }
+  },
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "dbd651dc54bc0188c71d74771ac2f3c606ba8b3b46dd349f202a0e09b375e793",
+  "inventory_scanner_sha256": "252bb7cd485828727001a1ef48de5df9eb6148573a47709d82f1f30f5014f0d2",
+  "development_token_savings": "not_measured",
+  "translation_inventory": {
+    "method": "Heuristic count of tracked first-party Markdown and technical documents. The check ignores inline literals, legacy anchors, URLs, and preserved UI labels. The word count is approximate.",
+    "before_input_sha256": "e65b68d0b5d082c8ba29bd1a477768f959cd97f4ea22019633c0535f7c8cb933",
+    "after_input_sha256": "bd48cd5ad2e1898cc2acc76577dc53202fc4aaedccdbdbc6b47f5c5b139b146c",
+    "staged_after_input_sha256": "ec96d92b408b328c6320a8c69f8378c1599a109a7d9de4cdf4a3d277b253f1b1",
+    "before": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 1,
+      "counts_by_area": {
+        "other_documents": 1
+      },
+      "flagged_prose_lines": 266,
+      "approximate_source_words": 10300,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 266,
+        "approximate_words": 10300
+      }
+    },
+    "after": {
+      "tracked_documents_scanned": 222,
+      "documents_with_remaining_turkish_prose": 0,
+      "counts_by_area": {},
+      "flagged_prose_lines": 0,
+      "approximate_source_words": 0,
+      "checkpoint": {
+        "path": "docs/IMPLEMENTATION_STATUS.md",
+        "lines": 0,
+        "approximate_words": 0
+      }
+    },
+    "progress_before": {
+      "ready_documents": 221,
+      "remaining_documents": 1,
+      "ready_percent": 99.5,
+      "remaining_percent": 0.5
+    },
+    "progress_after": {
+      "ready_documents": 222,
+      "remaining_documents": 0,
+      "ready_percent": 100.0,
+      "remaining_percent": 0.0
+    }
+  }
+}

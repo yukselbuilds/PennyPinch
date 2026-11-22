@@ -35,6 +35,8 @@ The earlier same-disk isolated Codex connect and undo evidence was reused after 
 
 The NSIS package targets x64 and the current user. Its packaged WebView2 bootstrapper needs internet access when WebView2 is missing. Test the missing-WebView2 and clean-user or clean-machine scenarios in a separate environment. The unsigned development preview preserves upstream LICENSE and NOTICE files. See the [third-party notices](../../NOTICE.md) for licensing and the acceptance section below for release checks.
 
+<a name="yerel-onarım-ve-webview2-ön-koşulu"></a>
+
 ## Local repair and WebView2 prerequisite
 
 9 November 2026. The same 0.1.0 installer rejected a copy truncated by 64 KiB with exit 2. No destination directory or app registration was created. This covers truncated-package rejection. Resume acceptance was tracked separately.
