@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "task": "H042-t",
+  "date": "2026-11-22",
+  "status": "pass",
+  "scope": "Preflight of the current Windows 10 x64 preview and a local signed update.",
+  "source_commit": "40b2cfcfa0f40be10728ce33b2034b9336986f10",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "engine": "0.44.0",
+  "current_preview": {
+    "installer_sha256": "f911b3871631aceb4fefd3493e87c25778b486099a84551f11c4badd762b32b6",
+    "delivery_zip_sha256": "938f83adb56013285d1a7569e4d4dcc18703f73c9b1e54a38b2567d8ae9e3530",
+    "authenticode": "NotSigned",
+    "matched_planned_url_and_fixture_key": false
+  },
+  "local_update": {
+    "version": "0.1.1",
+    "channel": "stable",
+    "manifest_schema": 3,
+    "package_bytes": 5009514,
+    "temporary_key_removed": true,
+    "checks": [
+      {
+        "check": "temporary_test_key",
+        "exit_code": 0,
+        "expected_exit_code": 0,
+        "seconds": 0.435
+      },
+      {
+        "check": "preview_identity_matches",
+        "exit_code": 0,
+        "expected_exit_code": 0,
+        "seconds": 0.873
+      },
+      {
+        "check": "preview_rejects_planned_source_and_fixture_key",
+        "exit_code": 2,
+        "expected_exit_code": 2,
+        "seconds": 0.047
+      },
+      {
+        "check": "release_executable_build",
+        "exit_code": 0,
+        "expected_exit_code": 0,
+        "seconds": 99.074
+      },
+      {
+        "check": "existing_recovery_probe",
+        "exit_code": 0,
+        "expected_exit_code": 0,
+        "seconds": 0.152
+      },
+      {
+        "check": "resource_pin_match",
+        "exit_code": 0,
+        "expected_exit_code": 0,
+        "seconds": 0.051
+      },
+      {
+        "check": "changed_resource_pin_refused",
+        "exit_code": 2,
+        "expected_exit_code": 2,
+        "seconds": 0.053
+      },
+      {
+        "check": "wrong_https_path_refused",
+        "exit_code": 2,
+        "expected_exit_code": 2,
+        "seconds": 0.051
+      },
+      {
+        "check": "matching_bundle_signed_and_verified",
+        "exit_code": 0,
+        "expected_exit_code": 0,
+        "seconds": 24.585
+      },
+      {
+        "check": "independently_signed_changed_runtime_manifest",
+        "exit_code": 0,
+        "expected_exit_code": 0,
+        "seconds": 0.427
+      },
+      {
+        "check": "signed_changed_runtime_rejected",
+        "exit_code": 101,
+        "expected_exit_code": 101,
+        "reason": "RuntimeResourcesMismatch"
+      }
+    ],
+    "runtime_resources": {
+      "current_sha256": "02af2411184956207d3440b138de4e9c1bfbf0b061b7ef531e3ccca720558bc0",
+      "earlier_sha256": "d8ed8c817000506ee67158e0ac4dc87c4df5c1ac18785cdc89f31f99b3092f0b",
+      "changed": [
+        "desktop_controller.py",
+        "optimization_control.py",
+        "optimization-sources.json",
+        "manifest.windows.json"
+      ],
+      "previous_preview_transition": "requires_full_installer"
+    }
+  },
+  "live_source": {
+    "base_url": "https://yukselbuilds.github.io/headroom-desktop/updates/",
+    "get": {
+      "stable": {
+        "manifest.json": {
+          "status": 404,
+          "transport_exit": 0
+        },
+        "manifest.json.sig": {
+          "status": 404,
+          "transport_exit": 0
+        }
+      },
+      "preview": {
+        "manifest.json": {
+          "status": 404,
+          "transport_exit": 0
+        },
+        "manifest.json.sig": {
+          "status": 404,
+          "transport_exit": 0
+        }
+      }
+    },
+    "anonymous_repository": {
+      "status": 404,
+      "transport_exit": 0
+    },
+    "git_ssh_matches_source": true,
+    "gh_cli_auth": "invalid"
+  },
+  "production_signing_inputs_present_in_process": {
+    "HEADROOM_DESKTOP_UPDATE_BASE_URL": false,
+    "HEADROOM_DESKTOP_UPDATE_PUBLIC_KEY": false,
+    "TAURI_SIGNING_PRIVATE_KEY": false,
+    "TAURI_SIGNING_PRIVATE_KEY_PASSWORD": false
+  },
+  "fingerprints": {
+    "preflight_inputs": 384,
+    "preflight_inputs_sha256_before_and_after": "f22bfc0b152b999bb90c6ab5502e62e138c8643b125f8b92a1fcdfc406701ba7",
+    "signed_update_receipt_sha256": "240632d0e86296487db7525d50c4b61c688c0aa509cd18ff95d713e276181da3",
+    "raw_preflight_receipt_sha256": "f7c2679642cd525aa565b40cbee608114e55514298531132136bba3e5e9414ce",
+    "tool_versions": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm": "11.25.0",
+      "python": "3.13.13"
+    }
+  },
+  "implementation": {
+    "owner": "lead agent",
+    "seconds": 142.58
+  },
+  "remaining": [
+    "Set the permanent update signing key and final HTTPS URL.",
+    "Build the first full installer with the update public key and HTTPS URL.",
+    "Verify the signed update through the live HTTPS source after publication.",
+    "Verify Windows 11 x64 update and rollback."
+  ],
+  "publication_performed": false,
+  "ci_dispatched": false,
+  "provider_requests": 0,
+  "development_token_savings": "not_measured"
+}

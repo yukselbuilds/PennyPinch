@@ -18,7 +18,9 @@ The updated Windows 10 installer passed live Codex savings verification in Activ
 
 The lead agent prepared the delivery ZIP and verified extraction on Windows 10. [Package record](proofs/pennypinch-windows10-activity-delivery.json)
 
-Next, check the signing requirements and the live HTTPS source for production updates. Windows 11 update and rollback and clean-host installation have separate acceptance. [Update acceptance](validation/windows-update.md) · [Installer acceptance](validation/windows-install.md#open-acceptance-criteria)
+The current Windows 10 release code verified a local signed update with a temporary key. The verifier rejected the earlier preview's runtime resource digest. The live update URLs returned HTTP 404. [Preflight record](proofs/pennypinch-windows10-update-preflight.json)
+
+The first production installer requires the permanent update public key and the final HTTPS URL. GitHub accepted the SSH check. The GitHub CLI session failed authentication. Windows 11 update and rollback and clean-host installation have separate acceptance. [Update acceptance](validation/windows-update.md) · [Installer acceptance](validation/windows-install.md#open-acceptance-criteria)
 
 ## History
 
