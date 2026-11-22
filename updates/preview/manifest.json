@@ -1,0 +1,22 @@
+{
+  "schema_version": 3,
+  "app_identifier": "dev.headroom.desktop",
+  "target": "windows-x86_64",
+  "channel": "preview",
+  "version": "0.1.1-preview.2",
+  "notes": "This update enables the signed preview delivery check. It uses the Headroom 0.44.0 engine and the same runtime resources.\n",
+  "engine": {
+    "version": "0.44.0",
+    "runtime_manifest_sha256": "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe"
+  },
+  "installer": {
+    "size_bytes": 5007456,
+    "sha256": "15708a3d73f2cf1da8612fc05b8eb832c89d8fe9073c2724b0672b5ed7daf567"
+  },
+  "application": {
+    "state_format": 1,
+    "size_bytes": 12414976,
+    "sha256": "7fee64123fa18734ba46c6e89f8abaa05439cd7f431d75c07eda5397febf209a",
+    "runtime_resources_sha256": "02af2411184956207d3440b138de4e9c1bfbf0b061b7ef531e3ccca720558bc0"
+  }
+}
