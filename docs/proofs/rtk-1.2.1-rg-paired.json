@@ -1,0 +1,318 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-22",
+  "task": "H044-c",
+  "status": "measured",
+  "base_commit": "a4807b2d3e720f1653f612fb9cbe3e04130b8097",
+  "scope": "Plain Windows 10 ripgrep on two synthetic files, with empty and missing path cases; loopback Responses SSE fixture.",
+  "edition": "rtk-oss",
+  "rtk_version": "rtk 1.2.1",
+  "rtk_commit": "d0f0399a5ff8cd1d81325a033f0b2d8864d665f6",
+  "rtk_executable_sha256": "114d4548964528494ad5f9cda2f203677292fd34006c6a0fb3ac5458bee3f7c1",
+  "rg_version": "ripgrep 15.2.0",
+  "rg_executable_sha256": "f5a77041dafa9c2648b57a718b0f489394d3a42bc37543e6efba21530a8beb9d",
+  "engine_version": "0.44.0",
+  "token_encoding": "o200k_base",
+  "token_basis": "canonical_full_request_json_including_added_tool_schemas",
+  "cold_rounds_per_process": 1,
+  "warm_rounds_per_process": 2,
+  "processes": 3,
+  "requests": 108,
+  "thresholds": {
+    "command_timeout_seconds": 30,
+    "startup_timeout_seconds": 100,
+    "request_timeout_seconds": 30,
+    "warm_command_added_p95_ms": 250,
+    "warm_combined_added_p95_ms": 1000,
+    "minimum_command_saved_fraction": 0.1
+  },
+  "engine_stops": [
+    {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    },
+    {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    },
+    {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    }
+  ],
+  "cases": {
+    "matches": {
+      "native_exit": [
+        0
+      ],
+      "rtk_exit": [
+        0
+      ],
+      "native_stdout_bytes": [
+        19184
+      ],
+      "rtk_stdout_bytes": [
+        4947
+      ],
+      "native_stderr_bytes": [
+        0
+      ],
+      "rtk_stderr_bytes": [
+        0
+      ],
+      "native_lines": [
+        200
+      ],
+      "visible_matches": [
+        50
+      ],
+      "rtk_recall_records": [
+        2
+      ],
+      "minimum_command_bytes_saved_percent": 74.21288573811509,
+      "command_added_p95_ms": 52.18,
+      "combined_added_p95_ms": 79.04,
+      "passed_command_byte_threshold": true,
+      "passed_latency_thresholds": true,
+      "full_request_tokens": {
+        "control": [
+          6338
+        ],
+        "headroom": [
+          156
+        ],
+        "rtk": [
+          1753
+        ],
+        "rtk_headroom": [
+          154
+        ]
+      },
+      "additional_tokens_saved_vs_headroom": [
+        2
+      ],
+      "engine_ccr_retrievals": {
+        "control": 0,
+        "headroom": 9,
+        "rtk": 0,
+        "rtk_headroom": 9
+      },
+      "integrity": {
+        "bypass_exact": true,
+        "exit_preserved": true,
+        "stderr_preserved": true,
+        "stdout_recovered_exact": true,
+        "visible_matches_intact": true,
+        "engine_exact_recovery": true,
+        "engine_immediate_diagnostics": true,
+        "combined_rtk_references_visible": false
+      }
+    },
+    "no_matches": {
+      "native_exit": [
+        1
+      ],
+      "rtk_exit": [
+        1
+      ],
+      "native_stdout_bytes": [
+        0
+      ],
+      "rtk_stdout_bytes": [
+        0
+      ],
+      "native_stderr_bytes": [
+        0
+      ],
+      "rtk_stderr_bytes": [
+        0
+      ],
+      "native_lines": [
+        0
+      ],
+      "visible_matches": [
+        0
+      ],
+      "rtk_recall_records": [
+        0
+      ],
+      "minimum_command_bytes_saved_percent": null,
+      "command_added_p95_ms": 39.12,
+      "combined_added_p95_ms": 67.91,
+      "passed_command_byte_threshold": false,
+      "passed_latency_thresholds": true,
+      "full_request_tokens": {
+        "control": [
+          138
+        ],
+        "headroom": [
+          138
+        ],
+        "rtk": [
+          138
+        ],
+        "rtk_headroom": [
+          138
+        ]
+      },
+      "additional_tokens_saved_vs_headroom": [
+        0
+      ],
+      "engine_ccr_retrievals": {
+        "control": 0,
+        "headroom": 0,
+        "rtk": 0,
+        "rtk_headroom": 0
+      },
+      "integrity": {
+        "bypass_exact": true,
+        "exit_preserved": true,
+        "stderr_preserved": true,
+        "stdout_recovered_exact": true,
+        "visible_matches_intact": true,
+        "engine_exact_recovery": true,
+        "engine_immediate_diagnostics": true,
+        "combined_rtk_references_visible": true
+      }
+    },
+    "missing_path": {
+      "native_exit": [
+        2
+      ],
+      "rtk_exit": [
+        2
+      ],
+      "native_stdout_bytes": [
+        0
+      ],
+      "rtk_stdout_bytes": [
+        0
+      ],
+      "native_stderr_bytes": [
+        112
+      ],
+      "rtk_stderr_bytes": [
+        112
+      ],
+      "native_lines": [
+        0
+      ],
+      "visible_matches": [
+        0
+      ],
+      "rtk_recall_records": [
+        0
+      ],
+      "minimum_command_bytes_saved_percent": 0.0,
+      "command_added_p95_ms": 37.72,
+      "combined_added_p95_ms": 60.88,
+      "passed_command_byte_threshold": false,
+      "passed_latency_thresholds": true,
+      "full_request_tokens": {
+        "control": [
+          169
+        ],
+        "headroom": [
+          169
+        ],
+        "rtk": [
+          169
+        ],
+        "rtk_headroom": [
+          169
+        ]
+      },
+      "additional_tokens_saved_vs_headroom": [
+        0
+      ],
+      "engine_ccr_retrievals": {
+        "control": 0,
+        "headroom": 0,
+        "rtk": 0,
+        "rtk_headroom": 0
+      },
+      "integrity": {
+        "bypass_exact": true,
+        "exit_preserved": true,
+        "stderr_preserved": true,
+        "stdout_recovered_exact": true,
+        "visible_matches_intact": true,
+        "engine_exact_recovery": true,
+        "engine_immediate_diagnostics": true,
+        "combined_rtk_references_visible": true
+      }
+    }
+  },
+  "network": {
+    "hf_hub_offline": true,
+    "transformers_offline": true,
+    "upstream": "owned_loopback_fixture",
+    "huggingface_hub_payload_bytes": 0,
+    "packet_capture": false
+  },
+  "external_model_requests": 0,
+  "provider_billing": "not_tested",
+  "client_hook": "not_tested",
+  "model_answer_quality": "not_tested",
+  "fingerprint_before": {
+    "inputs": 651,
+    "sha256": "05754b4d4d153e4f448eef459bbb8e9d5d28d784a7c57ea19891e9237c75c53f",
+    "environment": {
+      "windows_build": [
+        10,
+        0,
+        19045
+      ],
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "machine": "AMD64",
+      "processor": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+      "logical_cpus": 16,
+      "command_environment_sha256": "020e9c86d3acfbbc6f8f6ec4393cfca397dc7518bb096afdb4b6c84b2d467b4e"
+    }
+  },
+  "fingerprint_after": {
+    "inputs": 651,
+    "sha256": "05754b4d4d153e4f448eef459bbb8e9d5d28d784a7c57ea19891e9237c75c53f",
+    "environment": {
+      "windows_build": [
+        10,
+        0,
+        19045
+      ],
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "machine": "AMD64",
+      "processor": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+      "logical_cpus": 16,
+      "command_environment_sha256": "020e9c86d3acfbbc6f8f6ec4393cfca397dc7518bb096afdb4b6c84b2d467b4e"
+    }
+  },
+  "local_result_directory": "work/proofs/rtk/rg-paired/runs/88b74762081e499f8e6225ae756d0bbf",
+  "seconds": 136.4,
+  "visible_match_check": {
+    "visible_matches_verified": 50,
+    "native_matches": 200,
+    "identical_stdout_stderr_and_exit_for_all_paired_rounds": 9,
+    "scope": "Match payload bytes within RTK's grouped file display. The original display parser required a file name on each line.",
+    "input_sha256_before_and_after": "4346d3f8c6555f38a4b0a29598560991aaee88c465fa623b7473e59d366cbba7",
+    "inputs": 8,
+    "network_requests": 0,
+    "events_sha256": "46e2fa9d45a1f46601c564e96c280f94e1649c2160fcbe3e7a443314091f8652",
+    "paired_result_sha256": "56230a2d60a0d991bf82a20d9bc754fad70bb2002a732ab676d99c134aa6cc4f",
+    "local_path": "work/proofs/rtk/rg-paired/runs/88b74762081e499f8e6225ae756d0bbf/visible-matches/2700c458ac7340b3ab16b0a8f702d4f7/result.json"
+  },
+  "decision": {
+    "installation": "candidate_not_selected",
+    "reason": "The combined route saved two additional first-request tokens. Its first request hid both RTK recall references behind Headroom CCR.",
+    "recovery_verified": "Retrieve the filtered envelope from Headroom. Use both RTK recall references to restore native stdout.",
+    "recovery_turn_token_cost": "not_tested",
+    "client_integration_test": "deferred_until_a_candidate_qualifies"
+  },
+  "implementer": "lead_agent",
+  "development_token_savings": "not_measured"
+}

@@ -28,7 +28,9 @@ The local signing key and same-profile encrypted backup passed a signing check. 
 
 On Windows 10, the real installation upgraded from v0.1.0 with the full installer. Settings then applied the signed v0.1.1-preview.2 package. Rollback restored the previous executable and Windows registration. The test preferences matched across both restarts. The 19,484 recorded resource files matched after rollback. [Installed acceptance](proofs/pennypinch-windows10-installed-update-and-release.json)
 
-The RTK-OSS v1.2.1 follow-up recovered all native stdout bytes for one ripgrep search. H044 needs the paired Headroom comparison and isolated client checks for this command. H052 still needs the authorized report service. H053 and H054 depend on H052. [RTK follow-up evidence](proofs/rtk-1.2.1-recovery-followup.json) · [Task list](../TASKS.md)
+The lead agent ran the H044 ripgrep comparison on Windows 10 in 136.4 seconds. The combined route saved two more tokens than Headroom on the first request. Full readback required Headroom recovery and two RTK recalls. H044 waits for a candidate with a useful gain and a verified client recovery path. [Paired evidence](proofs/rtk-1.2.1-rg-paired.json)
+
+H052 now specifies how to include voluntary usage summaries in field benchmark results. An authorized Cloudflare Free deployment is pending. H053 and H054 depend on the live report service. [Task list](../TASKS.md)
 
 ## History
 

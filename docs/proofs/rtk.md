@@ -88,3 +88,20 @@ The follow-up used the official Windows x64 RTK-OSS binary with the default filt
 - **Ripgrep search.** RTK showed 50 of 200 matches from two files. It supplied two recall references. The joined recall output matched all 19,184 native stdout bytes. Output before recall fell to 4,947 bytes.
 
 Simple ripgrep search is a candidate for paired Headroom measurement and isolated client tests. The earlier eight pre-screen cases retain their recorded scope. H044 installation remains open.
+
+## RTK-OSS 1.2.1 - Paired ripgrep comparison
+
+22 November 2026. Windows 10 ran three engine processes and nine sample rounds for each case. A loopback Responses fixture recorded 108 requests. The test counted the full request JSON with `o200k_base`. [Evidence](rtk-1.2.1-rg-paired.json)
+
+| Route for the matching search | Tokens per first request |
+| --- | ---: |
+| Native ripgrep | 6,338 |
+| Native ripgrep with Headroom | 156 |
+| RTK alone | 1,753 |
+| RTK with Headroom | 154 |
+
+RTK showed 50 of 200 matches. Two recall calls restored all 19,184 native stdout bytes. Headroom replaced the large stdout field with a CCR reference in both engine routes. In the combined route, the first request hid both RTK recall references. Full readback first recovered the RTK result from Headroom. It then needed both RTK recalls.
+
+Bypass preserved stdout, stderr, and exit codes. The empty search and the missing file kept their native exit codes and stderr. A separate display check matched stdout and stderr hashes from all nine rounds. It verified the 50 match lines in RTK's grouped output.
+
+The lead agent ran the comparison in 136.4 seconds. The 651 input fingerprints matched. All three engines stopped gracefully. Model answer quality, later request cost, and real client recovery remain unmeasured. H044 remains open. Installation needs a candidate with useful benefit and a verified client recovery path.
