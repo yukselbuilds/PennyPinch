@@ -4,7 +4,7 @@
 
 **45 of 54 main tasks are complete.** H042 is the active release task. H041 remains open and deferred. [Task list](../TASKS.md)
 
-The Windows 10 22H2 x64 preview is ready as the draft GitHub prerelease for v0.1.0. Its ZIP contains the unsigned installer, the PennyPinch license, and the matching notices. The installer includes Headroom 0.44.0 and the verified Codex Activity measurement. PowerShell verified 677 listed digests. GitHub returned matching digests for both draft assets. [Draft evidence](proofs/pennypinch-windows10-preview-draft.json)
+The Windows 10 22H2 x64 v0.1.0 preview is available as a GitHub prerelease. It contains the unsigned installer, PennyPinch license, and the matching notices. Anonymous downloads matched the ZIP and checksum file digests. [Download v0.1.0](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.0) · [Publication evidence](proofs/pennypinch-windows10-preview-publication.json)
 
 The macOS ARM64 engine and package passed their recorded 0.44.0 checks. Native window acceptance remains open. The Ubuntu x64 build opened a window. Linux tests and packaging remain open. [Platform status](validation/desktop-platforms.md)
 
@@ -24,9 +24,9 @@ The public repository is named PennyPinch. Its Pages site serves the new update 
 
 The public README and project site show the benchmark results and measurement scopes. The repository description and topics identify PennyPinch and its client coverage. [Presentation checks](proofs/pennypinch-public-showcase.json)
 
-The next preview step is publication with the owner's approval. After publication, verify an anonymous download and its SHA-256 digest. This build uses manual downloads.
+The local signing key and same-profile encrypted backup passed a signing check. Build and verify the first update-enabled installer and its matching signed preview update. Full Windows 11 update and rollback and clean-host installation have separate acceptance.
 
-For in-app updates, set the permanent signing key with a durable backup. Build an installer with the public key and the verified HTTPS URL. Verify a live signed update on Windows 10. Windows 11 update and rollback and clean-host installation have separate acceptance. [Update acceptance](validation/windows-update.md) · [Installer acceptance](validation/windows-install.md#open-acceptance-criteria)
+The signed HTTPS feed and installed update check remain open. [Update acceptance](validation/windows-update.md)
 
 ## History
 

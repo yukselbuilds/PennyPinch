@@ -48,7 +48,7 @@ The proxy test counts full request JSON with `o200k_base`. The live Codex result
 | Claude Code | Windows 10 routing checks with synthetic credentials and a local provider. [Evidence](docs/proofs/claude-acceptance.md) |
 | OpenCode | Selected CLI, TUI, and Desktop routes with synthetic credentials and local providers. [Evidence](docs/proofs/opencode-acceptance.md) |
 
-The first public Windows installer is pending. Windows 11, macOS, and Linux release checks have separate acceptance. [Release list](https://github.com/yukselbuilds/PennyPinch/releases) · [Platform validation](docs/validation/desktop-platforms.md) · [Versioned client catalog](compatibility/clients.json)
+The v0.1.0 preview is available for Windows 10 22H2 x64. This preview uses manual downloads. Windows 11, macOS, and Linux release checks remain open. [Download the Windows 10 preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.0) · [Platform validation](docs/validation/desktop-platforms.md) · [Versioned client catalog](compatibility/clients.json)
 
 <details>
 <summary>Developer setup and verification history</summary>

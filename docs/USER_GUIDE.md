@@ -1,6 +1,6 @@
 # PennyPinch user guide
 
-This guide covers the local development preview. The [platform validation matrix](validation/desktop-platforms.md) records the tested platforms and the remaining release checks.
+This guide covers the Windows 10 preview. See the [v0.1.0 release notes](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.0) for installation steps. The [platform validation matrix](validation/desktop-platforms.md) records the tested platforms and the remaining release checks.
 
 ## Connect a coding agent
 

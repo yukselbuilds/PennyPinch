@@ -1,0 +1,52 @@
+{
+  "task": "H042-y",
+  "status": "pass",
+  "date": "2026-11-22",
+  "owner": "lead agent",
+  "release_url": "https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.0",
+  "tag": "v0.1.0",
+  "source_commit": "c7a9a2f3af74e9270cd4ba36f1adffde7b29456e",
+  "published_utc": "2026-11-22T16:50:23Z",
+  "prerelease": true,
+  "draft": false,
+  "installer_authenticode": "NotSigned",
+  "update_mode": "manual_download",
+  "assets": [
+    {
+      "name": "PennyPinch_0.1.0_Windows_x64_preview.zip",
+      "bytes": 126684972,
+      "sha256": "e420941377d556ee1371d89a14a443d6a72df1edb79fc9382f1f8b6f6c6b69f6",
+      "status": 200
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 107,
+      "sha256": "d26e9ecb04ddf6e933bb957d0e78569898a374975dbb3376bbb5155770ac68bb",
+      "status": 200
+    }
+  ],
+  "public_checksum_entry_matches": true,
+  "downloaded_on_windows_build": 19045,
+  "draft_proof_sha256": "feddc4b4f4fd789da58c7a11d96f0bf0c268163e9aebc764445d71a494508d02",
+  "powershell": "7.6.9",
+  "curl": "curl 8.13.0 (Windows) libcurl/8.13.0 Schannel zlib/1.3.1 WinIDN",
+  "verification_seconds": 43.492,
+  "provider_requests": 0,
+  "ci_runs_started": 0,
+  "development_token_savings": "not_measured",
+  "pages": {
+    "source_commit": "5da256e798b3cec5a93496bb396085f642a14883",
+    "live_checks": [
+      {
+        "url": "https://yukselbuilds.github.io/PennyPinch/",
+        "status": 200,
+        "source_and_live_sha256": "1bce5257b87f048048055454e871beb4811bf63cabe2422eb52817786b519137"
+      },
+      {
+        "url": "https://yukselbuilds.github.io/PennyPinch/updates/",
+        "status": 200,
+        "source_and_live_sha256": "1f72f4f1af44d543d9d6853c367073caacab8f2335fad525c8f47912e47f3480"
+      }
+    ]
+  }
+}
