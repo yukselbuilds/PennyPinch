@@ -3,20 +3,210 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PennyPinch</title>
-  <style>
-    :root { color-scheme: light dark; }
-    body { max-width: 38rem; margin: 8vh auto; padding: 0 1.25rem; font: 1rem/1.6 system-ui, sans-serif; }
-  </style>
+  <title>PennyPinch | Local token optimization for coding agents</title>
+  <meta name="description" content="PennyPinch measures input token savings and compresses coding context locally. Explore Windows 10 benchmarks and coverage for Codex, Claude Code, and OpenCode.">
+  <meta name="theme-color" content="#101513">
+  <link rel="canonical" href="https://yukselbuilds.github.io/headroom-desktop/">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PennyPinch">
+  <meta property="og:title" content="PennyPinch — Local token savings for coding agents">
+  <meta property="og:description" content="Compare measured context compression, from a live Codex request to six Headroom proxy workloads.">
+  <meta property="og:url" content="https://yukselbuilds.github.io/headroom-desktop/">
+  <meta property="og:image" content="https://yukselbuilds.github.io/headroom-desktop/assets/pennypinch-share.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="PennyPinch, with verified Windows 10 context compression measurements.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main>
-    <h1>PennyPinch</h1>
-    <p>Optimize and measure context use in supported coding tools.</p>
-    <ul>
-      <li><a href="updates/">Update status</a></li>
-      <li><a href="https://github.com/yukselbuilds/headroom-desktop">Source code</a></li>
-    </ul>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="./">
+        <img src="assets/pennypinch-mark.png" width="32" height="32" alt="">
+        PennyPinch
+      </a>
+      <nav aria-label="Main">
+        <a href="#benchmarks">Benchmarks</a>
+        <a href="#compatibility">Compatibility</a>
+        <a class="header-source" href="https://github.com/yukselbuilds/headroom-desktop">GitHub <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="status"><span aria-hidden="true"></span> Windows 10 preview in development</p>
+        <h1 id="hero-title">See what your<br class="headline-break"> coding tools <em>save.</em></h1>
+        <p class="hero-lead">PennyPinch compresses context on your computer. See how input tokens change for Codex, Claude Code, and OpenCode.</p>
+        <div class="actions">
+          <a class="button button-primary" href="#benchmarks">Explore benchmarks <span aria-hidden="true">↓</span></a>
+          <a class="button button-outline" href="#release">Release status</a>
+        </div>
+        <p class="hero-foot">Open source · Apache 2.0 · Powered by Headroom</p>
+      </div>
+
+      <figure class="hero-chart" aria-labelledby="proxy-title">
+        <figcaption class="chart-caption">
+          <span id="proxy-title">Local proxy benchmark</span>
+          <span class="mono engine-label">Headroom 0.44.0</span>
+        </figcaption>
+        <p class="hero-result mono">43.60<span>%</span></p>
+        <p class="result-label">fewer input tokens</p>
+        <dl class="hero-bars">
+          <div>
+            <dt>Direct request</dt>
+            <dd class="mono">122,922</dd>
+            <dd class="track" aria-hidden="true"><span class="bar bar-direct"></span></dd>
+          </div>
+          <div>
+            <dt>Through PennyPinch</dt>
+            <dd class="mono">69,328</dd>
+            <dd class="track" aria-hidden="true"><span class="bar bar-proxy"></span></dd>
+          </div>
+        </dl>
+        <p class="chart-note">Six synthetic workloads. Full request JSON, counted with <code>o200k_base</code>.</p>
+      </figure>
+    </section>
+
+    <section id="benchmarks" class="section" aria-labelledby="benchmarks-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="benchmarks-title">Benchmarks</h2>
+          <p>Windows 10 22H2 x64 · Headroom 0.44.0</p>
+        </div>
+        <a class="text-link" href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/validation/optimization-benefit.md">Read the validation notes <span aria-hidden="true">↗</span></a>
+      </div>
+
+      <div class="observations">
+        <article class="observation">
+          <h3>Live Codex CLI request</h3>
+          <p class="observation-value mono">211 <span>tokens fewer</span></p>
+          <p>18,081 → 17,870 · <strong>1.17%</strong> local estimate. One real request through the installed app.</p>
+          <a class="text-link" href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/proofs/pennypinch-windows10-activity-measurement.json">View the measurement <span aria-hidden="true">↗</span></a>
+        </article>
+        <article class="observation">
+          <h3>Headroom SDK rerun</h3>
+          <p class="observation-value mono">56.28<span>%</span></p>
+          <p>126,289 → 55,209 tokens. These six cases use the SDK counter and its input scope.</p>
+          <a class="text-link" href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/proofs/upstream-benchmarks-044.json">View the rerun <span aria-hidden="true">↗</span></a>
+        </article>
+        <article class="observation">
+          <h3>Paired local model test</h3>
+          <p class="observation-value mono">0<span>%</span></p>
+          <p>6,647 input tokens on each route. A local model answered the same log task in both runs.</p>
+          <a class="text-link" href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/validation/optimization-benefit.md#19-kas%C4%B1m--ger%C3%A7ek-yerel-modelde-e%C5%9Flenmi%C5%9F-chat-completions-k%C4%B1yas%C4%B1">View the comparison <span aria-hidden="true">↗</span></a>
+        </article>
+      </div>
+
+      <figure class="workloads">
+        <figcaption class="workload-heading">
+          <div>
+            <h3>What changed in the proxy</h3>
+            <p>Share of the original input sent onward</p>
+          </div>
+          <a class="text-link" href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/proofs/upstream-benchmarks-044.json">Raw benchmark data <span aria-hidden="true">↗</span></a>
+        </figcaption>
+        <ul class="workload-list">
+          <li data-direct="9519" data-proxy="5731">
+            <span class="workload-name">JSON search results <small>100 items</small></span>
+            <span class="workload-count mono">9,519 → 5,731</span>
+            <span class="track" aria-hidden="true"><span class="bar" style="--share:60.21%"></span></span>
+            <strong class="workload-change mono">39.79% less</strong>
+          </li>
+          <li data-direct="46791" data-proxy="27765">
+            <span class="workload-name">JSON search results <small>500 items</small></span>
+            <span class="workload-count mono">46,791 → 27,765</span>
+            <span class="track" aria-hidden="true"><span class="bar" style="--share:59.34%"></span></span>
+            <strong class="workload-change mono">40.66% less</strong>
+          </li>
+          <li data-direct="8655" data-proxy="5674">
+            <span class="workload-name">Structured logs <small>100 entries</small></span>
+            <span class="workload-count mono">8,655 → 5,674</span>
+            <span class="track" aria-hidden="true"><span class="bar" style="--share:65.56%"></span></span>
+            <strong class="workload-change mono">34.44% less</strong>
+          </li>
+          <li data-direct="40516" data-proxy="25931">
+            <span class="workload-name">Structured logs <small>500 entries</small></span>
+            <span class="workload-count mono">40,516 → 25,931</span>
+            <span class="track" aria-hidden="true"><span class="bar" style="--share:64.00%"></span></span>
+            <strong class="workload-change mono">36.00% less</strong>
+          </li>
+          <li data-direct="14499" data-proxy="1277">
+            <span class="workload-name">Documentation</span>
+            <span class="workload-count mono">14,499 → 1,277</span>
+            <span class="track" aria-hidden="true"><span class="bar" style="--share:8.81%"></span></span>
+            <strong class="workload-change mono">91.19% less</strong>
+          </li>
+          <li class="workload-more" data-direct="2942" data-proxy="2950">
+            <span class="workload-name">Python source <small>Code preserved</small></span>
+            <span class="workload-count mono">2,942 → 2,950</span>
+            <span class="track" aria-hidden="true"><span class="bar" style="--share:100%"></span></span>
+            <strong class="workload-change mono">0.27% more</strong>
+          </li>
+        </ul>
+      </figure>
+
+      <details class="method">
+        <summary>How we counted the tokens</summary>
+        <div class="method-body">
+          <p>The proxy test compares full request JSON, including tool schemas. It uses the coding and cache profile and makes zero model calls.</p>
+          <p>The Codex result uses the same local counter before and after compression on one Responses WebSocket request. The provider reports usage separately.</p>
+          <p>The SDK result uses its own input scope. The local model comparison uses the model server's input count. Savings vary with the workload.</p>
+          <p><a class="text-link" href="https://github.com/headroomlabs-ai/headroom/blob/b21479e0fa84db5f3e46bb79f96c962de4d5fdc6/docs/content/docs/benchmarks.mdx">Headroom benchmark source <span aria-hidden="true">↗</span></a></p>
+        </div>
+      </details>
+    </section>
+
+    <section id="compatibility" class="section" aria-labelledby="compatibility-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="compatibility-title">Tested connections</h2>
+          <p>Coverage depends on the client version and route.</p>
+        </div>
+        <a class="text-link" href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/USER_GUIDE.md#verified-coverage">Read the compatibility guide <span aria-hidden="true">↗</span></a>
+      </div>
+      <dl class="connections">
+        <div>
+          <dt>Codex</dt>
+          <dd><span class="route-live">Live ChatGPT traffic</span><p>The Windows 10 preview measured a real CLI request. Codex Desktop has separate live evidence for selected versions.</p></dd>
+        </div>
+        <div>
+          <dt>Claude Code</dt>
+          <dd><span class="route-local">Local routing tests</span><p>Connection tests used synthetic credentials and a local provider.</p></dd>
+        </div>
+        <div>
+          <dt>OpenCode</dt>
+          <dd><span class="route-local">Local routing tests</span><p>Versioned tests cover selected CLI, TUI, and Desktop routes with local providers.</p></dd>
+        </div>
+      </dl>
+      <p class="platform-note">Windows 11, macOS, and Linux release validation remains in progress. <a href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/validation/desktop-platforms.md">Platform status</a></p>
+    </section>
+
+    <section id="release" class="release" aria-labelledby="release-title">
+      <div>
+        <h2 id="release-title">First Windows preview</h2>
+        <p>Installation and live Codex measurement passed on the Windows 10 development host. The first public installer is pending.</p>
+      </div>
+      <div class="actions">
+        <a class="button button-primary" href="https://github.com/yukselbuilds/headroom-desktop/releases">View releases <span aria-hidden="true">↗</span></a>
+        <a class="button button-outline" href="updates/">Update status</a>
+      </div>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <span>PennyPinch</span>
+      <nav aria-label="Project resources">
+        <a href="https://github.com/yukselbuilds/headroom-desktop/blob/main/LICENSE">Apache 2.0</a>
+        <a href="https://github.com/headroomlabs-ai/headroom">Headroom engine</a>
+        <a href="https://github.com/yukselbuilds/headroom-desktop/blob/main/NOTICE.md">Third-party notices</a>
+      </nav>
+    </div>
+  </footer>
 </body>
 </html>
