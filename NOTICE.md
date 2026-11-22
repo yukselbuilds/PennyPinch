@@ -25,9 +25,13 @@ The existing locked proxy dependency set is retained; its size is reported
 separately from the application and WebView2 bootstrapper.
 
 Tauri and its Rust dependencies, React, and the bundled WebView2 prerequisite
-retain their respective licenses. A complete application-wide third-party
-license inventory and signed publication are still release acceptance work;
-this preview notice is not a claim of release readiness.
+retain their respective licenses. H037 recorded a component inventory and a
+597-entry license archive for the 9 November 2026 Windows preview with engine
+0.41.0. The current Windows payload uses 0.44.0. Release acceptance still
+requires delivery of the notices matching the published package.
+[Preview inventory](docs/proofs/windows-installer-components.json) ·
+[License archive](docs/proofs/windows-installer-notices.json) ·
+[Windows pin transition](docs/proofs/headroom-044-upgrade.json)
 
 ## Tauri Windows installer template
 
