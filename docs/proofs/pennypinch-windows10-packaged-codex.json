@@ -1,0 +1,116 @@
+{
+  "task": "H042-p",
+  "date": "2026-11-22",
+  "status": "pass",
+  "product_source_commit": "ab974e2ccd1c2dbc771cf581561539d839b02a02",
+  "source_checkout": "abd85810bda01f5b33085244326b6faa5b2b34f5",
+  "scope": "Extracted current unsigned PennyPinch NSIS payload and isolated ChatGPT CLI.",
+  "os": {
+    "release": "Windows 10 22H2",
+    "build": 19045,
+    "architecture": "AMD64"
+  },
+  "engine": "0.44.0",
+  "cli": "codex-cli 0.166.0",
+  "cli_signature": "Valid OpenAI",
+  "auth": "authorized isolated ChatGPT Free profile",
+  "artifact_sha256_before": {
+    "delivery_zip": "b271e0391d40319c1cf6a248f73d162a57527e4e2e0538913720526ad5f97800",
+    "installer": "eec3bf272196dd449e96bc5830fc4a498065585927132ab4605d3d64aa144b10",
+    "extracted_app": "edbcb239342fe61064540263c9c47957c8326fe46389e253f9a6444ae925d4bd",
+    "extraction_receipt": "74ee1503c81ec22c4269a6f3a29cfaf8c6b8ed0412634318fd365fb85bd8b097",
+    "codex_cli": "9d563ee4e0441ff9d59d612013e0460ddf8e5709735c2d9f6b98b7ef8ca4eb42"
+  },
+  "resource_sha256_before": "8941a16ac110d4eced5d474a0f436b5b46ea20eac766ae0b0108f3356e32a468",
+  "resource_files": 19484,
+  "verifier_sha256": "83511eb09e3bdae64a435fb05237fda6a3724aacd3baa5c7b035c60dfb67c030",
+  "python": "3.13.13",
+  "model_and_effort_override": false,
+  "live_cli_turns_started": 1,
+  "extracted_app_version_probe": "pass",
+  "nsis_install_invoked": false,
+  "development_token_savings": "not_measured",
+  "prior_run": {
+    "live_cli_turns_started": 1,
+    "sha256": "c69d00140c73b30aa4d151df6b49227a568afa3950ff23022a0b269e818030f0",
+    "corrected_verification": "The check required an HTTP status for a WebSocket usage record. WebSocket records have no HTTP status.",
+    "input_token_measurement": {
+      "before": 11010,
+      "after": 10799,
+      "saved": 211,
+      "percent": 1.92,
+      "scope": "One matched turn. Engine baseline and provider input."
+    }
+  },
+  "cli_seconds": 5.21,
+  "cli_result": {
+    "exit": 0,
+    "exact_reply": true,
+    "completed_turns": 1,
+    "tool_items": 0,
+    "known_errors": [],
+    "usage": {
+      "input_tokens": 11413,
+      "cached_input_tokens": 0,
+      "output_tokens": 17
+    }
+  },
+  "engine_requests": 2,
+  "provider_usage_rows": 2,
+  "provider_usage_summary": [
+    {
+      "surface": "openai_responses_ws",
+      "client_status": null,
+      "truncated": false,
+      "usage": {
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "input_tokens": 2,
+        "output_tokens": 0,
+        "total_input_tokens": 2,
+        "total_tokens": 2
+      },
+      "completed": true,
+      "seen_in_request_log": true
+    },
+    {
+      "surface": "openai_responses_ws",
+      "client_status": null,
+      "truncated": false,
+      "usage": {
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "input_tokens": 11413,
+        "output_tokens": 17,
+        "total_input_tokens": 11413,
+        "total_tokens": 11430
+      },
+      "completed": true,
+      "seen_in_request_log": true
+    }
+  ],
+  "matching_provider_usage": true,
+  "provider_surface": "openai_responses_ws",
+  "cache_read_match": true,
+  "observed_model": "gpt-6-luna",
+  "response_verified": true,
+  "graceful_stop": true,
+  "loopback_closed": true,
+  "artifact_sha256_after": {
+    "delivery_zip": "b271e0391d40319c1cf6a248f73d162a57527e4e2e0538913720526ad5f97800",
+    "installer": "eec3bf272196dd449e96bc5830fc4a498065585927132ab4605d3d64aa144b10",
+    "extracted_app": "edbcb239342fe61064540263c9c47957c8326fe46389e253f9a6444ae925d4bd",
+    "extraction_receipt": "74ee1503c81ec22c4269a6f3a29cfaf8c6b8ed0412634318fd365fb85bd8b097",
+    "codex_cli": "9d563ee4e0441ff9d59d612013e0460ddf8e5709735c2d9f6b98b7ef8ca4eb42"
+  },
+  "resource_sha256_after": "8941a16ac110d4eced5d474a0f436b5b46ea20eac766ae0b0108f3356e32a468",
+  "settings_unchanged": true,
+  "provider_savings": "not_measured",
+  "input_token_measurement": {
+    "before": 11624,
+    "after": 11413,
+    "saved": 211,
+    "percent": 1.82,
+    "scope": "One matched turn. Engine baseline and provider input."
+  }
+}

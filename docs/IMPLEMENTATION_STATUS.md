@@ -10,7 +10,9 @@ The macOS ARM64 engine and package passed their recorded 0.44.0 checks. Native w
 
 ### Next H042 release step
 
-The first-use priority is to verify the current Windows 10 22H2 x64 installer with real Codex traffic. [Task list](../TASKS.md)
+The extracted Windows 10 x64 payload passed a live Codex CLI turn. The provider usage matched, and the engine stopped gracefully. [Evidence](proofs/pennypinch-windows10-packaged-codex.json)
+
+Next, verify standard installation and the native application flow for this Windows 10 preview. [Task list](../TASKS.md)
 
 Production updates require the release key and the live HTTPS update source. Windows 11 update and rollback and clean-host installation have separate acceptance. [Update acceptance](validation/windows-update.md) · [Installer acceptance](validation/windows-install.md#open-acceptance-criteria)
 
