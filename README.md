@@ -10,7 +10,7 @@
 <p align="center">
   <a href="https://yukselbuilds.github.io/PennyPinch/"><img src="docs/branding/readme-site.png" width="126" height="38" alt="Project site"></a>
   <a href="#benchmarks"><img src="docs/branding/readme-benchmarks.png" width="130" height="38" alt="Benchmarks"></a>
-  <a href="https://yukselbuilds.github.io/PennyPinch/updates/"><img src="docs/branding/readme-releases.png" width="147" height="38" alt="Release status"></a>
+  <a href="https://github.com/yukselbuilds/PennyPinch/releases"><img src="docs/branding/readme-releases.png" width="147" height="38" alt="GitHub Releases"></a>
 </p>
 
 <p align="center">Windows 10 22H2 x64 development preview · Headroom 0.44.0 · Apache 2.0</p>
@@ -48,7 +48,7 @@ The proxy test counts full request JSON with `o200k_base`. The live Codex result
 | Claude Code | Windows 10 routing checks with synthetic credentials and a local provider. [Evidence](docs/proofs/claude-acceptance.md) |
 | OpenCode | Selected CLI, TUI, and Desktop routes with synthetic credentials and local providers. [Evidence](docs/proofs/opencode-acceptance.md) |
 
-The v0.1.0 preview is available for Windows 10 22H2 x64. This preview uses manual downloads. Windows 11, macOS, and Linux release checks remain open. [Download the Windows 10 preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.0) · [Platform validation](docs/validation/desktop-platforms.md) · [Versioned client catalog](compatibility/clients.json)
+The v0.1.1-preview.1 installer for Windows 10 22H2 x64 supports signed in-app updates. Windows 11, macOS, and Linux release checks remain open. [Download the Windows 10 preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.1) · [Platform validation](docs/validation/desktop-platforms.md) · [Versioned client catalog](compatibility/clients.json)
 
 <details>
 <summary>Developer setup and verification history</summary>

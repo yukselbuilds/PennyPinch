@@ -2,13 +2,13 @@
 
 ## Current status
 
-**45 of 54 main tasks are complete.** H042 is the active release task. H041 remains open and deferred. [Task list](../TASKS.md)
+**45 of 54 main tasks are complete.** H042 passed its Windows 10 release checks. Windows 11 x64 update and rollback remain open. H041 remains open and deferred. [Task list](../TASKS.md)
 
-The Windows 10 22H2 x64 v0.1.0 preview is available as a GitHub prerelease. It contains the unsigned installer, PennyPinch license, and the matching notices. Anonymous downloads matched the ZIP and checksum file digests. [Download v0.1.0](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.0) · [Publication evidence](proofs/pennypinch-windows10-preview-publication.json)
+PennyPinch v0.1.1-preview.1 for Windows 10 22H2 x64 is available from GitHub Releases. The ZIP includes the installer, the PennyPinch license, and the matching notices. Anonymous downloads matched both asset digests. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.1) · [Publication evidence](proofs/pennypinch-windows10-installed-update-and-release.json)
 
 The macOS ARM64 engine and package passed their recorded 0.44.0 checks. Native window acceptance remains open. The Ubuntu x64 build opened a window. Linux tests and packaging remain open. [Platform status](validation/desktop-platforms.md)
 
-### Next H042 release step
+### Windows release evidence
 
 The extracted Windows 10 x64 payload passed a live Codex CLI turn. The provider usage matched, and the engine stopped gracefully. [Evidence](proofs/pennypinch-windows10-packaged-codex.json)
 
@@ -20,13 +20,15 @@ The lead agent prepared the delivery ZIP and verified extraction on Windows 10. 
 
 The current Windows 10 release code verified a local signed update with a temporary key. The verifier rejected the earlier preview's runtime resource digest. The live update URLs returned HTTP 404. [Preflight record](proofs/pennypinch-windows10-update-preflight.json)
 
-The public repository is named PennyPinch. Its Pages site serves the new update address over HTTPS. The signed feed is pending. [Repository](https://github.com/yukselbuilds/PennyPinch) · [Update address](https://yukselbuilds.github.io/PennyPinch/updates/) · [Rename checks](proofs/pennypinch-repository-rename.json)
+The PennyPinch project site serves the update address over HTTPS. The preview channel serves signed updates. [Repository](https://github.com/yukselbuilds/PennyPinch) · [Update address](https://yukselbuilds.github.io/PennyPinch/updates/)
 
 The public README and project site show the benchmark results and measurement scopes. The repository description and topics identify PennyPinch and its client coverage. [Presentation checks](proofs/pennypinch-public-showcase.json)
 
 The local signing key and same-profile encrypted backup passed a signing check. The signed preview channel serves v0.1.1-preview.2. The Windows 10 update manager verified its signature, download, and extracted application. [Signed preview evidence](proofs/pennypinch-windows10-signed-preview.json)
 
-Next, run an installed update and rollback from the local trust-bound Windows 10 installer in an isolated profile. Then prepare that installer for public delivery. The Windows 11 x64 update and rollback check remains open. [Update acceptance](validation/windows-update.md)
+On Windows 10, the real installation upgraded from v0.1.0 with the full installer. Settings then applied the signed v0.1.1-preview.2 package. Rollback restored the previous executable and Windows registration. The test preferences matched across both restarts. The 19,484 recorded resource files matched after rollback. [Installed acceptance](proofs/pennypinch-windows10-installed-update-and-release.json)
+
+For H044, verify an RTK filter candidate against the H043 checks. H052 still needs the authorized report service. H053 and H054 depend on H052. [Task list](../TASKS.md)
 
 ## History
 

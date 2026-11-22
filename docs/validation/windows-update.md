@@ -145,10 +145,18 @@ GitHub Releases serves the v0.1.0 Windows 10 preview for manual installation. Bo
 
 The v0.1.1-preview.1 installer embeds the HTTPS source and public key. The preview channel serves a signed v0.1.1-preview.2 manifest and app package. The Windows 10 update manager accepted the live manifest, downloaded the signed package, and extracted the executable. The staged digest matched the release build. The manager deleted the staged file when the test ended. Five local flow tests also passed. [Preview evidence](../proofs/pennypinch-windows10-signed-preview.json)
 
-The live test uses the same check and download methods as Settings. It uses a test state directory. The installed transition and rollback for these builds still need evidence. The standard Windows 11 desktop check also remains open.
+The download test used the same check and download methods as Settings. It used a test state directory. The installed transition has separate evidence below.
 
 For a live preview check, set the build-time update URL and public key described above. Set `PENNYPINCH_LIVE_UPDATE_FROM_VERSION` to the installed version. Set `PENNYPINCH_LIVE_UPDATE_VERSION` to the published preview version. Set `PENNYPINCH_LIVE_UPDATE_APPLICATION_SHA256` to the application digest from the verified build. Run the following command from the project root.
 
 ```powershell
 cargo test --offline --locked --manifest-path src-tauri/Cargo.toml desktop::update_flow::tests::verifies_live_preview_download -- --ignored --exact
 ```
+
+## 22 November 2026 — Installed live update and public installer
+
+A real Windows 10 22H2 x64 installation accepted the v0.1.1-preview.1 installer over v0.1.0. Settings verified and installed v0.1.1-preview.2 from GitHub Pages. The app reopened with the new version. The restore action reopened the previous version. The restored executable matched its original digest. The installer registration, test preferences, and local test file matched. [Installed evidence](../proofs/pennypinch-windows10-installed-update-and-release.json)
+
+The original profile stayed in a local backup during the test. The test removed its installation and data. The 2,081 original profile files matched after restoration.
+
+GitHub published the full installer ZIP as v0.1.1-preview.1. Both assets passed anonymous download verification. The unsigned installer embeds the public key for signed in-app updates. Windows 11 x64 update and rollback remain open. [Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.1)
