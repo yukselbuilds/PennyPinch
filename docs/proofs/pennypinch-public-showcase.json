@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "task": "H042-v",
+  "date": "2026-11-22",
+  "status": "pass",
+  "scope": "Public README, GitHub Pages project site, and repository discovery metadata.",
+  "readme": {
+    "commit": "9ea4faaf0d148220cd8dfb353d6348fd052bcbb8",
+    "status": "pass",
+    "readme_sha256": "8a1c64b4ddc7f17caad06da4da86b248aa9ffc6eefdbd216d4534bb2663f6e30",
+    "renderer": "GitHub GFM API",
+    "navigation_assets": 3,
+    "measured_cases": 4,
+    "development_details_preserved": true,
+    "landing_page_ste100_hard_findings": 0,
+    "public_render_checks": [
+      {
+        "color_scheme": "dark",
+        "five_images_loaded": true,
+        "theme_logo": true,
+        "benchmarks_link": true,
+        "collapsed_contributor_notes": true
+      },
+      {
+        "color_scheme": "light",
+        "five_images_loaded": true,
+        "theme_logo": true,
+        "benchmarks_link": true,
+        "collapsed_contributor_notes": true
+      }
+    ]
+  },
+  "pages": {
+    "commit": "5863607562ce2d5051c78768e4fc958c52d75284",
+    "deployment": 45043053195,
+    "url": "https://yukselbuilds.github.io/headroom-desktop/",
+    "edge": "158.0.4370.33",
+    "viewports": [
+      {
+        "width": 320,
+        "height": 780,
+        "accessibility_violations": 0,
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "accessibility_violations": 0,
+        "overflow": false
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "accessibility_violations": 0,
+        "overflow": false
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "accessibility_violations": 0,
+        "overflow": false
+      },
+      {
+        "width": 1440,
+        "height": 1100,
+        "accessibility_violations": 0,
+        "overflow": false
+      }
+    ],
+    "published_files_sha256": {
+      "index.html": "9ba97f1899d80a93c809324c03bd7da9675a86eb0a5829eed3b796259a7a3d14",
+      "styles.css": "d2ab2e3d81215ddaf197d6bc9a4a6dfc4e9f404c54d0a00ca7cd75d34bfb9650",
+      "updates/index.html": "549a1cd1738e88745b5eb8c2f8690bb52dabf3cda25bcc2b21eaad6bd764f0a4",
+      "sitemap.xml": "c5cffbcdb55a7ef201e776f6e53383e3fa3d817dd12a785f9adef4bdda52ca83",
+      "assets/favicon.png": "00d8e0c3ab813a48a8de8b9c56fc234690435cf2d2a97d650017d90aef852d9e",
+      "assets/pennypinch-mark.png": "792c1d181f2cce6381daf33ba8fcd23bb0a7a86cef815389089caf0947f90dad",
+      "assets/pennypinch-share.png": "d2647393ce262da990be19bd82fe6c82c4277337e27a399a46976aba851804d4"
+    },
+    "social_image_dimensions": [
+      1200,
+      630
+    ],
+    "update_status": {
+      "deployed_tree_update_paths": [
+        "updates/index.html"
+      ],
+      "observed_status": {
+        "updates/stable/manifest.json": 404,
+        "updates/stable/manifest.json.sig": 404,
+        "updates/preview/manifest.json": 404,
+        "updates/preview/manifest.json.sig": 503
+      },
+      "public_feed": "pending"
+    }
+  },
+  "github_discovery": {
+    "description": "Windows desktop app for local context compression and token tracking with Codex, Claude Code, and OpenCode.",
+    "homepage": "https://yukselbuilds.github.io/headroom-desktop/",
+    "topics": [
+      "claude-code",
+      "codex",
+      "context-compression",
+      "desktop-app",
+      "llm",
+      "opencode",
+      "tauri",
+      "token-optimization"
+    ]
+  },
+  "benchmarks": {
+    "proxy_and_sdk_rerun": "docs/proofs/upstream-benchmarks-044.json",
+    "live_codex_local_estimate": "docs/proofs/pennypinch-windows10-activity-measurement.json",
+    "local_model_comparison": "docs/validation/optimization-benefit.md",
+    "evidence_sha256": {
+      "upstream": "1f1f6f992b955fc714955ddade9ecc4e2c54187b2dfb727aa064d537e1986d74",
+      "live": "8f07d2292717b473f47194b28a791620dc83c29c185a424ab2b1e37b134e9383"
+    }
+  },
+  "implementation": {
+    "owner": "lead agent",
+    "visual_check": [
+      "desktop",
+      "mobile",
+      "GitHub dark and light themes"
+    ]
+  },
+  "limits": [
+    "Search indexing and ranking are not measured.",
+    "The first signed release is pending."
+  ],
+  "new_benchmark_model_requests": 0,
+  "development_token_savings": "not_measured"
+}

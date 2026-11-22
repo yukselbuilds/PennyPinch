@@ -22,6 +22,8 @@ The current Windows 10 release code verified a local signed update with a tempor
 
 The existing GitHub repository is public. GitHub Pages serves the update base over HTTPS. The signed feed is pending. [Publication evidence](proofs/pennypinch-github-pages-publication.json)
 
+The public README and project site show the benchmark results and measurement scopes. The repository description and topics identify PennyPinch and its client coverage. [Presentation checks](proofs/pennypinch-public-showcase.json)
+
 Next, set the permanent update signing key. Build the first Windows installer with its public key and the verified HTTPS URL. Windows 11 update and rollback and clean-host installation have separate acceptance. [Update acceptance](validation/windows-update.md) · [Installer acceptance](validation/windows-install.md#open-acceptance-criteria)
 
 ## History
