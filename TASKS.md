@@ -5,7 +5,7 @@
 **Scope** [Product specification 0.6](HEADROOM_DESKTOP_SPEC.md)\
 **Targets** Windows 10 22H2 x64 and Windows 11 x64 for Codex, Claude Code and OpenCode.
 
-**First-use priority** Bind a new Windows 10 delivery ZIP to the installer with the verified Activity measurement. The earlier delivery ZIP predates the measurement fix. [Windows 10 delivery evidence](docs/proofs/pennypinch-windows10-delivery.json)
+**First-use priority** The Windows 10 preview ZIP is ready for local testing. [Windows 10 delivery evidence](docs/proofs/pennypinch-windows10-activity-delivery.json)
 
 **45 of 54 main tasks are complete.** H001–H005, H007–H036, H038–H040, H043, H045–H048 and H050–H051 are closed within their recorded acceptance scopes. **H042** is the active local release task.
 
@@ -939,6 +939,7 @@ These tasks came from the 20 October 2026 [review](docs/research/desktop-compari
 - [x] **H042-p Current Windows 10 payload and live Codex CLI.** One isolated ChatGPT turn used the controller from the current unsigned NSIS payload. The response and provider usage matched. The engine stopped gracefully. All 19,484 resource hashes and client settings matched after the run. The installed application flow has separate acceptance. [Evidence](docs/proofs/pennypinch-windows10-packaged-codex.json)
 - [x] **H042-q Windows 10 installation and native Codex connection.** The current unsigned NSIS package installed with its existing WebView2 runtime. PennyPinch saved the test route. A new ChatGPT CLI used it. Activity showed an earlier record from the run. The built-in verifier stopped at the ancestor configuration guard for this profile. Disconnect restored the test configuration bytes. The application closed normally. The owned installation was removed. [Evidence](docs/proofs/pennypinch-windows10-installed-codex.json)
 - [x] **H042-r Windows 10 live Codex savings in Activity.** The installed candidate matched the response to separate provider and local counts. Activity showed the local before and after counts, reduction, and percentage for that response. Earlier unverified counts remain separate. [Evidence](docs/proofs/pennypinch-windows10-activity-measurement.json)
+- [x] **H042-s Windows 10 delivery ZIP with the Activity fix.** The ZIP contains the exact installer from H042-r and 674 notice entries. PowerShell extracted all 677 files and verified 676 listed SHA-256 digests. All 26 Windows packaging tests passed. [Evidence](docs/proofs/pennypinch-windows10-activity-delivery.json)
 - **Acceptance.** Reject any signature or hash mismatch. Require explicit stable or preview channel selection. Keep the engine pinned, active streams intact and current user config and state intact through rollback. Verify the source and keep secrets out of diagnostic exports.
 - **Verification.** Exercise local signed fixtures, wrong keys and hashes, interrupted downloads, disk-full and migration failures. Record real installer update and rollback separately on Windows 10 and 11. Production distribution requires its own trust key.
 - **Dependencies and size.** H036, H037 and H038. Medium task with separately scoped a, b and c slices of about 1–5 files. Precedes H039.

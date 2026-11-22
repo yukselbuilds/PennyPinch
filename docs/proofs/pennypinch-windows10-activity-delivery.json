@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "task": "H042-s",
+  "status": "pass",
+  "date": "2026-11-22",
+  "scope": "Unsigned Windows 10 22H2 x64 preview delivery on the development host.",
+  "installer": {
+    "path": "work/w42r/b04d1de1/PennyPinch_0.1.0_x64-setup.exe",
+    "sha256": "f911b3871631aceb4fefd3493e87c25778b486099a84551f11c4badd762b32b6",
+    "bytes": 125243786
+  },
+  "source_build": "2757d73d134ff58020112c080c7f86b9944cf259",
+  "build_base_commit": "b2fba84a162e88a8537437bbd76a04368303b4a7",
+  "installed_evidence": {
+    "path": "docs/proofs/pennypinch-windows10-activity-measurement.json",
+    "sha256": "8f07d2292717b473f47194b28a791620dc83c29c185a424ab2b1e37b134e9383"
+  },
+  "installed_app_sha256": "9529755d4bd112f2d086cc619bb1240122a754ac9e2434546773feb907d9a41e",
+  "windows_build": [
+    10,
+    0,
+    19045
+  ],
+  "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+  "engine": "0.44.0",
+  "installer_signature": "NotSigned",
+  "webview2_bootstrapper_signature": "Valid",
+  "component_inventory": {
+    "python": 99,
+    "rust": 258,
+    "frontend": 6
+  },
+  "frontend_assets_matched": 7,
+  "changed_runtime_resources": [
+    "runtime/desktop_controller.py",
+    "runtime/manifest.json",
+    "runtime/optimization-sources.json",
+    "runtime/optimization_control.py"
+  ],
+  "notice_archive": {
+    "path": "work/w42r/b04d1de1/delivery/PennyPinch_0.1.0_third_party_notices_f911b3871631.zip",
+    "sha256": "92e533323d965e00c2dd4719b36e3626876bc782ec3521179aa205b724089005",
+    "bytes": 1403391,
+    "verified_entries": 674
+  },
+  "notice_payload_files_preserved": 673,
+  "notice_receipt": {
+    "path": "docs/proofs/pennypinch-windows10-activity-notices.json",
+    "sha256": "db87d6937d7e0cb5d152bcc77646530cb03e0adc5686e21e3476c21b07de472a"
+  },
+  "delivery_zip": {
+    "archive": "work/build/windows/delivery/PennyPinch_0.1.0_Windows_x64_preview_f911b3871631.zip",
+    "sha256": "938f83adb56013285d1a7569e4d4dcc18703f73c9b1e54a38b2567d8ae9e3530",
+    "bytes": 126680919,
+    "extracted_files": 677,
+    "listed_checksums": 676
+  },
+  "checks": {
+    "windows_extraction_unicode_spaces": true,
+    "old_notices_rejected": true,
+    "existing_archives_preserved": true,
+    "windows_packaging_tests": 26,
+    "windows_packaging_seconds": 8.479,
+    "reused_product_gate": {
+      "frontend_passed": 227,
+      "rust_passed": 481,
+      "rust_ignored": 24,
+      "embedded_build": "pass"
+    }
+  },
+  "fingerprints": {
+    "verified_inputs": 457,
+    "before_and_after_sha256": "e50d2cfe4378fe78f7b61ebeaa3b3436886089f90ed4118c23b6685e30e9c899",
+    "build_inputs_sha256": "4310803cc7e84cfbfa26ea63bd7696fe0ab0cc2042dacdf041174258de434533"
+  },
+  "implementation": {
+    "owner": "lead agent",
+    "seconds": 28.83
+  },
+  "remaining": [
+    "clean-host installation",
+    "production-signed updates and HTTPS delivery",
+    "Windows 11 acceptance"
+  ],
+  "provider_requests": 0,
+  "development_token_savings": "not_measured"
+}

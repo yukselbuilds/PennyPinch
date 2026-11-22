@@ -1,0 +1,30 @@
+{
+  "task": "H042-s",
+  "app_name": "PennyPinch",
+  "app_version": "0.1.0",
+  "source_build": "2757d73d134ff58020112c080c7f86b9944cf259",
+  "local_installed_slice": "pass",
+  "installed_evidence": {
+    "path": "docs/proofs/pennypinch-windows10-activity-measurement.json",
+    "sha256": "8f07d2292717b473f47194b28a791620dc83c29c185a424ab2b1e37b134e9383"
+  },
+  "engine": "0.44.0",
+  "installer_signature": "NotSigned",
+  "artifacts": {
+    "installer_sha256": "f911b3871631aceb4fefd3493e87c25778b486099a84551f11c4badd762b32b6",
+    "installer_bytes": 125243786
+  },
+  "installer_sha256": "f911b3871631aceb4fefd3493e87c25778b486099a84551f11c4badd762b32b6",
+  "companion_archive": {
+    "path": "work/w42r/b04d1de1/delivery/PennyPinch_0.1.0_third_party_notices_f911b3871631.zip",
+    "sha256": "92e533323d965e00c2dd4719b36e3626876bc782ec3521179aa205b724089005",
+    "bytes": 1403391,
+    "verified_entries": 674
+  },
+  "components": {
+    "python": 99,
+    "rust": 258,
+    "frontend": 6
+  },
+  "third_party_source_evidence": "docs/proofs/pennypinch-windows10-notices.json"
+}
