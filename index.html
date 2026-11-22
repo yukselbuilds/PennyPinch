@@ -6,14 +6,14 @@
   <title>PennyPinch | Local token optimization for coding agents</title>
   <meta name="description" content="PennyPinch measures input token savings and compresses coding context locally. Explore Windows 10 benchmarks and coverage for Codex, Claude Code, and OpenCode.">
   <meta name="theme-color" content="#101513">
-  <link rel="canonical" href="https://yukselbuilds.github.io/headroom-desktop/">
+  <link rel="canonical" href="https://yukselbuilds.github.io/PennyPinch/">
   <link rel="icon" href="assets/favicon.png" type="image/png">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="PennyPinch">
   <meta property="og:title" content="PennyPinch — Local token savings for coding agents">
   <meta property="og:description" content="Compare measured context compression, from a live Codex request to six Headroom proxy workloads.">
-  <meta property="og:url" content="https://yukselbuilds.github.io/headroom-desktop/">
-  <meta property="og:image" content="https://yukselbuilds.github.io/headroom-desktop/assets/pennypinch-share.png">
+  <meta property="og:url" content="https://yukselbuilds.github.io/PennyPinch/">
+  <meta property="og:image" content="https://yukselbuilds.github.io/PennyPinch/assets/pennypinch-share.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="PennyPinch, with verified Windows 10 context compression measurements.">
@@ -31,7 +31,7 @@
       <nav aria-label="Main">
         <a href="#benchmarks">Benchmarks</a>
         <a href="#compatibility">Compatibility</a>
-        <a class="header-source" href="https://github.com/yukselbuilds/headroom-desktop">GitHub <span aria-hidden="true">↗</span></a>
+        <a class="header-source" href="https://github.com/yukselbuilds/PennyPinch">GitHub <span aria-hidden="true">↗</span></a>
       </nav>
     </div>
   </header>
@@ -78,7 +78,7 @@
           <h2 id="benchmarks-title">Benchmarks</h2>
           <p>Windows 10 22H2 x64 · Headroom 0.44.0</p>
         </div>
-        <a class="text-link" href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/validation/optimization-benefit.md">Read the validation notes <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/validation/optimization-benefit.md">Read the validation notes <span aria-hidden="true">↗</span></a>
       </div>
 
       <div class="observations">
@@ -86,19 +86,19 @@
           <h3>Live Codex CLI request</h3>
           <p class="observation-value mono">211 <span>tokens fewer</span></p>
           <p>18,081 → 17,870 · <strong>1.17%</strong> local estimate. One real request through the installed app.</p>
-          <a class="text-link" href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/proofs/pennypinch-windows10-activity-measurement.json">View the measurement <span aria-hidden="true">↗</span></a>
+          <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/pennypinch-windows10-activity-measurement.json">View the measurement <span aria-hidden="true">↗</span></a>
         </article>
         <article class="observation">
           <h3>Headroom SDK rerun</h3>
           <p class="observation-value mono">56.28<span>%</span></p>
           <p>126,289 → 55,209 tokens. These six cases use the SDK counter and its input scope.</p>
-          <a class="text-link" href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/proofs/upstream-benchmarks-044.json">View the rerun <span aria-hidden="true">↗</span></a>
+          <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-044.json">View the rerun <span aria-hidden="true">↗</span></a>
         </article>
         <article class="observation">
           <h3>Paired local model test</h3>
           <p class="observation-value mono">0<span>%</span></p>
           <p>6,647 input tokens on each route. A local model answered the same log task in both runs.</p>
-          <a class="text-link" href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/validation/optimization-benefit.md#19-kas%C4%B1m--ger%C3%A7ek-yerel-modelde-e%C5%9Flenmi%C5%9F-chat-completions-k%C4%B1yas%C4%B1">View the comparison <span aria-hidden="true">↗</span></a>
+          <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/validation/optimization-benefit.md#19-kas%C4%B1m--ger%C3%A7ek-yerel-modelde-e%C5%9Flenmi%C5%9F-chat-completions-k%C4%B1yas%C4%B1">View the comparison <span aria-hidden="true">↗</span></a>
         </article>
       </div>
 
@@ -108,7 +108,7 @@
             <h3>What changed in the proxy</h3>
             <p>Share of the original input sent onward</p>
           </div>
-          <a class="text-link" href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/proofs/upstream-benchmarks-044.json">Raw benchmark data <span aria-hidden="true">↗</span></a>
+          <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-044.json">Raw benchmark data <span aria-hidden="true">↗</span></a>
         </figcaption>
         <ul class="workload-list">
           <li data-direct="9519" data-proxy="5731">
@@ -167,7 +167,7 @@
           <h2 id="compatibility-title">Tested connections</h2>
           <p>Coverage depends on the client version and route.</p>
         </div>
-        <a class="text-link" href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/USER_GUIDE.md#verified-coverage">Read the compatibility guide <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/USER_GUIDE.md#verified-coverage">Read the compatibility guide <span aria-hidden="true">↗</span></a>
       </div>
       <dl class="connections">
         <div>
@@ -183,7 +183,7 @@
           <dd><span class="route-local">Local routing tests</span><p>Versioned tests cover selected CLI, TUI, and Desktop routes with local providers.</p></dd>
         </div>
       </dl>
-      <p class="platform-note">Windows 11, macOS, and Linux release validation remains in progress. <a href="https://github.com/yukselbuilds/headroom-desktop/blob/main/docs/validation/desktop-platforms.md">Platform status</a></p>
+      <p class="platform-note">Windows 11, macOS, and Linux release validation remains in progress. <a href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/validation/desktop-platforms.md">Platform status</a></p>
     </section>
 
     <section id="release" class="release" aria-labelledby="release-title">
@@ -192,7 +192,7 @@
         <p>Installation and live Codex measurement passed on the Windows 10 development host. The first public installer is pending.</p>
       </div>
       <div class="actions">
-        <a class="button button-primary" href="https://github.com/yukselbuilds/headroom-desktop/releases">View releases <span aria-hidden="true">↗</span></a>
+        <a class="button button-primary" href="https://github.com/yukselbuilds/PennyPinch/releases">View releases <span aria-hidden="true">↗</span></a>
         <a class="button button-outline" href="updates/">Update status</a>
       </div>
     </section>
@@ -202,9 +202,9 @@
     <div class="wrap footer-inner">
       <span>PennyPinch</span>
       <nav aria-label="Project resources">
-        <a href="https://github.com/yukselbuilds/headroom-desktop/blob/main/LICENSE">Apache 2.0</a>
+        <a href="https://github.com/yukselbuilds/PennyPinch/blob/main/LICENSE">Apache 2.0</a>
         <a href="https://github.com/headroomlabs-ai/headroom">Headroom engine</a>
-        <a href="https://github.com/yukselbuilds/headroom-desktop/blob/main/NOTICE.md">Third-party notices</a>
+        <a href="https://github.com/yukselbuilds/PennyPinch/blob/main/NOTICE.md">Third-party notices</a>
       </nav>
     </div>
   </footer>
