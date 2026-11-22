@@ -102,7 +102,7 @@ The opt-in `runtime::manager::tests::live_manager_stable_ingress_survives_pinned
 ```powershell
 $env:CARGO_HOME = 'D:\Projeler\Headroom\work\caches\cargo'
 $env:CARGO_TARGET_DIR = 'D:\Projeler\Headroom\work\caches\cargo-target'
-$env:RUSTUP_HOME = '%USERPROFILE%\.rustup'
+$env:RUSTUP_HOME = Join-Path $env:USERPROFILE '.rustup'
 cargo test --manifest-path src-tauri/Cargo.toml runtime::manager::tests::live_manager_stable_ingress_survives_pinned_engine_restart -- --ignored --exact --test-threads=1
 ```
 

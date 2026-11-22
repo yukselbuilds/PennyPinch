@@ -118,7 +118,7 @@ Use the current pinned engine/Python/cache and a CLI with a matching hash. Refre
 
 ```powershell
 & work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B -m unittest discover -s tests/fixtures/claude -p test_tool_fixture.py
-& work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B bench/claude/roundtrip.py --run --claude-exe %USERPROFILE%/.local/bin/claude.exe
+& work/proofs/engine/toolchain/cpython-3.13.13-windows-x86_64-none/python.exe -I -B bench/claude/roundtrip.py --run --claude-exe (Join-Path $env:USERPROFILE '.local/bin/claude.exe')
 ```
 
 The last command does not run a different binary hash. It does not change native CLI caps/settings, user auth or sessions in other projects. Evidence for live Anthropic/OAuth, general tools/hooks/plugins, subagents, Desktop and other operating systems remains open. Main H009 and total 42/54 do not close with this local acceptance. Do not upgrade the old tools-disabled catalog profile as if it accepted this different MCP profile.

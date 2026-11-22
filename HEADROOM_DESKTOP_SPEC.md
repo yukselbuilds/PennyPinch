@@ -2,7 +2,7 @@
 
 **Scope date** 11 November 2026\
 **Document version** 0.6\
-**Development workspace** `D:\Projeler\Headroom`\
+**Development workspace** The root of this Git checkout\
 **Product name** PennyPinch, an independent desktop app that uses the Headroom engine for context compression.
 
 **Status reviewed on 20 November 2026.** The task list tracks acceptance and evidence for each build and platform. [Task list](TASKS.md) · [Current handoff](docs/IMPLEMENTATION_STATUS.md)

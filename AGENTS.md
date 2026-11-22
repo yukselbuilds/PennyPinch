@@ -2,11 +2,10 @@
 
 ## Purpose and sources
 
-- The canonical workspace is `D:\Projeler\Headroom`.
+- Use the root of this Git checkout as the workspace.
 - Product scope lives in `HEADROOM_DESKTOP_SPEC.md`. Task order and acceptance criteria live in `TASKS.md`.
 - Keep decisions in `docs/decisions/`, verification summaries in `docs/proofs/` and the current handoff in `docs/IMPLEMENTATION_STATUS.md`.
 - Target Windows 10 22H2 x64 and Windows 11 x64. Verify each operating system independently.
-- The finance, file and workspace rules from the an unrelated project reference project apply to that project alone.
 
 ## Task planning and context
 

@@ -72,7 +72,7 @@ Commands and environment:
 ```powershell
 $env:CARGO_HOME = 'D:\Projeler\Headroom\work\caches\cargo'
 $env:CARGO_TARGET_DIR = 'D:\Projeler\Headroom\work\caches\cargo-target'
-$env:RUSTUP_HOME = '%USERPROFILE%\.rustup'
+$env:RUSTUP_HOME = Join-Path $env:USERPROFILE '.rustup'
 cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
 cargo test --manifest-path src-tauri/Cargo.toml runtime::ingress -- --nocapture --test-threads=1
 ```
@@ -104,7 +104,7 @@ The final current relay filter reported **13 passed, 0 failed**. The delayed-rea
 ```powershell
 $env:CARGO_HOME = 'D:\Projeler\Headroom\work\caches\cargo'
 $env:CARGO_TARGET_DIR = 'D:\Projeler\Headroom\work\caches\cargo-target'
-$env:RUSTUP_HOME = '%USERPROFILE%\.rustup'
+$env:RUSTUP_HOME = Join-Path $env:USERPROFILE '.rustup'
 cargo test --manifest-path src-tauri/Cargo.toml runtime::ingress_relay::tests -- --test-threads=1
 cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
 cargo check --manifest-path src-tauri/Cargo.toml --offline
@@ -136,7 +136,7 @@ The opt-in test `runtime::manager::tests::live_manager_stable_ingress_survives_p
 ```powershell
 $env:CARGO_HOME = 'D:\Projeler\Headroom\work\caches\cargo'
 $env:CARGO_TARGET_DIR = 'D:\Projeler\Headroom\work\caches\cargo-target'
-$env:RUSTUP_HOME = '%USERPROFILE%\.rustup'
+$env:RUSTUP_HOME = Join-Path $env:USERPROFILE '.rustup'
 cargo test --manifest-path src-tauri/Cargo.toml runtime::manager::tests::live_manager_stable_ingress_survives_pinned_engine_restart -- --ignored --exact --test-threads=1
 ```
 
