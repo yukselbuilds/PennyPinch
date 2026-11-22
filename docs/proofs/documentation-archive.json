@@ -1,0 +1,59 @@
+{
+  "task": "H042-o",
+  "date": "2026-11-22",
+  "status": "pass",
+  "base_commit": "dd6564702144fad365355252bd3b5a490259e5d3",
+  "scope": "Documentation and local translation drafts. The lead agent handled the work.",
+  "handoff": {
+    "working_lines_before": 1808,
+    "working_lines_after": 19,
+    "archived_bodies_match_originals": true,
+    "working_history_sha256": "a29439f81baf83a8571915ad39c3c7cad1100f45b62119a4108e3433a5761e9a",
+    "index_history_sha256": "d4cf61ff317b71861eec4d19c0fe62ad15c191a5f8da1458029d64fe16808a82",
+    "local_plan_preserved_in_working_history": true,
+    "archived_schema_sha256": "36fae7269ec5388b8c5b4d5ef1ac9da97480207a2a6ed8d2872b508b46b48f32"
+  },
+  "relative_links": {
+    "before": {
+      "relative_links_verified": 1635,
+      "local_receipt_links": 23
+    },
+    "working_after": {
+      "relative_links_verified": 1646,
+      "local_receipt_links": 23
+    },
+    "index_after": {
+      "relative_links_verified": 1614,
+      "local_receipt_links": 23
+    }
+  },
+  "english_inventory": {
+    "documents": 223,
+    "untranslated_documents": 0,
+    "sha256": {
+      "working_before": "bd48cd5ad2e1898cc2acc76577dc53202fc4aaedccdbdbc6b47f5c5b139b146c",
+      "working_after": "c6777eaa67ecc9bf83615cb949161586ed52d67eb8521f9c15d479c615ba585b",
+      "index_before": "ec96d92b408b328c6320a8c69f8378c1599a109a7d9de4cdf4a3d277b253f1b1",
+      "index_after": "d89ce57a8f5b639e8cdc5e11ac62890fa5086c9806dbf49c3d06a437d3e07203"
+    }
+  },
+  "local_translation_archive": {
+    "archive": "work/proofs/post-translation-cleanup/translation-drafts.zip",
+    "archive_bytes": 21065147,
+    "archive_sha256": "4da1c00371b9edd368393465f249d46f89d2c1e3f8ccaaeaaffca149dc1078d0",
+    "manifest_sha256": "1b5c9f2c6e51458ded44c8f736538c5cb72706c031bb47289d61a9dcc29899d8",
+    "verified_files": 967,
+    "removed_loose_copies": 967,
+    "removed_bytes": 64080936,
+    "net_bytes_freed": 43015789,
+    "retained_copies": {}
+  },
+  "ste_hard_findings": 0,
+  "environment": {
+    "git": "git version 2.53.0.windows.1",
+    "python": "3.14.0",
+    "platform": "Windows-10-10.0.19045-SP0"
+  },
+  "verifier_sha256": "3675e7260524c4862fcbfa964ff881193868f714e415848b62f9d058eb93980b",
+  "development_token_savings": "not_measured"
+}
