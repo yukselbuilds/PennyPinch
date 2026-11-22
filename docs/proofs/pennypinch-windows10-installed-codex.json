@@ -1,0 +1,97 @@
+{
+  "task": "H042-q",
+  "date": "2026-11-22",
+  "status": "pass",
+  "platform": "Windows 10 22H2 x64, build 19045",
+  "scope": "Exact unsigned PennyPinch preview. Current-user NSIS with no shortcuts, native application and isolated ChatGPT CLI.",
+  "artifact_sha256": "eec3bf272196dd449e96bc5830fc4a498065585927132ab4605d3d64aa144b10",
+  "resource_receipt_sha256": "74ee1503c81ec22c4269a6f3a29cfaf8c6b8ed0412634318fd365fb85bd8b097",
+  "package_source_commit": "ab974e2ccd1c2dbc771cf581561539d839b02a02",
+  "cli": "0.166.0",
+  "setup": {
+    "silent": true,
+    "registration_created": true,
+    "preinstalled_webview2": true,
+    "exit_code": 0
+  },
+  "lead_agent": true,
+  "development_token_savings": "not_measured",
+  "verification_inputs": {
+    "launcher_sha256": "1fe193916310fd68fadafb4f10d0f53f360652f33d0a56da93f56d0f84553397",
+    "ui_sha256": "e0e64f924df54b50868018af5053271c1518a50e1d65af5accb26f345b38ea02",
+    "saved_cli_sha256": "f325de21690beefdd44dd57254044059a51d98fbf9b8e93d43786818dfbff9c2",
+    "node_sha256": "91ec09dda8f20556f366110859f106ab189d45f8f6a2bd092e6785174ad4a0fa"
+  },
+  "installed_before": {
+    "files": 19484,
+    "tree_sha256": "845c26f8b7b80202b558c91119325973fbd639a990ec6025f93291f0c4b6f830",
+    "uninstaller_sha256": "8e7919a610604947cc467cff9455bc89f44aab4edf0a4efd705d939294d0fbc4"
+  },
+  "visible_window": true,
+  "ui_exit": 0,
+  "ui": {
+    "embedded_window": true,
+    "discovery_read_only": true,
+    "connection_saved_to_test_profile": true,
+    "owned_engine_ready": true,
+    "ui_verification_requested": true,
+    "native_verify_guard": "route_unsupported",
+    "saved_cli": {
+      "completed": true,
+      "saved_setting_used": true,
+      "endpoint_override": false,
+      "entries": 2,
+      "model": "gpt-6-luna",
+      "before": 11607,
+      "after": 11396,
+      "saved": 211,
+      "percent": 1.82,
+      "cli_output_tokens": 16
+    },
+    "activity_request_visible": true,
+    "activity_input_pair_visible": false,
+    "disconnect_restored_bytes": true,
+    "exit_confirmed": true
+  },
+  "application_exit": 0,
+  "owned_ports_closed": true,
+  "test_process_stopped": true,
+  "installed_after": {
+    "files": 19484,
+    "tree_sha256": "845c26f8b7b80202b558c91119325973fbd639a990ec6025f93291f0c4b6f830",
+    "uninstaller_sha256": "8e7919a610604947cc467cff9455bc89f44aab4edf0a4efd705d939294d0fbc4"
+  },
+  "owned_install_removed": true,
+  "test_config_restored": true,
+  "runtime_restored": true,
+  "protected_settings_unchanged": true,
+  "installer_unchanged": true,
+  "autostart_unchanged": true,
+  "native_verifier_scope": "The built-in verifier rejected the isolated profile at its ancestor configuration guard. The CLI used the route that the application saved. Activity showed an earlier record from the run.",
+  "activity_scope": {
+    "records": 1,
+    "earlier_record_basis": "unknown_basis",
+    "response_measurement_visible": "not_verified",
+    "db_sha256": "fcec909e3cfe6511eb2be3ce92e0f46a3e4e9c6fabccf7a141f5b48804f9c3f2",
+    "ledger_sha256": "713f9e3975141a032dc4318319aa7b7fd9c62513d0256b21af2b61e3f154927a"
+  },
+  "earlier_checks": [
+    {
+      "sha256": "12c73b10550d68e6e15646103c1676c6a554cc2b65d4c35e8d823c81ec2add46",
+      "live_request_started": false,
+      "stage": "connect",
+      "status": "partial"
+    },
+    {
+      "sha256": "cbac4da21e0c587712f6c3b64722c7724bdb34fd0de2d0bbc96346b1a1d693f9",
+      "live_request_started": false,
+      "stage": "select_cli",
+      "status": "partial"
+    },
+    {
+      "sha256": "a49d532ac81ea2dc4304cd9361bc14cd9019294bbd2f8d6e3e40bb75d190078c",
+      "stage": "verify_with_isolated_profile",
+      "status": "partial"
+    }
+  ]
+}
