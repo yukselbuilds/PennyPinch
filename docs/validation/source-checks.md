@@ -32,6 +32,14 @@ Select `linux_config_transaction` to run the standalone file system probe. The p
 [Linux transaction evidence](../proofs/h049-linux-transaction.json)
 Use the standard runner in the public repository. [GitHub runner billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions) · [Linux evidence](../proofs/h049-linux-config.json)
 
+## Optional Linux engine check
+
+Select `linux_engine` to verify the pinned engine on Ubuntu 24.04 x64.
+The job verifies the archive hashes and installs the frozen binary wheels.
+It tests the relocated engine against a synthetic Responses provider in a loopback-only network namespace.
+The job checks socket peer identity, stream completion, shutdown, and restart.
+[Engine evidence](../proofs/h049-linux-engine.json)
+
 ## Excluded checks and limits
 
 These limits apply to the default frontend run.

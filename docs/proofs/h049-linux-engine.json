@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-23",
+  "task": "H049-b3",
+  "implementation": "lead_agent",
+  "scope": "direct Linux engine verification",
+  "runner": "ubuntu-24.04 x64 standard GitHub-hosted",
+  "initial_run": {
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45178543017",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45178543017/job/137706040471",
+    "source_commit": "7409522669417ff571fd1a6132fafefbcb013a4c",
+    "source_tree": "095732f31600d948b01c98eb321cc4f76ebcf222",
+    "run_attempt": 1,
+    "conclusion": "failure",
+    "step_started_at_utc": "2026-11-23T12:53:27Z",
+    "step_completed_at_utc": "2026-11-23T12:53:35Z",
+    "frontend_job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45178543017/job/137706040780",
+    "reason": "case_collision"
+  },
+  "verified_run": {
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45179103167",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45179103167/job/137707954556",
+    "source_commit": "6e15a2246f279141eaf58d9a8c2c7ca01eceacc1",
+    "source_tree": "7e78388de97ff226b1baaa4352b286eec70e388f",
+    "run_attempt": 1,
+    "conclusion": "success",
+    "step_started_at_utc": "2026-11-23T12:57:04Z",
+    "step_completed_at_utc": "2026-11-23T12:57:30Z",
+    "frontend_job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45179103167/job/137707955163"
+  },
+  "fingerprint": {
+    "reported_by_job": true,
+    "before_after_match": true,
+    "dependency_lock_sha256": "e1142cbbeaa139a6a23fcc3b1298af5a38f1f33b03d4833e744631c3015de3e7"
+  },
+  "runtime_versions": {
+    "cpython": "3.13.13",
+    "uv": "0.13.5",
+    "headroom_ai": "0.44.0",
+    "onnxruntime": "1.31.0"
+  },
+  "observations": {
+    "payload_relocated": true,
+    "payload_files": 20000,
+    "payload_bytes": 680628915,
+    "filesystem_case_sensitive_test_passed": true,
+    "socket_peer_pid_and_uid_verified": true,
+    "foreign_peer_received_http": false,
+    "network_scope": "loopback only",
+    "synthetic_responses_streams_completed": 2,
+    "stream_checks": [
+      "model",
+      "response text",
+      "fixture usage"
+    ],
+    "clean_engine_stops": 2,
+    "clean_restart": true,
+    "local_telemetry_enabled": true,
+    "anonymous_beacon_enabled": false
+  },
+  "limits": {
+    "desktop_runtime_manager": "not_tested",
+    "desktop_optimization_overlay": "not_tested",
+    "client_configuration_and_routing": "not_tested_in_this_run",
+    "native_installer": "not_tested",
+    "live_provider_requests": 0,
+    "token_savings": "not_measured"
+  },
+  "paid_jobs": 0
+}

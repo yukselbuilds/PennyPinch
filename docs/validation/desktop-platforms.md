@@ -15,8 +15,17 @@ The tests used isolated Codex, Claude Code, and OpenCode settings and compared t
 They also checked file replacement, unsafe paths, and the permissions of the application-owned directory.
 
 The read guard permits local ext-family, Btrfs, and XFS filesystems. This run verifies the Ubuntu runner's filesystem.
-The Linux transaction, engine lifecycle, and installer remain open.
+The transaction has separate verification. [Transaction evidence](../proofs/h049-linux-transaction.json)
 [Configuration evidence](../proofs/h049-linux-config.json)
+
+## Linux direct engine verification, 23 November 2026
+
+Ubuntu 24.04 x64 ran the pinned Headroom 0.44.0 wheels with CPython 3.13.13 and ONNX Runtime 1.31.0.
+The runner moved the payload before start. The engine completed two synthetic Responses streams.
+The test checked the Unix socket peer PID and UID before it sent HTTP.
+The engine stopped after each run and left no socket. The payload fingerprint matched before and after.
+The network namespace exposed only loopback. Desktop-managed routing and the installer remain open.
+[Engine evidence](../proofs/h049-linux-engine.json)
 
 <a name="windows-10-kurulumu"></a>
 
