@@ -42,7 +42,9 @@ GitHub About, README, and Pages now describe separate platform statuses. The liv
 
 The new local Windows 10 build and NSIS package passed the build path checks. The installation and release checks for that candidate remain open.
 
-Tokio 1.54.1 passed the Windows 10 product gate and signed update package checks with an isolated key. The real QA app passed signature, resource pin, extraction, and probe validation. The next Windows dependency check is the OpenTelemetry engine patch. Linux GTK has a separate update check. [Tokio verification](proofs/tokio-windows-1541.json) · [Public privacy and presentation checks](proofs/pennypinch-public-privacy.md)
+Tokio 1.54.1 passed the Windows 10 product gate and signed update package checks with an isolated key. The real QA app passed signature, resource pin, extraction, and probe validation. [Tokio verification](proofs/tokio-windows-1541.json) · [Public privacy and presentation checks](proofs/pennypinch-public-privacy.md)
+
+OpenTelemetry API 1.45.2 passed the Windows 10 product gate, the staged engine lifecycle test, and a local Responses stream. The local NSIS installer contains the patched package. Existing installations require the full installer for the new engine resources. The next Windows step is an isolated installed upgrade with that installer. Release and Windows 11 checks remain open. Linux GTK has a separate update check. [OpenTelemetry verification](proofs/opentelemetry-windows-1452.json)
 
 ## History
 

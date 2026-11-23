@@ -6,7 +6,7 @@
     "version": "0.44.0",
     "payload_root": "../work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime",
     "runtime_manifest": "runtime-manifest.json",
-    "runtime_manifest_sha256": "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe",
+    "runtime_manifest_sha256": "b0fc1f47e63121862409c5ec50f645a4968281206ec7da6564f26ddaadf53abf",
     "runner": "headroom_runtime.py",
     "runner_sha256": "86de03a4eca728c108a12293b498b0012890812aa490e9f2fd516550455ff5ee",
     "python": "python.exe",

@@ -16,7 +16,7 @@
 - The production JavaScript audit reported zero advisories on the current lockfile. Dependabot reported three moderate advisories in Rust and the Python engine lockfile. The registry and lockfile coverage of the two checks differs.
 - **Tokio 1.54.0.** The desktop dependency graph used this version during the privacy review. The Windows 10 candidate uses 1.54.1 and passed the local product and signed package checks. [Windows patch evidence](tokio-windows-1541.json) · [Tokio advisory](https://github.com/tokio-rs/tokio/security/advisories/GHSA-5wjr-9356-4wc8)
 - **glib 0.18.5.** Linux GTK dependencies use the affected series. The fix starts at 0.20.0. Resolve the GTK and Tauri dependency chain and rerun the Linux checks before a Linux release. [RustSec advisory](https://rustsec.org/advisories/RUSTSEC-2024-0429.html)
-- **OpenTelemetry API 1.45.1.** The pinned engine dependency graph includes this package. The fix starts at 1.45.2. Update the engine dependency lock and rebuild the payload. Verify the package inventory and engine routes before delivery. [OpenTelemetry release](https://github.com/open-telemetry/opentelemetry-python/releases/tag/v1.45.2)
+- **OpenTelemetry API.** The public privacy review found 1.45.1. The Windows 10 candidate contains 1.45.2. The application tests, local engine checks, and installer checks passed. [Windows patch evidence](opentelemetry-windows-1452.json) · [OpenTelemetry advisory](https://github.com/advisories/GHSA-mf5v-w3w3-f6cg)
 
 ## Public presentation
 

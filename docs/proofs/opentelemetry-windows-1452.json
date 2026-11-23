@@ -1,0 +1,218 @@
+{
+  "schema_version": 1,
+  "task": "H042-ad",
+  "scope": "Local Windows 10 22H2 x64 product, runtime, and unsigned NSIS installer",
+  "advisory": "https://github.com/advisories/GHSA-mf5v-w3w3-f6cg",
+  "engine": {
+    "headroom_ai": "0.44.0",
+    "python": "3.13.13",
+    "uv": "0.13.5",
+    "opentelemetry_api_before": "1.45.1",
+    "opentelemetry_api_after": "1.45.2",
+    "frozen_wheel_install": "pass",
+    "compatible_installed_distributions": 98,
+    "lock_sha256_before": "d932901067c729f4a9ee64c60589107d2f22dc351704b2d58eec7e3e7411a700",
+    "lock_sha256_after": "e1142cbbeaa139a6a23fcc3b1298af5a38f1f33b03d4833e744631c3015de3e7",
+    "wheel_sha256": "2cbd737377e710ee740d261c94e93fa0f08e6d037c18f17513cc0a2d94479a34",
+    "manifest_sha256_before": "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe",
+    "manifest_sha256_after": "b0fc1f47e63121862409c5ec50f645a4968281206ec7da6564f26ddaadf53abf",
+    "payload_before": {
+      "tree_sha256": "0b5e137fc3acfad412faee31f3d08d24d585c2689751f347240bd3ab05573081",
+      "files": 19475,
+      "bytes": 505117034
+    },
+    "payload_after": {
+      "tree_sha256": "8ac475b59ba66958fb3ba436f657c4cf479e6cf001c51a0608d0b14c4ac4dd01",
+      "files": 19475,
+      "bytes": 505117412
+    },
+    "changed_file_entries": 42,
+    "other_payload_changes": 0,
+    "record_files_with_local_entry_point_only_changes": 25
+  },
+  "staging": {
+    "old_lock_or_payload_rejected": true,
+    "test_manifest_signatures_refreshed_with_disposable_key": 4,
+    "signed_previous_engine_pin_rejected": true,
+    "public_key_sha256": "b52884a0602f7555818cc3146874c98f358922ff11066c0c8982cce9acfbd2e1",
+    "test_private_key_removed": true
+  },
+  "gate": {
+    "passed": true,
+    "inputs_before": "ec82d954fbf31f75e69eebfad863203a1af44b31bd39a089a1758fdf4edf90c9",
+    "inputs_after": "ec82d954fbf31f75e69eebfad863203a1af44b31bd39a089a1758fdf4edf90c9",
+    "verified_input_count": 378,
+    "toolchain": {
+      "versions": {
+        "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+        "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+        "node": "v25.2.1",
+        "pnpm": "11.25.0"
+      },
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "windows": [
+        10,
+        0,
+        19045
+      ],
+      "verifier": "503389a8a8d745575936a2db9f448160bc3bf76a6d253bdcb43538fe214deb0a",
+      "verifier_reference": "0018d1dc20af62c7e641ba124123a7739cbd49e95021dfe0e209aa976841838b"
+    },
+    "steps": {
+      "app_tests": {
+        "exit": 0,
+        "seconds": 1.305,
+        "rust": [],
+        "node": {
+          "tests": "227",
+          "pass": "227",
+          "fail": "0",
+          "skipped": "0"
+        },
+        "python": [],
+        "failures": []
+      },
+      "frontend": {
+        "exit": 0,
+        "seconds": 2.199,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_fmt": {
+        "exit": 0,
+        "seconds": 1.476,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_tests": {
+        "exit": 0,
+        "seconds": 45.646,
+        "rust": [
+          "test result: ok. 481 passed; 0 failed; 25 ignored; 0 measured; 0 filtered out; finished in 15.15s"
+        ],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "embedded_debug": {
+        "exit": 0,
+        "seconds": 10.582,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "update_package_tests": {
+        "exit": 0,
+        "seconds": 5.275,
+        "rust": [],
+        "node": {},
+        "python": [
+          "9"
+        ],
+        "failures": []
+      },
+      "windows_staging_tests": {
+        "exit": 0,
+        "seconds": 0.773,
+        "rust": [],
+        "node": {},
+        "python": [
+          "7"
+        ],
+        "failures": []
+      },
+      "macos_source_tests": {
+        "exit": 0,
+        "seconds": 5.69,
+        "rust": [],
+        "node": {},
+        "python": [
+          "45"
+        ],
+        "failures": []
+      }
+    }
+  },
+  "local_responses_stream": {
+    "passed": true,
+    "headroom_ai": "0.44.0",
+    "opentelemetry_api": "1.45.2",
+    "request_count": 1,
+    "http_status": 200,
+    "sse_completed": true,
+    "model_user_content_and_fixture_authorization_preserved": true,
+    "profile": {
+      "mode": "cache",
+      "savings_profile": "coding",
+      "ttl_seconds": 7200
+    },
+    "shutdown": {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    },
+    "network": {
+      "hf_hub_offline": true,
+      "transformers_offline": true,
+      "upstream": "owned_loopback_fixture",
+      "huggingface_hub_payload_bytes": 0,
+      "packet_capture": false
+    },
+    "provider_credentials_used": false,
+    "duration_seconds": 18.0,
+    "verified_input_count": 14,
+    "input_set_sha256": "1fc23e9589c3c55ccd66b7a473dad83f703ee3d53e0ad4af9b280fd56bb71c5d"
+  },
+  "staged_runtime": {
+    "passed": true,
+    "test": "windows_bundle_real_staged_payload_starts_and_stops_without_development_layout",
+    "seconds": 42.956,
+    "payload_tree_sha256": "8ac475b59ba66958fb3ba436f657c4cf479e6cf001c51a0608d0b14c4ac4dd01",
+    "harness_sha256_before_after": "e05985bace71578bf44ace668c7939380ec6eb3875f371553b50a519ebe66cbf",
+    "stage_receipt_sha256_before_after": "e7a39f1f7876fa1b77b180bffea09a58a5db45376ffe59ea470d61a454b0255f",
+    "runtime_inputs_sha256_before_after": {
+      "manager.rs": "5d564213adf00339d0acf0748b85416398b78d22f0d33ae117e3ce7633c2a569",
+      "manager_tests.rs": "a69f387f6a0b0956c04ff7fd77a00840ff71ae9f790af4bb7d56bc5549e77ca5",
+      "manifest.windows.json": "a28fb9d15607a95bcfcdb7d3abfda796f22e2e9d90582752e29c5849b8dfee3b",
+      "uv.lock": "e1142cbbeaa139a6a23fcc3b1298af5a38f1f33b03d4833e744631c3015de3e7",
+      "Cargo.lock": "0a9ae9ec89b51fd5cb8601726e81c0a429ce5464f0be0110af39242eb2bb5c4d"
+    },
+    "operation": "ready_then_stopped",
+    "foreign_loopback_listener_preserved": true,
+    "staged_resources_unchanged": true,
+    "live_provider_used": false
+  },
+  "installer": {
+    "passed": true,
+    "installer_sha256": "73417bae1f6511af2a28de81ac55df3c7a2509e3771fd09b97b3cd14659bbd03",
+    "installer_bytes": 125315765,
+    "compiled_app_sha256": "e17d4fafb03104693e6443bbd1ea302a7ebb84c0f748d7581981ac6cc1677b49",
+    "embedded_app_sha256": "80392587f9477f90c37d19b209d82c513ff26e6dd3492bce78cc0e3052b097d4",
+    "verified_package_members": 6,
+    "expected_resource_paths_present": 19483,
+    "embedded_application_privacy_and_pe_tests_passed": 2,
+    "input_set_sha256_before_after": "df723122ddb6782d785d31cd79ab19f9a4f5ad4726a8b72e471b23bcdca8e0d6",
+    "input_count": 378,
+    "runtime_resources_sha256_before": "02af2411184956207d3440b138de4e9c1bfbf0b061b7ef531e3ccca720558bc0",
+    "runtime_resources_sha256_after": "ce023b4ba70cc097c9426e1f14f46c500206c6a9f213cad57ed357609df1b978",
+    "installer_runtime_manifest_sha256": "b0fc1f47e63121862409c5ec50f645a4968281206ec7da6564f26ddaadf53abf",
+    "opentelemetry_api": "1.45.2",
+    "duration_seconds": 863.516,
+    "install_or_publish_performed": false
+  },
+  "limits": {
+    "installed_upgrade": "not_tested",
+    "public_release": "not_performed",
+    "windows_11": "not_tested",
+    "native_macos_and_linux": "not_tested",
+    "paid_ci_or_provider_calls": 0,
+    "upgrade_from_previous_runtime": "full_installer_required",
+    "development_token_savings": "unmeasured"
+  }
+}

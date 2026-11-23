@@ -100,21 +100,29 @@ def stage(project, output):
     project = project.resolve(strict=True)
     output = inside(output, project / 'work')
     runtime = project / 'runtime'
+    lock_path = inside(runtime / 'engine-deps/uv.lock', project)
+    pins_path = runtime / 'windows-payload.json'
+    source_files = [runtime / name for name in OVERLAYS] + [runtime / 'manifest.windows.json',
+                    pins_path, lock_path, project / 'NOTICE.md', project / 'src-tauri/windows-hooks.nsh']
+    for path in source_files:
+        no_links(path)
+    before = {str(p.relative_to(project)): sha(p) for p in source_files}
+    lock_sha = before[str(lock_path.relative_to(project))]
     development, packaged = windows_manifest(runtime)
     source = inside(runtime / development['engine']['payload_root'], project)
+    pins = json.loads(pins_path.read_text(encoding='utf-8'))
+    if pins['engine']['dependency_lock_sha256'] != lock_sha:
+        raise ValueError('payload_dependency_lock_mismatch')
     paths, measured = inventory(source)
-    pins = json.loads((runtime / 'windows-payload.json').read_text(encoding='utf-8'))
     if pins['schema_version'] != 1 or measured != pins['inventory']:
         raise ValueError('payload_inventory_mismatch')
     for key, expected in [('python', 'python_sha256'), ('runner', 'runner_sha256'),
                           ('runtime_manifest', 'runtime_manifest_sha256'), ('prefix_tracker', 'prefix_tracker_sha256')]:
         if paths[packaged['engine'][key]] != packaged['engine'][expected]:
             raise ValueError('payload_pin_mismatch')
-    source_files = [runtime / name for name in OVERLAYS] + [runtime / 'manifest.windows.json',
-                    runtime / 'windows-payload.json', project / 'NOTICE.md', project / 'src-tauri/windows-hooks.nsh']
-    for path in source_files:
-        no_links(path)
-    before = {str(p.relative_to(project)): sha(p) for p in source_files}
+    source_manifest = source / packaged['engine']['runtime_manifest']
+    if json.loads(source_manifest.read_text(encoding='utf-8'))['engine']['lock_sha256'] != lock_sha:
+        raise ValueError('payload_dependency_lock_mismatch')
     expected_resources = {'runtime/payload/' + name: value for name, value in paths.items()}
     expected_resources.update({'runtime/' + name: sha(runtime / name) for name in OVERLAYS})
     expected_resources.update({'runtime/manifest.json': sha(runtime / 'manifest.windows.json'),
@@ -124,6 +132,8 @@ def stage(project, output):
         receipt = json.loads((output / 'package-inputs.json').read_text(encoding='utf-8'))
         actual = inventory(output)[0]
         expected_files = expected_resources | {'package-inputs.json': sha(output / 'package-inputs.json')}
+        if {str(p.relative_to(project)): sha(p) for p in source_files} != before:
+            raise ValueError('inputs_changed_while_staging')
         if (receipt['inputs'] != before or receipt['payload'] != measured
                 or receipt['resources'] != expected_resources or actual != expected_files):
             raise ValueError('existing_stage_conflict')

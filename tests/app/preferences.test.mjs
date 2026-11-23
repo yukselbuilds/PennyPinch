@@ -22,7 +22,7 @@ function snapshot(overrides = {}) {
     preferences: { language: "en", theme: "dark" },
     runtime_manifest: {
       engine_version: "0.44.0",
-      manifest_sha256: "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe",
+      manifest_sha256: "b0fc1f47e63121862409c5ec50f645a4968281206ec7da6564f26ddaadf53abf",
       mode: "cache",
       savings_profile: "coding",
       ccr_ttl_seconds: 7200,

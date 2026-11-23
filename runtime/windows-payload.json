@@ -4,15 +4,15 @@
     "name": "headroom-ai",
     "version": "0.44.0",
     "python": "3.13.13",
-    "dependency_lock_sha256": "d932901067c729f4a9ee64c60589107d2f22dc351704b2d58eec7e3e7411a700"
+    "dependency_lock_sha256": "e1142cbbeaa139a6a23fcc3b1298af5a38f1f33b03d4833e744631c3015de3e7"
   },
   "inventory": {
-    "tree_sha256": "0b5e137fc3acfad412faee31f3d08d24d585c2689751f347240bd3ab05573081",
+    "tree_sha256": "8ac475b59ba66958fb3ba436f657c4cf479e6cf001c51a0608d0b14c4ac4dd01",
     "files": 19475,
-    "bytes": 505117034
+    "bytes": 505117412
   },
   "components": {
-    "Lib/site-packages/": 443227515,
+    "Lib/site-packages/": 443227893,
     "tiktoken-cache/": 8465407
   }
 }

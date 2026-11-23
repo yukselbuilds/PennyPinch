@@ -22,8 +22,14 @@ class WindowsPackageTests(unittest.TestCase):
         (self.root / 'runtime').mkdir()
         (self.root / 'src-tauri').mkdir()
         (self.root / 'src-tauri/windows-hooks.nsh').write_text('!define HEADROOM_MAX_INSTALL_DIR_CHARS 100\n')
-        for name in ('python.exe', 'runner.py', 'runtime-manifest.json', 'prefix.py'):
+        for name in ('python.exe', 'runner.py', 'prefix.py'):
             (self.root / 'work/source' / name).write_bytes(name.encode())
+        self.lock = self.root / 'runtime/engine-deps/uv.lock'
+        self.lock.parent.mkdir()
+        self.lock.write_text('version = 1\n', encoding='utf-8')
+        (self.root / 'work/source/runtime-manifest.json').write_text(json.dumps({
+            'engine': {'lock_sha256': package.sha(self.lock)},
+        }), encoding='utf-8')
         engine = {'payload_root': '../work/source'}
         for key, filename in [('python', 'python.exe'), ('runner', 'runner.py'),
                               ('runtime_manifest', 'runtime-manifest.json'), ('prefix_tracker', 'prefix.py')]:
@@ -46,7 +52,8 @@ class WindowsPackageTests(unittest.TestCase):
 
     def pin(self):
         (self.root / 'runtime/windows-payload.json').write_text(json.dumps({
-            'schema_version': 1, 'inventory': package.inventory(self.root / 'work/source')[1]}))
+            'schema_version': 1, 'engine': {'dependency_lock_sha256': package.sha(self.lock)},
+            'inventory': package.inventory(self.root / 'work/source')[1]}))
 
     def test_atomic_unicode_stage_and_exact_reuse(self):
         self.assertFalse(package.stage(self.root, self.output)['reused'])
@@ -67,6 +74,21 @@ class WindowsPackageTests(unittest.TestCase):
         (self.root / 'work/source/auth.json').write_bytes(b'private canary')
         with self.assertRaisesRegex(ValueError, 'private_input'):
             package.inventory(self.root / 'work/source')
+
+    def test_dependency_lock_drift_never_publishes_or_reuses_a_stage(self):
+        package.stage(self.root, self.output)
+        receipt = self.output / 'package-inputs.json'
+        before = receipt.read_bytes()
+        self.lock.write_text('version = 2\n', encoding='utf-8')
+        with self.assertRaisesRegex(ValueError, 'payload_dependency_lock_mismatch'):
+            package.stage(self.root, self.output)
+        self.assertEqual(receipt.read_bytes(), before)
+
+        self.pin()
+        new_output = self.output.with_name('new')
+        with self.assertRaisesRegex(ValueError, 'payload_dependency_lock_mismatch'):
+            package.stage(self.root, new_output)
+        self.assertFalse(new_output.exists())
 
     def test_manifest_drift_and_output_escape_are_rejected(self):
         (self.root / 'runtime/manifest.windows.json').write_text('{}')

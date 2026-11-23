@@ -8,7 +8,7 @@
   "notes": "Yerel imza örneği.",
   "engine": {
     "version": "0.44.0",
-    "runtime_manifest_sha256": "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe"
+    "runtime_manifest_sha256": "b0fc1f47e63121862409c5ec50f645a4968281206ec7da6564f26ddaadf53abf"
   },
   "installer": {
     "size_bytes": 39,

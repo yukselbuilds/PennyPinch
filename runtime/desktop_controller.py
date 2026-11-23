@@ -37,7 +37,7 @@ TOKENIZER_SOURCES = (
 PINNED_EXPECTED = {
     "engine_name": "headroom-ai",
     "engine_version": "0.44.0",
-    "runtime_manifest_sha256": "e7274bed1e89c18b74c690c5bd414eabbd1579f7352d8a0094477804559d3dbe",
+    "runtime_manifest_sha256": "b0fc1f47e63121862409c5ec50f645a4968281206ec7da6564f26ddaadf53abf",
     "runner_sha256": "86de03a4eca728c108a12293b498b0012890812aa490e9f2fd516550455ff5ee",
     "python_version": "3.13.13",
     "python_sha256": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
