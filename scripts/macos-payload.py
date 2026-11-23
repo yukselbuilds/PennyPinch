@@ -19,14 +19,15 @@ def identity(info):
     return stable + ((info.st_ctime_ns,) if os.name == "posix" else ())
 
 
-def trusted_entry(path):
+def trusted_entry(path, *, owner_uid=None):
     info = path.lstat()
     if getattr(info, "st_file_attributes", 0) & 0x400 and not stat.S_ISLNK(info.st_mode):
         raise ValueError("reparse_point_rejected")
     if os.name == "posix" and not stat.S_ISLNK(info.st_mode):
-        if info.st_uid != os.geteuid() or info.st_mode & 0o022:
+        expected_uid = os.geteuid() if owner_uid is None else owner_uid
+        if info.st_uid != expected_uid or info.st_mode & 0o022:
             raise ValueError(
-                f"untrusted_payload_entry owner_match={info.st_uid == os.geteuid()} "
+                f"untrusted_payload_entry owner_match={info.st_uid == expected_uid} "
                 f"mode={stat.S_IMODE(info.st_mode):04o}"
             )
     if stat.S_ISREG(info.st_mode) and info.st_nlink != 1:
@@ -50,11 +51,11 @@ def regular_hash(path, expected):
     return digest.hexdigest()
 
 
-def inventory(root, *, case_sensitive=False):
+def inventory(root, *, case_sensitive=False, owner_uid=None):
     root = Path(root)
     if not root.is_absolute():
         raise ValueError("payload_root_must_be_absolute")
-    root_info = trusted_entry(root)
+    root_info = trusted_entry(root, owner_uid=owner_uid)
     if not stat.S_ISDIR(root_info.st_mode):
         raise ValueError("payload_root_is_not_a_directory")
     for ancestor in root.parents:
@@ -69,7 +70,7 @@ def inventory(root, *, case_sensitive=False):
     byte_count = 0
     while pending:
         directory = pending.pop()
-        info = trusted_entry(directory)
+        info = trusted_entry(directory, owner_uid=owner_uid)
         if not stat.S_ISDIR(info.st_mode):
             raise ValueError("payload_directory_replaced")
         directories.append((directory, identity(info)))
@@ -82,7 +83,7 @@ def inventory(root, *, case_sensitive=False):
             private = path.name.casefold()
             if private in ("auth.json", "credentials.json", ".env") or private.startswith(".env."):
                 raise ValueError("private_input_rejected")
-            entry = trusted_entry(path)
+            entry = trusted_entry(path, owner_uid=owner_uid)
             mode = stat.S_IMODE(entry.st_mode)
             if stat.S_ISDIR(entry.st_mode):
                 pending.append(path)
@@ -112,7 +113,7 @@ def inventory(root, *, case_sensitive=False):
         if len(names) > MAX_FILES:
             raise ValueError("too_many_payload_entries")
     for directory, expected in directories:
-        current = trusted_entry(directory)
+        current = trusted_entry(directory, owner_uid=owner_uid)
         if not stat.S_ISDIR(current.st_mode) or identity(current) != expected:
             raise ValueError("payload_directory_changed")
     ordered = sorted(rows)
@@ -124,17 +125,21 @@ def inventory(root, *, case_sensitive=False):
     }, ordered
 
 
-def measure(root, *, case_sensitive=False):
-    return inventory(root, case_sensitive=case_sensitive)[0]
+def measure(root, *, case_sensitive=False, owner_uid=None):
+    return inventory(root, case_sensitive=case_sensitive, owner_uid=owner_uid)[0]
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("payload", type=Path)
     parser.add_argument("--case-sensitive", action="store_true")
+    parser.add_argument("--root-owned", action="store_true")
     args = parser.parse_args()
+    if args.root_owned and sys.platform != "linux":
+        parser.error("Use --root-owned on Linux.")
     try:
-        print(json.dumps(measure(args.payload, case_sensitive=args.case_sensitive),
+        owner_uid = 0 if args.root_owned else None
+        print(json.dumps(measure(args.payload, case_sensitive=args.case_sensitive, owner_uid=owner_uid),
                          sort_keys=True, separators=(",", ":")))
     except ValueError as error:
         sys.exit(f"Payload inventory failed: {error}")

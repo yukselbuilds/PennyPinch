@@ -9,7 +9,7 @@ test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
 git diff --quiet HEAD --
 mode="${1:-probe}"
 test "$#" -le 1
-[[ "$mode" == probe || "$mode" == --stage-managed ]]
+[[ "$mode" == probe || "$mode" == --stage-managed || "$mode" == --stage-package ]]
 
 mkdir -p work
 stage="$(mktemp -d "$GITHUB_WORKSPACE/work/lx.XXXXXX")"
@@ -51,13 +51,20 @@ TIKTOKEN_CACHE_DIR="$stage/payload/tiktoken-cache" "$python" -I -B -c '
 import site, sys
 site.addsitedir(sys.argv[1])
 import tiktoken
-names = tiktoken.list_encoding_names() if sys.argv[2] == "--stage-managed" else ("o200k_base",)
+names = ("o200k_base",) if sys.argv[2] == "probe" else tiktoken.list_encoding_names()
 for name in names:
     assert tiktoken.get_encoding(name).encode("PennyPinch Linux fixture")
 ' "$stage/payload/site-packages" "$mode" > "$log" 2>&1 \
   || { echo '::error::Pinned tokenizer preparation failed.'; exit 1; }
 find -P "$stage/payload" \( -type d -o -type f \) -exec chmod go-w {} +
-mv "$stage/payload" "$stage/relocated"
+if [[ "$mode" == --stage-package ]]; then
+  # The Debian bundler writes links as regular files. Check link targets before copying.
+  "$python" -I -B scripts/macos-payload.py --case-sensitive "$stage/payload" > "$log"
+  cp -RL --preserve=mode,timestamps -- "$stage/payload" "$stage/relocated"
+  find -P "$stage/relocated" \( -type d -o -type f \) -exec chmod u=rwX,go=rX {} +
+else
+  mv "$stage/payload" "$stage/relocated"
+fi
 python="$stage/relocated/python/bin/python3.13"
 
 if ! "$python" -I -B -m unittest discover -s tests/runtime -p 'test_macos_payload.py' -v > "$log" 2>&1; then
@@ -68,9 +75,13 @@ fi
 grep -Eq '^test_casefold_collisions_require_exact_name_matching.* \.\.\. ok$' "$log"
 awk '/^Ran [0-9]+ tests/ { print "Payload inventory: " $0 }' "$log"
 
-if [[ "$mode" == --stage-managed ]]; then
+if [[ "$mode" != probe ]]; then
   receipt="$("$python" -I -B scripts/stage-macos-runtime.py --platform linux-x86_64 \
     --payload "$stage/relocated" --output "$stage/runtime")"
+  if [[ "$mode" == --stage-package ]]; then
+    chmod 755 "$stage/runtime"
+    chmod 644 "$stage/runtime/manifest.json"
+  fi
   manifest_sha="$(sha256sum "$stage/runtime/manifest.json" | cut -d' ' -f1)"
   mkdir -m 700 "$stage/socket"
   printf '%s\n' \

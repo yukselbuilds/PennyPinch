@@ -28,6 +28,10 @@ on:
         description: Verify Linux CLI discovery and selection with pinned native files.
         type: boolean
         default: false
+      linux_package:
+        description: Install and check the Ubuntu 24.04 x64 package.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -57,7 +61,7 @@ jobs:
     if: ${{ inputs.free_only_confirmed == true }}
     name: Frontend source checks (Ubuntu standard runner)
     runs-on: ubuntu-24.04
-    timeout-minutes: ${{ (inputs.linux_desktop || inputs.linux_managed_engine || inputs.linux_cli_discovery) && 25 || 10 }}
+    timeout-minutes: ${{ (inputs.linux_desktop || inputs.linux_managed_engine || inputs.linux_cli_discovery || inputs.linux_package) && 25 || 10 }}
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -186,20 +190,29 @@ jobs:
             '- Scope: isolated ext4 fixtures and process interruption.' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Stage the pinned Linux desktop runtime
-        if: ${{ inputs.linux_managed_engine == true }}
+        if: ${{ inputs.linux_managed_engine == true || inputs.linux_package == true }}
         shell: bash
-        run: bash scripts/probe-linux-engine.sh --stage-managed
+        env:
+          HEADROOM_VERIFY_LINUX_PACKAGE: ${{ inputs.linux_package }}
+        run: |
+          if [[ "$HEADROOM_VERIFY_LINUX_PACKAGE" == true ]]; then
+            bash scripts/probe-linux-engine.sh --stage-package
+          else
+            bash scripts/probe-linux-engine.sh --stage-managed
+          fi
 
       - name: Build and open the Linux desktop
-        if: ${{ inputs.linux_desktop == true || inputs.linux_managed_engine == true || inputs.linux_cli_discovery == true }}
+        if: ${{ inputs.linux_desktop == true || inputs.linux_managed_engine == true || inputs.linux_cli_discovery == true || inputs.linux_package == true }}
         shell: bash
         env:
           CARGO_HOME: ${{ github.workspace }}/work/cargo-home
           CARGO_TARGET_DIR: ${{ github.workspace }}/work/cargo-target
           RUSTUP_HOME: ${{ github.workspace }}/work/rustup
           CARGO_PROFILE_DEV_DEBUG: '0'
+          HEADROOM_VERIFY_LINUX_DESKTOP: ${{ inputs.linux_desktop }}
           HEADROOM_VERIFY_LINUX_MANAGED_ENGINE: ${{ inputs.linux_managed_engine }}
           HEADROOM_VERIFY_LINUX_CLI_DISCOVERY: ${{ inputs.linux_cli_discovery }}
+          HEADROOM_VERIFY_LINUX_PACKAGE: ${{ inputs.linux_package }}
         run: |
           set -euo pipefail
           test "$(uname -sm)" = 'Linux x86_64'
@@ -216,9 +229,13 @@ jobs:
             awk '/^Err:|^E:|^W:/ { if (++count <= 5) print substr($0, 1, 220) }' work/linux-deps.log
             exit 1
           fi
-          if ! timeout 150s sudo apt-get "${apt_options[@]}" install --no-install-recommends -y pkg-config libwebkit2gtk-4.1-dev \
-              libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev xvfb xauth xdotool acl \
-              > work/linux-deps.log 2>&1; then
+          packages=(pkg-config libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev
+            librsvg2-dev libxdo-dev xvfb xauth xdotool acl)
+          if [[ "$HEADROOM_VERIFY_LINUX_PACKAGE" == true ]]; then
+            packages+=(at-spi2-core dbus-daemon python3-pyatspi)
+          fi
+          if ! timeout 150s sudo apt-get "${apt_options[@]}" install --no-install-recommends -y \
+              "${packages[@]}" > work/linux-deps.log 2>&1; then
             echo '::error::Ubuntu build dependency installation failed or timed out.'
             awk '/^Err:|^E:|^W:/ { if (++count <= 5) print substr($0, 1, 220) }' work/linux-deps.log
             exit 1
@@ -228,6 +245,15 @@ jobs:
           glib="$(cargo +1.92.0 tree --locked --manifest-path "$manifest" --depth 0 -i glib)"
           test "$glib" = "glib v0.18.5 ($GITHUB_WORKSPACE/src-tauri/vendor/glib-0.18.5)"
           printf 'Linux uses %s\n' "$glib"
+          if [[ "$HEADROOM_VERIFY_LINUX_PACKAGE" == true ]]; then
+            PATH="$GITHUB_WORKSPACE/work/ci-tools/node_modules/.bin:$PATH" \
+              RUSTUP_TOOLCHAIN=1.92.0 bash scripts/test-linux-package.sh
+            if [[ "$HEADROOM_VERIFY_LINUX_DESKTOP" != true &&
+                  "$HEADROOM_VERIFY_LINUX_CLI_DISCOVERY" != true &&
+                  "$HEADROOM_VERIFY_LINUX_MANAGED_ENGINE" != true ]]; then
+              exit 0
+            fi
+          fi
           export HEADROOM_LINUX_PROOF_ROOT
           HEADROOM_LINUX_PROOF_ROOT="$(mktemp -d "$GITHUB_WORKSPACE/work/linux-config.XXXXXXXX")"
           test "$(id -u)" -ne 0
