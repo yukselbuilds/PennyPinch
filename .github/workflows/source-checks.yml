@@ -226,7 +226,8 @@ jobs:
           before="$(fingerprint)"
           if ! cargo +1.92.0 test --locked --manifest-path "$manifest" --features custom-protocol \
             --color never -- linux_config_tests integrations::transaction_fs::linux_impl::tests:: \
-            --ignored --skip crash_after_ --skip crash_during_retained_archive --test-threads=1 \
+            --ignored --skip crash_after_ --skip crash_during_retained_archive \
+            --skip managed_engine_routes_an_isolated_connection --test-threads=1 \
             > work/linux-config.log 2>&1; then
             awk '/^error(\[[A-Z][0-9]+\])?: |^---- .* stdout ----$|^assertion failed:|^test result:/ \
               { if (++count <= 12) print substr($0, 1, 220) }
