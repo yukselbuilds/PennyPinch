@@ -425,12 +425,12 @@ impl OwnershipStore {
                         chain.validate().map_err(map_config_io_error)?;
                     }
                     self.verify_boundary()?;
-                    #[cfg(target_os = "macos")]
+                    #[cfg(any(target_os = "macos", target_os = "linux"))]
                     let creation = {
                         use std::os::unix::fs::DirBuilderExt;
                         fs::DirBuilder::new().mode(0o700).create(&current)
                     };
-                    #[cfg(not(target_os = "macos"))]
+                    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
                     let creation = fs::create_dir(&current);
                     match creation {
                         Ok(()) => {}
@@ -645,6 +645,20 @@ impl OwnershipStore {
                     return Err(OwnershipError::Unavailable)
                 }
                 Err(_) => return Err(OwnershipError::UnsafePath),
+            }
+        }
+        #[cfg(target_os = "linux")]
+        {
+            use std::os::unix::fs::MetadataExt;
+            let pins = crate::integrations::config_io::pin_existing_directory_chain(&current)
+                .map_err(map_config_io_error)?;
+            let info = pins
+                .directory_file()
+                .map_err(map_config_io_error)?
+                .metadata()
+                .map_err(|_| OwnershipError::Unavailable)?;
+            if info.uid() != unsafe { libc::geteuid() } || info.mode() & 0o077 != 0 {
+                return Err(OwnershipError::UnsafePath);
             }
         }
         Ok(Some(current))
@@ -1003,7 +1017,7 @@ pub(crate) fn config_path_binding_for_claude_project_target(
 }
 
 fn hash_config_path_binding(binding_path: &Path) -> Result<String, OwnershipError> {
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     {
         use std::os::unix::ffi::OsStrExt;
         let bytes = binding_path.as_os_str().as_bytes();
@@ -1017,7 +1031,7 @@ fn hash_config_path_binding(binding_path: &Path) -> Result<String, OwnershipErro
             .map(|byte| format!("{byte:02x}"))
             .collect());
     }
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
     {
         let units: Vec<u16> = binding_path.as_os_str().encode_wide_compat();
         let mut digest = Sha256::new();
@@ -1034,6 +1048,7 @@ fn hash_config_path_binding(binding_path: &Path) -> Result<String, OwnershipErro
     }
 }
 
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 trait EncodePathUnits {
     fn encode_wide_compat(&self) -> Vec<u16>;
 }
@@ -1046,7 +1061,7 @@ impl EncodePathUnits for std::ffi::OsStr {
     }
 }
 
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
 impl EncodePathUnits for std::ffi::OsStr {
     fn encode_wide_compat(&self) -> Vec<u16> {
         self.to_string_lossy().encode_utf16().collect()
@@ -1092,12 +1107,12 @@ fn make_absolute(path: &Path) -> Result<PathBuf, OwnershipError> {
     }
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 fn validate_absolute_local_path(path: &Path) -> Result<(), OwnershipError> {
     crate::integrations::config_io::validate_lexical_path(path).map_err(map_config_io_error)
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn validate_absolute_local_path(path: &Path) -> Result<(), OwnershipError> {
     let mut components = path.components();
     let Some(Component::Prefix(prefix)) = components.next() else {
@@ -1122,14 +1137,14 @@ fn validate_absolute_local_path(path: &Path) -> Result<(), OwnershipError> {
     Ok(())
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 fn validate_existing_directory_chain(path: &Path) -> Result<(), OwnershipError> {
     crate::integrations::config_io::pin_existing_directory_chain(path)
         .and_then(|chain| chain.validate())
         .map_err(map_config_io_error)
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn validate_existing_directory_chain(path: &Path) -> Result<(), OwnershipError> {
     validate_absolute_local_path(path)?;
     let mut components = path.components();
@@ -1175,28 +1190,29 @@ fn verify_directory(
     Ok(())
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn within_boundary(path: &Path, boundary: &Path) -> bool {
     let child = path_key(path);
     let parent = path_key(boundary);
     child == parent || child.starts_with(&(parent + "\\"))
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 fn within_boundary(path: &Path, boundary: &Path) -> bool {
     path.starts_with(boundary)
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 fn same_path(left: &Path, right: &Path) -> bool {
     left == right
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn same_path(left: &Path, right: &Path) -> bool {
     path_key(left).eq_ignore_ascii_case(&path_key(right))
 }
 
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn path_key(path: &Path) -> String {
     let value = path.to_string_lossy();
     let normalized = value.strip_prefix(r"\\?\").unwrap_or(&value);

@@ -507,7 +507,12 @@ pub(super) fn fingerprint_config(
         for unit in path.as_os_str().encode_wide() {
             digest.update(unit.to_le_bytes());
         }
-        #[cfg(not(windows))]
+        #[cfg(target_os = "linux")]
+        {
+            use std::os::unix::ffi::OsStrExt;
+            digest.update(path.as_os_str().as_bytes());
+        }
+        #[cfg(not(any(windows, target_os = "linux")))]
         digest.update(path.to_string_lossy().as_bytes());
     } else {
         digest.update(b"no-target\0");

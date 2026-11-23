@@ -7,7 +7,9 @@ use crate::runtime::manager::{ReadyStableEndpoint, RuntimeManager, StableEndpoin
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::env;
-use std::fs::{self, File, OpenOptions};
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
+use std::fs::OpenOptions;
+use std::fs::{self, File};
 use std::io::{Read, Take};
 use std::path::{Component, Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -33,10 +35,10 @@ mod recovery;
 mod retained_versions;
 pub(crate) use retained_versions::{ArchiveRetainedRequest, RetainedReply, RetainedRequest};
 
-#[cfg(target_os = "macos")]
-mod macos;
-#[cfg(target_os = "macos")]
-use macos::{pin_parent_directories, validate_pinned_directories, DirectoryPins};
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+mod unix;
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+use unix::{pin_parent_directories, validate_pinned_directories, DirectoryPins};
 
 pub(crate) use claude_context::{
     ClaudeContextErrorDetail, ClaudeContextErrorReply, ClaudeContextReply,
@@ -46,6 +48,8 @@ pub(crate) use claude_context::{
 #[cfg(test)]
 #[path = "config_io/codex_tests.rs"]
 mod codex_tests;
+#[cfg(all(test, target_os = "linux"))]
+mod linux_config_tests;
 
 pub(crate) use codex::{
     connection_status as codex_connection_status, failure_reply as codex_status_failure_reply,
@@ -69,7 +73,7 @@ pub(crate) use connection_actions::{
 pub(crate) fn ownership_store_for_app_local_data(
     app_local_data_dir: Option<PathBuf>,
 ) -> Result<crate::state::ownership::OwnershipStore, ConfigIoError> {
-    if cfg!(debug_assertions) && !cfg!(target_os = "macos") {
+    if cfg!(debug_assertions) && cfg!(windows) {
         let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let project_root = manifest_dir.parent().ok_or(ConfigIoError::InvalidRoot)?;
         return crate::state::ownership::OwnershipStore::new(
@@ -207,12 +211,8 @@ impl ConfigRootInputs {
             claude_config_dir: env::var_os("CLAUDE_CONFIG_DIR").map(PathBuf::from),
             claude_project_directory: None,
             xdg_config_home: env::var_os("XDG_CONFIG_HOME").map(PathBuf::from),
-            user_profile: env::var_os(if cfg!(target_os = "macos") {
-                "HOME"
-            } else {
-                "USERPROFILE"
-            })
-            .map(PathBuf::from),
+            user_profile: env::var_os(if cfg!(windows) { "USERPROFILE" } else { "HOME" })
+                .map(PathBuf::from),
             #[cfg(test)]
             claude_test_managed_settings: None,
             #[cfg(test)]
@@ -285,10 +285,8 @@ pub(super) struct ConfigRead {
     pub fingerprint: String,
 }
 
-/// A bounded Codex config observation whose file and parent-directory handles
-/// remain open while the caller reads the corresponding ownership record.
-/// The held handles prevent ordinary writes, deletes, and path replacement
-/// during that shared observation window.
+/// Keeps config and parent-directory handles open during an ownership read.
+/// Callers validate the config observation again after that read.
 pub(super) struct PinnedCodexConfigRead {
     pub presence: ConfigPresence,
     pub bytes: Vec<u8>,
@@ -325,9 +323,7 @@ pub(crate) enum ClaudeSettingsSnapshotReply {
     Error(connection_actions::ConnectionActionError),
 }
 
-/// A crate-internal pin for an existing directory chain. It keeps the same
-/// no-delete directory handles used by config reads/writes alive while an
-/// application-owned state child is created.
+/// Keeps validated directory handles open while a caller uses the chain.
 pub(crate) struct PinnedDirectoryChain {
     pins: DirectoryPins,
 }
@@ -347,7 +343,7 @@ impl PinnedDirectoryChain {
         validate_pinned_directories(&self.pins)
     }
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     pub(crate) fn directory_file(&self) -> Result<&File, ConfigIoError> {
         self.validate()?;
         self.pins
@@ -575,8 +571,8 @@ impl CandidatePin {
                     return Err(ConfigIoError::UnsafePath);
                 }
                 let current_identity = file_identity(file)?;
-                #[cfg(target_os = "macos")]
-                macos::validate_file_pin(&self.path, file, expected_identity)?;
+                #[cfg(any(target_os = "macos", target_os = "linux"))]
+                unix::validate_file_pin(&self.path, file, expected_identity)?;
                 if !same_file_object(expected_identity, current_identity)
                     || !handle_is_regular_file(current_identity.attributes)
                     || !same_path(
@@ -670,7 +666,7 @@ fn read_candidate(path: &Path) -> Result<CandidateRead, ConfigIoError> {
     {
         return Err(ConfigIoError::UnsafePath);
     }
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     if first_identity != file_identity(&file)? || first_identity != final_identity {
         return Err(ConfigIoError::Unavailable);
     }
@@ -712,10 +708,10 @@ fn read_missing_candidate(path: &Path) -> Result<CandidateRead, ConfigIoError> {
     }
 }
 
-#[cfg(target_os = "macos")]
-pub(crate) use macos::validate_lexical_path;
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+pub(crate) use unix::validate_lexical_path;
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 pub(crate) fn validate_lexical_path(path: &Path) -> Result<(), ConfigIoError> {
     if !path.is_absolute() {
         return Err(ConfigIoError::InvalidRoot);
@@ -795,7 +791,7 @@ fn validate_path_chain(path: &Path) -> Result<Option<PathBuf>, ConfigIoError> {
 
 #[cfg(windows)]
 pub(super) type DirectoryPins = Vec<DirectoryPin>;
-#[cfg(not(any(windows, target_os = "macos")))]
+#[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
 pub(super) type DirectoryPins = ();
 
 #[cfg(windows)]
@@ -819,7 +815,7 @@ impl DirectoryPin {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 pub(super) fn pin_parent_directories(path: &Path) -> Result<DirectoryPins, ConfigIoError> {
     #[cfg(windows)]
     {
@@ -891,18 +887,18 @@ pub(super) fn validate_pinned_directories(pins: &[DirectoryPin]) -> Result<(), C
     Ok(())
 }
 
-#[cfg(not(any(windows, target_os = "macos")))]
+#[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
 fn validate_pinned_directories(_: &DirectoryPins) -> Result<(), ConfigIoError> {
     Ok(())
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 fn volume_root(path: &Path) -> Result<PathBuf, ConfigIoError> {
     validate_lexical_path(path)?;
     Ok(PathBuf::from("/"))
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn volume_root(path: &Path) -> Result<PathBuf, ConfigIoError> {
     let mut components = path.components();
     let Some(Component::Prefix(prefix)) = components.next() else {
@@ -918,10 +914,10 @@ fn volume_root(path: &Path) -> Result<PathBuf, ConfigIoError> {
     Ok(root)
 }
 
-#[cfg(target_os = "macos")]
-pub(crate) use macos::ensure_fixed_volume;
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+pub(crate) use unix::ensure_fixed_volume;
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 pub(super) fn ensure_fixed_volume(path: &Path) -> Result<(), ConfigIoError> {
     #[cfg(windows)]
     {
@@ -969,12 +965,12 @@ fn path_key(path: &Path) -> String {
     text.strip_prefix(r"\\?\").unwrap_or(&text).to_owned()
 }
 
-#[cfg(target_os = "macos")]
-use macos::file_identity;
-#[cfg(target_os = "macos")]
-pub(super) use macos::open_read_shared;
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+use unix::file_identity;
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+pub(super) use unix::open_read_shared;
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 pub(super) fn open_read_shared(path: &Path) -> Result<File, ConfigIoError> {
     let mut options = OpenOptions::new();
     options.read(true);
@@ -991,11 +987,11 @@ struct FileIdentity {
     high: u32,
     low: u32,
     attributes: u32,
-    #[cfg(target_os = "macos")]
-    stamp: macos::FileStamp,
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    stamp: unix::FileStamp,
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn file_identity(file: &File) -> Result<FileIdentity, ConfigIoError> {
     #[cfg(windows)]
     {
@@ -1032,11 +1028,11 @@ fn handle_is_regular_file(attributes: u32) -> bool {
     {
         attributes & FILE_ATTRIBUTE_REPARSE_POINT == 0 && attributes & FILE_ATTRIBUTE_DIRECTORY == 0
     }
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     {
         attributes & libc::S_IFMT as u32 == libc::S_IFREG as u32
     }
-    #[cfg(not(any(windows, target_os = "macos")))]
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
     {
         let _ = attributes;
         true

@@ -9,7 +9,7 @@ on:
         type: boolean
         default: false
       linux_desktop:
-        description: Build and open the Linux desktop in an isolated Xvfb session.
+        description: Check Linux configuration safety, build the desktop, and open it in Xvfb.
         type: boolean
         default: false
 
@@ -120,6 +120,17 @@ jobs:
           glib="$(cargo +1.92.0 tree --locked --manifest-path "$manifest" --depth 0 -i glib)"
           test "$glib" = "glib v0.18.5 ($GITHUB_WORKSPACE/src-tauri/vendor/glib-0.18.5)"
           printf 'Linux uses %s\n' "$glib"
+          export HEADROOM_LINUX_PROOF_ROOT
+          HEADROOM_LINUX_PROOF_ROOT="$(mktemp -d "$GITHUB_WORKSPACE/work/linux-config.XXXXXXXX")"
+          test "$(id -u)" -ne 0
+          printf 'Linux test filesystem: %s\n' "$(stat -f -c %T "$HEADROOM_LINUX_PROOF_ROOT")"
+          if ! cargo +1.92.0 test --locked --manifest-path "$manifest" --features custom-protocol \
+            --color never linux_config_tests -- --ignored --test-threads=1 > work/linux-config.log 2>&1; then
+            awk '/^error(\[[A-Z][0-9]+\])?: |^---- .* stdout ----$|^assertion failed:|^test result:/ \
+              { if (++count <= 12) print substr($0, 1, 220) }' work/linux-config.log
+            exit 1
+          fi
+          grep -E '^test result: ok\. [1-9][0-9]* passed;' work/linux-config.log
           if ! cargo +1.92.0 build --locked --manifest-path "$manifest" \
             --features custom-protocol --color never > work/linux-build.log 2>&1; then
             awk '/^error(\[[A-Z][0-9]+\])?: / { if (++count <= 8) print substr($0, 1, 220) }' work/linux-build.log
@@ -136,4 +147,4 @@ jobs:
           SH
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           git diff --quiet HEAD --
-          printf '%s\n' '## Linux desktop' '' '- Locked build: passed.' '- PennyPinch window under Xvfb: visible.' '- Scope: desktop startup with patched glib.' >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' '## Linux desktop' '' '- Configuration safety tests: passed.' '- Locked build: passed.' '- PennyPinch window under Xvfb: visible.' >> "$GITHUB_STEP_SUMMARY"
