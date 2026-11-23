@@ -149,7 +149,7 @@ sudo -n unshare --net /bin/bash -euc '
     HOME="$2/home" XDG_DATA_HOME="$2/data" XDG_CONFIG_HOME="$2/config" \
     XDG_CACHE_HOME="$2/cache" XDG_RUNTIME_DIR="$2/session" TMPDIR="$2/tmp" \
     GTK_A11Y=always NO_AT_BRIDGE=0 \
-    timeout 240s dbus-run-session -- xvfb-run -a -s "-screen 0 1280x900x24" \
+    timeout 240s dbus-run-session -- xvfb-run -a -f "$2/session/Xauthority" -s "-screen 0 1280x900x24" \
     /usr/bin/python3 -I -B "$3" "$2"
 ' bash "$(id -un)" "$profile" "$GITHUB_WORKSPACE/scripts/probe-linux-package.py" > "$log" 2>&1 || status=$?
 awk '/^headroom-linux-package[- :]/ { if (++count <= 14) print substr($0, 1, 240) }' "$log"

@@ -156,21 +156,28 @@ def visible_window(app):
 def controls(atspi, app, labels):
     desktop = atspi.Registry.getDesktop(0)
     try:
-        stack = [candidate for candidate in desktop if candidate.get_process_id() == app.pid]
+        stack = [candidate for candidate in desktop if candidate is not None and candidate.get_process_id() == app.pid]
         remaining = 3000
         while stack and remaining:
             remaining -= 1
             node = stack.pop()
             if node.name in labels:
                 state = node.getState()
-                if state.contains(atspi.STATE_SHOWING) and state.contains(atspi.STATE_ENABLED):
+                if state.contains(atspi.STATE_ENABLED):
                     try:
                         action = node.queryAction()
                     except NotImplementedError:
                         action = None
                     if action is not None and action.nActions > 0:
-                        return action
-            stack.extend(reversed(tuple(node)))
+                        if state.contains(atspi.STATE_SHOWING):
+                            return action
+                        try:
+                            component = node.queryComponent()
+                            if not component.scrollTo(atspi.SCROLL_ANYWHERE):
+                                component.grabFocus()
+                        except NotImplementedError:
+                            pass
+            stack.extend(child for child in reversed(tuple(node)) if child is not None)
     except (RuntimeError, AttributeError):
         return None
     return None
