@@ -16,6 +16,10 @@ on:
         description: Check atomic file replacement and process interruption on ext4.
         type: boolean
         default: false
+      linux_engine:
+        description: Check the pinned Linux engine with a loopback-only provider fixture.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -25,6 +29,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  linux-engine:
+    if: ${{ inputs.free_only_confirmed == true && inputs.linux_engine == true }}
+    name: Pinned Linux engine (Ubuntu standard runner)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify the relocated Linux engine
+        shell: bash
+        run: bash scripts/probe-linux-engine.sh
+
   frontend-source:
     if: ${{ inputs.free_only_confirmed == true }}
     name: Frontend source checks (Ubuntu standard runner)
