@@ -1,0 +1,425 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-24",
+  "repository_candidate": "453cf6614b1824bdf22492bc14479703696802d9",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "python_version": "3.13.13",
+  "baseline_engine": "0.44.0",
+  "engine_version": "0.45.0",
+  "network_model_requests": 0,
+  "sources": {
+    "baseline_release_commit": "b21479e0fa84db5f3e46bb79f96c962de4d5fdc6",
+    "release_commit": "ce0460cfa8598dc939243dbc7aec4b2d35f4e44a",
+    "unchanged_source_files_sha256": {
+      "benchmarks/__init__.py": "caa5f187d3bbfde18fd0a734adc371a3fb6dc5846d3291cc05c1b2311958562c",
+      "benchmarks/bench_latency.py": "b45df201f732a3175fa033b7998b34806e4474b6bf994db60daeec3394c2ff72",
+      "benchmarks/scenarios/__init__.py": "534178e942f889569e04a6c819ae53095236cb3edf9c4de584637452bfe76789",
+      "benchmarks/scenarios/conversations.py": "896919d285794e67afe057d7da4fc5605323b7c9e638e346a8a87b263a46839f",
+      "benchmarks/scenarios/tool_outputs.py": "5382bf5e40a41ebe6bf2d00788d217552dcf7a7a1d2c71566e9bac2779b0581e",
+      "docs/content/docs/benchmarks.mdx": "73258afa12ef9972c24ba2cd2ff79cd1c38dda20d318fa1fd23c424053254cd4",
+      "docs/content/docs/local-llm-prefill.mdx": "96a7f9e17ea830ea1f0a5ee91bca4ac0bd2e71ebf71ceed4a80de3099d013623",
+      "headroom/evals/html_oss_benchmarks.py": "fd1ec0c590c46fd2d2c619137d28de34f986d3fa1dd23ad75682d5f1564b48a2",
+      "tests/test_evals/test_html_oss_benchmarks.py": "2054ce3be4fcc7d118770f61f26c3858c0af0fdccbbe0c8280dd8040943755be"
+    },
+    "changed_benchmark_files_sha256": {
+      "benchmarks/codemode_ab.py": "d0b97349719d9a5dae5c6c24b547847224ec9db7230bc46b3e4b94af08a2b736",
+      "benchmarks/index_proof_table.py": "5551336f450d826a1ed4aba47354d410a59bdb787c6205024c04287c7f85c314",
+      "benchmarks/results/index_proof_table.txt": "27f65687bf70f1f9207bc75dfdcccf2a02dd3aa2cba4bb25d84dde8c629fa590"
+    },
+    "historical_evidence": "docs/proofs/upstream-benchmarks-044.json",
+    "historical_evidence_sha256": "1f1f6f992b955fc714955ddade9ecc4e2c54187b2dfb727aa064d537e1986d74"
+  },
+  "fixture_seed": 7045,
+  "fixture_method": "Reset the generator seed for each arm. Replace UUID generation only while building fixtures. Restore UUID generation before engine execution.",
+  "upstream_sdk": {
+    "runner": "benchmarks/bench_latency.py::run_all",
+    "token_basis": "official runner message count using the benchmark-model tokenizer selection",
+    "warmup": 3,
+    "iterations": 10,
+    "matched_input_and_token_cases": 33,
+    "headline_scenarios": [
+      "JSON: Search Results (100 items)",
+      "JSON: Search Results (500 items)",
+      "Logs: Structured (100 entries)",
+      "Logs: Structured (500 entries)",
+      "Text: Documentation (20K tokens)",
+      "Code: Python (~200 lines)"
+    ],
+    "headline_each_version": {
+      "before": 126289,
+      "after": 55209,
+      "saved": 71080,
+      "saved_pct": 56.283603
+    },
+    "scenarios_each_version": [
+      {
+        "scenario": "JSON: Search Results (100 items)",
+        "input_sha256": "b5a94e608d60533888f0bc17bfdf3dad697e138ff7c6dffb3465da9b65a95f9a",
+        "before": 10181,
+        "after": 5313
+      },
+      {
+        "scenario": "JSON: Search Results (500 items)",
+        "input_sha256": "b00796a9bed9d5de46fff1418a228c873f6c14d5a6b64fc897141612f34eeaa5",
+        "before": 50161,
+        "after": 25797
+      },
+      {
+        "scenario": "JSON: Search Results (1K items)",
+        "input_sha256": "04fedced4d82b2461e290aea984e03633416a23a5826fe44358c9595cacd83df",
+        "before": 100461,
+        "after": 51662
+      },
+      {
+        "scenario": "JSON: Search Results (5K items)",
+        "input_sha256": "c77913e2b2c02c26cf134d0fdd9397c0850dfeeaccd9ba0de12e2f34e3533aa1",
+        "before": 502645,
+        "after": 258409
+      },
+      {
+        "scenario": "JSON: API Responses (500 items)",
+        "input_sha256": "9e2b9a4413062061526a6663d17ba48dc6c068048c547f60631bf8e5c9c0305a",
+        "before": 38859,
+        "after": 21826
+      },
+      {
+        "scenario": "JSON: Database Rows (1K rows)",
+        "input_sha256": "7dd45845ca0ec5c1ab16abd97f4b153adebc3d1af1dfeafc34ddd6f03fe866b2",
+        "before": 43657,
+        "after": 16202
+      },
+      {
+        "scenario": "JSON: String Array (100 strings)",
+        "input_sha256": "6f0da3f9721fa36fcde33a6eaf13d602107a7f4882a34834392f9ef884599a22",
+        "before": 1051,
+        "after": 244
+      },
+      {
+        "scenario": "JSON: String Array (500 strings)",
+        "input_sha256": "8375c5b55d27d6d9f40c081714b029ae5ca14b24bde87657a07875aecbb380f8",
+        "before": 4865,
+        "after": 246
+      },
+      {
+        "scenario": "JSON: String Array (1K strings)",
+        "input_sha256": "e1daff85a29c3da8acdd8941917a33d474f3da813530cf250500cc63c8743452",
+        "before": 9630,
+        "after": 256
+      },
+      {
+        "scenario": "JSON: Number Array (200 numbers)",
+        "input_sha256": "9816015792ab624b3c168c4a4281a719fb58f2dec5fd077d61465114be430af5",
+        "before": 1244,
+        "after": 165
+      },
+      {
+        "scenario": "JSON: Number Array (1K numbers)",
+        "input_sha256": "74acd1b35c906ead0112365df4e5a27407227e220f068c5ca5a396dcdaed1d26",
+        "before": 6061,
+        "after": 215
+      },
+      {
+        "scenario": "JSON: Mixed Array (250 items)",
+        "input_sha256": "7200ecf38cda5204177a5ae103436db462babd38d873c1b5b10a06acdec88814",
+        "before": 2255,
+        "after": 1123
+      },
+      {
+        "scenario": "JSON: Flat Object (100 keys)",
+        "input_sha256": "f0dd1df4a191c2d64308b2756d642beda5b57eb9898fcf19b6a4cdca9ad6278b",
+        "before": 6147,
+        "after": 6084
+      },
+      {
+        "scenario": "JSON: Nested Object (3 arrays)",
+        "input_sha256": "bf3a57f9f2790b275d6afd75181dde13cdf2848e31ee6d1c0954d31f966d64d4",
+        "before": 22763,
+        "after": 13221
+      },
+      {
+        "scenario": "Code: Python (~50 lines)",
+        "input_sha256": "5efe7cfa62cc0f8792b9d4139eeef2fef7a06ef955ce56757944117bbd3c1b34",
+        "before": 619,
+        "after": 619
+      },
+      {
+        "scenario": "Code: Python (~200 lines)",
+        "input_sha256": "de148b2fd954869bcbe3796be17f8dc421217a12969d4e3715b01f89707e8800",
+        "before": 2613,
+        "after": 2613
+      },
+      {
+        "scenario": "Code: Python (~500 lines)",
+        "input_sha256": "c9cf2c53ded49cbe98157ab371e7ebe50e972edd08012b783d43d8dd1f3ff599",
+        "before": 6563,
+        "after": 6563
+      },
+      {
+        "scenario": "Code: Python (~1K lines)",
+        "input_sha256": "178280b22551a97e70a34cbbf8840ef540314c311c67a3e8473abc8eb7c73c73",
+        "before": 13875,
+        "after": 13875
+      },
+      {
+        "scenario": "Text: Documentation (1K tokens)",
+        "input_sha256": "430651e3d9a390ead896bc452b07913adfa1572195b496dc35c3d8e4702d819d",
+        "before": 1056,
+        "after": 1056
+      },
+      {
+        "scenario": "Text: Documentation (5K tokens)",
+        "input_sha256": "fdd2b1ff9e68e41b8fdc5733add0e1707574d4560e19bb2a8fdeac508826885b",
+        "before": 5056,
+        "after": 1496
+      },
+      {
+        "scenario": "Text: Documentation (20K tokens)",
+        "input_sha256": "229308fe8419e41e58638b815e3c72efb418123a26b8c2c6e351533ccdba5c26",
+        "before": 20056,
+        "after": 1629
+      },
+      {
+        "scenario": "Text: Documentation (50K tokens)",
+        "input_sha256": "1f24f851944a182a217d4f98f1f494b4c21670f9bbeee61c973379c00be406fe",
+        "before": 50056,
+        "after": 2098
+      },
+      {
+        "scenario": "Logs: Structured (100 entries)",
+        "input_sha256": "bddcf5fb5a0c185e358a48d112f7ff96be5c151f6df2fa764a88a3b409b31f22",
+        "before": 7613,
+        "after": 3608
+      },
+      {
+        "scenario": "Logs: Structured (500 entries)",
+        "input_sha256": "6389852451f132318629481115fe9269298820cca96f2a1fe357281b730cafe5",
+        "before": 35665,
+        "after": 16249
+      },
+      {
+        "scenario": "Logs: Structured (1K entries)",
+        "input_sha256": "c92dc5b722e15a0c73b945042058aacce52c5c50253c1cc11c186c5e0896a55b",
+        "before": 70430,
+        "after": 31811
+      },
+      {
+        "scenario": "Logs: Structured (5K entries)",
+        "input_sha256": "93f9e55bd51b0094eede67448bbb50832b98be965c2411504b887f79bfc5fb82",
+        "before": 349622,
+        "after": 157165
+      },
+      {
+        "scenario": "Agentic: Multi-tool (10 turns)",
+        "input_sha256": "bfd2f43c7aa2188c12a3775662a0fb18326d824f0dc000b404d242d447f185e7",
+        "before": 80852,
+        "after": 41617
+      },
+      {
+        "scenario": "Agentic: Multi-tool (25 turns)",
+        "input_sha256": "b313d8c9ed27c34b5989f3fcbacd6a657d281a6c1dcb522d14438d5825537b68",
+        "before": 222500,
+        "after": 117262
+      },
+      {
+        "scenario": "Agentic: Multi-tool (50 turns)",
+        "input_sha256": "a22b546ad356fc4b5c5187fe7998369680d8462634c87d0248c6bfe2842fbecc",
+        "before": 423056,
+        "after": 224101
+      },
+      {
+        "scenario": "Agentic: Multi-tool (100 turns)",
+        "input_sha256": "95d5a6845c3aee80336c387235765e892cb2cd4cbac8d0d5c93733660f4236d1",
+        "before": 546715,
+        "after": 295785
+      },
+      {
+        "scenario": "RAG: Document QA (5K context)",
+        "input_sha256": "f7e17fa7ebfa113530fc9d4478b7fc8afaa9aa464f83c7e2530648dc18311808",
+        "before": 5487,
+        "after": 5487
+      },
+      {
+        "scenario": "RAG: Document QA (20K context)",
+        "input_sha256": "c37e666e5d642b9dd056f1677f35917ecc5ec35f94891089ed3e1f2ec895ade3",
+        "before": 20801,
+        "after": 20801
+      },
+      {
+        "scenario": "RAG: Document QA (50K context)",
+        "input_sha256": "40bea980e4bd96805718ff72f56f973fcbf845fa915ae6cee2d894d459a922c2",
+        "before": 51126,
+        "after": 51126
+      }
+    ]
+  },
+  "paired_proxy": {
+    "method": "Use the staged Windows controller and engine, isolated configuration, and a loopback Chat Completions SSE fixture. Capture each full submitted request.",
+    "token_basis": "o200k_base canonical full request JSON including added tool schemas",
+    "profile": {
+      "mode": "cache",
+      "savings_profile": "coding",
+      "ttl_seconds": 7200,
+      "telemetry_enabled": true,
+      "beacon_enabled": false,
+      "memory_enabled": false,
+      "learning_enabled": false,
+      "output_shaper_enabled": false,
+      "model_router_enabled": false,
+      "protected_tools": []
+    },
+    "local_requests_per_version": 16,
+    "matched_input_and_token_cases": 8,
+    "headline_each_version": {
+      "before": 122944,
+      "after": 69350,
+      "saved": 53594,
+      "saved_pct": 43.592205
+    },
+    "sdk_full_json_headline_each_version": {
+      "before": 122944,
+      "after": 69302,
+      "saved": 53642,
+      "saved_pct": 43.631247
+    },
+    "scenarios_each_version": [
+      {
+        "scenario": "JSON: Search Results (100 items)",
+        "input_sha256": "7929580682242646827e2dda9193d11999e68c43da2582018023322dcc018f96",
+        "direct_tokens": 9521,
+        "sdk_tokens": 5725,
+        "desktop_tokens": 5733,
+        "desktop_tool_result_unchanged": false
+      },
+      {
+        "scenario": "JSON: Search Results (500 items)",
+        "input_sha256": "eaa90a19979ab455723c2861a8a53aff90cda03e28fac2083fe4446a66c95791",
+        "direct_tokens": 46794,
+        "sdk_tokens": 27760,
+        "desktop_tokens": 27768,
+        "desktop_tool_result_unchanged": false
+      },
+      {
+        "scenario": "Logs: Structured (100 entries)",
+        "input_sha256": "af13a98d36160ae12830fdb2ec47cb28826924c8ca5372915d57f58207b2513e",
+        "direct_tokens": 8661,
+        "sdk_tokens": 5672,
+        "desktop_tokens": 5680,
+        "desktop_tool_result_unchanged": false
+      },
+      {
+        "scenario": "Logs: Structured (500 entries)",
+        "input_sha256": "53708cc772beaa01079fe492bc60b57570764512157ffeedf8d195bb3a443cbb",
+        "direct_tokens": 40527,
+        "sdk_tokens": 25934,
+        "desktop_tokens": 25942,
+        "desktop_tool_result_unchanged": false
+      },
+      {
+        "scenario": "Text: Documentation (20K tokens)",
+        "input_sha256": "d2d251664128d4783706c2b77d57dd03f1604c0cf80c523c1b00eb5bc72e1dda",
+        "direct_tokens": 14499,
+        "sdk_tokens": 1269,
+        "desktop_tokens": 1277,
+        "desktop_tool_result_unchanged": false
+      },
+      {
+        "scenario": "Code: Python (~200 lines)",
+        "input_sha256": "1bdd3eeced230efa24ad07057e3297758949154c0b4bc43b5ad7b6b12ecb6355",
+        "direct_tokens": 2942,
+        "sdk_tokens": 2942,
+        "desktop_tokens": 2950,
+        "desktop_tool_result_unchanged": true
+      },
+      {
+        "scenario": "JSON: Number Array (200 numbers)",
+        "input_sha256": "cd395671aa420c1bbdba10ceca7e0caf2ea9f46a898adace25dc2f19439f45f5",
+        "direct_tokens": 1898,
+        "sdk_tokens": 259,
+        "desktop_tokens": 267,
+        "desktop_tool_result_unchanged": false
+      },
+      {
+        "scenario": "SmartCrusher: Reconstructed Error at 67",
+        "input_sha256": "7bc6459448e4f922a0469ef0cd956c377e7dfbab8699b6cfe4e91580346972e6",
+        "direct_tokens": 7769,
+        "sdk_tokens": 4891,
+        "desktop_tokens": 4899,
+        "desktop_tool_result_unchanged": false,
+        "sdk_anomaly_fields": {
+          "error_code": true,
+          "resolution": true,
+          "affected_count": true
+        },
+        "desktop_anomaly_fields": {
+          "error_code": true,
+          "resolution": true,
+          "affected_count": true
+        },
+        "desktop_sdk_messages_equal": true,
+        "stream_usage_requested": true,
+        "keys_added_by_proxy": [
+          "stream_options"
+        ],
+        "stock_sdk_api": {
+          "tokens_before": 7520,
+          "tokens_after": 4739,
+          "transforms_applied": [
+            "router:protected:user_message",
+            "router:smart_crusher:0.46"
+          ]
+        }
+      }
+    ],
+    "engine_stop_each_version": {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    }
+  },
+  "html_extraction": {
+    "summary": {
+      "total_samples": 181,
+      "avg_precision": 0.8712,
+      "avg_recall": 0.9855,
+      "avg_f1": 0.9168,
+      "baseline_f1": 0.958,
+      "matches_baseline": false,
+      "avg_compression_ratio": 0.0502
+    },
+    "dataset": {
+      "source": "https://huggingface.co/datasets/allenai/scrapinghub-article-extraction-benchmark",
+      "revision": "f74b11e8b2e38f3828c3052622d108a22de53319",
+      "sha256": "9f809b524e7e27cb40b4112b9c377e2367aa2ebf096d6f88f67553c67d141ba9",
+      "bytes": 10374590
+    },
+    "packages": {
+      "headroom-ai": "0.45.0",
+      "trafilatura": "2.3.1",
+      "datasets": "5.2.0",
+      "pyarrow": "26.0.1"
+    },
+    "upstream_full_test_f1_threshold_exclusive": 0.9,
+    "mean_characters_removed_pct": 94.98,
+    "same_reported_summary_as_historical_044": true,
+    "inputs_sha256": "8bf071d2f3f8926b4f3573e5dee73f439ab3d2babaf3ac522621bf33925e18a2",
+    "receipt_sha256": "e3cd8de593dc47cabdd738f7306e86a1ef1ff31d02d9d08fe5fbd5545cc5a2d9"
+  },
+  "verification": {
+    "input_files": 132,
+    "inputs_sha256_before_and_after": "7192865bfe16cd369b96eb8b50183c19601f54ae4a5ce6305fd98704ce185712",
+    "run_environments_sha256": {
+      "sdk-0.44.0": "39bdcb3dcc68779645dfb5f2ca967333d1011a7ce2a1730bf6aa45b8f30c0d9d",
+      "proxy-0.44.0": "3afc9c23bd6cdc04a4c79f38b91022f46ef4db0530d56f5e05885bccfb0e8745",
+      "sdk-0.45.0": "e8f9ed274d9dbc053f61ceba7998c680c2f7b361bfb2080e439ab6ba1eb5f6c8",
+      "proxy-0.45.0": "63d883889f433f07063e93a924f2783c023016f3bce43307bbdf7b5220a70634"
+    },
+    "paired_receipt_sha256": "058a4c2faaaf303d9d662bd3676a009a7f508b1a06f8c1c7e88119bbc89b80b1"
+  },
+  "unmeasured": [
+    "provider billing and quota use",
+    "end-to-end response time",
+    "live model response quality",
+    "SQuAD model evaluation"
+  ]
+}

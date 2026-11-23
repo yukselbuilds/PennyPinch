@@ -282,3 +282,20 @@ The counts cover the full request JSON. The test preserved source code exactly. 
 Both local runs closed the owned engine and port without model calls. [Programmatic evidence](../proofs/upstream-benchmarks-044.json).
 
 The HTML test used the pinned Scrapinghub dataset and HTML dependencies in the test environment. On 181 pages, F1 was 0.9168 and average character reduction was 94.98%. This exceeded the upstream full-dataset F1 threshold of 0.90. Paid SQuAD model evaluation, actual provider billing, and end-to-end response time remain unmeasured. [HTML test source](https://github.com/headroomlabs-ai/headroom/blob/b21479e0fa84db5f3e46bb79f96c962de4d5fdc6/tests/test_evals/test_html_oss_benchmarks.py) · [Programmatic evidence](../proofs/upstream-benchmarks-044.json).
+
+## 24 November — Matched Headroom 0.45.0 comparison
+
+Headroom 0.45.0 adds a clean-worktree requirement to the code-mode benchmark and removes the duplicate index table for protect_recent=0. The SDK runner, fixture sources, benchmark page, and HTML evaluator match the 0.44.0 files. These changes do not update the measurements on the upstream benchmark page. [Release notes](https://github.com/headroomlabs-ai/headroom/releases/tag/v0.45.0) · [Pinned benchmark page](https://github.com/headroomlabs-ai/headroom/blob/ce0460cfa8598dc939243dbc7aec4b2d35f4e44a/docs/content/docs/benchmarks.mdx).
+
+Windows 10 22H2 ran both versions with the same fixtures. The runner fixed generated IDs before each run to keep the inputs identical. Input hashes and token counts matched in all 33 SDK cases and all eight proxy cases. The six headline cases use two counting methods.
+
+| Method | Before | After | Change |
+| --- | ---: | ---: | ---: |
+| Upstream SDK message counter | 126,289 | 55,209 | 56.28% lower |
+| Full Chat Completions JSON through the managed proxy | 122,944 | 69,350 | 43.59% lower |
+
+The proxy sent 53,594 fewer input tokens in the six headline cases. The count uses `o200k_base` and includes the full request JSON. The SDK produced 69,302 tokens when measured on the same full JSON. Both engines preserved the Python source exactly. They also preserved the error code, resolution, and value 731 in the same synthetic error record.
+
+The HTML extraction test returned F1 of 0.9168 on 181 pages. The mean character reduction was 94.98%. The test passed the upstream F1 threshold of 0.90 and matched the previous result.
+
+These runs used local test inputs and zero model calls. Provider billing, live response quality, and end-to-end response times remain unmeasured. [Matched measurements and source hashes](../proofs/upstream-benchmarks-045.json) · [Earlier 0.44.0 run](../proofs/upstream-benchmarks-044.json).
