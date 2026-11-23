@@ -39,6 +39,7 @@ with (root / "tauri.macos-qa.json").open("x", encoding="utf-8") as stream:
     stream.write("\n")
 PY
 
+printf '%s\n' 'headroom-package-phase=tauri_build'
 if ! pnpm tauri build --ci --bundles app --target aarch64-apple-darwin \
   --config "$build_config" --no-sign --no-binary-patching -- --locked \
   > "$build_log" 2>&1; then
@@ -49,6 +50,7 @@ if ! pnpm tauri build --ci --bundles app --target aarch64-apple-darwin \
   exit 1
 fi
 
+printf '%s\n' 'headroom-package-phase=runtime_staging'
 source_app="$CARGO_TARGET_DIR/aarch64-apple-darwin/release/bundle/macos/PennyPinch.app"
 bundle="$build_root/PennyPinch.app"
 test -d "$source_app"
@@ -61,9 +63,11 @@ staged_sha="$("$build_python" -I -B -c \
   'import json,sys; print(json.load(open(sys.argv[1]))["manifest_sha256"])' "$build_root/staging.json")"
 test "$staged_sha" = "$HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256"
 
+printf '%s\n' 'headroom-package-phase=ad_hoc_signing'
 /usr/bin/codesign --force --sign - --timestamp=none "$bundle" > "$build_log" 2>&1
 /usr/bin/codesign --verify --strict "$bundle" > "$build_log" 2>&1
 test "$(lipo -archs "$bundle/Contents/MacOS/headroom-desktop")" = arm64
+printf '%s\n' 'headroom-package-phase=resource_parity'
 "$build_python" -I -B scripts/verify-macos-bundle.py --bundle "$bundle" \
   --runtime "$runtime_root" --expected-manifest "$HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256" \
   > "$build_root/bundle-before.json"
