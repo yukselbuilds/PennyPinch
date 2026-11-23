@@ -125,6 +125,10 @@ jobs:
                           state::ownership::codec_tests::macos_
                           integrations::config_io::macos::
                           integrations::transaction_fs::macos_impl::)
+            if [[ "$HEADROOM_VERIFY_DESKTOP_DISCOVERY" != true ]]; then
+              # The desktop tests require the signed Codex Desktop fixture.
+              test_filters+=(--skip integrations::config_io::macos::tests::native_desktop_manager_)
+            fi
           fi
           if [[ "$HEADROOM_VERIFY_CLI_DISCOVERY" == true ]]; then
             if [[ "$HEADROOM_VERIFY_CONFIG_RECOVERY" != true && -z "${HEADROOM_MACOS_RUNTIME_ROOT:-}" ]]; then
