@@ -62,24 +62,24 @@
             <p class="eyebrow">One local proxy test</p>
             <h2 id="hero-evidence-title">Six synthetic requests</h2>
           </div>
-          <span class="engine-chip">0.44.0</span>
+          <span class="engine-chip">0.45.0</span>
         </figcaption>
-        <p class="hero-result">43.60<span>%</span></p>
+        <p class="hero-result">43.59<span>%</span></p>
         <p class="result-label">fewer input tokens in this test</p>
         <div class="compare-bars" role="group" aria-label="Input counts before and after the local proxy test">
           <div class="bar-row bar-row-direct">
             <span>Direct requests</span>
-            <strong>122,922</strong>
+            <strong>122,944</strong>
             <span class="bar-track" aria-hidden="true"><span class="bar-fill"></span></span>
           </div>
           <div class="bar-row bar-row-proxy">
             <span>Through the proxy</span>
-            <strong>69,328</strong>
+            <strong>69,350</strong>
             <span class="bar-track" aria-hidden="true"><span class="bar-fill"></span></span>
           </div>
         </div>
         <p id="hero-evidence-note" class="evidence-note">Windows 10 22H2 x64. Full Chat Completions request JSON, including tool schemas, counted with <code>o200k_base</code>. No model calls.</p>
-        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-044.json">Read the request-count evidence <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-045.json">Read the request-count evidence <span aria-hidden="true">↗</span></a>
       </figure>
     </section>
 
@@ -96,17 +96,17 @@
         <article class="measurement measurement-featured">
           <p class="measurement-kicker">Windows proxy · synthetic input</p>
           <h3>Six selected requests</h3>
-          <p class="measurement-value">122,922 <span>→</span> 69,328</p>
-          <p class="measurement-result">43.60% lower counted input</p>
-          <p>Full request JSON for six selected Chat Completions cases. The local count includes tool schemas and uses <code>o200k_base</code>.</p>
-          <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-044.json">Full request counts <span aria-hidden="true">↗</span></a>
+          <p class="measurement-value">122,944 <span>→</span> 69,350</p>
+          <p class="measurement-result">43.59% lower counted input</p>
+          <p>The count uses <code>o200k_base</code> for the full Chat Completions request JSON. Both engine versions produced the same counts with matching fixtures.</p>
+          <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-045.json">Full request counts <span aria-hidden="true">↗</span></a>
         </article>
         <article class="measurement">
           <p class="measurement-kicker">Codex CLI · one real request</p>
           <h3>Installed Windows preview</h3>
           <p class="measurement-value">18,081 <span>→</span> 17,870</p>
           <p class="measurement-result">211 fewer · 1.17% local estimate</p>
-          <p>One Responses WebSocket request through the installed app. The provider reported 10,780 input tokens separately.</p>
+          <p>One Responses WebSocket request through the installed app used Headroom 0.44.0. The provider reported 10,780 input tokens separately.</p>
           <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/pennypinch-windows10-activity-measurement.json">Read the measurement <span aria-hidden="true">↗</span></a>
         </article>
         <article class="measurement">
@@ -114,20 +114,20 @@
           <h3>Six selected SDK examples</h3>
           <p class="measurement-value">126,289 <span>→</span> 55,209</p>
           <p class="measurement-result">56.28% lower in the SDK count</p>
-          <p>This local rerun uses the upstream SDK runner's benchmark tokenizer and input scope. It is not a desktop-proxy result.</p>
-          <a class="text-link" href="https://github.com/headroomlabs-ai/headroom/blob/b21479e0fa84db5f3e46bb79f96c962de4d5fdc6/docs/content/docs/benchmarks.mdx">Pinned benchmark source <span aria-hidden="true">↗</span></a>
+          <p>The local 0.45.0 rerun uses the upstream SDK tokenizer and counts the SDK input.</p>
+          <a class="text-link" href="https://github.com/headroomlabs-ai/headroom/blob/ce0460cfa8598dc939243dbc7aec4b2d35f4e44a/docs/content/docs/benchmarks.mdx">Pinned benchmark source <span aria-hidden="true">↗</span></a>
         </article>
         <article class="measurement">
           <p class="measurement-kicker">Local model server · paired task</p>
           <h3>Same log task on both routes</h3>
           <p class="measurement-value">6,647 <span>→</span> 6,647</p>
           <p class="measurement-result">0% change in this pair</p>
-          <p>The same task ran against a local model on both routes. This count does not measure provider billing.</p>
+          <p>Both routes ran the same task against a local model. The proxy used Headroom 0.44.0.</p>
           <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/validation/optimization-benefit.md#19-kas%C4%B1m--ger%C3%A7ek-yerel-modelde-e%C5%9Flenmi%C5%9F-chat-completions-k%C4%B1yas%C4%B1">Read the comparison method <span aria-hidden="true">↗</span></a>
         </article>
       </div>
 
-      <p class="measurement-caveat"><strong>These results are not interchangeable.</strong> They use different requests, counters, and test setups. The live Codex value is a local estimate for one request. PennyPinch did not measure provider-billed token savings or quota savings.</p>
+      <p class="measurement-caveat"><strong>Each result covers a specific test.</strong> The tests use different requests and counters. The live Codex value is a local estimate for one request. Provider billing and quota savings remain unmeasured.</p>
 
       <details class="breakdown">
         <summary>See each synthetic proxy case</summary>
@@ -135,17 +135,17 @@
           <table>
             <thead><tr><th scope="col">Input</th><th scope="col">Direct</th><th scope="col">Through proxy</th><th scope="col">Change</th></tr></thead>
             <tbody>
-              <tr><th scope="row">JSON search results · 100 items</th><td>9,519</td><td>5,731</td><td>39.79% lower</td></tr>
-              <tr><th scope="row">JSON search results · 500 items</th><td>46,791</td><td>27,765</td><td>40.66% lower</td></tr>
-              <tr><th scope="row">Structured logs · 100 entries</th><td>8,655</td><td>5,674</td><td>34.44% lower</td></tr>
-              <tr><th scope="row">Structured logs · 500 entries</th><td>40,516</td><td>25,931</td><td>36.00% lower</td></tr>
+              <tr><th scope="row">JSON search results · 100 items</th><td>9,521</td><td>5,733</td><td>39.79% lower</td></tr>
+              <tr><th scope="row">JSON search results · 500 items</th><td>46,794</td><td>27,768</td><td>40.66% lower</td></tr>
+              <tr><th scope="row">Structured logs · 100 entries</th><td>8,661</td><td>5,680</td><td>34.42% lower</td></tr>
+              <tr><th scope="row">Structured logs · 500 entries</th><td>40,527</td><td>25,942</td><td>35.99% lower</td></tr>
               <tr><th scope="row">Documentation</th><td>14,499</td><td>1,277</td><td>91.19% lower</td></tr>
               <tr class="row-increase"><th scope="row">Python source · about 200 lines</th><td>2,942</td><td>2,950</td><td>0.27% higher</td></tr>
             </tbody>
           </table>
         </div>
         <p class="table-note">The aggregate includes an input that grew. The percentage applies only to the six selected synthetic cases in this test.</p>
-        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-044.json">Open the programmatic evidence <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-045.json">Open the programmatic evidence <span aria-hidden="true">↗</span></a>
       </details>
     </section>
 
