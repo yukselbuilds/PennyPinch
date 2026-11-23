@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-23",
+  "task": "H049-sec1",
+  "implementation": "lead_agent",
+  "source_commit": "1861a96540c11dbcd4ffe838c7fcbd3e2cc7b36c",
+  "advisory": {
+    "rustsec": "https://rustsec.org/advisories/RUSTSEC-2024-0429.html",
+    "github": "https://github.com/advisories/GHSA-wrw7-89jp-8q8g",
+    "first_fixed_registry_version": "0.20.0"
+  },
+  "backport": {
+    "tauri_manifest": "https://github.com/tauri-apps/tauri/blob/tauri-v2.12.4/crates/tauri/Cargo.toml",
+    "source_crate_version": "0.18.5",
+    "upstream_fix": "https://github.com/gtk-rs/gtk-rs-core/commit/b5a4071e439bef2b5eea76c3aa25e5ae84839e34",
+    "cargo_lock": {
+      "previous_sha256": "0a9ae9ec89b51fd5cb8601726e81c0a429ce5464f0be0110af39242eb2bb5c4d",
+      "candidate_sha256": "5cad0f81196938bdf21dd8377e3ff437e5b74dcdac1dbe06b659b247108e5843",
+      "other_changes": 0
+    },
+    "vendor": {
+      "crate_archive_sha256": "233daaf6e83ae6a12a52055f568f9d7cf4671dabb78ff9560ab6da230ce00ee5",
+      "upstream_patch_sha256": "a742bf59f1b00af0f434623b34e2fd969dc8697d37c796efdf909dd9eb19b854",
+      "source_file_count": 121,
+      "changed_source_files": [
+        "src/variant_iter.rs"
+      ],
+      "source_before_sha256": "1fd02859333761c45321b32f28b24233446b97d0022a90d3a937ed162585b90e",
+      "source_after_sha256": "a0f5ee8acb8faa089bcdfbc9a57372609fce7654026ccef7d9a224d05a654ccc",
+      "license_sha256": "8cf56d10131ce201cf69ab74b111d3ebac1acca3833d7efb39ae357224b70edb",
+      "copyright_sha256": "dae402989de65164815b7e2b6bc2b9576285434c3785934c8b6ece0fa055960d",
+      "vendor_tree_sha256": "a848a699b947b11bc91ced34e083db1763b86db42ef3e72923b98987da00debe"
+    },
+    "retirement": "Remove the Cargo patch when the Linux GTK dependency graph can use a fixed registry release."
+  },
+  "target_resolution": {
+    "linux_x64": "vendored_glib_0.18.5",
+    "windows_x64": "absent",
+    "macos_arm64": "absent"
+  },
+  "windows_10_x64": {
+    "build": 19045,
+    "product_gate": "passed",
+    "application_tests_passed": 227,
+    "rust_tests_passed": 481,
+    "rust_tests_ignored": 25,
+    "checks": [
+      "app_tests",
+      "frontend",
+      "rust_fmt",
+      "rust_tests",
+      "embedded_debug"
+    ],
+    "tracked_inputs": 499,
+    "tracked_inputs_sha256_before_after": "12551cfda9467ebb34df59fdfb2eea31b1c33d15c0d58cd83068baa06ba68b0a",
+    "toolchain_before_after": {
+      "versions": {
+        "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+        "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+        "node": "v25.2.1",
+        "pnpm": "11.25.0"
+      },
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "windows": [
+        10,
+        0,
+        19045
+      ],
+      "verifier": "503389a8a8d745575936a2db9f448160bc3bf76a6d253bdcb43538fe214deb0a",
+      "verifier_reference": "0018d1dc20af62c7e641ba124123a7739cbd49e95021dfe0e209aa976841838b"
+    }
+  },
+  "linux_x64": {
+    "status": "passed",
+    "environment": "GitHub Actions public repository standard runner, Ubuntu 24.04 x64",
+    "run_id": 45162373980,
+    "run_attempt": 1,
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45162373980",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45162373980/job/137650741831",
+    "source_commit": "1861a96540c11dbcd4ffe838c7fcbd3e2cc7b36c",
+    "native_step": "Build and open the Linux desktop",
+    "native_step_seconds": 137,
+    "completed_at_utc": "2026-11-23T11:10:45Z",
+    "locked_glib_path": "src-tauri/vendor/glib-0.18.5",
+    "window": "PennyPinch, visible under Xvfb",
+    "runtime_acceptance": "not_tested",
+    "installer_acceptance": "not_tested"
+  },
+  "dependabot": {
+    "state": "fixed",
+    "automatically_closed": true,
+    "fixed_commit": "1861a96540c11dbcd4ffe838c7fcbd3e2cc7b36c",
+    "alert_number": 2,
+    "advisory": "GHSA-wrw7-89jp-8q8g",
+    "observed_at_utc": "2026-11-23T11:09:47.7346359Z",
+    "evidence": "GitHub alert page shows Fixed and the Dependabot completion event links the commit.",
+    "url": "https://github.com/yukselbuilds/PennyPinch/security/dependabot/2"
+  },
+  "paid_jobs": 0,
+  "provider_requests": 0,
+  "development_token_savings": "unmeasured"
+}

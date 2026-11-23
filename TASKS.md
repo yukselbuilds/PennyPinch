@@ -1,6 +1,6 @@
 # PennyPinch task list
 
-**Status date** 20 November 2026
+**Status date** 23 November 2026
 
 **Scope** [Product specification 0.6](HEADROOM_DESKTOP_SPEC.md)\
 **Targets** Windows 10 22H2 x64 and Windows 11 x64 for Codex, Claude Code and OpenCode.
@@ -15,7 +15,7 @@
 | H041 · Additional acceptance | Other live protocols and API-key checks need authorized access. The 0.44.0 macOS ARM64 engine and package passed. Native window acceptance remains open. Windows 11 verification was deferred. The Serena pilot is complete. Broader Learn acceptance remains open. Experimental e3 is on hold, and e4 depends on e3 acceptance. [Platform tests](docs/validation/desktop-platforms.md) · [Open work items](#h041--cache-bütünlük-ve-gecikmefayda-regresyonu) |
 | H006, H037 and H042 · External environments and release | H006 needs clean Windows 10 and Windows 11 x64 environments. H037 also needs installation without WebView2 and an interrupted download from the release URL. H042 needs Windows 11 x64 update and rollback acceptance. |
 | H044 · Ripgrep candidate | Adding RTK to Headroom saved two more tokens per first request in the Windows 10 fixture. It added a recovery step. Installation remains open. [Evidence](docs/proofs/rtk-1.2.1-rg-paired.json) |
-| H049 · Resumed | The Ubuntu x64 build opened a window on CircleCI Free. The Rust suite recorded 220 passes, 81 failures and 2 skipped tests. Linux adaptation and package acceptance remain open. [Platform tests](docs/validation/desktop-platforms.md) |
+| H049 · Resumed | The patched Ubuntu x64 build opened a window on GitHub Actions. The earlier CircleCI Rust run recorded 220 passes, 81 failures and 2 skipped tests. Linux runtime and packaging remain open. [Platform tests](docs/validation/desktop-platforms.md) · [glib verification](docs/proofs/glib-0429-linux-backport.json) |
 | H052, H053 and H054 · Deferred | The Cloudflare account shows Workers Free. H052 needs a confirmed controller, processor terms, and transfer basis for live reports. H053 and H054 depend on the service. [Privacy decision](docs/decisions/032-usage-sharing-privacy.md) |
 
 Windows development and packaging use Headroom **0.44.0**. H048's native macOS 15.8.2 Apple Silicon acceptance covers **0.41.0**. H050 account connections and H051 chat metadata and navigation passed on Windows 10. Each additional operating system, new sign-in and production release requires its own evidence. [Engine transition](docs/proofs/headroom-044-upgrade.json) · [H048](docs/proofs/macos-acceptance.json) · [H050](docs/proofs/accounts.md) · [H051](docs/proofs/sessions.md)
@@ -1069,6 +1069,7 @@ These three tasks do not expand the required installation for the first release.
 - [ ] Port the Tauri/Rust app and pinned runtime to Linux, and verify the local package and real native lifecycle.
 - **Status.** Restarted at the user's request on 19 November. CircleCI Free provided an Ubuntu 24.04 x64 run independently of the GitHub Actions quota. Build and Xvfb window check passed. The 81 Rust tests failed. The next slice covers Linux configuration and file ownership. [Platform tests](docs/validation/desktop-platforms.md).
 - **Slices.** H049-a port and build, H049-b pinned engine and config transaction adaptation, and H049-c native package and real lifecycle acceptance. Each slice starts with 1–5 source files. The main task stays open until all three finish.
+- [x] **H049-sec1 — glib security fix.** Applied the upstream fix to the Linux GTK3 dependency. The locked Ubuntu 24.04 x64 build opened a PennyPinch window under Xvfb. Dependabot closed alert #2 as fixed. [Evidence](docs/proofs/glib-0429-linux-backport.json)
 - **Acceptance.** Verify distribution format, display and session behavior, and filesystem ownership on Linux. Manually dispatch the native job through free CircleCI or an H047-verified free standard GitHub runner.
 - **Verification.** Manually dispatch a free standard hosted Linux job for typecheck, build, native start and stop, and clean local state. Verify platform-specific atomic config transactions, network binding, and shutdown. Native acceptance requires runtime evidence.
 - **Dependencies and size.** H019, H047 / L. Follows the first working Windows slice.
