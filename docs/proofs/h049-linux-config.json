@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-23",
+  "task": "H049-b1",
+  "source_commit": "26260092991b7261c6e06933d5b8580a718002a2",
+  "implementation": "lead_agent",
+  "review_corrections": 2,
+  "linux_ubuntu_x64": {
+    "source_commit": "26260092991b7261c6e06933d5b8580a718002a2",
+    "result": "passed",
+    "run_id": 45166103695,
+    "run_attempt": 1,
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45166103695",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45166103695/job/137663437274",
+    "runner_label": "ubuntu-24.04",
+    "architecture": "x86_64",
+    "workflow": ".github/workflows/source-checks.yml",
+    "step": "Build and open the Linux desktop",
+    "step_seconds": 229,
+    "completed_at_utc": "2026-11-23T11:36:43Z",
+    "isolated_test_cases": [
+      "reads_user_configs_without_changing_bytes_or_creating_missing_paths",
+      "rejects_unsafe_paths_and_file_modes",
+      "pins_reject_later_creation_and_replacement",
+      "ownership_uses_private_app_state_and_preserves_distinct_path_bytes"
+    ],
+    "supported_configuration_types": [
+      "Codex TOML",
+      "Claude Code JSON",
+      "OpenCode JSON and JSONC"
+    ],
+    "filesystem_types_allowed": [
+      "ext family",
+      "Btrfs",
+      "XFS"
+    ],
+    "evidence_scope": "The Ubuntu standard runner exercised the guards on its local filesystem.",
+    "desktop_window": "visible under Xvfb"
+  },
+  "windows_10_x64": {
+    "passed": true,
+    "candidate_before_after": {
+      "content_sha256": "8b7352f4774d50cb2e91b24bc15cb12d59911267fc3a767f7b00cbf2aacd897c",
+      "file_count": 498,
+      "source_tree": "16ff0d792c65adf921b39f069faee4c8d9b655b7",
+      "toolchain": {
+        "versions": {
+          "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+          "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+          "node": "v25.2.1",
+          "pnpm": "11.25.0"
+        },
+        "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+        "windows": [
+          10,
+          0,
+          19045
+        ],
+        "verifier": "503389a8a8d745575936a2db9f448160bc3bf76a6d253bdcb43538fe214deb0a",
+        "verifier_reference": "0018d1dc20af62c7e641ba124123a7739cbd49e95021dfe0e209aa976841838b"
+      },
+      "commands": {
+        "app_tests": [
+          "pnpm.cmd",
+          "test:app"
+        ],
+        "frontend": [
+          "pnpm.cmd",
+          "build"
+        ],
+        "rust_fmt": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "--",
+          "--check"
+        ],
+        "rust_tests": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "--",
+          "--test-threads=1"
+        ],
+        "embedded_debug": [
+          "cargo",
+          "build",
+          "--offline",
+          "--locked",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "--features",
+          "custom-protocol"
+        ]
+      }
+    },
+    "checks": {
+      "app_tests": {
+        "exit": 0,
+        "seconds": 1.294,
+        "rust": [],
+        "node": {
+          "tests": "227",
+          "pass": "227",
+          "fail": "0",
+          "skipped": "0"
+        },
+        "python": [],
+        "failures": []
+      },
+      "frontend": {
+        "exit": 0,
+        "seconds": 1.62,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_fmt": {
+        "exit": 0,
+        "seconds": 1.236,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_tests": {
+        "exit": 0,
+        "seconds": 23.171,
+        "rust": [
+          "test result: ok. 481 passed; 0 failed; 25 ignored; 0 measured; 0 filtered out; finished in 13.09s"
+        ],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "embedded_debug": {
+        "exit": 0,
+        "seconds": 9.413,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      }
+    }
+  },
+  "macos_arm64": {
+    "source_commit": "2a14f6fa25ceeaf5e43c3eaada4e7536318e4a79",
+    "result": "passed",
+    "run_id": 45167792405,
+    "run_attempt": 1,
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45167792405",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45167792405/job/137669168569",
+    "runner_label": "macos-15",
+    "architecture": "aarch64",
+    "workflow": ".github/workflows/macos-build.yml",
+    "step": "Build and verify the native executable",
+    "focus": "isolated APFS configuration actions and recovery",
+    "desktop_fixtures": "separate explicit option",
+    "previous_run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45165962091",
+    "previous_run_finding": "Three desktop tests required the signed Codex Desktop fixture.",
+    "step_seconds": 223,
+    "completed_at_utc": "2026-11-23T11:47:54Z"
+  },
+  "limits": {
+    "linux_full_rust_suite": "not_retested",
+    "linux_client_apply_undo": "not_tested",
+    "linux_engine": "not_tested",
+    "linux_package": "not_tested",
+    "macos_engine_and_package": "outside_this_check",
+    "windows_11": "not_tested"
+  },
+  "provider_requests": 0,
+  "paid_jobs": 0,
+  "development_token_savings": "unmeasured"
+}

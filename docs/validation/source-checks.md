@@ -24,7 +24,15 @@ The job uses one standard `ubuntu-24.04` x64 runner, a ten-minute job limit, rea
 
 The [first manual run](https://github.com/Protocol272/headroom-desktop/actions/runs/39759872053) passed 49 app tests and the frontend build on 22 October 2026 (job 21s, total 29s); [H047 evidence](../proofs/free-ci.md) records the free-only account gate and post-run observation. This establishes only the source-only frontend checks described above. It does not establish Tauri/Rust native behavior, engine packaging or readiness, client/provider compatibility, macOS/Linux native support, or Windows 11/clean-machine support.
 
+## Optional Linux desktop check
+
+Select `linux_desktop` in Source checks to add the native Ubuntu check. The job limit increases to 25 minutes.
+This check runs four isolated configuration tests, builds the desktop app, and opens its window in Xvfb.
+Use the standard runner in the public repository. [GitHub runner billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions) · [Linux evidence](../proofs/h049-linux-config.json)
+
 ## Excluded checks and limits
+
+These limits apply to the default frontend run.
 
 This gate does not run the historical Python protocol/client proof helpers: several import helper modules from ignored `work/proofs/...` paths. It does not run the Python engine smoke or `scripts/package-engine.ps1`; those need the separately provisioned Windows Python/runtime payload and packaging inputs described by [`runtime/manifest.json`](../../runtime/manifest.json). It does not compile or test the Tauri/Rust native backend.
 

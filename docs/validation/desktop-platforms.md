@@ -8,6 +8,16 @@ These checks used candidate commit 10f32e3. Windows 10 22H2 x64 is the first rel
 | macOS 15 ARM64, CircleCI M4 Pro | The 0.44.0 engine passed a local traffic test. The ARM64 application bundle was built and its ad hoc signature and contents were verified. | The application process started. AppleScript timed out with −1712 on two attempts to inspect the window. The native window and engine lifecycle checks remain open. [Run 5](https://app.circleci.com/pipelines/circleci/KoDRDU6JmR6wiWsrCamPDH/b460f300-344a-4d50-8849-edc9e66c82b8/5/details) |
 | Ubuntu 24.04 x64, CircleCI | TypeScript/Vite and Rust builds passed. The ELF application opened a visible window under Xvfb. The Rust suite recorded 220 passes, 81 failures and 2 skipped tests. | H049 covers client configuration, file ownership and engine ports. Installer and engine lifecycle checks remain open. [Run 6](https://app.circleci.com/pipelines/circleci/KoDRDU6JmR6wiWsrCamPDH/b460f300-344a-4d50-8849-edc9e66c82b8/6/details) |
 
+## Linux configuration reads, 23 November 2026
+
+The Ubuntu 24.04 x64 standard runner passed four configuration tests and opened PennyPinch under Xvfb.
+The tests used isolated Codex, Claude Code, and OpenCode settings and compared the original file bytes.
+They also checked file replacement, unsafe paths, and the permissions of the application-owned directory.
+
+The read guard permits local ext-family, Btrfs, and XFS filesystems. This run verifies the Ubuntu runner's filesystem.
+The Linux transaction, engine lifecycle, and installer remain open.
+[Configuration evidence](../proofs/h049-linux-config.json)
+
 <a name="windows-10-kurulumu"></a>
 
 ## Windows 10 installation

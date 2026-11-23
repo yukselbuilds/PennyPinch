@@ -6,7 +6,9 @@
 
 PennyPinch v0.1.1-preview.3 is available for Windows 10 22H2 x64. The full installer updates OpenTelemetry API and Tokio. Both public downloads matched their SHA-256 digests. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.3) · [Publication evidence](proofs/pennypinch-windows10-preview3-publication.json)
 
-macOS ARM64 passed native desktop development checks with engine 0.41.0. The later 0.44.0 engine and package passed. Native window acceptance for 0.44.0 remains open. The Ubuntu x64 build opened a window. Linux runtime tests and packaging remain open. [Platform status](validation/desktop-platforms.md)
+macOS ARM64 passed native desktop development checks with engine 0.41.0. The later 0.44.0 engine and package passed. Native window acceptance for 0.44.0 remains open. [Platform status](validation/desktop-platforms.md)
+
+H049-b1 passed four Linux configuration checks and the Ubuntu 24.04 x64 window check. Windows 10 and macOS ARM64 configuration checks also passed. Next, implement atomic Linux Apply and Undo and verify them with isolated client files. Linux engine lifecycle and packaging remain open. [H049-b1 evidence](proofs/h049-linux-config.json)
 
 ### Windows release evidence
 
@@ -46,7 +48,7 @@ Tokio 1.54.1 passed the Windows 10 product gate and signed update package checks
 
 OpenTelemetry API 1.45.2 passed the Windows 10 product gate, the staged engine lifecycle test, and a local Responses stream. The local NSIS installer contains the patched package. Existing installations require the full installer for the new engine resources. [OpenTelemetry verification](proofs/opentelemetry-windows-1452.json)
 
-The lead agent applied the upstream `glib` fix to the Linux GTK3 dependency. The locked Ubuntu 24.04 x64 build opened PennyPinch under Xvfb. Dependabot closed alert #2 as fixed. The next Linux slice covers configuration and file ownership. [Security verification](proofs/glib-0429-linux-backport.json)
+The lead agent applied the upstream `glib` fix to the Linux GTK3 dependency. The locked Ubuntu 24.04 x64 build opened PennyPinch under Xvfb. Dependabot closed alert #2 as fixed. [Security verification](proofs/glib-0429-linux-backport.json)
 
 The local 0.1.1-preview.3 full installer upgraded the public Windows 10 preview. The installed runtime reports OpenTelemetry API 1.45.2. The app kept the test preferences and started and stopped the engine. Windows 11 checks remain open. [Installed verification](proofs/opentelemetry-windows-installed-upgrade.json)
 
