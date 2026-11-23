@@ -262,3 +262,212 @@ fn config_transaction_reads_the_same_native_file_as_the_config_reader() {
     transaction.rollback().unwrap();
     assert_eq!(fs::read(config).unwrap(), original);
 }
+
+struct StopRuntime(RuntimeManager);
+
+impl Drop for StopRuntime {
+    fn drop(&mut self) {
+        let _ = self.0.shutdown();
+    }
+}
+
+#[test]
+#[ignore = "requires the pinned Linux runtime and a local Responses fixture"]
+fn managed_engine_routes_an_isolated_connection_and_undoes_all_client_configs() {
+    let fixture = Fixture::new();
+    let app = fixture.directory("app");
+    let codex = fixture.directory("codex");
+    let claude = fixture.directory("claude");
+    let xdg = fixture.directory("xdg");
+    fs::DirBuilder::new()
+        .mode(0o700)
+        .create(xdg.join("opencode"))
+        .unwrap();
+    let upstream = env::var("HEADROOM_LINUX_FIXTURE_ORIGIN").unwrap();
+    assert!(upstream
+        .strip_prefix("http://127.0.0.1:")
+        .and_then(|port| port.parse::<u16>().ok())
+        .is_some_and(|port| port != 0));
+    let workspace = app.join("runtime/workspace");
+    fs::DirBuilder::new()
+        .mode(0o700)
+        .recursive(true)
+        .create(&workspace)
+        .unwrap();
+    let settings = workspace.join("settings.json");
+    fs::write(
+        &settings,
+        serde_json::json!({"openai_base_url": upstream}).to_string(),
+    )
+    .unwrap();
+    fs::set_permissions(&settings, fs::Permissions::from_mode(0o600)).unwrap();
+    let resources = PathBuf::from(env::var_os("HEADROOM_LINUX_RUNTIME_ROOT").unwrap());
+    let runtime = RuntimeManager::new(
+        Some(resources.parent().unwrap().to_owned()),
+        Some(app.clone()),
+    );
+    let _stop = StopRuntime(runtime.clone());
+    let reply = serde_json::to_value(runtime.start_engine(Uuid::new_v4().to_string())).unwrap();
+    assert_eq!(
+        reply["engine"]["status"], "ready",
+        "engine start: {}",
+        reply["error"]["code"]
+    );
+    let endpoint = runtime
+        .ready_stable_endpoint()
+        .expect("owned stable endpoint");
+    let root_url = format!("http://127.0.0.1:{}", endpoint.port);
+
+    let discovery = DiscoveryManager::with_choice_store(None);
+    let marker = fixture.0.join("client-metadata");
+    fs::write(&marker, b"synthetic metadata only").unwrap();
+    let scan = discovery.fixture_cli_scan(&marker);
+    let roots = ConfigRootInputs {
+        codex_home: Some(codex.clone()),
+        claude_config_dir: Some(claude.clone()),
+        xdg_config_home: Some(xdg.clone()),
+        claude_test_managed_settings: Some(fixture.0.join("missing-managed-settings.json")),
+        claude_test_route_environment: Some(Vec::new()),
+        ..ConfigRootInputs::default()
+    };
+    let mut manager = PlanManager::new(discovery, runtime.clone()).with_ownership_store(
+        ownership_store_for_app_local_data(Some(app)).expect("private ownership store"),
+    );
+    manager.roots_provider = Arc::new(move || roots.clone());
+    for (kind, client_kind, config, original) in [
+        (
+            "codex",
+            "codex",
+            codex.join("config.toml"),
+            b"model = 'gpt-5.2-codex'\nmodel_reasoning_effort = 'medium'\n# preserve settings\n"
+                .as_slice(),
+        ),
+        (
+            "claude_code",
+            "claude_code",
+            claude.join("settings.json"),
+            br#"{"model":"fixture-claude","env":{"KEEP_THIS":"yes"}}"#.as_slice(),
+        ),
+        (
+            "opencode",
+            "opencode_v1",
+            xdg.join("opencode/opencode.json"),
+            br#"{"provider":{"openai":{"npm":"@ai-sdk/openai","models":{"gpt-5.2-codex":{}}}}}"#
+                .as_slice(),
+        ),
+    ] {
+        fs::write(&config, original).unwrap();
+        fs::set_permissions(&config, fs::Permissions::from_mode(0o640)).unwrap();
+        let installation = scan
+            .installations
+            .iter()
+            .find(|item| item.client_kind == kind)
+            .unwrap();
+        let plan = match manager.preview(PreviewRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            scope: "user_config".into(),
+            installation_id: installation.installation_id.clone(),
+            scan_generation: scan.scan_generation,
+        }) {
+            PlanReply::Preview(reply) => reply.plan,
+            PlanReply::Error(reply) => panic!("fixture preview failed: {}", reply.error.code),
+        };
+        assert!(
+            plan.blockers.is_empty(),
+            "fixture plan is blocked: {:?}",
+            plan.blockers
+        );
+        let applied = match manager.apply_connection(ApplyConnectionRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            expected_config_fingerprint: plan.config_fingerprint,
+            plan_id: plan.plan_id,
+        }) {
+            ConnectionActionReply::Success(reply) => reply,
+            ConnectionActionReply::Error(reply) => {
+                panic!("fixture apply failed: {}", reply.error.code)
+            }
+        };
+        assert_eq!(applied.status, "applied");
+        let owned = applied.ownership.unwrap();
+        let persisted = fs::read_to_string(&config).unwrap();
+        assert!(persisted.contains(&root_url));
+        if kind == "codex" {
+            request_from_codex_fixture(&persisted, &root_url);
+        }
+        let undone = match manager.undo_connection(UndoConnectionRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            client_kind: client_kind.into(),
+            owner_id: owned.owner_id,
+            expected_revision: owned.revision,
+            expected_record_fingerprint: owned.record_fingerprint,
+        }) {
+            ConnectionActionReply::Success(reply) => reply,
+            ConnectionActionReply::Error(reply) => {
+                panic!("fixture undo failed: {}", reply.error.code)
+            }
+        };
+        assert_eq!(undone.status, "released");
+        assert_eq!(fs::read(&config).unwrap(), original);
+        assert_eq!(fs::metadata(&config).unwrap().mode() & 0o777, 0o640);
+    }
+    assert!(runtime.shutdown());
+}
+
+fn request_from_codex_fixture(config: &str, root_url: &str) {
+    let saved: toml::Table = toml::from_str(config).unwrap();
+    let model = saved["model"].as_str().unwrap();
+    let effort = saved["model_reasoning_effort"].as_str().unwrap();
+    let base = saved["openai_base_url"].as_str().unwrap();
+    assert_eq!(base, format!("{root_url}/v1"));
+    let nonce = env::var("HEADROOM_LINUX_FIXTURE_NONCE").unwrap();
+    let key = env::var("HEADROOM_LINUX_FIXTURE_KEY").unwrap();
+    let body = serde_json::json!({
+        "model": model, "reasoning": {"effort": effort}, "stream": true,
+        "input": format!("Return the local fixture marker. {nonce}"),
+    });
+    let authorization = format!("Authorization: Bearer {key}");
+    let request = std::process::Command::new("/usr/bin/curl")
+        .args([
+            "--disable",
+            "--fail",
+            "--silent",
+            "--max-time",
+            "25",
+            "--noproxy",
+            "*",
+            "--header",
+            &authorization,
+            "--header",
+            "Content-Type: application/json",
+            "--data",
+            &body.to_string(),
+            &format!("{base}/responses"),
+        ])
+        .env_clear()
+        .output()
+        .expect("run loopback request through the saved config");
+    assert!(
+        request.status.success(),
+        "local Responses request failed: {}",
+        request.status
+    );
+    let output = String::from_utf8(request.stdout).unwrap();
+    let completed: Vec<_> = output
+        .lines()
+        .filter_map(|line| line.strip_prefix("data: "))
+        .filter_map(|data| serde_json::from_str::<serde_json::Value>(data).ok())
+        .filter(|event| event["type"] == "response.completed")
+        .collect();
+    assert_eq!(completed.len(), 1);
+    let response = &completed[0]["response"];
+    assert_eq!(response["model"], model);
+    assert_eq!(response["usage"]["input_tokens"], 11);
+    assert_eq!(response["usage"]["output_tokens"], 7);
+    assert!(response["output"][0]["content"][0]["text"]
+        .as_str()
+        .unwrap()
+        .contains(&format!("HEADROOM_FIXTURE_RESULT:{nonce}")));
+}

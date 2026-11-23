@@ -555,6 +555,38 @@ impl DiscoveryManager {
         self.scan_from_inputs(request_id, inputs)
     }
 
+    #[cfg(all(test, target_os = "linux"))]
+    pub(super) fn fixture_cli_scan(&self, fixture_path: &Path) -> DiscoverySnapshot {
+        {
+            let mut state = self.inner.state.write().unwrap();
+            assert!(!state.scanned);
+            for (kind, version) in [
+                ("codex", "0.163.0-alpha.10.2"),
+                ("claude_code", "2.1.158"),
+                ("opencode", "1.19.3"),
+            ] {
+                let id = Uuid::new_v4().to_string();
+                state.paths.insert(id.clone(), fixture_path.to_owned());
+                state.installations.push(InstallationSummary {
+                    installation_id: id,
+                    client_kind: kind,
+                    surface: "cli",
+                    version: Some(version.to_owned()),
+                    source: "user_local_npm",
+                    location_label: "Test fixture",
+                    status: "detected",
+                    connection_status: "not_verified",
+                });
+            }
+            state.scanned = true;
+            state.generation = 1;
+        }
+        match self.list_snapshot(Uuid::new_v4().to_string()) {
+            DiscoveryReply::Snapshot(snapshot) => snapshot,
+            _ => panic!("fixture scan unavailable"),
+        }
+    }
+
     fn scan_from_inputs(&self, request_id: String, inputs: DiscoveryInputs) -> DiscoveryReply {
         if !valid_request_id(&request_id) {
             return error_reply(&request_id, ErrorCode::ValidationFailed);

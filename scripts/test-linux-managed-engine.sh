@@ -34,18 +34,17 @@ before="$(fingerprint)"
 status=0
 sudo -n unshare --net /bin/bash -euc '
   ip link set dev lo up
-  exec runuser -u "$1" -- env -i PATH=/usr/bin:/bin XDG_RUNTIME_DIR="$2/socket" \
-    HEADROOM_LINUX_ENGINE_PROOF_ROOT="$2" HEADROOM_LINUX_RUNTIME_ROOT="$2/runtime" "$3" \
-    runtime::manager::macos_tests::managed_app_engine_lifecycle runtime::ingress::tests:: \
-    runtime::ingress_relay::tests:: runtime::unix_backend::tests:: \
-    --include-ignored --test-threads=1
-' bash "$(id -un)" "$root" "$test_binary" > "$log" 2>&1 || status=$?
+  exec runuser -u "$1" -- env -i PATH=/usr/bin:/bin "$2" -I -B "$3" --managed "$4" "$5"
+' bash "$(id -un)" "$python" "$GITHUB_WORKSPACE/scripts/probe-linux-engine.py" "$root" "$test_binary" \
+  > "$log" 2>&1 || status=$?
 test "$before" = "$(fingerprint)"
-awk '/^test .* \.\.\. (ok|FAILED)$|^test result:|^headroom-macos-error=/ { print substr($0, 1, 220) }
+awk '/^test .* \.\.\. (ok|FAILED)$|^test result:|^headroom-macos-error=|^Linux engine proof/ { print substr($0, 1, 220) }
      /panicked at|^assertion|^  left:|^ right:/ && ++count <= 12 { print substr($0, 1, 220) }' "$log"
 test "$status" -eq 0
 grep -q '^test runtime::manager::macos_tests::managed_app_engine_lifecycle \.\.\. ok$' "$log"
+grep -q '^test .*::managed_engine_routes_an_isolated_connection_and_undoes_all_client_configs \.\.\. ok$' "$log"
 digest="$(printf '%s\n' "$before" | sha256sum | cut -d' ' -f1)"
 printf '%s\n' '## Linux desktop runtime manager' '' "- Input fingerprint before and after: $digest" \
   '- Verified readiness, pause, resume, stop, restart, and conflict with a foreign listener.' \
-  '- Verified loopback forwarding to the authenticated Unix socket.' >> "$GITHUB_STEP_SUMMARY"
+  '- Verified one local Responses stream through the saved Codex endpoint and the authenticated Unix socket.' \
+  '- Verified Apply and byte-exact Undo for isolated Codex, Claude Code, and OpenCode profiles.' >> "$GITHUB_STEP_SUMMARY"

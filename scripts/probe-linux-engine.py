@@ -189,28 +189,37 @@ def run_engine(state, payload, fixture, *, test_foreign_peer):
             process.wait(timeout=5)
 
 
-def probe(root):
+def require_isolated_linux():
     require(sys.platform == "linux" and platform.machine() == "x86_64"
             and sys.version_info[:3] == (3, 13, 13), "expected Linux x64 and CPython 3.13.13")
     require(os.geteuid() != 0 and {name for _, name in socket.if_nameindex()} == {"lo"},
             "expected an unprivileged process in a loopback-only network namespace")
+
+
+def local_responses_fixture():
+    module_spec = spec_from_file_location("local_responses_fixture", Path(__file__).with_name("macos-desktop-fixture.py"))
+    module = module_from_spec(module_spec)
+    module_spec.loader.exec_module(module)
+    return module.DesktopResponsesFixture(
+        "sk-local-fixture-" + uuid.uuid4().hex, "gpt-5.2-codex", "medium", uuid.uuid4().hex,
+    )
+
+
+def probe(root):
+    require_isolated_linux()
     payload = root / "relocated"
     site.addsitedir(str(payload / "site-packages"))
     import onnxruntime
 
     require(version("headroom-ai") == ENGINE_VERSION and onnxruntime.__version__ == "1.31.0",
             "installed engine or ONNX runtime pin mismatch")
-    module_spec = spec_from_file_location("local_responses_fixture", Path(__file__).with_name("macos-desktop-fixture.py"))
-    module = module_from_spec(module_spec)
-    module_spec.loader.exec_module(module)
     with tempfile.TemporaryDirectory(prefix="run-", dir=root) as directory:
         state = Path(directory)
         require(state.stat().st_mode & 0o777 == 0o700, "expected private test state")
         for name in ("home", "temp", "config", "workspace", "cache"):
             (state / name).mkdir(mode=0o700)
         for index in range(2):
-            fixture = module.DesktopResponsesFixture("sk-local-fixture-" + uuid.uuid4().hex,
-                "gpt-5.2-codex", "medium", uuid.uuid4().hex)
+            fixture = local_responses_fixture()
             try:
                 run_engine(state, payload, fixture, test_foreign_peer=index == 0)
             finally:
@@ -218,11 +227,46 @@ def probe(root):
     print("Linux engine proof: Headroom 0.44.0, CPython 3.13.13, two fixture streams, owned peer, foreign peer rejected, clean restart and stop.")
 
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.exit("Usage: probe-linux-engine.py <private-proof-root>")
+def probe_managed(root, test_binary):
+    require_isolated_linux()
+    fixture = local_responses_fixture()
     try:
-        probe(Path(sys.argv[1]).resolve(strict=True))
+        fixture.release_terminal()
+        result = subprocess.run(
+            [str(test_binary), "runtime::manager::macos_tests::managed_app_engine_lifecycle",
+             "runtime::ingress::tests::", "runtime::ingress_relay::tests::", "runtime::unix_backend::tests::",
+             "linux_config_tests::managed_engine_routes_an_isolated_connection",
+             "--include-ignored", "--test-threads=1"],
+            env={
+                "PATH": "/usr/bin:/bin",
+                "XDG_RUNTIME_DIR": str(root / "socket"),
+                "HEADROOM_LINUX_ENGINE_PROOF_ROOT": str(root),
+                "HEADROOM_LINUX_PROOF_ROOT": str(root),
+                "HEADROOM_LINUX_RUNTIME_ROOT": str(root / "runtime"),
+                "HEADROOM_LINUX_FIXTURE_ORIGIN": fixture.origin,
+                "HEADROOM_LINUX_FIXTURE_KEY": fixture.api_key,
+                "HEADROOM_LINUX_FIXTURE_NONCE": fixture.nonce,
+            },
+            timeout=240,
+        )
+        require(result.returncode == 0, "managed engine or connection test failed")
+        report = fixture.report()
+        require(report["transport_counts"] == {"http_sse": 1}
+                and report["accepted_response_count"] == 1 and report["terminal_sent"]
+                and not report["error_counts"], "unexpected managed fixture request or result")
+    finally:
+        require(fixture.close(), "fixture shutdown was incomplete")
+    print("Linux engine proof: Managed engine, local Responses stream, and three config Apply and Undo checks passed.")
+
+
+if __name__ == "__main__":
+    try:
+        if len(sys.argv) == 2:
+            probe(Path(sys.argv[1]).resolve(strict=True))
+        elif len(sys.argv) == 4 and sys.argv[1] == "--managed":
+            probe_managed(Path(sys.argv[2]).resolve(strict=True), Path(sys.argv[3]).resolve(strict=True))
+        else:
+            sys.exit("Usage: probe-linux-engine.py [--managed] <private-proof-root> [<test-binary>]")
     except ProbeError as error:
         sys.exit(f"Linux engine proof failed: {error}")
     except (OSError, ImportError, ValueError, KeyError, subprocess.SubprocessError) as error:
