@@ -1076,6 +1076,7 @@ These three tasks do not expand the required installation for the first release.
   - [x] Verify the pinned engine with an owned Unix socket. Ubuntu passed two start, stream, and stop cycles. [Engine evidence](docs/proofs/h049-linux-engine.json)
   - [x] The desktop manager routed a local Responses stream from the saved Codex endpoint. Apply and byte-exact Undo passed for three isolated CLI profiles. [Managed engine evidence](docs/proofs/h049-linux-managed.json)
 - [x] **H049-b4 — Linux CLI discovery and saved choices.** Ubuntu detected three pinned native CLI files without launching them. The scan created no app state. Explicit choices reopened and matched the next scan. [Discovery evidence](docs/proofs/h049-linux-discovery.json)
+  - macOS 26.7.2 ARM64 also passed CLI discovery, saved choices, and the native build after the Linux changes. [macOS regression evidence](docs/proofs/h049-macos-cli-regression.json)
 - [x] **H049-c — Ubuntu package and installed lifecycle.** The Debian package installed. The desktop controls started, stopped, and restarted the engine. The app exited normally. Package purge retained the separate user state. [Package evidence](docs/proofs/h049-linux-package.json)
 - **Acceptance.** Check the package format, display behavior, session behavior, and file ownership on Linux. Run the native checks on the free standard `ubuntu-24.04` GitHub runner.
 - **Verification.** Manually dispatch a free standard hosted Linux job for typecheck, build, native start and stop, and clean local state. Verify platform-specific atomic config transactions, network binding, and shutdown. Native acceptance requires runtime evidence.
@@ -1158,7 +1159,7 @@ These three tasks do not expand the required installation for the first release.
 - Detailed savings by content type and an on-device preview.
 - Project and chat breakdowns when trusted metadata is available.
 - Cursor, Copilot and separate IDE extension adapters.
-- Production packages for macOS and Linux. CircleCI Free verified the macOS ARM64 0.44.0 package. Native window acceptance remains open. H049 verified the Linux build and window startup. The installer and engine port remain open.
+- Production packages for macOS and Linux. The macOS 0.44.0 installed window and engine lifecycle remain open. H049 verified the Ubuntu 24.04 x64 Debian package and installed engine lifecycle. [Platform evidence](docs/validation/desktop-platforms.md)
 - Optional output shaping, memory and learning. Verify output quality before considering default enablement.
 
 <a name="başlıca-riskler"></a>

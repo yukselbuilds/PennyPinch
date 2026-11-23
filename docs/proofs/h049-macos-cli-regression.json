@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "task": "H049-b4",
+  "scope": "macOS CLI discovery and saved-choice regression",
+  "date": "2026-11-23",
+  "source_commit": "6e472b5838dca934fe0ef4eac98a1eeaf4321690",
+  "implementation": {
+    "verification_owner": "lead_agent",
+    "trial_change": "Standard macOS runner label only",
+    "base_workflow_sha256": "26b7901f95402ee41c02a0e292a66100c084a03f6fc7e4bbfcb24351543b0676",
+    "trial_workflow_sha256": "8470459e8807a88a9bbd4b96249532894a0a2057e16d75502387938f3763d7e3",
+    "development_token_savings": "unmeasured"
+  },
+  "macos_15": {
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45238133341",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45238133341/job/137915245952",
+    "source_commit": "6e472b5838dca934fe0ef4eac98a1eeaf4321690",
+    "source_tree": "fe4fdc6aacc943c9160ff5f3f95f2306db03dc44",
+    "runner_label": "macos-15",
+    "conclusion": "cancelled",
+    "runner_assigned": false,
+    "queue_seconds": 902,
+    "result": "not_tested"
+  },
+  "macos_26": {
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45240111759",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45240111759/job/137922150940",
+    "source_commit": "a76fe131d6d6bf6d2191359b303da3054fa1523f",
+    "source_tree": "b291a1ee2f2ce7add5807b82c34165577c54d020",
+    "runner_label": "macos-26",
+    "conclusion": "success",
+    "runner_assigned": true,
+    "seconds_until_job_start": 305,
+    "seconds_from_job_start_to_end": 361,
+    "native_log_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45240111759/job/137922150940#step:5:1",
+    "runner_os": "macOS 26.7.2 ARM64",
+    "runner_os_build": "25G332",
+    "native_rust_tests": {
+      "passed": 16,
+      "failed": 0,
+      "ignored_in_parent": 2,
+      "seconds": 21.31
+    },
+    "input_fingerprints_match": true,
+    "frontend_build": "pass",
+    "locked_tauri_build": "pass"
+  },
+  "observed": [
+    "Discover pinned Codex, Claude Code, and OpenCode executables without starting them.",
+    "Reopen saved installation choices.",
+    "Preserve a later writer and recover the selection file after process exit.",
+    "Build an ARM64 Tauri executable."
+  ],
+  "limits": {
+    "installed_window_and_engine_0_44_0": "not_tested_in_this_run",
+    "live_client_and_provider_traffic": "not_tested",
+    "macos_release": "not_published"
+  }
+}

@@ -43,10 +43,16 @@ The standard Ubuntu 24.04 x64 GitHub runner found Codex, Claude Code, and OpenCo
 The test used pinned Linux x64 npm executables. It checked unsafe paths, duplicate links, version hashes, and file changes.
 The app reopened saved choices. Separate tests checked concurrent writers and process exit during publication.
 The Linux app requires ext4 for selection and client configuration writes.
-The Windows 10 product gate passed. The macOS ARM64 rerun awaits runner capacity. [H049-b4 evidence](../proofs/h049-linux-discovery.json)
+The Windows 10 product gate passed. [H049-b4 evidence](../proofs/h049-linux-discovery.json)
 
 The Ubuntu 24.04 x64 package passed installation, engine control, exit, and package purge.
 Real client processes and live provider traffic require separate checks. [Linux validation](linux.md)
+
+## macOS CLI regression after the Linux changes
+
+The standard GitHub runner passed this check on macOS 26.7.2 ARM64. The scan found the pinned Codex, Claude Code, and OpenCode executables without starting them. The tests reopened saved choices and checked concurrent writers, conflicts, and recovery after process exit.
+
+The job passed 16 Rust tests, the frontend build, and the locked native build. The input fingerprints matched before and after. The macOS 15 job ended without a runner. [Regression evidence](../proofs/h049-macos-cli-regression.json) · [macOS 26 job](https://github.com/yukselbuilds/PennyPinch/actions/runs/45240111759/job/137922150940)
 
 <a name="windows-10-kurulumu"></a>
 

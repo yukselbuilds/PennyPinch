@@ -17,7 +17,7 @@ Ubuntu 24.04 x64 passed H049-b4. PennyPinch found the three pinned native CLI fi
 
 H049 is complete for Ubuntu 24.04 x64. The installed Debian package passed the native window and engine lifecycle checks. The package is a CI test candidate. Distribution release checks remain separate. [Linux validation](validation/linux.md)
 
-The macOS ARM64 regression check remains open. GitHub cancelled the run before it assigned a runner. Rerun the CLI discovery check when a runner is available. [macOS job](https://github.com/yukselbuilds/PennyPinch/actions/runs/45223891265/job/137865111090)
+The lead agent verified the H049-b4 regression on macOS 26.7.2 ARM64. The job passed 16 Rust tests, the frontend build, and the locked native build. GitHub cancelled the macOS 15 job before runner assignment. The next macOS check covers the installed 0.44.0 window and engine lifecycle. [Regression evidence](proofs/h049-macos-cli-regression.json)
 
 GitHub lists free standard hosted compute for public repositories. Standard Windows x64 runners use Windows Server. The standard Windows 11 desktop runner uses ARM64. Windows 11 x64 acceptance remains open. [Windows acceptance](validation/windows-install.md#open-acceptance-criteria)
 
