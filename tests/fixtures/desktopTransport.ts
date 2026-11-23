@@ -51,7 +51,7 @@ export const installations=['codex','claude_code','opencode'].map((client_kind,i
  client_kind,surface:'cli',version:['0.163.0-alpha.10.2','2.1.158','1.19.3'][index],
  source:'user_local_npm',location_label:'User-local npm',status:'detected',connection_status:'not_verified',
 }));
-const reference={engine_version:'0.44.0',manifest_sha256:'b0fc1f47e63121862409c5ec50f645a4968281206ec7da6564f26ddaadf53abf',mode:'cache',savings_profile:'coding',ccr_ttl_seconds:7200};
+const reference={engine_version:'0.45.0',manifest_sha256:'ef1ed3803ebfd7c819eefd2b5662f3cc72d5d688cfcd2b8eb4b5d2221ac80c29',mode:'cache',savings_profile:'coding',ccr_ttl_seconds:7200};
 const operating={close_to_tray:true,retention_days:30,protected_tools:[]};
 const at='2026-11-08T12:00:00Z';
 function preferences(id:string){return {schema_version:1,request_id:id,status:'ok',revision,state_fingerprint:'ab'.repeat(32),preferences:{language,theme,operating,...(showRecommendations?{show_recommendations:true}:{}),...(experimentalRules?{experimental_rules:true}:{})},runtime_manifest:reference};}

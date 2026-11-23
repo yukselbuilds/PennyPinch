@@ -31,11 +31,11 @@ $listener = [pscustomobject]@{
     State = 'Listen'
     OwningProcess = 412
 }
-$ready = '{"ready":true,"version":"0.44.0"}'
+$ready = '{"ready":true,"version":"0.45.0"}'
 $good = Get-ManualCodexPreflightResult -ListenerRows @($listener) -ProcessId 412 `
     -ProcessImagePath $expectedExe -ExpectedImagePath $expectedExe -HttpStatusCode 200 -ReadyJson $ready
 Assert-True $good.ok 'valid-owned-ready'
-Assert-Equal '0.44.0' $good.engine_version 'ready-version'
+Assert-Equal '0.45.0' $good.engine_version 'ready-version'
 
 $foreign = Get-ManualCodexPreflightResult -ListenerRows @($listener) -ProcessId 999 `
     -ProcessImagePath $expectedExe -ExpectedImagePath $expectedExe -HttpStatusCode 200 -ReadyJson $ready
@@ -57,7 +57,7 @@ Assert-Equal 'process_image_mismatch' $wrongImage.code 'other-image-rejected'
 
 $notReady = Get-ManualCodexPreflightResult -ListenerRows @($listener) -ProcessId 412 `
     -ProcessImagePath $expectedExe -ExpectedImagePath $expectedExe -HttpStatusCode 503 `
-    -ReadyJson '{"ready":false,"version":"0.44.0"}'
+    -ReadyJson '{"ready":false,"version":"0.45.0"}'
 Assert-Equal 'engine_not_ready' $notReady.code 'not-ready-rejected'
 $missingReady = Get-ManualCodexPreflightResult -ListenerRows @($listener) -ProcessId 412 `
     -ProcessImagePath $expectedExe -ExpectedImagePath $expectedExe -HttpStatusCode 200 -ReadyJson '{}'
@@ -66,7 +66,7 @@ $missingVersion = Get-ManualCodexPreflightResult -ListenerRows @($listener) -Pro
     -ProcessImagePath $expectedExe -ExpectedImagePath $expectedExe -HttpStatusCode 200 -ReadyJson '{"ready":true}'
 Assert-Equal 'engine_not_ready' $missingVersion.code 'missing-version-rejected'
 $wrongReadyType = Get-ManualCodexPreflightResult -ListenerRows @($listener) -ProcessId 412 `
-    -ProcessImagePath $expectedExe -ExpectedImagePath $expectedExe -HttpStatusCode 200 -ReadyJson '{"ready":"true","version":"0.44.0"}'
+    -ProcessImagePath $expectedExe -ExpectedImagePath $expectedExe -HttpStatusCode 200 -ReadyJson '{"ready":"true","version":"0.45.0"}'
 Assert-Equal 'engine_not_ready' $wrongReadyType.code 'wrong-ready-type-rejected'
 
 $cliRoot = 'C:\Users\test\AppData\Local\OpenAI\Codex\bin'

@@ -70,7 +70,7 @@ jobs:
           rust_target: aarch64-apple-darwin
           rust_sha: 20ef5516c31b1ac2290084199ba77dbbcaa1406c45c1d978ca68558ef5964ef5
       - run:
-          name: Exercise and package the native 0.44.0 engine
+          name: Exercise and package the native 0.45.0 engine
           no_output_timeout: 18m
           command: |
             set -euo pipefail

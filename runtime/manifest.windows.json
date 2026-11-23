@@ -3,22 +3,22 @@
   "protocol_version": 1,
   "engine": {
     "name": "headroom-ai",
-    "version": "0.44.0",
+    "version": "0.45.0",
     "payload_root": "payload",
     "runtime_manifest": "runtime-manifest.json",
-    "runtime_manifest_sha256": "b0fc1f47e63121862409c5ec50f645a4968281206ec7da6564f26ddaadf53abf",
+    "runtime_manifest_sha256": "ef1ed3803ebfd7c819eefd2b5662f3cc72d5d688cfcd2b8eb4b5d2221ac80c29",
     "runner": "headroom_runtime.py",
-    "runner_sha256": "86de03a4eca728c108a12293b498b0012890812aa490e9f2fd516550455ff5ee",
+    "runner_sha256": "dc067a6c76316be981ebc36d4066a5096e71b3c1ff689fff078410b06b33a2af",
     "python": "python.exe",
     "python_version": "3.13.13",
     "python_sha256": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
     "site_packages": "Lib/site-packages",
     "prefix_tracker": "Lib/site-packages/headroom/cache/prefix_tracker.py",
-    "prefix_tracker_sha256": "29c7d63d8b63ed3dc4906bd3762ff672f5941947f8f8803180c5d1f13a8bbec0"
+    "prefix_tracker_sha256": "35015786e675bc435d92a6fed223b4282b03673eeb41b68cca50772dc69847dc"
   },
   "shim": {
     "file": "cache_control_shim.py",
-    "sha256": "9e47ad68053289d7d02ec942927d5f0c2d14e9d09a867333211f24646f371a8b"
+    "sha256": "09eb94e7edd4877da1c92223baa2b4871ba71dbc8355fdf162f2b3d44b1db340"
   },
   "profile": {
     "mode": "cache",
@@ -33,8 +33,8 @@
   },
   "optimization_control": {
     "file": "optimization_control.py",
-    "sha256": "093a596a79f9d1d9a7597a6aaf8c03a28ff7844db379353f300c1c22fa93e983",
+    "sha256": "e4af8f72447fc24bb33f30ccd79370827576519f0833feeadfdfa77f9a4e147d",
     "sources": "optimization-sources.json",
-    "sources_sha256": "49369a12641eacac00e79eebb3347cff0c2c79b95094d77de332f6f2c11e9e74"
+    "sources_sha256": "53ce06d596b6e0a928d030caae607d95ddce2151aec05d74d6027e93561f5fa8"
   }
 }

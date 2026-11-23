@@ -16,6 +16,19 @@ import optimization_control as control
 import headroom.cache.prefix_tracker as prefix
 
 
+class CacheMarkerTests(unittest.TestCase):
+    def test_runtime_shim_preserves_the_upstream_unmarked_policy(self):
+        import cache_control_shim
+
+        messages = [{"role": "user", "content": [{"type": "text", "text": "Fixture"}]}]
+        with patch.object(prefix, "normalize_message_cache_control", prefix.normalize_message_cache_control):
+            cache_control_shim.install()
+            normalize = prefix.normalize_message_cache_control
+            self.assertEqual(normalize(messages, client_messages=messages, place_unmarked=False), messages)
+            first = normalize(messages, client_messages=messages)[0]["content"][0]
+            self.assertEqual(first["cache_control"], {"type": "ephemeral"})
+
+
 class ResponsesRepeatTests(unittest.TestCase):
     def test_reference_is_resolved_against_actual_forwarded_items(self):
         value = "\n".join(f"Diagnostic item {number} returned the expected value" for number in range(12))

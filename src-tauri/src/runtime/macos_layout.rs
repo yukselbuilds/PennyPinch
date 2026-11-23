@@ -133,10 +133,10 @@ fn verify(root: &Path, expected: &str) -> Result<MacRuntime, MacRuntimeError> {
         serde_json::from_slice(&bytes).map_err(|_| MacRuntimeError::InvalidManifest)?;
     if manifest.schema_version != 1
         || manifest.platform != RUNTIME_PLATFORM
-        || manifest.engine_version != "0.44.0"
+        || manifest.engine_version != super::manager::EXPECTED_ENGINE_VERSION
         || manifest.python_version != "3.13.13"
         || manifest.dependency_lock_sha256
-            != "e1142cbbeaa139a6a23fcc3b1298af5a38f1f33b03d4833e744631c3015de3e7"
+            != "5878af97b0b09a0301e982d42950bc69a9459a8caa38028bfb72438632138d63"
         || manifest.python != "python/bin/python3.13"
         || manifest.site_packages != "site-packages"
         || manifest.entries.is_empty()

@@ -34,7 +34,7 @@ python="$stage/payload/python/bin/python3.13"
 uv="$stage/tools/uv"
 test "$("$python" -I -B --version)" = 'Python 3.13.13'
 test "$("$uv" --version | cut -d' ' -f1,2)" = 'uv 0.13.5'
-printf '%s  %s\n' 'e1142cbbeaa139a6a23fcc3b1298af5a38f1f33b03d4833e744631c3015de3e7' \
+printf '%s  %s\n' '5878af97b0b09a0301e982d42950bc69a9459a8caa38028bfb72438632138d63' \
   runtime/engine-deps/uv.lock | sha256sum --check --status
 
 export UV_NO_CONFIG=1 UV_NO_PROGRESS=1 UV_NO_MANAGED_PYTHON=1 UV_PYTHON_DOWNLOADS=never

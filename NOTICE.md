@@ -2,9 +2,9 @@
 
 This is an unsigned development preview. It is not a signed production release.
 
-The Windows engine payload includes Headroom (`headroom-ai` 0.44.0), Copyright
-2025 Headroom Contributors, under Apache-2.0. Its original LICENSE and NOTICE
-are preserved at `runtime/payload/Lib/site-packages/headroom_ai-0.44.0.dist-info/licenses/`.
+The Windows engine payload includes Headroom (`headroom-ai` 0.45.0), Copyright
+2025 Headroom Contributors, under Apache-2.0. The payload keeps its original LICENSE and NOTICE
+at `runtime/payload/Lib/site-packages/headroom_ai-0.45.0.dist-info/licenses/`.
 The pinned CPython 3.13.13 distribution's license is preserved at
 `runtime/payload/LICENSE.txt`. Python dependency metadata, license files and
 notices remain in their original `.dist-info` and package directories.
@@ -14,8 +14,8 @@ controller, hidden helper, cache-control shim and optimization-control overlay
 are separate files under `runtime/`; the overlay verifies its upstream source
 hashes in `runtime/optimization-sources.json`. They are not vendor replacements.
 The original pinned supervisor inside the payload was authored in this project
-at `work/proofs/engine-0.44.0/headroom_runtime.py`; it is copied byte-for-byte and
-identified by the runner SHA-256 in both source manifests.
+at `work/proofs/engine-0.45.0/headroom_runtime.py`. Both source manifests record the
+SHA-256 of that exact file.
 
 The payload, lock identity and exact file-tree inventory are recorded in
 `runtime/windows-payload.json` in the source checkout. The built package records
@@ -27,11 +27,11 @@ separately from the application and WebView2 bootstrapper.
 Tauri and its Rust dependencies, React, and the bundled WebView2 prerequisite
 retain their respective licenses. H037 recorded a component inventory and a
 597-entry license archive for the 9 November 2026 Windows preview with engine
-0.41.0. The current Windows payload uses 0.44.0. Release acceptance still
+0.41.0. The current Windows payload uses 0.45.0. Release acceptance still
 requires delivery of the notices matching the published package.
 [Preview inventory](docs/proofs/windows-installer-components.json) ·
 [License archive](docs/proofs/windows-installer-notices.json) ·
-[Windows pin transition](docs/proofs/headroom-044-upgrade.json)
+[Windows pin transition](docs/proofs/headroom-045-upgrade.json)
 
 ## Tauri Windows installer template
 

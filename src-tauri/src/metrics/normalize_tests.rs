@@ -41,12 +41,19 @@ fn metrics_empty_is_not_zero_savings() {
 fn current_and_previous_engine_stats_preserve_the_same_measurement_basis() {
     let raw = br#"{"recent_requests":[{"request_id":"fixture","timestamp":"2026-11-16T12:00:00Z","input_tokens_original":100,"input_tokens_optimized":80,"cost_usd":12.5}]}"#;
     let previous = project_headroom_041(raw, GENERATION, "0.41.0", Source::Proxy).unwrap();
-    let current = project_headroom_041(raw, GENERATION, "0.44.0", Source::Proxy).unwrap();
-    assert_eq!(
-        serde_json::to_value(&previous.batch).unwrap(),
-        serde_json::to_value(&current.batch).unwrap()
-    );
-    assert!(current.batch.events[0].saved_tokens.is_none());
+    let latest_raw = br#"{"recent_requests":[{"request_id":"fixture","timestamp":"2026-11-16T12:00:00Z","input_tokens_original":100,"input_tokens_optimized":80,"cost_usd":12.5,"output_tokens_saved":70,"output_tokens_saved_high":100}]}"#;
+    let earlier = project_headroom_041(raw, GENERATION, "0.44.0", Source::Proxy).unwrap();
+    let latest = project_headroom_041(
+        latest_raw,
+        GENERATION,
+        crate::runtime::manager::EXPECTED_ENGINE_VERSION,
+        Source::Proxy,
+    )
+    .unwrap();
+    let previous = serde_json::to_value(&previous.batch).unwrap();
+    assert_eq!(serde_json::to_value(&earlier.batch).unwrap(), previous);
+    assert_eq!(serde_json::to_value(&latest.batch).unwrap(), previous);
+    assert!(latest.batch.events[0].saved_tokens.is_none());
 }
 
 #[test]

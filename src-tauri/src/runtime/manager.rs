@@ -127,11 +127,11 @@ fn startup_diagnostic_for_test() -> StartupDiagnostic {
         .unwrap_or_default()
 }
 
-pub(crate) const EXPECTED_ENGINE_VERSION: &str = "0.44.0";
+pub(crate) const EXPECTED_ENGINE_VERSION: &str = "0.45.0";
 const EXPECTED_MANIFEST_SHA256: &str =
-    "d6e755b8718bba7764818cf01338f044281fed10a710552154615a41f55f646d";
+    "f53f8a26c50bc6d4c7e5ed6f5afc6b2c566db6aaadfbcaf38f9121d33ee33869";
 const EXPECTED_WINDOWS_MANIFEST_SHA256: &str =
-    "a28fb9d15607a95bcfcdb7d3abfda796f22e2e9d90582752e29c5849b8dfee3b";
+    "56c3dac053dbac184fa0ba19c49a8e9ca791db98fbb0632bd3c94270a521f231";
 pub(crate) const ACTIVE_MANIFEST: &str = if cfg!(debug_assertions) {
     include_str!("../../../runtime/manifest.json")
 } else {
@@ -143,26 +143,26 @@ const ACTIVE_MANIFEST_SHA256: &str = if cfg!(debug_assertions) {
     EXPECTED_WINDOWS_MANIFEST_SHA256
 };
 const EXPECTED_CONTROLLER_SHA256: &str =
-    "c806a85bbf7c4017baee59b700bb54cd72b8688dec960e531e9eb764592578e1";
+    "d199f539fe18b1d3029a420b3be485d99b1222d0d7f5a938ab1df5ba2062e16f";
 const EXPECTED_HELPER_SHA256: &str =
-    "0fa23e60d7b4191d44dc672d216da80d80338423a2c1a0360bae2bee0b4b2249";
+    "e663ac42634f7a5a34b30a8409105d0cdef6f40879207006bea3b13272407b31";
 #[cfg(windows)]
 const EXPECTED_RETRIEVAL_BRIDGE_SHA256: &str =
     "163a28b73967782668f557ae509c45b55c63087eb4523ba7a294aaf9839a3b5a";
 const EXPECTED_SHIM_SHA256: &str =
-    "9e47ad68053289d7d02ec942927d5f0c2d14e9d09a867333211f24646f371a8b";
+    "09eb94e7edd4877da1c92223baa2b4871ba71dbc8355fdf162f2b3d44b1db340";
 const EXPECTED_OPTIMIZATION_SHA256: &str =
-    "093a596a79f9d1d9a7597a6aaf8c03a28ff7844db379353f300c1c22fa93e983";
+    "e4af8f72447fc24bb33f30ccd79370827576519f0833feeadfdfa77f9a4e147d";
 const EXPECTED_OPTIMIZATION_SOURCES_SHA256: &str =
-    "49369a12641eacac00e79eebb3347cff0c2c79b95094d77de332f6f2c11e9e74";
+    "53ce06d596b6e0a928d030caae607d95ddce2151aec05d74d6027e93561f5fa8";
 pub(crate) const EXPECTED_RUNTIME_MANIFEST_SHA256: &str =
-    "b0fc1f47e63121862409c5ec50f645a4968281206ec7da6564f26ddaadf53abf";
+    "ef1ed3803ebfd7c819eefd2b5662f3cc72d5d688cfcd2b8eb4b5d2221ac80c29";
 const EXPECTED_RUNNER_SHA256: &str =
-    "86de03a4eca728c108a12293b498b0012890812aa490e9f2fd516550455ff5ee";
+    "dc067a6c76316be981ebc36d4066a5096e71b3c1ff689fff078410b06b33a2af";
 const EXPECTED_PYTHON_SHA256: &str =
     "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07";
 const EXPECTED_PREFIX_SHA256: &str =
-    "29c7d63d8b63ed3dc4906bd3762ff672f5941947f8f8803180c5d1f13a8bbec0";
+    "35015786e675bc435d92a6fed223b4282b03673eeb41b68cca50772dc69847dc";
 const EXPECTED_PYTHON_VERSION: &str = "3.13.13";
 const EXPECTED_SITE_PACKAGES: &str = "Lib/site-packages";
 const EXPECTED_RUNNER: &str = "headroom_runtime.py";

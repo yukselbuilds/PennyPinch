@@ -8,7 +8,7 @@ parser=argparse.ArgumentParser();parser.add_argument('--write',action='store_tru
 manifest_path=ROOT/'runtime/manifest.json';controller_path=ROOT/'runtime/desktop_controller.py';manager_path=ROOT/'src-tauri/src/runtime/manager.rs'
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 source_path=ROOT/'runtime/optimization-sources.json';control_path=ROOT/'runtime/optimization_control.py'
-manifest=json.loads(manifest_path.read_text(encoding='utf-8'));assert manifest['engine']['version']=='0.44.0'
+manifest=json.loads(manifest_path.read_text(encoding='utf-8'));assert manifest['engine']['version']=='0.45.0'
 package=(manifest_path.parent/manifest['engine']['payload_root']/'Lib/site-packages/headroom').resolve();assert package.is_relative_to(ROOT)
 expected=json.loads(source_path.read_text(encoding='utf-8'))
 assert expected and all((package/p).is_file() and sha(package/p)==h for p,h in expected.items())

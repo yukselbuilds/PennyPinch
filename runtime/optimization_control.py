@@ -912,7 +912,7 @@ def install(generation: str, secret: str) -> dict[str, str]:
 
     root = Path(server.__file__).resolve().parents[1]
     expected = json.loads(Path(__file__).with_name("optimization-sources.json").read_text(encoding="utf-8"))
-    if headroom._version.__version__ != "0.44.0" or any(hashlib.sha256((root / p).read_bytes()).hexdigest() != h for p, h in expected.items()):
+    if headroom._version.__version__ != "0.45.0" or any(hashlib.sha256((root / p).read_bytes()).hexdigest() != h for p, h in expected.items()):
         raise RuntimeError("optimization-source-mismatch")
     if len(generation) != 32 or len(secret) != 32 or any(c not in "0123456789abcdef" for c in generation + secret) or int(generation, 16) == 0 or int(secret, 16) == 0:
         raise RuntimeError("optimization-control-invalid")
@@ -971,7 +971,7 @@ def install(generation: str, secret: str) -> dict[str, str]:
             )
         return body, raw
 
-    def normalize(messages, previous_forwarded_messages=None, client_messages=None):
+    def normalize(messages, previous_forwarded_messages=None, client_messages=None, *, place_unmarked=True):
         state = _request.get()
         if state is not None and state.kind == "anthropic" and not state.bypass:
             if not state.enabled:
@@ -982,12 +982,15 @@ def install(generation: str, secret: str) -> dict[str, str]:
                     with state.gate.lock: state.gate.history_safe = False
                     raise
             paused_prefix = not state.enabled and state.previous and state.previous[0]
-            if (state.skip_anthropic_generated_marker or paused_prefix) and not _has_client_markers(client_messages):
+            if (place_unmarked and (state.skip_anthropic_generated_marker or paused_prefix)
+                    and not _has_client_markers(client_messages)):
                 if state.skip_anthropic_generated_marker:
                     # Drop a generated marker carried forward by replay before the request is recorded.
                     return prefix.mirror_client_message_cache_control(messages, client_messages)
                 return messages
-        return original_normalize(messages, previous_forwarded_messages, client_messages)
+        return original_normalize(
+            messages, previous_forwarded_messages, client_messages, place_unmarked=place_unmarked
+        )
 
     def payload(proxy, body, **kwargs):
         state = _request.get()
@@ -1113,6 +1116,6 @@ def install(generation: str, secret: str) -> dict[str, str]:
     openai._extract_responses_usage = websocket_usage
     openai._strip_codex_lite_metadata = websocket_strip
     server.create_app = create
-    return {"active": "true", "version": "0.44.0", "source_sha256": hashlib.sha256(_encoded(expected)).hexdigest(),
+    return {"active": "true", "version": "0.45.0", "source_sha256": hashlib.sha256(_encoded(expected)).hexdigest(),
             "module_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             "sources_sha256": hashlib.sha256(Path(__file__).with_name("optimization-sources.json").read_bytes()).hexdigest()}

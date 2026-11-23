@@ -303,7 +303,7 @@ fn ready_frame() -> Vec<u8> {
         "engine_pid": 302,
         "listener_port": 48631,
         "listener_pid": 302,
-        "engine_version": "0.44.0",
+        "engine_version": "0.45.0",
         "controller_consoleless": true,
         "manager_hidden_console": true,
         "engine_console_allocated": true,
@@ -322,7 +322,7 @@ fn ready_frame() -> Vec<u8> {
         "optimization_control":{"protocol_version":1,"control_token":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","module_sha256":EXPECTED_OPTIMIZATION_SHA256,"sources_sha256":EXPECTED_OPTIMIZATION_SOURCES_SHA256},
         "shim": {
             "active": true,
-            "version": "0.44.0",
+            "version": "0.45.0",
             "prefix_tracker_sha256": EXPECTED_PREFIX_SHA256,
             "shim_sha256": EXPECTED_SHIM_SHA256
         }
@@ -476,7 +476,7 @@ fn health_probe_selects_pinned_readiness_fields_and_ignores_large_diagnostics() 
         "service": "headroom-proxy",
         "status": "healthy",
         "ready": true,
-        "version": "0.44.0",
+        "version": "0.45.0",
         "timestamp": "2026-10-20T00:00:00Z",
         "uptime_seconds": 1.25,
         "checks": {"worker": {"ready": true, "detail": "x".repeat(4096)}},
@@ -485,28 +485,28 @@ fn health_probe_selects_pinned_readiness_fields_and_ignores_large_diagnostics() 
     });
     let encoded = serde_json::to_vec(&body).unwrap();
     assert!(encoded.len() > 2048);
-    assert!(health_payload_matches(&encoded, "0.44.0"));
+    assert!(health_payload_matches(&encoded, "0.45.0"));
 
     body["service"] = json!("other-service");
     assert!(!health_payload_matches(
         &serde_json::to_vec(&body).unwrap(),
-        "0.44.0"
+        "0.45.0"
     ));
     body["service"] = json!("headroom-proxy");
     body["status"] = json!("unhealthy");
     assert!(!health_payload_matches(
         &serde_json::to_vec(&body).unwrap(),
-        "0.44.0"
+        "0.45.0"
     ));
     body["status"] = json!("healthy");
     body["version"] = json!("0.42.0");
     assert!(!health_payload_matches(
         &serde_json::to_vec(&body).unwrap(),
-        "0.44.0"
+        "0.45.0"
     ));
     assert!(!health_payload_matches(
-        br#"{"service":"headroom-proxy","status":"healthy","ready":true,"ready":false,"version":"0.44.0"}"#,
-        "0.44.0"
+        br#"{"service":"headroom-proxy","status":"healthy","ready":true,"ready":false,"version":"0.45.0"}"#,
+        "0.45.0"
     ));
 }
 

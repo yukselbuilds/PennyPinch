@@ -19,7 +19,7 @@ import time
 import uuid
 
 
-ENGINE_VERSION = "0.44.0"
+ENGINE_VERSION = "0.45.0"
 MAX_BODY = 256 * 1024
 PEER_CREDENTIALS = struct.Struct("iII")
 BOOTSTRAP = """
@@ -224,7 +224,7 @@ def probe(root):
                 run_engine(state, payload, fixture, test_foreign_peer=index == 0)
             finally:
                 require(fixture.close(), "fixture shutdown was incomplete")
-    print("Linux engine proof: Headroom 0.44.0, CPython 3.13.13, two fixture streams, owned peer, foreign peer rejected, clean restart and stop.")
+    print("Linux engine proof: Headroom 0.45.0, CPython 3.13.13, two fixture streams, owned peer, foreign peer rejected, clean restart and stop.")
 
 
 def probe_managed(root, test_binary):

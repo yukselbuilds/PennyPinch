@@ -24,7 +24,7 @@ function Stop-Safe([string]$Code) {
         process_image_mismatch = 'The endpoint owner is not the expected project Headroom executable.'
         readiness_unavailable = 'The local engine readiness check did not complete safely.'
         readiness_invalid = 'The local engine returned an invalid readiness response.'
-        engine_not_ready = 'The owned Headroom engine is not ready at version 0.44.0.'
+        engine_not_ready = 'The owned Headroom engine is not ready at version 0.45.0.'
         codex_unavailable = 'The installed Codex CLI could not be located safely.'
         codex_path_unsafe = 'Codex is not at the expected user-local installation path.'
         codex_version_unverified = 'The installed Codex CLI version is not in the verified local allowlist.'
@@ -207,7 +207,7 @@ $preflight = Get-ManualCodexPreflightResult -ListenerRows $after.rows -ProcessId
 if (-not $preflight.ok) { Stop-Safe $preflight.code }
 
 if ($CheckOnly) {
-    Write-Output 'Check passed: the expected Headroom desktop process owns 127.0.0.1:51778 and its 0.44.0 engine is ready.'
+    Write-Output 'Check passed: the expected Headroom desktop process owns 127.0.0.1:51778 and its 0.45.0 engine is ready.'
     Write-Output ('Codex CLI selection: ' + $codexSelection.version + ' (' + $codexPath + ')')
     Write-Output 'Codex was not launched; login files and client configuration were not inspected.'
     exit 0

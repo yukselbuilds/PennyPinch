@@ -138,7 +138,7 @@ class DesktopProtocolTests(unittest.TestCase):
                 json.dumps(
                     {
                         "schema_version": 1,
-                        "engine": {"name": "headroom-ai", "version": "0.44.0"},
+                        "engine": {"name": "headroom-ai", "version": "0.45.0"},
                         "python": {
                             "version": "3.13.13",
                             "sha256": hashlib.sha256(b"pinned-python").hexdigest(),
@@ -162,7 +162,7 @@ class DesktopProtocolTests(unittest.TestCase):
                 "protocol_version": 1,
                 "engine": {
                     "name": "headroom-ai",
-                    "version": "0.44.0",
+                    "version": "0.45.0",
                     "python_version": "3.13.13",
                     "payload_root": ".",
                     "runtime_manifest": "runtime-manifest.json",
@@ -317,7 +317,7 @@ class DesktopRuntimeSmokeTests(unittest.TestCase):
             self.assertEqual(ready.get("protocol_version"), 1)
             generation = ready.get("runtime_generation")
             self.assertIsInstance(generation, str)
-            self.assertEqual(ready.get("engine_version"), "0.44.0")
+            self.assertEqual(ready.get("engine_version"), "0.45.0")
             self.assertTrue(ready.get("controller_consoleless"))
             self.assertTrue(ready.get("manager_hidden_console"))
             self.assertTrue(ready.get("engine_console_allocated"))
@@ -344,7 +344,7 @@ class DesktopRuntimeSmokeTests(unittest.TestCase):
             )
             shim = ready.get("shim")
             self.assertEqual(shim.get("active"), True)
-            self.assertEqual(shim.get("version"), "0.44.0")
+            self.assertEqual(shim.get("version"), "0.45.0")
             self.assertEqual(
                 shim.get("prefix_tracker_sha256"),
                 json.loads(manifest.read_bytes())["engine"]["prefix_tracker_sha256"],

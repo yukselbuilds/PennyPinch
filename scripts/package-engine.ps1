@@ -7,9 +7,9 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $artifactRoot = [System.IO.Path]::GetFullPath((Join-Path $repoRoot 'work\proofs\packaging\artifacts'))
-$outputRoot = [System.IO.Path]::GetFullPath((Join-Path $artifactRoot 'headroom-engine-0.44.0'))
+$outputRoot = [System.IO.Path]::GetFullPath((Join-Path $artifactRoot 'headroom-engine-0.45.0'))
 $runtimeOutput = Join-Path $outputRoot 'runtime'
-$proofRoot = Join-Path $repoRoot 'work\proofs\engine-0.44.0'
+$proofRoot = Join-Path $repoRoot 'work\proofs\engine-0.45.0'
 $sourceRuntime = Join-Path $repoRoot 'work\proofs\engine\toolchain\cpython-3.13.13-windows-x86_64-none'
 $sourceSitePackages = Join-Path $proofRoot '.venv\Lib\site-packages'
 $pythonExe = Join-Path $sourceRuntime 'python.exe'
@@ -36,7 +36,7 @@ if (-not (Test-Path -LiteralPath $pythonExe -PathType Leaf) -or
     throw 'Pinned runtime inputs are incomplete; no package was written.'
 }
 $projectDefinition = Get-Content -LiteralPath $pyproject -Raw
-if ($projectDefinition -notmatch 'headroom-ai\[proxy\]==0\.44\.0') {
+if ($projectDefinition -notmatch 'headroom-ai\[proxy\]==0\.45\.0') {
     throw 'The proof project no longer pins the expected Headroom runtime.'
 }
 $sourceLockHash = (Get-FileHash -LiteralPath $lockFile -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -132,7 +132,7 @@ $manifest = [ordered]@{
     engine = [ordered]@{
         name = 'headroom-ai'
         distribution = 'headroom-ai[proxy]'
-        version = '0.44.0'
+        version = '0.45.0'
         lock_sha256 = $sourceLockHash
     }
     python = [ordered]@{

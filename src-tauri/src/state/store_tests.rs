@@ -359,7 +359,7 @@ fn previous_engine_preferences_migrate_without_rewrite_and_legacy_save_preserves
     let original = serde_json::to_vec(&legacy).unwrap();
     fs::write(&path, &original).unwrap();
     let read = snapshot(fixture.store.get_preferences(REQUEST_ID.into()));
-    assert_eq!(read.runtime_manifest.engine_version, "0.44.0");
+    assert_eq!(read.runtime_manifest.engine_version, "0.45.0");
     assert_eq!(
         read.runtime_manifest.manifest_sha256,
         crate::runtime::manager::EXPECTED_RUNTIME_MANIFEST_SHA256
@@ -590,7 +590,7 @@ fn missing_state_returns_defaults_without_creating_a_file() {
     assert_eq!(value.revision, 0);
     assert_eq!(value.preferences.language, "tr");
     assert_eq!(value.preferences.theme, "system");
-    assert_eq!(value.runtime_manifest.engine_version, "0.44.0");
+    assert_eq!(value.runtime_manifest.engine_version, "0.45.0");
     assert_eq!(value.runtime_manifest.ccr_ttl_seconds, 7200);
     assert!(value.state_fingerprint.is_none());
     assert!(!fixture.root().exists());

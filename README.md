@@ -111,7 +111,10 @@ pnpm test:app
 pnpm build
 ```
 
-`test:app` runs the contract tests listed in the package scripts. `build` checks TypeScript and builds the frontend. The Windows desktop runtime also needs the separately prepared engine. The development manifest resolves `../work/proofs/packaging/artifacts/headroom-engine-0.44.0/runtime` relative to its directory. The payload and some historical protocol-helper inputs are under the Git-ignored `work/` directory. See [package scripts](package.json), [source-check scope](docs/validation/source-checks.md), and the [development manifest](runtime/manifest.json).
+`test:app` runs the app contract tests. `build` checks TypeScript and builds the frontend.
+The Windows build needs the Headroom 0.45.0 payload from the development manifest.
+The payload and protocol test helpers are in the Git-ignored `work/` directory.
+[Package scripts](package.json) · [Source check scope](docs/validation/source-checks.md) · [Development manifest](runtime/manifest.json)
 
 With the pinned development toolchain and engine payload already prepared locally, build the Windows preview:
 
@@ -121,6 +124,8 @@ pnpm.cmd build:windows
 
 This verifies and stages the engine, then builds an x64 current-user NSIS preview under `work/caches/cargo-target/release/bundle/nsis/`. The installed app requires WebView2. If it is missing, the embedded bootstrapper needs internet access. The installer rejects destinations longer than 100 UTF-16 units.
 
-The Windows package keeps the engine in `runtime/payload` and mutable app state separately under LocalAppData. Before installer compression, the Headroom 0.44.0 payload contains 19,475 files and 505,117,034 bytes. See the [payload inventory](runtime/windows-payload.json), [vendor notices](NOTICE.md), and [installer validation](docs/validation/windows-install.md).
+The Windows package keeps the engine in `runtime/payload` and stores app state under LocalAppData.
+The Headroom 0.45.0 payload contains 19,483 files and 505,296,374 bytes before installer compression.
+[Payload inventory](runtime/windows-payload.json) · [Vendor notices](NOTICE.md) · [Installer validation](docs/validation/windows-install.md)
 
 </details>

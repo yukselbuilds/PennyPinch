@@ -1,4 +1,4 @@
-"""Narrow, pinned workaround for Headroom 0.44.0's legacy cache marker."""
+"""Narrow, pinned workaround for Headroom 0.45.0's legacy cache marker."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Any, Callable
 
 
-EXPECTED_VERSION = "0.44.0"
-EXPECTED_PREFIX_TRACKER_SHA256 = "29c7d63d8b63ed3dc4906bd3762ff672f5941947f8f8803180c5d1f13a8bbec0"
+EXPECTED_VERSION = "0.45.0"
+EXPECTED_PREFIX_TRACKER_SHA256 = "35015786e675bc435d92a6fed223b4282b03673eeb41b68cca50772dc69847dc"
 
 # These are documented Anthropic Messages block types. Any other type is
 # treated as opaque so the engine-generated legacy marker cannot mutate it.
@@ -198,8 +198,12 @@ def install() -> dict[str, str]:
             messages: list[dict[str, Any]],
             previous_forwarded_messages: list[dict[str, Any]] | None = None,
             client_messages: list[dict[str, Any]] | None = None,
+            *,
+            place_unmarked: bool = True,
         ) -> list[dict[str, Any]]:
-            normalized = original(messages, previous_forwarded_messages, client_messages)
+            normalized = original(
+                messages, previous_forwarded_messages, client_messages, place_unmarked=place_unmarked
+            )
             if _has_client_markers(client_messages):
                 normalized = _restore_client_opaque_markers(normalized, client_messages)
                 return normalized

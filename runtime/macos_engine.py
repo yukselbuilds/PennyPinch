@@ -152,7 +152,7 @@ def run(args):
     manifest = json.loads(manifest_bytes, object_pairs_hook=unique_keys)
     if (
         manifest["platform"] != runtime_platform
-        or manifest["engine_version"] != "0.44.0"
+        or manifest["engine_version"] != "0.45.0"
         or manifest["python_version"] != "3.13.13"
     ):
         raise StartupError("runtime_pin_mismatch")
@@ -164,7 +164,7 @@ def run(args):
     site.addsitedir(str(payload / "site-packages"))
     from importlib.metadata import version
 
-    if version("headroom-ai") != "0.44.0":
+    if version("headroom-ai") != "0.45.0":
         raise StartupError("engine_version_mismatch")
     os.environ.update({
         "HOME": str(state / "home"),
@@ -194,7 +194,7 @@ def run(args):
     if ModelRouterConfig.from_env("0", None).enabled:
         raise StartupError("model_router_enabled")
     shim = cache_control_shim.install()
-    if shim.get("active") != "true" or shim.get("version") != "0.44.0":
+    if shim.get("active") != "true" or shim.get("version") != "0.45.0":
         raise StartupError("cache_shim_inactive")
     optimization_control.install(request["generation"], request["secret"])
     install_private_dashboard(request["secret"])

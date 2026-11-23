@@ -9,7 +9,7 @@ use uuid::Uuid;
 pub const MAX_TOKEN_COUNT: u64 = 9_007_199_254_740_991;
 pub const MAX_OBSERVATIONS: usize = 10_000;
 pub const MAX_SNAPSHOT_BYTES: usize = 2 * 1024 * 1024;
-const WS_INPUT_BASIS_PREFIX: &str = "headroom-0.44.0-ws-json-v1:";
+const WS_INPUT_BASIS_PREFIX: &str = "headroom-0.45.0-ws-json-v1:";
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -441,12 +441,9 @@ fn preserve_owned_ws_input(target: &mut NormalizedEvent, source: &NormalizedEven
         && source.observed_via.contains(&Source::Proxy)
         && source.before.component == Component::WholeInput
         && source.before.basis.kind == CounterKind::LocalEstimate
-        && source
-            .before
-            .basis
-            .tokenizer
-            .as_deref()
-            .is_some_and(|id| id.starts_with(WS_INPUT_BASIS_PREFIX))
+        && source.before.basis.tokenizer.as_deref().is_some_and(|id| {
+            id.starts_with(WS_INPUT_BASIS_PREFIX) || id.starts_with("headroom-0.44.0-ws-json-v1:")
+        })
     {
         target.before = source.before.clone();
         target.after = source.after.clone();
@@ -824,7 +821,10 @@ fn project_headroom(
     source: Source,
     usage: &BTreeMap<String, CapturedUsage>,
 ) -> Result<EngineProjection, NormalizeError> {
-    if !matches!(engine_version, "0.41.0" | "0.44.0") {
+    if !matches!(
+        engine_version,
+        "0.41.0" | "0.44.0" | crate::runtime::manager::EXPECTED_ENGINE_VERSION
+    ) {
         return Err(NormalizeError::UnsupportedEngineVersion);
     }
     generation(runtime_generation)?;

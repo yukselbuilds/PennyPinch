@@ -21,8 +21,8 @@ function snapshot(overrides = {}) {
     state_fingerprint: fingerprint,
     preferences: { language: "en", theme: "dark" },
     runtime_manifest: {
-      engine_version: "0.44.0",
-      manifest_sha256: "b0fc1f47e63121862409c5ec50f645a4968281206ec7da6564f26ddaadf53abf",
+      engine_version: "0.45.0",
+      manifest_sha256: "ef1ed3803ebfd7c819eefd2b5662f3cc72d5d688cfcd2b8eb4b5d2221ac80c29",
       mode: "cache",
       savings_profile: "coding",
       ccr_ttl_seconds: 7200,

@@ -119,7 +119,7 @@ def ready_engine(app, state, session, owned_get):
         except OSError:
             continue
         if row.get("ready") is True:
-            require(row.get("service") == "headroom-proxy" and row.get("version") == "0.44.0", "engine_version_mismatch")
+            require(row.get("service") == "headroom-proxy" and row.get("version") == "0.45.0", "engine_version_mismatch")
             return path, pid, identity
     return None
 

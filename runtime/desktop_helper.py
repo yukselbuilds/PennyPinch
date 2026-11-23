@@ -34,7 +34,8 @@ PROFILE_ENV = {
     "HEADROOM_KOMPRESS_WARMUP": "0",
 }
 SHIM_MARKER = re.compile(
-    rb"headroom-desktop-cache-shim:version=(0\.44\.0);prefix_sha256=([0-9a-f]{64});shim_sha256=([0-9a-f]{64})"
+    rb"headroom-desktop-cache-shim:version=([0-9]+\.[0-9]+\.[0-9]+);"
+    rb"prefix_sha256=([0-9a-f]{64});shim_sha256=([0-9a-f]{64})"
 )
 ROUTER_MARKER = b"headroom-desktop-model-router:disabled"
 CONTROL_MARKER = re.compile(rb"headroom-desktop-optimization-control:module_sha256=([0-9a-f]{64});sources_sha256=([0-9a-f]{64})")
