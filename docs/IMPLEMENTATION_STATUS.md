@@ -2,11 +2,11 @@
 
 ## Current status
 
-**46 of 54 main tasks are complete.** H042 passed its Windows 10 release checks. Windows 11 x64 update and rollback remain open. H041 remains open and deferred. [Task list](../TASKS.md)
+**46 of 54 main tasks are complete.** H042 passed its Windows 10 release checks. Windows 11 x64 update and rollback remain open. H041 remains open. [Task list](../TASKS.md)
 
 PennyPinch v0.1.1-preview.3 is available for Windows 10 22H2 x64. The full installer updates OpenTelemetry API and Tokio. Both public downloads matched their SHA-256 digests. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.3) · [Publication evidence](proofs/pennypinch-windows10-preview3-publication.json)
 
-macOS ARM64 passed native desktop development checks with engine 0.41.0. The later 0.44.0 engine and package passed. Native window acceptance for 0.44.0 remains open. [Platform status](validation/desktop-platforms.md)
+The lead agent verified the packaged PennyPinch window and Headroom 0.44.0 engine on macOS 26.7.2 ARM64. Two normal exits closed the engine and released the loopback port. Next, check a controlled Codex Desktop turn and its measurement through the package. [Package evidence](proofs/macos-044-package-lifecycle.json)
 
 Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b2 evidence](proofs/h049-linux-transaction.json)
 
@@ -17,7 +17,7 @@ Ubuntu 24.04 x64 passed H049-b4. PennyPinch found the three pinned native CLI fi
 
 H049 is complete for Ubuntu 24.04 x64. The installed Debian package passed the native window and engine lifecycle checks. The package is a CI test candidate. Distribution release checks remain separate. [Linux validation](validation/linux.md)
 
-The lead agent verified the H049-b4 regression on macOS 26.7.2 ARM64. The job passed 16 Rust tests, the frontend build, and the locked native build. GitHub cancelled the macOS 15 job before runner assignment. The next macOS check covers the installed 0.44.0 window and engine lifecycle. [Regression evidence](proofs/h049-macos-cli-regression.json)
+The lead agent verified the H049-b4 regression on macOS 26.7.2 ARM64. The job passed 16 Rust tests, the frontend build, and the locked native build. GitHub cancelled the macOS 15 job before runner assignment. [Regression evidence](proofs/h049-macos-cli-regression.json)
 
 GitHub lists free standard hosted compute for public repositories. Standard Windows x64 runners use Windows Server. The standard Windows 11 desktop runner uses ARM64. Windows 11 x64 acceptance remains open. [Windows acceptance](validation/windows-install.md#open-acceptance-criteria)
 

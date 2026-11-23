@@ -5,7 +5,7 @@ The initial checks below used commit 10f32e3. The macOS and Linux checks in the 
 | Environment | Verified coverage | Open acceptance criteria |
 | --- | --- | --- |
 | Windows 10 22H2 x64, build 19045 | The current NSIS package installed. All 19,484 resources matched the receipt. The native window opened, and the 0.44.0 engine answered a local HTTP request. The app exited normally and the test installation was removed. | A clean Windows environment without WebView2, real client traffic against the installed candidate and download from the release URL require further verification. |
-| macOS 15 ARM64, CircleCI M4 Pro | The 0.44.0 engine passed a local traffic test. The ARM64 application bundle was built and its ad hoc signature and contents were verified. | The application process started. AppleScript timed out with −1712 on two attempts to inspect the window. The native window and engine lifecycle checks remain open. [Run 5](https://app.circleci.com/pipelines/circleci/KoDRDU6JmR6wiWsrCamPDH/b460f300-344a-4d50-8849-edc9e66c82b8/5/details) |
+| macOS 15 ARM64, CircleCI M4 Pro | The 0.44.0 engine passed a local traffic test. The ARM64 bundle passed ad hoc signature and contents checks. | AppleScript timed out with −1712 on two window checks. A later macOS 26 job passed the window checks. [CircleCI run](https://app.circleci.com/pipelines/circleci/KoDRDU6JmR6wiWsrCamPDH/b460f300-344a-4d50-8849-edc9e66c82b8/5/details) · [macOS 26 result](#macos-26-packaged-window-and-engine) |
 | Ubuntu 24.04 x64, CircleCI | The frontend and Rust builds passed. The window opened under Xvfb. The Rust suite recorded 220 passes, 81 failures, and 2 skipped tests. [Run 6](https://app.circleci.com/pipelines/circleci/KoDRDU6JmR6wiWsrCamPDH/b460f300-344a-4d50-8849-edc9e66c82b8/6/details) | Later checks covered installation and the engine lifecycle. [Linux validation](linux.md) |
 
 ## Linux configuration reads, 23 November 2026
@@ -53,6 +53,14 @@ Real client processes and live provider traffic require separate checks. [Linux 
 The standard GitHub runner passed this check on macOS 26.7.2 ARM64. The scan found the pinned Codex, Claude Code, and OpenCode executables without starting them. The tests reopened saved choices and checked concurrent writers, conflicts, and recovery after process exit.
 
 The job passed 16 Rust tests, the frontend build, and the locked native build. The input fingerprints matched before and after. The macOS 15 job ended without a runner. [Regression evidence](../proofs/h049-macos-cli-regression.json) · [macOS 26 job](https://github.com/yukselbuilds/PennyPinch/actions/runs/45240111759/job/137922150940)
+
+## macOS 26 packaged window and engine
+
+The standard GitHub runner tested the `.app` on macOS 26.7.2 ARM64. PennyPinch opened twice. The window started, stopped, and restarted the pinned Headroom 0.44.0 engine. The test observed three separate engine processes.
+
+Both exits released the engine, loopback port, and private locks. The app reused its saved loopback port on reopen. The signed test bundle and its 17,125 runtime files matched before and after. [Package evidence](../proofs/macos-044-package-lifecycle.json) · [GitHub Actions run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45244117050)
+
+The job used private test state. Client traffic, stored measurements, production signing, notarization, and release delivery have separate acceptance checks. [H041 criteria](optimization-benefit.md#open-h041-acceptance-criteria)
 
 <a name="windows-10-kurulumu"></a>
 

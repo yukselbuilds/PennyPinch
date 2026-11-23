@@ -178,7 +178,7 @@ On 19 November 2026, **6 verification criteria and 3 optional R&D criteria** wer
 | --- | --- |
 | Restricted native Windows file profile for Codex | Check an allowed read in a suitable native sandbox. Check an explicit access denial. The legacy sandbox on Windows 10 did not start the profile. WSL2 verified the same file boundary. [File and archive evidence](../proofs/targeted-query-comparison.json) |
 | Windows 11 x64 | Test the packaged 0.44.0 engine, shutdown, and traffic on actual Windows 11 x64. The standard GitHub Windows 11 image was ARM64. CircleCI offered Windows Server images. [Standard GitHub runners](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-private-repositories) · [CircleCI Windows images](https://circleci.com/docs/guides/execute/using-windows/) |
-| macOS ARM64 | Confirm free capacity. Test packaged 0.44.0 startup, owned shutdown, traffic, and metrics. The GitHub job has a 15-minute limit. [Launch conditions](#19-kasım--kalan-kabullerin-başlatma-koşulları) |
+| macOS ARM64 | The macOS 26 package passed the window, startup, restart, and normal exit checks with 0.44.0. Check a controlled Codex Desktop turn and its stored measurement through the package. [Package evidence](../proofs/macos-044-package-lifecycle.json) |
 | Live Anthropic Messages | Use an authorized account. Match the usage counters of an actual Messages response to the corresponding Headroom request. [Local usage evidence](../proofs/desktop-anthropic-usage.json) |
 | Live OpenAI API-key route | Confirm authorized access to the API-key route. Collect usage evidence for the scope that H008 carried forward. [H041-d plan](../decisions/027-optimization-regression.md#h041-d-responses-httpsse-kullanım-ölçümü) |
 | Actual billing difference | Collect comparable billing data for the paired runs. The token comparison is on record. [Live comparison](../proofs/targeted-query-comparison.json) |
@@ -201,7 +201,7 @@ On 19 November 2026, **6 verification criteria and 3 optional R&D criteria** wer
   This option requires authorization to connect the private repository to CircleCI. Confirm the account quota. Run the native GUI precheck. [Plan](https://circleci.com/pricing/) · [Rates](https://circleci.com/pricing/price-list/) · [Apple Silicon images](https://circleci.com/docs/guides/execute/using-macos/).
 - **Native Codex profile.** The running Codex process used CLI 0.169.0-alpha.11.1. The test computer ran Windows 10 x64 build 19045. MXC requires a suitable current Windows 11 environment. The earlier legacy elevated test stopped before the command because it required `:root` read access. [OpenAI sandbox compatibility](https://learn.chatgpt.com/docs/windows/windows-sandbox#mxc-compatibility) · [Earlier run](../proofs/targeted-query-comparison.json).
 
-The local precheck report has SHA-256 `38ce4294dd93fadb20762023699e96f197c362f61b73e3eb5908770d1dff4b63`. Native macOS acceptance awaits access and an actual run. At this checkpoint, the team could give no completion date for all H041 criteria.
+The local precheck report has SHA-256 `38ce4294dd93fadb20762023699e96f197c362f61b73e3eb5908770d1dff4b63`. At that checkpoint, native macOS acceptance awaited an actual run. The table above shows the current package result.
 
 <a name="18-kasım-erişim-kontrolü"></a>
 

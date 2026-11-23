@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "task": "H041",
+  "slice": "macOS 0.44.0 packaged window and engine lifecycle",
+  "date": "2026-11-23",
+  "source_commit": "f366141de5da1939d01cf67f6236d7d19c4be594",
+  "implementation": {
+    "verification_owner": "lead_agent",
+    "trial_change": "Standard macOS runner label only",
+    "development_token_savings": "unmeasured"
+  },
+  "native": {
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45244117050",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45244117050/job/137936289837",
+    "native_log_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45244117050/job/137936289837#step:5:1",
+    "source_commit": "3c997c27261b33ae3003ca677ae383e8617b88ed",
+    "source_tree": "02f71f687d7ba1faf65545447a50f2132ea669e0",
+    "workflow_sha256": "20a7fca9e02468f758f12aecb98609ebfd83129735616f5d36d1000d54d1ef9f",
+    "engine_lock_sha256": "e1142cbbeaa139a6a23fcc3b1298af5a38f1f33b03d4833e744631c3015de3e7",
+    "runner_label": "macos-26",
+    "os_version": "26.7.2",
+    "os_build": "25G332",
+    "architecture": "arm64",
+    "seconds_until_job_start": 14,
+    "job_seconds": 854,
+    "conclusion": "success",
+    "source_and_environment_fingerprints_match_before_after": true,
+    "engine_version": "0.44.0",
+    "signing": "ad_hoc_verified",
+    "bundle_and_staged_runtime_inventory_match_before_after": true,
+    "runtime_files": 17125,
+    "runtime_bytes": 613767169,
+    "window_opens": 2,
+    "distinct_engine_processes": 3,
+    "normal_exits": 2,
+    "private_test_state": true,
+    "ui_stop_and_restart": true,
+    "saved_loopback_port_reused_after_reopen": true,
+    "owned_engine_port_and_locks_released_on_exit": true
+  },
+  "limits": {
+    "packaged_client_traffic_and_measurement": "not_tested_in_this_run",
+    "macos_15_gui_with_0_44_0": "not_tested_in_this_run",
+    "live_provider_traffic": "not_tested",
+    "production_signing_notarization_and_release": "not_tested"
+  }
+}
