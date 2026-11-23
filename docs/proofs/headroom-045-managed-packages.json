@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-24",
+  "engine_version": "0.45.0",
+  "adapter_commit": "7e430a04f61616d7d72a60e724774f60af22b52a",
+  "native_candidate": "8e3c968b29ad9b918fee5ef603ba4dce447b4345",
+  "network_model_requests": 0,
+  "unix_private_status": {
+    "scope": "In-process ASGI requests with the Unix socket client shape and the pinned SDK",
+    "before_status": 500,
+    "after_status": 200,
+    "owns_detailed_stats": true,
+    "public_stats_keeps_aggregates_only": true,
+    "inputs_sha256_before_and_after": "decb2cbb6a7fb83de125ed55d5ea5b44997769d47b43d20934c64cac8acf6643"
+  },
+  "local_windows_10_gate": {
+    "status": "pass",
+    "source_and_tool_inputs": 522,
+    "inputs_sha256_before_and_after": "a9f197569adc2ba9712b4a04519b3c0ae8bc9d89034045a7c3f481f757700c1c",
+    "tools_sha256_before_and_after": "8b9badebf63ab1b3092fd9f18d8126100a1fb6351cc402a69253f93ffbe3f2d4",
+    "receipt_sha256": "20e102352ea4e695b860db0bdaea1633a9e98c572f79f7e42d8214801bf06ca1",
+    "app_tests_passed": 227,
+    "rust_result": "test result: ok. 481 passed; 0 failed; 25 ignored; 0 measured; 0 filtered out",
+    "step_exit_codes": {
+      "app_tests": 0,
+      "frontend": 0,
+      "rust_fmt": 0,
+      "rust_tests": 0,
+      "embedded_debug": 0,
+      "windows_runtime_tests": 0,
+      "macos_portable_tests": 0,
+      "runtime_source_pins": 0,
+      "manual_launcher": 0
+    }
+  },
+  "ubuntu_24_04_x64": {
+    "status": "pass",
+    "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45268798820",
+    "job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45268798820/job/138022766904",
+    "earlier_readiness_timeout": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45262455542",
+    "receipt": {
+      "version": "0.1.0",
+      "package_bytes": 265457520,
+      "package_sha256": "83c5cd1ca050fab34ca4dc63dc63f6518dfc64570ae727174e2552d3cdfdf40a",
+      "manifest_sha256": "93133b95eddd32145a38f376961d4e2c52d50653183a051342401ba0958151f1",
+      "input_sha256": "b5ac2f4a0a190bca3082ef4d32359c3b08252ce2fb0be6c8d5c79693b9e86e3a"
+    },
+    "verified": [
+      "installed AMD64 package",
+      "matched runtime inventory and root ownership",
+      "native window under Xvfb",
+      "start, stop, and restart",
+      "normal exit and listener cleanup",
+      "purge retained the separate user state"
+    ],
+    "unmeasured": [
+      "live client traffic",
+      "public package delivery"
+    ]
+  },
+  "macos_26_arm64": {
+    "status": "verification_in_progress",
+    "prior_runs": [
+      {
+        "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45262361485",
+        "outcome": "built the QA app; the controlled turn probe stopped before a fixture request"
+      },
+      {
+        "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45267836801",
+        "outcome": "canceled during the package build step at the 20-minute job limit"
+      }
+    ],
+    "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45271792284",
+    "retry_candidate": "34782f75d2e648a834679021ad2754742ae16872",
+    "scope": "Standard macOS 26 ARM64 runner, QA bundle and controlled Codex Desktop turn"
+  }
+}

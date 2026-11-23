@@ -7,13 +7,17 @@
 PennyPinch v0.1.1-preview.3 is available for Windows 10 22H2 x64. The full installer updates OpenTelemetry API and Tokio. Both public downloads matched their SHA-256 digests. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.3) · [Publication evidence](proofs/pennypinch-windows10-preview3-publication.json)
 
 The source pins Headroom 0.45.0. Windows 10 built the local installer and passed the staged engine lifecycle and loopback usage tests.
-Ubuntu 24.04 x64 passed the engine check on a standard GitHub runner. The macOS 26 ARM64 engine check passed.
-The lead agent implemented the upgrade. Luna reviewed the upstream interfaces. Development token savings remain unknown.
-[Engine verification](proofs/headroom-045-upgrade.json)
+Ubuntu 24.04 x64 and macOS 26 ARM64 passed direct engine checks. [Engine verification](proofs/headroom-045-upgrade.json)
 
-The earlier macOS 26.7.2 ARM64 package started and stopped Headroom 0.44.0. Both exits released the loopback port.
-The next macOS check uses the 0.45.0 package. Verify a controlled Codex Desktop turn and its local measurement.
-[Earlier package evidence](proofs/macos-044-package-lifecycle.json)
+The matched Windows 10 benchmarks produced equal counts on both engines in all 33 SDK and eight proxy cases.
+In six headline cases, the proxy reduced the count from 122,944 to 69,350 tokens (43.59%).
+HTML extraction returned F1 of 0.9168. The tests used local fixtures and zero model calls. [Benchmark evidence](proofs/upstream-benchmarks-045.json).
+
+The lead agent updated the Unix status adapter. The local window build and quality gate passed with 522 matching inputs.
+The Ubuntu 24.04 x64 package passed install, start, stop, restart, exit, and purge checks on GitHub Actions.
+The macOS package run reached its 20-minute limit during the build step. A retry records the build phases. Check the controlled Codex Desktop turn, its stored measurement, and normal exit. [macOS retry](https://github.com/yukselbuilds/PennyPinch/actions/runs/45271792284).
+Luna reviewed the upstream sources. Development token savings remain unknown.
+[Package and adapter evidence](proofs/headroom-045-managed-packages.json)
 
 Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b2 evidence](proofs/h049-linux-transaction.json)
 

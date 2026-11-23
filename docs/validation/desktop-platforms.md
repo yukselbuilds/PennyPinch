@@ -62,6 +62,12 @@ Both exits released the engine, loopback port, and private locks. The app reused
 
 The job used private test state. Client traffic, stored measurements, production signing, notarization, and release delivery have separate acceptance checks. [H041 criteria](optimization-benefit.md#open-h041-acceptance-criteria)
 
+## Headroom 0.45.0 managed package checks
+
+Headroom 0.45.0 changed the argument list for its private status check. The Unix adapter forwards the new argument. The local SDK test returned HTTP 200 for the private dashboard. The public dashboard still returned aggregates only.
+
+Ubuntu 24.04 x64 passed the installed package test. The native app started, stopped, and restarted the engine. Both processes closed on exit. [Package and adapter evidence](../proofs/headroom-045-managed-packages.json).
+
 <a name="windows-10-kurulumu"></a>
 
 ## Windows 10 installation

@@ -1,5 +1,14 @@
 # Ubuntu 24.04 x64 validation
 
+## Headroom 0.45.0 package
+
+The standard GitHub runner installed the AMD64 Debian package and checked root ownership and resource parity.
+The application opened in Xvfb. The engine started, stopped, and restarted through the window.
+Normal exit closed the app, the engine, and its listeners. Package purge retained the separate user state.
+The job used a private test profile and loopback traffic. [Package receipt](../proofs/headroom-045-managed-packages.json) · [GitHub Actions run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45268798820).
+
+## Earlier Headroom 0.44.0 package
+
 H049 passed on the standard Ubuntu 24.04 x64 GitHub runner with ext4 and Xvfb.
 The Tauri build generated the AMD64 Debian package with Headroom 0.44.0.
 The job compared the installed runtime inventory with the staged inventory.
