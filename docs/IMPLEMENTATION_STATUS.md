@@ -8,7 +8,9 @@ PennyPinch v0.1.1-preview.3 is available for Windows 10 22H2 x64. The full insta
 
 macOS ARM64 passed native desktop development checks with engine 0.41.0. The later 0.44.0 engine and package passed. Native window acceptance for 0.44.0 remains open. [Platform status](validation/desktop-platforms.md)
 
-H049-b1 passed four Linux configuration checks and the Ubuntu 24.04 x64 window check. Windows 10 and macOS ARM64 configuration checks also passed. Next, implement atomic Linux Apply and Undo and verify them with isolated client files. Linux engine lifecycle and packaging remain open. [H049-b1 evidence](proofs/h049-linux-config.json)
+The lead agent completed H049-b2. Ubuntu verified the Rust transaction on ext4 with isolated files. The tests checked Apply, Undo, metadata, conflict preservation, and recovery after process exit. The macOS and Windows regressions passed. Next, verify the pinned Linux engine and connect the isolated client profiles. [H049-b2 evidence](proofs/h049-linux-transaction.json)
+
+GitHub lists free standard hosted compute for public repositories. Standard Windows x64 runners use Windows Server. The standard Windows 11 desktop runner uses ARM64. Windows 11 x64 acceptance remains open. [Windows acceptance](validation/windows-install.md#open-acceptance-criteria)
 
 ### Windows release evidence
 

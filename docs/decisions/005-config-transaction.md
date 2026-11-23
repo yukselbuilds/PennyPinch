@@ -60,4 +60,18 @@ For a missing Claude project directory, the directory and new settings.local.jso
 
 Retained-version review returns only counts and the current review fingerprint for the selected client/target. The explicit “Continue with current settings” confirmation revalidates that view. Config bytes and displaced inodes are preserved. Pending ownership is completed only when the typed receipt matches the current document and the recorded transition. App-owned metadata is copied to and verified in a private 0700 group. Root records are not moved before the manifest is published exclusively. After publication, metadata may be moved with an fd-relative exclusive rename. Completed entries in the manifest index leave the active 64-record limit. At most 64 archive groups are retained. Partially prepared groups count toward this protective limit. There is no automatic cleanup, and old config files remain in the client directory. On reopen, the manifest's structure/identity is verified. All archive copies are not rehashed during every ordinary settings operation. The three adapter managers, process interruption, stale data, and both capacity limits were verified with native fixtures. Confirmation/scope/keyboard behavior was verified in an isolated panel. [Archive acceptance and limits](../proofs/macos-retained-versions.json).
 
+### Linux ext4 transaction checks
+
+The lead agent reused the Unix ownership journal for Linux. The backend pins both parent directories and uses Linux `renameat2`.
+The exchange flag keeps the displaced file. The no-replace flag protects an existing name when the transaction creates a file.
+The backend requires the ext filesystem type and a readable file birth time. The hosted tests exercised ext4.
+If the required rename or metadata copy fails, the transaction returns an error.
+
+The backend sets the original mode and group on the staged file. It copies extended attributes and compares the metadata fingerprint before publication.
+The fixtures verified a POSIX ACL and a user extended attribute. They also verified typed Undo after an unrelated user edit.
+The backend keeps retained file versions in the client directory. The private app directory stores the ownership metadata.
+A new explicit action can recover matching ownership after interruption. A passive read leaves the record unchanged.
+The tests cover process exit. Physical power loss and the live Linux client connection require separate evidence.
+[Linux verification](../proofs/h049-linux-transaction.json)
+
 H018-a covers the real Windows primitive/publication experiment. H018-b covers byte-preserving patch/undo and a secret-free ownership record. H018-c covers manager/typed command/UI integration. H018-d covers review, the final quality gate, and the real native fixture flow. A sub-slice PASS does not complete the main task. [Task list](../../TASKS.md), [checkpoint](../IMPLEMENTATION_STATUS.md).

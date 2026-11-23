@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-23",
+  "task": "H049-b2",
+  "source_commit": "a6eada4c0325b4831fb9908ad2a2ee8b83f76806",
+  "implementation": "lead_agent",
+  "backend": "shared Unix configuration transaction and typed ownership recovery",
+  "linux_write_scope": "local ext-family filesystem with file birth time and supported atomic renames",
+  "source_tree": "37cbdb9d44607984976f2481e129662d950af10d",
+  "native_evidence": {
+    "linux_probe": {
+      "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45170865688",
+      "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45170865688/job/137679743506",
+      "source_commit": "2434effc2f71c793a014b46c4e0a2c700c4757fa",
+      "source_tree": "d49d5d5aa3ea9f9ffdc63d6431e4b6f9c00bd9fb",
+      "runner": "ubuntu-24.04",
+      "run_attempt": 1,
+      "result": "success",
+      "step": "Probe Linux file replacement on ext4",
+      "duration_seconds": 2,
+      "completed_at_utc": "2026-11-23T12:04:57Z",
+      "before_after_match": true,
+      "observed": [
+        "exclusive create",
+        "preserved existing target",
+        "preserved both inodes during exchange",
+        "preserved late writes",
+        "process exit before owner publication",
+        "mode and user xattr",
+        "birth time",
+        "file and directory sync"
+      ]
+    },
+    "macos_probe": {
+      "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45170947839",
+      "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45170947839/job/137680028880",
+      "source_commit": "2434effc2f71c793a014b46c4e0a2c700c4757fa",
+      "source_tree": "d49d5d5aa3ea9f9ffdc63d6431e4b6f9c00bd9fb",
+      "runner": "macos-15",
+      "run_attempt": 1,
+      "result": "success",
+      "step": "Probe APFS with isolated files",
+      "duration_seconds": 3,
+      "completed_at_utc": "2026-11-23T12:05:17Z",
+      "before_after_match": true,
+      "observed": [
+        "exclusive create",
+        "preserved existing target",
+        "preserved both inodes during exchange",
+        "preserved late writes",
+        "process exit before owner publication"
+      ]
+    },
+    "baseline": {
+      "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45171817544",
+      "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45171817544/job/137682990292",
+      "source_commit": "6b9b0482554749a11c0eac71effc3becc7bc62c4",
+      "source_tree": "ef56ba7e762cc09c01cb6cee37e6f6a569ee9831",
+      "runner": "ubuntu-24.04",
+      "run_attempt": 1,
+      "result": "failure",
+      "step": "Build and open the Linux desktop",
+      "duration_seconds": 120,
+      "completed_at_utc": "2026-11-23T12:12:57Z",
+      "failed_test": "config_transaction_reads_the_same_native_file_as_the_config_reader"
+    },
+    "linux_rust": {
+      "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45173210211",
+      "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45173210211/job/137687737502",
+      "source_commit": "a6eada4c0325b4831fb9908ad2a2ee8b83f76806",
+      "source_tree": "37cbdb9d44607984976f2481e129662d950af10d",
+      "runner": "ubuntu-24.04",
+      "run_attempt": 1,
+      "result": "success",
+      "step": "Build and open the Linux desktop",
+      "duration_seconds": 208,
+      "completed_at_utc": "2026-11-23T12:23:18Z",
+      "before_after_match": true,
+      "observations": [
+        "typed Apply and Undo",
+        "extended attribute and ACL",
+        "late editor change",
+        "process restart and private ownership recovery",
+        "retained versions",
+        "visible desktop window under Xvfb"
+      ],
+      "passed_tests": 22,
+      "rust_test_seconds": 50.81
+    },
+    "macos_rust": {
+      "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45173314352",
+      "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45173314352/job/137696956594",
+      "source_commit": "a6eada4c0325b4831fb9908ad2a2ee8b83f76806",
+      "source_tree": "37cbdb9d44607984976f2481e129662d950af10d",
+      "runner": "macos-15",
+      "run_attempt": 2,
+      "result": "success",
+      "step": "Build and verify the native executable",
+      "duration_seconds": 275,
+      "completed_at_utc": "2026-11-23T12:41:16Z",
+      "before_after_match": true,
+      "scope": "isolated APFS configuration and recovery tests plus native executable build",
+      "previous_attempt": {
+        "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45173314352/job/137688094510",
+        "result": "runner_unavailable",
+        "steps_started": 0
+      }
+    },
+    "runner_billing": "Standard hosted runners in a public repository. No artifact upload or metered cache."
+  },
+  "windows_10_x64": {
+    "passed": true,
+    "candidate_before_after": {
+      "content_sha256": "1379d4b5fb2b2f2f1ead9be5da74cf6c5ec99f36a93103cec0243f60157103ff",
+      "file_count": 497,
+      "source_commit": "a6eada4c0325b4831fb9908ad2a2ee8b83f76806",
+      "source_tree": "37cbdb9d44607984976f2481e129662d950af10d",
+      "toolchain": {
+        "versions": {
+          "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+          "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+          "node": "v25.2.1",
+          "pnpm": "11.25.0"
+        },
+        "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+        "windows": [
+          10,
+          0,
+          19045
+        ],
+        "verifier": "503389a8a8d745575936a2db9f448160bc3bf76a6d253bdcb43538fe214deb0a",
+        "verifier_reference": "0018d1dc20af62c7e641ba124123a7739cbd49e95021dfe0e209aa976841838b"
+      },
+      "commands": {
+        "app_tests": [
+          "pnpm.cmd",
+          "test:app"
+        ],
+        "frontend": [
+          "pnpm.cmd",
+          "build"
+        ],
+        "rust_fmt": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "--",
+          "--check"
+        ],
+        "rust_tests": [
+          "cargo",
+          "test",
+          "--offline",
+          "--locked",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "--",
+          "--test-threads=1"
+        ],
+        "embedded_debug": [
+          "cargo",
+          "build",
+          "--offline",
+          "--locked",
+          "--manifest-path",
+          "src-tauri/Cargo.toml",
+          "--features",
+          "custom-protocol"
+        ]
+      }
+    },
+    "checks": {
+      "app_tests": {
+        "exit": 0,
+        "seconds": 1.19,
+        "rust": [],
+        "node": {
+          "tests": "227",
+          "pass": "227",
+          "fail": "0",
+          "skipped": "0"
+        },
+        "python": [],
+        "failures": []
+      },
+      "frontend": {
+        "exit": 0,
+        "seconds": 1.751,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_fmt": {
+        "exit": 0,
+        "seconds": 1.274,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_tests": {
+        "exit": 0,
+        "seconds": 28.691,
+        "rust": [
+          "test result: ok. 481 passed; 0 failed; 25 ignored; 0 measured; 0 filtered out; finished in 14.22s"
+        ],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "embedded_debug": {
+        "exit": 0,
+        "seconds": 8.221,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      }
+    }
+  },
+  "limits": {
+    "linux_full_rust_suite": "not_retested",
+    "linux_client_discovery_and_connection_manager": "not_tested",
+    "linux_live_traffic_and_engine": "not_tested",
+    "linux_package": "not_tested",
+    "windows_11_x64": "not_tested",
+    "physical_power_loss": "not_tested",
+    "production_files": "not_used"
+  },
+  "paid_jobs": 0,
+  "provider_requests": 0,
+  "development_token_savings": "unmeasured"
+}

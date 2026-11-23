@@ -5,6 +5,10 @@
 
 ## Decision
 
+On 23 November 2026, the GitHub API reported PennyPinch as public. GitHub lists standard hosted jobs for public repositories as free, separate from private-repository compute usage. Confirm public visibility and the standard runner label before each manual job. The free-only rule still applies to larger runners, paid storage, and other metered resources. [Current repository](https://github.com/yukselbuilds/PennyPinch) · [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions)
+
+### Initial private repository
+
 GitHub work must remain free-only. The repository is private, and the first import is source-only. [Protocol272/headroom-desktop](https://github.com/Protocol272/headroom-desktop) was created/published in GitHub Desktop using its existing sign-in flow on22 October2026; the browser Private label was independently observed. Local Git history and commits do not require a GitHub CLI token; the invalid CLI token was not refreshed. [H046 acceptance](../proofs/repository-import.md).
 
 Until H047 verifies the applicable free allowance and a no-charge stop, do not add or run GitHub Actions. If H047 verifies those conditions, standard GitHub-hosted runners within the included allowance are permitted for manually dispatched (`workflow_dispatch`) checks. This can include macOS/Linux native jobs; a local Mac/Linux host is not required. Paid or larger runners, overage spending, new payment methods, metered caches, Codespaces, and a separate cloud-macOS subscription remain prohibited. No payment method or account billing setting was changed. H047 subsequently configured and accepted one manual source-only Ubuntu workflow; no automatic platform matrix is enabled. [H047 acceptance](../proofs/free-ci.md).

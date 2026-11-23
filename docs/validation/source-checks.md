@@ -27,7 +27,9 @@ The [first manual run](https://github.com/Protocol272/headroom-desktop/actions/r
 ## Optional Linux desktop check
 
 Select `linux_desktop` in Source checks to add the native Ubuntu check. The job limit increases to 25 minutes.
-This check runs four isolated configuration tests, builds the desktop app, and opens its window in Xvfb.
+This check runs isolated configuration and transaction tests on ext4. It builds the desktop app and opens its window in Xvfb.
+Select `linux_config_transaction` to run the standalone file system probe. The probe tests rename behavior and process interruption.
+[Linux transaction evidence](../proofs/h049-linux-transaction.json)
 Use the standard runner in the public repository. [GitHub runner billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions) · [Linux evidence](../proofs/h049-linux-config.json)
 
 ## Excluded checks and limits
