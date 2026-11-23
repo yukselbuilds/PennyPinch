@@ -682,6 +682,9 @@ Section Install
   !endif
 
   !insertmacro CheckIfAppIsRunning "$INSTDIR\${MAINBINARYNAME}.exe" "${PRODUCTNAME}"
+  !ifmacrodef HeadroomPrepareOpenTelemetryRetirement
+    !insertmacro HeadroomPrepareOpenTelemetryRetirement
+  !endif
 
   ; Copy main executable
   File "${MAINBINARYSRCPATH}"
@@ -693,6 +696,9 @@ Section Install
   {{#each resources}}
     File /a "/oname={{this.[1]}}" "{{no-escape @key}}"
   {{/each}}
+  !ifmacrodef HeadroomRetireOpenTelemetry
+    !insertmacro HeadroomRetireOpenTelemetry
+  !endif
 
   ; Copy external binaries
   {{#each binaries}}
@@ -830,7 +836,7 @@ Section Uninstall
   ; Copy main executable
   Delete "$INSTDIR\${MAINBINARYNAME}.exe"
   ${If} ${FileExists} "$INSTDIR\${MAINBINARYNAME}.exe"
-    !insertmacro HeadroomAbortRemoval "$(HeadroomRemovalBusy)"
+    !insertmacro HeadroomAbortSetup "$(HeadroomRemovalBusy)"
   ${EndIf}
 
   ; Delete resources

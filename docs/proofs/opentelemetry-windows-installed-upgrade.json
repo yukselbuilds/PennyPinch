@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "task": "H042-ae",
+  "scope": "Windows 10 22H2 x64 installed upgrade from the public preview using the full candidate installer",
+  "owner": "lead agent",
+  "previous_bundle_conflict": {
+    "before": {
+      "headroom": "0.44.0",
+      "opentelemetry": "1.45.1",
+      "distribution_directories": [
+        "opentelemetry_api-1.45.1.dist-info"
+      ]
+    },
+    "after_in_place_install_without_fix": {
+      "headroom": "0.44.0",
+      "opentelemetry": "1.45.1",
+      "distribution_directories": [
+        "opentelemetry_api-1.45.1.dist-info",
+        "opentelemetry_api-1.45.2.dist-info"
+      ]
+    },
+    "original_profile_restored": true,
+    "seconds": 103.62
+  },
+  "candidate": {
+    "passed": true,
+    "version": "0.1.1-preview.3",
+    "installer_sha256": "22caab14bf445896a37f78e83f72e9253521df80a8ac6d00c03811aa3b3fe1e2",
+    "installer_bytes": 125319636,
+    "embedded_exe_sha256": "1b0518f035c5bc7f54b8468b9a6370879b9aafb382eeeb5d41d3b72d780137a3",
+    "release_key_fingerprint": "c32e894d22af6146ee736e04ec06454aaf740912aed00e65aa7a116cc7d0b52c",
+    "release_base_url": "https://yukselbuilds.github.io/PennyPinch/updates/",
+    "runtime_resource_pin": "ce023b4ba70cc097c9426e1f14f46c500206c6a9f213cad57ed357609df1b978",
+    "resource_count": 19483,
+    "stage_receipt_sha256_before_after": "e1286cc6323cf957f59ba0e0e74fab0c3ef83a8cb38a58e2212a4ae7e3f32575",
+    "input_set_sha256_before_after": "cbf7a449e1aa049032fa4e6e80ce4aa2cb990ebfef951d65c1cf82e4db7ed9c6",
+    "input_count": 378,
+    "embedded_exe_checks": 2,
+    "seconds": 759.311,
+    "uploaded": false
+  },
+  "gate": {
+    "passed": true,
+    "input_fingerprint_before_after": "cbf7a449e1aa049032fa4e6e80ce4aa2cb990ebfef951d65c1cf82e4db7ed9c6",
+    "input_count": 378,
+    "toolchain": {
+      "versions": {
+        "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+        "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+        "node": "v25.2.1",
+        "pnpm": "11.25.0"
+      },
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "windows": [
+        10,
+        0,
+        19045
+      ],
+      "verifier": "503389a8a8d745575936a2db9f448160bc3bf76a6d253bdcb43538fe214deb0a",
+      "verifier_reference": "0018d1dc20af62c7e641ba124123a7739cbd49e95021dfe0e209aa976841838b"
+    },
+    "checks": {
+      "app_tests": {
+        "exit": 0,
+        "seconds": 1.243,
+        "rust": [],
+        "node": {
+          "tests": "227",
+          "pass": "227",
+          "fail": "0",
+          "skipped": "0"
+        },
+        "python": [],
+        "failures": []
+      },
+      "frontend": {
+        "exit": 0,
+        "seconds": 2.126,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_fmt": {
+        "exit": 0,
+        "seconds": 1.465,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_tests": {
+        "exit": 0,
+        "seconds": 28.37,
+        "rust": [
+          "test result: ok. 481 passed; 0 failed; 25 ignored; 0 measured; 0 filtered out; finished in 15.67s"
+        ],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "embedded_debug": {
+        "exit": 0,
+        "seconds": 24.876,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "update_package_tests": {
+        "exit": 0,
+        "seconds": 5.236,
+        "rust": [],
+        "node": {},
+        "python": [
+          "9"
+        ],
+        "failures": []
+      },
+      "windows_staging_tests": {
+        "exit": 0,
+        "seconds": 1.426,
+        "rust": [],
+        "node": {},
+        "python": [
+          "8"
+        ],
+        "failures": []
+      }
+    }
+  },
+  "installed_upgrade": {
+    "passed": true,
+    "versions": [
+      "0.1.1-preview.1",
+      "0.1.1-preview.3"
+    ],
+    "runtime_before": {
+      "headroom": "0.44.0",
+      "opentelemetry": "1.45.1",
+      "distribution_directories": [
+        "opentelemetry_api-1.45.1.dist-info"
+      ]
+    },
+    "runtime_after": {
+      "headroom": "0.44.0",
+      "opentelemetry": "1.45.2",
+      "distribution_directories": [
+        "opentelemetry_api-1.45.2.dist-info"
+      ]
+    },
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "verified_installed_resources": 19484,
+    "old_ui": {
+      "installed_window": true,
+      "expected_preferences": true,
+      "normal_exit_requested": true
+    },
+    "new_ui": {
+      "installed_window": true,
+      "expected_preferences": true,
+      "installed_engine_ready": true,
+      "installed_engine_stopped": true,
+      "normal_exit_requested": true
+    },
+    "preference_bytes_preserved": true,
+    "test_data_marker_preserved": true,
+    "downgrade_exit": 2,
+    "registered_install_unchanged_after_downgrade": true,
+    "owned_windows_exited_normally": true,
+    "owned_installation_removed": true,
+    "isolation": {
+      "original_profile_matches": true,
+      "original_profile_files": 2081,
+      "desktop_use_gate_restored": true,
+      "test_profile_removed": true
+    },
+    "input_digests_match_before_after": true,
+    "verified_input_count": 11,
+    "seconds": 113.217
+  },
+  "test_driver_correction": {
+    "initial_failure": "The driver did not expand the engine options before selecting Stop engine.",
+    "correction_cycles": 1,
+    "first_test_profile_restored": true,
+    "full_retry_passed": true
+  },
+  "limits": {
+    "release": "not_published",
+    "windows_11_x64": "not_tested",
+    "actual_provider_model_requests": 0,
+    "ci_workflow_dispatches": 0,
+    "development_token_savings": "not_measured"
+  }
+}

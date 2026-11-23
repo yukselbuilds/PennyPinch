@@ -44,7 +44,9 @@ The new local Windows 10 build and NSIS package passed the build path checks. Th
 
 Tokio 1.54.1 passed the Windows 10 product gate and signed update package checks with an isolated key. The real QA app passed signature, resource pin, extraction, and probe validation. [Tokio verification](proofs/tokio-windows-1541.json) · [Public privacy and presentation checks](proofs/pennypinch-public-privacy.md)
 
-OpenTelemetry API 1.45.2 passed the Windows 10 product gate, the staged engine lifecycle test, and a local Responses stream. The local NSIS installer contains the patched package. Existing installations require the full installer for the new engine resources. The next Windows step is an isolated installed upgrade with that installer. Release and Windows 11 checks remain open. Linux GTK has a separate update check. [OpenTelemetry verification](proofs/opentelemetry-windows-1452.json)
+OpenTelemetry API 1.45.2 passed the Windows 10 product gate, the staged engine lifecycle test, and a local Responses stream. The local NSIS installer contains the patched package. Existing installations require the full installer for the new engine resources. Linux GTK has a separate update check. [OpenTelemetry verification](proofs/opentelemetry-windows-1452.json)
+
+The local 0.1.1-preview.3 full installer upgraded the public Windows 10 preview. The installed runtime reports OpenTelemetry API 1.45.2. The app kept the test preferences and started and stopped the engine. The next Windows step is to prepare the delivery package for this candidate. Publication and Windows 11 checks remain open. [Installed verification](proofs/opentelemetry-windows-installed-upgrade.json)
 
 ## History
 

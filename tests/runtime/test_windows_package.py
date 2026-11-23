@@ -1,12 +1,16 @@
 """Small packaging fixtures exercise corruption, path and atomic publication boundaries."""
 import importlib.util
 import json
+import os
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 from unittest import mock
+import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
+MAKENSIS = ROOT / 'work/caches/cargo-target/.tauri/NSIS/makensis.exe'
 spec = importlib.util.spec_from_file_location('windows_package', ROOT / 'scripts/package-windows.py')
 package = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(package)
@@ -116,6 +120,74 @@ class WindowsPackageTests(unittest.TestCase):
             with self.subTest(name_units=len(name.encode('utf-16-le')) // 2):
                 with self.assertRaisesRegex(ValueError, 'budget_exceeded'):
                     package.validate_path_budget(self.root, [name])
+
+    @unittest.skipUnless(os.name == 'nt' and MAKENSIS.is_file(), 'requires the cached Windows NSIS compiler')
+    def test_nsis_retires_old_opentelemetry_only_from_the_registered_install(self):
+        import winreg
+
+        destination = self.root / 'install'
+        packages = destination / 'runtime/payload/Lib/site-packages'
+        old = packages / 'opentelemetry_api-1.45.1.dist-info'
+        patched = packages / 'opentelemetry_api-1.45.2.dist-info'
+        retired = destination / 'opentelemetry-1.45.1.retired'
+        registry = 'Software\\PennyPinchInstallerTest_' + uuid.uuid4().hex
+        hooks = ROOT / 'src-tauri/windows-hooks.nsh'
+        installer = self.root / 'sample.exe'
+        source = self.root / 'sample.nsi'
+        source.write_text(f'''Unicode true
+!include LogicLib.nsh
+!define MANUPRODUCTKEY "{registry}"
+!include "{hooks}"
+Var PassiveMode
+RequestExecutionLevel user
+SilentInstall silent
+InstallDir "{destination}"
+OutFile "{installer}"
+Section
+  SetShellVarContext current
+  !insertmacro HeadroomPrepareOpenTelemetryRetirement
+  FileOpen $4 "$INSTDIR\\write-marker.txt" w
+  FileWrite $4 "ready"
+  FileClose $4
+  !insertmacro HeadroomRetireOpenTelemetry
+  SetErrorLevel 0
+SectionEnd
+''', encoding='utf-8-sig')
+        built = subprocess.run([str(MAKENSIS), '/V2', str(source)], capture_output=True, timeout=20)
+        self.assertEqual(built.returncode, 0, built.stdout.decode(errors='replace')[-1200:])
+
+        def run():
+            return subprocess.run([str(installer)], capture_output=True, timeout=20).returncode
+
+        patched.mkdir(parents=True)
+        marker = destination / 'write-marker.txt'
+        (patched / 'METADATA').write_bytes(b'patched metadata')
+        self.assertEqual(run(), 0)
+        marker.unlink()
+        old.mkdir()
+        (old / 'METADATA').write_bytes(b'old metadata')
+        (old / 'notes.txt').write_bytes(b'preserve this file')
+        self.assertEqual(run(), 2)
+        self.assertFalse(marker.exists())
+        self.assertEqual((old / 'METADATA').read_bytes(), b'old metadata')
+        with winreg.CreateKey(winreg.HKEY_CURRENT_USER, registry) as key:
+            winreg.SetValueEx(key, '', 0, winreg.REG_SZ, str(destination))
+        try:
+            self.assertEqual(run(), 0)
+            self.assertFalse(old.exists())
+            self.assertFalse((retired / 'METADATA').exists())
+            self.assertEqual((retired / 'notes.txt').read_bytes(), b'preserve this file')
+            self.assertEqual((patched / 'METADATA').read_bytes(), b'patched metadata')
+            self.assertEqual(run(), 0)
+            marker.unlink()
+            old.mkdir()
+            (old / 'METADATA').write_bytes(b'old metadata')
+            self.assertEqual(run(), 2)
+            self.assertFalse(marker.exists())
+            self.assertEqual((old / 'METADATA').read_bytes(), b'old metadata')
+            self.assertEqual((retired / 'notes.txt').read_bytes(), b'preserve this file')
+        finally:
+            winreg.DeleteKey(winreg.HKEY_CURRENT_USER, registry)
 
 
 if __name__ == '__main__':
