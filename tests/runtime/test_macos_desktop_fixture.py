@@ -215,6 +215,8 @@ class DesktopFixtureTests(unittest.TestCase):
         self.assertEqual(streamed_text, done_text)
         self.assertEqual(streamed_text, terminal["response"]["output"][0]["content"][0]["text"])
         self.assertIn(fixture.final_marker, json.dumps(terminal))
+        # The server records delivery before it sends the normal close frame.
+        self.assertEqual(_recv_exact(sock, 4), b"\x88\x02\x03\xe8")
         report = fixture.report()
         self.assertEqual(report["transport_counts"]["websocket"], 1)
         self.assertEqual(report["accepted_response_count"], 1)
