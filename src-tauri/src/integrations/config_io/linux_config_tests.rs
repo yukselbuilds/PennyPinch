@@ -227,3 +227,38 @@ fn ownership_uses_private_app_state_and_preserves_distinct_path_bytes() {
         missing_config(0xfe).fingerprint
     );
 }
+
+#[test]
+#[ignore = "requires an isolated HEADROOM_LINUX_PROOF_ROOT"]
+fn config_transaction_reads_the_same_native_file_as_the_config_reader() {
+    use crate::integrations::transaction_fs::{FileTransaction, MAX_TRANSACTION_FILE_BYTES};
+
+    let fixture = Fixture::new();
+    let config = fixture.0.join("config.toml");
+    let original = b"model = 'fixture'\n";
+    fs::write(&config, original).unwrap();
+    let observed = read_user_config(ClientKind::Codex, &fixture.codex_roots()).unwrap();
+    let mut transaction = FileTransaction::begin().expect("begin Linux configuration transaction");
+    let (token, pinned) = transaction
+        .open_existing(&config, MAX_TRANSACTION_FILE_BYTES)
+        .unwrap();
+    let identity = pinned.identity;
+    let target = transaction.canonical_target(token).unwrap();
+    let fingerprint = super::super::plan::fingerprint_config(
+        ClientKind::Codex,
+        observed.source,
+        ConfigPresence::Present,
+        &pinned.bytes,
+        Some((
+            identity.volume_serial,
+            (identity.file_index >> 32) as u32,
+            identity.file_index as u32,
+        )),
+        Some(&target),
+    );
+    assert_eq!(target, config);
+    assert_eq!(pinned.bytes, original);
+    assert_eq!(fingerprint, observed.fingerprint);
+    transaction.rollback().unwrap();
+    assert_eq!(fs::read(config).unwrap(), original);
+}

@@ -168,9 +168,13 @@ jobs:
         run: |
           set -euo pipefail
           test "$(uname -sm)" = 'Linux x86_64'
-          sudo apt-get -qq update
-          sudo apt-get -qq install --no-install-recommends -y pkg-config libwebkit2gtk-4.1-dev \
-            libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev xvfb xauth xdotool
+          if ! sudo apt-get -qq update > work/linux-deps.log 2>&1 ||
+            ! sudo apt-get -qq install --no-install-recommends -y pkg-config libwebkit2gtk-4.1-dev \
+              libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev xvfb xauth xdotool acl \
+              >> work/linux-deps.log 2>&1; then
+            awk '/^E:/ && ++count <= 5 { print substr($0, 1, 220) }' work/linux-deps.log
+            exit 1
+          fi
           rustup toolchain install 1.92.0 --profile minimal --no-self-update
           manifest=src-tauri/Cargo.toml
           glib="$(cargo +1.92.0 tree --locked --manifest-path "$manifest" --depth 0 -i glib)"
@@ -179,14 +183,30 @@ jobs:
           export HEADROOM_LINUX_PROOF_ROOT
           HEADROOM_LINUX_PROOF_ROOT="$(mktemp -d "$GITHUB_WORKSPACE/work/linux-config.XXXXXXXX")"
           test "$(id -u)" -ne 0
-          printf 'Linux test filesystem: %s\n' "$(stat -f -c %T "$HEADROOM_LINUX_PROOF_ROOT")"
+          test "$(findmnt --target "$HEADROOM_LINUX_PROOF_ROOT" --noheadings --output FSTYPE)" = ext4
+          fingerprint() {
+            git rev-parse HEAD 'HEAD^{tree}'
+            uname -smr
+            cargo +1.92.0 --version
+            rustc +1.92.0 --version
+            sha256sum src-tauri/Cargo.lock
+            printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}"
+            stat -c '%a' "$HEADROOM_LINUX_PROOF_ROOT"
+          }
+          before="$(fingerprint)"
           if ! cargo +1.92.0 test --locked --manifest-path "$manifest" --features custom-protocol \
-            --color never linux_config_tests -- --ignored --test-threads=1 > work/linux-config.log 2>&1; then
+            --color never -- linux_config_tests integrations::transaction_fs::linux_impl::tests:: \
+            --ignored --skip crash_after_ --skip crash_during_retained_archive --test-threads=1 \
+            > work/linux-config.log 2>&1; then
             awk '/^error(\[[A-Z][0-9]+\])?: |^---- .* stdout ----$|^assertion failed:|^test result:/ \
-              { if (++count <= 12) print substr($0, 1, 220) }' work/linux-config.log
+              { if (++count <= 12) print substr($0, 1, 220) }
+              /^thread .* panicked at / { detail=1; next }
+              detail == 1 { if (++count <= 12) print substr($0, 1, 220); detail=0 }' work/linux-config.log
             exit 1
           fi
-          grep -E '^test result: ok\. [1-9][0-9]* passed;' work/linux-config.log
+          rust_tests="$(grep -E '^test result: ok\. [1-9][0-9]* passed;' work/linux-config.log)"
+          printf '%s\n' "$rust_tests"
+          test "$(grep -Ec '^test .*::(config_transaction_reads_the_same_native_file_as_the_config_reader|transaction_apply_reopen_and_typed_undo_preserve_user_metadata|fresh_action_recovers_owner_after_process_exit_between_publications|retained_review_is_passive_and_archive_keeps_displaced_edits_after_reopen) \.\.\. ok$' work/linux-config.log)" = 4
           if ! cargo +1.92.0 build --locked --manifest-path "$manifest" \
             --features custom-protocol --color never > work/linux-build.log 2>&1; then
             awk '/^error(\[[A-Z][0-9]+\])?: / { if (++count <= 8) print substr($0, 1, 220) }' work/linux-build.log
@@ -201,6 +221,11 @@ jobs:
           trap 'kill "$app" 2>/dev/null || :; wait "$app" || :' EXIT
           timeout 30s xdotool search --sync --onlyvisible --pid "$app" --name '^PennyPinch$' >/dev/null
           SH
+          test "$before" = "$(fingerprint)"
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           git diff --quiet HEAD --
-          printf '%s\n' '## Linux desktop' '' '- Configuration safety tests: passed.' '- Locked build: passed.' '- PennyPinch window under Xvfb: visible.' >> "$GITHUB_STEP_SUMMARY"
+          digest="$(printf '%s\n' "$before" | sha256sum | cut -d' ' -f1)"
+          printf 'Inputs before and after: %s\n%s\n' "$digest" "$before"
+          printf '%s\n' '## Linux desktop' '' "- Configuration tests on ext4: $rust_tests" \
+            "- Inputs before and after: $digest" '- Locked build: passed.' \
+            '- PennyPinch window under Xvfb: visible.' >> "$GITHUB_STEP_SUMMARY"

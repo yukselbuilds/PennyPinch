@@ -361,7 +361,7 @@ pub(crate) struct OwnershipStore {
 }
 
 impl OwnershipStore {
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     pub(crate) fn retained_versions_root(&self) -> Result<Option<PathBuf>, OwnershipError> {
         self.verify_root(false)
     }
@@ -473,7 +473,7 @@ impl OwnershipStore {
         let slot_path = root
             .unwrap_or_else(|| self.boundary.join(&self.relative_root))
             .join(slot_filename(kind));
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         transaction
             .bind_ownership_path(&slot_path, Some(config_path_binding_sha256))
             .map_err(map_transaction_error)?;
@@ -494,7 +494,7 @@ impl OwnershipStore {
         if !metadata.is_file() || is_reparse(&metadata) {
             return Err(OwnershipError::UnsafePath);
         }
-        #[cfg(any(windows, target_os = "macos"))]
+        #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
         {
             let (token, FileSnapshot { bytes, .. }) = transaction
                 .open_existing(&slot_path, MAX_RECORD_BYTES)
@@ -517,7 +517,7 @@ impl OwnershipStore {
                 record_fingerprint: Some(content_hash(&bytes)),
             })
         }
-        #[cfg(not(any(windows, target_os = "macos")))]
+        #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
         {
             let _ = transaction;
             Err(OwnershipError::Unsupported)
@@ -535,7 +535,7 @@ impl OwnershipStore {
             return Ok(None);
         };
         let slot_path = root.join(slot_filename(kind));
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         transaction
             .bind_ownership_path(&slot_path, None)
             .map_err(map_transaction_error)?;
@@ -547,7 +547,7 @@ impl OwnershipStore {
         if !metadata.is_file() || is_reparse(&metadata) {
             return Err(OwnershipError::UnsafePath);
         }
-        #[cfg(any(windows, target_os = "macos"))]
+        #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
         {
             let (_, FileSnapshot { bytes, .. }) = transaction
                 .open_existing(&slot_path, MAX_RECORD_BYTES)
@@ -561,7 +561,7 @@ impl OwnershipStore {
                 record_fingerprint: content_hash(&bytes),
             }))
         }
-        #[cfg(not(any(windows, target_os = "macos")))]
+        #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
         {
             let _ = transaction;
             Err(OwnershipError::Unsupported)
@@ -598,14 +598,14 @@ impl OwnershipStore {
                 if next.state() != OwnershipState::Active || next.revision() != 1 {
                     return Err(OwnershipError::Conflict);
                 }
-                #[cfg(any(windows, target_os = "macos"))]
+                #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
                 {
                     let (token, _) = transaction
                         .create_missing(&current.slot_path, MAX_RECORD_BYTES)
                         .map_err(map_transaction_error)?;
                     token
                 }
-                #[cfg(not(any(windows, target_os = "macos")))]
+                #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
                 return Err(OwnershipError::Unsupported);
             }
             Some(previous) => {
@@ -615,13 +615,13 @@ impl OwnershipStore {
                 current.token.ok_or(OwnershipError::Conflict)?
             }
         };
-        #[cfg(any(windows, target_os = "macos"))]
+        #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
         {
             transaction
                 .replace_contents(token, &bytes)
                 .map_err(map_transaction_error)
         }
-        #[cfg(not(any(windows, target_os = "macos")))]
+        #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
         {
             let _ = (transaction, token, bytes);
             Err(OwnershipError::Unsupported)
@@ -690,8 +690,8 @@ impl OwnershipStore {
     }
 }
 
-#[cfg(target_os = "macos")]
-pub(crate) fn validate_macos_publication(
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+pub(crate) fn validate_unix_publication(
     config_path: &Path,
     owner_filename: &str,
     previous_owner: Option<&[u8]>,
@@ -701,7 +701,7 @@ pub(crate) fn validate_macos_publication(
 ) -> Result<(), OwnershipError> {
     let next = OwnershipRecord::decode(next_owner)?;
     let previous = previous_owner.map(OwnershipRecord::decode).transpose()?;
-    let kind = validate_macos_owner_target(config_path, owner_filename, &next)?;
+    let kind = validate_unix_owner_target(config_path, owner_filename, &next)?;
     if !previous.as_ref().map_or(
         next.state() == OwnershipState::Active && next.revision() == 1,
         |previous| valid_transition(previous, &next),
@@ -743,8 +743,8 @@ pub(crate) fn validate_macos_publication(
     Ok(())
 }
 
-#[cfg(target_os = "macos")]
-fn validate_macos_owner_target(
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+fn validate_unix_owner_target(
     config_path: &Path,
     owner_filename: &str,
     next: &OwnershipRecord,
@@ -782,13 +782,13 @@ fn validate_macos_owner_target(
     Ok(kind)
 }
 
-#[cfg(target_os = "macos")]
-pub(crate) fn validate_macos_ownership_bytes(bytes: &[u8]) -> Result<(), OwnershipError> {
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+pub(crate) fn validate_unix_ownership_bytes(bytes: &[u8]) -> Result<(), OwnershipError> {
     OwnershipRecord::decode(bytes).map(|_| ())
 }
 
-#[cfg(target_os = "macos")]
-pub(crate) fn validate_macos_retained_adoption(
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+pub(crate) fn validate_unix_retained_adoption(
     config_path: &Path,
     owner_filename: &str,
     previous_owner: Option<&[u8]>,
@@ -797,7 +797,7 @@ pub(crate) fn validate_macos_retained_adoption(
 ) -> Result<(), OwnershipError> {
     let next = OwnershipRecord::decode(next_owner)?;
     let previous = previous_owner.map(OwnershipRecord::decode).transpose()?;
-    let kind = validate_macos_owner_target(config_path, owner_filename, &next)?;
+    let kind = validate_unix_owner_target(config_path, owner_filename, &next)?;
     if !previous.as_ref().map_or(
         next.state() == OwnershipState::Active && next.revision() == 1,
         |previous| previous_owner == Some(next_owner) || valid_transition(previous, &next),

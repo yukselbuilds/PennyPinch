@@ -1063,19 +1063,25 @@ mod windows_impl {
 pub(crate) use windows_impl::FileTransaction;
 
 #[cfg(target_os = "macos")]
-#[path = "transaction_macos.rs"]
+#[path = "transaction_unix.rs"]
 mod macos_impl;
 #[cfg(target_os = "macos")]
 pub(crate) use macos_impl::choices::SelectionFile as MacSelectionFile;
 #[cfg(target_os = "macos")]
-pub(crate) use macos_impl::retained_versions as macos_retained_versions;
+pub(crate) use macos_impl::retained_versions as unix_retained_versions;
 #[cfg(target_os = "macos")]
 pub(crate) use macos_impl::FileTransaction;
 
-#[cfg(not(any(windows, target_os = "macos")))]
+#[cfg(target_os = "linux")]
+#[path = "transaction_unix.rs"]
+mod linux_impl;
+#[cfg(target_os = "linux")]
+pub(crate) use linux_impl::{retained_versions as unix_retained_versions, FileTransaction};
+
+#[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
 pub(crate) struct FileTransaction;
 
-#[cfg(not(any(windows, target_os = "macos")))]
+#[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
 impl FileTransaction {
     pub(crate) fn begin() -> Result<Self, TransactionFsError> {
         Err(TransactionFsError::Unsupported)

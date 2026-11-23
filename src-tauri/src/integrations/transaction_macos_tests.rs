@@ -32,6 +32,14 @@ const CONFIG_NAME: &str = "config.toml";
 const CLAUDE_SETTINGS_NAME: &str = "settings.local.json";
 const CLAUDE_BEFORE: &[u8] = b"{}";
 const CLAUDE_USER_FILE: &[u8] = b"{\"api_key\":\"SYNTHETIC_AUTH_SENTINEL\"}";
+#[cfg(target_os = "macos")]
+const PROOF_ROOT_ENV: &str = "HEADROOM_MACOS_PROOF_ROOT";
+#[cfg(target_os = "linux")]
+const PROOF_ROOT_ENV: &str = "HEADROOM_LINUX_PROOF_ROOT";
+#[cfg(target_os = "macos")]
+const FIXTURE_XATTR: &CStr = c"com.headroom.fixture-canary";
+#[cfg(target_os = "linux")]
+const FIXTURE_XATTR: &CStr = c"user.pennypinch.fixture";
 
 struct Fixture {
     id: String,
@@ -69,8 +77,7 @@ fn proof_root() -> PathBuf {
         .expect("project root")
         .join("work");
     let project_work = fs::canonicalize(project_work).expect("canonical project work");
-    let root =
-        PathBuf::from(std::env::var_os("HEADROOM_MACOS_PROOF_ROOT").expect("native proof root"));
+    let root = PathBuf::from(std::env::var_os(PROOF_ROOT_ENV).expect("native proof root"));
     let root = fs::canonicalize(root).expect("canonical proof root");
     assert!(root != project_work && root.starts_with(&project_work));
     let metadata = fs::symlink_metadata(&root).expect("proof root metadata");
@@ -541,37 +548,54 @@ fn contains(bytes: &[u8], needle: &[u8]) -> bool {
 }
 
 fn set_xattr(path: &Path) {
-    let path = CString::new(path.as_os_str().as_bytes()).expect("fixture path CString");
-    let name = CString::new("com.headroom.fixture-canary").expect("xattr name");
+    let file = File::open(path).expect("open fixture metadata file");
     let value = b"preserve";
-    // SAFETY: both C strings and the bounded value remain live for the call.
+    // SAFETY: the descriptor, attribute name, and bounded value remain live.
     let result = unsafe {
-        libc::setxattr(
-            path.as_ptr(),
-            name.as_ptr(),
+        #[cfg(target_os = "macos")]
+        let result = libc::fsetxattr(
+            file.as_raw_fd(),
+            FIXTURE_XATTR.as_ptr(),
             value.as_ptr().cast(),
             value.len(),
             0,
             0,
-        )
+        );
+        #[cfg(target_os = "linux")]
+        let result = libc::fsetxattr(
+            file.as_raw_fd(),
+            FIXTURE_XATTR.as_ptr(),
+            value.as_ptr().cast(),
+            value.len(),
+            0,
+        );
+        result
     };
     assert_eq!(result, 0, "set synthetic metadata canary");
 }
 
 fn assert_xattr(path: &Path) {
-    let path = CString::new(path.as_os_str().as_bytes()).expect("fixture path CString");
-    let name = CString::new("com.headroom.fixture-canary").expect("xattr name");
+    let file = File::open(path).expect("open published metadata file");
     let mut value = [0_u8; 16];
-    // SAFETY: both C strings and the writable bounded buffer remain live.
+    // SAFETY: the descriptor, name, and writable buffer remain live.
     let size = unsafe {
-        libc::getxattr(
-            path.as_ptr(),
-            name.as_ptr(),
+        #[cfg(target_os = "macos")]
+        let size = libc::fgetxattr(
+            file.as_raw_fd(),
+            FIXTURE_XATTR.as_ptr(),
             value.as_mut_ptr().cast(),
             value.len(),
             0,
             0,
-        )
+        );
+        #[cfg(target_os = "linux")]
+        let size = libc::fgetxattr(
+            file.as_raw_fd(),
+            FIXTURE_XATTR.as_ptr(),
+            value.as_mut_ptr().cast(),
+            value.len(),
+        );
+        size
     };
     assert_eq!(size, 8, "read synthetic metadata canary");
     assert!(&value[..8] == b"preserve", "metadata canary is unchanged");
@@ -583,6 +607,7 @@ fn assert_config_mode(path: &Path) {
     assert_eq!(metadata.mode() & 0o7777, 0o644, "config mode is preserved");
 }
 
+#[cfg(target_os = "macos")]
 fn fixture_acl(path: &Path, set: bool) -> Vec<String> {
     if set {
         let mut account = std::mem::MaybeUninit::<libc::passwd>::uninit();
@@ -635,6 +660,37 @@ fn fixture_acl(path: &Path, set: bool) -> Vec<String> {
     entries
 }
 
+#[cfg(target_os = "linux")]
+fn fixture_acl(path: &Path, set: bool) -> Vec<String> {
+    if set {
+        let status = Command::new("setfacl")
+            .args(["-m", "u:65534:r--", "--"])
+            .arg(path)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .unwrap();
+        assert!(status.success(), "set fixture ACL");
+    }
+    let output = Command::new("getfacl")
+        .args(["-cn", "--"])
+        .arg(path)
+        .stdin(Stdio::null())
+        .stderr(Stdio::null())
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "read fixture ACL");
+    let entries: Vec<_> = String::from_utf8(output.stdout)
+        .unwrap()
+        .lines()
+        .filter(|line| !line.is_empty())
+        .map(str::to_owned)
+        .collect();
+    assert!(entries.iter().any(|line| line == "user:65534:r--"));
+    entries
+}
+
 fn spawn_crash_child(id: &str) {
     let executable = std::env::current_exe().expect("test executable");
     let crate_prefix = format!("{}::", env!("CARGO_CRATE_NAME"));
@@ -646,7 +702,7 @@ fn spawn_crash_child(id: &str) {
     let mut child = Command::new(executable)
         .args(["--exact", &filter, "--ignored", "--test-threads=1"])
         .env_clear()
-        .env("HEADROOM_MACOS_PROOF_ROOT", proof)
+        .env(PROOF_ROOT_ENV, proof)
         .env("HEADROOM_MACOS_TXN_FIXTURE", id)
         .stdin(Stdio::null())
         .stdout(Stdio::null())
@@ -675,6 +731,7 @@ fn spawn_crash_child(id: &str) {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn transaction_apply_reopen_and_typed_undo_preserve_user_metadata() {
     let fixture = Fixture::create();
     set_xattr(&fixture.config);
@@ -725,6 +782,7 @@ fn transaction_apply_reopen_and_typed_undo_preserve_user_metadata() {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn rollback_and_sealed_drop_leave_config_and_abort_without_replay() {
     let fixture = Fixture::create();
     stage_apply(&fixture)
@@ -779,6 +837,7 @@ fn rollback_and_sealed_drop_leave_config_and_abort_without_replay() {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn fresh_action_recovers_owner_after_process_exit_between_publications() {
     let fixture = Fixture::create();
     let (expected, _) = expected_patched(ORIGINAL);
@@ -813,6 +872,7 @@ fn fresh_action_recovers_owner_after_process_exit_between_publications() {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn late_write_through_displaced_fd_conflicts_without_losing_either_version() {
     let fixture = Fixture::create();
     let mut late_writer = OpenOptions::new()
@@ -852,7 +912,7 @@ fn late_write_through_displaced_fd_conflicts_without_losing_either_version() {
         .filter(|entry| {
             let name = entry.file_name();
             let name = name.to_string_lossy();
-            name.starts_with(".apfs-") && name.ends_with(".config")
+            name.starts_with(RECORD_PREFIX) && name.ends_with(".config")
         })
         .map(|entry| fs::read(entry.path()).expect("read displaced fixture version"))
         .collect();
@@ -868,7 +928,7 @@ fn late_write_through_displaced_fd_conflicts_without_losing_either_version() {
 }
 
 #[test]
-#[ignore = "owned child invoked by the macOS config transaction recovery test"]
+#[ignore = "owned child invoked by the configuration transaction recovery test"]
 fn crash_after_config_publication_before_owner() {
     let id = std::env::var("HEADROOM_MACOS_TXN_FIXTURE").expect("owned fixture id");
     let fixture = Fixture::open(&id);
@@ -892,7 +952,7 @@ fn spawn_claude_crash_child(id: &str) {
     let mut child = Command::new(executable)
         .args(["--exact", &filter, "--ignored", "--test-threads=1"])
         .env_clear()
-        .env("HEADROOM_MACOS_PROOF_ROOT", proof)
+        .env(PROOF_ROOT_ENV, proof)
         .env("HEADROOM_MACOS_CLAUDE_FIXTURE", id)
         .stdin(Stdio::null())
         .stdout(Stdio::null())
@@ -917,6 +977,7 @@ fn spawn_claude_crash_child(id: &str) {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn missing_claude_project_apply_and_typed_undo_keep_user_additions() {
     let fixture = ClaudeProjectFixture::create();
     let unrelated_before = fs::read(&fixture.user_file).expect("unrelated file bytes");
@@ -1002,6 +1063,7 @@ fn missing_claude_project_apply_and_typed_undo_keep_user_additions() {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn missing_claude_rollback_and_new_action_abort_do_not_publish_old_plan() {
     let fixture = ClaudeProjectFixture::create();
     let StagedClaudeApply { transaction, .. } = stage_claude_apply(&fixture);
@@ -1037,6 +1099,7 @@ fn missing_claude_rollback_and_new_action_abort_do_not_publish_old_plan() {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn competing_claude_directory_and_replaced_project_are_preserved() {
     let token_fixture = ClaudeProjectFixture::create();
     let mut original_transaction = FileTransaction::begin().unwrap();
@@ -1091,6 +1154,7 @@ fn competing_claude_directory_and_replaced_project_are_preserved() {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn claude_directory_publication_crash_recovers_owner_on_explicit_action() {
     let fixture = ClaudeProjectFixture::create();
     let (_, expected) = {
@@ -1137,6 +1201,7 @@ fn crash_after_claude_config_publication_before_owner() {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn retained_review_is_passive_and_archive_keeps_displaced_edits_after_reopen() {
     let fixture = Fixture::create();
     let mut late = OpenOptions::new()
@@ -1192,6 +1257,7 @@ fn retained_review_is_passive_and_archive_keeps_displaced_edits_after_reopen() {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn retained_review_rejects_changed_config_and_cross_target_acceptance() {
     let fixture = Fixture::create();
     commit_apply(&fixture);
@@ -1233,6 +1299,7 @@ fn retained_review_rejects_changed_config_and_cross_target_acceptance() {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn retained_archive_rechecks_metadata_and_copies_before_publishing_manifest() {
     let fixture = Fixture::create();
     commit_apply(&fixture);
@@ -1262,7 +1329,7 @@ fn retained_archive_rechecks_metadata_and_copies_before_publishing_manifest() {
         .unwrap_err(),
         TransactionFsError::Conflict
     );
-    let empty_group = state.join(format!(".apfs-archive-{}", Uuid::new_v4()));
+    let empty_group = state.join(format!("{RECORD_PREFIX}archive-{}", Uuid::new_v4()));
     create_private_dir(&empty_group);
     let review = retained_versions::inspect(&state, &fixture.config, "codex.json").unwrap();
     let result = retained_versions::archive_inner(
@@ -1330,6 +1397,7 @@ fn retained_archive_rechecks_metadata_and_copies_before_publishing_manifest() {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn retained_record_capacity_can_be_archived_without_discarding_config_versions() {
     let fixture = Fixture::create();
     for _ in 0..32 {
@@ -1358,6 +1426,7 @@ fn retained_record_capacity_can_be_archived_without_discarding_config_versions()
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn retained_acceptance_recovers_pending_owner_without_rewriting_current_config() {
     let fixture = Fixture::create();
     let mut old_writer = OpenOptions::new()
@@ -1411,6 +1480,7 @@ fn retained_acceptance_recovers_pending_owner_without_rewriting_current_config()
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn retained_acceptance_refuses_pending_owner_after_owned_endpoint_changes() {
     let fixture = Fixture::create();
     let mut old_writer = OpenOptions::new()
@@ -1446,6 +1516,7 @@ fn retained_acceptance_refuses_pending_owner_after_owned_endpoint_changes() {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn retained_archive_reopens_after_process_exit_on_both_sides_of_manifest_publication() {
     for phase in ["copies", "manifest"] {
         let fixture = Fixture::create();
@@ -1457,7 +1528,7 @@ fn retained_archive_reopens_after_process_exit_on_both_sides_of_manifest_publica
         let mut child = Command::new(std::env::current_exe().unwrap())
             .args(["--exact", &filter, "--ignored", "--test-threads=1"])
             .env_clear()
-            .env("HEADROOM_MACOS_PROOF_ROOT", proof_root())
+            .env(PROOF_ROOT_ENV, proof_root())
             .env("HEADROOM_MACOS_TXN_FIXTURE", &fixture.id)
             .env("HEADROOM_MACOS_ARCHIVE_PHASE", phase)
             .stdin(Stdio::null())
@@ -1533,6 +1604,7 @@ fn crash_during_retained_archive() {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn retained_archive_group_capacity_is_explicit_and_never_deletes_older_groups() {
     let fixture = Fixture::create();
     let state = fixture.root.join("state");
@@ -1582,13 +1654,14 @@ fn retained_archive_group_capacity_is_explicit_and_never_deletes_older_groups() 
             .filter(|entry| entry
                 .file_name()
                 .to_str()
-                .is_some_and(|name| name.starts_with(".apfs-archive-")))
+                .is_some_and(|name| name.starts_with(&format!("{RECORD_PREFIX}archive-"))))
             .count(),
         64
     );
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "set HEADROOM_LINUX_PROOF_ROOT")]
 fn publication_rechecks_replacement_inode_and_late_write_before_claiming_owner() {
     let fixture = Fixture::create();
     let mut staged = stage_apply(&fixture);
@@ -1654,18 +1727,8 @@ fn publication_rechecks_replacement_inode_and_late_write_before_claiming_owner()
             .unwrap();
         let target = CString::new(fixture.config.as_os_str().as_bytes()).unwrap();
         let displaced = CString::new(displaced.path().as_os_str().as_bytes()).unwrap();
-        assert_eq!(
-            unsafe {
-                libc::renameatx_np(
-                    libc::AT_FDCWD,
-                    target.as_ptr(),
-                    libc::AT_FDCWD,
-                    displaced.as_ptr(),
-                    libc::RENAME_SWAP,
-                )
-            },
-            0
-        );
+        rename_entry(libc::AT_FDCWD, &target, libc::AT_FDCWD, &displaced, true)
+            .expect("exchange the two fixture entries");
     });
     assert_eq!(
         result,

@@ -2,16 +2,19 @@ use super::{ClaudeDirectoryToken, FileIdentity, FileSnapshot, FileToken, Transac
 use super::{MAX_TRANSACTION_FILES, MAX_TRANSACTION_FILE_BYTES};
 use crate::integrations::config_io::{self, ConfigIoError, PinnedDirectoryChain};
 use crate::state::ownership::{
-    config_path_binding, config_path_binding_for_claude_project_target, validate_macos_publication,
+    config_path_binding, config_path_binding_for_claude_project_target, validate_unix_publication,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::ffi::{CStr, CString, OsString};
-use std::fs::{self, File, Metadata, OpenOptions};
+use std::fs::{self, File, Metadata};
+use std::io;
 use std::io::{Read, Write};
-use std::os::fd::{AsRawFd, FromRawFd};
+use std::os::fd::{AsRawFd, FromRawFd, RawFd};
 use std::os::unix::ffi::{OsStrExt, OsStringExt};
-use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+use std::os::unix::fs::MetadataExt;
+#[cfg(target_os = "linux")]
+use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant, UNIX_EPOCH};
@@ -21,6 +24,14 @@ const MAX_JOURNALS: usize = 64;
 const MAX_JOURNAL_BYTES: usize = 32 * 1024;
 const MAX_XATTR_BYTES: usize = 64 * 1024;
 const WALL_LIMIT: Duration = Duration::from_secs(10);
+#[cfg(target_os = "macos")]
+const RECORD_PREFIX: &str = ".apfs-";
+#[cfg(target_os = "linux")]
+const RECORD_PREFIX: &str = ".pennypinch-";
+#[cfg(target_os = "macos")]
+const LOCK_NAME: &CStr = c".apfs.lock";
+#[cfg(target_os = "linux")]
+const LOCK_NAME: &CStr = c".pennypinch.lock";
 static NEXT_TRANSACTION: AtomicU64 = AtomicU64::new(1);
 
 fn hash(bytes: &[u8]) -> String {
@@ -64,17 +75,35 @@ fn require_absent(path: &Path) -> Result<(), TransactionFsError> {
     }
 }
 
-fn metadata_hash(file: &File) -> Result<String, TransactionFsError> {
+fn visit_xattrs(
+    file: &File,
+    mut visit: impl FnMut(&CStr, &[u8]) -> Result<(), TransactionFsError>,
+) -> Result<(), TransactionFsError> {
     let fd = file.as_raw_fd();
-    // SAFETY: null requests only the required bounded buffer size.
-    let length = unsafe { libc::flistxattr(fd, std::ptr::null_mut(), 0, 0) };
+    let list = |buffer: *mut libc::c_char, size| {
+        // SAFETY: callers provide a buffer of the requested size or a null size probe.
+        unsafe {
+            #[cfg(target_os = "macos")]
+            return libc::flistxattr(fd, buffer, size, 0);
+            #[cfg(target_os = "linux")]
+            return libc::flistxattr(fd, buffer, size);
+        }
+    };
+    let get = |name: &CStr, buffer: *mut libc::c_void, size| {
+        // SAFETY: name is NUL terminated. The buffer matches the length argument.
+        unsafe {
+            #[cfg(target_os = "macos")]
+            return libc::fgetxattr(fd, name.as_ptr(), buffer, size, 0, 0);
+            #[cfg(target_os = "linux")]
+            return libc::fgetxattr(fd, name.as_ptr(), buffer, size);
+        }
+    };
+    let length = list(std::ptr::null_mut(), 0);
     if length < 0 || length as usize > MAX_XATTR_BYTES {
         return Err(TransactionFsError::UnsafeFile);
     }
     let mut names = vec![0u8; length as usize];
-    if length > 0
-        && unsafe { libc::flistxattr(fd, names.as_mut_ptr().cast(), names.len(), 0) } != length
-    {
+    if length > 0 && list(names.as_mut_ptr().cast(), names.len()) != length {
         return Err(TransactionFsError::Conflict);
     }
     let mut keys: Vec<_> = names
@@ -82,35 +111,123 @@ fn metadata_hash(file: &File) -> Result<String, TransactionFsError> {
         .filter(|key| !key.is_empty())
         .collect();
     keys.sort_unstable();
-    let mut digest = Sha256::new();
     let mut total = names.len();
     for key in keys {
         let name = CString::new(key).map_err(|_| TransactionFsError::UnsafeFile)?;
-        let size = unsafe { libc::fgetxattr(fd, name.as_ptr(), std::ptr::null_mut(), 0, 0, 0) };
+        let size = get(&name, std::ptr::null_mut(), 0);
         if size < 0 || size as usize > MAX_XATTR_BYTES.saturating_sub(total) {
             return Err(TransactionFsError::UnsafeFile);
         }
         let mut value = vec![0; size as usize];
-        if unsafe {
-            libc::fgetxattr(
-                fd,
-                name.as_ptr(),
-                value.as_mut_ptr().cast(),
-                value.len(),
-                0,
-                0,
-            )
-        } != size
-        {
+        if get(&name, value.as_mut_ptr().cast(), value.len()) != size {
             return Err(TransactionFsError::Conflict);
         }
         total += value.len();
-        digest.update((key.len() as u64).to_le_bytes());
-        digest.update(key);
-        digest.update((value.len() as u64).to_le_bytes());
-        digest.update(&value);
+        visit(&name, &value)?;
     }
+    Ok(())
+}
+
+fn metadata_hash(file: &File) -> Result<String, TransactionFsError> {
+    let mut digest = Sha256::new();
+    visit_xattrs(file, |key, value| {
+        digest.update((key.to_bytes().len() as u64).to_le_bytes());
+        digest.update(key.to_bytes());
+        digest.update((value.len() as u64).to_le_bytes());
+        digest.update(value);
+        Ok(())
+    })?;
     Ok(format!("{:x}", digest.finalize()))
+}
+
+#[cfg(target_os = "macos")]
+fn copy_metadata(original: &Snapshot, staged: &File) -> Result<(), TransactionFsError> {
+    // SAFETY: both file descriptors stay open for the metadata copy.
+    if unsafe {
+        libc::fcopyfile(
+            original.file.as_raw_fd(),
+            staged.as_raw_fd(),
+            std::ptr::null_mut(),
+            libc::COPYFILE_METADATA,
+        )
+    } != 0
+    {
+        return Err(TransactionFsError::UnsafeFile);
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn copy_metadata(original: &Snapshot, staged: &File) -> Result<(), TransactionFsError> {
+    let fd = staged.as_raw_fd();
+    let info = staged.metadata().map_err(|_| TransactionFsError::Io)?;
+    // SAFETY: fd remains open. The sentinel preserves the current owner.
+    if info.gid() != original.version.gid
+        && unsafe { libc::fchown(fd, libc::uid_t::MAX, original.version.gid) } != 0
+    {
+        return Err(TransactionFsError::UnsafeFile);
+    }
+    staged
+        .set_permissions(fs::Permissions::from_mode(original.version.mode & 0o777))
+        .map_err(|_| TransactionFsError::UnsafeFile)?;
+    if metadata_hash(staged)? == original.version.metadata_sha256 {
+        return Ok(());
+    }
+    visit_xattrs(&original.file, |name, value| {
+        // SAFETY: the descriptor, NUL-terminated name, and bounded value stay live.
+        if unsafe { libc::fsetxattr(fd, name.as_ptr(), value.as_ptr().cast(), value.len(), 0) } != 0
+        {
+            return Err(TransactionFsError::UnsafeFile);
+        }
+        Ok(())
+    })
+}
+
+fn rename_entry(
+    from_dir: RawFd,
+    from: &CStr,
+    to_dir: RawFd,
+    to: &CStr,
+    exchange: bool,
+) -> io::Result<()> {
+    // SAFETY: callers hold the directory descriptors and checked, NUL-terminated names.
+    let result = unsafe {
+        #[cfg(target_os = "macos")]
+        {
+            let flags = if exchange {
+                libc::RENAME_SWAP
+            } else {
+                libc::RENAME_EXCL
+            };
+            libc::renameatx_np(from_dir, from.as_ptr(), to_dir, to.as_ptr(), flags)
+        }
+        #[cfg(target_os = "linux")]
+        {
+            let flags = if exchange {
+                libc::RENAME_EXCHANGE
+            } else {
+                libc::RENAME_NOREPLACE
+            };
+            libc::renameat2(from_dir, from.as_ptr(), to_dir, to.as_ptr(), flags)
+        }
+    };
+    if result != 0 {
+        return Err(io::Error::last_os_error());
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn require_ext_filesystem(file: &File) -> Result<(), TransactionFsError> {
+    let mut filesystem = std::mem::MaybeUninit::<libc::statfs>::uninit();
+    // SAFETY: the file owns the descriptor and the buffer can hold a statfs result.
+    if unsafe { libc::fstatfs(file.as_raw_fd(), filesystem.as_mut_ptr()) } != 0 {
+        return Err(TransactionFsError::Io);
+    }
+    if unsafe { filesystem.assume_init() }.f_type != libc::EXT4_SUPER_MAGIC {
+        return Err(TransactionFsError::Unsupported);
+    }
+    Ok(())
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
@@ -172,12 +289,15 @@ struct Directory {
 impl Directory {
     fn open(path: &Path, private: bool) -> Result<Self, TransactionFsError> {
         let pins = config_io::pin_existing_directory_chain(path).map_err(map_path)?;
+        #[cfg(target_os = "macos")]
         config_io::ensure_fixed_volume(&path.join(".headroom-volume")).map_err(map_path)?;
-        let file = OpenOptions::new()
-            .read(true)
-            .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW_ANY | libc::O_CLOEXEC)
-            .open(path)
+        let file = pins
+            .directory_file()
+            .map_err(map_path)?
+            .try_clone()
             .map_err(|_| TransactionFsError::UnsafePath)?;
+        #[cfg(target_os = "linux")]
+        require_ext_filesystem(&file)?;
         let info = file.metadata().map_err(|_| TransactionFsError::Io)?;
         if info.uid() != unsafe { libc::geteuid() }
             || info.mode() & 0o022 != 0
@@ -239,6 +359,10 @@ impl Directory {
         }
         let mut file = self.open_file(name, libc::O_RDONLY)?;
         let before = file.metadata().map_err(|_| TransactionFsError::Io)?;
+        #[cfg(target_os = "linux")]
+        if before.dev() != self.object.device {
+            return Err(TransactionFsError::UnsafeFile);
+        }
         if !before.is_file()
             || before.nlink() != 1
             || before.uid() != unsafe { libc::geteuid() }
@@ -294,25 +418,14 @@ impl Directory {
         bytes: &[u8],
         original: Option<&Snapshot>,
     ) -> Result<Snapshot, TransactionFsError> {
+        if original.is_some_and(|snapshot| snapshot.version.mode & 0o200 == 0) {
+            return Err(TransactionFsError::UnsafeFile);
+        }
         let mut file = self.open_file(name, libc::O_RDWR | libc::O_CREAT | libc::O_EXCL)?;
         let created = Object::from(&file.metadata().map_err(|_| TransactionFsError::Io)?);
         file.write_all(bytes).map_err(|_| TransactionFsError::Io)?;
         if let Some(original) = original {
-            if original.version.mode & 0o200 == 0 {
-                return Err(TransactionFsError::UnsafeFile);
-            }
-            // Copy metadata from the held source, including ACLs and extended attributes.
-            if unsafe {
-                libc::fcopyfile(
-                    original.file.as_raw_fd(),
-                    file.as_raw_fd(),
-                    std::ptr::null_mut(),
-                    libc::COPYFILE_METADATA,
-                )
-            } != 0
-            {
-                return Err(TransactionFsError::UnsafeFile);
-            }
+            copy_metadata(original, &file)?;
         }
         file.sync_all()
             .and_then(|_| self.file.sync_all())
@@ -354,21 +467,17 @@ impl Directory {
         existed: bool,
     ) -> Result<(), TransactionFsError> {
         self.verify()?;
-        let flags = if existed {
-            libc::RENAME_SWAP
-        } else {
-            libc::RENAME_EXCL
-        };
-        if unsafe {
-            libc::renameatx_np(
-                self.file.as_raw_fd(),
-                stage.as_ptr(),
-                self.file.as_raw_fd(),
-                target.as_ptr(),
-                flags,
-            )
-        } != 0
-        {
+        let fd = self.file.as_raw_fd();
+        if let Err(error) = rename_entry(fd, stage, fd, target, existed) {
+            #[cfg(target_os = "linux")]
+            if matches!(
+                error.raw_os_error(),
+                Some(libc::ENOSYS | libc::EINVAL | libc::EOPNOTSUPP | libc::EXDEV)
+            ) {
+                return Err(TransactionFsError::Unsupported);
+            }
+            #[cfg(target_os = "macos")]
+            let _ = error;
             return Err(TransactionFsError::Conflict);
         }
         self.file
@@ -421,7 +530,7 @@ fn name(id: &str, suffix: &str) -> Result<CString, TransactionFsError> {
     {
         return Err(TransactionFsError::Conflict);
     }
-    CString::new(format!(".apfs-{id}.{suffix}")).map_err(|_| TransactionFsError::Conflict)
+    CString::new(format!("{RECORD_PREFIX}{id}.{suffix}")).map_err(|_| TransactionFsError::Conflict)
 }
 
 fn config_stage(id: &str) -> Result<CString, TransactionFsError> {
@@ -575,7 +684,7 @@ impl Journal {
                 {
                     return Err(TransactionFsError::Conflict);
                 }
-                validate_macos_publication(
+                validate_unix_publication(
                     &path,
                     &self.owner_filename,
                     owner.as_ref().map(|file| file.bytes.as_slice()),
@@ -634,7 +743,7 @@ impl Journal {
         {
             return Err(TransactionFsError::Conflict);
         }
-        validate_macos_publication(
+        validate_unix_publication(
             &path,
             &self.owner_filename,
             owner.as_ref().map(|value| value.bytes.as_slice()),
@@ -692,7 +801,7 @@ fn journals(state: &Directory) -> Result<Vec<(Journal, String)>, TransactionFsEr
             continue;
         };
         let Some(id) = filename
-            .strip_prefix(".apfs-")
+            .strip_prefix(RECORD_PREFIX)
             .and_then(|name| name.strip_suffix(".json"))
         else {
             continue;
@@ -742,11 +851,11 @@ fn check_history(
 }
 
 fn lock(state: &Directory, create: bool) -> Result<Option<File>, TransactionFsError> {
-    if !create && state.snapshot(c".apfs.lock", 0)?.is_none() {
+    if !create && state.snapshot(LOCK_NAME, 0)?.is_none() {
         return Ok(None);
     }
     let file = state.open_file(
-        c".apfs.lock",
+        LOCK_NAME,
         libc::O_RDWR | if create { libc::O_CREAT } else { 0 },
     )?;
     let info = file.metadata().map_err(|_| TransactionFsError::Io)?;
@@ -761,7 +870,7 @@ fn lock(state: &Directory, create: bool) -> Result<Option<File>, TransactionFsEr
         return Err(TransactionFsError::Conflict);
     }
     let named = state
-        .snapshot(c".apfs.lock", 0)?
+        .snapshot(LOCK_NAME, 0)?
         .ok_or(TransactionFsError::Conflict)?;
     if Object::from(&info) != named.version.object {
         return Err(TransactionFsError::Conflict);
@@ -1041,7 +1150,7 @@ impl FileTransaction {
     fn ensure_lock(&mut self, state: &Directory, create: bool) -> Result<(), TransactionFsError> {
         if let Some(file) = &self.lock {
             let named = state
-                .snapshot(c".apfs.lock", 0)?
+                .snapshot(LOCK_NAME, 0)?
                 .ok_or(TransactionFsError::Conflict)?;
             if Object::from(&file.metadata().map_err(|_| TransactionFsError::Io)?)
                 != named.version.object
@@ -1164,7 +1273,7 @@ impl FileTransaction {
             .file_name()
             .and_then(|value| value.to_str())
             .ok_or(TransactionFsError::UnsafePath)?;
-        validate_macos_publication(
+        validate_unix_publication(
             &config.path,
             owner_filename,
             owner.before.as_ref().map(|file| file.bytes.as_slice()),
@@ -1344,5 +1453,6 @@ mod tests;
 #[path = "transaction_macos_retained.rs"]
 pub(crate) mod retained_versions;
 
+#[cfg(target_os = "macos")]
 #[path = "transaction_macos_choices.rs"]
 pub(crate) mod choices;

@@ -1,5 +1,10 @@
 use super::*;
 
+#[cfg(target_os = "macos")]
+const ARCHIVE_PREFIX: &str = ".apfs-archive-";
+#[cfg(target_os = "linux")]
+const ARCHIVE_PREFIX: &str = ".pennypinch-archive-";
+
 #[derive(Debug)]
 pub(crate) struct RetainedReview {
     pub(crate) review_fingerprint: String,
@@ -71,7 +76,7 @@ fn valid_hash(value: &str) -> bool {
 
 fn archive_name(id: &str) -> Result<CString, TransactionFsError> {
     name(id, "json")?;
-    CString::new(format!(".apfs-archive-{id}")).map_err(|_| TransactionFsError::Conflict)
+    CString::new(format!("{ARCHIVE_PREFIX}{id}")).map_err(|_| TransactionFsError::Conflict)
 }
 
 impl Manifest {
@@ -103,7 +108,7 @@ impl Manifest {
             let matched = self.journal_ids.iter().any(|id| {
                 SUFFIXES
                     .iter()
-                    .any(|suffix| file.filename == format!(".apfs-{id}.{suffix}"))
+                    .any(|suffix| file.filename == format!("{RECORD_PREFIX}{id}.{suffix}"))
             });
             if !matched
                 || !filenames.insert(&file.filename)
@@ -118,7 +123,7 @@ impl Manifest {
         if self
             .journal_ids
             .iter()
-            .any(|id| !filenames.contains(&format!(".apfs-{id}.json")))
+            .any(|id| !filenames.contains(&format!("{RECORD_PREFIX}{id}.json")))
         {
             return Err(TransactionFsError::Conflict);
         }
@@ -140,7 +145,7 @@ fn groups(state: &Directory) -> Result<Vec<ArchiveGroup>, TransactionFsError> {
         let filename = entry.file_name();
         let Some(id) = filename
             .to_str()
-            .and_then(|value| value.strip_prefix(".apfs-archive-"))
+            .and_then(|value| value.strip_prefix(ARCHIVE_PREFIX))
         else {
             continue;
         };
@@ -342,7 +347,7 @@ fn can_adopt(
         None
     };
     Ok(next_bytes.is_some_and(|bytes| {
-        crate::state::ownership::validate_macos_retained_adoption(
+        crate::state::ownership::validate_unix_retained_adoption(
             path,
             &journal.owner_filename,
             owner.as_ref().map(|file| file.bytes.as_slice()),
@@ -445,7 +450,7 @@ fn collect_files(
                         }
                     }
                     "owner" => {
-                        crate::state::ownership::validate_macos_ownership_bytes(&file.bytes)
+                        crate::state::ownership::validate_unix_ownership_bytes(&file.bytes)
                             .map_err(|_| TransactionFsError::Conflict)?;
                     }
                     _ => return Err(TransactionFsError::Conflict),
@@ -587,16 +592,15 @@ pub(super) fn archive_inner(
             .flatten()
             .is_some_and(|actual| actual.version == file.version)
         {
-            let moved = unsafe {
-                libc::renameatx_np(
-                    state.file.as_raw_fd(),
-                    name.as_ptr(),
-                    group.directory.file.as_raw_fd(),
-                    name.as_ptr(),
-                    libc::RENAME_EXCL,
-                )
-            };
-            if moved == 0 {
+            if rename_entry(
+                state.file.as_raw_fd(),
+                &name,
+                group.directory.file.as_raw_fd(),
+                &name,
+                false,
+            )
+            .is_ok()
+            {
                 let _ = group.directory.file.sync_all();
                 let _ = state.file.sync_all();
             }

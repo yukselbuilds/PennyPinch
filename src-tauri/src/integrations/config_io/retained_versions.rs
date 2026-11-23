@@ -154,17 +154,17 @@ impl PlanManager {
             archive_limit: 64,
             can_archive: false,
         };
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(not(any(target_os = "macos", target_os = "linux")))]
         {
             let _ = scope;
             if expected.is_some() {
                 return failure(&request.request_id, "unavailable");
             }
         }
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         {
             use crate::integrations::transaction_fs::{
-                macos_retained_versions as native, TransactionFsError,
+                unix_retained_versions as native, TransactionFsError,
             };
             let (roots, selected_scope) = match self.config_roots_for_context(kind) {
                 Ok(value) => value,
@@ -293,8 +293,8 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(target_os = "macos"))]
-    fn retained_review_is_explicitly_unsupported_off_macos() {
+    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
+    fn retained_review_is_explicitly_unsupported_without_the_unix_backend() {
         let result = serde_json::to_value(manager().retained_versions(request())).unwrap();
         assert_eq!(result["status"], "snapshot");
         assert_eq!(result["supported"], false);
