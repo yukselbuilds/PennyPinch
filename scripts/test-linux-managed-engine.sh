@@ -41,8 +41,6 @@ test "$before" = "$(fingerprint)"
 awk '/^test .* \.\.\. (ok|FAILED)$|^test result:|^headroom-macos-error=|^Linux engine proof/ { print substr($0, 1, 220) }
      /panicked at|^assertion|^  left:|^ right:|^(save|start)_error=/ && ++count <= 12 { print substr($0, 1, 220) }' "$log"
 test "$status" -eq 0
-grep -q '^test runtime::manager::macos_tests::managed_app_engine_lifecycle \.\.\. ok$' "$log"
-grep -q '^test .*::managed_engine_routes_an_isolated_connection_and_undoes_all_client_configs \.\.\. ok$' "$log"
 digest="$(printf '%s\n' "$before" | sha256sum | cut -d' ' -f1)"
 printf '%s\n' '## Linux desktop runtime manager' '' "- Input fingerprint before and after: $digest" \
   '- Verified readiness, pause, resume, stop, restart, and conflict with a foreign listener.' \

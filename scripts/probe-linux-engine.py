@@ -229,15 +229,23 @@ def probe(root):
 
 def probe_managed(root, test_binary):
     require_isolated_linux()
+    required_tests = (
+        "runtime::manager::macos_tests::managed_app_engine_lifecycle",
+        "integrations::config_io::linux_config_tests::managed_engine_routes_an_isolated_connection_and_undoes_all_client_configs",
+    )
+    test_command = [
+        str(test_binary), *required_tests,
+        "runtime::ingress::tests::", "runtime::ingress_relay::tests::", "runtime::unix_backend::tests::",
+        "state::store_tests::", "--include-ignored", "--test-threads=1",
+    ]
+    # Child diagnostics can interrupt an individual test's status line.
+    listed = subprocess.check_output([*test_command, "--list"], text=True, timeout=10).splitlines()
+    require(all(f"{name}: test" in listed for name in required_tests), "required managed tests not selected")
     fixture = local_responses_fixture()
     try:
         fixture.release_terminal()
         result = subprocess.run(
-            [str(test_binary), "runtime::manager::macos_tests::managed_app_engine_lifecycle",
-             "runtime::ingress::tests::", "runtime::ingress_relay::tests::", "runtime::unix_backend::tests::",
-             "state::store_tests::",
-             "linux_config_tests::managed_engine_routes_an_isolated_connection",
-             "--include-ignored", "--test-threads=1"],
+            test_command,
             env={
                 "PATH": "/usr/bin:/bin",
                 "XDG_RUNTIME_DIR": str(root / "socket"),
