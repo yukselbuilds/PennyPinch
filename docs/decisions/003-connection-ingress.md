@@ -107,3 +107,12 @@ cargo test --manifest-path src-tauri/Cargo.toml runtime::manager::tests::live_ma
 ```
 
 The C smoke remains opt-in and is not repeated after its PASS. The final parent Rust gate and native physical UI/idle-keepalive/normal-exit/process-reopen checks also passed. See the linked final proof. Paid provider/auth, real client config, ChatGPT gateway, client compatibility, live-engine active gated-SSE drain, tray/app-closed port protection, Windows 11, and clean-machine support remain unverified. No direct-upstream fallback is configured or inferred.
+
+## Linux loopback ingress
+
+Linux reuses the Unix process manager and the opaque TCP relay.
+The relay binds to 127.0.0.1. It keeps the address while the engine stops or restarts.
+Linux socket credentials identify the engine PID and UID before the relay sends any request data.
+The app publishes the endpoint record with an exclusive rename. A conflicting listener keeps its port.
+The Linux manager checks the pinned payload manifest and the x64 ELF executable before start.
+[Managed engine evidence](../proofs/h049-linux-managed.json)

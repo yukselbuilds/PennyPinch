@@ -10,7 +10,8 @@ macOS ARM64 passed native desktop development checks with engine 0.41.0. The lat
 
 Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b2 evidence](proofs/h049-linux-transaction.json)
 
-The lead agent verified Headroom 0.44.0 on Ubuntu 24.04 x64. The relocated engine completed two local Responses streams and stopped after each run. Next, connect that engine to the desktop's stable loopback endpoint and verify isolated client Apply and Undo. [H049-b3 engine evidence](proofs/h049-linux-engine.json)
+The lead agent completed H049-b3 on Ubuntu 24.04 x64. The desktop manager ran Headroom 0.44.0 and forwarded a local Responses stream from the saved Codex endpoint.
+Apply and Undo passed for isolated Codex, Claude Code, and OpenCode settings. Next, verify native Linux discovery, packaging, and the installed app lifecycle. [H049-b3 evidence](proofs/h049-linux-managed.json)
 
 GitHub lists free standard hosted compute for public repositories. Standard Windows x64 runners use Windows Server. The standard Windows 11 desktop runner uses ARM64. Windows 11 x64 acceptance remains open. [Windows acceptance](validation/windows-install.md#open-acceptance-criteria)
 

@@ -24,8 +24,19 @@ Ubuntu 24.04 x64 ran the pinned Headroom 0.44.0 wheels with CPython 3.13.13 and 
 The runner moved the payload before start. The engine completed two synthetic Responses streams.
 The test checked the Unix socket peer PID and UID before it sent HTTP.
 The engine stopped after each run and left no socket. The payload fingerprint matched before and after.
-The network namespace exposed only loopback. Desktop-managed routing and the installer remain open.
+The network namespace exposed only loopback. The following check covers the desktop manager.
 [Engine evidence](../proofs/h049-linux-engine.json)
+
+## Linux managed engine and client configuration
+
+The Ubuntu 24.04 x64 test ran the pinned engine from the desktop manager.
+It checked the saved loopback port, socket peer identity, pause, resume, restart, and orderly stop.
+The native window opened under Xvfb and reserved the saved endpoint.
+The connection test used simulated installation records and real configuration files.
+The saved Codex address carried one synthetic Responses stream.
+The app applied the route in each profile. Undo restored the original file bytes and permissions.
+Linux client discovery, real client processes, live provider accounts, and the installer require separate checks.
+[Managed engine evidence](../proofs/h049-linux-managed.json)
 
 <a name="windows-10-kurulumu"></a>
 

@@ -40,6 +40,11 @@ It tests the relocated engine against a synthetic Responses provider in a loopba
 The job checks socket peer identity, stream completion, shutdown, and restart.
 [Engine evidence](../proofs/h049-linux-engine.json)
 
+Select `linux_managed_engine` to stage the pinned resources and run the desktop manager tests.
+This option also runs the isolated configuration checks and opens the native window under Xvfb.
+The provider fixture and manager tests use a loopback-only network namespace.
+[Managed engine evidence](../proofs/h049-linux-managed.json)
+
 ## Excluded checks and limits
 
 These limits apply to the default frontend run.

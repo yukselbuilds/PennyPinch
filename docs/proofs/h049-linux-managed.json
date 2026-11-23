@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "task": "H049-b3",
+  "date": "2026-11-23",
+  "implementation": "lead_agent",
+  "source_commit": "ef1087689d146fe2a9fb197a67416a9dc207a529",
+  "source_tree": "1f26fce7ba792a66bbc8ca38a099c1afa46a6507",
+  "engine_version": "0.44.0",
+  "engine_lock_sha256": "e1142cbbeaa139a6a23fcc3b1298af5a38f1f33b03d4833e744631c3015de3e7",
+  "linux": {
+    "source_commit": "ef1087689d146fe2a9fb197a67416a9dc207a529",
+    "source_tree": "1f26fce7ba792a66bbc8ca38a099c1afa46a6507",
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45193348705",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45193348705/job/137757214585",
+    "runner": "Ubuntu 24.04 x64 standard GitHub-hosted",
+    "job_duration_seconds": 260,
+    "conclusion": "success",
+    "inputs_before_after_match": true,
+    "isolated_config_profiles": [
+      "Codex",
+      "Claude Code",
+      "OpenCode"
+    ],
+    "discovery": "synthetic CLI installation records",
+    "observed": [
+      "pinned native engine readiness and owned Unix socket peer",
+      "private preference lock and atomic file replacement",
+      "pause, resume, same-port restart and orderly stop",
+      "saved port conflict leaves the foreign listener available",
+      "one local Responses stream through the saved Codex endpoint",
+      "Apply and byte-exact Undo with original permissions for all three profiles",
+      "locked build, native Xvfb window, and idle loopback ingress"
+    ],
+    "previous_runtime_suite": {
+      "source_commit": "362f5d10021fb1ebcbf0c37cd3722d78f9af903b",
+      "source_tree": "33679570660eac73cd7a9310379250d3fd065847",
+      "proof_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45191840565/job/137751937341#step:7:454",
+      "passed_tests": 36,
+      "step_failed_after_tests": "status-line matcher did not allow inherited engine diagnostics"
+    }
+  },
+  "macos": {
+    "source_commit": "93a18b62aa5d27cce276c28c35241c604e892222",
+    "source_tree": "ea20655873e1b8cb55f1f9594dd0ff2bd67e8be1",
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45187537458",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45187537458/job/137736955303",
+    "runner": "macos-15 ARM64 standard GitHub-hosted",
+    "job_duration_seconds": 394,
+    "conclusion": "success",
+    "scope": "managed engine readiness, control, metrics, normal stop, restart and parent loss"
+  },
+  "windows_10": {
+    "source_commit": "fcd39401fdd62352309f08cc813658576c868556",
+    "source_tree": "67fe5de8d13b600a5693fa85479cec6135b9d55e",
+    "passed": true,
+    "inputs_before_after_match": true,
+    "input_sha256": "ded2235b3be747dd95d0347561754ad022272d254077c3116ac6238badc54582",
+    "input_count": 500,
+    "checks": {
+      "app_tests": {
+        "exit": 0,
+        "seconds": 1.228,
+        "rust": [],
+        "node": {
+          "tests": "227",
+          "pass": "227",
+          "fail": "0",
+          "skipped": "0"
+        },
+        "python": [],
+        "failures": []
+      },
+      "frontend": {
+        "exit": 0,
+        "seconds": 1.376,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_fmt": {
+        "exit": 0,
+        "seconds": 1.206,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_tests": {
+        "exit": 0,
+        "seconds": 20.881,
+        "rust": [
+          "test result: ok. 481 passed; 0 failed; 25 ignored; 0 measured; 0 filtered out; finished in 13.68s"
+        ],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "embedded_debug": {
+        "exit": 0,
+        "seconds": 7.519,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      }
+    }
+  },
+  "limits": {
+    "linux_native_client_discovery": "not_tested",
+    "linux_actual_client_processes": "not_tested",
+    "linux_installer_and_installed_lifecycle": "not_tested",
+    "linux_full_rust_suite": "not_retested",
+    "windows_11_x64": "not_tested",
+    "live_provider_requests": 0,
+    "development_token_savings": "unmeasured",
+    "paid_jobs": 0
+  }
+}
