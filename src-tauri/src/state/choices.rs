@@ -72,20 +72,20 @@ pub(crate) struct InstallationChoice {
     pub(crate) size_bytes: u64,
     pub(crate) version: Option<String>,
     pub(crate) availability: ChoiceAvailability,
-    #[cfg(target_os = "macos")]
-    pub(crate) macos_change_time: Option<MacChangeTime>,
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    pub(crate) unix_change_time: Option<UnixChangeTime>,
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
-pub(crate) struct MacChangeTime {
+pub(crate) struct UnixChangeTime {
     seconds: i64,
     nanos: i64,
 }
 
-#[cfg(target_os = "macos")]
-impl MacChangeTime {
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+impl UnixChangeTime {
     pub(crate) fn from_metadata(info: &fs::Metadata) -> Self {
         use std::os::unix::fs::MetadataExt;
         Self {
@@ -168,9 +168,10 @@ struct StoredInstallationChoice {
     identity: StoredIdentity,
     size_bytes: u64,
     version: Option<String>,
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    #[cfg_attr(target_os = "macos", serde(rename = "macos_change_time"))]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    macos_change_time: Option<MacChangeTime>,
+    unix_change_time: Option<UnixChangeTime>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -191,8 +192,8 @@ struct InspectedPath {
     canonical_path: String,
     identity: FileIdentity,
     size_bytes: u64,
-    #[cfg(target_os = "macos")]
-    macos_change_time: Option<MacChangeTime>,
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    unix_change_time: Option<UnixChangeTime>,
 }
 
 impl StoredChoices {
@@ -228,8 +229,8 @@ impl StoredChoices {
             {
                 return Err(ChoiceError::Invalid);
             }
-            #[cfg(target_os = "macos")]
-            if choice.macos_change_time.is_some_and(|time| !time.valid()) {
+            #[cfg(any(target_os = "macos", target_os = "linux"))]
+            if choice.unix_change_time.is_some_and(|time| !time.valid()) {
                 return Err(ChoiceError::Invalid);
             }
         }
@@ -328,7 +329,7 @@ impl ChoiceStore {
     pub(crate) fn for_app_local_data(
         app_local_data_dir: Option<PathBuf>,
     ) -> Result<Self, ChoiceError> {
-        if cfg!(debug_assertions) && !cfg!(target_os = "macos") {
+        if cfg!(debug_assertions) && !cfg!(any(target_os = "macos", target_os = "linux")) {
             let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
             let project_root = manifest_dir.parent().ok_or(ChoiceError::UnsafePath)?;
             return Self::new(
@@ -338,7 +339,7 @@ impl ChoiceStore {
         }
 
         let app_local_data_dir = app_local_data_dir.ok_or(ChoiceError::Unavailable)?;
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         {
             crate::integrations::config_io::validate_lexical_path(&app_local_data_dir)
                 .map_err(map_config_io_error)?;
@@ -347,7 +348,7 @@ impl ChoiceStore {
                     .map_err(|_| ChoiceError::UnsafePath)?;
             Self::new(boundary, relative.join("onboarding"))
         }
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(not(any(target_os = "macos", target_os = "linux")))]
         {
             let parent = app_local_data_dir.parent().ok_or(ChoiceError::UnsafePath)?;
             let app_dir_name = app_local_data_dir
@@ -423,12 +424,12 @@ impl ChoiceStore {
         &self,
         choice: InstallationChoice,
     ) -> Result<ChoicesSnapshot, ChoiceError> {
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(not(any(target_os = "macos", target_os = "linux")))]
         let stored = validate_new_installation(&choice)?;
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         validate_new_installation(&choice)?;
         self.update(|document| {
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", target_os = "linux"))]
             let stored = validate_new_installation(&choice)?;
             let existing = document
                 .installations
@@ -469,8 +470,8 @@ impl ChoiceStore {
             size_bytes: inspected.size_bytes,
             version,
             availability: ChoiceAvailability::Available,
-            #[cfg(target_os = "macos")]
-            macos_change_time: inspected.macos_change_time,
+            #[cfg(any(target_os = "macos", target_os = "linux"))]
+            unix_change_time: inspected.unix_change_time,
         })
     }
 
@@ -572,8 +573,8 @@ impl ChoiceStore {
             size_bytes: inspected.size_bytes,
             version: None,
             availability: ChoiceAvailability::Available,
-            #[cfg(target_os = "macos")]
-            macos_change_time: inspected.macos_change_time,
+            #[cfg(any(target_os = "macos", target_os = "linux"))]
+            unix_change_time: inspected.unix_change_time,
         })
     }
 
@@ -654,12 +655,12 @@ fn snapshot_from_document(document: StoredChoices) -> ChoicesSnapshot {
                         && value.identity == to_identity(stored.identity)
                         && value.size_bytes == stored.size_bytes
                         && {
-                            #[cfg(target_os = "macos")]
+                            #[cfg(any(target_os = "macos", target_os = "linux"))]
                             {
-                                stored.macos_change_time.is_some()
-                                    && stored.macos_change_time == value.macos_change_time
+                                stored.unix_change_time.is_some()
+                                    && stored.unix_change_time == value.unix_change_time
                             }
-                            #[cfg(not(target_os = "macos"))]
+                            #[cfg(not(any(target_os = "macos", target_os = "linux")))]
                             {
                                 true
                             }
@@ -678,8 +679,8 @@ fn snapshot_from_document(document: StoredChoices) -> ChoicesSnapshot {
                 size_bytes: stored.size_bytes,
                 version: stored.version,
                 availability,
-                #[cfg(target_os = "macos")]
-                macos_change_time: stored.macos_change_time,
+                #[cfg(any(target_os = "macos", target_os = "linux"))]
+                unix_change_time: stored.unix_change_time,
             }
         })
         .collect();
@@ -734,9 +735,8 @@ fn validate_new_installation(
     {
         return Err(ChoiceError::Conflict);
     }
-    #[cfg(target_os = "macos")]
-    if choice.macos_change_time.is_none() || choice.macos_change_time != inspected.macos_change_time
-    {
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    if choice.unix_change_time.is_none() || choice.unix_change_time != inspected.unix_change_time {
         return Err(ChoiceError::Conflict);
     }
     Ok(StoredInstallationChoice {
@@ -747,8 +747,8 @@ fn validate_new_installation(
         identity: from_identity(inspected.identity),
         size_bytes: inspected.size_bytes,
         version: choice.version.clone(),
-        #[cfg(target_os = "macos")]
-        macos_change_time: inspected.macos_change_time,
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        unix_change_time: inspected.unix_change_time,
     })
 }
 
@@ -790,16 +790,16 @@ fn inspect_path(path: &Path, directory: bool) -> Result<InspectedPath, ChoiceErr
     if before.identity != after.identity || before.size_bytes != after.size_bytes {
         return Err(ChoiceError::Conflict);
     }
-    #[cfg(target_os = "macos")]
-    if before.macos_change_time != after.macos_change_time {
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    if before.unix_change_time != after.unix_change_time {
         return Err(ChoiceError::Conflict);
     }
     Ok(InspectedPath {
         canonical_path: canonical_string,
         identity: after.identity,
         size_bytes: after.size_bytes,
-        #[cfg(target_os = "macos")]
-        macos_change_time: after.macos_change_time,
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        unix_change_time: after.unix_change_time,
     })
 }
 
@@ -921,11 +921,41 @@ fn native_identity(path: &Path, directory: bool) -> Result<NativeIdentity, Choic
             file_index: info.ino(),
         },
         size_bytes: if directory { 0 } else { info.len() },
-        macos_change_time: (!directory).then(|| MacChangeTime::from_metadata(&info)),
+        unix_change_time: (!directory).then(|| UnixChangeTime::from_metadata(&info)),
     })
 }
 
-#[cfg(not(any(windows, target_os = "macos")))]
+#[cfg(target_os = "linux")]
+fn native_identity(path: &Path, directory: bool) -> Result<NativeIdentity, ChoiceError> {
+    use std::os::unix::fs::MetadataExt;
+    let info = if directory {
+        let pin = pin_existing_directory_chain(path).map_err(map_config_io_error)?;
+        let info = pin
+            .directory_file()
+            .map_err(map_config_io_error)?
+            .metadata();
+        let info = info.map_err(|_| ChoiceError::Unavailable)?;
+        if info.uid() != unsafe { libc::geteuid() } || info.mode() & 0o022 != 0 {
+            return Err(ChoiceError::UnsafePath);
+        }
+        info
+    } else {
+        crate::integrations::config_io::open_linux_executable(path)
+            .map_err(map_config_io_error)?
+            .metadata()
+            .map_err(|_| ChoiceError::Unavailable)?
+    };
+    Ok(NativeIdentity {
+        identity: FileIdentity {
+            volume_serial: info.dev().try_into().map_err(|_| ChoiceError::UnsafePath)?,
+            file_index: info.ino(),
+        },
+        size_bytes: if directory { 0 } else { info.len() },
+        unix_change_time: (!directory).then(|| UnixChangeTime::from_metadata(&info)),
+    })
+}
+
+#[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
 fn native_identity(_path: &Path, _directory: bool) -> Result<NativeIdentity, ChoiceError> {
     Err(ChoiceError::Unsupported)
 }
@@ -933,8 +963,8 @@ fn native_identity(_path: &Path, _directory: bool) -> Result<NativeIdentity, Cho
 struct NativeIdentity {
     identity: FileIdentity,
     size_bytes: u64,
-    #[cfg(target_os = "macos")]
-    macos_change_time: Option<MacChangeTime>,
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    unix_change_time: Option<UnixChangeTime>,
 }
 
 fn validate_path_shape(path: &Path) -> Result<(), ChoiceError> {
@@ -946,7 +976,7 @@ fn validate_path_shape(path: &Path) -> Result<(), ChoiceError> {
     {
         return Err(ChoiceError::UnsafePath);
     }
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     crate::integrations::config_io::validate_lexical_path(path).map_err(map_config_io_error)?;
     for component in path.components() {
         match component {

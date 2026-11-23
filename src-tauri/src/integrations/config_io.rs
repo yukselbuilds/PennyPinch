@@ -972,6 +972,8 @@ fn path_key(path: &Path) -> String {
 
 #[cfg(any(target_os = "macos", target_os = "linux"))]
 use unix::file_identity;
+#[cfg(target_os = "linux")]
+pub(crate) use unix::open_linux_executable;
 #[cfg(any(target_os = "macos", target_os = "linux"))]
 pub(super) use unix::open_read_shared;
 

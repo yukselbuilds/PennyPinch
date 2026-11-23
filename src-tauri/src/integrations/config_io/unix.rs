@@ -232,7 +232,7 @@ fn open_relative(parent: &File, name: &OsStr, flags: libc::c_int) -> io::Result<
     Ok(unsafe { File::from_raw_fd(fd) })
 }
 
-pub(in crate::integrations) fn open_read_shared(path: &Path) -> Result<File, ConfigIoError> {
+fn open_pinned_read(path: &Path) -> Result<File, ConfigIoError> {
     let pins = pin_parent_directories(path)?;
     let parent = pins.last().ok_or(ConfigIoError::InvalidRoot)?;
     let file = open_relative(
@@ -244,7 +244,28 @@ pub(in crate::integrations) fn open_read_shared(path: &Path) -> Result<File, Con
     validate_pinned_directories(&pins)?;
     #[cfg(target_os = "linux")]
     ensure_supported_filesystem(&file)?;
+    Ok(file)
+}
+
+pub(in crate::integrations) fn open_read_shared(path: &Path) -> Result<File, ConfigIoError> {
+    let file = open_pinned_read(path)?;
     file_identity(&file)?;
+    Ok(file)
+}
+
+#[cfg(target_os = "linux")]
+pub(crate) fn open_linux_executable(path: &Path) -> Result<File, ConfigIoError> {
+    let file = open_pinned_read(path)?;
+    let info = file.metadata().map_err(|_| ConfigIoError::Unavailable)?;
+    if !info.is_file()
+        || info.nlink() != 1
+        || info.len() == 0
+        || info.mode() & 0o7022 != 0
+        || info.mode() & 0o111 == 0
+        || (info.uid() != 0 && info.uid() != unsafe { libc::geteuid() })
+    {
+        return Err(ConfigIoError::UnsafePath);
+    }
     Ok(file)
 }
 

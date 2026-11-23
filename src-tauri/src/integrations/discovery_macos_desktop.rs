@@ -34,7 +34,7 @@ pub(in crate::integrations::discovery) fn add_desktop_candidates(
     candidate_count: &mut usize,
 ) -> Observations {
     let user_applications = inputs
-        .macos_home
+        .unix_home
         .as_ref()
         .map(|home| home.join("Applications"));
     let mut roots = HashSet::new();

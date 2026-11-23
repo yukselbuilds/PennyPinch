@@ -52,7 +52,7 @@ fn signed_desktop_scan_rebinds_selection_and_rejects_untrusted_bundles() {
         let DiscoveryReply::Snapshot(snapshot) = manager.scan_with_inputs(
             Uuid::new_v4().to_string(),
             DiscoveryInputs {
-                macos_home: Some(home.clone()),
+                unix_home: Some(home.clone()),
                 macos_applications: Some(applications.clone()),
                 path_entries: vec![cli_bin.clone()],
                 ..Default::default()

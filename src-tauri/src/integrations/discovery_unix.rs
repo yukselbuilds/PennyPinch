@@ -1,9 +1,13 @@
 use super::*;
 use std::fs::Metadata;
-use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+use std::os::unix::fs::MetadataExt;
+#[cfg(target_os = "macos")]
+use std::os::unix::fs::OpenOptionsExt;
 
+#[cfg(target_os = "macos")]
 #[path = "discovery_macos_desktop.rs"]
 mod desktop;
+#[cfg(target_os = "macos")]
 pub(super) use desktop::{add_desktop_candidates, observe_desktop};
 
 const MAX_LINKS: usize = 8;
@@ -11,6 +15,7 @@ const MAX_HASH_BYTES: u64 = 1024 * 1024 * 1024;
 type Observations = HashMap<(&'static str, &'static str, PathBuf), InstallationObservation>;
 
 // Official Apple Silicon release binaries, measured without executing them.
+#[cfg(target_os = "macos")]
 const PINNED_CLI: &[(&str, &str, u64, &str)] = &[
     (
         "codex",
@@ -32,6 +37,32 @@ const PINNED_CLI: &[(&str, &str, u64, &str)] = &[
     ),
 ];
 
+// Official Linux x64 npm binaries, measured without executing them.
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+const PINNED_CLI: &[(&str, &str, u64, &str)] = &[
+    (
+        "codex",
+        "0.163.0-alpha.11.1",
+        294_498_248,
+        "ce74d935f61c14d931dd62a79736a964f741af47688ae119b17a1fd973a08399",
+    ),
+    (
+        "claude_code",
+        "2.1.158",
+        240_666_320,
+        "dd27008acd42700bac5762652ec83ff604bf9ae0786d4dde55d57a6866017fbe",
+    ),
+    (
+        "opencode",
+        "1.19.3",
+        186_013_824,
+        "179ca421d61eefeadfa0c50e084a6e79c1623734732f0f4593f81ccfd3ab7ee9",
+    ),
+];
+
+#[cfg(all(target_os = "linux", not(target_arch = "x86_64")))]
+const PINNED_CLI: &[(&str, &str, u64, &str)] = &[];
+
 pub(super) fn add_cli_candidates(
     inputs: &DiscoveryInputs,
     candidates: &mut HashMap<String, Candidate>,
@@ -39,7 +70,7 @@ pub(super) fn add_cli_candidates(
     candidate_count: &mut usize,
 ) -> Observations {
     let home_bins = inputs
-        .macos_home
+        .unix_home
         .iter()
         .filter(|home| home.is_absolute())
         .flat_map(|home| [home.join(".local/bin"), home.join(".opencode/bin")]);
@@ -103,12 +134,26 @@ pub(super) fn add_cli_candidates(
 fn resolve_command(mut path: PathBuf) -> Option<PathBuf> {
     for _ in 0..=MAX_LINKS {
         let parent = check_existing_path(path.parent()?, PathKind::Directory).ok()?;
+        #[cfg(target_os = "linux")]
+        let parent_pin =
+            crate::integrations::config_io::pin_existing_directory_chain(&parent).ok()?;
         path = parent.join(path.file_name()?);
         let metadata = fs::symlink_metadata(&path).ok()?;
         if !metadata.file_type().is_symlink() {
             return check_existing_path(&path, PathKind::File).ok();
         }
+        #[cfg(target_os = "linux")]
+        if metadata.uid() != 0 && metadata.uid() != unsafe { libc::geteuid() } {
+            return None;
+        }
         let target = fs::read_link(&path).ok()?;
+        #[cfg(target_os = "linux")]
+        {
+            parent_pin.validate().ok()?;
+            if file_stamp(&metadata) != file_stamp(&fs::symlink_metadata(&path).ok()?) {
+                return None;
+            }
+        }
         let mut resolved = parent;
         let mut entered_target = false;
         for part in target.components() {
@@ -155,12 +200,18 @@ pub(super) fn manual_cli_candidate(
     })
 }
 
+#[cfg(target_os = "macos")]
 fn open_command(path: &Path) -> Option<File> {
     OpenOptions::new()
         .read(true)
         .custom_flags(libc::O_NOFOLLOW_ANY | libc::O_NONBLOCK | libc::O_CLOEXEC)
         .open(path)
         .ok()
+}
+
+#[cfg(target_os = "linux")]
+fn open_command(path: &Path) -> Option<File> {
+    crate::integrations::config_io::open_linux_executable(path).ok()
 }
 
 fn trusted_file_metadata(file: &File) -> Option<Metadata> {
@@ -187,7 +238,7 @@ fn observation_from_metadata(info: &Metadata) -> Option<InstallationObservation>
             file_index: info.ino(),
         },
         size_bytes: info.len(),
-        macos_change_time: Some(MacChangeTime::from_metadata(info)),
+        unix_change_time: Some(UnixChangeTime::from_metadata(info)),
     })
 }
 
@@ -248,6 +299,6 @@ fn file_stamp(info: &Metadata) -> (u64, u64, u32, u32, u64, u64, i64, i64, i64, 
     )
 }
 
-#[cfg(test)]
+#[cfg(all(test, target_os = "macos"))]
 #[path = "discovery_macos_tests.rs"]
 mod tests;

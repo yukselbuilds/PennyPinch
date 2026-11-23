@@ -1,6 +1,6 @@
 use crate::integrations::transaction_fs::FileIdentity;
-#[cfg(target_os = "macos")]
-use crate::state::choices::MacChangeTime;
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+use crate::state::choices::UnixChangeTime;
 use crate::state::choices::{
     ChoiceAvailability, ChoiceClient, ChoiceOrigin, ChoiceStore, ChoiceSurface, InstallationChoice,
 };
@@ -17,8 +17,17 @@ use std::sync::{Arc, RwLock};
 use uuid::Uuid;
 
 #[cfg(target_os = "macos")]
-#[path = "discovery_macos.rs"]
+#[path = "discovery_unix.rs"]
 mod macos;
+#[cfg(target_os = "macos")]
+use macos as native;
+#[cfg(target_os = "linux")]
+#[path = "discovery_unix.rs"]
+mod native;
+
+#[cfg(all(test, target_os = "linux"))]
+#[path = "discovery_linux_tests.rs"]
+mod linux_tests;
 
 #[cfg(windows)]
 use std::ffi::c_void;
@@ -105,10 +114,10 @@ struct DiscoveryState {
 struct InstallationObservation {
     identity: FileIdentity,
     size_bytes: u64,
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
     modified: std::time::SystemTime,
-    #[cfg(target_os = "macos")]
-    macos_change_time: Option<MacChangeTime>,
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    unix_change_time: Option<UnixChangeTime>,
 }
 
 pub(crate) struct RecoveryScan {
@@ -340,7 +349,7 @@ impl DiscoveryManager {
             .get(installation_id)
             .cloned()
             .ok_or(InstallationSelectionError::InstallationNotFound)?;
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         if state
             .observations
             .get(installation_id)
@@ -654,7 +663,7 @@ impl DiscoveryManager {
                 report.warnings.insert("candidate_limit_reached");
             } else {
                 let id = Uuid::new_v4().to_string();
-                #[cfg(target_os = "macos")]
+                #[cfg(any(target_os = "macos", target_os = "linux"))]
                 if let Some(observed) = current_observation {
                     report.native_observations.insert(id.clone(), observed);
                 }
@@ -741,7 +750,7 @@ impl DiscoveryManager {
             Ok(None) => return cancelled_reply(request_id),
             Err(()) => return error_reply(&request_id, ErrorCode::EnvironmentBlocked),
         };
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         if !manual_filename_matches(client_kind, &selected) {
             return error_reply(&request_id, ErrorCode::ValidationFailed);
         }
@@ -978,15 +987,15 @@ fn client_kind(value: &str) -> Option<&'static str> {
     }
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 fn manual_candidate(
     client_kind: &'static str,
     path: &Path,
 ) -> Result<ManualCandidate, ManualRejectReason> {
-    macos::manual_cli_candidate(client_kind, path)
+    native::manual_cli_candidate(client_kind, path)
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn manual_candidate(
     client_kind: &'static str,
     path: &Path,
@@ -1068,14 +1077,14 @@ impl ManualRejectReason {
     }
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 fn manual_filename_matches(kind: &str, path: &Path) -> bool {
     PRODUCTS.iter().any(|product| {
         product.kind == kind && path.file_name().is_some_and(|name| name == product.command)
     })
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn manual_filename_matches(client_kind: &str, path: &Path) -> bool {
     let Some(filename) = path.file_name().and_then(|name| name.to_str()) else {
         return false;
@@ -1121,7 +1130,7 @@ fn observe_installation(
 ) -> Option<InstallationObservation> {
     #[cfg(target_os = "macos")]
     if summary.source == "macos_app_bundle" && summary.surface == "desktop" {
-        return macos::observe_desktop(path, summary.version.as_deref());
+        return native::observe_desktop(path, summary.version.as_deref());
     }
     capture_observation(
         ChoiceStore::capture_installation(
@@ -1139,13 +1148,13 @@ fn capture_observation(choice: InstallationChoice) -> Option<InstallationObserva
     Some(InstallationObservation {
         identity: choice.identity,
         size_bytes: choice.size_bytes,
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(not(any(target_os = "macos", target_os = "linux")))]
         modified: fs::metadata(&choice.executable_path)
             .ok()?
             .modified()
             .ok()?,
-        #[cfg(target_os = "macos")]
-        macos_change_time: choice.macos_change_time,
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        unix_change_time: choice.unix_change_time,
     })
 }
 
@@ -1156,11 +1165,11 @@ fn observation_matches_choice(
     if observed.identity != choice.identity || observed.size_bytes != choice.size_bytes {
         return false;
     }
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     {
-        choice.macos_change_time.is_some() && observed.macos_change_time == choice.macos_change_time
+        choice.unix_change_time.is_some() && observed.unix_change_time == choice.unix_change_time
     }
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
     {
         true
     }
@@ -1169,7 +1178,7 @@ fn observation_matches_choice(
 fn collect_observations(report: &DiscoveryReport) -> HashMap<String, InstallationObservation> {
     let mut observations = HashMap::new();
     for installation in &report.installations {
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         if let Some(observation) = report
             .native_observations
             .get(&installation.installation_id)
@@ -1221,7 +1230,7 @@ fn append_saved_manual_candidates(
             continue;
         }
         let id = Uuid::new_v4().to_string();
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         report.native_observations.insert(id.clone(), observation);
         report
             .paths
@@ -1272,8 +1281,8 @@ pub(super) struct DiscoveryInputs {
     pub(super) user_profile: Option<PathBuf>,
     pub(super) program_files: Option<PathBuf>,
     pub(super) registered_codex_packages: Vec<PathBuf>,
-    #[cfg(target_os = "macos")]
-    pub(super) macos_home: Option<PathBuf>,
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    pub(super) unix_home: Option<PathBuf>,
     #[cfg(target_os = "macos")]
     pub(super) macos_applications: Option<PathBuf>,
 }
@@ -1295,12 +1304,15 @@ impl DiscoveryInputs {
                 inputs.path_entries.push(entry);
             }
         }
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        {
+            inputs.unix_home = env::var_os("HOME").map(PathBuf::from);
+        }
         #[cfg(target_os = "macos")]
         {
-            inputs.macos_home = env::var_os("HOME").map(PathBuf::from);
             inputs.macos_applications = Some(PathBuf::from("/Applications"));
         }
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(not(any(target_os = "macos", target_os = "linux")))]
         {
             if let Some(app_data) = env::var_os("APPDATA") {
                 inputs.npm_roots.push(PathBuf::from(app_data).join("npm"));
@@ -1362,7 +1374,7 @@ struct DiscoveryReport {
     installations: Vec<InstallationSummary>,
     paths: HashMap<String, PathBuf>,
     warnings: BTreeSet<&'static str>,
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     native_observations: HashMap<String, InstallationObservation>,
 }
 
@@ -1431,15 +1443,17 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
         }
     }
 
-    #[cfg(target_os = "macos")]
-    let macos_observations = {
-        let mut observations = macos::add_desktop_candidates(
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    let unix_observations = {
+        let mut observations = HashMap::new();
+        #[cfg(target_os = "macos")]
+        observations.extend(native::add_desktop_candidates(
             &inputs,
             &mut candidates,
             &mut warnings,
             &mut candidate_count,
-        );
-        observations.extend(macos::add_cli_candidates(
+        ));
+        observations.extend(native::add_cli_candidates(
             &inputs,
             &mut candidates,
             &mut warnings,
@@ -1448,9 +1462,9 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
         observations
     };
 
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
     let mut path_entries = HashSet::new();
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
     for entry in inputs.path_entries.into_iter().take(MAX_PATH_ENTRIES) {
         if is_network_or_device_path(&entry) {
             warnings.insert("network_location_skipped");
@@ -1527,14 +1541,14 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
         ))
     });
     let mut paths = HashMap::new();
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     let mut native_observations = HashMap::new();
     let installations = candidate_list
         .into_iter()
         .map(|candidate| {
             let id = Uuid::new_v4().to_string();
-            #[cfg(target_os = "macos")]
-            if let Some(observed) = macos_observations.get(&(
+            #[cfg(any(target_os = "macos", target_os = "linux"))]
+            if let Some(observed) = unix_observations.get(&(
                 candidate.kind,
                 candidate.surface,
                 candidate.executable_path.clone(),
@@ -1559,7 +1573,7 @@ fn discover(inputs: DiscoveryInputs) -> DiscoveryReport {
         installations,
         paths,
         warnings,
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         native_observations,
     }
 }
@@ -2204,12 +2218,12 @@ fn is_local_fixed_volume(path: &Path) -> bool {
     unsafe { GetDriveTypeW(wide.as_ptr()) == DRIVE_FIXED }
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 fn is_local_fixed_volume(path: &Path) -> bool {
     super::config_io::ensure_fixed_volume(path).is_ok()
 }
 
-#[cfg(not(any(windows, target_os = "macos")))]
+#[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
 fn is_local_fixed_volume(_path: &Path) -> bool {
     false
 }
@@ -2225,9 +2239,9 @@ fn is_reparse_point(_metadata: &fs::Metadata) -> bool {
 }
 
 fn path_key(path: &Path) -> String {
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     return path.to_string_lossy().into_owned();
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
     path.to_string_lossy().to_lowercase()
 }
 
