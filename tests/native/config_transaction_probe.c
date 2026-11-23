@@ -3,20 +3,28 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdint.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/file.h>
-#include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 
-#if !defined(__APPLE__) || !defined(__arm64__)
-#error "This fixture must be compiled for Apple Silicon macOS."
+#if defined(__APPLE__) && defined(__arm64__)
+#include <sys/mount.h>
+#define FIXTURE_FILESYSTEM "apfs"
+#define FIXTURE_ARCHITECTURE "arm64"
+#elif defined(__linux__) && defined(__x86_64__)
+#include <linux/magic.h>
+#include <sys/vfs.h>
+#include <sys/xattr.h>
+#define FIXTURE_FILESYSTEM "ext4"
+#define FIXTURE_ARCHITECTURE "x86_64"
+#else
+#error "This fixture requires Apple Silicon macOS or x86_64 Linux."
 #endif
 
 #define MAX_BYTES 256
@@ -28,6 +36,21 @@ typedef struct {
     ino_t inode;
     off_t size;
 } Identity;
+
+typedef enum {
+    CREATE_WITHOUT_REPLACEMENT,
+    EXCHANGE_NAMES,
+} RenameMode;
+
+static int rename_fixture(int directory_fd, const char *source, const char *target, RenameMode mode) {
+#ifdef __linux__
+    unsigned int flags = mode == EXCHANGE_NAMES ? RENAME_EXCHANGE : RENAME_NOREPLACE;
+    return renameat2(directory_fd, source, directory_fd, target, flags);
+#else
+    unsigned int flags = mode == EXCHANGE_NAMES ? RENAME_SWAP : RENAME_EXCL;
+    return renameatx_np(directory_fd, source, directory_fd, target, flags);
+#endif
+}
 
 static void fail(const char *label) {
     (void)fprintf(stderr, "FAIL:%s\n", label);
@@ -232,7 +255,7 @@ static int directory_is_empty(int directory_fd) {
     return empty;
 }
 
-static int valid_private_apfs_cwd(int directory_fd) {
+static int valid_private_cwd(int directory_fd) {
     struct stat info;
     struct statfs filesystem;
     if (fstat(directory_fd, &info) != 0 || !S_ISDIR(info.st_mode) ||
@@ -240,8 +263,13 @@ static int valid_private_apfs_cwd(int directory_fd) {
         fstatfs(directory_fd, &filesystem) != 0) {
         return 0;
     }
-    return strcmp(filesystem.f_fstypename, "apfs") == 0 &&
-        (filesystem.f_flags & MNT_LOCAL) != 0 && directory_is_empty(directory_fd);
+#ifdef __linux__
+    int supported = geteuid() != 0 && filesystem.f_type == EXT4_SUPER_MAGIC;
+#else
+    int supported = strcmp(filesystem.f_fstypename, "apfs") == 0 &&
+        (filesystem.f_flags & MNT_LOCAL) != 0;
+#endif
+    return supported && directory_is_empty(directory_fd);
 }
 
 static int fixture_file_identity(int descriptor, Identity *identity) {
@@ -400,7 +428,7 @@ static void exclusive_and_swap_checks(int directory_fd) {
     Identity create_before;
     Identity create_after;
     if (!identity_at(directory_fd, "exclusive-source", &create_before) ||
-        renameatx_np(directory_fd, "exclusive-source", directory_fd, "exclusive-created", RENAME_EXCL) != 0 ||
+        rename_fixture(directory_fd, "exclusive-source", "exclusive-created", CREATE_WITHOUT_REPLACEMENT) != 0 ||
         !file_absent(directory_fd, "exclusive-source") ||
         !identity_at(directory_fd, "exclusive-created", &create_after) ||
         !same_identity(&create_before, &create_after) ||
@@ -417,12 +445,11 @@ static void exclusive_and_swap_checks(int directory_fd) {
         fail("rename_excl_precheck");
     }
     errno = 0;
-    int result = renameatx_np(
+    int result = rename_fixture(
         directory_fd,
         "exclusive-source-2",
-        directory_fd,
         "exclusive-target-2",
-        RENAME_EXCL
+        CREATE_WITHOUT_REPLACEMENT
     );
     int rename_error = errno;
     Identity source_after;
@@ -462,7 +489,7 @@ static void exclusive_and_swap_checks(int directory_fd) {
         !file_equals(directory_fd, "race-target", "racing-user-file")) {
         fail("postcheck_racing_replacement");
     }
-    if (renameatx_np(directory_fd, "race-candidate", directory_fd, "race-target", RENAME_SWAP) != 0) {
+    if (rename_fixture(directory_fd, "race-candidate", "race-target", EXCHANGE_NAMES) != 0) {
         fail("rename_swap");
     }
     Identity displaced;
@@ -483,7 +510,7 @@ static void exclusive_and_swap_checks(int directory_fd) {
         !file_equals(directory_fd, "race-candidate", "racing-file-written-after-swap")) {
         fail("displaced_inode_remains_writable");
     }
-    if (renameatx_np(directory_fd, "race-candidate", directory_fd, "race-target", RENAME_SWAP) != 0) {
+    if (rename_fixture(directory_fd, "race-candidate", "race-target", EXCHANGE_NAMES) != 0) {
         fail("swap_back");
     }
     Identity restored;
@@ -498,6 +525,69 @@ static void exclusive_and_swap_checks(int directory_fd) {
     }
 }
 
+#ifdef __linux__
+static int read_birth_time(int fd, struct statx_timestamp *birth) {
+    struct statx info;
+    if (statx(fd, "", AT_EMPTY_PATH, STATX_BTIME, &info) != 0 ||
+        (info.stx_mask & STATX_BTIME) == 0) {
+        return 0;
+    }
+    *birth = info.stx_btime;
+    return 1;
+}
+
+static void linux_metadata_publication(int directory_fd) {
+    static const char attribute[] = "user.pennypinch.fixture";
+    static const char value[] = "preserve";
+    char buffer[sizeof(value)];
+    create_file(directory_fd, "metadata-target", "old-file");
+    create_file(directory_fd, "metadata-candidate", "new-file");
+    int original = openat(directory_fd, "metadata-target", O_RDWR | O_NOFOLLOW | O_CLOEXEC);
+    int candidate = openat(directory_fd, "metadata-candidate", O_RDWR | O_NOFOLLOW | O_CLOEXEC);
+    struct stat original_info;
+    if (original < 0 || candidate < 0 ||
+        fchmod(original, 0640) != 0 ||
+        fsetxattr(original, attribute, value, sizeof(value), 0) != 0 ||
+        fstat(original, &original_info) != 0 ||
+        fgetxattr(original, attribute, buffer, sizeof(buffer)) != (ssize_t)sizeof(value) ||
+        fchmod(candidate, original_info.st_mode & 0777) != 0 ||
+        fsetxattr(candidate, attribute, buffer, sizeof(buffer), 0) != 0) {
+        fail("linux_metadata_stage");
+    }
+
+    struct statx_timestamp before;
+    Identity identity_before;
+    if (!read_birth_time(candidate, &before) || !fixture_file_identity(candidate, &identity_before)) {
+        fail("linux_candidate_identity");
+    }
+    if (fsync(candidate) != 0 || fsync(directory_fd) != 0 ||
+        rename_fixture(directory_fd, "metadata-candidate", "metadata-target", EXCHANGE_NAMES) != 0 ||
+        fsync(directory_fd) != 0) {
+        fail("linux_metadata_publication");
+    }
+
+    int published = openat(directory_fd, "metadata-target", O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+    struct stat published_info;
+    struct statx_timestamp after;
+    Identity identity_after;
+    if (published < 0 || fstat(published, &published_info) != 0 ||
+        published_info.st_mode != original_info.st_mode ||
+        published_info.st_uid != original_info.st_uid || published_info.st_gid != original_info.st_gid ||
+        !read_birth_time(published, &after) ||
+        before.tv_sec != after.tv_sec || before.tv_nsec != after.tv_nsec ||
+        !fixture_file_identity(published, &identity_after) || !same_identity(&identity_before, &identity_after) ||
+        fgetxattr(published, attribute, buffer, sizeof(buffer)) != (ssize_t)sizeof(value) ||
+        memcmp(value, buffer, sizeof(value)) != 0 ||
+        !file_equals(directory_fd, "metadata-target", "new-file") ||
+        !file_equals(directory_fd, "metadata-candidate", "old-file")) {
+        fail("linux_metadata_after_publication");
+    }
+    (void)close(published);
+    (void)close(candidate);
+    (void)close(original);
+}
+#endif
+
 static void crash_after_swap_before_owner(int directory_fd) {
     create_file(directory_fd, "crash-config", "config-before");
     create_file(directory_fd, "crash-next", "config-after");
@@ -511,9 +601,14 @@ static void crash_after_swap_before_owner(int directory_fd) {
         fail("crash_child");
     }
     if (child == 0) {
-        if (renameatx_np(directory_fd, "crash-next", directory_fd, "crash-config", RENAME_SWAP) != 0) {
+        if (rename_fixture(directory_fd, "crash-next", "crash-config", EXCHANGE_NAMES) != 0) {
             _exit(91);
         }
+#ifdef __linux__
+        if (fsync(directory_fd) != 0) {
+            _exit(93);
+        }
+#endif
         (void)kill(getpid(), SIGKILL);
         int owner = openat(directory_fd, "crash-owner", O_WRONLY | O_NOFOLLOW | O_CLOEXEC);
         if (owner >= 0) {
@@ -551,16 +646,19 @@ int main(int argc, char **argv) {
     (void)alarm(TOTAL_DEADLINE_SECONDS);
 
     int directory_fd = open(".", O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
-    if (directory_fd < 0 || !valid_private_apfs_cwd(directory_fd)) {
-        fail("private_empty_local_apfs_cwd");
+    if (directory_fd < 0 || !valid_private_cwd(directory_fd)) {
+        fail("private_empty_local_fixture");
     }
     advisory_flock_and_path_operations(directory_fd);
     exclusive_and_swap_checks(directory_fd);
+#ifdef __linux__
+    linux_metadata_publication(directory_fd);
+#endif
     crash_after_swap_before_owner(directory_fd);
 
     (void)alarm(0);
     if (printf(
-            "{\"filesystem\":\"apfs\",\"architecture\":\"arm64\","
+            "{\"filesystem\":\"" FIXTURE_FILESYSTEM "\",\"architecture\":\"" FIXTURE_ARCHITECTURE "\","
             "\"cwd_private_0700\":true,\"advisory_flock_rejected\":true,"
             "\"in_place_write_succeeded\":true,\"atomic_replacement_succeeded\":true,"
             "\"unlink_succeeded\":true,\"rename_excl_create\":true,"
@@ -570,7 +668,13 @@ int main(int argc, char **argv) {
             "\"displaced_inode_remains_writable\":true,"
             "\"swap_back_preserved_racing_inode_and_bytes\":true,"
             "\"child_killed_after_config_swap_before_owner_publication\":true,"
-            "\"displaced_original_and_owner_unchanged\":true}\n"
+            "\"displaced_original_and_owner_unchanged\":true"
+#ifdef __linux__
+            ",\"staged_mode_and_user_xattr_preserved\":true"
+            ",\"birth_time_and_inode_preserved\":true"
+            ",\"file_and_directory_sync_succeeded\":true"
+#endif
+            "}\n"
         ) < 0 || fflush(stdout) != 0) {
         fail("json_output");
     }

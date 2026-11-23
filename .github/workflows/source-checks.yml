@@ -12,6 +12,10 @@ on:
         description: Check Linux configuration safety, build the desktop, and open it in Xvfb.
         type: boolean
         default: false
+      linux_config_transaction:
+        description: Check atomic file replacement and process interruption on ext4.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -100,6 +104,58 @@ jobs:
           fi
 
           printf '%s\n' '## Source-only checks' '' "- App tests: ${app_test_summary}." '- Frontend build: passed.' '- Scope: source-only frontend; no engine or native runtime validation.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Probe Linux file replacement on ext4
+        if: ${{ inputs.linux_config_transaction == true }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$(uname -sm)" = 'Linux x86_64'
+          test "$(id -u)" -ne 0
+          test "$(pwd -P)" = "$GITHUB_WORKSPACE"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --quiet HEAD --
+          stage="$(mktemp -d "$GITHUB_WORKSPACE/work/linux-tx.XXXXXXXX")"
+          mkdir -m 700 "$stage/fixture"
+          test "$(findmnt --target "$stage/fixture" --noheadings --output FSTYPE)" = ext4
+          source=tests/native/config_transaction_probe.c
+          recipe=.github/workflows/source-checks.yml
+          compiler="$(command -v cc)"
+          fingerprint() {
+            git rev-parse HEAD 'HEAD^{tree}'
+            uname -smr
+            getconf GNU_LIBC_VERSION
+            "$compiler" --version | sed -n '1p'
+            printf '%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}"
+            sha256sum "$source" "$recipe"
+            findmnt --target "$stage/fixture" --noheadings --output FSTYPE
+            stat -c '%a' "$stage/fixture"
+            umask
+          }
+
+          before="$(fingerprint)"
+          digest="$(printf '%s\n' "$before" | sha256sum | cut -d' ' -f1)"
+          status=0
+          if "$compiler" -std=c17 -D_GNU_SOURCE -Wall -Wextra -Werror "$source" -o "$stage/probe" > "$stage/build.log" 2>&1; then
+            result="$(cd "$stage/fixture" && timeout 40s "$stage/probe" 2> "$stage/probe.log")" || status=$?
+            if [[ "$status" != 0 ]]; then
+              awk '/^FAIL:[a-z0-9_]+$/ && ++count <= 5 { print }' "$stage/probe.log"
+            fi
+          else
+            echo '::error::Native Linux probe compilation failed.'
+            awk '/error:/ && ++count <= 5 { print substr($0, 1, 220) }' "$stage/build.log"
+            status=1
+          fi
+          after="$(fingerprint)"
+          test "$before" = "$after"
+          git diff --quiet HEAD --
+          test "$status" = 0
+          printf 'Inputs before and after: %s\n%s\n' "$digest" "$before"
+          printf 'ext4 probe: %s\n' "$result"
+          printf '%s\n' '## ext4 file transaction probe' '' "- Commit: $GITHUB_SHA" \
+            "- Inputs before and after: $digest" "- Observations: $result" \
+            '- Scope: isolated ext4 fixtures and process interruption.' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Build and open the Linux desktop
         if: ${{ inputs.linux_desktop == true }}

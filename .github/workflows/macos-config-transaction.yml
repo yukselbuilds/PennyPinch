@@ -41,7 +41,7 @@ jobs:
           mkdir -p work
           stage="$(mktemp -d "$GITHUB_WORKSPACE/work/mac-config.XXXXXX")"
           mkdir -m 700 "$stage/fixture"
-          source=tests/native/macos_config_transaction.c
+          source=tests/native/config_transaction_probe.c
           recipe=.github/workflows/macos-config-transaction.yml
           compiler="$(xcrun --find clang)"
           sdk="$(xcrun --sdk macosx --show-sdk-path)"
