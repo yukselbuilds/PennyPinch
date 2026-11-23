@@ -86,7 +86,8 @@ See the [versioned compatibility records](compatibility/clients.json) for status
 | **Ubuntu 24.04 x64** | The Debian package installed. The app started, stopped, and restarted Headroom 0.44.0 under Xvfb. Package purge retained the separate user state. [Linux validation](docs/validation/linux.md) | Live provider use and public Linux distribution require separate checks. |
 | **Windows 11 x64** | Independent desktop acceptance pending. | Release validation. |
 
-See the [full platform status](docs/validation/desktop-platforms.md).
+The current source pins Headroom 0.45.0. The upgrade record covers the Windows 10 package and the direct engine checks.
+[Engine verification](docs/proofs/headroom-045-upgrade.json) · [Full platform status](docs/validation/desktop-platforms.md)
 
 ## Local data and reports
 
@@ -113,7 +114,7 @@ pnpm build
 
 `test:app` runs the app contract tests. `build` checks TypeScript and builds the frontend.
 The Windows build needs the Headroom 0.45.0 payload from the development manifest.
-The payload and protocol test helpers are in the Git-ignored `work/` directory.
+The payload and some historical protocol test helpers are in the Git-ignored `work/` directory.
 [Package scripts](package.json) · [Source check scope](docs/validation/source-checks.md) · [Development manifest](runtime/manifest.json)
 
 With the pinned development toolchain and engine payload already prepared locally, build the Windows preview:

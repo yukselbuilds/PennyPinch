@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "task": "H041",
+  "scope": "Headroom 0.45.0 source transition, Windows 10 package, and native engine probes",
+  "date": "2026-11-23",
+  "candidate_commit": "469a22c7481cb72b9b854d727b6cf849d9d6b497",
+  "upstream": {
+    "version": "0.45.0",
+    "previous": "0.44.0",
+    "commit": "ce0460cfa8598dc939243dbc7aec4b2d35f4e44a",
+    "release": "https://github.com/headroomlabs-ai/headroom/releases/tag/v0.45.0"
+  },
+  "dependency_lock_sha256": "5878af97b0b09a0301e982d42950bc69a9459a8caa38028bfb72438632138d63",
+  "wheel_inputs": {
+    "win_amd64": {
+      "sha256": "9ddcf12e6a70c73525783a7db31b7261a612215e47dcedec2e94d72260aa2648",
+      "size": 15895937,
+      "filename": "headroom_ai-0.45.0-cp310-abi3-win_amd64.whl"
+    },
+    "macosx_11_0_arm64": {
+      "sha256": "3b7f9ee266039ab5a8b10c5da5868f9b640f1f949d34005dc26362be526a5165",
+      "size": 15779304,
+      "filename": "headroom_ai-0.45.0-cp310-abi3-macosx_11_0_arm64.whl"
+    },
+    "manylinux_2_28_x86_64": {
+      "sha256": "75c386fb9d9124ea9259a61567ffa46128759f2695691459c6e7d751f9d4c2ca",
+      "size": 15952938,
+      "filename": "headroom_ai-0.45.0-cp310-abi3-manylinux_2_28_x86_64.whl"
+    }
+  },
+  "windows_10": {
+    "version": "22H2 x64, build 19045",
+    "engine_python": "3.13.13",
+    "runtime_manifest_sha256": "ef1ed3803ebfd7c819eefd2b5662f3cc72d5d688cfcd2b8eb4b5d2221ac80c29",
+    "payload": {
+      "tree_sha256": "1fb3d6638718c833d82b9f11e63a4e44b44c3212bacedd799b285bd67e961f79",
+      "files": 19483,
+      "bytes": 505296374
+    },
+    "previous_payload": {
+      "tree_sha256": "8ac475b59ba66958fb3ba436f657c4cf479e6cf001c51a0608d0b14c4ac4dd01",
+      "files": 19475,
+      "bytes": 505117412
+    },
+    "package_build_seconds": 652.395,
+    "artifacts": {
+      "work/caches/cargo-target/release/headroom-desktop.exe": {
+        "sha256": "8b32d8c68ceaf8347ad79d52b68583a5df1611b93f4d67dbe4fabd6955ebc619",
+        "bytes": 12046848
+      },
+      "work/caches/cargo-target/release/bundle/nsis/PennyPinch_0.1.0_x64-setup.exe": {
+        "sha256": "df966adc6ea0a9ecec94349386d406f3883d7f72193b4115fd35dfe3eee893d6",
+        "bytes": 125355004
+      }
+    },
+    "staged_runtime": {
+      "seconds": 33.429,
+      "foreign_listener_retained": true,
+      "staged_resources_unchanged": true
+    },
+    "checks": {
+      "app_tests_passed": 227,
+      "rust_tests_passed": 481,
+      "rust_tests_ignored": 25,
+      "frontend_and_embedded_builds": "pass",
+      "pause_replay_cases": 6,
+      "anthropic_cache_marker_rows": 24,
+      "provider_usage_scenarios": {
+        "ws": 13,
+        "responses": 8,
+        "chat": 10,
+        "anthropic": 6
+      },
+      "release_executable_check": "pass"
+    }
+  },
+  "linux": {
+    "github_actions": {
+      "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45253214768",
+      "job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45253214768/job/137968089721",
+      "source_commit": "8d153a16d2c2dd508bbe6935010d2501b411c31c",
+      "status": "completed",
+      "conclusion": "success",
+      "started_utc": "2026-11-23T19:51:15Z",
+      "ended_utc": "2026-11-23T19:51:51Z",
+      "checks": {
+        "Set up job": "success",
+        "Check out source": "success",
+        "Verify the relocated Linux engine": "success",
+        "Post Check out source": "success",
+        "Complete job": "success"
+      },
+      "coverage": "two local Responses streams, peer ownership, clean stop and restart",
+      "runner": "ubuntu-24.04-x64"
+    },
+    "wsl2": {
+      "version": "Ubuntu 24.04 x64",
+      "direct_fixture_streams": 2,
+      "inputs_before_after_sha256": "f08bed4e3c48088b8722a40e451c6c61f23dac706e6d6f7db0e42b3baf016c7f",
+      "payload": {
+        "bytes": 680809361,
+        "files": 20008,
+        "tree_sha256": "1284a14e31da90ce2386eaa4906db73df25f1a1466b696b20f924a206532d3a6"
+      }
+    }
+  },
+  "macos": {
+    "github_actions": {
+      "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45253100678",
+      "job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45253100678/job/137967685950",
+      "source_commit": "8d153a16d2c2dd508bbe6935010d2501b411c31c",
+      "status": "completed",
+      "conclusion": "success",
+      "started_utc": "2026-11-23T19:55:37Z",
+      "ended_utc": "2026-11-23T19:56:37Z",
+      "checks": {
+        "Set up job": "success",
+        "Check out source": "success",
+        "Verify the relocated engine over its owned Unix socket": "success",
+        "Post Check out source": "success",
+        "Complete job": "success"
+      },
+      "coverage": "native engine readiness, peer ownership, local telemetry, beacon off, and clean stop",
+      "runner": "macos-26-arm64"
+    },
+    "packaged_app_traffic": "not_tested"
+  },
+  "windows_11_x64": "not_tested",
+  "live_provider_calls": 0,
+  "new_live_token_savings_measurement": "not_tested",
+  "new_public_release": "not_published",
+  "development_token_savings": "unmeasured",
+  "local_records": {
+    "quality-final": {
+      "path": "work/proofs/optimization/engine-upgrade/045/quality-final.json",
+      "sha256": "06cc8ed0ab2134a5d43bc7e825156f2cbc3b23ae7a92d0c2b39039c89cc78d1b"
+    },
+    "windows-payload-receipt": {
+      "path": "work/proofs/optimization/engine-upgrade/045/windows-payload-receipt.json",
+      "sha256": "650e6b362db50b6401071e6bf5e00595783500c0fd960b5c93e24b4abf92b1e3"
+    },
+    "windows-package-result": {
+      "path": "work/proofs/optimization/engine-upgrade/045/windows-package-result.json",
+      "sha256": "f181659f0cdf1d27805545d8c071861b92da8dd9bed7d813de88798403a933d5"
+    },
+    "staged-runtime-result": {
+      "path": "work/proofs/optimization/engine-upgrade/045/staged-runtime-result.json",
+      "sha256": "e3c0b494cae1ceea011b21a618e38435e0a67dda6b3ccb1d8e6eb01841433cfd"
+    },
+    "provider-usage-result": {
+      "path": "work/proofs/optimization/engine-upgrade/045/provider-usage-result.json",
+      "sha256": "fd232fdbd3554d21906900a04f99a7a215fc84ede089ca0b349105c025656cfb"
+    },
+    "wheel-receipt": {
+      "path": "work/proofs/optimization/engine-upgrade/045/wheel-receipt.json",
+      "sha256": "effcaf282c4ad5472f90df7bb7624c3bbb86b157585ee1ca3924238b33d5a84d"
+    },
+    "pause_replay": {
+      "path": "work/proofs/pause/runs/8e199fb9-6684-4fa2-af04-fe77052409e1/result.json",
+      "sha256": "7221f867b966bfa26e1d09a85a63e09cb8a65f33f285c842d9d37b2e80e33e83"
+    },
+    "anthropic_markers": {
+      "path": "work/proofs/optimization/anthropic-cache-markers/candidate-bec03011ae1e488cb08069f880531a60/result.json",
+      "sha256": "af9c440a5138318d2e096467c3f2464b189b93fc2978c317e3307178649cd097"
+    },
+    "linux_wsl": {
+      "path": "work/proofs/optimization/engine-upgrade/045/linux-wsl-fingerprint.txt",
+      "sha256": "f08bed4e3c48088b8722a40e451c6c61f23dac706e6d6f7db0e42b3baf016c7f"
+    }
+  }
+}

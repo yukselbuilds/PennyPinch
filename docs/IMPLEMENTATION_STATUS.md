@@ -6,7 +6,14 @@
 
 PennyPinch v0.1.1-preview.3 is available for Windows 10 22H2 x64. The full installer updates OpenTelemetry API and Tokio. Both public downloads matched their SHA-256 digests. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.3) · [Publication evidence](proofs/pennypinch-windows10-preview3-publication.json)
 
-The lead agent verified the packaged PennyPinch window and Headroom 0.44.0 engine on macOS 26.7.2 ARM64. Two normal exits closed the engine and released the loopback port. Next, check a controlled Codex Desktop turn and its measurement through the package. [Package evidence](proofs/macos-044-package-lifecycle.json)
+The source pins Headroom 0.45.0. Windows 10 built the local installer and passed the staged engine lifecycle and loopback usage tests.
+Ubuntu 24.04 x64 passed the engine check on a standard GitHub runner. The macOS 26 ARM64 engine check passed.
+The lead agent implemented the upgrade. Luna reviewed the upstream interfaces. Development token savings remain unknown.
+[Engine verification](proofs/headroom-045-upgrade.json)
+
+The earlier macOS 26.7.2 ARM64 package started and stopped Headroom 0.44.0. Both exits released the loopback port.
+The next macOS check uses the 0.45.0 package. Verify a controlled Codex Desktop turn and its local measurement.
+[Earlier package evidence](proofs/macos-044-package-lifecycle.json)
 
 Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b2 evidence](proofs/h049-linux-transaction.json)
 
