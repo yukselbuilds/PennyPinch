@@ -198,10 +198,13 @@ jobs:
         run: |
           set -euo pipefail
           test "$(uname -sm)" = 'Linux x86_64'
-          if ! sudo apt-get -qq update > work/linux-deps.log 2>&1 ||
-            ! sudo apt-get -qq install --no-install-recommends -y pkg-config libwebkit2gtk-4.1-dev \
+          apt_options=(-qq -o Acquire::Retries=1 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20)
+          echo 'Prepare the Ubuntu build dependencies.'
+          if ! timeout 120s sudo apt-get "${apt_options[@]}" update > work/linux-deps.log 2>&1 ||
+            ! timeout 120s sudo apt-get "${apt_options[@]}" install --no-install-recommends -y pkg-config libwebkit2gtk-4.1-dev \
               libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev xvfb xauth xdotool acl \
               >> work/linux-deps.log 2>&1; then
+            echo '::error::Ubuntu build dependency setup failed or timed out.'
             awk '/^E:/ && ++count <= 5 { print substr($0, 1, 220) }' work/linux-deps.log
             exit 1
           fi
