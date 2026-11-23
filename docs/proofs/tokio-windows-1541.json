@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-23",
+  "task": "H042-ac",
+  "base_commit": "4ce497e0f9947c1df2ade1187e608926a1e9ba7f",
+  "advisory": "https://github.com/tokio-rs/tokio/security/advisories/GHSA-5wjr-9356-4wc8",
+  "version_before": "1.54.0",
+  "version_after": "1.54.1",
+  "resolved_change": "Only the Tokio version and registry checksum changed in Cargo.lock.",
+  "lock_and_crate_fingerprints": {
+    "before": "4d38badcab3da0d8a9aac3a0fe13c1a175a3d6862ebf5432bb9b65f080486bda",
+    "candidate": "0a9ae9ec89b51fd5cb8601726e81c0a429ce5464f0be0110af39242eb2bb5c4d",
+    "crate": "b52fd3255258d26fac7264ab5a76b53c13367136dc011d3d6ad4f8ed070396a3"
+  },
+  "tracked_inputs": 373,
+  "tracked_inputs_sha256_before_after": "131603c459499dcd0f4623ab0c7d1fdbd07b5eb7c66de9416be3bab83a7cab0d",
+  "toolchain_before_after": {
+    "versions": {
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "node": "v25.2.1",
+      "pnpm": "11.25.0"
+    },
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "windows": [
+      10,
+      0,
+      19045
+    ],
+    "verifier": "503389a8a8d745575936a2db9f448160bc3bf76a6d253bdcb43538fe214deb0a",
+    "verifier_reference": "0018d1dc20af62c7e641ba124123a7739cbd49e95021dfe0e209aa976841838b"
+  },
+  "product_gate": {
+    "app_tests": {
+      "exit": 0,
+      "seconds": 1.233,
+      "rust": [],
+      "node": {
+        "tests": "227",
+        "pass": "227",
+        "fail": "0",
+        "skipped": "0"
+      },
+      "python": [],
+      "failures": []
+    },
+    "frontend": {
+      "exit": 0,
+      "seconds": 1.782,
+      "rust": [],
+      "node": {},
+      "python": [],
+      "failures": []
+    },
+    "rust_fmt": {
+      "exit": 0,
+      "seconds": 1.449,
+      "rust": [],
+      "node": {},
+      "python": [],
+      "failures": []
+    },
+    "rust_tests": {
+      "exit": 0,
+      "seconds": 72.529,
+      "rust": [
+        "test result: ok. 481 passed; 0 failed; 25 ignored; 0 measured; 0 filtered out; finished in 14.92s"
+      ],
+      "node": {},
+      "python": [],
+      "failures": []
+    },
+    "embedded_debug": {
+      "exit": 0,
+      "seconds": 41.278,
+      "rust": [],
+      "node": {},
+      "python": [],
+      "failures": []
+    },
+    "update_package_tests": {
+      "exit": 0,
+      "seconds": 5.068,
+      "rust": [],
+      "node": {},
+      "python": [
+        "9"
+      ],
+      "failures": []
+    }
+  },
+  "local_update_check": {
+    "status": "passed",
+    "source_gate_sha256": "4f39c95418354caaf056958dd6bd7d126ac02bf73474606ee5321b58b5401c2c",
+    "application_sha256": "968d4fa458d5ddc345e94386e26fe2b6cb945cb64960c21ced899fef9ad8da82",
+    "qa_version": "0.1.1-tokio.1",
+    "manifest_schema": 3,
+    "engine": "0.44.0",
+    "windows": [
+      10,
+      0,
+      19045
+    ],
+    "local_only": true,
+    "release_profile": {
+      "lto": false,
+      "codegen_units": 16,
+      "strip": true
+    },
+    "gate_inputs": 373,
+    "inputs_unchanged": true,
+    "preparer_receipt_sha256": "75f847900320db2b7bd567500b3c5e7df490c39fbfee37788b2f4d08ec626b64",
+    "package_files": {
+      "manifest.json": "e6f9e7d9166c15aa8d0e01bf0bfc9f541c79de84741ab9bbb3d10ed54a7be78d",
+      "manifest.json.sig": "02441e0be45982982e3704473a936e0d0d477400232b63e6979d6ba787bc8930",
+      "Headroom_0.1.1-tokio.1_x64-update.exe": "93acbcfa67c5afc63b2670b71b7263724ac4ea94102dcb27a10a4cd456eea31b"
+    },
+    "build_seconds": 174.407,
+    "package_seconds": 12.088,
+    "seconds": 189.234,
+    "private_fixture_key_removed": true
+  },
+  "scope": "Windows 10 x64 source tests, builds, manifest v3 signing and extraction using an isolated QA app.",
+  "production_release": "open",
+  "installed_update_and_rollback_for_candidate": "not_tested",
+  "windows_11": "not_tested",
+  "provider_calls": 0,
+  "implementer": "lead",
+  "development_token_savings": "not_measured"
+}

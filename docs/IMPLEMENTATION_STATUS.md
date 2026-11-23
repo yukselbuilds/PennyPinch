@@ -42,7 +42,7 @@ GitHub About, README, and Pages now describe separate platform statuses. The liv
 
 The new local Windows 10 build and NSIS package passed the build path checks. The installation and release checks for that candidate remain open.
 
-The next dependency step is to validate the Tokio patch on Windows. The Python engine and the Linux GTK chain have separate update checks. [Public privacy and presentation checks](proofs/pennypinch-public-privacy.md)
+Tokio 1.54.1 passed the Windows 10 product gate and signed update package checks with an isolated key. The real QA app passed signature, resource pin, extraction, and probe validation. The next Windows dependency check is the OpenTelemetry engine patch. Linux GTK has a separate update check. [Tokio verification](proofs/tokio-windows-1541.json) · [Public privacy and presentation checks](proofs/pennypinch-public-privacy.md)
 
 ## History
 
