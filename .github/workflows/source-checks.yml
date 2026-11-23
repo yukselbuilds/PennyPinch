@@ -8,6 +8,10 @@ on:
         required: true
         type: boolean
         default: false
+      linux_desktop:
+        description: Build and open the Linux desktop in an isolated Xvfb session.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -21,7 +25,7 @@ jobs:
     if: ${{ inputs.free_only_confirmed == true }}
     name: Frontend source checks (Ubuntu standard runner)
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: ${{ inputs.linux_desktop && 25 || 10 }}
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -96,3 +100,40 @@ jobs:
           fi
 
           printf '%s\n' '## Source-only checks' '' "- App tests: ${app_test_summary}." '- Frontend build: passed.' '- Scope: source-only frontend; no engine or native runtime validation.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build and open the Linux desktop
+        if: ${{ inputs.linux_desktop == true }}
+        shell: bash
+        env:
+          CARGO_HOME: ${{ github.workspace }}/work/cargo-home
+          CARGO_TARGET_DIR: ${{ github.workspace }}/work/cargo-target
+          RUSTUP_HOME: ${{ github.workspace }}/work/rustup
+          CARGO_PROFILE_DEV_DEBUG: '0'
+        run: |
+          set -euo pipefail
+          test "$(uname -sm)" = 'Linux x86_64'
+          sudo apt-get -qq update
+          sudo apt-get -qq install --no-install-recommends -y pkg-config libwebkit2gtk-4.1-dev \
+            libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev xvfb xauth xdotool
+          rustup toolchain install 1.92.0 --profile minimal --no-self-update
+          manifest=src-tauri/Cargo.toml
+          glib="$(cargo +1.92.0 tree --locked --manifest-path "$manifest" --depth 0 -i glib)"
+          test "$glib" = "glib v0.18.5 ($GITHUB_WORKSPACE/src-tauri/vendor/glib-0.18.5)"
+          printf 'Linux uses %s\n' "$glib"
+          if ! cargo +1.92.0 build --locked --manifest-path "$manifest" \
+            --features custom-protocol --color never > work/linux-build.log 2>&1; then
+            awk '/^error(\[[A-Z][0-9]+\])?: / { if (++count <= 8) print substr($0, 1, 220) }' work/linux-build.log
+            exit 1
+          fi
+          export XDG_DATA_HOME="$PWD/work/linux-smoke/data" XDG_CONFIG_HOME="$PWD/work/linux-smoke/config"
+          export XDG_CACHE_HOME="$PWD/work/linux-smoke/cache"
+          mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
+          timeout 45s xvfb-run -a bash -euo pipefail <<'SH'
+          "$CARGO_TARGET_DIR/debug/headroom-desktop" > work/linux-smoke/application.log 2>&1 &
+          app=$!
+          trap 'kill "$app" 2>/dev/null || :; wait "$app" || :' EXIT
+          timeout 30s xdotool search --sync --onlyvisible --pid "$app" --name '^PennyPinch$' >/dev/null
+          SH
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --quiet HEAD --
+          printf '%s\n' '## Linux desktop' '' '- Locked build: passed.' '- PennyPinch window under Xvfb: visible.' '- Scope: desktop startup with patched glib.' >> "$GITHUB_STEP_SUMMARY"

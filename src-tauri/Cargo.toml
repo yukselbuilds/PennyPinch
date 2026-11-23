@@ -50,6 +50,10 @@ block2 = "=0.6.2"
 objc2-app-kit = { version = "=0.3.2", default-features = false, features = ["NSRunningApplication"] }
 objc2-foundation = { version = "=0.3.2", default-features = false, features = ["NSTimer", "NSRunLoop", "NSDate", "block2"] }
 
+[patch.crates-io]
+# gtk-rs/gtk-rs-core#1343 backport for RUSTSEC-2024-0429 while GTK3 requires glib 0.18.
+glib = { path = "vendor/glib-0.18.5" }
+
 [profile.release]
 panic = "abort"
 codegen-units = 1
