@@ -55,6 +55,14 @@ find -P "$stage/payload" \( -type d -o -type f \) -exec chmod go-w {} +
 mv "$stage/payload" "$stage/relocated"
 python="$stage/relocated/python/bin/python3.13"
 
+if ! "$python" -I -B -m unittest discover -s tests/runtime -p 'test_macos_payload.py' -v > "$log" 2>&1; then
+  echo '::error::Payload inventory tests failed.'
+  awk '/^FAIL: |^ERROR: / { print substr($0, 1, 220) }' "$log"
+  exit 1
+fi
+grep -Eq '^test_casefold_collisions_require_exact_name_matching.* \.\.\. ok$' "$log"
+awk '/^Ran [0-9]+ tests/ { print "Payload inventory: " $0 }' "$log"
+
 fingerprint() {
   git rev-parse HEAD 'HEAD^{tree}'
   uname -smr
@@ -63,7 +71,7 @@ fingerprint() {
   "$python" -I -B --version
   "$uv" --version
   sha256sum "$stage/python.tgz" "$stage/uv.tgz" "$stage/requirements.txt" runtime/engine-deps/uv.lock | cut -d' ' -f1
-  "$python" -I -B scripts/macos-payload.py "$stage/relocated"
+  "$python" -I -B scripts/macos-payload.py --case-sensitive "$stage/relocated"
 }
 before="$(fingerprint)"
 status=0

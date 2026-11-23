@@ -92,7 +92,7 @@ class MacOSPayloadTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     macos_payload.measure(tree)
 
-    def test_rejects_casefold_collisions_when_filesystem_can_represent_them(self):
+    def test_casefold_collisions_require_exact_name_matching(self):
         tree = self.root / 'casefold'
         self.tree(tree, [('Name.txt', b'a')])
         try:
@@ -101,8 +101,11 @@ class MacOSPayloadTests(unittest.TestCase):
             self.skipTest('filesystem is case-insensitive')
         if len(list(tree.iterdir())) != 2:
             self.skipTest('filesystem cannot represent casefold-colliding entries')
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, 'case_collision'):
             macos_payload.measure(tree)
+        summary, entries = macos_payload.inventory(tree, case_sensitive=True)
+        self.assertEqual(summary['files'], 2)
+        self.assertEqual({row[0] for row in entries}, {'Name.txt', 'name.TXT'})
 
     def test_accepts_only_relative_in_root_file_symlinks_and_hashes_link_text(self):
         first = self.root / 'link-one'

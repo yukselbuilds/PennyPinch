@@ -1,5 +1,6 @@
-"""Read-only, relocatable inventory of the macOS engine and its file links."""
+"""Read-only, relocatable inventory of a Unix engine payload and its file links."""
 
+import argparse
 import hashlib
 import json
 import os
@@ -49,7 +50,7 @@ def regular_hash(path, expected):
     return digest.hexdigest()
 
 
-def inventory(root):
+def inventory(root, *, case_sensitive=False):
     root = Path(root)
     if not root.is_absolute():
         raise ValueError("payload_root_must_be_absolute")
@@ -74,7 +75,7 @@ def inventory(root):
         directories.append((directory, identity(info)))
         for path in directory.iterdir():
             name = path.relative_to(root).as_posix()
-            key = name.casefold()
+            key = name if case_sensitive else name.casefold()
             if key in names:
                 raise ValueError("case_collision")
             names.add(key)
@@ -123,16 +124,19 @@ def inventory(root):
     }, ordered
 
 
-def measure(root):
-    return inventory(root)[0]
+def measure(root, *, case_sensitive=False):
+    return inventory(root, case_sensitive=case_sensitive)[0]
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.exit("usage: macos-payload.py <absolute-payload-root>")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("payload", type=Path)
+    parser.add_argument("--case-sensitive", action="store_true")
+    args = parser.parse_args()
     try:
-        print(json.dumps(measure(Path(sys.argv[1])), sort_keys=True, separators=(",", ":")))
+        print(json.dumps(measure(args.payload, case_sensitive=args.case_sensitive),
+                         sort_keys=True, separators=(",", ":")))
     except ValueError as error:
-        sys.exit(f"macOS payload inventory failed: {error}")
+        sys.exit(f"Payload inventory failed: {error}")
     except OSError:
-        sys.exit("macOS payload inventory failed: unsafe or changed input")
+        sys.exit("Payload inventory failed: unsafe or changed input")
