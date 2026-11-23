@@ -23,6 +23,8 @@ GitHub lists free standard hosted compute for public repositories. Standard Wind
 
 ### Windows release evidence
 
+H037-a8 passed. The public Windows 10 preview ZIP download resumed at 8 MiB. The complete SHA-256 and 673 indexed license and notice files matched the delivery record. The next H037 check requires a clean Windows desktop without WebView2. [Public delivery evidence](proofs/windows-installer-public-preview-resume.json) · [Open installation checks](validation/windows-install.md#open-acceptance-criteria)
+
 The extracted Windows 10 x64 payload passed a live Codex CLI turn. The provider usage matched, and the engine stopped gracefully. [Evidence](proofs/pennypinch-windows10-packaged-codex.json)
 
 An earlier Windows 10 preview installed on this host. PennyPinch saved the test route. A new ChatGPT CLI used it. Activity showed an earlier record from the run. The built-in verifier stopped at the ancestor configuration guard for this profile. Disconnect restored the test configuration. The application closed normally. [Installed flow](proofs/pennypinch-windows10-installed-codex.json)

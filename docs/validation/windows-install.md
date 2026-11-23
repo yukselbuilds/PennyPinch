@@ -79,13 +79,18 @@ Select this receipt using the project's pinned CPython.
 
 The receipt adds the first 12 characters of the installer hash to the ZIP name to avoid colliding with an older package of the same version. Extraction on Windows verified all 677 files and 676 listed SHA-256 values. The command rejected the stale notices archive and preserved the existing delivery file. Nineteen Windows packaging tests passed. This output is an unsigned local preview. GitHub Releases and the production update source have separate delivery checks. [Delivery evidence](../proofs/windows-installer-044-delivery.json)
 
+## 23 November — Public Windows 10 preview download
+
+The lead agent interrupted a public download of `v0.1.1-preview.3` at 8 MiB. A second request sent the same ETag in `If-Range`. GitHub returned HTTP 206 for the remaining 118,372,644 bytes. The initial bytes stayed intact.
+
+The complete 126,761,252-byte ZIP matched the public checksum and the earlier delivery record. It contains 673 license and notice files plus their matching index. The identical ZIP digest preserves the earlier verification of 677 internal file digests. [Download evidence](../proofs/windows-installer-public-preview-resume.json) · [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.3)
+
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria
 
 1. **Clean Windows 10 and Windows 11 x64 desktops.** The user's available external environment at this stage was GitHub Actions. The 15 November 2026 check found that private-repository standard Windows x64 jobs use Server 2022 or 2025 and the standard Windows 11 job uses ARM64. The Windows 11 x64 desktop image is a larger-runner option for GitHub Team or Enterprise Cloud. The desktop test status is `not_tested`. [Standard images](https://github.com/actions/runner-images#available-images) · [Larger-runner images](https://docs.github.com/en/actions/reference/runners/larger-runners#runner-images) · [Plan requirements](https://docs.github.com/en/actions/how-tos/manage-runners/larger-runners/use-larger-runners)
 2. **Microsoft WebView2 setup on a clean host without the runtime.** The controlled NSIS failure branch and same-version repair passed in their local slices. [Microsoft WebView2 distribution](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution)
-3. **Interrupted download and SHA-256 verification at the actual release URL.** Distribute the third-party license archive with the release package. Verify remaining free CI quota and spending limits before dispatch. H042 covers updates and rollback.
 
 The 15 November private-repository check estimated ten standard Windows minutes from the reported $0.10 allowance. On 23 November, the GitHub API reported PennyPinch as public. Standard hosted jobs now run outside that allowance. The standard Windows x64 images still run Windows Server. The standard Windows 11 desktop image uses ARM64. Keep the Windows 11 x64 desktop status as `not_tested` until a suitable environment is available. [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions) · [Runner images](https://github.com/actions/runner-images#available-images)
 

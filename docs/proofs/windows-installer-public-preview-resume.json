@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "task": "H037-a8",
+  "passed": true,
+  "date": "2026-11-23",
+  "source_commit": "79dbba0b662c64cddfbc4e943178dbf833862f55",
+  "release_url": "https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.3",
+  "release": {
+    "release_id": 455286345,
+    "tag": "v0.1.1-preview.3",
+    "assets": [
+      {
+        "name": "PennyPinch_0.1.1-preview.3_Windows_x64_preview.zip",
+        "id": 782551719,
+        "size": 126761252,
+        "digest": "sha256:919bbea5778c0a145c3c5f4d93e9f122fc2c9e455e78ec0e70d0fd9417e5ce21",
+        "updated_at": "2026-11-23T10:47:18Z"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "id": 782557907,
+        "size": 117,
+        "digest": "sha256:1dead6dee8de79b7f5b9e8438b897e840e0366f81fb77b598671d527ea625530",
+        "updated_at": "2026-11-23T10:47:18Z"
+      }
+    ]
+  },
+  "inputs": {
+    "checker_sha256": "11aa7846984a1e7b23ad4aa4a4b0a23976c0cd1a87515c8c6dd47951281491b3",
+    "publication_evidence_sha256": "0dd8fa3571bb8f5ee6cf7473af90b960d01782877f3a8352ce874c91b57688d0",
+    "delivery_evidence_sha256": "462b652ae94a8e5468c7dd4a1317ca984cdc73b6066e21b189cd386ef9c27584",
+    "windows_version": [
+      10,
+      0,
+      19045
+    ],
+    "python": "3.14.0",
+    "tls_library": "OpenSSL 3.0.18 30 Sep 2025"
+  },
+  "inputs_and_asset_metadata_match_before_after": true,
+  "transfer": {
+    "initial_status": 200,
+    "partial_bytes": 8388608,
+    "partial_sha256": "c1b97e574bdba9865472e8f69eed8ba82f5ea5d8cd63d095cd5718342517c30a",
+    "resume_status": 206,
+    "resumed_bytes": 118372644,
+    "content_range": "bytes 8388608-126761251/126761252",
+    "validator": "ETag",
+    "prefix_preserved": true,
+    "complete_sha256": "919bbea5778c0a145c3c5f4d93e9f122fc2c9e455e78ec0e70d0fd9417e5ce21",
+    "complete_bytes": 126761252
+  },
+  "notices": {
+    "zip_files": 678,
+    "license_and_notice_files": 673,
+    "notice_index_sha256": "1c0713639b84915f98184a82c7c69bd08acce3c547f869c3e37cba452b92d438",
+    "reused_verified_internal_digests": 677
+  },
+  "seconds": 31.822,
+  "limits": {
+    "scope": "Public Windows 10 preview ZIP and included notices",
+    "clean_install": "not_tested",
+    "windows_11_x64": "not_tested",
+    "development_token_savings": "not_measured",
+    "provider_requests": 0,
+    "ci_workflow_dispatches": 0
+  },
+  "implementation": {
+    "owner": "lead agent",
+    "scope": "Published artifact identity and download verification",
+    "probe_corrections": 0
+  }
+}
