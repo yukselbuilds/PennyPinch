@@ -30,6 +30,20 @@ class WindowsReleaseExecutableTests(unittest.TestCase):
         self.assertEqual(struct.unpack_from('<H', header, 92)[0], 2,
                          'a desktop release must not open an extra console window')
 
+    def test_release_executable_omits_private_build_paths(self):
+        path = staging.inside(Path(os.environ['HEADROOM_RELEASE_EXE_CANDIDATE']), ROOT / 'work')
+        staging.no_links(path)
+        executable = path.read_bytes().lower()
+        build_paths = {'checkout': ROOT}
+        if profile := os.environ.get('USERPROFILE'):
+            build_paths['user profile'] = Path(profile)
+        for scope, directory in build_paths.items():
+            for spelling in (str(directory), directory.as_posix()):
+                for encoding in ('utf-8', 'utf-16-le'):
+                    with self.subTest(scope=scope, encoding=encoding):
+                        self.assertFalse(spelling.lower().encode(encoding) in executable,
+                                         'the release embeds a private build path')
+
 
 if __name__ == '__main__':
     unittest.main()

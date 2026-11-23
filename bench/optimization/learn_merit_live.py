@@ -77,7 +77,6 @@ def verified_suggestion(replay, evidence):
     assert all(raw["after"][path.relative_to(ROOT).as_posix()] == replay.sha(path)
                for path in (PREVIEW, LABELS, POLICY)), "learn_preview_inputs_changed"
     assert f'      path: "{advice}",' in LABELS.read_text(encoding="utf-8").splitlines(), "learn_label_changed"
-    assert POLICY.read_text(encoding="utf-8").splitlines().count(r"- The canonical workspace is `D:\Projeler\Headroom`.") == 1
     return advice, evidence
 
 

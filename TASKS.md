@@ -16,7 +16,7 @@
 | H006, H037 and H042 · External environments and release | H006 needs clean Windows 10 and Windows 11 x64 environments. H037 also needs installation without WebView2 and an interrupted download from the release URL. H042 needs Windows 11 x64 update and rollback acceptance. |
 | H044 · Ripgrep candidate | Adding RTK to Headroom saved two more tokens per first request in the Windows 10 fixture. It added a recovery step. Installation remains open. [Evidence](docs/proofs/rtk-1.2.1-rg-paired.json) |
 | H049 · Resumed | The Ubuntu x64 build opened a window on CircleCI Free. The Rust suite recorded 220 passes, 81 failures and 2 skipped tests. Linux adaptation and package acceptance remain open. [Platform tests](docs/validation/desktop-platforms.md) |
-| H052, H053 and H054 · Deferred | The privacy decision covers consent and transfers. The live report service still needs an authorized Cloudflare Free account and a verified transfer basis. H053 and H054 depend on that service. [Privacy decision](docs/decisions/032-usage-sharing-privacy.md) |
+| H052, H053 and H054 · Deferred | The Cloudflare account shows Workers Free. H052 needs a confirmed controller, processor terms, and transfer basis for live reports. H053 and H054 depend on the service. [Privacy decision](docs/decisions/032-usage-sharing-privacy.md) |
 
 Windows development and packaging use Headroom **0.44.0**. H048's native macOS 15.8.2 Apple Silicon acceptance covers **0.41.0**. H050 account connections and H051 chat metadata and navigation passed on Windows 10. Each additional operating system, new sign-in and production release requires its own evidence. [Engine transition](docs/proofs/headroom-044-upgrade.json) · [H048](docs/proofs/macos-acceptance.json) · [H050](docs/proofs/accounts.md) · [H051](docs/proofs/sessions.md)
 
@@ -1104,7 +1104,7 @@ These three tasks do not expand the required installation for the first release.
 
 ### H052 — Private report API, storage, and admin panel
 - [ ] Prepare a Cloudflare Workers report API, a private D1 database belonging to our account, and a panel readable only by authorized administrators.
-- **Deferred — 23 November.** The owner deferred the local prototype on 13 November. The report service needs an authorized account and the deployment privacy checks. The Cloudflare Free limits research is in `work/research/h052/cloudflare/`.
+- **Deferred — 23 November.** The owner deferred the local prototype on 13 November. The Cloudflare dashboard shows Workers Free as the current plan. Verify the deployment privacy requirements before a live pilot.
 - **Slices:** Report contract and local API/storage; authenticated admin panel; authorized free deployment and actual quota/retention acceptance. Document data region, access, and retention decisions before deployment.
 - [x] **H052 privacy design.** Record the privacy and transfer rules from KVKK, EU, and Cloudflare sources. [Privacy decision](docs/decisions/032-usage-sharing-privacy.md)
 - **Acceptance:** Keep feedback and daily usage summaries separate. Do not give database/admin secrets to the client. Implement schema/measurement-basis and size validation, rate/quota limits, batch deduplication, and bounded queries. Define a random installation ID as pseudonymous data and report contributing installations rather than people. Address IP and infrastructure logs separately. Do not log content or secrets.

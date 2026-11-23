@@ -90,7 +90,7 @@ H035 and H036 have additional checks. `pnpm.cmd test:a11y` runs the real App wit
 
 H038 verified uninstall on Windows 10 with real NSIS and an isolated application identifier. Reuse existing product-gate results when inputs match. For an uninstaller change, observe a running app, a locked or conflicting config, and the retain and delete choices for local data. Unattended uninstall retains data. Update has its own acceptance. [Uninstall validation](../validation/uninstall.md)
 
-For the H039 Windows release check, `build-windows.ps1` points `HEADROOM_RELEASE_EXE_CANDIDATE` at the owned release executable after packaging, runs `test_windows_release_executable.py` and restores the previous process environment. The test reads the actual file's PE, x64, PE32+ and GUI subsystem=2 fields. A direct run without that environment variable explicitly skips the check and leaves release acceptance open. [Release candidate evidence](../validation/release-candidate.md)
+For the H039 Windows release check, `build-windows.ps1` points `HEADROOM_RELEASE_EXE_CANDIDATE` at the owned release executable after packaging, runs `test_windows_release_executable.py` and restores the previous process environment. The test reads the actual file's PE, x64, PE32+ and GUI subsystem=2 fields. The Windows release build remaps the checkout and profile paths during Rust compilation. The test checks the executable for both original paths. A direct run without that environment variable explicitly skips the check and leaves release acceptance open. [Release candidate evidence](../validation/release-candidate.md)
 
 ## Historical code audit scope
 

@@ -148,7 +148,7 @@ def main():
     require(len(labels) == 2, "learn_path_label_changed")
     advice = {language: {"text": label, "tokens_o200k_base": len(tokenizer.encode(label, disallowed_special=()))}
               for language, label in zip(("tr", "en"), labels, strict=True)}
-    policies = {"workspace": policy_line(guidance, "The canonical workspace is"),
+    policies = {"workspace": policy_line(guidance, "Use the root of this Git checkout as the workspace."),
                 "changed_inputs": policy_line(guidance, "If inputs changed, the PASS is evidence"),
                 "workflow": policy_line(workflow, "For new code acceptance, run the final candidate gate")}
     environment = {"SystemRoot": os.environ["SystemRoot"]}

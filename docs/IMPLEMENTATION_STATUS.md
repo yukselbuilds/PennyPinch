@@ -34,6 +34,16 @@ The 23 November check found RTK-OSS v1.2.1 is still the latest stable release. T
 
 On 23 November the lead agent confirmed Workers Free in the Cloudflare account dashboard. H052 still needs the controller and transfer checks. Verify the processing terms and any transfer mechanism before accepting real reports. H053 and H054 depend on the live report service. [Privacy decision](decisions/032-usage-sharing-privacy.md)
 
+### Public privacy and presentation
+
+The two public branches and two release tags use the rewritten Git history. GitHub Support accepted the request to remove old cached objects. Confirm removal by anonymous access after Support replies.
+
+GitHub About, README, and Pages now describe separate platform statuses. The live release asset IDs, SHA256 values, and signed update files matched. Secret Protection, push protection, and Dependabot alerts are on.
+
+The new local Windows 10 build and NSIS package passed the build path checks. The installation and release checks for that candidate remain open.
+
+The next dependency step is to validate the Tokio patch on Windows. The Python engine and the Linux GTK chain have separate update checks. [Public privacy and presentation checks](proofs/pennypinch-public-privacy.md)
+
 ## History
 
 The repository documentation is in English. The archive keeps earlier handoffs, measurements, and their original acceptance limits. [Implementation history](IMPLEMENTATION_HISTORY.md) · [English documentation check](proofs/pennypinch-final-implementation-history-english.json)
