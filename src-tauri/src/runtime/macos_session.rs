@@ -555,6 +555,6 @@ fn state_lock(state: &Path) -> Result<File, MacRuntimeError> {
     Ok(file)
 }
 
-#[cfg(test)]
+#[cfg(all(test, target_os = "macos"))]
 #[path = "macos_session_tests.rs"]
 mod tests;
