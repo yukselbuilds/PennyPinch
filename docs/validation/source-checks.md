@@ -32,6 +32,10 @@ Select `linux_config_transaction` to run the standalone file system probe. The p
 [Linux transaction evidence](../proofs/h049-linux-transaction.json)
 Use the standard runner in the public repository. [GitHub runner billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions) · [Linux evidence](../proofs/h049-linux-config.json)
 
+Select `linux_cli_discovery` to check native CLI discovery and saved choices.
+The test checks archive integrity and extracts the three pinned Linux x64 executables.
+It scans a private home and PATH without launching the clients. [Discovery evidence](../proofs/h049-linux-discovery.json)
+
 ## Optional Linux engine check
 
 Select `linux_engine` to verify the pinned engine on Ubuntu 24.04 x64.

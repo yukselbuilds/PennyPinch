@@ -35,8 +35,17 @@ The native window opened under Xvfb and reserved the saved endpoint.
 The connection test used simulated installation records and real configuration files.
 The saved Codex address carried one synthetic Responses stream.
 The app applied the route in each profile. Undo restored the original file bytes and permissions.
-Linux client discovery, real client processes, live provider accounts, and the installer require separate checks.
 [Managed engine evidence](../proofs/h049-linux-managed.json)
+
+## Linux CLI discovery
+
+The standard Ubuntu 24.04 x64 GitHub runner found Codex, Claude Code, and OpenCode in an isolated home and PATH.
+The test used pinned Linux x64 npm executables. It checked unsafe paths, duplicate links, version hashes, and file changes.
+The app reopened saved choices. Separate tests checked concurrent writers and process exit during publication.
+The Linux app requires ext4 for selection and client configuration writes.
+The Windows 10 product gate passed. The macOS ARM64 rerun awaits runner capacity. [H049-b4 evidence](../proofs/h049-linux-discovery.json)
+
+Linux package checks, real client processes, and live provider traffic require separate checks.
 
 <a name="windows-10-kurulumu"></a>
 

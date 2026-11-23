@@ -11,7 +11,11 @@ macOS ARM64 passed native desktop development checks with engine 0.41.0. The lat
 Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b2 evidence](proofs/h049-linux-transaction.json)
 
 The lead agent completed H049-b3 on Ubuntu 24.04 x64. The desktop manager ran Headroom 0.44.0 and forwarded a local Responses stream from the saved Codex endpoint.
-Apply and Undo passed for isolated Codex, Claude Code, and OpenCode settings. Next, verify native Linux discovery, packaging, and the installed app lifecycle. [H049-b3 evidence](proofs/h049-linux-managed.json)
+Apply and Undo passed for isolated Codex, Claude Code, and OpenCode settings. [H049-b3 evidence](proofs/h049-linux-managed.json)
+
+Ubuntu 24.04 x64 passed H049-b4. PennyPinch found the three pinned native CLI files without launching them. The app saved explicit choices and restored them on the next scan. Next, check the Linux package and app behavior after installation. [H049-b4 evidence](proofs/h049-linux-discovery.json)
+
+The macOS ARM64 regression check remains open. GitHub cancelled the run before it assigned a runner. Rerun the CLI discovery check when a runner is available. [macOS job](https://github.com/yukselbuilds/PennyPinch/actions/runs/45223891265/job/137865111090)
 
 GitHub lists free standard hosted compute for public repositories. Standard Windows x64 runners use Windows Server. The standard Windows 11 desktop runner uses ARM64. Windows 11 x64 acceptance remains open. [Windows acceptance](validation/windows-install.md#open-acceptance-criteria)
 

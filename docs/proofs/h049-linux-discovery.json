@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "task": "H049-b4",
+  "date": "2026-11-23",
+  "source_commit": "5a9e8c07a0e360f69ce86f9f656fcc0c2514e2e5",
+  "source_tree": "51775f6fa3650d7cd09f1f306066682ae2ca4578",
+  "implementation": {
+    "discovery_and_selection": "lead_agent",
+    "pinned_test_files": "GPT-6 Luna xhigh",
+    "development_token_savings": "unmeasured"
+  },
+  "linux": {
+    "source_commit": "5a9e8c07a0e360f69ce86f9f656fcc0c2514e2e5",
+    "source_tree": "51775f6fa3650d7cd09f1f306066682ae2ca4578",
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45223789858",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45223789858/job/137864761363",
+    "runner": "Ubuntu 24.04 x64 standard GitHub-hosted",
+    "job_duration_seconds": 189,
+    "conclusion": "success",
+    "inputs_before_after_match": true,
+    "fingerprints": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45223789858/job/137864761363#step:7:1",
+    "native_discovery_tests": 3,
+    "observed": [
+      "pinned native clients in HOME and PATH without launching them",
+      "duplicate links, an untrusted parent and writable file, and an unverified same-size file",
+      "three explicit installation choices rebound after reopening",
+      "changed contents rejected even with the previous modification time",
+      "selection lock, late-writer conflict preservation, and process exit",
+      "locked desktop build and visible Xvfb window"
+    ]
+  },
+  "macos": {
+    "source_commit": "5a9e8c07a0e360f69ce86f9f656fcc0c2514e2e5",
+    "source_tree": "51775f6fa3650d7cd09f1f306066682ae2ca4578",
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45223891265",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45223891265/job/137865111090",
+    "runner": "macos-15 ARM64 standard GitHub-hosted",
+    "conclusion": "cancelled",
+    "queue_seconds": 901,
+    "runner_assigned": false,
+    "regression": "not_tested",
+    "reason": "GitHub-hosted macOS ARM64 runner capacity"
+  },
+  "linux_client_fixtures": {
+    "preparation_sha256": "b1b4fa2e06e3071c213da2ab3a1e7864854763ca578484fece50fd992611b029",
+    "clients": [
+      {
+        "client": "codex",
+        "version": "0.163.0-alpha.11.1-linux-x64",
+        "url": "https://registry.npmjs.org/@openai/codex/-/codex-0.163.0-alpha.11.1-linux-x64.tgz",
+        "archive_size": 159391723,
+        "archive_sri": "sha512-3TMCWdaqX0UyE3+GUR3PUUU1sIVd5IHOXxQiZWdjX3QHxNeOjM6JrzXIM6wi9hMowY5OJSZUdLRbfAABwgiT6g==",
+        "member": "package/vendor/x86_64-unknown-linux-musl/bin/codex",
+        "binary_name": "codex",
+        "binary_size": 294498248,
+        "binary_sha256": "ce74d935f61c14d931dd62a79736a964f741af47688ae119b17a1fd973a08399"
+      },
+      {
+        "client": "claude",
+        "version": "2.1.158",
+        "url": "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-x64/-/claude-code-linux-x64-2.1.158.tgz",
+        "archive_size": 73309197,
+        "archive_sri": "sha512-yIQwKyz9g66GfFnp/ydz2wq1HuRY7Gq3TY9/yyf5hEqEwAdj2ycP8/jMPGi+9UeKrc4GTcJ/BCBv/GqbTD9N4g==",
+        "member": "package/claude",
+        "binary_name": "claude",
+        "binary_size": 240666320,
+        "binary_sha256": "dd27008acd42700bac5762652ec83ff604bf9ae0786d4dde55d57a6866017fbe"
+      },
+      {
+        "client": "opencode",
+        "version": "1.19.3",
+        "url": "https://registry.npmjs.org/opencode-linux-x64/-/opencode-linux-x64-1.19.3.tgz",
+        "archive_size": 60356012,
+        "archive_sri": "sha512-wz+kXi7ZkvLW04hEIocW3RoEznALJ3YGnvNlZdXFarYF0v1jyDyAwpPGZkxb4JZDrw4oy48/LDZ8wCFIQDTxhw==",
+        "member": "package/bin/opencode",
+        "binary_name": "opencode",
+        "binary_size": 186013824,
+        "binary_sha256": "179ca421d61eefeadfa0c50e084a6e79c1623734732f0f4593f81ccfd3ab7ee9"
+      }
+    ]
+  },
+  "windows_10": {
+    "runner": "Windows 10 22H2 x64",
+    "passed": true,
+    "inputs_before_after_match": true,
+    "input_sha256": "f177fa704e22d013651159c06ee08b0cdaf3b295107d47146f4aa9425bbc2da6",
+    "input_count": 502,
+    "checks": {
+      "app_tests": {
+        "exit": 0,
+        "seconds": 1.556,
+        "rust": [],
+        "node": {
+          "tests": "227",
+          "pass": "227",
+          "fail": "0",
+          "skipped": "0"
+        },
+        "python": [],
+        "failures": []
+      },
+      "frontend": {
+        "exit": 0,
+        "seconds": 2.151,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_fmt": {
+        "exit": 0,
+        "seconds": 1.335,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_tests": {
+        "exit": 0,
+        "seconds": 50.773,
+        "rust": [
+          "test result: ok. 481 passed; 0 failed; 25 ignored; 0 measured; 0 filtered out; finished in 14.49s"
+        ],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "embedded_debug": {
+        "exit": 0,
+        "seconds": 9.842,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      }
+    }
+  },
+  "limits": {
+    "linux_installed_package": "not_tested",
+    "live_provider_traffic": "not_tested",
+    "windows_11_x64": "not_tested",
+    "recognized_installations": "pinned native files in supported search locations",
+    "linux_selection_and_config_writes": "ext4",
+    "macos_discovery_regression": "not_tested"
+  }
+}
