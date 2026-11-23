@@ -110,8 +110,8 @@ def install_private_dashboard(secret):
 
     original = server._request_is_loopback
 
-    def private_request(request):
-        if request.client is None and request.scope.get("path") in {"/health", "/stats"}:
+    def private_request(request, *, allow_gateway_peer: bool = True):
+        if allow_gateway_peer and request.client is None and request.scope.get("path") in {"/health", "/stats"}:
             supplied = request.headers.get("x-headroom-desktop-control", "")
             try:
                 allowed = hmac.compare_digest(supplied.encode("latin1"), secret.encode("ascii"))
@@ -119,7 +119,7 @@ def install_private_dashboard(secret):
                 allowed = False
             if allowed and is_loopback_host_header(request.headers.get("host")):
                 return True
-        return original(request)
+        return original(request, allow_gateway_peer=allow_gateway_peer)
 
     server._request_is_loopback = private_request
 

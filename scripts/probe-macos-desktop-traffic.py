@@ -11,6 +11,7 @@ import stat
 import subprocess
 import sys
 import time
+import traceback
 import uuid
 
 
@@ -148,10 +149,12 @@ def run(package, vendor):
         settings = workspace / "settings.json"
         settings.write_text(json.dumps({"openai_base_url": provider.origin}) + "\n", encoding="utf-8")
         settings.chmod(0o600)
+        print("headroom-desktop-phase=private_fixture_ready", flush=True)
         core.require(core.find_app(executable) is None, "qa_app_already_open")
         launcher = subprocess.Popen(["/usr/bin/open", "-n", "-W", "-a", str(bundle)], cwd=package,
             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         app = core.wait_for(lambda: core.find_app(executable), "headroom_launch_timeout")
+        print("headroom-desktop-phase=packaged_headroom_open", flush=True)
         core.run_ui("open")
         port = core.wait_for(lambda: core.endpoint_owned(app, state), "headroom_endpoint_timeout")
         core.run_ui("start")
@@ -209,6 +212,9 @@ if __name__ == "__main__":
     except (core.ProbeError, desktop.cdp.CdpError) as error:
         print(f"headroom-desktop-error={error}", file=sys.stderr)
         sys.exit(2)
-    except (OSError, ValueError, KeyError, subprocess.SubprocessError):
-        print("headroom-desktop-error=controlled_probe_failed", file=sys.stderr)
+    except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
+        frames = [line for frame, line in traceback.walk_tb(error.__traceback__)
+                  if frame.f_code.co_filename == __file__]
+        location = frames[-1] if frames else 0
+        print(f"headroom-desktop-error={type(error).__name__} check_line={location}", file=sys.stderr)
         sys.exit(2)
