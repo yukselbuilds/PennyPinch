@@ -12,6 +12,7 @@ import struct
 import subprocess
 import sys
 import time
+import traceback
 
 
 APP = Path("/usr/bin/pennypinch")
@@ -105,7 +106,7 @@ def ready_engine(app, state, session, owned_get):
         try:
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as peer:
                 peer.settimeout(1)
-                peer.connect(path)
+                peer.connect(str(path))
                 pid, uid, _ = struct.unpack("iII", peer.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, 12))
             identity = process_identity(pid)
             if identity is None:
@@ -242,7 +243,10 @@ def main():
         print(f"headroom-linux-package-error={error}", flush=True)
         return 1
     except Exception as error:
-        print(f"headroom-linux-package-error={type(error).__name__}", flush=True)
+        probe_lines = [line for frame, line in traceback.walk_tb(error.__traceback__)
+                       if frame.f_code.co_filename == __file__]
+        location = probe_lines[-1] if probe_lines else 0
+        print(f"headroom-linux-package-error={type(error).__name__} check_line={location}", flush=True)
         return 1
     print("headroom-linux-package-result=pass", flush=True)
     return 0
