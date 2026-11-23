@@ -8,7 +8,7 @@ The root reviewed the same GPT-6 Luna xhigh worker's `.gitignore`, README, free-
 
 The initial import contains **143 files / 1,770,104 bytes**. Candidate and staged audits checked bounded paths, sizes, UTF-8/binary shape, file links and common credential patterns; no findings. This is a bounded review, not a guarantee that every possible secret format is detectable. The one expected binary is the checked-in Tauri icon.16 representative local/cache/credential paths were ignored;10 representative source/lock/template paths were retained. `/work/`, `/outputs/`, downloaded engine payload, app state, logs, cache and build products were excluded; none was deleted or moved.
 
-Local metadata evidence is retained under `work/proofs/repository-import/`: `initial-candidate.json`, `initial-staged.json`, `ignore-check.json`, and `audit_candidate.py`. Those proof files are intentionally outside Git. The exact initial application-source commit is [357fbd2](https://github.com/Protocol272/headroom-desktop/commit/357fbd2c3d1bbb2aba820703c44b34cbd1eee9f1).
+The local metadata checks are in `work/proofs/repository-import/`. The public link points to the initial application source after the privacy rewrite. [Initial source](https://github.com/yukselbuilds/PennyPinch/commit/b362fdd61c9ed8d18776a0312d846034690ba63c)
 
 ## Observed path
 

@@ -6,7 +6,7 @@
 
 PennyPinch v0.1.1-preview.1 for Windows 10 22H2 x64 is available from GitHub Releases. The ZIP includes the installer, the PennyPinch license, and the matching notices. Anonymous downloads matched both asset digests. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.1) · [Publication evidence](proofs/pennypinch-windows10-installed-update-and-release.json)
 
-The macOS ARM64 engine and package passed their recorded 0.44.0 checks. Native window acceptance remains open. The Ubuntu x64 build opened a window. Linux tests and packaging remain open. [Platform status](validation/desktop-platforms.md)
+macOS ARM64 passed native desktop development checks with engine 0.41.0. The later 0.44.0 engine and package passed. Native window acceptance for 0.44.0 remains open. The Ubuntu x64 build opened a window. Linux runtime tests and packaging remain open. [Platform status](validation/desktop-platforms.md)
 
 ### Windows release evidence
 
@@ -32,7 +32,7 @@ The lead agent ran the H044 ripgrep comparison on Windows 10 in 136.4 seconds. T
 
 The 23 November check found RTK-OSS v1.2.1 is still the latest stable release. The paired evidence applies to that release. [Upstream release](https://github.com/rtk-ai/rtk/releases/tag/v1.2.1)
 
-The lead agent documented the H052–H054 privacy design. The next H052 step is to confirm the operator and authorized hosting account. Verify the actual processing terms and any transfer mechanism before a live pilot. H053 and H054 depend on the live report service. [Privacy decision](decisions/032-usage-sharing-privacy.md)
+On 23 November the lead agent confirmed Workers Free in the Cloudflare account dashboard. H052 still needs the controller and transfer checks. Verify the processing terms and any transfer mechanism before accepting real reports. H053 and H054 depend on the live report service. [Privacy decision](decisions/032-usage-sharing-privacy.md)
 
 ## History
 
