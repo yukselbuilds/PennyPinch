@@ -60,7 +60,10 @@ class MacOSBootstrapTests(unittest.TestCase):
         guard = types.ModuleType("headroom.proxy.loopback_guard")
         package.proxy = proxy
         proxy.server = server
-        server._request_is_loopback = lambda request: request.client == "original-loopback"
+        def original(request, *, allow_gateway_peer=True):
+            return request.client == "original-loopback" or (allow_gateway_peer and request.client == "gateway")
+
+        server._request_is_loopback = original
         guard.is_loopback_host_header = lambda host: host == "127.0.0.1"
         modules = {module.__name__: module for module in (package, proxy, server, guard)}
         with patch.dict(sys.modules, modules):
@@ -68,7 +71,8 @@ class MacOSBootstrapTests(unittest.TestCase):
             for path in ("/health", "/stats"):
                 request = types.SimpleNamespace(client=None, scope={"path": path},
                     headers={"host": "127.0.0.1", "x-headroom-desktop-control": SECRET})
-                self.assertTrue(server._request_is_loopback(request))
+                self.assertTrue(server._request_is_loopback(request, allow_gateway_peer=True))
+                self.assertFalse(server._request_is_loopback(request, allow_gateway_peer=False))
                 for header, value in (("host", "outside.example"),
                                       ("x-headroom-desktop-control", ""),
                                       ("x-headroom-desktop-control", "wrong"),
@@ -80,6 +84,9 @@ class MacOSBootstrapTests(unittest.TestCase):
                 self.assertFalse(server._request_is_loopback(request))
                 request.client = "original-loopback"
                 self.assertTrue(server._request_is_loopback(request))
+                request.client = "gateway"
+                self.assertTrue(server._request_is_loopback(request))
+                self.assertFalse(server._request_is_loopback(request, allow_gateway_peer=False))
             for path in ("/stats/clear", "/config", "/v1/chat/completions"):
                 request = types.SimpleNamespace(client=None, scope={"path": path},
                     headers={"host": "127.0.0.1", "x-headroom-desktop-control": SECRET})
