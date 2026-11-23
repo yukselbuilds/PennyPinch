@@ -1,12 +1,12 @@
 # Desktop platform validation, 19 November 2026
 
-These checks used candidate commit 10f32e3. Windows 10 22H2 x64 is the first release target. The macOS and Linux checks used CircleCI Free. Windows 11 x64 verification is pending.
+The initial checks below used commit 10f32e3. The macOS and Linux checks in the table used CircleCI Free. Windows 10 22H2 x64 is the first release target. Windows 11 x64 verification is pending.
 
 | Environment | Verified coverage | Open acceptance criteria |
 | --- | --- | --- |
 | Windows 10 22H2 x64, build 19045 | The current NSIS package installed. All 19,484 resources matched the receipt. The native window opened, and the 0.44.0 engine answered a local HTTP request. The app exited normally and the test installation was removed. | A clean Windows environment without WebView2, real client traffic against the installed candidate and download from the release URL require further verification. |
 | macOS 15 ARM64, CircleCI M4 Pro | The 0.44.0 engine passed a local traffic test. The ARM64 application bundle was built and its ad hoc signature and contents were verified. | The application process started. AppleScript timed out with −1712 on two attempts to inspect the window. The native window and engine lifecycle checks remain open. [Run 5](https://app.circleci.com/pipelines/circleci/KoDRDU6JmR6wiWsrCamPDH/b460f300-344a-4d50-8849-edc9e66c82b8/5/details) |
-| Ubuntu 24.04 x64, CircleCI | TypeScript/Vite and Rust builds passed. The ELF application opened a visible window under Xvfb. The Rust suite recorded 220 passes, 81 failures and 2 skipped tests. | H049 covers client configuration, file ownership and engine ports. Installer and engine lifecycle checks remain open. [Run 6](https://app.circleci.com/pipelines/circleci/KoDRDU6JmR6wiWsrCamPDH/b460f300-344a-4d50-8849-edc9e66c82b8/6/details) |
+| Ubuntu 24.04 x64, CircleCI | The frontend and Rust builds passed. The window opened under Xvfb. The Rust suite recorded 220 passes, 81 failures, and 2 skipped tests. [Run 6](https://app.circleci.com/pipelines/circleci/KoDRDU6JmR6wiWsrCamPDH/b460f300-344a-4d50-8849-edc9e66c82b8/6/details) | Later checks covered installation and the engine lifecycle. [Linux validation](linux.md) |
 
 ## Linux configuration reads, 23 November 2026
 
@@ -45,7 +45,8 @@ The app reopened saved choices. Separate tests checked concurrent writers and pr
 The Linux app requires ext4 for selection and client configuration writes.
 The Windows 10 product gate passed. The macOS ARM64 rerun awaits runner capacity. [H049-b4 evidence](../proofs/h049-linux-discovery.json)
 
-Linux package checks, real client processes, and live provider traffic require separate checks.
+The Ubuntu 24.04 x64 package passed installation, engine control, exit, and package purge.
+Real client processes and live provider traffic require separate checks. [Linux validation](linux.md)
 
 <a name="windows-10-kurulumu"></a>
 

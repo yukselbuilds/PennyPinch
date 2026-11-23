@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "task": "H049-c",
+  "date": "2026-11-23",
+  "source_commit": "ed7e85b48f3473b0239a17f51ee876a85a8614d4",
+  "source_tree": "d2d41c3107c4fc570dd9edeb1bdb2e0c42d0be3e",
+  "implementation": {
+    "package_and_installation": "lead_agent",
+    "installed_ui_probe": "lead_agent",
+    "worker_draft": "GPT-6 Luna xhigh",
+    "takeover_reason": "Remove duplicate process checks and use the existing Unix readiness probe.",
+    "native_probe_corrections": 2,
+    "development_token_savings": "unmeasured"
+  },
+  "linux": {
+    "source_commit": "ed7e85b48f3473b0239a17f51ee876a85a8614d4",
+    "source_tree": "d2d41c3107c4fc570dd9edeb1bdb2e0c42d0be3e",
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45235051126",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45235051126/job/137904425878",
+    "runner": "Ubuntu 24.04 x64 standard GitHub-hosted",
+    "job_duration_seconds": 365,
+    "conclusion": "success",
+    "inputs_before_after_match": true,
+    "version": "0.1.0",
+    "package_bytes": 265384382,
+    "package_sha256": "b4592663673467e81954d683c816d4cc8dbb751b47f1f3ddb6581f2407293db5",
+    "manifest_sha256": "ffde10c97dfac85770aa7c005b54f8962abd2ab683600bfedbfbac4f7d83a669",
+    "input_sha256": "357628d72b666a8b765f3daa5a2fc2d2c693ff0a8555af5e37dfa8c6c055bdce"
+  },
+  "windows_10": {
+    "runner": "Windows 10 22H2 x64",
+    "passed": true,
+    "inputs_before_after_match": true,
+    "input_sha256": "8d8e7598ab2e160ace59eea00f5bbf872010db9cd1f9465e430dbce9b5cdf9ac",
+    "input_count": 505,
+    "checks": {
+      "app_tests": {
+        "exit": 0,
+        "seconds": 1.329,
+        "rust": [],
+        "node": {
+          "tests": "227",
+          "pass": "227",
+          "fail": "0",
+          "skipped": "0"
+        },
+        "python": [],
+        "failures": []
+      },
+      "frontend": {
+        "exit": 0,
+        "seconds": 1.558,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_fmt": {
+        "exit": 0,
+        "seconds": 1.248,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_tests": {
+        "exit": 0,
+        "seconds": 13.66,
+        "rust": [
+          "test result: ok. 481 passed; 0 failed; 25 ignored; 0 measured; 0 filtered out; finished in 12.90s"
+        ],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "embedded_debug": {
+        "exit": 0,
+        "seconds": 6.431,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      }
+    }
+  },
+  "observed": [
+    "Tauri Debian package and desktop entry on Ubuntu 24.04 x64",
+    "root-owned installed files and matching engine payload",
+    "owned Headroom 0.44.0 processes in two native UI starts",
+    "engine stop and private socket cleanup",
+    "confirmed app exit and loopback listener cleanup",
+    "package purge and separate user state retained"
+  ],
+  "limits": {
+    "scope": "Ubuntu 24.04 x64 with ext4 and Xvfb",
+    "live_provider_traffic": "not_tested",
+    "other_linux_distributions_and_architectures": "not_tested",
+    "linux_release": "not_published",
+    "macos_discovery_regression": "not_tested"
+  }
+}

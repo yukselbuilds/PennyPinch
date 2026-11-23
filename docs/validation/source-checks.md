@@ -36,6 +36,11 @@ Select `linux_cli_discovery` to check native CLI discovery and saved choices.
 The test checks archive integrity and extracts the three pinned Linux x64 executables.
 It scans a private home and PATH without launching the clients. [Discovery evidence](../proofs/h049-linux-discovery.json)
 
+## Optional Ubuntu package check
+
+Select `linux_package` to build and install the Ubuntu 24.04 x64 Debian package.
+The job checks the installed window, engine, file ownership, and package purge. [Linux validation](linux.md)
+
 ## Optional Linux engine check
 
 Select `linux_engine` to verify the pinned engine on Ubuntu 24.04 x64.
@@ -55,4 +60,4 @@ These limits apply to the default frontend run.
 
 This gate does not run the historical Python protocol/client proof helpers: several import helper modules from ignored `work/proofs/...` paths. It does not run the Python engine smoke or `scripts/package-engine.ps1`; those need the separately provisioned Windows Python/runtime payload and packaging inputs described by [`runtime/manifest.json`](../../runtime/manifest.json). It does not compile or test the Tauri/Rust native backend.
 
-The Windows runtime and filesystem transaction paths are platform-specific. Non-Windows Rust fallbacks report unsupported behavior, so a Linux or macOS frontend check is not evidence of native runtime support on those systems. Windows 11 and clean-machine engine startup remain separate validation items. This source gate alone makes no engine, client-compatibility, installer, or cross-platform support claim.
+Native runtime and filesystem transaction checks use platform-specific backends. The default job covers the frontend tests and build. See the [platform validation matrix](desktop-platforms.md) for native evidence.

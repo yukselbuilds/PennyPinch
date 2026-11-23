@@ -2,7 +2,7 @@
 
 ## Current status
 
-**45 of 54 main tasks are complete.** H042 passed its Windows 10 release checks. Windows 11 x64 update and rollback remain open. H041 remains open and deferred. [Task list](../TASKS.md)
+**46 of 54 main tasks are complete.** H042 passed its Windows 10 release checks. Windows 11 x64 update and rollback remain open. H041 remains open and deferred. [Task list](../TASKS.md)
 
 PennyPinch v0.1.1-preview.3 is available for Windows 10 22H2 x64. The full installer updates OpenTelemetry API and Tokio. Both public downloads matched their SHA-256 digests. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.3) · [Publication evidence](proofs/pennypinch-windows10-preview3-publication.json)
 
@@ -13,7 +13,9 @@ Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b
 The lead agent completed H049-b3 on Ubuntu 24.04 x64. The desktop manager ran Headroom 0.44.0 and forwarded a local Responses stream from the saved Codex endpoint.
 Apply and Undo passed for isolated Codex, Claude Code, and OpenCode settings. [H049-b3 evidence](proofs/h049-linux-managed.json)
 
-Ubuntu 24.04 x64 passed H049-b4. PennyPinch found the three pinned native CLI files without launching them. The app saved explicit choices and restored them on the next scan. Next, check the Linux package and app behavior after installation. [H049-b4 evidence](proofs/h049-linux-discovery.json)
+Ubuntu 24.04 x64 passed H049-b4. PennyPinch found the three pinned native CLI files without starting them. The app saved explicit choices and restored them on the next scan. [H049-b4 evidence](proofs/h049-linux-discovery.json)
+
+H049 is complete for Ubuntu 24.04 x64. The installed Debian package passed the native window and engine lifecycle checks. The package is a CI test candidate. Distribution release checks remain separate. [Linux validation](validation/linux.md)
 
 The macOS ARM64 regression check remains open. GitHub cancelled the run before it assigned a runner. Rerun the CLI discovery check when a runner is available. [macOS job](https://github.com/yukselbuilds/PennyPinch/actions/runs/45223891265/job/137865111090)
 

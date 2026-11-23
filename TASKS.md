@@ -7,7 +7,7 @@
 
 **First-use priority** The Windows 10 preview ZIP is ready for local testing. [Windows 10 delivery evidence](docs/proofs/pennypinch-windows10-activity-delivery.json)
 
-**45 of 54 main tasks are complete.** H001–H005, H007–H036, H038–H040, H043, H045–H048 and H050–H051 are closed within their recorded acceptance scopes. H042 passed its Windows 10 release checks. Windows 11 x64 remains open.
+**46 of 54 main tasks are complete.** H001–H005, H007–H036, H038–H040, H043 and H045–H051 meet their recorded acceptance criteria. H042 passed its Windows 10 release checks. Windows 11 x64 remains open.
 
 | Open work | Condition for proceeding |
 | --- | --- |
@@ -15,7 +15,6 @@
 | H041 · Additional acceptance | Other live protocols and API-key checks need authorized access. The 0.44.0 macOS ARM64 engine and package passed. Native window acceptance remains open. Windows 11 verification was deferred. The Serena pilot is complete. Broader Learn acceptance remains open. Experimental e3 is on hold, and e4 depends on e3 acceptance. [Platform tests](docs/validation/desktop-platforms.md) · [Open work items](#h041--cache-bütünlük-ve-gecikmefayda-regresyonu) |
 | H006, H037 and H042 · External environments and release | H006 needs clean Windows 10 and Windows 11 x64 environments. H037 also needs installation without WebView2 and an interrupted download from the release URL. H042 needs Windows 11 x64 update and rollback acceptance. |
 | H044 · Ripgrep candidate | Adding RTK to Headroom saved two more tokens per first request in the Windows 10 fixture. It added a recovery step. Installation remains open. [Evidence](docs/proofs/rtk-1.2.1-rg-paired.json) |
-| H049 · Active | Ubuntu passed managed engine, client discovery, and saved choice checks. Linux package and installed lifecycle checks remain open. [Linux discovery evidence](docs/proofs/h049-linux-discovery.json) |
 | H052, H053 and H054 · Deferred | The Cloudflare account shows Workers Free. H052 needs a confirmed controller, processor terms, and transfer basis for live reports. H053 and H054 depend on the service. [Privacy decision](docs/decisions/032-usage-sharing-privacy.md) |
 
 Windows development and packaging use Headroom **0.44.0**. H048's native macOS 15.8.2 Apple Silicon acceptance covers **0.41.0**. H050 account connections and H051 chat metadata and navigation passed on Windows 10. Each additional operating system, new sign-in and production release requires its own evidence. [Engine transition](docs/proofs/headroom-044-upgrade.json) · [H048](docs/proofs/macos-acceptance.json) · [H050](docs/proofs/accounts.md) · [H051](docs/proofs/sessions.md)
@@ -1066,8 +1065,8 @@ These three tasks do not expand the required installation for the first release.
 <a name="h049--linux-portu-paketleme-ve-native-kabul"></a>
 
 ### H049 — Linux port, packaging, and native acceptance
-- [ ] Port the Tauri/Rust app and pinned runtime to Linux, and verify the local package and real native lifecycle.
-- **Status.** Ubuntu 24.04 x64 builds the desktop and opens it under Xvfb. The earlier full Linux Rust suite recorded 81 failures. The focused checks cover configuration and the pinned engine. [Platform tests](docs/validation/desktop-platforms.md)
+- [x] Port the Tauri app and pinned engine to Ubuntu 24.04 x64. Check the installed package and native app lifecycle.
+- **Status.** Ubuntu 24.04 x64 passed the package and installed lifecycle checks. The earlier full Linux Rust suite recorded 81 failures. The acceptance used focused native checks. [Linux validation](docs/validation/linux.md)
 - **Slices.** H049-a port and build, H049-b pinned engine and config transaction adaptation, and H049-c native package and real lifecycle acceptance. Each slice starts with 1–5 source files. The main task stays open until all three finish.
 - [x] **H049-sec1 — glib security fix.** Applied the upstream fix to the Linux GTK3 dependency. The locked Ubuntu 24.04 x64 build opened a PennyPinch window under Xvfb. Dependabot closed alert #2 as fixed. [Evidence](docs/proofs/glib-0429-linux-backport.json)
 - [x] **H049-b1 — Linux configuration reads and file ownership.** Ubuntu passed four checks for client configuration reads, unsafe paths, file identity, and private ownership state. The Windows 10 product checks and the macOS ARM64 configuration check passed. [Evidence](docs/proofs/h049-linux-config.json)
@@ -1076,10 +1075,11 @@ These three tasks do not expand the required installation for the first release.
   - [x] Verify the pinned engine with an owned Unix socket. Ubuntu passed two start, stream, and stop cycles. [Engine evidence](docs/proofs/h049-linux-engine.json)
   - [x] The desktop manager routed a local Responses stream from the saved Codex endpoint. Apply and byte-exact Undo passed for three isolated CLI profiles. [Managed engine evidence](docs/proofs/h049-linux-managed.json)
 - [x] **H049-b4 — Linux CLI discovery and saved choices.** Ubuntu detected three pinned native CLI files without launching them. The scan created no app state. Explicit choices reopened and matched the next scan. [Discovery evidence](docs/proofs/h049-linux-discovery.json)
+- [x] **H049-c — Ubuntu package and installed lifecycle.** The Debian package installed. The desktop controls started, stopped, and restarted the engine. The app exited normally. Package purge retained the separate user state. [Package evidence](docs/proofs/h049-linux-package.json)
 - **Acceptance.** Check the package format, display behavior, session behavior, and file ownership on Linux. Run the native checks on the free standard `ubuntu-24.04` GitHub runner.
 - **Verification.** Manually dispatch a free standard hosted Linux job for typecheck, build, native start and stop, and clean local state. Verify platform-specific atomic config transactions, network binding, and shutdown. Native acceptance requires runtime evidence.
 - **Dependencies and size.** H019, H047 / L. Follows the first working Windows slice.
-- **Files.** Platform runtime, packaging, and tests, plus `docs/validation/linux.md` (planned).
+- **Files.** Platform runtime, packaging, tests, and [Linux validation](docs/validation/linux.md).
 
 <a name="hesaplar-ve-sohbetler--24-ekim-kullanıcı-isteği"></a>
 
