@@ -4,7 +4,7 @@
 
 **45 of 54 main tasks are complete.** H042 passed its Windows 10 release checks. Windows 11 x64 update and rollback remain open. H041 remains open and deferred. [Task list](../TASKS.md)
 
-PennyPinch v0.1.1-preview.1 for Windows 10 22H2 x64 is available from GitHub Releases. The ZIP includes the installer, the PennyPinch license, and the matching notices. Anonymous downloads matched both asset digests. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.1) · [Publication evidence](proofs/pennypinch-windows10-installed-update-and-release.json)
+PennyPinch v0.1.1-preview.3 is available for Windows 10 22H2 x64. The full installer updates OpenTelemetry API and Tokio. Both public downloads matched their SHA-256 digests. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.3) · [Publication evidence](proofs/pennypinch-windows10-preview3-publication.json)
 
 macOS ARM64 passed native desktop development checks with engine 0.41.0. The later 0.44.0 engine and package passed. Native window acceptance for 0.44.0 remains open. The Ubuntu x64 build opened a window. Linux runtime tests and packaging remain open. [Platform status](validation/desktop-platforms.md)
 
@@ -46,9 +46,9 @@ Tokio 1.54.1 passed the Windows 10 product gate and signed update package checks
 
 OpenTelemetry API 1.45.2 passed the Windows 10 product gate, the staged engine lifecycle test, and a local Responses stream. The local NSIS installer contains the patched package. Existing installations require the full installer for the new engine resources. Linux GTK has a separate update check. [OpenTelemetry verification](proofs/opentelemetry-windows-1452.json)
 
-The local 0.1.1-preview.3 full installer upgraded the public Windows 10 preview. The installed runtime reports OpenTelemetry API 1.45.2. The app kept the test preferences and started and stopped the engine. Publication and Windows 11 checks remain open. [Installed verification](proofs/opentelemetry-windows-installed-upgrade.json)
+The local 0.1.1-preview.3 full installer upgraded the public Windows 10 preview. The installed runtime reports OpenTelemetry API 1.45.2. The app kept the test preferences and started and stopped the engine. Windows 11 checks remain open. [Installed verification](proofs/opentelemetry-windows-installed-upgrade.json)
 
-The local 0.1.1-preview.3 delivery ZIP, external checksum, and release notes are ready. Windows extraction matched 677 internal digests and the installer from H042-ae. The next step is the GitHub prerelease for this full installer. Windows 11 checks remain open. [Delivery evidence](proofs/pennypinch-windows10-preview3-delivery.json) · [Release notes](releases/0.1.1-preview.3-windows10.md)
+The v0.1.1-preview.3 ZIP passed Windows extraction with 677 matching digests. The signed update files kept their recorded digests. [Delivery evidence](proofs/pennypinch-windows10-preview3-delivery.json) · [Release notes](releases/0.1.1-preview.3-windows10.md)
 
 ## History
 

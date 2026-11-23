@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "task": "H042-ag",
+  "scope": "Public Windows 10 22H2 x64 security preview",
+  "owner": "lead agent",
+  "publication": {
+    "passed": true,
+    "release": {
+      "id": 455286345,
+      "html_url": "https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.3",
+      "tag_name": "v0.1.1-preview.3",
+      "name": "PennyPinch v0.1.1-preview.3 for Windows 10",
+      "draft": false,
+      "prerelease": true,
+      "published_at": "2026-11-23T10:48:21Z",
+      "target_commitish": "f1cc712fa5470e9bc37a55b1f65276ecf14ad129"
+    },
+    "tag_source": "f1cc712fa5470e9bc37a55b1f65276ecf14ad129",
+    "notes_match_local": true,
+    "published_release_list_matches": true,
+    "anonymous_assets": [
+      {
+        "name": "PennyPinch_0.1.1-preview.3_Windows_x64_preview.zip",
+        "id": 782551719,
+        "status": 200,
+        "sha256": "919bbea5778c0a145c3c5f4d93e9f122fc2c9e455e78ec0e70d0fd9417e5ce21",
+        "bytes": 126761252
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "id": 782557907,
+        "status": 200,
+        "sha256": "1dead6dee8de79b7f5b9e8438b897e840e0366f81fb77b598671d527ea625530",
+        "bytes": 117
+      }
+    ],
+    "checksum_entry_matches_archive": true,
+    "local_delivery_evidence_sha256": "462b652ae94a8e5468c7dd4a1317ca984cdc73b6066e21b189cd386ef9c27584",
+    "seconds": 37.017
+  },
+  "public_project_site": {
+    "passed": true,
+    "source": "7c915158eb586854bda1642d8c730a30ae8f2985",
+    "changed_download_links": 3,
+    "anonymous_pages_sha256": {
+      "index.html": "64c4d13118bb3d2766a9bae04caeebb302d634ecb5235da6cd6a6d99a9d2697c",
+      "updates/index.html": "18c6318fcc255df4744bc7157b6db0f869c707056d0faa4bd5bee2f61b813f4d"
+    },
+    "signed_update_files_sha256": {
+      "updates/preview/Headroom_0.1.1-preview.2_x64-update.exe": "15708a3d73f2cf1da8612fc05b8eb832c89d8fe9073c2724b0672b5ed7daf567",
+      "updates/preview/manifest.json": "413ddd1db7d4c7733b7aeed980f8fd915312985eb2f00e571c4f92d366c7f598",
+      "updates/preview/manifest.json.sig": "8f9ab96f0e27d6f590d3a8f374158ab3a9f4d9a07f330f5d9327c4e70fa4900d"
+    },
+    "signed_update_version": "0.1.1-preview.2",
+    "signed_update_files_match_previous_branch": true,
+    "seconds": 2.735
+  },
+  "main_download_document_sha256": {
+    "README.md": "462e324b903ac22f0b02891d03c382602418b681f3c3f5333d45da920a13f731",
+    "docs/USER_GUIDE.md": "7f555e4992f781e82f9df2f6e0859a69e2cde1be282566e807e8b0bd2518530f"
+  },
+  "limits": {
+    "windows_11_x64": "not_tested",
+    "published_installer_authenticode": "NotSigned",
+    "manual_ci_workflow_dispatches": 0,
+    "provider_requests": 0,
+    "development_token_savings": "not_measured"
+  }
+}
