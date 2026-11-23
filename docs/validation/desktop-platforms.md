@@ -68,6 +68,10 @@ Headroom 0.45.0 changed the argument list for its private status check. The Unix
 
 Ubuntu 24.04 x64 passed the installed package test. The native app started, stopped, and restarted the engine. Both processes closed on exit. [Package and adapter evidence](../proofs/headroom-045-managed-packages.json).
 
+On macOS 26.7.2 ARM64, the test package matched the staged runtime inventory. The native app started Headroom 0.45.0. Codex Desktop 26.1106.51428 showed the partial and final response from a loopback fixture. The collector stored usage records for the selected model. Both apps exited normally. The Headroom process and listener closed.
+
+The native probe reported a pass. The workflow logged the same input fingerprint before and after the probe. GitHub marked the job cancelled at its 28-minute limit. This verifies the local package and controlled turn. [Managed package evidence](../proofs/headroom-045-managed-packages.json) · [macOS job](https://github.com/yukselbuilds/PennyPinch/actions/runs/45271792284/job/138033215147).
+
 <a name="windows-10-kurulumu"></a>
 
 ## Windows 10 installation

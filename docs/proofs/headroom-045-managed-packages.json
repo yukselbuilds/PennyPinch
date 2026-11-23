@@ -59,7 +59,7 @@
     ]
   },
   "macos_26_arm64": {
-    "status": "verification_in_progress",
+    "status": "pass",
     "prior_runs": [
       {
         "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45262361485",
@@ -72,6 +72,52 @@
     ],
     "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45271792284",
     "retry_candidate": "34782f75d2e648a834679021ad2754742ae16872",
-    "scope": "Standard macOS 26 ARM64 runner, QA bundle and controlled Codex Desktop turn"
+    "scope": "Standard macOS 26 ARM64 runner, QA bundle and controlled Codex Desktop turn",
+    "workflow_conclusion": "cancelled",
+    "workflow_note": "The native probe and input comparison finished at the job limit. GitHub marked the overall job cancelled.",
+    "job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45271792284/job/138033215147",
+    "platform": "macOS 26.7.2 ARM64",
+    "inputs_sha256_before_and_after": "3ba619247a6e682805d068f39f36eeb2ade42cfd0943137c94b3efef02c1be2c",
+    "candidate_differences": [
+      ".github/workflows/macos-package.yml",
+      "scripts/build-macos.sh"
+    ],
+    "qa_signature": "ad_hoc_verified",
+    "bundle_before_and_after": {
+      "bundle_unchanged": true,
+      "manifest_sha256": "c60b9d23730dd85e3e1adca82193f928007ae4177d1a26307401fb48066db893",
+      "payload_bytes": 613943435,
+      "payload_files": 17133,
+      "payload_inventory_sha256": "0e17b184227b6572a4a9e16531797283fc81c393afb71ba7becbe716a3b98461",
+      "source_unchanged": true,
+      "status": "verified"
+    },
+    "codex_desktop_version": "26.1106.51428",
+    "codex_backend_version": "codex-cli 0.167.0-alpha.4.1",
+    "model": "gpt-5.2-codex",
+    "reasoning_effort": "medium",
+    "fixture": {
+      "accepted_response_count": 1,
+      "auth_mismatch_count": 0,
+      "input_nonce_match_count": 5,
+      "model_match_count": 3,
+      "partial_sent": true,
+      "reasoning_match_count": 3,
+      "terminal_sent": true
+    },
+    "metrics": {
+      "matched_rows": 3,
+      "model_matches": true,
+      "source": "actual_headroom_collector",
+      "stored_events": 8
+    },
+    "partial_visible_before_terminal": true,
+    "final_visible": true,
+    "codex_desktop_normal_exit": true,
+    "packaged_headroom_normal_exit": true,
+    "headroom_engine_exited": true,
+    "headroom_listener_released": true,
+    "live_provider_traffic": "not_tested",
+    "receipt_sha256": "8bc1bf7f5a98b40c6a434311e11ace616cb4fd23d7e528e4b67768f4f0d929ad"
   }
 }

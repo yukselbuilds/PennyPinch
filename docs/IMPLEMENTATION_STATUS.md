@@ -15,9 +15,11 @@ HTML extraction returned F1 of 0.9168. The tests used local fixtures and zero mo
 
 The lead agent updated the Unix status adapter. The local window build and quality gate passed with 522 matching inputs.
 The Ubuntu 24.04 x64 package passed install, start, stop, restart, exit, and purge checks on GitHub Actions.
-The macOS package run reached its 20-minute limit during the build step. A retry records the build phases. Check the controlled Codex Desktop turn, its stored measurement, and normal exit. [macOS retry](https://github.com/yukselbuilds/PennyPinch/actions/runs/45271792284).
+The macOS 26 ARM64 package passed a controlled Codex Desktop turn, stored local usage, and exited normally. The probe and input comparison finished at the time limit. GitHub marked the overall job cancelled. [Native job](https://github.com/yukselbuilds/PennyPinch/actions/runs/45271792284).
 Luna reviewed the upstream sources. Development token savings remain unknown.
 [Package and adapter evidence](proofs/headroom-045-managed-packages.json)
+
+The 0.45.0 transition check is complete. The next restricted-file check requires a supported Codex sandbox. Observe an allowed read and an explicit denial. [Open H041 criteria](validation/optimization-benefit.md#open-h041-acceptance-criteria).
 
 Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b2 evidence](proofs/h049-linux-transaction.json)
 
