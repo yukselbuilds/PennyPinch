@@ -39,7 +39,7 @@ sudo -n unshare --net /bin/bash -euc '
   > "$log" 2>&1 || status=$?
 test "$before" = "$(fingerprint)"
 awk '/^test .* \.\.\. (ok|FAILED)$|^test result:|^headroom-macos-error=|^Linux engine proof/ { print substr($0, 1, 220) }
-     /panicked at|^assertion|^  left:|^ right:/ && ++count <= 12 { print substr($0, 1, 220) }' "$log"
+     /panicked at|^assertion|^  left:|^ right:|^(save|start)_error=/ && ++count <= 12 { print substr($0, 1, 220) }' "$log"
 test "$status" -eq 0
 grep -q '^test runtime::manager::macos_tests::managed_app_engine_lifecycle \.\.\. ok$' "$log"
 grep -q '^test .*::managed_engine_routes_an_isolated_connection_and_undoes_all_client_configs \.\.\. ok$' "$log"

@@ -229,7 +229,7 @@ impl PreferenceStore {
     /// Create a store without touching disk. Invalid or unavailable roots are
     /// retained as a fixed error so app setup and the runtime manager survive.
     pub fn new(app_data_dir: Option<PathBuf>) -> Self {
-        let location = if cfg!(debug_assertions) && !cfg!(target_os = "macos") {
+        let location = if cfg!(debug_assertions) && cfg!(windows) {
             let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
             manifest_dir
                 .parent()
@@ -484,7 +484,7 @@ impl StoreLocation {
                     if !create {
                         return Ok(None);
                     }
-                    #[cfg(target_os = "macos")]
+                    #[cfg(any(target_os = "macos", target_os = "linux"))]
                     {
                         use std::os::unix::fs::DirBuilderExt;
                         match fs::DirBuilder::new().mode(0o700).create(&current) {
@@ -493,7 +493,7 @@ impl StoreLocation {
                             Err(_) => return Err(StoreError::EnvironmentBlocked),
                         }
                     }
-                    #[cfg(not(target_os = "macos"))]
+                    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
                     fs::create_dir(&current).map_err(|_| StoreError::EnvironmentBlocked)?;
                     let metadata = fs::symlink_metadata(&current)
                         .map_err(|_| StoreError::EnvironmentBlocked)?;
@@ -754,7 +754,7 @@ fn write_state_bytes(
     let result = (|| {
         let mut options = OpenOptions::new();
         options.write(true).create_new(true);
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         {
             use std::os::unix::fs::OpenOptionsExt;
             options.mode(0o600);
@@ -860,7 +860,7 @@ fn sync_directory(path: &Path) -> Result<(), StoreError> {
 struct StoreLock {
     #[cfg(windows)]
     handle: windows_sys::Win32::Foundation::HANDLE,
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     _file: Option<File>,
 }
 
@@ -894,7 +894,7 @@ impl StoreLock {
                 Err(StoreError::EnvironmentBlocked)
             }
         }
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         {
             use std::os::fd::AsRawFd;
             use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
@@ -951,7 +951,7 @@ impl StoreLock {
             }
             Ok(Self { _file: Some(file) })
         }
-        #[cfg(not(any(windows, target_os = "macos")))]
+        #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
         {
             let _ = location;
             Err(StoreError::EnvironmentBlocked)

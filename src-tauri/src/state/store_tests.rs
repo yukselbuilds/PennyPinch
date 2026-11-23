@@ -191,7 +191,7 @@ fn invalid_extension_disables_the_preview_and_preserves_core_settings_and_confli
 }
 
 #[test]
-#[cfg(any(windows, target_os = "macos"))]
+#[cfg(any(windows, target_os = "macos", target_os = "linux"))]
 fn concurrent_readers_restore_saved_appearance() {
     let fixture = Fixture::new();
     snapshot(fixture.store.save_preferences(
@@ -231,7 +231,7 @@ fn concurrent_readers_restore_saved_appearance() {
 }
 
 #[test]
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 fn redirected_preference_lock_preserves_both_files() {
     let fixture = Fixture::new();
     snapshot(fixture.store.save_preferences(

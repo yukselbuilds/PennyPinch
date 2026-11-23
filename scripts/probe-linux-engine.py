@@ -235,6 +235,7 @@ def probe_managed(root, test_binary):
         result = subprocess.run(
             [str(test_binary), "runtime::manager::macos_tests::managed_app_engine_lifecycle",
              "runtime::ingress::tests::", "runtime::ingress_relay::tests::", "runtime::unix_backend::tests::",
+             "state::store_tests::",
              "linux_config_tests::managed_engine_routes_an_isolated_connection",
              "--include-ignored", "--test-threads=1"],
             env={
