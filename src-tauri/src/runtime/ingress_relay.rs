@@ -11,11 +11,11 @@ use std::io::{self, Read, Write};
 #[cfg(windows)]
 use std::net::SocketAddrV4;
 use std::net::{Shutdown, SocketAddr, TcpListener, TcpStream};
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 use std::path::PathBuf;
 #[cfg(windows)]
 type BackendStream = TcpStream;
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 type BackendStream = std::os::unix::net::UnixStream;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -36,7 +36,7 @@ const ACCEPT_JOIN_RESERVE: Duration = Duration::from_millis(50);
 pub struct BackendTarget {
     #[cfg(windows)]
     address: SocketAddrV4,
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     socket_path: PathBuf,
     generation: Uuid,
     expected_engine_pid: u32,
@@ -62,7 +62,7 @@ impl BackendTarget {
         })
     }
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     pub fn new_unix(
         socket_path: PathBuf,
         generation: Uuid,
@@ -262,7 +262,7 @@ pub struct IngressRelay {
 }
 
 impl IngressRelay {
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     pub fn owns_endpoint(&self) -> bool {
         self.is_accepting() && self.stable.as_ref().is_some_and(StableIngress::is_owned)
     }
@@ -658,7 +658,7 @@ fn run_connection(
     let Ok(backend) = TcpStream::connect_timeout(&backend_address, limits.connect_timeout) else {
         return Err(RelayError::ConnectFailed);
     };
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     let backend = crate::runtime::unix_backend::UnixTarget {
         socket_path: &target.socket_path,
         expected_pid: target.expected_engine_pid,
@@ -939,6 +939,6 @@ fn check_deadlines(session: &ConnectionControl, limits: RelayLimits) -> Result<(
 #[path = "ingress_relay_tests.rs"]
 mod tests;
 
-#[cfg(all(test, target_os = "macos"))]
+#[cfg(all(test, any(target_os = "macos", target_os = "linux")))]
 #[path = "ingress_relay_macos_tests.rs"]
 mod tests;

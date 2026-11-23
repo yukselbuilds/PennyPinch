@@ -1,4 +1,4 @@
-//! Own one macOS engine process, its parent-pipe lifetime and inherited state lock.
+//! Own one Unix engine process, its parent pipe and inherited state lock.
 
 use super::control::{self, ControlError, ControlOperation, OptimizationState};
 use super::ingress_relay::BackendTarget;
@@ -444,10 +444,7 @@ fn check_startup(deadline: Instant, shutting_down: &AtomicBool) -> Result<(), Ma
 fn create_endpoint_directory(state: &Path, generation: &str) -> Result<PathBuf, MacRuntimeError> {
     let mut directory = state.join(format!("e-{}", &generation[..8]));
     if directory.join("s").as_os_str().as_bytes().len() >= 104 {
-        // Darwin's socket address limit can be shorter than the user's app data path.
-        let temporary =
-            fs::canonicalize(std::env::temp_dir()).map_err(|_| MacRuntimeError::UnsafeState)?;
-        private_directory(&temporary)?;
+        let temporary = socket_parent()?;
         directory = temporary.join(format!("hr-{}", &generation[..16]));
         if directory.join("s").as_os_str().as_bytes().len() >= 104 {
             return Err(MacRuntimeError::UnsafeState);
@@ -458,6 +455,27 @@ fn create_endpoint_directory(state: &Path, generation: &str) -> Result<PathBuf, 
         .create(&directory)
         .map_err(|_| MacRuntimeError::UnsafeState)?;
     Ok(directory)
+}
+
+fn socket_parent() -> Result<PathBuf, MacRuntimeError> {
+    #[cfg(target_os = "linux")]
+    if let Some(runtime) = std::env::var_os("XDG_RUNTIME_DIR") {
+        let runtime = PathBuf::from(runtime);
+        private_directory(&runtime)?;
+        return Ok(runtime);
+    }
+    let temporary =
+        fs::canonicalize(std::env::temp_dir()).map_err(|_| MacRuntimeError::UnsafeState)?;
+    #[cfg(target_os = "linux")]
+    if temporary == Path::new("/tmp") {
+        let info = fs::symlink_metadata(&temporary).map_err(|_| MacRuntimeError::UnsafeState)?;
+        // Exclusive creation under the root-owned sticky directory protects the new name.
+        if info.is_dir() && info.uid() == 0 && info.mode() & 0o7777 == 0o1777 {
+            return Ok(temporary);
+        }
+    }
+    private_directory(&temporary)?;
+    Ok(temporary)
 }
 
 fn remove_endpoint(

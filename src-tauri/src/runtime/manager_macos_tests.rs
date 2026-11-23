@@ -16,10 +16,12 @@ impl Drop for ShutdownOnDrop {
 }
 
 fn isolated_paths() -> (PathBuf, PathBuf) {
-    let runtime = PathBuf::from(
-        std::env::var_os("HEADROOM_MACOS_RUNTIME_ROOT")
-            .expect("CI must provide HEADROOM_MACOS_RUNTIME_ROOT"),
-    );
+    let runtime_env = if cfg!(target_os = "linux") {
+        "HEADROOM_LINUX_RUNTIME_ROOT"
+    } else {
+        "HEADROOM_MACOS_RUNTIME_ROOT"
+    };
+    let runtime = PathBuf::from(std::env::var_os(runtime_env).expect("pinned runtime path"));
     assert!(runtime.is_absolute());
     assert_eq!(
         runtime.file_name().and_then(|name| name.to_str()),
@@ -34,8 +36,7 @@ fn isolated_paths() -> (PathBuf, PathBuf) {
         .to_path_buf();
 
     let proof_root = PathBuf::from(
-        std::env::var_os("HEADROOM_MACOS_PROOF_ROOT")
-            .expect("CI must provide HEADROOM_MACOS_PROOF_ROOT"),
+        std::env::var_os(crate::runtime::ENGINE_PROOF_ENV).expect("private engine proof path"),
     );
     assert!(proof_root.is_absolute());
     let proof_info = fs::symlink_metadata(&proof_root).expect("private proof root exists");
@@ -146,7 +147,7 @@ fn assert_no_route(port: u16) {
 }
 
 #[test]
-#[ignore = "opt-in pinned macOS runtime manager lifecycle; local readiness and stats only, no provider API"]
+#[ignore = "requires a pinned native runtime and an isolated state directory"]
 fn managed_app_engine_lifecycle() {
     use crate::state::store::{OperatingPreferences, PreferenceStore, PreferencesReply};
     let (resources, state) = isolated_paths();
@@ -290,8 +291,13 @@ fn managed_app_engine_lifecycle() {
     )
     .is_err());
 
-    let foreign =
-        TcpListener::bind((Ipv4Addr::LOCALHOST, port)).expect("foreign saved-port listener");
+    let socket = socket2::Socket::new(socket2::Domain::IPV4, socket2::Type::STREAM, None).unwrap();
+    socket.set_reuse_address(true).unwrap();
+    socket
+        .bind(&SocketAddr::from((Ipv4Addr::LOCALHOST, port)).into())
+        .expect("foreign saved-port listener");
+    socket.listen(1).unwrap();
+    let foreign = TcpListener::from(socket);
     let conflicted = RuntimeManager::new(Some(resources.clone()), Some(state.clone()));
     let _conflict_cleanup = ShutdownOnDrop(conflicted.clone());
     assert_error(

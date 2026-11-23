@@ -1,4 +1,4 @@
-"""Stage a pinned, relocatable macOS engine payload without replacing output."""
+"""Stage a pinned Unix engine payload without replacing output."""
 
 import argparse
 import ctypes
@@ -133,7 +133,10 @@ def _publish_exclusive(source, destination):
         raise OSError(code, "atomic_exclusive_rename_failed")
 
 
-def stage(payload_root: Path, output_root: Path) -> dict:
+def stage(payload_root: Path, output_root: Path, platform="darwin-arm64") -> dict:
+    case_sensitive = platform == "linux-x86_64"
+    if platform not in ("darwin-arm64", "linux-x86_64"):
+        raise ValueError("unsupported_platform")
     work, _ = _existing_directory(WORK)
     payload = _canonical_absolute(payload_root)
     _reject_reparse_chain(payload)
@@ -152,7 +155,7 @@ def stage(payload_root: Path, output_root: Path) -> dict:
     if _is_within(parent, payload):
         raise ValueError("output_inside_payload")
 
-    source_summary, source_rows = macos_payload.inventory(payload)
+    source_summary, source_rows = macos_payload.inventory(payload, case_sensitive=case_sensitive)
     root_identity = macos_payload.identity(payload_info)
     root_mode = stat.S_IMODE(payload_info.st_mode)
     lock_path, _ = _existing_directory(RUNTIME / "engine-deps")
@@ -179,7 +182,7 @@ def stage(payload_root: Path, output_root: Path) -> dict:
         os.chmod(temporary, 0o700)
     staged_payload = temporary / "payload"
     shutil.copytree(payload, staged_payload, symlinks=True, copy_function=shutil.copy2)
-    copied_summary, copied_rows = macos_payload.inventory(staged_payload)
+    copied_summary, copied_rows = macos_payload.inventory(staged_payload, case_sensitive=case_sensitive)
     if (copied_summary, copied_rows) != (source_summary, source_rows):
         raise ValueError("payload_copy_mismatch")
 
@@ -201,7 +204,7 @@ def stage(payload_root: Path, output_root: Path) -> dict:
             raise ValueError("overlay_copy_mismatch")
         overlays[name] = copied_hash
 
-    after_summary, after_rows = macos_payload.inventory(payload)
+    after_summary, after_rows = macos_payload.inventory(payload, case_sensitive=case_sensitive)
     final_payload_info = payload.lstat()
     if (
         (after_summary, after_rows) != (source_summary, source_rows)
@@ -214,7 +217,7 @@ def stage(payload_root: Path, output_root: Path) -> dict:
 
     manifest = {
         "schema_version": 1,
-        "platform": "darwin-arm64",
+        "platform": platform,
         "engine_version": "0.44.0",
         "python_version": "3.13.13",
         "dependency_lock_sha256": lock_hash,
@@ -244,9 +247,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--payload", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--platform", choices=("darwin-arm64", "linux-x86_64"), default="darwin-arm64")
     args = parser.parse_args()
     try:
-        result = stage(args.payload, args.output)
+        result = stage(args.payload, args.output, args.platform)
     except (OSError, ValueError, RuntimeError):
         print('{"error":"staging_failed"}', file=sys.stderr)
         return 2

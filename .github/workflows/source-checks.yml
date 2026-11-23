@@ -20,6 +20,10 @@ on:
         description: Check the pinned Linux engine with a loopback-only provider fixture.
         type: boolean
         default: false
+      linux_managed_engine:
+        description: Verify the pinned engine through the Linux desktop runtime manager.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -49,7 +53,7 @@ jobs:
     if: ${{ inputs.free_only_confirmed == true }}
     name: Frontend source checks (Ubuntu standard runner)
     runs-on: ubuntu-24.04
-    timeout-minutes: ${{ inputs.linux_desktop && 25 || 10 }}
+    timeout-minutes: ${{ (inputs.linux_desktop || inputs.linux_managed_engine) && 25 || 10 }}
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -177,14 +181,20 @@ jobs:
             "- Inputs before and after: $digest" "- Observations: $result" \
             '- Scope: isolated ext4 fixtures and process interruption.' >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Stage the pinned Linux desktop runtime
+        if: ${{ inputs.linux_managed_engine == true }}
+        shell: bash
+        run: bash scripts/probe-linux-engine.sh --stage-managed
+
       - name: Build and open the Linux desktop
-        if: ${{ inputs.linux_desktop == true }}
+        if: ${{ inputs.linux_desktop == true || inputs.linux_managed_engine == true }}
         shell: bash
         env:
           CARGO_HOME: ${{ github.workspace }}/work/cargo-home
           CARGO_TARGET_DIR: ${{ github.workspace }}/work/cargo-target
           RUSTUP_HOME: ${{ github.workspace }}/work/rustup
           CARGO_PROFILE_DEV_DEBUG: '0'
+          HEADROOM_VERIFY_LINUX_MANAGED_ENGINE: ${{ inputs.linux_managed_engine }}
         run: |
           set -euo pipefail
           test "$(uname -sm)" = 'Linux x86_64'
@@ -227,6 +237,9 @@ jobs:
           rust_tests="$(grep -E '^test result: ok\. [1-9][0-9]* passed;' work/linux-config.log)"
           printf '%s\n' "$rust_tests"
           test "$(grep -Ec '^test .*::(config_transaction_reads_the_same_native_file_as_the_config_reader|transaction_apply_reopen_and_typed_undo_preserve_user_metadata|fresh_action_recovers_owner_after_process_exit_between_publications|retained_review_is_passive_and_archive_keeps_displaced_edits_after_reopen) \.\.\. ok$' work/linux-config.log)" = 4
+          if [[ "$HEADROOM_VERIFY_LINUX_MANAGED_ENGINE" == true ]]; then
+            bash scripts/test-linux-managed-engine.sh
+          fi
           if ! cargo +1.92.0 build --locked --manifest-path "$manifest" \
             --features custom-protocol --color never > work/linux-build.log 2>&1; then
             awk '/^error(\[[A-Z][0-9]+\])?: / { if (++count <= 8) print substr($0, 1, 220) }' work/linux-build.log

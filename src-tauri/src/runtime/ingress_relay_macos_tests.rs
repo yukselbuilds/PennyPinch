@@ -20,8 +20,7 @@ struct FixtureRoot {
 impl FixtureRoot {
     fn new() -> Self {
         let path = PathBuf::from(
-            std::env::var_os("HEADROOM_MACOS_PROOF_ROOT")
-                .expect("CI must provide HEADROOM_MACOS_PROOF_ROOT"),
+            std::env::var_os(crate::runtime::ENGINE_PROOF_ENV).expect("private engine proof path"),
         );
         assert!(path.is_absolute());
         let info = fs::symlink_metadata(&path).expect("proof root exists");
@@ -168,6 +167,10 @@ fn read_socket_to_close(stream: &mut UnixStream) -> Option<(Vec<u8>, SocketEnd)>
 }
 
 #[test]
+#[cfg_attr(
+    target_os = "linux",
+    ignore = "requires an isolated engine proof directory"
+)]
 fn unix_route_preserves_delta_before_terminal_and_graceful_half_close_drain() {
     const REQUEST: &[u8] = b"POST /v1/responses HTTP/1.1\r\nContent-Length: 0\r\n\r\n";
     const DELTA: &[u8] = b"event: response.output_text.delta\ndata: {\"delta\":\"fixture\"}\n\n";
@@ -249,6 +252,10 @@ fn unix_route_preserves_delta_before_terminal_and_graceful_half_close_drain() {
 }
 
 #[test]
+#[cfg_attr(
+    target_os = "linux",
+    ignore = "requires an isolated engine proof directory"
+)]
 fn wrong_unix_peer_receives_no_client_bytes() {
     let root = FixtureRoot::new();
     let (socket_path, listener) = root.unix_socket();
@@ -287,6 +294,10 @@ fn wrong_unix_peer_receives_no_client_bytes() {
 }
 
 #[test]
+#[cfg_attr(
+    target_os = "linux",
+    ignore = "requires an isolated engine proof directory"
+)]
 fn dead_target_liveness_prevents_unix_connect_and_forwarding() {
     let root = FixtureRoot::new();
     let (socket_path, listener) = root.unix_socket();

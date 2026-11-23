@@ -1,4 +1,4 @@
-//! Validate macOS resources against the manifest digest embedded at build time.
+//! Validate Unix resources against the manifest digest embedded at build time.
 
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
@@ -8,8 +8,16 @@ use std::io::Read;
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::path::{Component, Path, PathBuf};
 
+#[cfg(target_os = "macos")]
 pub(super) const COMPILED_MANIFEST_SHA256: Option<&str> =
     option_env!("HEADROOM_MACOS_RUNTIME_MANIFEST_SHA256");
+#[cfg(target_os = "linux")]
+pub(super) const COMPILED_MANIFEST_SHA256: Option<&str> =
+    option_env!("HEADROOM_LINUX_RUNTIME_MANIFEST_SHA256");
+#[cfg(target_os = "macos")]
+const RUNTIME_PLATFORM: &str = "darwin-arm64";
+#[cfg(target_os = "linux")]
+const RUNTIME_PLATFORM: &str = "linux-x86_64";
 const MAX_PAYLOAD_BYTES: u64 = 2 * 1024 * 1024 * 1024;
 const MAX_ENTRIES: usize = 100_000;
 const OVERLAYS: [&str; 4] = [
@@ -124,7 +132,7 @@ fn verify(root: &Path, expected: &str) -> Result<MacRuntime, MacRuntimeError> {
     let manifest: Manifest =
         serde_json::from_slice(&bytes).map_err(|_| MacRuntimeError::InvalidManifest)?;
     if manifest.schema_version != 1
-        || manifest.platform != "darwin-arm64"
+        || manifest.platform != RUNTIME_PLATFORM
         || manifest.engine_version != "0.44.0"
         || manifest.python_version != "3.13.13"
         || manifest.dependency_lock_sha256
@@ -223,7 +231,10 @@ fn verify(root: &Path, expected: &str) -> Result<MacRuntime, MacRuntimeError> {
         }
     }
     let python = payload.join(&manifest.python);
+    #[cfg(target_os = "macos")]
     let mut header = [0u8; 12];
+    #[cfg(target_os = "linux")]
+    let mut header = [0u8; 20];
     let mut file = OpenOptions::new()
         .read(true)
         .custom_flags(libc::O_NOFOLLOW)
@@ -231,9 +242,14 @@ fn verify(root: &Path, expected: &str) -> Result<MacRuntime, MacRuntimeError> {
         .map_err(|_| MacRuntimeError::Integrity)?;
     file.read_exact(&mut header)
         .map_err(|_| MacRuntimeError::Integrity)?;
-    if header[..4] != [0xcf, 0xfa, 0xed, 0xfe]
-        || u32::from_le_bytes(header[4..8].try_into().unwrap()) != 0x0100_000c
-    {
+    #[cfg(target_os = "macos")]
+    let valid_header = header[..4] == [0xcf, 0xfa, 0xed, 0xfe]
+        && u32::from_le_bytes(header[4..8].try_into().unwrap()) == 0x0100_000c;
+    #[cfg(target_os = "linux")]
+    let valid_header = &header[..7] == b"\x7fELF\x02\x01\x01"
+        && matches!(u16::from_le_bytes([header[16], header[17]]), 2 | 3)
+        && u16::from_le_bytes([header[18], header[19]]) == 62;
+    if !valid_header {
         return Err(MacRuntimeError::Integrity);
     }
     for (path, before) in directories {

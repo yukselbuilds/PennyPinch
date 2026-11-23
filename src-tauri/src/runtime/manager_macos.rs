@@ -16,7 +16,7 @@ use std::time::Instant;
 use uuid::Uuid;
 
 impl RuntimeLayout {
-    pub(super) fn from_macos_bundle(
+    pub(super) fn from_unix_bundle(
         resource_dir: PathBuf,
         app_data_dir: PathBuf,
     ) -> Result<Self, PublicError> {

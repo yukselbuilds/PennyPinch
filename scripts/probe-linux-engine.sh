@@ -7,6 +7,9 @@ grep -qx 'VERSION_ID="24.04"' /etc/os-release
 test "$(pwd -P)" = "$GITHUB_WORKSPACE"
 test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
 git diff --quiet HEAD --
+mode="${1:-probe}"
+test "$#" -le 1
+[[ "$mode" == probe || "$mode" == --stage-managed ]]
 
 mkdir -p work
 stage="$(mktemp -d "$GITHUB_WORKSPACE/work/lx.XXXXXX")"
@@ -48,8 +51,10 @@ TIKTOKEN_CACHE_DIR="$stage/payload/tiktoken-cache" "$python" -I -B -c '
 import site, sys
 site.addsitedir(sys.argv[1])
 import tiktoken
-assert tiktoken.get_encoding("o200k_base").encode("PennyPinch Linux fixture")
-' "$stage/payload/site-packages" > "$log" 2>&1 \
+names = tiktoken.list_encoding_names() if sys.argv[2] == "--stage-managed" else ("o200k_base",)
+for name in names:
+    assert tiktoken.get_encoding(name).encode("PennyPinch Linux fixture")
+' "$stage/payload/site-packages" "$mode" > "$log" 2>&1 \
   || { echo '::error::Pinned tokenizer preparation failed.'; exit 1; }
 find -P "$stage/payload" \( -type d -o -type f \) -exec chmod go-w {} +
 mv "$stage/payload" "$stage/relocated"
@@ -62,6 +67,19 @@ if ! "$python" -I -B -m unittest discover -s tests/runtime -p 'test_macos_payloa
 fi
 grep -Eq '^test_casefold_collisions_require_exact_name_matching.* \.\.\. ok$' "$log"
 awk '/^Ran [0-9]+ tests/ { print "Payload inventory: " $0 }' "$log"
+
+if [[ "$mode" == --stage-managed ]]; then
+  receipt="$("$python" -I -B scripts/stage-macos-runtime.py --platform linux-x86_64 \
+    --payload "$stage/relocated" --output "$stage/runtime")"
+  manifest_sha="$(sha256sum "$stage/runtime/manifest.json" | cut -d' ' -f1)"
+  mkdir -m 700 "$stage/socket"
+  printf '%s\n' \
+    "HEADROOM_LINUX_RUNTIME_ROOT=$stage/runtime" \
+    "HEADROOM_LINUX_ENGINE_PROOF_ROOT=$stage" \
+    "HEADROOM_LINUX_RUNTIME_MANIFEST_SHA256=$manifest_sha" >> "$GITHUB_ENV"
+  printf '%s\n' "$receipt"
+  exit 0
+fi
 
 fingerprint() {
   git rev-parse HEAD 'HEAD^{tree}'

@@ -187,7 +187,8 @@ fn publish(root: &PrivateRoot, record: &EndpointRecord) -> Result<(), IngressErr
     let name = CString::new(name).map_err(|_| IngressError::StateUnavailable)?;
     let destination = CString::new(ENDPOINT).unwrap();
     // Exclusive rename publishes one complete record without replacing any concurrent file.
-    if unsafe {
+    #[cfg(target_os = "macos")]
+    let renamed = unsafe {
         libc::renameatx_np(
             root.directory.as_raw_fd(),
             name.as_ptr(),
@@ -195,8 +196,18 @@ fn publish(root: &PrivateRoot, record: &EndpointRecord) -> Result<(), IngressErr
             destination.as_ptr(),
             libc::RENAME_EXCL,
         )
-    } != 0
-    {
+    };
+    #[cfg(target_os = "linux")]
+    let renamed = unsafe {
+        libc::renameat2(
+            root.directory.as_raw_fd(),
+            name.as_ptr(),
+            root.directory.as_raw_fd(),
+            destination.as_ptr(),
+            libc::RENAME_NOREPLACE,
+        )
+    };
+    if renamed != 0 {
         return Err(
             if io::Error::last_os_error().kind() == io::ErrorKind::AlreadyExists {
                 IngressError::EndpointConflict
@@ -247,6 +258,7 @@ impl StableIngress {
         }
         let previous = read_endpoint(&root)?;
         let port = previous.as_ref().map_or(0, |value| value.0.port);
+        #[cfg(target_os = "macos")]
         if port != 0 && super::macos_ports::observe_port(port)?.wildcard {
             return Err(IngressError::EndpointConflict);
         }
@@ -264,20 +276,27 @@ impl StableIngress {
                 IngressError::SocketUnavailable
             }
         })?;
-        socket
-            .listen(128)
-            .map_err(|_| IngressError::SocketUnavailable)?;
+        socket.listen(128).map_err(|error| {
+            if error.kind() == io::ErrorKind::AddrInUse {
+                IngressError::EndpointConflict
+            } else {
+                IngressError::SocketUnavailable
+            }
+        })?;
         let listener = TcpListener::from(socket);
-        let bound_port = listener
-            .local_addr()
-            .map_err(|_| IngressError::SocketUnavailable)?
-            .port();
-        let listeners = super::macos_ports::observe_port(bound_port)?;
-        if listeners.wildcard {
-            return Err(IngressError::EndpointConflict);
-        }
-        if !listeners.loopback {
-            return Err(IngressError::StateUnavailable);
+        #[cfg(target_os = "macos")]
+        {
+            let bound_port = listener
+                .local_addr()
+                .map_err(|_| IngressError::SocketUnavailable)?
+                .port();
+            let listeners = super::macos_ports::observe_port(bound_port)?;
+            if listeners.wildcard {
+                return Err(IngressError::EndpointConflict);
+            }
+            if !listeners.loopback {
+                return Err(IngressError::StateUnavailable);
+            }
         }
         let record = match previous {
             Some((record, _)) => record,

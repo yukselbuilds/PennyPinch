@@ -42,6 +42,17 @@ class MacOSBootstrapTests(unittest.TestCase):
                 with self.assertRaises(engine.StartupError):
                     engine.start_request(io.BytesIO(frame))
 
+    def test_linux_x64_checks_the_private_state_directory(self):
+        args = types.SimpleNamespace(state=ROOT)
+        with (
+            patch.object(engine.sys, "platform", "linux"),
+            patch.object(engine.sys, "version_info", (3, 13, 13)),
+            patch.object(engine.platform, "machine", return_value="x86_64"),
+            patch.object(engine, "private_directory", side_effect=engine.StartupError("invalid_private_state")),
+        ):
+            with self.assertRaisesRegex(engine.StartupError, "^invalid_private_state$"):
+                engine.run(args)
+
     def test_dashboard_capability_is_only_for_two_private_uds_reads(self):
         package = types.ModuleType("headroom")
         proxy = types.ModuleType("headroom.proxy")

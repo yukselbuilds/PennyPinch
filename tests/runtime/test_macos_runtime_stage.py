@@ -177,9 +177,9 @@ class MacOSRuntimeStageTests(unittest.TestCase):
         original_inventory = stage_module.macos_payload.inventory
         changed = False
 
-        def inventory_then_change(path):
+        def inventory_then_change(path, *, case_sensitive=False):
             nonlocal changed
-            result = original_inventory(path)
+            result = original_inventory(path, case_sensitive=case_sensitive)
             if Path(path) == self.payload and not changed:
                 source_file.write_bytes(b"changed during stage")
                 changed = True

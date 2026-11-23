@@ -1,7 +1,7 @@
 //! Read only the current owned backend; no caller-supplied URL or credentials.
 use crate::metrics::normalize::EngineProjection;
 use chrono::{DateTime, Utc};
-#[cfg(any(windows, target_os = "macos"))]
+#[cfg(any(windows, target_os = "macos", target_os = "linux"))]
 use std::time::{Duration, Instant};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -22,12 +22,12 @@ pub(crate) struct OwnedMetricsSnapshot {
     pub projection: EngineProjection,
 }
 
-#[cfg(any(windows, target_os = "macos"))]
+#[cfg(any(windows, target_os = "macos", target_os = "linux"))]
 fn private_get(path: &str, secret: &str) -> String {
     format!("GET {path} HTTP/1.1\r\nHost: 127.0.0.1\r\nX-Headroom-Desktop-Control: {secret}\r\nConnection: close\r\n\r\n")
 }
 
-#[cfg(any(windows, target_os = "macos"))]
+#[cfg(any(windows, target_os = "macos", target_os = "linux"))]
 fn project_owned_snapshot(
     body: &[u8],
     generation: &str,
@@ -137,7 +137,7 @@ pub(crate) fn read_owned_projection(
     }
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 pub(crate) fn read_owned_projection_unix(
     target: super::unix_backend::UnixTarget<'_>,
     generation: &str,

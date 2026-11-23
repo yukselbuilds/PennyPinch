@@ -1,4 +1,4 @@
-//! Authenticate a private macOS engine socket before any HTTP byte is sent.
+//! Authenticate a private Unix engine socket before sending HTTP.
 
 use socket2::{Domain, SockAddr, Socket, Type};
 use std::fs;
@@ -49,22 +49,7 @@ impl UnixTarget<'_> {
         socket
             .connect_timeout(&address, timeout.min(Duration::from_millis(300)))
             .map_err(|_| UnixBackendError::Transport)?;
-        let mut pid: libc::pid_t = 0;
-        let mut length = std::mem::size_of_val(&pid) as libc::socklen_t;
-        // SAFETY: LOCAL_PEERPID writes one pid_t to the sized, live buffer.
-        let status = unsafe {
-            libc::getsockopt(
-                socket.as_raw_fd(),
-                libc::SOL_LOCAL,
-                libc::LOCAL_PEERPID,
-                (&mut pid as *mut libc::pid_t).cast(),
-                &mut length,
-            )
-        };
-        if status != 0
-            || length as usize != std::mem::size_of_val(&pid)
-            || pid <= 0
-            || pid as u32 != self.expected_pid
+        if !peer_matches(&socket, self.expected_pid)
             || endpoint_identity(self.socket_path)? != before
             || !is_alive()
         {
@@ -72,6 +57,47 @@ impl UnixTarget<'_> {
         }
         Ok(UnixStream::from(OwnedFd::from(socket)))
     }
+}
+
+#[cfg(target_os = "macos")]
+fn peer_matches(socket: &Socket, expected_pid: u32) -> bool {
+    let mut pid: libc::pid_t = 0;
+    let mut length = std::mem::size_of_val(&pid) as libc::socklen_t;
+    // SAFETY: LOCAL_PEERPID writes one pid_t to the sized, live buffer.
+    let status = unsafe {
+        libc::getsockopt(
+            socket.as_raw_fd(),
+            libc::SOL_LOCAL,
+            libc::LOCAL_PEERPID,
+            (&mut pid as *mut libc::pid_t).cast(),
+            &mut length,
+        )
+    };
+    status == 0 && length as usize == std::mem::size_of_val(&pid) && pid as u32 == expected_pid
+}
+
+#[cfg(target_os = "linux")]
+fn peer_matches(socket: &Socket, expected_pid: u32) -> bool {
+    let mut peer = libc::ucred {
+        pid: 0,
+        uid: 0,
+        gid: 0,
+    };
+    let mut length = std::mem::size_of_val(&peer) as libc::socklen_t;
+    // SAFETY: SO_PEERCRED writes one ucred to the sized, live buffer.
+    let status = unsafe {
+        libc::getsockopt(
+            socket.as_raw_fd(),
+            libc::SOL_SOCKET,
+            libc::SO_PEERCRED,
+            (&mut peer as *mut libc::ucred).cast(),
+            &mut length,
+        )
+    };
+    status == 0
+        && length as usize == std::mem::size_of_val(&peer)
+        && peer.pid as u32 == expected_pid
+        && peer.uid == unsafe { libc::geteuid() }
 }
 
 fn endpoint_identity(path: &Path) -> Result<(u64, u64, u64, u64), UnixBackendError> {

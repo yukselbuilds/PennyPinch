@@ -1,4 +1,4 @@
-"""Pinned macOS engine bootstrap with a parent-pipe lifetime and inherited state lock."""
+"""Pinned Unix engine bootstrap with a parent pipe and inherited state lock."""
 
 import argparse
 import hashlib
@@ -134,7 +134,11 @@ def serve(endpoint):
 
 
 def run(args):
-    if sys.platform != "darwin" or platform.machine() != "arm64" or sys.version_info[:3] != (3, 13, 13):
+    runtime_platform = {
+        ("darwin", "arm64"): "darwin-arm64",
+        ("linux", "x86_64"): "linux-x86_64",
+    }.get((sys.platform, platform.machine()))
+    if runtime_platform is None or sys.version_info[:3] != (3, 13, 13):
         raise StartupError("unsupported_runtime")
     state = private_directory(args.state)
     endpoint = private_directory(args.socket_dir) / "s"
@@ -146,7 +150,11 @@ def run(args):
     if len(manifest_bytes) > 16 * 1024 * 1024 or hashlib.sha256(manifest_bytes).hexdigest() != args.manifest_sha256:
         raise StartupError("runtime_manifest_changed")
     manifest = json.loads(manifest_bytes, object_pairs_hook=unique_keys)
-    if manifest["engine_version"] != "0.44.0" or manifest["python_version"] != "3.13.13":
+    if (
+        manifest["platform"] != runtime_platform
+        or manifest["engine_version"] != "0.44.0"
+        or manifest["python_version"] != "3.13.13"
+    ):
         raise StartupError("runtime_pin_mismatch")
     request = start_request(sys.stdin.buffer)
     threading.Thread(target=watch_parent, args=(sys.stdin.buffer,), daemon=True).start()
@@ -176,6 +184,8 @@ def run(args):
         "HEADROOM_OUTPUT_SHAPER": "0",
         "HEADROOM_PROTECT_TOOL_RESULTS": ",".join(request["protected_tools"]),
     })
+    if runtime_platform == "linux-x86_64":
+        os.environ["TIKTOKEN_CACHE_DIR"] = str(payload / "tiktoken-cache")
     sys.path.insert(0, str(args.runtime))
     import cache_control_shim
     import optimization_control

@@ -19,8 +19,7 @@ struct FixtureRoot {
 impl FixtureRoot {
     fn new() -> Self {
         let base = PathBuf::from(
-            std::env::var_os("HEADROOM_MACOS_PROOF_ROOT")
-                .expect("CI must provide HEADROOM_MACOS_PROOF_ROOT"),
+            std::env::var_os(crate::runtime::ENGINE_PROOF_ENV).expect("private engine proof path"),
         );
         assert!(base.is_absolute());
         let base_info = fs::symlink_metadata(&base).expect("proof root exists");
@@ -84,6 +83,10 @@ impl Drop for FixtureRoot {
 }
 
 #[test]
+#[cfg_attr(
+    target_os = "linux",
+    ignore = "requires an isolated engine proof directory"
+)]
 fn reopen_preserves_the_owned_loopback_port_and_endpoint_id() {
     let root = FixtureRoot::new();
     let first = StableIngress::open_or_create(root.path()).expect("create stable endpoint");
@@ -139,6 +142,10 @@ fn reopen_preserves_the_owned_loopback_port_and_endpoint_id() {
 }
 
 #[test]
+#[cfg_attr(
+    target_os = "linux",
+    ignore = "requires an isolated engine proof directory"
+)]
 fn second_owner_is_rejected_and_record_drift_revokes_ownership() {
     let root = FixtureRoot::new();
     let owner = StableIngress::open_or_create(root.path()).expect("create stable endpoint");
@@ -159,6 +166,10 @@ fn second_owner_is_rejected_and_record_drift_revokes_ownership() {
 }
 
 #[test]
+#[cfg_attr(
+    target_os = "linux",
+    ignore = "requires an isolated engine proof directory"
+)]
 fn foreign_listener_blocks_reopen_and_preserves_saved_record() {
     let root = FixtureRoot::new();
     let ingress = StableIngress::open_or_create(root.path()).expect("create endpoint");
@@ -201,6 +212,10 @@ fn assert_foreign_listener_accepts(listener: &TcpListener, port: u16) {
 }
 
 #[test]
+#[cfg_attr(
+    target_os = "linux",
+    ignore = "requires an isolated engine proof directory"
+)]
 fn symlink_and_non_private_roots_are_rejected() {
     let root = FixtureRoot::new();
     let random = Uuid::new_v4().simple().to_string();
@@ -220,6 +235,10 @@ fn symlink_and_non_private_roots_are_rejected() {
 }
 
 #[test]
+#[cfg_attr(
+    target_os = "linux",
+    ignore = "requires an isolated engine proof directory"
+)]
 fn malformed_and_symlink_endpoint_records_are_rejected_and_preserved() {
     let root = FixtureRoot::new();
     let path = root.endpoint_record();
@@ -252,6 +271,7 @@ fn malformed_and_symlink_endpoint_records_are_rejected_and_preserved() {
     assert_eq!(fs::read(target).unwrap(), content);
 }
 
+#[cfg(target_os = "macos")]
 #[test]
 fn parses_synthetic_netstat_port_table_strictly() {
     use crate::runtime::macos_ports::{parse_port_table, PortListeners};

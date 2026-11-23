@@ -189,7 +189,7 @@ fn encode_request(
     Ok(frame)
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 pub(crate) fn request_unix(
     target: super::unix_backend::UnixTarget<'_>,
     generation: &str,

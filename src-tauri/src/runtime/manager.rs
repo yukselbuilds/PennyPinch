@@ -19,11 +19,11 @@ use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 #[path = "manager_macos.rs"]
-mod macos;
-#[cfg(target_os = "macos")]
-use macos::ControllerSession;
+mod unix_manager;
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+use unix_manager::ControllerSession;
 
 const DTO_SCHEMA_VERSION: u8 = 1;
 const HELPER_PROTOCOL_VERSION: u8 = 1;
@@ -348,7 +348,7 @@ struct StopFailure {
     stage: &'static str,
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 #[derive(Clone, Copy, Debug)]
 struct ForceStopReport {
     controller_exited: bool,
@@ -358,7 +358,7 @@ struct ForceStopReport {
     reader_stopped: bool,
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 #[derive(Clone, Copy, Debug)]
 struct ForceStopReport {
     owned_child_and_socket_released: bool,
@@ -366,7 +366,7 @@ struct ForceStopReport {
 
 impl ForceStopReport {
     fn clean(self) -> bool {
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(not(any(target_os = "macos", target_os = "linux")))]
         {
             self.controller_exited
                 && self.process_tree_absent
@@ -374,7 +374,7 @@ impl ForceStopReport {
                 && self.job_empty
                 && self.reader_stopped
         }
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         self.owned_child_and_socket_released
     }
 }
@@ -850,7 +850,7 @@ fn cleanup_result_error(original: PublicError, cleanup_verified: bool) -> Public
     }
 }
 
-#[cfg(any(windows, target_os = "macos"))]
+#[cfg(any(windows, target_os = "macos", target_os = "linux"))]
 fn map_ingress_error(error: super::ingress::IngressError) -> PublicError {
     use super::ingress::IngressError;
     match error {
@@ -884,7 +884,7 @@ impl RuntimeLayout {
         resource_dir: Option<PathBuf>,
         app_data_dir: Option<PathBuf>,
     ) -> Result<Self, PublicError> {
-        if cfg!(debug_assertions) && !cfg!(target_os = "macos") {
+        if cfg!(debug_assertions) && !cfg!(any(target_os = "macos", target_os = "linux")) {
             let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
             let project_root = manifest_dir
                 .parent()
@@ -903,10 +903,10 @@ impl RuntimeLayout {
 
         let resource_dir = resource_dir.ok_or(PublicError::EnvironmentBlocked)?;
         let app_data_dir = app_data_dir.ok_or(PublicError::EnvironmentBlocked)?;
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(not(any(target_os = "macos", target_os = "linux")))]
         return Self::from_bundle(resource_dir, app_data_dir);
-        #[cfg(target_os = "macos")]
-        Self::from_macos_bundle(resource_dir, app_data_dir)
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        Self::from_unix_bundle(resource_dir, app_data_dir)
     }
 
     fn from_bundle(resource_dir: PathBuf, app_data_dir: PathBuf) -> Result<Self, PublicError> {
@@ -988,7 +988,7 @@ impl RuntimeLayout {
         Ok((root, workspace, config))
     }
 
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
     fn state_runtime_root(&self) -> Result<PathBuf, PublicError> {
         ensure_existing_ancestor_inside(&self.state_boundary_root, &self.state_root)?;
         fs::create_dir_all(&self.state_root).map_err(|_| PublicError::EnvironmentBlocked)?;
@@ -1841,7 +1841,7 @@ fn safe_environment(state_root: &Path) -> Result<Vec<(String, String)>, PublicEr
     ])
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 struct ControllerSession {
     protected_tools: Vec<String>,
     control_secret: ControlSecret,
@@ -1862,7 +1862,7 @@ struct ControllerSession {
     last_health: Instant,
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 impl ControllerSession {
     fn tcp_listener(&self) -> Option<(u16, u32)> {
         Some((self.listener_port, self.engine_pid))
@@ -2344,7 +2344,7 @@ impl ControllerSession {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 impl Drop for ControllerSession {
     fn drop(&mut self) {
         if self.child.try_wait().ok().flatten().is_none() {
@@ -2466,7 +2466,7 @@ impl TimedRead for TcpStream {
     }
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 impl TimedRead for std::os::unix::net::UnixStream {
     fn set_read_timeout(&self, timeout: Option<Duration>) -> io::Result<()> {
         std::os::unix::net::UnixStream::set_read_timeout(self, timeout)
@@ -3274,23 +3274,23 @@ struct IngressDrainResult {
 }
 
 struct ManagedIngress {
-    #[cfg(any(windows, target_os = "macos"))]
+    #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
     relay: Option<super::ingress_relay::IngressRelay>,
     startup_error: Option<PublicError>,
     view: Arc<RwLock<IngressView>>,
 }
 
 impl ManagedIngress {
-    #[cfg(any(windows, target_os = "macos"))]
+    #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
     fn endpoint_is_current(relay: &super::ingress_relay::IngressRelay) -> bool {
         #[cfg(windows)]
         return relay.is_accepting();
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         relay.owns_endpoint()
     }
 
     fn open(layout: &Result<RuntimeLayout, PublicError>, view: Arc<RwLock<IngressView>>) -> Self {
-        #[cfg(any(windows, target_os = "macos"))]
+        #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
         {
             let opened = layout
                 .as_ref()
@@ -3349,7 +3349,7 @@ impl ManagedIngress {
                 Err(error) => Self::unavailable(view, error),
             }
         }
-        #[cfg(not(any(windows, target_os = "macos")))]
+        #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
         {
             let error = layout
                 .as_ref()
@@ -3370,7 +3370,7 @@ impl ManagedIngress {
             *state = IngressView::unavailable(error, status)
         });
         Self {
-            #[cfg(any(windows, target_os = "macos"))]
+            #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
             relay: None,
             startup_error: Some(error),
             view,
@@ -3382,7 +3382,7 @@ impl ManagedIngress {
     }
 
     fn observe_endpoint(&self) -> bool {
-        #[cfg(any(windows, target_os = "macos"))]
+        #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
         {
             let Some(relay) = self.relay.as_ref() else {
                 self.mark_endpoint_unavailable();
@@ -3398,7 +3398,7 @@ impl ManagedIngress {
             });
             true
         }
-        #[cfg(not(any(windows, target_os = "macos")))]
+        #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
         {
             self.mark_endpoint_unavailable();
             false
@@ -3432,7 +3432,7 @@ impl ManagedIngress {
         });
     }
 
-    #[cfg(any(windows, target_os = "macos"))]
+    #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
     fn publish_route(&mut self, session: &ControllerSession) -> Result<(), PublicError> {
         #[cfg(test)]
         set_startup_diagnostic_stage("route_publish_precheck");
@@ -3482,12 +3482,12 @@ impl ManagedIngress {
         Ok(())
     }
 
-    #[cfg(not(any(windows, target_os = "macos")))]
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
     fn publish_route(&mut self, _session: &ControllerSession) -> Result<(), PublicError> {
         Err(PublicError::EnvironmentBlocked)
     }
 
-    #[cfg(any(windows, target_os = "macos"))]
+    #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
     fn route_healthy(&self, generation: &str) -> bool {
         let Some(relay) = self.relay.as_ref() else {
             return false;
@@ -3497,12 +3497,12 @@ impl ManagedIngress {
         })
     }
 
-    #[cfg(not(any(windows, target_os = "macos")))]
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
     fn route_healthy(&self, _generation: &str) -> bool {
         false
     }
 
-    #[cfg(any(windows, target_os = "macos"))]
+    #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
     fn begin_drain(&mut self) -> Result<(), PublicError> {
         let Some(relay) = self.relay.as_ref() else {
             return Err(self
@@ -3520,12 +3520,12 @@ impl ManagedIngress {
         Ok(())
     }
 
-    #[cfg(not(any(windows, target_os = "macos")))]
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
     fn begin_drain(&mut self) -> Result<(), PublicError> {
         Err(PublicError::EnvironmentBlocked)
     }
 
-    #[cfg(any(windows, target_os = "macos"))]
+    #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
     fn finish_drain(&mut self, timeout: Duration) -> IngressDrainResult {
         let report = self
             .relay
@@ -3564,7 +3564,7 @@ impl ManagedIngress {
         }
     }
 
-    #[cfg(not(any(windows, target_os = "macos")))]
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
     fn finish_drain(&mut self, _timeout: Duration) -> IngressDrainResult {
         IngressDrainResult {
             complete: false,
@@ -3574,7 +3574,7 @@ impl ManagedIngress {
         }
     }
 
-    #[cfg(any(windows, target_os = "macos"))]
+    #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
     fn shutdown(&mut self, timeout: Duration) -> IngressDrainResult {
         let report = self
             .relay
@@ -3614,7 +3614,7 @@ impl ManagedIngress {
         }
     }
 
-    #[cfg(not(any(windows, target_os = "macos")))]
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
     fn shutdown(&mut self, _timeout: Duration) -> IngressDrainResult {
         IngressDrainResult {
             complete: self.startup_error.is_some(),
@@ -3963,9 +3963,9 @@ impl RuntimeManager {
         expire_stale_ready_view(&mut view, Instant::now());
         CatalogRuntime {
             pinned_version: EXPECTED_ENGINE_VERSION,
-            #[cfg(not(target_os = "macos"))]
+            #[cfg(not(any(target_os = "macos", target_os = "linux")))]
             manifest_sha256: ACTIVE_MANIFEST_SHA256,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", target_os = "linux"))]
             manifest_sha256: super::macos_layout::COMPILED_MANIFEST_SHA256.unwrap_or(""),
             active_version: view.engine_version.clone(),
             engine_status: view.status.label(),
@@ -4853,7 +4853,7 @@ mod tests;
 #[path = "windows_crash_tests.rs"]
 mod windows_crash_tests;
 
-#[cfg(all(test, target_os = "macos"))]
+#[cfg(all(test, any(target_os = "macos", target_os = "linux")))]
 #[path = "manager_macos_tests.rs"]
 mod macos_tests;
 
