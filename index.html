@@ -3,35 +3,41 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PennyPinch | Local token optimization for coding agents</title>
-  <meta name="description" content="PennyPinch measures input token savings and compresses coding context locally. Explore Windows 10 benchmarks and coverage for Codex, Claude Code, and OpenCode.">
-  <meta name="theme-color" content="#101513">
+  <title>PennyPinch — Local token savings for AI coding tools</title>
+  <meta name="description" content="Compress context locally and track input tokens for Codex, Claude Code, and OpenCode. Download the Windows 10 preview and see macOS, Linux, and Windows 11 status.">
+  <meta name="theme-color" content="#101513" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f5f8f5" media="(prefers-color-scheme: light)">
+  <meta name="robots" content="index,follow">
   <link rel="canonical" href="https://yukselbuilds.github.io/PennyPinch/">
-  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="icon" href="/PennyPinch/assets/favicon.png" type="image/png">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="PennyPinch">
-  <meta property="og:title" content="PennyPinch — Local token savings for coding agents">
-  <meta property="og:description" content="Compare measured context compression, from a live Codex request to six Headroom proxy workloads.">
+  <meta property="og:title" content="PennyPinch — Local token savings for AI coding tools">
+  <meta property="og:description" content="Compress context locally and track input tokens. Windows 10 preview available. See macOS and Linux validation.">
   <meta property="og:url" content="https://yukselbuilds.github.io/PennyPinch/">
   <meta property="og:image" content="https://yukselbuilds.github.io/PennyPinch/assets/pennypinch-share.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="PennyPinch, with verified Windows 10 context compression measurements.">
+  <meta property="og:image:alt" content="PennyPinch measures local input-token changes for supported coding-tool routes.">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="stylesheet" href="styles.css">
+  <meta name="twitter:title" content="PennyPinch — Local token savings for AI coding tools">
+  <meta name="twitter:description" content="Compress context locally and track input tokens. Windows 10 preview available. See macOS and Linux validation.">
+  <meta name="twitter:image" content="https://yukselbuilds.github.io/PennyPinch/assets/pennypinch-share.png">
+  <link rel="stylesheet" href="/PennyPinch/styles.css">
 </head>
 <body>
-  <a class="skip" href="#main">Skip to content</a>
+  <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <div class="wrap header-inner">
-      <a class="brand" href="./">
-        <img src="assets/pennypinch-mark.png" width="32" height="32" alt="">
-        PennyPinch
+      <a class="brand" href="/PennyPinch/" aria-label="PennyPinch home">
+        <img src="/PennyPinch/assets/pennypinch-mark.png" width="34" height="34" alt="">
+        <span>PennyPinch</span>
       </a>
-      <nav aria-label="Main">
-        <a href="#benchmarks">Benchmarks</a>
-        <a href="#compatibility">Compatibility</a>
-        <a class="header-source" href="https://github.com/yukselbuilds/PennyPinch">GitHub <span aria-hidden="true">↗</span></a>
+      <nav aria-label="Main navigation">
+        <a href="#benchmarks">Measurements</a>
+        <a href="#coverage">Coverage</a>
+        <a href="#local-data">Local data</a>
+        <a class="nav-source" href="https://github.com/yukselbuilds/PennyPinch">GitHub <span aria-hidden="true">↗</span></a>
       </nav>
     </div>
   </header>
@@ -39,172 +45,209 @@
   <main id="main" class="wrap">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <p class="status"><span aria-hidden="true"></span> Windows 10 preview available</p>
-        <h1 id="hero-title">See what your<br class="headline-break"> coding tools <em>save.</em></h1>
-        <p class="hero-lead">PennyPinch compresses context on your computer. See how input tokens change for Codex, Claude Code, and OpenCode.</p>
+        <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> Local compression for coding tools</p>
+        <h1 id="hero-title">Trim context. <em>Track token savings.</em></h1>
+        <p class="hero-lead">PennyPinch runs Headroom on your computer. Connect a supported Codex, Claude Code, or OpenCode route to see how its input token count changes.</p>
+        <p class="hero-note">Your coding client keeps control of its model, reasoning level, and sign-in.</p>
         <div class="actions">
-          <a class="button button-primary" href="#benchmarks">Explore benchmarks <span aria-hidden="true">↓</span></a>
-          <a class="button button-outline" href="#release">Download for Windows 10</a>
+          <a class="button button-primary" href="https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.1">Download Windows 10 preview <span aria-hidden="true">↗</span></a>
+          <a class="button button-secondary" href="#benchmarks">See measured results <span aria-hidden="true">↓</span></a>
         </div>
-        <p class="hero-foot">Open source · Apache 2.0 · Powered by Headroom</p>
+        <p class="hero-foot">Windows 10 22H2 x64 preview available. <a href="#platforms">See platform status.</a></p>
       </div>
 
-      <figure class="hero-chart" aria-labelledby="proxy-title">
-        <figcaption class="chart-caption">
-          <span id="proxy-title">Local proxy benchmark</span>
-          <span class="mono engine-label">Headroom 0.44.0</span>
+      <figure class="hero-evidence" aria-labelledby="hero-evidence-title" aria-describedby="hero-evidence-note">
+        <figcaption class="evidence-heading">
+          <div>
+            <p class="eyebrow">One local proxy test</p>
+            <h2 id="hero-evidence-title">Six synthetic requests</h2>
+          </div>
+          <span class="engine-chip">0.44.0</span>
         </figcaption>
-        <p class="hero-result mono">43.60<span>%</span></p>
-        <p class="result-label">fewer input tokens</p>
-        <dl class="hero-bars">
-          <div>
-            <dt>Direct request</dt>
-            <dd class="mono">122,922</dd>
-            <dd class="track" aria-hidden="true"><span class="bar bar-direct"></span></dd>
+        <p class="hero-result">43.60<span>%</span></p>
+        <p class="result-label">fewer input tokens in this test</p>
+        <div class="compare-bars" role="group" aria-label="Input counts before and after the local proxy test">
+          <div class="bar-row bar-row-direct">
+            <span>Direct requests</span>
+            <strong>122,922</strong>
+            <span class="bar-track" aria-hidden="true"><span class="bar-fill"></span></span>
           </div>
-          <div>
-            <dt>Through PennyPinch</dt>
-            <dd class="mono">69,328</dd>
-            <dd class="track" aria-hidden="true"><span class="bar bar-proxy"></span></dd>
+          <div class="bar-row bar-row-proxy">
+            <span>Through the proxy</span>
+            <strong>69,328</strong>
+            <span class="bar-track" aria-hidden="true"><span class="bar-fill"></span></span>
           </div>
-        </dl>
-        <p class="chart-note">Six synthetic workloads. Full request JSON, counted with <code>o200k_base</code>.</p>
+        </div>
+        <p id="hero-evidence-note" class="evidence-note">Windows 10 22H2 x64. Full Chat Completions request JSON, including tool schemas, counted with <code>o200k_base</code>. No model calls.</p>
+        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-044.json">Read the request-count evidence <span aria-hidden="true">↗</span></a>
       </figure>
     </section>
 
     <section id="benchmarks" class="section" aria-labelledby="benchmarks-title">
       <div class="section-heading">
         <div>
-          <h2 id="benchmarks-title">Benchmarks</h2>
-          <p>Windows 10 22H2 x64 · Headroom 0.44.0</p>
+          <p class="eyebrow">Four separate scopes</p>
+          <h2 id="benchmarks-title">What the numbers measure</h2>
         </div>
         <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/validation/optimization-benefit.md">Read the validation notes <span aria-hidden="true">↗</span></a>
       </div>
 
-      <div class="observations">
-        <article class="observation">
-          <h3>Live Codex CLI request</h3>
-          <p class="observation-value mono">211 <span>tokens fewer</span></p>
-          <p>18,081 → 17,870 · <strong>1.17%</strong> local estimate. One real request through the installed app.</p>
-          <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/pennypinch-windows10-activity-measurement.json">View the measurement <span aria-hidden="true">↗</span></a>
+      <div class="measurement-grid">
+        <article class="measurement measurement-featured">
+          <p class="measurement-kicker">Windows proxy · synthetic input</p>
+          <h3>Six selected requests</h3>
+          <p class="measurement-value">122,922 <span>→</span> 69,328</p>
+          <p class="measurement-result">43.60% lower counted input</p>
+          <p>Full request JSON for six selected Chat Completions cases. The local count includes tool schemas and uses <code>o200k_base</code>.</p>
+          <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-044.json">Full request counts <span aria-hidden="true">↗</span></a>
         </article>
-        <article class="observation">
-          <h3>Headroom SDK rerun</h3>
-          <p class="observation-value mono">56.28<span>%</span></p>
-          <p>126,289 → 55,209 tokens. These six cases use the SDK counter and its input scope.</p>
-          <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-044.json">View the rerun <span aria-hidden="true">↗</span></a>
+        <article class="measurement">
+          <p class="measurement-kicker">Codex CLI · one real request</p>
+          <h3>Installed Windows preview</h3>
+          <p class="measurement-value">18,081 <span>→</span> 17,870</p>
+          <p class="measurement-result">211 fewer · 1.17% local estimate</p>
+          <p>One Responses WebSocket request through the installed app. The provider reported 10,780 input tokens separately.</p>
+          <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/pennypinch-windows10-activity-measurement.json">Read the measurement <span aria-hidden="true">↗</span></a>
         </article>
-        <article class="observation">
-          <h3>Paired local model test</h3>
-          <p class="observation-value mono">0<span>%</span></p>
-          <p>6,647 input tokens on each route. A local model answered the same log task in both runs.</p>
-          <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/validation/optimization-benefit.md#19-kas%C4%B1m--ger%C3%A7ek-yerel-modelde-e%C5%9Flenmi%C5%9F-chat-completions-k%C4%B1yas%C4%B1">View the comparison <span aria-hidden="true">↗</span></a>
+        <article class="measurement">
+          <p class="measurement-kicker">Headroom SDK · separate benchmark</p>
+          <h3>Six selected SDK examples</h3>
+          <p class="measurement-value">126,289 <span>→</span> 55,209</p>
+          <p class="measurement-result">56.28% lower in the SDK count</p>
+          <p>This local rerun uses the upstream SDK runner's benchmark tokenizer and input scope. It is not a desktop-proxy result.</p>
+          <a class="text-link" href="https://github.com/headroomlabs-ai/headroom/blob/b21479e0fa84db5f3e46bb79f96c962de4d5fdc6/docs/content/docs/benchmarks.mdx">Pinned benchmark source <span aria-hidden="true">↗</span></a>
+        </article>
+        <article class="measurement">
+          <p class="measurement-kicker">Local model server · paired task</p>
+          <h3>Same log task on both routes</h3>
+          <p class="measurement-value">6,647 <span>→</span> 6,647</p>
+          <p class="measurement-result">0% change in this pair</p>
+          <p>The same task ran against a local model on both routes. This count does not measure provider billing.</p>
+          <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/validation/optimization-benefit.md#19-kas%C4%B1m--ger%C3%A7ek-yerel-modelde-e%C5%9Flenmi%C5%9F-chat-completions-k%C4%B1yas%C4%B1">Read the comparison method <span aria-hidden="true">↗</span></a>
         </article>
       </div>
 
-      <figure class="workloads">
-        <figcaption class="workload-heading">
-          <div>
-            <h3>What changed in the proxy</h3>
-            <p>Share of the original input sent onward</p>
-          </div>
-          <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-044.json">Raw benchmark data <span aria-hidden="true">↗</span></a>
-        </figcaption>
-        <ul class="workload-list">
-          <li data-direct="9519" data-proxy="5731">
-            <span class="workload-name">JSON search results <small>100 items</small></span>
-            <span class="workload-count mono">9,519 → 5,731</span>
-            <span class="track" aria-hidden="true"><span class="bar" style="--share:60.21%"></span></span>
-            <strong class="workload-change mono">39.79% less</strong>
-          </li>
-          <li data-direct="46791" data-proxy="27765">
-            <span class="workload-name">JSON search results <small>500 items</small></span>
-            <span class="workload-count mono">46,791 → 27,765</span>
-            <span class="track" aria-hidden="true"><span class="bar" style="--share:59.34%"></span></span>
-            <strong class="workload-change mono">40.66% less</strong>
-          </li>
-          <li data-direct="8655" data-proxy="5674">
-            <span class="workload-name">Structured logs <small>100 entries</small></span>
-            <span class="workload-count mono">8,655 → 5,674</span>
-            <span class="track" aria-hidden="true"><span class="bar" style="--share:65.56%"></span></span>
-            <strong class="workload-change mono">34.44% less</strong>
-          </li>
-          <li data-direct="40516" data-proxy="25931">
-            <span class="workload-name">Structured logs <small>500 entries</small></span>
-            <span class="workload-count mono">40,516 → 25,931</span>
-            <span class="track" aria-hidden="true"><span class="bar" style="--share:64.00%"></span></span>
-            <strong class="workload-change mono">36.00% less</strong>
-          </li>
-          <li data-direct="14499" data-proxy="1277">
-            <span class="workload-name">Documentation</span>
-            <span class="workload-count mono">14,499 → 1,277</span>
-            <span class="track" aria-hidden="true"><span class="bar" style="--share:8.81%"></span></span>
-            <strong class="workload-change mono">91.19% less</strong>
-          </li>
-          <li class="workload-more" data-direct="2942" data-proxy="2950">
-            <span class="workload-name">Python source <small>Code preserved</small></span>
-            <span class="workload-count mono">2,942 → 2,950</span>
-            <span class="track" aria-hidden="true"><span class="bar" style="--share:100%"></span></span>
-            <strong class="workload-change mono">0.27% more</strong>
-          </li>
-        </ul>
-      </figure>
+      <p class="measurement-caveat"><strong>These results are not interchangeable.</strong> They use different requests, counters, and test setups. The live Codex value is a local estimate for one request. PennyPinch did not measure provider-billed token savings or quota savings.</p>
 
-      <details class="method">
-        <summary>How we counted the tokens</summary>
-        <div class="method-body">
-          <p>The proxy test compares full request JSON, including tool schemas. It uses the coding and cache profile and makes zero model calls.</p>
-          <p>The Codex result uses the same local counter before and after compression on one Responses WebSocket request. The provider reports usage separately.</p>
-          <p>The SDK result uses its own input scope. The local model comparison uses the model server's input count. Savings vary with the workload.</p>
-          <p><a class="text-link" href="https://github.com/headroomlabs-ai/headroom/blob/b21479e0fa84db5f3e46bb79f96c962de4d5fdc6/docs/content/docs/benchmarks.mdx">Headroom benchmark source <span aria-hidden="true">↗</span></a></p>
+      <details class="breakdown">
+        <summary>See each synthetic proxy case</summary>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Synthetic proxy input counts">
+          <table>
+            <thead><tr><th scope="col">Input</th><th scope="col">Direct</th><th scope="col">Through proxy</th><th scope="col">Change</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">JSON search results · 100 items</th><td>9,519</td><td>5,731</td><td>39.79% lower</td></tr>
+              <tr><th scope="row">JSON search results · 500 items</th><td>46,791</td><td>27,765</td><td>40.66% lower</td></tr>
+              <tr><th scope="row">Structured logs · 100 entries</th><td>8,655</td><td>5,674</td><td>34.44% lower</td></tr>
+              <tr><th scope="row">Structured logs · 500 entries</th><td>40,516</td><td>25,931</td><td>36.00% lower</td></tr>
+              <tr><th scope="row">Documentation</th><td>14,499</td><td>1,277</td><td>91.19% lower</td></tr>
+              <tr class="row-increase"><th scope="row">Python source · about 200 lines</th><td>2,942</td><td>2,950</td><td>0.27% higher</td></tr>
+            </tbody>
+          </table>
         </div>
+        <p class="table-note">The aggregate includes an input that grew. The percentage applies only to the six selected synthetic cases in this test.</p>
+        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-044.json">Open the programmatic evidence <span aria-hidden="true">↗</span></a>
       </details>
     </section>
 
-    <section id="compatibility" class="section" aria-labelledby="compatibility-title">
+    <section id="local-data" class="section privacy-section" aria-labelledby="local-data-title">
       <div class="section-heading">
         <div>
-          <h2 id="compatibility-title">Tested connections</h2>
-          <p>Coverage depends on the client version and route.</p>
+          <p class="eyebrow">Local by default</p>
+          <h2 id="local-data-title">Your measurements stay on your device</h2>
         </div>
-        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/USER_GUIDE.md#verified-coverage">Read the compatibility guide <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/SECURITY_BOUNDARIES.md">Read the data boundaries <span aria-hidden="true">↗</span></a>
       </div>
-      <dl class="connections">
+      <div class="privacy-grid">
         <div>
-          <dt>Codex</dt>
-          <dd><span class="route-live">Live ChatGPT traffic</span><p>The Windows 10 preview measured a real CLI request. Codex Desktop has separate live evidence for selected versions.</p></dd>
+          <h3>Local measurements</h3>
+          <p>Activity and usage records store allow-listed metadata, such as client, model, and comparable input counts. Prompts and raw request content are not included in these records.</p>
         </div>
         <div>
-          <dt>Claude Code</dt>
-          <dd><span class="route-local">Local routing tests</span><p>Connection tests used synthetic credentials and a local provider.</p></dd>
+          <h3>Optional exports</h3>
+          <p>You choose when to export a statistics or diagnostic report. Exports omit raw request content and credential values. The Headroom usage beacon starts off.</p>
         </div>
         <div>
-          <dt>OpenCode</dt>
-          <dd><span class="route-local">Local routing tests</span><p>Versioned tests cover selected CLI, TUI, and Desktop routes with local providers.</p></dd>
+          <h3>Client-owned sign-in</h3>
+          <p>Sign in through the coding client. Requests continue to use its selected model provider.</p>
         </div>
-      </dl>
-      <p class="platform-note">Windows 11, macOS, and Linux release validation remains in progress. <a href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/validation/desktop-platforms.md">Platform status</a></p>
+      </div>
     </section>
 
-    <section id="release" class="release" aria-labelledby="release-title">
-      <div>
-        <h2 id="release-title">First Windows preview</h2>
-        <p>The Windows 10 22H2 x64 preview supports signed in-app updates. The download includes the installer, licenses, and file checksums.</p>
+    <section id="coverage" class="section" aria-labelledby="coverage-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Version and route specific</p>
+          <h2 id="coverage-title">Client coverage</h2>
+          <p>Evidence applies to the listed client version, surface, authentication method, and route.</p>
+        </div>
+        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/compatibility/clients.json">Read the versioned catalog <span aria-hidden="true">↗</span></a>
       </div>
-      <div class="actions">
-        <a class="button button-primary" href="https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.1">Download Windows preview <span aria-hidden="true">↗</span></a>
-        <a class="button button-outline" href="updates/">Update status</a>
+      <dl class="client-list">
+        <div class="client-row">
+          <dt>Codex CLI and Desktop</dt>
+          <dd><span class="coverage-tag coverage-live">Selected Windows 10 ChatGPT routes</span><p>Codex CLI 0.166.0 and Desktop 26.1027.6604.0 were tested with backend 0.166.0-alpha.5.1 on Headroom 0.41.0. A separate Headroom 0.44.0 measurement covers one installed CLI request. CLI and Desktop evidence have separate limits.</p><p><a href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/codex-native-wait.md">CLI evidence</a> · <a href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/codex-desktop-live.md">Desktop evidence</a> · <a href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/pennypinch-windows10-activity-measurement.json">0.44.0 measurement</a></p></dd>
+        </div>
+        <div class="client-row">
+          <dt>Claude Code 2.1.158</dt>
+          <dd><span class="coverage-tag">Windows 10 local-provider checks</span><p>Connection tests used synthetic credentials and a local provider. They do not verify live provider sign-in.</p><a href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/claude-acceptance.md">Claude evidence</a></dd>
+        </div>
+        <div class="client-row">
+          <dt>OpenCode V1 1.19.3 and V2 2.3.0</dt>
+          <dd><span class="coverage-tag">Selected Windows 10 routes</span><p>Tests used synthetic credentials and local providers for selected CLI, TUI, and packaged Desktop surfaces. Each version and surface has a separate scope.</p><a href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/opencode-acceptance.md">OpenCode evidence</a></dd>
+        </div>
+      </dl>
+      <p class="coverage-note">An installation match does not prove which account, chat, model, or route is active. A subagent is covered only when its requests use the same verified route. <code>Unknown</code> and <code>not_tested</code> do not mean unsupported.</p>
+    </section>
+
+    <section id="platforms" class="section" aria-labelledby="platforms-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Independent platform checks</p>
+          <h2 id="platforms-title">Where validation stands</h2>
+        </div>
+        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/validation/desktop-platforms.md">Full platform record <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="platform-list">
+        <article class="platform-row platform-current">
+          <div class="platform-name"><span class="platform-marker" aria-hidden="true"></span><h3>Windows 10 22H2 x64</h3><span class="platform-state">Preview available</span></div>
+          <p>The preview package installed, matched its resource receipt, opened its native window, and reached the local 0.44.0 engine. A real Windows 10 installation also checked the published update and rollback flow. Clean-host and missing-WebView2 installation checks remain open. The NSIS installer is unsigned. In-app updates use signed update metadata.</p>
+        </article>
+        <article class="platform-row">
+          <div class="platform-name"><span class="platform-marker platform-marker-partial" aria-hidden="true"></span><h3>macOS 15 · Apple Silicon</h3><span class="platform-state">Partial</span></div>
+          <p>Earlier desktop development acceptance used Headroom 0.41.0. A separate 0.44.0 engine traffic test and Apple Silicon package/signature check passed. The 0.44.0 app process started, but AppleScript timed out twice while inspecting the window. Native window and engine lifecycle acceptance remain open.</p>
+        </article>
+        <article class="platform-row">
+          <div class="platform-name"><span class="platform-marker platform-marker-partial" aria-hidden="true"></span><h3>Ubuntu 24.04 x64</h3><span class="platform-state">Partial</span></div>
+          <p>TypeScript/Vite and Rust builds passed. The app opened a visible window under Xvfb. That run recorded 220 Rust passes, 81 failures, and 2 skipped tests. Runtime, installer, and engine lifecycle acceptance remain open.</p>
+        </article>
+        <article class="platform-row">
+          <div class="platform-name"><span class="platform-marker platform-marker-open" aria-hidden="true"></span><h3>Windows 11 x64</h3><span class="platform-state">Pending</span></div>
+          <p>Independent desktop verification has not been completed.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="release" class="release-panel" aria-labelledby="release-title">
+      <div>
+        <p class="eyebrow">First release target</p>
+        <h2 id="release-title">Try the Windows 10 preview</h2>
+        <p>Download the <code>v0.1.1-preview.1</code> release for Windows 10 22H2 x64. The installer is unsigned. Signed in-app update and rollback checks passed on a Windows 10 installation.</p>
+      </div>
+      <div class="release-actions">
+        <a class="button button-primary" href="https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.1">Download the preview <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="/PennyPinch/updates/">Update status <span aria-hidden="true">→</span></a>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="wrap footer-inner">
-      <span>PennyPinch</span>
-      <nav aria-label="Project resources">
-        <a href="https://github.com/yukselbuilds/PennyPinch/blob/main/LICENSE">Apache 2.0</a>
+      <div class="footer-brand"><img src="/PennyPinch/assets/pennypinch-mark.png" width="28" height="28" alt=""><span>PennyPinch</span></div>
+      <nav aria-label="Project and license links">
+        <a href="https://github.com/yukselbuilds/PennyPinch/blob/main/LICENSE">Apache License 2.0</a>
         <a href="https://github.com/headroomlabs-ai/headroom">Headroom engine</a>
         <a href="https://github.com/yukselbuilds/PennyPinch/blob/main/NOTICE.md">Third-party notices</a>
+        <a href="https://github.com/yukselbuilds/PennyPinch">Source code</a>
       </nav>
     </div>
   </footer>
