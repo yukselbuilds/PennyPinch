@@ -29,7 +29,7 @@ concurrency:
 jobs:
   native-package:
     if: ${{ inputs.free_only_confirmed == true }}
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: ${{ inputs.verify_desktop_traffic && 15 || 20 }}
     env:
       CARGO_HOME: ${{ github.workspace }}/work/caches/cargo-home
