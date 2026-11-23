@@ -27,6 +27,7 @@ class WindowsDeliveryTests(unittest.TestCase):
         hooks = self.project / 'src-tauri/windows-hooks.nsh'
         hooks.parent.mkdir()
         hooks.write_text('!define HEADROOM_MAX_INSTALL_DIR_CHARS 100\n', encoding='utf-8')
+        (self.project / 'LICENSE').write_bytes(b'isolated project license')
         installer = self.project / 'work/caches/cargo-target/release/bundle/nsis/Headroom_0.1.0_x64-setup.exe'
         installer.parent.mkdir(parents=True)
         installer.write_bytes(b'isolated installer fixture')
@@ -102,22 +103,25 @@ class WindowsDeliveryTests(unittest.TestCase):
             self.assertEqual(archive.read('Headroom_0.1.0_x64-setup.exe'), b'isolated installer fixture')
             self.assertEqual(archive.read('LICENSES/LICENSE.txt'), b'isolated notice fixture')
 
-    def test_new_product_name_is_used_for_the_verified_delivery(self):
+    def test_prerelease_delivery_preserves_the_version_and_project_license(self):
         self.write_notices()
         candidate = json.loads((self.proofs / 'windows-installer.json').read_bytes())
         notices = json.loads((self.proofs / 'windows-installer-notices.json').read_bytes())
-        self.write_json('pennypinch.json', {**candidate, **notices, 'app_name': 'PennyPinch'})
-        name = 'PennyPinch_0.1.0_x64-setup.exe'
+        version = '0.1.1-preview.3'
+        self.write_json('pennypinch.json', {**candidate, **notices, 'app_name': 'PennyPinch', 'app_version': version})
+        name = f'PennyPinch_{version}_x64-setup.exe'
         installer = self.project / 'work/caches/cargo-target/release/bundle/nsis'
         (installer / name).write_bytes((installer / 'Headroom_0.1.0_x64-setup.exe').read_bytes())
 
         result = delivery.package(self.project, Path('docs/proofs/pennypinch.json'))
 
         output = self.project / result['output']
-        self.assertEqual(output.name, f'PennyPinch_0.1.0_Windows_x64_preview_{self.installer_sha[:12]}.zip')
+        self.assertEqual(output.name, f'PennyPinch_{version}_Windows_x64_preview_{self.installer_sha[:12]}.zip')
         with zipfile.ZipFile(output) as archive:
             self.assertEqual(archive.read(name), b'isolated installer fixture')
-            self.assertIn('PennyPinch 0.1.0', archive.read('README.txt').decode('utf-8-sig'))
+            self.assertEqual(archive.read('LICENSE'), b'isolated project license')
+            self.assertIn('  LICENSE\n', archive.read('SHA256SUMS.txt').decode('utf-8'))
+            self.assertIn(f'PennyPinch {version}', archive.read('README.txt').decode('utf-8-sig'))
 
     def extracted_preview(self, installed='not_tested', evidence_sha=None):
         self.write_notices()

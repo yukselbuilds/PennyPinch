@@ -89,7 +89,7 @@ def package(project, receipt=None):
     app_name = candidate.get('app_name', 'Headroom')
     installer_sha = candidate['artifacts']['installer_sha256']
     installer_size = candidate['artifacts']['installer_bytes']
-    if (not re.fullmatch(r'\d+\.\d+\.\d+', version)
+    if (not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?', version)
             or app_name not in ('Headroom', 'PennyPinch')
             or not re.fullmatch(r'[0-9a-f]{64}', installer_sha)):
         raise ValueError('unverified_installer_candidate')
@@ -118,6 +118,8 @@ def package(project, receipt=None):
         raise ValueError('unverified_installer_candidate')
     companion = notices['companion_archive']
     archive = staging.inside(project / companion['path'], work)
+    license_path = staging.inside(project / 'LICENSE', project)
+    records[license_path] = license_path.read_bytes()
     suffix = f'_{installer_sha[:12]}' if receipt is not None else ''
     output = staging.inside(work / f'build/windows/delivery/{app_name}_{version}_Windows_x64_preview{suffix}.zip', work)
     if output.exists():
@@ -133,6 +135,7 @@ def package(project, receipt=None):
         raise ValueError('notice_archive_mismatch')
 
     files = read_notices(archive, companion['verified_entries'], installer_sha)
+    files['LICENSE'] = records[license_path]
     title = 'Headroom Desktop' if app_name == 'Headroom' else app_name
     files['README.txt'] = (
         f'{title} {version} · Windows x64\n\n'

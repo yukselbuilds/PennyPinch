@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "task": "H042-af",
+  "scope": "Local Windows 10 22H2 x64 security preview delivery",
+  "owner": "lead agent",
+  "package": {
+    "passed": true,
+    "version": "0.1.1-preview.3",
+    "product_source": "f1cc712fa5470e9bc37a55b1f65276ecf14ad129",
+    "archive": {
+      "name": "PennyPinch_0.1.1-preview.3_Windows_x64_preview.zip",
+      "bytes": 126761252,
+      "sha256": "919bbea5778c0a145c3c5f4d93e9f122fc2c9e455e78ec0e70d0fd9417e5ce21",
+      "files": 678
+    },
+    "installer": {
+      "path": "PennyPinch_0.1.1-preview.3_x64-setup.exe",
+      "sha256": "22caab14bf445896a37f78e83f72e9253521df80a8ac6d00c03811aa3b3fe1e2",
+      "bytes": 125319636
+    },
+    "external_checksums_sha256": "1dead6dee8de79b7f5b9e8438b897e840e0366f81fb77b598671d527ea625530",
+    "release_notes_sha256": "5989a9689602f3ee06a4c35a685ac14b458dbb558f5d36317e2fe4d7dab9698f",
+    "third_party_notices": {
+      "count": 673,
+      "unchanged": 671,
+      "updated": {
+        "python/opentelemetry-api@1.45.2/opentelemetry_api-1.45.2.dist-info/licenses/LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "rust/tokio@1.54.1/LICENSE": "253cd04c6714889df2d32f3f64d669179a1c95c76ac43c40882c52eb06bc3552"
+      },
+      "previous_release": "v0.1.1-preview.1"
+    },
+    "notice_index_sha256": "1c0713639b84915f98184a82c7c69bd08acce3c547f869c3e37cba452b92d438",
+    "installed_upgrade_evidence_sha256": "85e0b9f2e531a2d28a5329408d49f116d550963677ac22e8c1e6961324162135",
+    "verified_input_count": 17,
+    "inputs_before_after_sha256": "8fd3d191ea0a218084704ffc3f223033e88b2465f142431f0bd84e5bd4815faf",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "python": "3.13.13",
+    "seconds": 4.28
+  },
+  "windows_extraction": {
+    "passed": true,
+    "archive_sha256_before_after": "919bbea5778c0a145c3c5f4d93e9f122fc2c9e455e78ec0e70d0fd9417e5ce21",
+    "external_checksums_sha256_before_after": "1dead6dee8de79b7f5b9e8438b897e840e0366f81fb77b598671d527ea625530",
+    "extractor_script_sha256": "a69189ac9c2e5fab27793bb0fd344a923196f4e4ec3e4ea7e133e0510439df1a",
+    "files": 678,
+    "matched_internal_digests": 677,
+    "installer_matches_installed_upgrade": true,
+    "release_zip_extracted_to_path_with_unicode_and_spaces": true,
+    "authenticode": "NotSigned",
+    "powershell": "7.6.9",
+    "seconds": 5.715
+  },
+  "quality_gate": {
+    "passed": true,
+    "input_fingerprint_before_after": "91a054361ba15772cd05a0b0309e06b2a8fed7367d60db0ac8f635e0aa444eb1",
+    "input_count": 378,
+    "toolchain": {
+      "versions": {
+        "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+        "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+        "node": "v25.2.1",
+        "pnpm": "11.25.0"
+      },
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "windows": [
+        10,
+        0,
+        19045
+      ],
+      "verifier": "503389a8a8d745575936a2db9f448160bc3bf76a6d253bdcb43538fe214deb0a",
+      "verifier_reference": "0018d1dc20af62c7e641ba124123a7739cbd49e95021dfe0e209aa976841838b"
+    },
+    "checks": {
+      "app_tests": {
+        "exit": 0,
+        "seconds": 1.27,
+        "rust": [],
+        "node": {
+          "tests": "227",
+          "pass": "227",
+          "fail": "0",
+          "skipped": "0"
+        },
+        "python": [],
+        "failures": []
+      },
+      "frontend": {
+        "exit": 0,
+        "seconds": 2.265,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_fmt": {
+        "exit": 0,
+        "seconds": 1.436,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "rust_tests": {
+        "exit": 0,
+        "seconds": 26.075,
+        "rust": [
+          "test result: ok. 481 passed; 0 failed; 25 ignored; 0 measured; 0 filtered out; finished in 14.24s"
+        ],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "embedded_debug": {
+        "exit": 0,
+        "seconds": 23.379,
+        "rust": [],
+        "node": {},
+        "python": [],
+        "failures": []
+      },
+      "update_package_tests": {
+        "exit": 0,
+        "seconds": 4.518,
+        "rust": [],
+        "node": {},
+        "python": [
+          "9"
+        ],
+        "failures": []
+      },
+      "windows_staging_tests": {
+        "exit": 0,
+        "seconds": 1.492,
+        "rust": [],
+        "node": {},
+        "python": [
+          "8"
+        ],
+        "failures": []
+      },
+      "windows_delivery_tests": {
+        "exit": 0,
+        "seconds": 0.477,
+        "rust": [],
+        "node": {},
+        "python": [
+          "10"
+        ],
+        "failures": []
+      }
+    }
+  },
+  "local_assets": {
+    "directory": "work/releases/0.1.1-preview.3",
+    "files": [
+      "PennyPinch_0.1.1-preview.3_Windows_x64_preview.zip",
+      "SHA256SUMS.txt"
+    ],
+    "release_notes": "docs/releases/0.1.1-preview.3-windows10.md"
+  },
+  "limits": {
+    "release": "not_published",
+    "windows_11": "not_tested",
+    "model_provider_requests": 0,
+    "ci_workflow_dispatches": 0,
+    "development_token_savings": "not_measured"
+  }
+}
