@@ -35,7 +35,12 @@ mod recovery;
 mod retained_versions;
 pub(crate) use retained_versions::{ArchiveRetainedRequest, RetainedReply, RetainedRequest};
 
-#[cfg(any(target_os = "macos", target_os = "linux"))]
+#[cfg(target_os = "macos")]
+#[path = "config_io/unix.rs"]
+mod macos;
+#[cfg(target_os = "macos")]
+use macos as unix;
+#[cfg(target_os = "linux")]
 mod unix;
 #[cfg(any(target_os = "macos", target_os = "linux"))]
 use unix::{pin_parent_directories, validate_pinned_directories, DirectoryPins};
