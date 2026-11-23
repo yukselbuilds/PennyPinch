@@ -1,10 +1,10 @@
 //! Explicit, non-secret selections that can be rebound to a fresh discovery scan.
 
 use crate::integrations::config_io::{pin_existing_directory_chain, PinnedDirectoryChain};
-#[cfg(target_os = "macos")]
-use crate::integrations::transaction_fs::MacSelectionFile;
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+use crate::integrations::transaction_fs::UnixSelectionFile;
 use crate::integrations::transaction_fs::{FileIdentity, TransactionFsError};
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 use crate::integrations::transaction_fs::{FileSnapshot, FileToken, FileTransaction};
 use crate::state::ownership::{OwnershipError, OwnershipStore};
 use serde::{Deserialize, Serialize};
@@ -19,7 +19,7 @@ const MAX_PATH_BYTES: usize = 32 * 1024;
 const MAX_VERSION_BYTES: usize = 128;
 const MAX_INSTALLATION_BYTES: u64 = 2 * 1024 * 1024 * 1024;
 const MAX_SAFE_REVISION: u64 = 9_007_199_254_740_991;
-#[cfg(any(test, not(target_os = "macos")))]
+#[cfg(any(test, not(any(target_os = "macos", target_os = "linux"))))]
 const CHOICES_FILE: &str = "selections.json";
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -182,7 +182,7 @@ struct StoredClaudeChoice {
     project_identity: Option<StoredIdentity>,
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 struct LoadedChoices {
     document: StoredChoices,
     token: Option<FileToken>,
@@ -318,7 +318,7 @@ impl StoreLocation {
         self.verify_root_under_boundary_pin(&boundary_pin)
     }
 
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
     fn file_path(&self) -> PathBuf {
         self.root.join(CHOICES_FILE)
     }
@@ -382,15 +382,15 @@ impl ChoiceStore {
         let Some(root_pin) = self.inner.location.verify_root()? else {
             return Ok(snapshot_from_document(StoredChoices::empty()));
         };
-        #[cfg(target_os = "macos")]
-        let document = MacSelectionFile::open(&self.inner.location.root, MAX_CHOICES_BYTES, false)
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        let document = UnixSelectionFile::open(&self.inner.location.root, MAX_CHOICES_BYTES, false)
             .map_err(map_transaction_error)?
             .bytes()
             .map(decode_document)
             .transpose()?
             .unwrap_or_else(StoredChoices::empty);
 
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(not(any(target_os = "macos", target_os = "linux")))]
         let document = {
             let path = self.inner.location.file_path();
             match fs::symlink_metadata(&path) {
@@ -507,9 +507,9 @@ impl ChoiceStore {
             .location
             .verify_root_under_boundary_pin(&boundary_pin)?
             .ok_or(ChoiceError::Unavailable)?;
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
         {
-            let file = MacSelectionFile::open(&self.inner.location.root, MAX_CHOICES_BYTES, true)
+            let file = UnixSelectionFile::open(&self.inner.location.root, MAX_CHOICES_BYTES, true)
                 .map_err(map_transaction_error)?;
             let mut document = file
                 .bytes()
@@ -524,7 +524,7 @@ impl ChoiceStore {
             }
             Ok(snapshot_from_document(document))
         }
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(not(any(target_os = "macos", target_os = "linux")))]
         {
             let path = self.inner.location.file_path();
             let mut transaction = FileTransaction::begin().map_err(map_transaction_error)?;
@@ -610,7 +610,7 @@ fn change_document(
     Ok(Some(bytes))
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn read_document_in_transaction(
     transaction: &mut FileTransaction,
     path: &Path,

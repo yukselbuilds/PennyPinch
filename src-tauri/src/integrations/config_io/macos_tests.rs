@@ -280,7 +280,7 @@ fn desktop_manager_fixture(
     let DiscoveryReply::Snapshot(scan) = discovery.scan_with_inputs(
         Uuid::new_v4().to_string(),
         DiscoveryInputs {
-            macos_home: Some(vendor_home),
+            unix_home: Some(vendor_home),
             ..DiscoveryInputs::default()
         },
     ) else {

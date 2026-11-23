@@ -121,6 +121,13 @@ fn isolated_discovery_process() {
     let manager = open_manager();
     let scan = snapshot(&manager);
     assert_eq!(scan.installations.len(), 4);
+    assert_eq!(
+        scan.installations
+            .iter()
+            .filter(|row| row.version.is_none() && row.client_kind == "opencode")
+            .count(),
+        1
+    );
     assert!(!serde_json::to_string(&scan)
         .unwrap()
         .contains(root.to_str().unwrap()));
@@ -138,17 +145,18 @@ fn isolated_discovery_process() {
             .expect("Missing verified CLI");
         assert_eq!(selected.source, source);
         assert_eq!(selected.connection_status, "not_verified");
-        let SavedInstallationChoiceReply::Snapshot(saved) =
-            manager.remember_installation_choice(RememberInstallationChoiceRequest {
-                schema_version: 1,
-                request_id: Uuid::new_v4().to_string(),
-                installation_id: selected.installation_id.clone(),
-                scan_generation: scan.scan_generation,
-            })
-        else {
-            panic!("Could not save installation");
+        let saved = manager.remember_installation_choice(RememberInstallationChoiceRequest {
+            schema_version: 1,
+            request_id: Uuid::new_v4().to_string(),
+            installation_id: selected.installation_id.clone(),
+            scan_generation: scan.scan_generation,
+        });
+        match saved {
+            SavedInstallationChoiceReply::Snapshot(saved) => assert_eq!(saved.status, "saved"),
+            SavedInstallationChoiceReply::Error(error) => {
+                panic!("Could not save {client}: {:?}", error.error.code);
+            }
         };
-        assert_eq!(saved.status, "saved");
     }
 
     let reopened = open_manager();

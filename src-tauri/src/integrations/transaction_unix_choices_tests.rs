@@ -7,6 +7,10 @@ const OLD: &[u8] = br#"{"schema_version":1,"revision":1,"installations":[],"clau
 const NEXT: &[u8] = br#"{"schema_version":1,"revision":2,"installations":[],"claude":null}"#;
 const OTHER: &[u8] = br#"{"schema_version":1,"revision":3,"installations":[],"claude":null}"#;
 const LIMIT: usize = 16 * 1024;
+#[cfg(target_os = "macos")]
+const PROOF_ROOT_ENV: &str = "HEADROOM_MACOS_PROOF_ROOT";
+#[cfg(target_os = "linux")]
+const PROOF_ROOT_ENV: &str = "HEADROOM_LINUX_PROOF_ROOT";
 
 fn proof_root() -> PathBuf {
     let work = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -15,7 +19,7 @@ fn proof_root() -> PathBuf {
         .join("work")
         .canonicalize()
         .unwrap();
-    let root = PathBuf::from(std::env::var_os("HEADROOM_MACOS_PROOF_ROOT").unwrap());
+    let root = PathBuf::from(std::env::var_os(PROOF_ROOT_ENV).unwrap());
     assert_eq!(root.canonicalize().unwrap(), root);
     assert!(root != work && root.starts_with(work));
     Directory::open(&root, true).unwrap();
@@ -36,6 +40,7 @@ fn snapshot(root: &Path) -> Option<Vec<u8>> {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "requires isolated Ubuntu ext4 root")]
 fn late_selection_replacement_is_preserved_and_reported_as_conflict() {
     for initial in [None, Some(OLD)] {
         let root = fixture();
@@ -78,7 +83,7 @@ fn run_owned_child(root: &Path, phase: &str, expected: i32) {
     let mut child = Command::new(std::env::current_exe().unwrap())
         .args(["--exact", &filter, "--ignored", "--test-threads=1"])
         .env_clear()
-        .env("HEADROOM_MACOS_PROOF_ROOT", proof_root())
+        .env(PROOF_ROOT_ENV, proof_root())
         .env("HEADROOM_TEST_SELECTION_ROOT", root)
         .env("HEADROOM_TEST_SELECTION_PHASE", phase)
         .stdin(Stdio::null())
@@ -108,6 +113,7 @@ fn run_owned_child(root: &Path, phase: &str, expected: i32) {
 }
 
 #[test]
+#[cfg_attr(target_os = "linux", ignore = "requires isolated Ubuntu ext4 root")]
 fn selection_file_serializes_writers_and_reopens_after_process_exit() {
     let root = fixture();
     SelectionFile::open(&root, LIMIT, true)

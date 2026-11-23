@@ -264,10 +264,19 @@ jobs:
           test "$(grep -Ec '^test .*::(config_transaction_reads_the_same_native_file_as_the_config_reader|transaction_apply_reopen_and_typed_undo_preserve_user_metadata|fresh_action_recovers_owner_after_process_exit_between_publications|retained_review_is_passive_and_archive_keeps_displaced_edits_after_reopen) \.\.\. ok$' work/linux-config.log)" = 4
           if [[ "$HEADROOM_VERIFY_LINUX_CLI_DISCOVERY" == true ]]; then
             discovery='integrations::discovery::linux_tests::native_linux_discovery_preserves_choices_and_does_not_run_clients'
-            cargo +1.92.0 test --locked --manifest-path "$manifest" --features custom-protocol \
-              --color never -- --ignored --exact "$discovery" | tee work/linux-discovery.log
+            selections='integrations::transaction_fs::linux_impl::choices::tests'
+            if ! cargo +1.92.0 test --locked --manifest-path "$manifest" --features custom-protocol \
+              --color never -- "$discovery" "$selections" --ignored --skip owned_selection_file_child \
+              --test-threads=1 > work/linux-discovery.log 2>&1; then
+              awk '/^error(\[[A-Z][0-9]+\])?: |^---- .* stdout ----$|^test result:/ { print substr($0, 1, 220) }
+                /^thread .* panicked at / { detail=2 }
+                detail > 0 { print substr($0, 1, 220); detail-- }' work/linux-discovery.log | head -n 30
+              exit 1
+            fi
+            discovery_tests="$(grep -E '^test result: ok\. 3 passed; 0 failed;' work/linux-discovery.log)"
             grep -Fxq "test $discovery ... ok" work/linux-discovery.log
-            printf '%s\n' 'Linux CLI discovery and saved choices passed.' >> "$GITHUB_STEP_SUMMARY"
+            printf '%s\n' "$discovery_tests"
+            printf '%s\n' "- Linux CLI discovery and saved choices: $discovery_tests" >> "$GITHUB_STEP_SUMMARY"
           fi
           if [[ "$HEADROOM_VERIFY_LINUX_MANAGED_ENGINE" == true ]]; then
             bash scripts/test-linux-managed-engine.sh

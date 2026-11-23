@@ -123,5 +123,5 @@ impl SelectionFile {
 }
 
 #[cfg(test)]
-#[path = "transaction_macos_choices_tests.rs"]
+#[path = "transaction_unix_choices_tests.rs"]
 mod tests;

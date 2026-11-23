@@ -1453,6 +1453,5 @@ mod tests;
 #[path = "transaction_macos_retained.rs"]
 pub(crate) mod retained_versions;
 
-#[cfg(target_os = "macos")]
-#[path = "transaction_macos_choices.rs"]
+#[path = "transaction_unix_choices.rs"]
 pub(crate) mod choices;
