@@ -70,7 +70,7 @@ The two public branches and two release tags use the rewritten Git history. GitH
 
 GitHub About, README, and Pages now describe separate platform statuses. The live release asset IDs, SHA256 values, and signed update files matched. Secret Protection, push protection, and Dependabot alerts are on.
 
-The new local Windows 10 build and NSIS package passed the build path checks. The installation and release checks for that candidate remain open.
+The lead agent completed H042-ah on Windows 10. The full NSIS installer replaced Headroom 0.44.0 with 0.45.0 at PennyPinch version 0.1.0. The installed runtime matched 19,491 staged resources. It completed one local Responses stream and stopped normally. The next release step uses the public preview as the upgrade baseline. Windows 11 x64 remains open. [Installer transition](proofs/windows-installer-045-upgrade.json).
 
 Tokio 1.54.1 passed the Windows 10 product gate and signed update package checks with an isolated key. The real QA app passed signature, resource pin, extraction, and probe validation. [Tokio verification](proofs/tokio-windows-1541.json) · [Public privacy and presentation checks](proofs/pennypinch-public-privacy.md)
 

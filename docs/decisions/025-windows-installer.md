@@ -10,6 +10,8 @@ Do not change the development manifest or old payload. The package uses a separa
 
 WebView2 availability is checked through Tauri's supported installer path; if absent, the bootstrapper's internet requirement is stated clearly. Users do not need to install Python/Node/Rust. Bundler tools downloaded during development stay in the project cache. This is an unsigned development preview; it does not claim signed release status and adds no payment/certificate. Do not blindly remove existing pinned proxy dependencies; record actual component size and optional ML/MCP/RTK boundaries.
 
+When the full installer replaces a known runtime distribution, check the installed target against its registry record. Move its old metadata out of the Python package directory. Remove only the files listed for the earlier distribution. Preserve unknown files at the retirement path. Reject an unrelated target or a conflict at that path. [Installed transition evidence](../proofs/windows-installer-045-upgrade.json).
+
 ## Ordered acceptance
 
 The first deep-test target was 113 characters; although NSIS returned exit 0, two .pyc files whose full paths were 261/271 characters long were missing. This candidate is not complete installer acceptance. Without changing Windows-wide settings, the installer rejects with a clear error/exit 2 before copying when the root exceeds 100 UTF-16 code units; it must not skip files. Staging checks that every pinned file and directory path fits Win32 limits under that root; if the payload changes, check the budget again. Validate a shorter target containing spaces/Unicode and long-path rejection separately with the real installer. Unsupported long paths are not silent success.

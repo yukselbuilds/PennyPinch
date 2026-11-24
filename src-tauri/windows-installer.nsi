@@ -682,8 +682,8 @@ Section Install
   !endif
 
   !insertmacro CheckIfAppIsRunning "$INSTDIR\${MAINBINARYNAME}.exe" "${PRODUCTNAME}"
-  !ifmacrodef HeadroomPrepareOpenTelemetryRetirement
-    !insertmacro HeadroomPrepareOpenTelemetryRetirement
+  !ifmacrodef HeadroomPrepareLegacyRuntimeRetirement
+    !insertmacro HeadroomPrepareLegacyRuntimeRetirement
   !endif
 
   ; Copy main executable
@@ -696,8 +696,8 @@ Section Install
   {{#each resources}}
     File /a "/oname={{this.[1]}}" "{{no-escape @key}}"
   {{/each}}
-  !ifmacrodef HeadroomRetireOpenTelemetry
-    !insertmacro HeadroomRetireOpenTelemetry
+  !ifmacrodef HeadroomRetireLegacyRuntime
+    !insertmacro HeadroomRetireLegacyRuntime
   !endif
 
   ; Copy external binaries

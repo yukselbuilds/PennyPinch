@@ -24,9 +24,10 @@ LangString HeadroomRemovalState 1033 "PennyPinch could not finish removing its l
 LangString HeadroomRemovalState 1055 "PennyPinch yerel verilerini veya başlangıç kaydını kaldıramadı. Bu dosyaları kullanan programları kapatıp yeniden deneyin. Kurulum korundu."
 LangString HeadroomRemovalUnavailable 1033 "PennyPinch could not check its installation data. Repair this installation and try again."
 LangString HeadroomRemovalUnavailable 1055 "PennyPinch kurulum verilerini kontrol edemedi. Bu kurulumu onarıp yeniden deneyin."
-LangString HeadroomRuntimeReplacementFailed 1033 "Setup cannot replace the old OpenTelemetry package. Close programs that use PennyPinch. Run setup again. Use an empty folder for a new installation."
-LangString HeadroomRuntimeReplacementFailed 1055 "Kurulum eski OpenTelemetry paketini değiştiremiyor. PennyPinch'i kullanan programları kapatın. Kurulumu yeniden başlatın. Yeni kurulum için boş bir klasör seçin."
+LangString HeadroomRuntimeReplacementFailed 1033 "Setup cannot replace the old runtime files. Close programs that use PennyPinch. Run setup again. Use an empty folder for a new installation."
+LangString HeadroomRuntimeReplacementFailed 1055 "Kurulum eski motor dosyalarını değiştiremiyor. PennyPinch'i kullanan programları kapatın. Kurulumu yeniden başlatın. Yeni kurulum için boş bir klasör seçin."
 Var HeadroomLegacyOpenTelemetry
+Var HeadroomLegacyEngine
 
 !macro HeadroomAbortSetup message
   DetailPrint "${message}"
@@ -45,10 +46,10 @@ Var HeadroomLegacyOpenTelemetry
   ${EndIf}
 !macroend
 
-!macro HeadroomPrepareOpenTelemetryRetirement
+!macro HeadroomPrepareRuntimeRetirement metadata retired saved
   ; Python can select the old distribution when both metadata directories exist.
   StrCpy $0 "$INSTDIR\runtime\payload\Lib\site-packages"
-  StrCpy $1 "$0\opentelemetry_api-1.45.1.dist-info"
+  StrCpy $1 "$0\${metadata}"
   System::Call 'kernel32::GetFileAttributesW(w "$1") i.r2 ?e'
   Pop $3
   ${If} $2 <> -1
@@ -62,7 +63,7 @@ Var HeadroomLegacyOpenTelemetry
     !insertmacro HeadroomRequireRuntimeDirectory "$INSTDIR\runtime\payload\Lib"
     !insertmacro HeadroomRequireRuntimeDirectory "$0"
     !insertmacro HeadroomRequireRuntimeDirectory "$1"
-    System::Call 'kernel32::GetFileAttributesW(w "$INSTDIR\opentelemetry-1.45.1.retired") i.r2 ?e'
+    System::Call 'kernel32::GetFileAttributesW(w "$INSTDIR\${retired}") i.r2 ?e'
     Pop $3
     ${If} $2 <> -1
       !insertmacro HeadroomAbortSetup "$(HeadroomRuntimeReplacementFailed)"
@@ -70,18 +71,19 @@ Var HeadroomLegacyOpenTelemetry
     ${AndIf} $3 <> 3
       !insertmacro HeadroomAbortSetup "$(HeadroomRuntimeReplacementFailed)"
     ${EndIf}
-    StrCpy $HeadroomLegacyOpenTelemetry "$1"
+    StrCpy ${saved} "$1"
   ${ElseIf} $3 <> 2
   ${AndIf} $3 <> 3
     !insertmacro HeadroomAbortSetup "$(HeadroomRuntimeReplacementFailed)"
   ${EndIf}
 !macroend
 
-!macro HeadroomRetireOpenTelemetry
-  ${If} $HeadroomLegacyOpenTelemetry != ""
-    StrCpy $3 "$INSTDIR\opentelemetry-1.45.1.retired"
+!macro HeadroomRetireRuntimeMetadata saved retired engineMetadata
+  ${If} ${saved} != ""
+    !insertmacro HeadroomRequireRuntimeDirectory "${saved}"
+    StrCpy $3 "$INSTDIR\${retired}"
     ClearErrors
-    Rename "$HeadroomLegacyOpenTelemetry" "$3"
+    Rename "${saved}" "$3"
     ${If} ${Errors}
       !insertmacro HeadroomAbortSetup "$(HeadroomRuntimeReplacementFailed)"
     ${EndIf}
@@ -97,11 +99,32 @@ Var HeadroomLegacyOpenTelemetry
     IntOp $2 $2 & 0x410
     ${If} $2 = 16
       Delete "$3\licenses\LICENSE"
+      !if ${engineMetadata} = 1
+        Delete "$3\licenses\NOTICE"
+      !endif
       RMDir "$3\licenses"
     ${EndIf}
+    !if ${engineMetadata} = 1
+      System::Call 'kernel32::GetFileAttributesW(w "$3\sboms") i.r2'
+      IntOp $2 $2 & 0x410
+      ${If} $2 = 16
+        Delete "$3\sboms\headroom-py.cyclonedx.json"
+        RMDir "$3\sboms"
+      ${EndIf}
+    !endif
     RMDir "$3"
     ClearErrors
   ${EndIf}
+!macroend
+
+!macro HeadroomPrepareLegacyRuntimeRetirement
+  !insertmacro HeadroomPrepareRuntimeRetirement "opentelemetry_api-1.45.1.dist-info" "opentelemetry-1.45.1.retired" $HeadroomLegacyOpenTelemetry
+  !insertmacro HeadroomPrepareRuntimeRetirement "headroom_ai-0.44.0.dist-info" "headroom-ai-0.44.0.retired" $HeadroomLegacyEngine
+!macroend
+
+!macro HeadroomRetireLegacyRuntime
+  !insertmacro HeadroomRetireRuntimeMetadata $HeadroomLegacyOpenTelemetry "opentelemetry-1.45.1.retired" 0
+  !insertmacro HeadroomRetireRuntimeMetadata $HeadroomLegacyEngine "headroom-ai-0.44.0.retired" 1
 !macroend
 
 !macro NSIS_HOOK_PREUNINSTALL

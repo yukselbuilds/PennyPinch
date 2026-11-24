@@ -160,3 +160,13 @@ A real Windows 10 22H2 x64 installation accepted the v0.1.1-preview.1 installer 
 The original profile stayed in a local backup during the test. The test removed its installation and data. The 2,081 original profile files matched after restoration.
 
 GitHub published the full installer ZIP as v0.1.1-preview.1. Both assets passed anonymous download verification. The unsigned installer embeds the public key for signed in-app updates. Windows 11 x64 update and rollback remain open. [Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.1)
+
+## 24 November 2026 — Headroom 0.45.0 full installer
+
+Before the fix, the 0.45.0 NSIS package returned exit code 0 after an in-place install. It left nine Headroom 0.44.0 metadata files. Packaged Python selected that version. The engine launcher rejected the version mismatch.
+
+The installer now removes the known 0.44.0 metadata from the registered installation. It checks the target before copying. It preserves unknown files and rejects a conflict at the retirement path.
+
+On Windows 10 22H2 x64, the fixed full installer replaced Headroom 0.44.0 with 0.45.0. Both installers used PennyPinch version 0.1.0. All 19,491 staged resources matched. Packaged Python selected 0.45.0. The installed controller started the engine, completed one local Responses SSE request, and stopped normally. The test preserved its separate state marker and removed its installation.
+
+The executable-only update channel requires matching runtime resources. Use a full installer for an engine version change. Public release delivery and Windows 11 require separate checks. [Evidence](../proofs/windows-installer-045-upgrade.json).

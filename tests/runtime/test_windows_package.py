@@ -122,7 +122,7 @@ class WindowsPackageTests(unittest.TestCase):
                     package.validate_path_budget(self.root, [name])
 
     @unittest.skipUnless(os.name == 'nt' and MAKENSIS.is_file(), 'requires the cached Windows NSIS compiler')
-    def test_nsis_retires_old_opentelemetry_only_from_the_registered_install(self):
+    def test_nsis_retires_known_runtime_metadata_only_from_the_registered_install(self):
         import winreg
 
         destination = self.root / 'install'
@@ -130,6 +130,9 @@ class WindowsPackageTests(unittest.TestCase):
         old = packages / 'opentelemetry_api-1.45.1.dist-info'
         patched = packages / 'opentelemetry_api-1.45.2.dist-info'
         retired = destination / 'opentelemetry-1.45.1.retired'
+        old_engine = packages / 'headroom_ai-0.44.0.dist-info'
+        patched_engine = packages / 'headroom_ai-0.45.0.dist-info'
+        retired_engine = destination / 'headroom-ai-0.44.0.retired'
         registry = 'Software\\PennyPinchInstallerTest_' + uuid.uuid4().hex
         hooks = ROOT / 'src-tauri/windows-hooks.nsh'
         installer = self.root / 'sample.exe'
@@ -145,11 +148,11 @@ InstallDir "{destination}"
 OutFile "{installer}"
 Section
   SetShellVarContext current
-  !insertmacro HeadroomPrepareOpenTelemetryRetirement
+  !insertmacro HeadroomPrepareLegacyRuntimeRetirement
   FileOpen $4 "$INSTDIR\\write-marker.txt" w
   FileWrite $4 "ready"
   FileClose $4
-  !insertmacro HeadroomRetireOpenTelemetry
+  !insertmacro HeadroomRetireLegacyRuntime
   SetErrorLevel 0
 SectionEnd
 ''', encoding='utf-8-sig')
@@ -160,10 +163,23 @@ SectionEnd
             return subprocess.run([str(installer)], capture_output=True, timeout=20).returncode
 
         patched.mkdir(parents=True)
+        patched_engine.mkdir()
         marker = destination / 'write-marker.txt'
         (patched / 'METADATA').write_bytes(b'patched metadata')
+        (patched_engine / 'METADATA').write_bytes(b'current engine metadata')
         self.assertEqual(run(), 0)
         marker.unlink()
+
+        (old_engine / 'licenses').mkdir(parents=True)
+        (old_engine / 'sboms').mkdir()
+        (old_engine / 'METADATA').write_bytes(b'old engine metadata')
+        (old_engine / 'licenses/NOTICE').write_bytes(b'old engine notice')
+        (old_engine / 'sboms/headroom-py.cyclonedx.json').write_bytes(b'old engine SBOM')
+        (old_engine / 'notes.txt').write_bytes(b'keep engine notes')
+        self.assertEqual(run(), 2)
+        self.assertFalse(marker.exists())
+        self.assertEqual((old_engine / 'METADATA').read_bytes(), b'old engine metadata')
+
         old.mkdir()
         (old / 'METADATA').write_bytes(b'old metadata')
         (old / 'notes.txt').write_bytes(b'preserve this file')
@@ -178,8 +194,18 @@ SectionEnd
             self.assertFalse((retired / 'METADATA').exists())
             self.assertEqual((retired / 'notes.txt').read_bytes(), b'preserve this file')
             self.assertEqual((patched / 'METADATA').read_bytes(), b'patched metadata')
+            self.assertFalse(old_engine.exists())
+            self.assertEqual(sorted(path.name for path in retired_engine.iterdir()), ['notes.txt'])
+            self.assertEqual((retired_engine / 'notes.txt').read_bytes(), b'keep engine notes')
+            self.assertEqual((patched_engine / 'METADATA').read_bytes(), b'current engine metadata')
             self.assertEqual(run(), 0)
             marker.unlink()
+            old_engine.mkdir()
+            (old_engine / 'METADATA').write_bytes(b'old engine metadata')
+            self.assertEqual(run(), 2)
+            self.assertFalse(marker.exists())
+            self.assertEqual((old_engine / 'METADATA').read_bytes(), b'old engine metadata')
+            self.assertEqual((retired_engine / 'notes.txt').read_bytes(), b'keep engine notes')
             old.mkdir()
             (old / 'METADATA').write_bytes(b'old metadata')
             self.assertEqual(run(), 2)

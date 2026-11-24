@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-24",
+  "task": "H042-ah",
+  "platform": "Windows 10 22H2 x64, build 19045",
+  "application_version": "0.1.0",
+  "scope": "Run the full current-user NSIS installers in an owned test path. Keep the same application version and replace the engine.",
+  "base_commit": "273eaf828f0d0c1d997b350a45a871e13e1038c7",
+  "changed_source_sha256": {
+    "src-tauri/windows-hooks.nsh": "4c160b0ed88fdb486ebc45b1cc30f63a597807c5c537d2ac9a7b98971e7db88c",
+    "src-tauri/windows-installer.nsi": "ea04f8d68051d38c9c96d843109a9bfe41904c0f8e042b97ee84780f21dd0023",
+    "tests/runtime/test_windows_package.py": "14bfb3926a70c89ef21aa529ae59804ddc0d95a62349c91180209334abdf7b82"
+  },
+  "before_fix": {
+    "baseline_installer_sha256": "73417bae1f6511af2a28de81ac55df3c7a2509e3771fd09b97b3cd14659bbd03",
+    "candidate_installer_sha256": "df966adc6ea0a9ecec94349386d406f3883d7f72193b4115fd35dfe3eee893d6",
+    "installer_exit": 0,
+    "stale_metadata_files": 9,
+    "observed_distribution": "0.44.0",
+    "runner_result": "engine-package-version-mismatch",
+    "duration_seconds": 98.852,
+    "receipt_sha256": "bdd4f9ebba6b9ad6f689b6c53d9688817841f063fcc8650f193f3bfbcb4e454a"
+  },
+  "after_fix": {
+    "installer_sha256": "aff6384beb2eef381c974c1f2f225f934a9a52d451d887a4b8243c36e344b92d",
+    "installer_bytes": 125333758,
+    "compiled_executable_sha256": "8b32d8c68ceaf8347ad79d52b68583a5df1611b93f4d67dbe4fabd6955ebc619",
+    "embedded_executable_sha256": "4643ac6658a7a89876da6b7ced6be5e4848e9f9e9fed28393554c5859a4df3db",
+    "staged_resources_matched": 19491,
+    "unlisted_installation_files": 0,
+    "resource_receipt_sha256": "6ffb2b5f2cb7d638716f9230c58c984ec2c8b315144df5dd0ba85e716cf6d18d",
+    "observed_distribution": "0.45.0",
+    "runner_result": "pass",
+    "duration_seconds": 176.656,
+    "installed_runtime": {
+      "native_executable_probe": "pass",
+      "wrong_application_version_rejected": true,
+      "engine_version": "0.45.0",
+      "profile": {
+        "mode": "cache",
+        "savings_profile": "coding",
+        "ttl_seconds": 7200,
+        "telemetry_enabled": true,
+        "beacon_enabled": false,
+        "memory_enabled": false,
+        "learning_enabled": false,
+        "output_shaper_enabled": false,
+        "model_router_enabled": false,
+        "protected_tools": []
+      },
+      "loopback_responses_sse": 200,
+      "matched_local_requests": 1,
+      "sentinel_auth_and_model_preserved": true,
+      "controller_stop": {
+        "shutdown": "graceful",
+        "engine_exit_code": 0,
+        "owned_port_closed": true,
+        "force_fallback": false
+      }
+    },
+    "test_install_removed": true,
+    "isolated_state_restored": true,
+    "fixture_state_marker_preserved": true,
+    "receipt_sha256": "c2b9f226c1f504c5381c6f67cb5ef9570ec0145bbfd391a538a7f6a86e98184a"
+  },
+  "verification": {
+    "input_artifacts_match": true,
+    "normalized_nsis_marker_verified": true,
+    "bundle_inputs_sha256": "dde4a4f6e16b6dd14b138f09be6830d0593742fb3cc3ce3a13f1ef2ce06bb76e",
+    "product_gate_receipt_sha256": "f2d7a30af5b26c5aec37f373d7ec3d7198522167877257ba0f0bff947117456c",
+    "product_gate_inputs": 523,
+    "product_gate_input_set_sha256": "1fd544c28273467e70aa8de4ce5bedf0f7a6ba04a899d8d989c32d32f201d369",
+    "app_tests_passed": 227,
+    "rust_tests_result": "test result: ok. 481 passed; 0 failed; 25 ignored; 0 measured; 0 filtered out",
+    "windows_packaging_tests_passed": 29,
+    "step_exit_codes": {
+      "app_tests": 0,
+      "frontend": 0,
+      "rust_fmt": 0,
+      "rust_tests": 0,
+      "embedded_debug": 0,
+      "windows_runtime_tests": 0,
+      "macos_portable_tests": 0,
+      "runtime_source_pins": 0,
+      "manual_launcher": 0
+    }
+  },
+  "network_model_requests": 0,
+  "open_verification": [
+    "public release upgrade and download",
+    "clean host without WebView2",
+    "Windows 11 x64"
+  ]
+}
