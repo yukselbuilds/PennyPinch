@@ -38,21 +38,21 @@ See how to connect and review traffic in the [user guide](docs/USER_GUIDE.md).
 
 ## Measured input-token results
 
-Each result has a specific workload and counter. Provider usage and billing use separate measurements.
+On Windows 10, Headroom 0.45.0 and PennyPinch forwarded the same request JSON in all eight test cases. Both proxies reduced the count by 43.59% in the six headline cases. The SDK estimates tokens in messages. The proxy test counts the full request JSON with `o200k_base`. [Matched comparison](docs/proofs/upstream-benchmarks-045.json)
 
 | Test scope | Before → after input count | Result | Counter and limit |
 | --- | ---: | ---: | --- |
-| Six selected synthetic Chat Completions requests through the Windows desktop proxy, Headroom 0.45.0 | 122,944 → 69,350 | **43.59% lower** | Full request JSON, including tool schemas, counted with `o200k_base`. No model calls. [Request counts](docs/proofs/upstream-benchmarks-045.json) |
+| Six synthetic Chat Completions requests through each proxy, Headroom 0.45.0 | 122,944 → 69,350 | **43.59% lower** | The full request JSON count. The test used a local fixture and zero model calls. [Request counts](docs/proofs/upstream-benchmarks-045.json) |
 | One real Codex CLI Responses WebSocket request through the installed Windows app | 18,081 → 17,870 | **211 fewer · 1.17% local estimate** | One matched local pair from Headroom 0.44.0. The provider reported 10,780 input tokens separately. [Measurement](docs/proofs/pennypinch-windows10-activity-measurement.json) |
-| Six selected examples from the Headroom SDK benchmark, rerun with Headroom 0.45.0 | 126,289 → 55,209 | **56.28% lower** | The SDK runner's benchmark tokenizer and input scope. The SDK runner measures compression directly. [SDK counts](docs/proofs/upstream-benchmarks-045.json) · [Pinned benchmark source](https://github.com/headroomlabs-ai/headroom/blob/ce0460cfa8598dc939243dbc7aec4b2d35f4e44a/docs/content/docs/benchmarks.mdx) |
+| Six selected examples from the Headroom SDK benchmark, rerun with Headroom 0.45.0 | 126,289 → 55,209 | **56.28% lower** | Headroom's `benchmark-model` estimates message tokens. [SDK counts](docs/proofs/upstream-benchmarks-045.json) · [Pinned benchmark source](https://github.com/headroomlabs-ai/headroom/blob/ce0460cfa8598dc939243dbc7aec4b2d35f4e44a/docs/content/docs/benchmarks.mdx) |
 | One paired task on a local model server | 6,647 → 6,647 | **0% change** | Both routes used the same log task and local model. The proxy used Headroom 0.44.0. The model server supplied both counts. [Comparison method](docs/validation/optimization-benefit.md#19-kas%C4%B1m--ger%C3%A7ek-yerel-modelde-e%C5%9Flenmi%C5%9F-chat-completions-k%C4%B1yas%C4%B1) |
 
 <details>
 <summary>See the six synthetic proxy cases</summary>
 
-The Windows 10 22H2 run used Headroom 0.45.0 through the managed desktop proxy. Headroom 0.44.0 returned the same counts with the same fixtures. The Python source case increased by 0.27%.
+The counts match for the Headroom 0.45.0 and PennyPinch proxies. The Python source stayed exact. A streaming usage field added eight tokens to its request JSON.
 
-| Synthetic input | Direct | Through proxy | Change |
+| Synthetic input | Direct | Through either proxy | Change |
 | --- | ---: | ---: | ---: |
 | JSON search results · 100 items | 9,521 | 5,733 | 39.79% lower |
 | JSON search results · 500 items | 46,794 | 27,768 | 40.66% lower |

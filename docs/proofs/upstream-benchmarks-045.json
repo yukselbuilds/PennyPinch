@@ -254,7 +254,7 @@
   },
   "paired_proxy": {
     "method": "Use the staged Windows controller and engine, isolated configuration, and a loopback Chat Completions SSE fixture. Capture each full submitted request.",
-    "token_basis": "o200k_base canonical full request JSON including added tool schemas",
+    "token_basis": "o200k_base canonical full Chat Completions request JSON",
     "profile": {
       "mode": "cache",
       "savings_profile": "coding",
@@ -421,5 +421,164 @@
     "end-to-end response time",
     "live model response quality",
     "SQuAD model evaluation"
-  ]
+  ],
+  "stock_proxy_comparison": {
+    "scope": "Run the unmodified Headroom CLI proxy and the PennyPinch runtime on Windows 10. Both use Headroom 0.45.0 and the coding/cache profile. Send each request directly and through both proxies to the same loopback fixture.",
+    "repository_candidate": "22870a6a97acfb1e6ef3256afd08a06dd24668b3",
+    "toolchain": {
+      "engine": "0.45.0",
+      "python": "3.13.13",
+      "os_build": 19045,
+      "tiktoken": "0.14.0"
+    },
+    "local_requests": 24,
+    "network_model_requests": 0,
+    "fixture_seed": 7045,
+    "direct_request_fields": [
+      "messages",
+      "model",
+      "stream"
+    ],
+    "stock_runtime_profile": {
+      "mode": "cache",
+      "savings_profile": "coding",
+      "optimize": true
+    },
+    "desktop_runtime_profile": {
+      "mode": "cache",
+      "savings_profile": "coding",
+      "ttl_seconds": 7200,
+      "telemetry_enabled": true,
+      "beacon_enabled": false,
+      "memory_enabled": false,
+      "learning_enabled": false,
+      "output_shaper_enabled": false,
+      "model_router_enabled": false,
+      "protected_tools": []
+    },
+    "matched_proxy_bodies": 8,
+    "headline_cases": 6,
+    "direct_request_tokens": 122944,
+    "stock_proxy_request_tokens": 69350,
+    "desktop_proxy_request_tokens": 69350,
+    "saved_pct_in_each_proxy": 43.592205,
+    "additional_proxy_tokens_each_request": 8,
+    "difference_between_proxies": 0,
+    "added_field": "stream_options.include_usage=true",
+    "code_preserved": true,
+    "anomaly_fields_preserved": {
+      "error_code": true,
+      "resolution": true,
+      "affected_count": true
+    },
+    "case_results": [
+      {
+        "scenario": "JSON: Search Results (100 items)",
+        "input_sha256": "7929580682242646827e2dda9193d11999e68c43da2582018023322dcc018f96",
+        "direct_tokens": 9521,
+        "sdk_full_json_tokens": 5725,
+        "stock_proxy_tokens": 5733,
+        "desktop_proxy_tokens": 5733,
+        "proxy_body_equal": true,
+        "stock_usage_requested": true,
+        "desktop_usage_requested": true
+      },
+      {
+        "scenario": "JSON: Search Results (500 items)",
+        "input_sha256": "eaa90a19979ab455723c2861a8a53aff90cda03e28fac2083fe4446a66c95791",
+        "direct_tokens": 46794,
+        "sdk_full_json_tokens": 27760,
+        "stock_proxy_tokens": 27768,
+        "desktop_proxy_tokens": 27768,
+        "proxy_body_equal": true,
+        "stock_usage_requested": true,
+        "desktop_usage_requested": true
+      },
+      {
+        "scenario": "Logs: Structured (100 entries)",
+        "input_sha256": "af13a98d36160ae12830fdb2ec47cb28826924c8ca5372915d57f58207b2513e",
+        "direct_tokens": 8661,
+        "sdk_full_json_tokens": 5672,
+        "stock_proxy_tokens": 5680,
+        "desktop_proxy_tokens": 5680,
+        "proxy_body_equal": true,
+        "stock_usage_requested": true,
+        "desktop_usage_requested": true
+      },
+      {
+        "scenario": "Logs: Structured (500 entries)",
+        "input_sha256": "53708cc772beaa01079fe492bc60b57570764512157ffeedf8d195bb3a443cbb",
+        "direct_tokens": 40527,
+        "sdk_full_json_tokens": 25934,
+        "stock_proxy_tokens": 25942,
+        "desktop_proxy_tokens": 25942,
+        "proxy_body_equal": true,
+        "stock_usage_requested": true,
+        "desktop_usage_requested": true
+      },
+      {
+        "scenario": "Text: Documentation (20K tokens)",
+        "input_sha256": "d2d251664128d4783706c2b77d57dd03f1604c0cf80c523c1b00eb5bc72e1dda",
+        "direct_tokens": 14499,
+        "sdk_full_json_tokens": 1269,
+        "stock_proxy_tokens": 1277,
+        "desktop_proxy_tokens": 1277,
+        "proxy_body_equal": true,
+        "stock_usage_requested": true,
+        "desktop_usage_requested": true
+      },
+      {
+        "scenario": "Code: Python (~200 lines)",
+        "input_sha256": "1bdd3eeced230efa24ad07057e3297758949154c0b4bc43b5ad7b6b12ecb6355",
+        "direct_tokens": 2942,
+        "sdk_full_json_tokens": 2942,
+        "stock_proxy_tokens": 2950,
+        "desktop_proxy_tokens": 2950,
+        "proxy_body_equal": true,
+        "stock_usage_requested": true,
+        "desktop_usage_requested": true
+      },
+      {
+        "scenario": "JSON: Number Array (200 numbers)",
+        "input_sha256": "cd395671aa420c1bbdba10ceca7e0caf2ea9f46a898adace25dc2f19439f45f5",
+        "direct_tokens": 1898,
+        "sdk_full_json_tokens": 259,
+        "stock_proxy_tokens": 267,
+        "desktop_proxy_tokens": 267,
+        "proxy_body_equal": true,
+        "stock_usage_requested": true,
+        "desktop_usage_requested": true
+      },
+      {
+        "scenario": "SmartCrusher: Reconstructed Error at 67",
+        "input_sha256": "7bc6459448e4f922a0469ef0cd956c377e7dfbab8699b6cfe4e91580346972e6",
+        "direct_tokens": 7769,
+        "sdk_full_json_tokens": 4891,
+        "stock_proxy_tokens": 4899,
+        "desktop_proxy_tokens": 4899,
+        "proxy_body_equal": true,
+        "stock_usage_requested": true,
+        "desktop_usage_requested": true
+      }
+    ],
+    "sdk_counter_comparison": {
+      "default_model_label": "benchmark-model",
+      "default_counter": "EstimatingTokenCounter",
+      "proxy_payload_model_label": "gpt-4o",
+      "proxy_payload_counter": "tiktoken o200k_base over request JSON",
+      "matched_compressed_sdk_messages": 6,
+      "default_sdk_output_as_full_json_tokens": 69302,
+      "input_files": 9,
+      "inputs_sha256_before_and_after": "072c3bdfa88a9cf36de90f01926913d975167ff06926a8f7eb02f3572a172675",
+      "receipt_sha256": "b05b2d54c01f0e7b6c1d36e03deca8ab27a8dfd9a65a8c0ccb92a2475ee919ab"
+    },
+    "verification": {
+      "input_files": 28,
+      "inputs_sha256_before_and_after": "d5e3d0e7bdc9c0d3133cd7c7093ca3859f338ab1cfd30026733b189c3cc5ce27",
+      "stock_environment_sha256": "24fef02b53eed7a818859017d1f9d0a4898cc7ee7e725d42af72c9c04e344ca6",
+      "desktop_environment_sha256": "a31cc7a3315bea193b5983062267f711598d78a2e411d9d7aa563003d8124660",
+      "both_proxies_exited_normally_and_closed_owned_ports": true,
+      "receipt_sha256": "0813cd1b4306167634cf04c2b0902d7c25388abe57a2d781b682a049395dae10"
+    }
+  }
 }

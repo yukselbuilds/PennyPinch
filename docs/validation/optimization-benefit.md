@@ -172,11 +172,11 @@ The following values are full JSON bodies counted with the same `o200k_base` enc
 
 ## Open H041 acceptance criteria
 
-On 19 November 2026, **6 verification criteria and 3 optional R&D criteria** were open. The main task count was **45/54**.
+On 24 November 2026, **5 verification criteria and 3 optional R&D criteria** remain open. The main task count is **46/54**.
 
 | Criterion | Evidence needed |
 | --- | --- |
-| Restricted native Windows file profile for Codex | Check an allowed read in a suitable native sandbox. Check an explicit access denial. The legacy sandbox on Windows 10 did not start the profile. WSL2 verified the same file boundary. [File and archive evidence](../proofs/targeted-query-comparison.json) |
+| Restricted native Windows file profile for Codex | Check an allowed read and an explicit denial in a supported native sandbox. On Windows 10, Codex CLI 0.171.0-alpha.13 stopped before the file command in both tested backends. WSL2 verified the same file boundary. [File and archive evidence](../proofs/targeted-query-comparison.json) |
 | Windows 11 x64 | Test the packaged 0.44.0 engine, shutdown, and traffic on actual Windows 11 x64. The standard GitHub Windows 11 image was ARM64. CircleCI offered Windows Server images. [Standard GitHub runners](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-private-repositories) · [CircleCI Windows images](https://circleci.com/docs/guides/execute/using-windows/) |
 | macOS ARM64 | **Verified on 24 November.** The 0.45.0 package passed the controlled Codex Desktop turn, local usage, and normal exit checks. The earlier 0.44.0 package passed the start, stop, and restart checks. [Current package evidence](../proofs/headroom-045-managed-packages.json) · [Earlier lifecycle](../proofs/macos-044-package-lifecycle.json) |
 | Live Anthropic Messages | Use an authorized account. Match the usage counters of an actual Messages response to the corresponding Headroom request. [Local usage evidence](../proofs/desktop-anthropic-usage.json) |
@@ -294,8 +294,12 @@ Windows 10 22H2 ran both versions with the same fixtures. The runner fixed gener
 | Upstream SDK message counter | 126,289 | 55,209 | 56.28% lower |
 | Full Chat Completions JSON through the managed proxy | 122,944 | 69,350 | 43.59% lower |
 
-The proxy sent 53,594 fewer input tokens in the six headline cases. The count uses `o200k_base` and includes the full request JSON. The SDK produced 69,302 tokens when measured on the same full JSON. Both engines preserved the Python source exactly. They also preserved the error code, resolution, and value 731 in the same synthetic error record.
+The stock Headroom 0.45.0 CLI proxy and PennyPinch forwarded identical JSON content in all eight cases. Direct requests used 122,944 tokens in the six headline cases. Each proxy forwarded 69,350 tokens, which is 53,594 fewer. Both proxies preserved the exact Python source and the error code, resolution, and value 731 in the synthetic error.
 
-The HTML extraction test returned F1 of 0.9168 on 181 pages. The mean character reduction was 94.98%. The test passed the upstream F1 threshold of 0.90 and matched the previous result.
+The upstream runner uses an estimator for the `benchmark-model` label and counts message tokens. The compressed messages matched in all six headline cases when the SDK used `gpt-4o`. Counting the same SDK output as full request JSON with `o200k_base` gave 69,302 tokens (43.63% fewer).
+
+Headroom adds `stream_options.include_usage` to both proxy routes to request provider usage. That field added eight tokens per request in the JSON count. It accounts for the full 48-token difference between the SDK output and either proxy across six cases. [Matched proxy and counter data](../proofs/upstream-benchmarks-045.json).
+
+The HTML extraction test returned F1 of 0.9168 on 181 pages. The mean character reduction was 94.98%. The test passed the upstream F1 threshold of 0.90 and matched the 0.44.0 run. The upstream page reports 0.919 on its earlier setup.
 
 These runs used local test inputs and zero model calls. Provider billing, live response quality, and end-to-end response times remain unmeasured. [Matched measurements and source hashes](../proofs/upstream-benchmarks-045.json) · [Earlier 0.44.0 run](../proofs/upstream-benchmarks-044.json).

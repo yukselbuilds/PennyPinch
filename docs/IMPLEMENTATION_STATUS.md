@@ -19,7 +19,9 @@ The macOS 26 ARM64 package passed a controlled Codex Desktop turn, stored local 
 Luna reviewed the upstream sources. Development token savings remain unknown.
 [Package and adapter evidence](proofs/headroom-045-managed-packages.json)
 
-The 0.45.0 transition check is complete. The next restricted-file check requires a supported Codex sandbox. Observe an allowed read and an explicit denial. [Open H041 criteria](validation/optimization-benefit.md#open-h041-acceptance-criteria).
+The stock Headroom 0.45.0 proxy and PennyPinch forwarded the same JSON in eight matched Windows 10 cases. The six headline cases returned 43.59% fewer tokens in both proxies. The SDK uses a message estimator. [Matched comparison](proofs/upstream-benchmarks-045.json).
+
+Codex CLI 0.171.0-alpha.13 stopped the named Windows 10 file tests before any command started. The unelevated backend refused the profile. MXC was unavailable. Resume this check on a compatible native Windows sandbox. Check an allowed read and an explicit denial. [Open H041 criteria](validation/optimization-benefit.md#open-h041-acceptance-criteria).
 
 Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b2 evidence](proofs/h049-linux-transaction.json)
 
