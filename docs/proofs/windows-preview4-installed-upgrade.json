@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "task": "H042-ai",
+  "scope": "Local Windows 10 22H2 x64 upgrade from the public preview to a full Headroom 0.45.0 candidate",
+  "owner": "lead agent",
+  "baseline": {
+    "tag": "v0.1.1-preview.3",
+    "tag_source": "f1cc712fa5470e9bc37a55b1f65276ecf14ad129",
+    "release_id": 455286345,
+    "asset_id": 782551719,
+    "archive_sha256": "919bbea5778c0a145c3c5f4d93e9f122fc2c9e455e78ec0e70d0fd9417e5ce21",
+    "archive_bytes": 126761252,
+    "installer_sha256": "22caab14bf445896a37f78e83f72e9253521df80a8ac6d00c03811aa3b3fe1e2",
+    "installer_bytes": 125319636,
+    "embedded_exe_sha256": "1b0518f035c5bc7f54b8468b9a6370879b9aafb382eeeb5d41d3b72d780137a3",
+    "metadata": "public_release_asset_matches",
+    "source": "immutable_archive_from_recorded_anonymous_download"
+  },
+  "candidate": {
+    "passed": true,
+    "candidate_version": "0.1.1-preview.4",
+    "engine_version": "0.45.0",
+    "source_commit": "2358e588a8374afa33a58a726dc58e20d52c8958",
+    "installer_sha256": "76556a6118252e1d0fac8380b6b60d698958208148e7dba5e8b77f1d4daedfa0",
+    "installer_bytes": 125347616,
+    "compiled_exe_sha256": "654534738de68722b94719cf8b6603a1906a807c9598a65009b2c8e871a18c17",
+    "embedded_exe_sha256": "cea8b0e9d0d0852bb4114be3d875baa90d89ecb7c35a5e02acc90ddb8ac0d62b",
+    "stage_receipt_sha256": "6ffb2b5f2cb7d638716f9230c58c984ec2c8b315144df5dd0ba85e716cf6d18d",
+    "stage_resource_count": 19491,
+    "release_key_fingerprint": "c32e894d22af6146ee736e04ec06454aaf740912aed00e65aa7a116cc7d0b52c",
+    "release_base_url": "https://yukselbuilds.github.io/PennyPinch/updates/",
+    "new_resource_pin": "8554027a438cdc37310ba8aa7d7dc283cfa71acb973506d1583bfc136076aeec",
+    "old_resource_pin": "ce023b4ba70cc097c9426e1f14f46c500206c6a9f213cad57ed357609df1b978",
+    "version_and_update_source_probes": 4,
+    "embedded_pe_and_privacy_checks": 2,
+    "environment": {
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "verification_seconds": 9.658,
+    "input_count": 511,
+    "input_set_sha256_before_and_after": "2055ba746b6724cb898cf9ee495c54cf9603074f72ec8f57c17d84d313679ddd",
+    "authenticode": "NotSigned"
+  },
+  "installed": {
+    "passed": true,
+    "versions": [
+      "0.1.1-preview.3",
+      "0.1.1-preview.4"
+    ],
+    "runtime_before": {
+      "headroom": "0.44.0",
+      "opentelemetry": "1.45.2",
+      "distribution_directories": [
+        "opentelemetry_api-1.45.2.dist-info"
+      ],
+      "headroom_distribution_directories": [
+        "headroom_ai-0.44.0.dist-info"
+      ]
+    },
+    "runtime_after": {
+      "headroom": "0.45.0",
+      "opentelemetry": "1.45.2",
+      "distribution_directories": [
+        "opentelemetry_api-1.45.2.dist-info"
+      ],
+      "headroom_distribution_directories": [
+        "headroom_ai-0.45.0.dist-info"
+      ]
+    },
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "staged_resources_and_receipt_matched": 19492,
+    "old_ui": {
+      "installed_window": true,
+      "expected_preferences": true,
+      "normal_exit_requested": true
+    },
+    "new_ui": {
+      "installed_window": true,
+      "expected_preferences": true,
+      "installed_engine_ready": true,
+      "local_responses_sse": 200,
+      "installed_engine_stopped": true,
+      "normal_exit_requested": true
+    },
+    "preference_bytes_preserved": true,
+    "test_data_marker_preserved": true,
+    "loopback_fixture_requests": 1,
+    "fixture_model_and_sentinel_auth_preserved": true,
+    "owned_ingress_closed": true,
+    "downgrade_exit": 2,
+    "registered_install_unchanged_after_downgrade": true,
+    "owned_windows_exited_normally": true,
+    "owned_installation_removed": true,
+    "existing_desktop_gate_preserved": true,
+    "isolation": {
+      "original_profile_matches": true,
+      "original_profile_files": 0,
+      "desktop_use_gate_restored": true,
+      "test_profile_removed": true
+    },
+    "python_version": "3.13.13",
+    "seconds": 124.022,
+    "input_count": 12,
+    "input_set_sha256_before_and_after": "24dc64560a34ff70605f8783b5971f0701cb3a96d89c9c1717d67ab61361cc0c"
+  },
+  "reused_product_gate": {
+    "scope": "Matching Windows 10 product-gate evidence for the unchanged source. The preview candidate has separate installer tests.",
+    "record_sha256": "f2d7a30af5b26c5aec37f373d7ec3d7198522167877257ba0f0bff947117456c",
+    "source_inputs": 523,
+    "input_set_sha256": "1fd544c28273467e70aa8de4ce5bedf0f7a6ba04a899d8d989c32d32f201d369",
+    "frontend_assets": 7,
+    "checks": [
+      "app_tests",
+      "frontend",
+      "rust_fmt",
+      "rust_tests",
+      "embedded_debug",
+      "windows_runtime_tests",
+      "macos_portable_tests",
+      "runtime_source_pins",
+      "manual_launcher"
+    ],
+    "toolchain": {
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "node": "v25.2.1",
+      "pnpm": "11.25.0"
+    },
+    "application_tests_passed": 227,
+    "rust_summary": "test result: ok. 481 passed; 0 failed; 25 ignored; 0 measured; 0 filtered out; finished in 15.31s",
+    "windows_runtime_tests_reported": 29
+  },
+  "limits": {
+    "github_release_published": false,
+    "signed_update_feed_changed": false,
+    "windows_11_x64": "not_tested",
+    "live_provider_requests": 0,
+    "manual_ci_dispatches": 0
+  }
+}

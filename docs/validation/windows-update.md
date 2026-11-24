@@ -170,3 +170,11 @@ The installer now removes the known 0.44.0 metadata from the registered installa
 On Windows 10 22H2 x64, the fixed full installer replaced Headroom 0.44.0 with 0.45.0. Both installers used PennyPinch version 0.1.0. All 19,491 staged resources matched. Packaged Python selected 0.45.0. The installed controller started the engine, completed one local Responses SSE request, and stopped normally. The test preserved its separate state marker and removed its installation.
 
 The executable-only update channel requires matching runtime resources. Use a full installer for an engine version change. Public release delivery and Windows 11 require separate checks. [Evidence](../proofs/windows-installer-045-upgrade.json).
+
+## 24 November 2026 — Windows 10 preview.4 installed upgrade
+
+The test used the public PennyPinch 0.1.1-preview.3 package that matches the release digest. The local full installer upgraded it to 0.1.1-preview.4 on Windows 10 22H2 x64. Packaged Python selected Headroom 0.45.0. All 19,491 staged resources and the package receipt matched.
+
+The app kept the saved preferences and the test data file. Start opened the installed engine. The app completed one local Responses SSE request through its loopback listener. The engine stopped normally. The older installer exited with code 2. The installed version and its files matched after that attempt. The test removed the test profile and installation.
+
+The candidate executable accepted the existing update source, the public key, and the new runtime resource pin. It rejected the pin for 0.44.0. The candidate installer has no Authenticode signature. Release ZIP checks, publication, and Windows 11 x64 verification remain open. [Evidence](../proofs/windows-preview4-installed-upgrade.json).
