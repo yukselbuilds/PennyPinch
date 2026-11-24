@@ -2,7 +2,7 @@
 
 ## Current status
 
-**46 of 54 main tasks are complete.** H042 passed its Windows 10 release checks. Windows 11 x64 update and rollback remain open. H041 remains open. [Task list](../TASKS.md)
+**46 of 54 main tasks are complete.** The Windows 10 preview.4 package passed ZIP extraction. Windows 11 x64 update and rollback remain open. H041 remains open. [Task list](../TASKS.md)
 
 PennyPinch v0.1.1-preview.3 is available for Windows 10 22H2 x64. The full installer updates OpenTelemetry API and Tokio. Both public downloads matched their SHA-256 digests. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.3) · [Publication evidence](proofs/pennypinch-windows10-preview3-publication.json)
 
@@ -70,7 +70,7 @@ The two public branches and two release tags use the rewritten Git history. GitH
 
 GitHub About, README, and Pages now describe separate platform statuses. The live release asset IDs, SHA256 values, and signed update files matched. Secret Protection, push protection, and Dependabot alerts are on.
 
-The lead agent completed H042-ai on Windows 10. The local full installer upgraded the public PennyPinch 0.1.1-preview.3 to 0.1.1-preview.4 with Headroom 0.45.0. The app kept its saved preferences and completed a local Responses stream. The older installer returned a failure code and left the candidate installed. The next release step is the ZIP, third-party notices, and extraction checks. Windows 11 x64 remains open. [Installed upgrade](proofs/windows-preview4-installed-upgrade.json).
+The lead agent completed H042-aj. The local 0.1.1-preview.4 ZIP contains the tested Windows 10 installer, the PennyPinch license, and 673 indexed notice files. The test extracted 678 files and matched all 677 listed SHA-256 digests. The release ZIP, checksum, and notes are ready for publication. Windows 11 x64 remains open. [Delivery evidence](proofs/pennypinch-windows10-preview4-delivery.json) · [Release notes](releases/0.1.1-preview.4-windows10.md)
 
 Tokio 1.54.1 passed the Windows 10 product gate and signed update package checks with an isolated key. The real QA app passed signature, resource pin, extraction, and probe validation. [Tokio verification](proofs/tokio-windows-1541.json) · [Public privacy and presentation checks](proofs/pennypinch-public-privacy.md)
 

@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "task": "H042-aj",
+  "owner": "lead agent",
+  "scope": "Local Windows 10 22H2 x64 release delivery for the tested Headroom 0.45.0 installer",
+  "implementation": "The lead agent prepared the release package and verified notice provenance and extracted installer identity.",
+  "delivery": {
+    "passed": true,
+    "version": "0.1.1-preview.4",
+    "engine_version": "0.45.0",
+    "product_source": "2358e588a8374afa33a58a726dc58e20d52c8958",
+    "archive": {
+      "name": "PennyPinch_0.1.1-preview.4_Windows_x64_preview.zip",
+      "bytes": 126789222,
+      "sha256": "da97cc80b7a03220c64003b5c1b05cefe291ebf199132f5e7aea22ba4c7a4ff5",
+      "files": 678
+    },
+    "installer": {
+      "path": "PennyPinch_0.1.1-preview.4_x64-setup.exe",
+      "sha256": "76556a6118252e1d0fac8380b6b60d698958208148e7dba5e8b77f1d4daedfa0",
+      "bytes": 125347616
+    },
+    "release_notes_sha256": "0255c39823825f956dd60f9c792411fd3fc01d2af8457c5b663755523bda1ab1",
+    "external_checksums_sha256": "3ac6a42c3ab78b2df79ac46f6fba26e26864c98ea7d9712c4670a3f264b2c64e",
+    "installed_upgrade_evidence_sha256": "f0a3e1781649a29c42f20cd6ca2912e653691e0231834ffbbe81420f0389007d",
+    "third_party_notices": {
+      "count": 673,
+      "unchanged_entries": 669,
+      "updated": {
+        "python/headroom-ai@0.45.0/headroom/license_env.py": "dc6245538602d0fada5b51862f07e46273ccea02385263244b77505e5f236178",
+        "python/headroom-ai@0.45.0/headroom_ai-0.45.0.dist-info/licenses/LICENSE": "50b9e890f4afb0a500696cdb6cde3dae08468225a1699317d23e81a1e2703a46",
+        "python/headroom-ai@0.45.0/headroom_ai-0.45.0.dist-info/licenses/NOTICE": "93c0d7d91c2aa2f9362e180714b07b25636b5f74ea71a3c88ac113a6d31ee524",
+        "NOTICE.md": "580902ddc3c09cc473027efacc2c5a73654d37c64bb865fb6245e7d438da2a59"
+      },
+      "headroom_wheel_files_match_stage": 3,
+      "headroom_files_with_unchanged_bytes": 3,
+      "previous_release": "v0.1.1-preview.3",
+      "unchanged_python_notices_in_staged_runtime": 190,
+      "unchanged_python_notices_from_verified_prior_archive": 5,
+      "components": {
+        "python": 99,
+        "rust": 258,
+        "frontend": 6
+      },
+      "index_sha256": "9ec9949688a838f1e432ec31043c93933ee0038bdd2fe6bcaf0e69aedfae75db"
+    },
+    "input_count": 221,
+    "inputs_sha256_before_after": "33762f86ed852785c0388884ecc7bfe03ffe004632876dc63dd7bddb19fb730c",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "python": "3.13.13",
+    "windows_extraction": {
+      "authenticode": "NotSigned",
+      "powershell": "7.6.9",
+      "passed": true,
+      "files": 678,
+      "matched_internal_digests": 677,
+      "archive_sha256_before_after": "da97cc80b7a03220c64003b5c1b05cefe291ebf199132f5e7aea22ba4c7a4ff5",
+      "external_checksums_sha256_before_after": "3ac6a42c3ab78b2df79ac46f6fba26e26864c98ea7d9712c4670a3f264b2c64e",
+      "extractor_sha256_before_after": "8ae33058b89967d42f6fd16ca8254f1fa9decc51304216c4a192e3478b721156",
+      "windows_path_with_unicode_and_spaces": true,
+      "installer_matches_installed_upgrade": true,
+      "seconds": 5.8
+    },
+    "seconds": 11.103
+  },
+  "limits": {
+    "github_release_published": false,
+    "signed_update_feed_changed": false,
+    "windows_11_x64": "not_tested",
+    "live_provider_requests": 0,
+    "manual_ci_dispatches": 0
+  }
+}
