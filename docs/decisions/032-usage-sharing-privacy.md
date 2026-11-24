@@ -43,3 +43,15 @@ pnpm.cmd --dir services/reports test
 ```
 
 The next slice adds authenticated intake and request limits. Administrator access, collection, deployment, and aggregate publication each require their own verification. [Storage evidence](../proofs/h052-daily-usage-storage.json) · [Cloudflare local D1 tests](https://developers.cloudflare.com/d1/best-practices/local-development/)
+
+## H052-b — Daily report HTTP intake
+
+The Worker accepts POST requests at `/v1/usage` over HTTPS. Set `REPORTS_ENABLED` to `true` only for an approved pilot. Bind the `REPORTS_DB` database and the `USAGE_RATE` rate limiter. The Worker keeps the route closed by default. It returns fixed status names and prevents response caching.
+
+The pilot gives each installation its own bearer credential. Generate 32 random bytes for each credential. Encode them as 43 base64url characters without padding. Use `PILOT_USAGE_CREDENTIALS` to bind up to 32 SHA-256 digests of these strings to installation UUIDs. Store the digests as lowercase hexadecimal keys in a JSON object. Keep this configuration on the Worker. Remove a digest to revoke its credential. The Worker accepts only the installation UUID bound to the credential.
+
+Configure six requests per installation per 60 seconds in the rate limiter. The rate limit applies per Cloudflare location and can allow extra requests during propagation. The Worker limits the input to 4,096 bytes as it reads the body. [Cloudflare Rate Limiting](https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/)
+
+D1 accepts up to 128 new reports per UTC day for the service. The transaction reserves a slot only for a new row. An identical retry uses the existing row. Deleting an accepted report preserves the day's quota count. When the daily quota is full, the Worker returns HTTP 429 with the time until the next UTC day. Apply migration 0002 after migration 0001 to keep earlier summaries. [D1 batch transactions](https://developers.cloudflare.com/d1/worker-api/d1-database/#batch)
+
+The local tests use synthetic credentials and reports. Administrator access and bounded queries come next. Verify the account limits, logging, retention schedule, and privacy conditions before live collection. [Intake evidence](../proofs/h052-report-intake.json)

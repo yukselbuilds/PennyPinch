@@ -62,7 +62,7 @@ The lead agent deferred H044. The Windows 10 ripgrep comparison ran for 136.4 se
 
 The 23 November check found RTK-OSS v1.2.1 is still the latest stable release. The paired evidence applies to that release. [Upstream release](https://github.com/rtk-ai/rtk/releases/tag/v1.2.1)
 
-The lead agent completed H052-a in the local Cloudflare D1 test runtime. Six tests passed in a gate of 4.245 seconds. The module keeps measurement bases separate, preserves negative results, and stores one summary per installation and UTC day. The next slice adds authenticated HTTP intake and request limits. Cloudflare deployment and real report collection remain open. H053 and H054 depend on the live report service. [Storage evidence](proofs/h052-daily-usage-storage.json) · [Privacy decision](decisions/032-usage-sharing-privacy.md)
+The lead agent completed H052-b in the local Cloudflare Worker and D1 runtime. All 14 tests passed in a gate of 6.561 seconds. They covered authorization, streamed body limits, rate rejection, and the last quota slot under concurrency. The next slice adds administrator access and bounded reporting queries. Cloudflare deployment and real report collection remain open. [Intake evidence](proofs/h052-report-intake.json) · [Privacy decision](decisions/032-usage-sharing-privacy.md)
 
 ### Public privacy and presentation
 

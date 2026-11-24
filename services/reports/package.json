@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@11.25.0",
   "scripts": {
-    "test": "node --test usage.test.mjs"
+    "test": "node --test usage.test.mjs worker.test.mjs"
   },
   "devDependencies": {
     "miniflare": "4.20260730.0"
