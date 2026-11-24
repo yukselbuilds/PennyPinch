@@ -62,11 +62,11 @@ The lead agent deferred H044. The Windows 10 ripgrep comparison ran for 136.4 se
 
 The 23 November check found RTK-OSS v1.2.1 is still the latest stable release. The paired evidence applies to that release. [Upstream release](https://github.com/rtk-ai/rtk/releases/tag/v1.2.1)
 
-The lead agent provisioned the private EU D1 pilot database. A read-only query returned zero application tables. The dashboard showed a seven-day Time Travel window. Zero Trust Free requires a payment method at activation. The pilot is on hold under the zero-cost constraint. The migrations, live Worker, Access policy, and cleanup still need acceptance. [Provisioning evidence](proofs/h052-private-pilot-d1.json) · [Privacy decision](decisions/032-usage-sharing-privacy.md)
+The lead agent completed the H052 PostgreSQL port because it changes persistent data and quota handling. All 26 report service tests passed in 2.443 seconds. Native PostgreSQL 17.12 tests passed in 5.348 seconds. The lead agent deleted the empty pilot database after the owner approved this action. The Neon Free project remains in Frankfurt. Next, apply the migration and connect the Neon Function, administrator sign-in, and cleanup trigger. The privacy review remains open. [PostgreSQL evidence](proofs/h052-postgres-port.json) · [Privacy decision](decisions/032-usage-sharing-privacy.md)
 
 ### Public privacy and presentation
 
-The two public branches and two release tags use the rewritten Git history. GitHub Support accepted the request to remove old cached objects. Confirm removal by anonymous access after Support replies.
+The two public branches and two release tags use the rewritten Git history. On 24 November the GitHub Support portal showed the removal request as Open. The portal showed only the original request. Verify anonymous access after Support replies.
 
 GitHub About, README, and Pages now describe separate platform statuses. The live release asset IDs, SHA256 values, and signed update files matched. Secret Protection, push protection, and Dependabot alerts are on.
 

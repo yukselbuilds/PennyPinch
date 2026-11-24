@@ -1,6 +1,6 @@
 # H052–H054 — Privacy for optional usage reports
 
-23 November 2026. This decision covers benchmark reports for a project operated from Türkiye. It covers Türkiye and the EU rules that may apply to the service. The release owner must confirm the operator, launch scope, and data flow before the service accepts real reports.
+24 November 2026. This decision covers benchmark reports for a project operated from Türkiye. It covers Türkiye and the EU rules that may apply to the service. The release owner must verify the operator, release scope, and data flow before the service accepts real reports.
 
 ## Legal basis
 
@@ -12,84 +12,71 @@ Check GDPR Article 3 if the release targets people in the EU or monitors their b
 
 ## Hosting and transfers
 
-Daily sends are regular transfers. For transfers abroad subject to KVKK, check for an applicable adequacy decision or establish an appropriate safeguard under Article 9. Reserve the Article 9 consent exception for occasional transfers that meet its conditions. If the project uses the Turkish standard contract, secure the parties' signatures and notify the KVKK Authority within five business days of signing. [KVKK transfer rules](https://www.kvkk.gov.tr/Icerik/2053/Yurtdisina-Aktarim) · [KVKK standard contract notification](https://www.kvkk.gov.tr/Icerik/8043/Standart-Sozlesme-Bildirim-Modulu-Hakkinda-Kamuoyu-Duyurusu)
+The current hosting candidate is Neon Free with PostgreSQL in AWS Europe (Frankfurt). Neon lists the Free plan at $0 and says it requires no credit card. Verify the project's plan, remaining quotas, and billing settings before the synthetic pilot. [Neon pricing](https://neon.com/pricing) · [Neon plans](https://neon.com/docs/introduction/plans)
 
-Cloudflare Free is the hosting candidate. Review the account's processing terms, contracting entity, subprocessors, access, and data locations. The public DPA includes EU transfer clauses. Confirm a Turkish transfer safeguard for the actual service where required. If GDPR applies, verify the processor terms under Article 28 and the applicable Chapter V transfer mechanism. D1's EU jurisdiction limits where the database runs and persists. Workers can access it worldwide. Check request processing and infrastructure logs separately. [Cloudflare DPA](https://www.cloudflare.com/cloudflare-customer-dpa/) · [D1 data location](https://developers.cloudflare.com/d1/configuration/data-location/) · [Workers Logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/)
+Neon documents Functions in Frankfurt and says Functions are available on any plan, subject to usage limits. The actual Function entrypoint, administrator authentication, trigger schedule, project configuration, and deployment have not passed review. Verify the database and Function regions in the actual project. Review Neon processing terms, subprocessors, provider access, and service logs before the service accepts real reports. [Neon Functions](https://neon.com/docs/compute/functions/overview) · [Neon data processing agreement](https://neon.com/pdf/DPA.pdf)
+
+Daily reports are regular transfers. For transfers abroad subject to KVKK, verify whether an adequacy decision applies. Use an appropriate safeguard under Article 9 if no adequacy decision applies. Reserve the Article 9 consent exception for occasional transfers that meet its conditions. If the project uses the Turkish standard contract, secure the parties' signatures and notify the KVKK Authority within five business days of signing. If GDPR applies, verify the processor terms under Article 28 and the applicable Chapter V transfer mechanism. [KVKK transfer rules](https://www.kvkk.gov.tr/Icerik/2053/Yurtdisina-Aktarim) · [KVKK standard contract notification](https://www.kvkk.gov.tr/Icerik/8043/Standart-Sozlesme-Bildirim-Modulu-Hakkinda-Kamuoyu-Duyurusu)
 
 ## Data lifecycle and acceptance
 
-- Start daily reports after opt-in. Use measurements made after that choice. Show a payload preview and the last send status. Declining, upgrading, or restarting an opted-out installation must result in zero report uploads.
-- Accept only the fields in H054. Exclude prompts, code, paths, account and chat IDs, and secrets. Keep IP addresses and request contents out of application storage and logs. Verify the actual provider logging settings and disclose applicable infrastructure processing.
-- On withdrawal, stop new uploads and clear the queue. Test withdrawal during a retry or active upload. Check the server outcome for an upload that was in flight. Use an authorized method to handle access and erasure for earlier reports. Erase personal reports after withdrawal when the law requires it. Provide a contact for requests.
-- Remove daily reports from active storage after 30 days. Document backup retention and enforce earlier deletions before a restored database serves requests. D1 Time Travel currently allows seven days of recovery on Free. Verify this in the actual deployment. [D1 Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/)
-- Test aggregates for re-identification before long-term retention or publication. A small group, a dominant contributor, or the difference between published totals can expose one installation. Retain and publish only aggregates that pass this check. Show sample size, dates, measurement basis, and coverage. Apply H052's weighted net calculation.
+- Start daily reports only after separate opt-in. Use measurements captured after opt-in. Show a payload preview and the last send status. Declining, upgrading, or restarting an opted-out installation must result in zero report uploads.
+- Accept only the H054 fields. Exclude prompts, code, paths, account and chat IDs, and secrets. Keep IP addresses and request contents out of application storage and logs. Verify provider logging settings and disclose infrastructure processing.
+- On withdrawal, stop new uploads and clear the queue. Test withdrawal during a retry or active upload. Verify the result of any upload that was in flight. Use an authorized path for access and erasure requests. Delete personal reports after withdrawal when the law requires it. Provide a rights contact.
+- Delete daily reports from active storage after 30 days. Document backup and restore retention. Apply expired-record deletion and queued erasures before a restored database serves requests. Neon documents a six-hour Free instant-restore history, limited to 1 GB of changes, and one manual snapshot. Scheduled backups are not available on Free. These provider features do not by themselves prove 30-day erasure from all backups. Verify the selected restore process and its retention. [Neon plan limits](https://neon.com/docs/introduction/plans)
+- Test aggregates for re-identification before long-term retention or publication. A small group, a dominant contributor, or the difference between published totals can expose one installation. Suppress aggregates that fail the review. Show sample size, dates, measurement basis, and coverage. Apply H052's weighted net calculation.
 - Give manual feedback its own notice and retention policy. Preview its text and optional metadata before send. Review the processing basis and hosting route for that data before opening the endpoint.
 
-Resolve the controller, notice, rights contact, and transfer basis before accepting real reports. Verify these checks against the actual deployment. Use synthetic reports for prelaunch tests. Keep collection off while these items are open.
+Resolve the controller, notice, rights contact, and transfer basis before accepting real reports. Verify these conditions against the actual deployment. Use synthetic reports for local tests. Keep collection off while these items are open.
 
 ## H052-a — Daily usage storage
 
-The storage module accepts a version 1 JSON summary of at most 4,096 bytes. Each summary has a random version 4 UUID, a completed UTC day, an OS family, application and engine versions, and a notice version. Application versions use numeric release or preview versions. The schema accepts notice version 1. H054 will bind the notice version to the user's consent action before sending.
+The storage contract accepts a version 1 JSON summary of at most 4,096 bytes. Each summary has a random version 4 UUID, a completed UTC day, an OS family, application and engine versions, and a notice version. Application versions use numeric release or preview versions. The schema accepts notice version 1. H054 must bind the notice version to the user's consent action before sending.
 
-The module accepts the six known Headroom 0.45.0 WebSocket counter bases. The bases measure the whole request input. Each group has its own comparable request count and before and after token totals. The report keeps incomparable and failed request counts separate. A failed request belongs to the failed count only. A report can carry coverage counts when no measured pair exists. The module keeps zero and negative savings.
+The contract accepts the six known Headroom 0.45.0 WebSocket counter bases. The bases measure whole-request input. Each group has its own comparable request count and before and after token totals. Keep incomparable and failed request counts separate. A failed request belongs only to the failed count. A report can include coverage when it has no measured pair. Preserve zero and negative savings.
 
-The database stores one summary per installation and UTC day. It accepts identical retries and refuses changed summaries. The write and its result read run in one D1 transaction. The module accepts the 30 most recent completed UTC days. Each purge call deletes up to 500 expired rows. The first deployment needs a schedule for these calls. [D1 transactions](https://developers.cloudflare.com/d1/worker-api/d1-database/#batch)
+Store one summary per installation and UTC day. Accept identical retries and reject changed summaries. Commit the write and its result read in one PostgreSQL transaction. Retain at most the 30 most recent completed UTC days. Exclude older records from reads even when physical deletion is pending. Delete expired rows in bounded batches. Verify the cleanup schedule in the live pilot.
 
-The local Miniflare tests use synthetic summaries. Run them from the source checkout.
-
-```powershell
-pnpm.cmd --dir services/reports install --ignore-scripts --frozen-lockfile
-pnpm.cmd --dir services/reports test
-```
-
-The next slice adds authenticated intake and request limits. Administrator access, collection, deployment, and aggregate publication each require their own verification. [Storage evidence](../proofs/h052-daily-usage-storage.json) · [Cloudflare local D1 tests](https://developers.cloudflare.com/d1/best-practices/local-development/)
+The local implementation uses `services/reports/migrations/0001_reports.sql` and `services/reports/usage.mjs`. The HTTP service is in `services/reports/service.mjs`. The local suite passed 26 tests with isolated PGlite. A separate local PostgreSQL 17.12 run verified the schema, concurrent quota, retry, and expiry paths. These results do not verify Neon migration or a live reporting path. [PostgreSQL port evidence](../proofs/h052-postgres-port.json)
 
 ## H052-b — Daily report HTTP intake
 
-The Worker accepts POST requests at `/v1/usage` over HTTPS. Set `REPORTS_ENABLED` to `true` only for an approved pilot. Bind the `REPORTS_DB` database and the `USAGE_RATE` rate limiter. The Worker keeps the route closed by default. It returns fixed status names and prevents response caching.
+The local service accepts report submissions at `/v1/usage` over HTTPS and keeps intake closed by default. It accepts only POST requests with the H052-a schema. It rejects bodies over 4,096 bytes before decoding. It authenticates each installation and limits requests to 6 per installation per fixed UTC minute. It allows at most 128 new reports per UTC day. Keep credentials and report bodies out of logs. The Neon Function URL, deployed authentication, and account limits remain unverified.
 
-The pilot gives each installation its own bearer credential. Generate 32 random bytes for each credential. Encode them as 43 base64url characters without padding. Use `PILOT_USAGE_CREDENTIALS` to bind up to 32 SHA-256 digests of these strings to installation UUIDs. Store the digests as lowercase hexadecimal keys in a JSON object. Keep this configuration on the Worker. Remove a digest to revoke its credential. The Worker accepts only the installation UUID bound to the credential.
+Identify each report by installation and UTC day. An identical retry returns `duplicate`. A retry with changed data returns `conflict`. Both preserve the stored report. Return fixed status names and disable response caching.
 
-Configure six requests per installation per 60 seconds in the rate limiter. The rate limit applies per Cloudflare location and can allow extra requests during propagation. The Worker limits the input to 4,096 bytes as it reads the body. [Cloudflare Rate Limiting](https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/)
+Return HTTP 429 when the per-installation or daily limit is reached. Do not upgrade the plan or incur charges to continue collection. Enforce the no-card and $0 spending limits before any live setup.
 
-D1 accepts up to 128 new reports per UTC day for the service. The transaction reserves a slot only for a new row. An identical retry uses the existing row. Deleting an accepted report preserves the day's quota count. When the daily quota is full, the Worker returns HTTP 429 with the time until the next UTC day. Apply migration 0002 after migration 0001 to keep earlier summaries. [D1 batch transactions](https://developers.cloudflare.com/d1/worker-api/d1-database/#batch)
-
-The local tests use synthetic credentials and reports. Administrator access and bounded queries come next. Verify the account limits, logging, retention schedule, and privacy conditions before live collection. [Intake evidence](../proofs/h052-report-intake.json)
+Local HTTP tests must use synthetic credentials and reports. They do not verify Neon authentication, account quotas, provider logs, or a deployed Function. Keep collection off until each live test passes.
 
 ## H052-c — Administrator report queries
 
-The Worker serves GET requests at `/v1/admin/summary`. Bind `ADMIN_ACCESS_ISSUER` to the Cloudflare Access team origin. Set `ADMIN_ACCESS_AUDIENCE` to the audience of the administrator Access application. Apply an Access policy that grants access to authorized administrators. The route stays closed when these bindings are absent.
+The local service keeps the administrator route closed by default. Tests inject an authorized `verifyAdmin` function. No production access provider, signed-identity validation, or Neon login has been selected or tested. Do not expose a public query endpoint or accept a user-supplied installation identifier.
 
-The Worker verifies the RS256 signature, issuer, audience, and validity times of the Access assertion. It requires an application token for an authenticated identity. It reads public signing keys from the configured team origin. It returns aggregate data with caching disabled. The response excludes installation IDs and administrator identity. [Cloudflare Access JWT validation](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/)
+Support bounded reads for 1, 7, or 30 completed UTC days. Reject unsupported ranges and excessive row counts. Return only aggregate coverage and counts. Exclude installation IDs and administrator identity.
 
-Request 1, 7, or 30 completed UTC days. The default is seven days. D1 reads at most 4,097 rows, which includes one row for overflow detection. The Worker rejects a summary when the range contains more than 4,096 rows. It reports contributing installations, report days, comparable requests, incomparable requests, and failed requests.
+Keep token counts exact as decimal strings. Calculate weighted savings from total before and after counts within each counter basis. Calculate installation medians only after summing each installation's counts. A zero before count has an undefined percentage. Include measured zero and negative results in coverage. Give the administrator view and any public summary separate privacy acceptance.
 
-The summary keeps token counts exact as decimal strings. It calculates weighted savings from the total before and after counts for each counter basis. It sums each installation's counts before calculating the median percentage. A zero before count gives an undefined percentage. The coverage still includes the measured zero and negative results. The administrator view and any public summary need their own acceptance.
-
-The local tests use generated keys and synthetic reports. Verify the live Access policy before granting administrator access. [Summary evidence](../proofs/h052-admin-summary.json)
+The local route tests use a synthetic verifier and reports. They do not prove a deployed login policy or a live summary query.
 
 ## H052-d — Private admin panel
 
-The Worker verifies the signed Access identity before it serves GET `/admin`. Protect `/admin` and `/v1/admin/summary` with the same administrator policy in the live deployment. The default range covers seven completed UTC days. Select one or 30 days for other ranges.
+The local private-panel renderer is in `services/reports/admin-panel.mjs`. The service serves it only after the injected `verifyAdmin` function approves the request. Local tests cover this dependency. No Neon administrator login or panel deployment has passed acceptance. The panel defaults to seven completed UTC days. It also offers one-day and 30-day ranges.
 
-The panel reads the same aggregate D1 summary as the JSON route. It shows local token estimates, weighted savings, and the median per installation for each counter basis. Report coverage includes installations, daily reports, and comparable, incomparable, and failed requests. An empty period, a period without comparable requests, and a database failure have distinct messages.
+Show local token estimates, weighted savings, and the per-installation median for each counter basis. Show installations, report days, and comparable, incomparable, and failed requests. Give empty periods, periods without comparable requests, and database failures distinct messages.
 
-The Worker generates the HTML and disables caching. The panel contains aggregate measurements only. It uses nonce-bound styles and blocks scripts, framing, and external resources. The local browser tests use synthetic reports and generated Access credentials. Verify the live Access policy and the D1 limits before the pilot. [Panel evidence](../proofs/h052-admin-panel.json)
+Serve aggregate data only. Disable caching. Use nonce-bound styles. Block scripts, framing, and external resources. Test the panel with synthetic reports. Do not claim a private live dashboard until the access policy, queries, and deployment pass.
 
-## H052-e — Retention timer and deployment preflight
+## H052-e — Bounded retention and scheduled cleanup
 
-The cleanup trigger runs at minute five of each UTC hour. Each run uses the scheduled time to preserve the 30 most recent completed UTC days. It deletes at most 500 expired reports per batch and stops after eight batches. If all eight batches fill, the run reports a backlog and the next trigger continues cleanup. Cleanup runs when the Worker disables intake. [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
+Expire reports after 30 days. The local PostgreSQL implementation deletes up to 500 rows per batch and stops after at most 8 batches per call. Keep expired records out of query results while cleanup is delayed. Resume a backlog on the next cleanup call. Local expiry passed against PostgreSQL 17.12. No Neon trigger has been configured or tested for this project.
 
-The preflight config uses a test database ID and keeps intake, Worker URLs, preview URLs, and Worker observability off. Wrangler 4.167.0 built the bundle in a dry run. It applied both migrations in an isolated local D1 database. Use `--dry-run` to build and `--local` to apply the migrations locally. [Preflight config](../../services/reports/wrangler.preflight.jsonc) · [Preflight evidence](../proofs/h052-deployment-preflight.json)
+Neon documents that function triggers can retry and deliver events more than once or out of order. Make cleanup safe to repeat. Verify actual Free-plan limits and retry behavior before scheduling a trigger. [Neon Function Triggers](https://neon.com/docs/compute/functions/triggers/overview) · [Neon plans](https://neon.com/docs/introduction/plans)
 
-The owner account showed Workers Free and zero D1 databases on 24 November. The Zero Trust dashboard showed initial setup. Workers Free allows 100,000 requests per day and 10 ms of CPU time per HTTP request or cron event. It allows five cron triggers per account. D1 Free allows ten databases, five million row reads per day, and 100,000 row writes per day. Verify account usage and CPU time during the synthetic pilot. [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) · [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/)
+Test cleanup, backup restore, and queued erasure with synthetic reports. Keep real report collection off until expiry and restore behavior pass in the actual service.
 
-Use a dedicated Free Worker and a private D1 database with the EU jurisdiction for the synthetic pilot. Protect the Worker with an Access policy for the approved administrator. Keep preview URLs off. Use the account's `workers.dev` address for this test. The owner completes any required Zero Trust Free subscription setup. [Workers Access](https://developers.cloudflare.com/workers/configuration/cloudflare-access/) · [Zero Trust setup](https://developers.cloudflare.com/cloudflare-one/setup/) · [D1 data location](https://developers.cloudflare.com/d1/configuration/data-location/)
+## H052-f — Neon Free candidate and live status
 
-Use only synthetic reports during validation of the route, access policy, cleanup, and restore. Keep real report collection off pending the controller, notice, transfer, and retention review. D1 Free offers seven days of Time Travel. Delete expired reports and apply queued erasures before a restored database serves requests. [D1 Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/)
+Neon Free with PostgreSQL in Frankfurt is the current candidate. The public pricing page lists $0 and no credit-card requirement. A Frankfurt project was provisioned separately. This proves project provisioning only. It does not verify the application schema migration, Function entrypoint, administrator login, retention trigger, deployment, or live report flow. The local PostgreSQL port passed its tests. No live report was received, and no live reporting flow has passed acceptance.
 
-## H052-f — Private pilot database
-
-Cloudflare created a separate D1 database for the pilot. Its Settings page showed the EU jurisdiction. D1 Console returned zero application tables in a read-only query. The Time Travel page showed a seven-day restore window. [Provisioning evidence](../proofs/h052-private-pilot-d1.json) · [D1 Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/)
-
-Zero Trust Free requires payment details at activation. The pilot is on hold under the zero-cost constraint. Resume on a free path that meets the access and privacy criteria. Apply the two migrations to the pilot database and use synthetic reports to verify the live Worker and cleanup. [D1 migrations](https://developers.cloudflare.com/d1/reference/migrations/) · [Zero Trust setup](https://developers.cloudflare.com/cloudflare-one/setup/)
+The owner approved deletion of the previous empty pilot database. The PostgreSQL port is the active implementation. Keep the existing zero-card and $0 budget limits. Keep real report intake off during the synthetic pilot. [Neon pricing](https://neon.com/pricing) · [Neon Functions](https://neon.com/docs/compute/functions/overview)

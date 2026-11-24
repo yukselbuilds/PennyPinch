@@ -7,7 +7,7 @@
 - Rewrote the two published branches and the two existing release tags with git-filter-repo 2.47.0. Verified 363 reachable commits and 3,032 blobs in the rewritten graph. The scan found zero matches for the known private email and workstation account markers.
 - The GitHub repository uses a local `noreply` identity for new commits. The rewrite kept the current source tree and Pages tree before the presentation changes. The tag source archives changed only where the privacy rewrite redacted text.
 - Checked both release entries and their four assets by ID, name, byte count, and published SHA256. The release filenames and tags match the original records. The live preview manifest, signature, and update installer matched the Git blobs byte for byte.
-- An old GitHub commit URL still returned the previous metadata after the ref update. GitHub Support accepted a private request to clear obsolete objects and cached views. Removal remains open until a new anonymous check passes. A local backup is available during the cleanup.
+- An old GitHub commit URL still returned the previous metadata after the ref update. The owner asked GitHub Support to delete obsolete objects and cached views. The portal showed the request as Open on 24 November. The thread contained the original request only. Verify anonymous access before you close this item. A local backup is available during the cleanup.
 
 ## Repository protection
 

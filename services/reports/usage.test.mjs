@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { before, after, test } from "node:test";
-import { Miniflare } from "miniflare";
+import { PGlite } from "@electric-sql/pglite";
 import { pruneUsageDays, saveUsageDay } from "./usage.mjs";
 
 const now = Date.parse("2026-11-24T15:00:00Z");
@@ -21,30 +21,17 @@ const report = {
   ],
 };
 
-const fixture = new Miniflare({
-  host: "127.0.0.1",
-  port: 0,
-  modules: true,
-  script: "export default { fetch() { return new Response(null, { status: 404 }); } };",
-  d1Databases: { DB: "1f8b7278-aa59-4f4a-a2b4-9b017585eb43" },
-  cf: false,
-  telemetry: { enabled: false },
-});
-let db;
+const db = new PGlite();
 before(async () => {
-  db = await fixture.getD1Database("DB");
-  for (const name of ["0001_usage.sql", "0002_intake.sql"]) {
-    const sql = await readFile(new URL("./migrations/" + name, import.meta.url), "utf8");
-    await db.batch(sql.trim().split(/\r?\n\r?\n/).map((statement) => db.prepare(statement)));
-  }
+  await db.exec(await readFile(new URL("./migrations/0001_reports.sql", import.meta.url), "utf8"));
 });
-after(async () => fixture.dispose());
+after(() => db.close());
 
 test("stores negative savings, observed zeroes, and separate bases and coverage", async () => {
   assert.equal(await saveUsageDay(db, JSON.stringify(report), report.installation_id, now), "stored");
-  const { results } = await db.prepare("SELECT summary FROM usage_days").all();
-  assert.equal(results.length, 1);
-  const stored = JSON.parse(results[0].summary);
+  const { rows } = await db.query("SELECT summary FROM reports.usage_days");
+  assert.equal(rows.length, 1);
+  const stored = JSON.parse(rows[0].summary);
   assert.equal(stored.groups.length, 2);
   assert.equal(stored.groups[0].basis, report.groups[1].basis);
   assert.equal(stored.groups[0].before_tokens, 0);
@@ -62,23 +49,19 @@ test("coalesces concurrent retries and refuses a changed summary for the same da
   ]);
   assert.deepEqual(outcomes.sort(), ["duplicate", "stored"]);
   assert.equal(await saveUsageDay(db, JSON.stringify({ ...next, failed_requests: 7 }), report.installation_id, now), "conflict");
-  const stored = await db.prepare("SELECT summary FROM usage_days WHERE report_day = ?").bind(next.report_day).first("summary");
-  assert.equal(JSON.parse(stored).failed_requests, next.failed_requests);
+  const { rows } = await db.query("SELECT summary FROM reports.usage_days WHERE report_day = $1", [next.report_day]);
+  assert.equal(JSON.parse(rows[0].summary).failed_requests, next.failed_requests);
 });
 
-test("leaves the day empty when the storage transaction fails", async () => {
+test("rolls back the report when the quota write fails", async () => {
   const day = { ...report, report_day: "2026-11-21" };
-  const failedBatch = {
-    prepare: (sql) => db.prepare(sql),
-    batch: (statements) => db.batch([
-      ...statements,
-      db.prepare("INSERT INTO usage_days (report_day, installation_id, summary) VALUES ('2026-11-21', 'invalid-id', '{}')"),
-    ]),
-  };
-  await assert.rejects(() => saveUsageDay(failedBatch, JSON.stringify(day), report.installation_id, now), /CHECK constraint failed/);
-  const stored = await db.prepare("SELECT COUNT(*) AS rows FROM usage_days WHERE report_day = ?")
-    .bind(day.report_day).first("rows");
-  assert.equal(stored, 0);
+  await db.exec("ALTER TABLE reports.usage_intake_quota ADD CHECK (received_day <> DATE '2026-11-25')");
+  await assert.rejects(
+    () => saveUsageDay(db, JSON.stringify(day), report.installation_id, Date.parse("2026-11-25T00:00:00Z")),
+    { code: "23514" },
+  );
+  const { rows } = await db.query("SELECT count(*)::int AS count FROM reports.usage_days WHERE report_day = $1", [day.report_day]);
+  assert.equal(rows[0].count, 0);
 });
 
 test("rejects unsupported fields and invalid counters before any database call", async () => {
@@ -111,24 +94,26 @@ test("rejects unsupported fields and invalid counters before any database call",
 test("stores coverage with no comparable requests", async () => {
   const day = { ...report, report_day: "2026-11-20", groups: [] };
   assert.equal(await saveUsageDay(db, JSON.stringify(day), report.installation_id, now), "stored");
-  const stored = await db.prepare("SELECT summary FROM usage_days WHERE report_day = ?").bind(day.report_day).first("summary");
-  assert.deepEqual(JSON.parse(stored).groups, []);
+  const { rows } = await db.query("SELECT summary FROM reports.usage_days WHERE report_day = $1", [day.report_day]);
+  assert.deepEqual(JSON.parse(rows[0].summary).groups, []);
 });
 
 test("expires reports older than 30 UTC days in bounded batches", async () => {
   const cutoff = { ...report, report_day: "2026-10-25" };
   assert.equal(await saveUsageDay(db, JSON.stringify(cutoff), report.installation_id, now), "stored");
-  await db.prepare(
-    "WITH RECURSIVE n(i) AS (VALUES(1) UNION ALL SELECT i+1 FROM n WHERE i<501) " +
-    "INSERT INTO usage_days (report_day, installation_id, summary) SELECT '2026-10-24', printf('%036d', i), '{}' FROM n",
-  ).run();
-  await db.prepare("INSERT INTO usage_intake_quota (received_day, accepted_count) VALUES (?, 1)")
-    .bind("2026-10-24").run();
+  await db.exec(
+    "INSERT INTO reports.usage_days (report_day, installation_id, summary) " +
+    "SELECT '2026-10-24', ('1b93c822-ac37-4360-aa79-' || lpad(i::text, 12, '0'))::uuid, '{}' " +
+    "FROM generate_series(1, 501) AS g(i); " +
+    "INSERT INTO reports.usage_intake_quota (received_day, accepted_count) VALUES ('2026-10-24', 1);",
+  );
   assert.equal(await pruneUsageDays(db, now), 500);
   assert.equal(await pruneUsageDays(db, now), 1);
   assert.equal(await pruneUsageDays(db, now), 0);
-  assert.equal(await db.prepare("SELECT COUNT(*) AS rows FROM usage_days WHERE report_day = ?")
-    .bind(cutoff.report_day).first("rows"), 1);
-  const quota = await db.prepare("SELECT received_day FROM usage_intake_quota ORDER BY received_day").all();
-  assert.deepEqual(quota.results.map((row) => row.received_day), ["2026-11-24"]);
+  const { rows } = await db.query(
+    "SELECT report_day::text AS report_day FROM reports.usage_days WHERE report_day <= $1", [cutoff.report_day],
+  );
+  assert.deepEqual(rows, [{ report_day: cutoff.report_day }]);
+  const quota = await db.query("SELECT received_day::text AS received_day FROM reports.usage_intake_quota ORDER BY received_day");
+  assert.deepEqual(quota.rows.map((row) => row.received_day), ["2026-11-24"]);
 });

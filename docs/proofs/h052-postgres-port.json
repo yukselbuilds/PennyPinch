@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "task": "H052",
+  "slice": "postgresql-port",
+  "passed": true,
+  "owner": "lead agent",
+  "source_base": "f11c5200afc8c3c8a1423c5d229c2a7ac9a42bfa",
+  "service": {
+    "command": "node --test usage.test.mjs service.test.mjs",
+    "cases": {
+      "tests": 26,
+      "pass": 26,
+      "fail": 0,
+      "skipped": 0
+    },
+    "duration_seconds": 2.443,
+    "runtime": "Node with isolated PGlite PostgreSQL"
+  },
+  "native_postgresql": {
+    "version": "17.12",
+    "binary_distribution": "@embedded-postgres/windows-x64@17.12.0-beta.19",
+    "scope": "Temporary localhost cluster and synthetic inputs",
+    "cases": [
+      "migration and schema access restriction",
+      "two connections compete for the final daily slot",
+      "ungranted advisory lock observed for the second connection",
+      "stored, daily quota, duplicate, and conflict",
+      "erasure preserves accepted quota",
+      "six rate admissions across two sessions",
+      "aggregate query and cutoff cleanup",
+      "owned server stopped"
+    ],
+    "harness_sha256": "9aa7268de6f969bdbe2f75bf9b62d18e9e0b86e56f455567b81c2c4762ebd71d",
+    "duration_seconds": 5.348
+  },
+  "dependency_audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0
+  },
+  "toolchain": {
+    "node": "v25.2.1",
+    "pnpm": "11.25.0",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ]
+  },
+  "input_fingerprints_before_and_after": {
+    "sources": {
+      "services/reports/migrations/0001_reports.sql": "65637c2f72f3bb1afe950dce87aca28583498b6b77c4782786dd6287941bbd30",
+      "services/reports/admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+      "services/reports/service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+      "services/reports/usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+      "services/reports/service.test.mjs": "f6fe370e1ca5b7cddecdaecf8049ce3330b33d4e977d2997f7cc38f46ca0e824",
+      "services/reports/usage.test.mjs": "ddeeb3898507adc04895fd765ba0ed8afffc5a08f60b393ccbc6d0a69ff450a2",
+      "services/reports/package.json": "c2436e611bac266e433d7febc5bb5884b91f52de9adf0391d10d9aa3786cf935",
+      "services/reports/pnpm-lock.yaml": "e04aa81b0f78a0f5cb9e71e1314296221c6277a516593b600ff683f5b8b99ac8"
+    },
+    "binaries": {
+      "node": "91ec09dda8f20556f366110859f106ab189d45f8f6a2bd092e6785174ad4a0fa",
+      "postgres": "70334b2428dac81d111b4e3a6cfed01568b216e4ef3c5cc879d423a0fe69c0df",
+      "initdb": "515eeba9d255c60b4a0eb2954d9b79f39f097694846e5df5a9bf308c578f1d8f",
+      "pg_ctl": "833ab137ed6df021e49dfbef062783be5c1e898119f43e01440373a88a6ab998"
+    },
+    "pglite_package": "f03e1d4faf3e91704b3a62185be170f880201cbecb36a1e5a82cfbb159c71a3d",
+    "pglite_wasm": {
+      "initdb.wasm": "c2c2d7405169331202a2cdeb8cf7a5fe617c5f5b012e1f35186ae0d08b026584",
+      "pglite.wasm": "ee67ef4ef23f7a8f5b92a06d9d4f9b4a048185bcbabf12381f7c729d166b6a22"
+    },
+    "package_manifest": "b472ff11ed179814c085d58d4879bcc8da977338548c3d9bb1f6c78c36af394f",
+    "pg_client_manifest": "b1e53333a3d0c2c47c49a5cb919d221135dc03145df740925b899bc2baacc435"
+  },
+  "limits": {
+    "neon_migration": "not_tested",
+    "neon_admin_login": "not_tested",
+    "live_receive": "not_tested",
+    "live_retention": "not_tested",
+    "real_user_reports": 0
+  },
+  "observations": {
+    "prior_pilot_database": "empty before owner-authorized deletion, absent from account list after deletion",
+    "neon_project": "Free project in Frankfurt observed during account setup",
+    "observed_on": "2026-11-24",
+    "development_agent_token_savings": "not_measured"
+  }
+}

@@ -4,6 +4,8 @@ const dailyWriteLimit = 128;
 const pruneBatchSize = 500;
 const maxPruneBatches = Math.ceil(retentionDays * dailyWriteLimit / pruneBatchSize);
 const summaryRowLimit = 4096;
+const minuteMilliseconds = 60_000;
+const requestsPerMinute = 6;
 export const maxUsageReportBytes = 4096;
 
 const installationId = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -97,33 +99,42 @@ export async function saveUsageDay(db, raw, authenticatedId, now = Date.now()) {
   if (!report) return "invalid";
   if (report.installationId !== authenticatedId) return "forbidden";
 
-  // The insert, the quota trigger, and the retry lookup share one D1 transaction.
   const receivedDay = dateLabel(utcDay(now));
-  const [inserted, current] = await db.batch([
-    db.prepare(
-      "INSERT INTO usage_days (report_day, installation_id, summary, received_day) " +
-      "SELECT ?, ?, ?, ? WHERE COALESCE((SELECT accepted_count FROM usage_intake_quota WHERE received_day = ?), 0) < ? " +
-      "ON CONFLICT(report_day, installation_id) DO NOTHING RETURNING report_day",
-    ).bind(report.reportDay, report.installationId, report.summary, receivedDay, receivedDay, dailyWriteLimit),
-    db.prepare("SELECT summary FROM usage_days WHERE report_day = ? AND installation_id = ?")
-      .bind(report.reportDay, report.installationId),
-  ]);
-  if (current.results.length === 0) return "daily_quota";
-  if (current.results[0].summary !== report.summary) return "conflict";
-  return inserted.results.length === 1 ? "stored" : "duplicate";
+  const { rows } = await db.query(
+    "SELECT reports.save_usage_day($1::date, $2::uuid, $3::text, $4::date, $5::int) AS status",
+    [report.reportDay, report.installationId, report.summary, receivedDay, dailyWriteLimit],
+  );
+  return rows[0].status;
+}
+
+export async function allowUsageRequest(db, id, now) {
+  const window = Math.floor(now / minuteMilliseconds);
+  const { rows } = await db.query(
+    "INSERT INTO reports.usage_rate_limits AS rate (installation_id, window_minute, request_count) " +
+    "VALUES ($1, $2, 1) ON CONFLICT (installation_id) DO UPDATE " +
+    "SET window_minute = EXCLUDED.window_minute, " +
+    "request_count = CASE WHEN rate.window_minute < EXCLUDED.window_minute THEN 1 ELSE rate.request_count + 1 END " +
+    "WHERE rate.window_minute < EXCLUDED.window_minute OR " +
+    "(rate.window_minute = EXCLUDED.window_minute AND rate.request_count < $3) RETURNING 1",
+    [id, window, requestsPerMinute],
+  );
+  return rows.length === 1;
 }
 
 export async function pruneUsageDays(db, now = Date.now()) {
   const cutoff = dateLabel(utcDay(now) - retentionDays * dayMilliseconds);
-  const [deleted] = await db.batch([
-    db.prepare(
-      "DELETE FROM usage_days WHERE (report_day, installation_id) IN " +
-      "(SELECT report_day, installation_id FROM usage_days WHERE report_day < ? " +
-      "ORDER BY report_day, installation_id LIMIT ?)",
-    ).bind(cutoff, pruneBatchSize),
-    db.prepare("DELETE FROM usage_intake_quota WHERE received_day < ?").bind(cutoff),
-  ]);
-  return deleted.meta.changes;
+  const oldestRateMinute = Math.floor((now - dayMilliseconds) / minuteMilliseconds);
+  const { rows } = await db.query(
+    "WITH reports_deleted AS ( " +
+    "DELETE FROM reports.usage_days WHERE (report_day, installation_id) IN " +
+    "(SELECT report_day, installation_id FROM reports.usage_days WHERE report_day < $1::date " +
+    "ORDER BY report_day, installation_id LIMIT $2) RETURNING 1), " +
+    "quota_deleted AS (DELETE FROM reports.usage_intake_quota WHERE received_day < $1::date), " +
+    "rates_deleted AS (DELETE FROM reports.usage_rate_limits WHERE window_minute < $3) " +
+    "SELECT count(*)::int AS count FROM reports_deleted",
+    [cutoff, pruneBatchSize, oldestRateMinute],
+  );
+  return rows[0].count;
 }
 
 export async function pruneExpiredUsageDays(db, now) {
@@ -164,16 +175,17 @@ export async function summarizeUsageDays(db, days, now = Date.now()) {
   const today = utcDay(now);
   const start = dateLabel(today - days * dayMilliseconds);
   const end = dateLabel(today);
-  const { results } = await db.prepare(
-    "SELECT installation_id, summary FROM usage_days WHERE report_day >= ? AND report_day < ? " +
-    "ORDER BY report_day, installation_id LIMIT ?",
-  ).bind(start, end, summaryRowLimit + 1).all();
-  if (results.length > summaryRowLimit) throw new Error("summary_row_limit");
+  const { rows } = await db.query(
+    "SELECT installation_id, summary FROM reports.usage_days WHERE report_day >= $1::date AND report_day < $2::date " +
+    "ORDER BY report_day, installation_id LIMIT $3",
+    [start, end, summaryRowLimit + 1],
+  );
+  if (rows.length > summaryRowLimit) throw new Error("summary_row_limit");
 
   const installations = new Set();
   const byBasis = new Map();
   let comparable = 0n, incomparable = 0n, failed = 0n;
-  for (const { installation_id, summary } of results) {
+  for (const { installation_id, summary } of rows) {
     const { schema_version, incomparable_requests, failed_requests, groups } = JSON.parse(summary);
     if (!isInstallationId(installation_id) || schema_version !== 1 ||
         !counter(incomparable_requests) || !counter(failed_requests) || !validGroups(groups)) {
@@ -197,7 +209,7 @@ export async function summarizeUsageDays(db, days, now = Date.now()) {
   return {
     schema_version: 1,
     period: { from_day: start, to_day_exclusive: end },
-    coverage: { installations: installations.size, report_days: results.length, comparable_requests: String(comparable),
+    coverage: { installations: installations.size, report_days: rows.length, comparable_requests: String(comparable),
       incomparable_requests: String(incomparable), failed_requests: String(failed) },
     groups: [...byBasis.keys()].sort().map((basis) => summarizeBasis(basis, byBasis.get(basis))),
   };
