@@ -67,3 +67,11 @@ Request 1, 7, or 30 completed UTC days. The default is seven days. D1 reads at m
 The summary keeps token counts exact as decimal strings. It calculates weighted savings from the total before and after counts for each counter basis. It sums each installation's counts before calculating the median percentage. A zero before count gives an undefined percentage. The coverage still includes the measured zero and negative results. The administrator view and any public summary need their own acceptance.
 
 The local tests use generated keys and synthetic reports. Verify the live Access policy before granting administrator access. [Summary evidence](../proofs/h052-admin-summary.json)
+
+## H052-d — Private admin panel
+
+The Worker verifies the signed Access identity before it serves GET `/admin`. Protect `/admin` and `/v1/admin/summary` with the same administrator policy in the live deployment. The default range covers seven completed UTC days. Select one or 30 days for other ranges.
+
+The panel reads the same aggregate D1 summary as the JSON route. It shows local token estimates, weighted savings, and the median per installation for each counter basis. Report coverage includes installations, daily reports, and comparable, incomparable, and failed requests. An empty period, a period without comparable requests, and a database failure have distinct messages.
+
+The Worker generates the HTML and disables caching. The panel contains aggregate measurements only. It uses nonce-bound styles and blocks scripts, framing, and external resources. The local browser tests use synthetic reports and generated Access credentials. Verify the live Access policy and the D1 limits before the pilot. [Panel evidence](../proofs/h052-admin-panel.json)

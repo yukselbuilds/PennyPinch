@@ -1,4 +1,5 @@
 import { authorizeAdmin } from "./admin-access.mjs";
+import { renderAdminPanel } from "./admin-panel.mjs";
 import { isInstallationId, maxUsageReportBytes, saveUsageDay, summarizeUsageDays } from "./usage.mjs";
 
 const maxPilotCredentials = 32;
@@ -51,7 +52,7 @@ async function readReport(request) {
   }
 }
 
-async function adminSummary(request, env, url) {
+async function adminReport(request, env, url) {
   const access = await authorizeAdmin(request, env);
   if (access === "not_found") return reply(access, 404);
   if (access === "unavailable") return reply(access, 503);
@@ -59,20 +60,22 @@ async function adminSummary(request, env, url) {
   if (request.method !== "GET") return reply("method_not_allowed", 405, { allow: "GET" });
   const range = /^\?days=(1|7|30)$/.exec(url.search);
   if (url.search && !range) return reply("invalid", 400);
-  if (!env.REPORTS_DB) return reply("unavailable", 503);
+  const days = Number(range?.[1] ?? 7);
+  let summary = null;
   try {
-    const summary = await summarizeUsageDays(env.REPORTS_DB, Number(range?.[1] ?? 7));
-    return reply("ready", 200, undefined, { summary });
+    if (env.REPORTS_DB) summary = await summarizeUsageDays(env.REPORTS_DB, days);
   } catch {
-    return reply("unavailable", 503);
+    // Keep database errors out of both responses.
   }
+  if (url.pathname === "/admin") return renderAdminPanel(days, summary);
+  return summary ? reply("ready", 200, undefined, { summary }) : reply("unavailable", 503);
 }
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.protocol !== "https:") return reply("not_found", 404);
-    if (url.pathname === "/v1/admin/summary") return adminSummary(request, env, url);
+    if (url.pathname === "/v1/admin/summary" || url.pathname === "/admin") return adminReport(request, env, url);
     if (env.REPORTS_ENABLED !== "true" || url.pathname !== "/v1/usage" || url.search) {
       return reply("not_found", 404);
     }

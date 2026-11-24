@@ -10,6 +10,7 @@ import worker from "./worker.mjs";
 
 const url = "https://pennypinch.test/v1/usage";
 const adminUrl = "https://pennypinch.test/v1/admin/summary";
+const panelUrl = "https://pennypinch.test/admin";
 const ids = ["125d94ba-1e98-4d64-ac76-eb56f665a527", "55676b9c-87d3-479d-ab92-fa0fc07a9d32"];
 const tokens = ["A".repeat(43), "B".repeat(43)];
 const digest = (text) => createHash("sha256").update(text).digest("hex");
@@ -201,6 +202,7 @@ const adminHeaders = (token) => ({ "cf-access-jwt-assertion": token });
 test("keeps admin reads closed without Access configuration", async (t) => {
   const { fetch } = await start(t);
   await expectResponse(await fetch(adminUrl), 404, "not_found");
+  await expectResponse(await fetch(panelUrl), 404, "not_found");
   await expectResponse(await worker.fetch(new Request(adminUrl), {
     ADMIN_ACCESS_ISSUER: "https://untrusted.test", ADMIN_ACCESS_AUDIENCE: audience,
   }), 503, "unavailable");
@@ -315,4 +317,87 @@ test("refuses a query above the report-day bound", async (t) => {
 test("keeps reports private when Access keys are unavailable", async (t) => {
   const { fetch } = await startAdmin(t, { outboundService: () => new Response(null, { status: 502 }) });
   await expectResponse(await fetch(adminUrl, { headers: adminHeaders(await signAdmin()) }), 503, "unavailable");
+});
+
+test("renders the private panel only for the administrator Access application", async (t) => {
+  const { fetch } = await startAdmin(t, { bindings: { REPORTS_ENABLED: "false" } });
+  await expectResponse(await fetch(panelUrl), 401, "unauthorized");
+  const wrongAudience = { headers: adminHeaders(await signAdmin({ aud: ["cd".repeat(32)] })) };
+  await expectResponse(await fetch(panelUrl, wrongAudience), 401, "unauthorized");
+  const options = { headers: adminHeaders(await signAdmin()) };
+  await expectResponse(await fetch(panelUrl + "?days=7&days=1", options), 400, "invalid");
+  await expectResponse(await fetch(panelUrl.replace("https:", "http:"), options), 404, "not_found");
+  const nonGet = await fetch(panelUrl, { ...options, method: "POST" });
+  assert.equal(nonGet.headers.get("allow"), "GET");
+  await expectResponse(nonGet, 405, "method_not_allowed");
+  const response = await fetch(panelUrl, options);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("content-type"), "text/html; charset=utf-8");
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+  assert.equal(response.headers.get("referrer-policy"), "no-referrer");
+  const policy = response.headers.get("content-security-policy");
+  assert.match(policy, /default-src 'none'.*frame-ancestors 'none'.*form-action 'none'/);
+  const nonce = /style-src 'nonce-([^']+)'/.exec(policy)[1];
+  assert.equal(atob(nonce).length, 16);
+  const html = await response.text();
+  assert.ok(html.includes(`<style nonce="${nonce}">`));
+  assert.match(html, /No reports in this period/);
+  assert.match(html, /href="\/admin\?days=7" aria-current="page"/);
+  assert.doesNotMatch(html, /<script\b/);
+});
+
+test("renders date ranges, signed savings and exact numbers without exposing private values", async (t) => {
+  const { send, fetch } = await startAdmin(t);
+  await expectResponse(await send({ ...summary(ids[0]), report_day: day(-2), failed_requests: 1,
+    groups: [pair(mainBasis, 100, 60), pair(otherBasis, 0, 2)] }, tokens[0]), 201, "stored");
+  const options = { headers: adminHeaders(await signAdmin()) };
+  const oneDay = await fetch(panelUrl + "?days=1", options);
+  assert.match(await oneDay.text(), /No reports in this period/);
+  await expectResponse(await send({ ...summary(ids[0]), groups: [pair(mainBasis, 100, 105)] }, tokens[0]),
+    201, "stored");
+  await expectResponse(await send({ ...summary(ids[1]), groups: [pair(mainBasis, 300, 315)] }, tokens[1]),
+    201, "stored");
+  const oneDayHtml = await (await fetch(panelUrl + "?days=1", options)).text();
+  assert.match(oneDayHtml, /href="\/admin\?days=1" aria-current="page"/);
+  assert.match(oneDayHtml, /-5%/);
+  assert.ok(oneDayHtml.includes(`datetime="${day(-1)}"`));
+
+  const maximum = Number.MAX_SAFE_INTEGER;
+  for (let i = 0; i < ids.length; i++) {
+    await expectResponse(await send({ ...summary(ids[i]), report_day: day(-3),
+      groups: [pair(mainBasis, maximum, maximum), pair("headroom-0.45.0-ws-json-v1:gpt2", 1, 1)] },
+    tokens[i]), 201, "stored");
+  }
+  const response = await fetch(panelUrl + "?days=30", options);
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /href="\/admin\?days=30" aria-current="page"/);
+  assert.ok(html.includes(`datetime="${day(-30)}"`));
+  assert.match(html, /18,014,398,509,482,482/);
+  assert.match(html, /<dd>&lt;0.01% saved<\/dd>/);
+  assert.match(html, /<dd>0%<\/dd>/);
+  assert.ok(html.includes(otherBasis));
+  assert.match(html, /Unavailable/);
+  for (const privateValue of [...ids, ...tokens, "synthetic-admin", "admin@pennypinch.test",
+    options.headers["cf-access-jwt-assertion"]]) {
+    assert.ok(!html.includes(privateValue));
+  }
+});
+
+test("renders coverage with no comparable input and gives a distinct database error", async (t) => {
+  const { send, db, fetch } = await startAdmin(t);
+  await expectResponse(await send(summary(ids[0]), tokens[0]), 201, "stored");
+  const options = { headers: adminHeaders(await signAdmin()) };
+  const html = await (await fetch(panelUrl, options)).text();
+  assert.match(html, /No comparable requests in this period/);
+  assert.match(html, /Incomparable requests\s*<\/dt>\s*<dd>1<\/dd>/);
+  assert.doesNotMatch(html, /Weighted savings/);
+  await db.prepare("DROP TABLE usage_days").run();
+  const unavailable = await fetch(panelUrl, options);
+  assert.equal(unavailable.status, 503);
+  assert.equal(unavailable.headers.get("cache-control"), "no-store");
+  const fallback = await unavailable.text();
+  assert.match(fallback, /Usage reports are unavailable/);
+  assert.doesNotMatch(fallback, /SQLITE|usage_days/);
 });
