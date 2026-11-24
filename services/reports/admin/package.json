@@ -1,0 +1,9 @@
+{
+  "name": "pennypinch-reports-admin",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "dependencies": {
+    "jose": "6.2.18"
+  }
+}

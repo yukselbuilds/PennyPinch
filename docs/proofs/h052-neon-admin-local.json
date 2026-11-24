@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "task": "H052",
+  "slice": "H052-l",
+  "scope": "Local administrator authorization and session cookie with synthetic issuer keys",
+  "owner": "lead agent",
+  "observed_on": "2026-11-24",
+  "source_base": "67deca647aa46890abcc6a39049f0fd948d7aae8",
+  "local_report_suite": {
+    "command": "node --test --test-reporter=tap",
+    "node": "v24.22.3",
+    "counts": {
+      "duration_ms": 5858.8942,
+      "tests": 38.0,
+      "pass": 38.0,
+      "fail": 0.0,
+      "skipped": 0.0
+    },
+    "fingerprints": {
+      "admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+      "function.mjs": "29d868e53c06f0286e6ee19cd8e3caca96402d2fac0e8afac1fb6fe785a82b01",
+      "retention-function.mjs": "bf245b5eb6ae0c4ff42579fc841c0d36fa22d63d39c49eb28096b1330f64a2de",
+      "retention-function.test.mjs": "10960aa225a24feeaf9e148d7bafd53e418f45e197779598ca5caf48ccbafec7",
+      "service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+      "service.test.mjs": "4b412d8d053ea690dcbc4e333031473bfb56da139fd732e66fb1112bb41a9d52",
+      "usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+      "usage.test.mjs": "ddeeb3898507adc04895fd765ba0ed8afffc5a08f60b393ccbc6d0a69ff450a2",
+      "migrations/0001_reports.sql": "65637c2f72f3bb1afe950dce87aca28583498b6b77c4782786dd6287941bbd30",
+      "migrations/0002_reports_runtime.sql": "a8a8e34346c222fad30766518ab34329f1bcb26b00d95a263b3218ab0c01c9ff",
+      "migrations/0003_reports_cleanup.sql": "9ad8ec17c20ba7c1eaab712142c2b82b2fa4d2ec345de6df2682ad05f299127f",
+      "admin/admin-function.mjs": "ea836cb2d3340ce5885080f1bd508bd443622293c1df3e2d2c49698d2b4865d0",
+      "admin/admin-function.test.mjs": "7a12eeb553330ebade8a8463ff3700714b5addbf78ad3de35809c7175c010089",
+      "package.json": "4503ac1c444188f2f7e2f95c0390fb097584e35f78d9e65149c3cd5d47a63d52",
+      "pnpm-lock.yaml": "e4e63c972617091894135a94a9270c67f9c2c98c3d136235d8fe17d50e9efefe",
+      "admin/package.json": "b807a25cbe287f50b869280211061b3870f1699d778288e735713d5e0993eb39",
+      "admin/pnpm-lock.yaml": "1462cef4772316bf067fb27091c36206101f8e95db580124120e367963d8e517",
+      "node.exe": "86fc4785327db5f5c7558dc6156c543b433c313e813a222e088086222ab4afa6"
+    }
+  },
+  "native_postgres": {
+    "unconfigured_routes_closed": 4,
+    "postgres_version": "17.12",
+    "actual_tls": true,
+    "remote_key_fixture_reads": 1,
+    "anonymous_read_status": 401,
+    "other_subject_status": 401,
+    "session_status": 204,
+    "authorised_read_status": 200,
+    "local_synthetic_input_tokens_saved": 25,
+    "intake_status": 404,
+    "native_duration_seconds": 22.885,
+    "server_closed": true,
+    "node": "v24.22.3",
+    "input_fingerprints_before_and_after": {
+      "services/reports/migrations/0001_reports.sql": "65637c2f72f3bb1afe950dce87aca28583498b6b77c4782786dd6287941bbd30",
+      "services/reports/migrations/0002_reports_runtime.sql": "a8a8e34346c222fad30766518ab34329f1bcb26b00d95a263b3218ab0c01c9ff",
+      "services/reports/function.mjs": "29d868e53c06f0286e6ee19cd8e3caca96402d2fac0e8afac1fb6fe785a82b01",
+      "services/reports/service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+      "services/reports/admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+      "services/reports/usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+      "services/reports/admin/admin-function.mjs": "ea836cb2d3340ce5885080f1bd508bd443622293c1df3e2d2c49698d2b4865d0",
+      "services/reports/admin/admin-function.test.mjs": "7a12eeb553330ebade8a8463ff3700714b5addbf78ad3de35809c7175c010089",
+      "services/reports/admin/package.json": "b807a25cbe287f50b869280211061b3870f1699d778288e735713d5e0993eb39",
+      "services/reports/admin/pnpm-lock.yaml": "1462cef4772316bf067fb27091c36206101f8e95db580124120e367963d8e517",
+      "services/reports/package.json": "4503ac1c444188f2f7e2f95c0390fb097584e35f78d9e65149c3cd5d47a63d52",
+      "services/reports/pnpm-lock.yaml": "e4e63c972617091894135a94a9270c67f9c2c98c3d136235d8fe17d50e9efefe",
+      "services/reports/service.test.mjs": "4b412d8d053ea690dcbc4e333031473bfb56da139fd732e66fb1112bb41a9d52",
+      "services/reports/usage.test.mjs": "ddeeb3898507adc04895fd765ba0ed8afffc5a08f60b393ccbc6d0a69ff450a2",
+      "work/toolchains/reports-postgres-17.12/node_modules/@embedded-postgres/windows-x64/native/bin/postgres.exe": "70334b2428dac81d111b4e3a6cfed01568b216e4ef3c5cc879d423a0fe69c0df",
+      "work/toolchains/reports-postgres-17.12/node_modules/@embedded-postgres/windows-x64/native/bin/initdb.exe": "515eeba9d255c60b4a0eb2954d9b79f39f097694846e5df5a9bf308c578f1d8f",
+      "work/toolchains/reports-postgres-17.12/node_modules/@embedded-postgres/windows-x64/native/bin/pg_ctl.exe": "833ab137ed6df021e49dfbef062783be5c1e898119f43e01440373a88a6ab998",
+      "openssl.exe": "3fbfe9fa1fdfbae35980ce3b1e6f5a2db843a3d4d69b7d1c13168ec2f1b538a6",
+      "work/toolchains/reports-neon-function/node-v24.22.3-win-x64/node.exe": "86fc4785327db5f5c7558dc6156c543b433c313e813a222e088086222ab4afa6",
+      "work/proofs/h052/neon-admin/bundle/index.mjs": "31cbde50cb21df44be721ba3fd0719a5726fd89e877c33a0b1429b5d9eaa9bef",
+      "work/proofs/h052/neon-admin/native-runtime-test.py": "60a19bb21d9601d844a95fdada04f70c87d59041b2b22ae2a8d532fdca4c9584",
+      "work/proofs/h052/neon-admin/native-runtime-check.mjs": "2497ad44bbdefea6c799349603d9cb6ca2cc8fc3fe6168ee41928bcf7826d5b5"
+    }
+  },
+  "bundle": {
+    "archive_sha256": "18dfd19ea269dec4b1b3237a79555a3012977c2267db4d9d6894c3132b91d986",
+    "entry_sha256": "31cbde50cb21df44be721ba3fd0719a5726fd89e877c33a0b1429b5d9eaa9bef",
+    "archive_entries": [
+      "index.mjs"
+    ]
+  },
+  "verifier": {
+    "dependency": "jose 6.2.18",
+    "dependency_audit_findings": 0,
+    "allowed_subjects": 1,
+    "max_session_seconds": 900
+  },
+  "existing_function_probe_inputs_unchanged": true,
+  "acceptance": {
+    "local": "passed",
+    "managed_auth_enabled": false,
+    "live_issuer_audience_and_subject": "not_tested",
+    "provider_browser_sign_in_and_sign_out": "not_tested",
+    "hosted_admin_routes": "not_deployed",
+    "real_user_reports": 0,
+    "development_agent_token_savings": "not_measured"
+  }
+}

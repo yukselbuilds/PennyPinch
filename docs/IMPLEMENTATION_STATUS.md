@@ -76,6 +76,8 @@ The deployment runner passed five cases with simulated Neon and PostgreSQL respo
 
 The lead agent implemented H052-k because it controls deletion. All 34 local reporting tests passed. Native PostgreSQL verified TLS and the cleanup role. The first invocation removed 4,000 expired rows. A retry removed the final expired row. The test preserved the rows at the retention boundary. The Neon cleanup role and trigger still need deployment and live verification. The earlier Function probe inputs still match. [Cleanup evidence](proofs/h052-neon-retention-local.json)
 
+The lead agent implemented H052-l because it controls administrator access. The local Function uses the Managed Better Auth token contract. It requires the configured issuer, audience, and administrator subject. The packaged handler verified a test session and read a summary over TLS from native PostgreSQL. All 38 local reporting tests passed. The pilot still needs authorization, deployment, and a real sign-in check. [Administrator access evidence](proofs/h052-neon-admin-local.json)
+
 ### Public privacy and presentation
 
 The two public branches and two release tags use the rewritten Git history. On 24 November the GitHub Support portal showed the removal request as Open. The portal showed only the original request. Verify anonymous access after Support replies.

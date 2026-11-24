@@ -51,7 +51,7 @@ Local HTTP tests must use synthetic credentials and reports. They do not verify 
 
 ## H052-c — Administrator report queries
 
-The local service keeps the administrator route closed by default. Tests inject an authorized `verifyAdmin` function. No production access provider, signed-identity validation, or Neon login has been selected or tested. Do not expose a public query endpoint or accept a user-supplied installation identifier.
+The base service keeps the administrator route closed by default. H052-l provides a local verifier for Managed Better Auth. Live administrator sign-in and the deployed access policy need pilot verification. Do not expose a public query endpoint or accept a user-supplied installation identifier.
 
 Support bounded reads for 1, 7, or 30 completed UTC days. Reject unsupported ranges and excessive row counts. Return only aggregate coverage and counts. Exclude installation IDs and administrator identity.
 
@@ -100,3 +100,11 @@ The cleanup Function uses a dedicated database role. The role can delete from th
 Set `REPORTS_CLEANUP_TRIGGER_ID` to the scheduler's trigger ID. Set `REPORTS_CLEANUP_DATABASE_URL` to the restricted role's connection URL. The handler requires HTTPS, the expected trigger envelope, and the Neon invocation header. Neon documents that its edge removes client-supplied headers with the `X-Neon-` prefix. Verify this behavior on the deployed Function before enabling the schedule. [Neon trigger security](https://neon.com/docs/compute/functions/triggers/overview#confirming-a-request-came-from-neon)
 
 The handler uses its current UTC time for the retention cutoff. A backlog or a database error requests a retry after 60 seconds. The local bundle passed the cutoff, duplicate delivery, restricted role, and retry checks on PostgreSQL. The live schedule, provider logs, and backup and restore checks remain open. [Cleanup evidence](../proofs/h052-neon-retention-local.json)
+
+## H052-l — Local administrator access
+
+Use Neon Managed Better Auth for the administrator Function. Pin the audience in `REPORTS_ADMIN_AUDIENCE`. Set `REPORTS_ADMIN_SUBJECT` to the approved operator's stable identifier. Read the issuer and public key endpoint from the Neon environment. Require EdDSA signatures and a token lifetime of at most 15 minutes. Verify the actual issuer, audience, and subject during pilot sign-in. [Neon Function authentication](https://neon.com/docs/compute/functions/authentication)
+
+Allow a valid bearer token on the private report routes. Use a same-origin POST to create a short-lived browser session for panel navigation. Use a same-origin DELETE to clear its cookie. Verify the token on every read. Keep the cookie host-only, HTTP-only, and limited to HTTPS. The managed provider's sign-out remains part of the browser sign-in test.
+
+The local bundle passed the signed session and summary checks with synthetic keys and native PostgreSQL. The administrator Function keeps intake closed. Keep the operator identifier and connection credentials in server configuration. The live Function and managed sign-in still need pilot verification. [Administrator access evidence](../proofs/h052-neon-admin-local.json)
