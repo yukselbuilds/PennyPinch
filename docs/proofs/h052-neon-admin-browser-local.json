@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "task": "H052",
+  "slice": "H052-m",
+  "scope": "Local browser sign-in and sign-out with synthetic managed authentication",
+  "owner": "lead agent",
+  "observed_on": "2026-11-24",
+  "source_base": "c4540ba7fd85688c2e6760c14cef39165a7eb65c",
+  "local_report_suite": {
+    "command": "node --test --test-reporter=tap",
+    "node": "v24.22.3",
+    "counts": {
+      "skipped": 0.0,
+      "pass": 41.0,
+      "tests": 41.0,
+      "duration_ms": 4817.2765,
+      "fail": 0.0
+    },
+    "fingerprints": {
+      "admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+      "function.mjs": "29d868e53c06f0286e6ee19cd8e3caca96402d2fac0e8afac1fb6fe785a82b01",
+      "retention-function.mjs": "bf245b5eb6ae0c4ff42579fc841c0d36fa22d63d39c49eb28096b1330f64a2de",
+      "retention-function.test.mjs": "10960aa225a24feeaf9e148d7bafd53e418f45e197779598ca5caf48ccbafec7",
+      "service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+      "service.test.mjs": "4b412d8d053ea690dcbc4e333031473bfb56da139fd732e66fb1112bb41a9d52",
+      "usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+      "usage.test.mjs": "ddeeb3898507adc04895fd765ba0ed8afffc5a08f60b393ccbc6d0a69ff450a2",
+      "migrations/0001_reports.sql": "65637c2f72f3bb1afe950dce87aca28583498b6b77c4782786dd6287941bbd30",
+      "migrations/0002_reports_runtime.sql": "a8a8e34346c222fad30766518ab34329f1bcb26b00d95a263b3218ab0c01c9ff",
+      "migrations/0003_reports_cleanup.sql": "9ad8ec17c20ba7c1eaab712142c2b82b2fa4d2ec345de6df2682ad05f299127f",
+      "admin/admin-function.mjs": "c0de20dcaa5a7750d12f860ba309039f1c88c99ef27aea7a1be66a315e1046c0",
+      "admin/admin-function.test.mjs": "3482be437cf8036f56d79b986dea382db8899fc4a5cb84718bcb138118f8da77",
+      "admin/browser-login.mjs": "7e305c4ad77d2ca3149203b3b8a1b1a117669b5fc13a3991e580782b4fda8c33",
+      "package.json": "4503ac1c444188f2f7e2f95c0390fb097584e35f78d9e65149c3cd5d47a63d52",
+      "pnpm-lock.yaml": "e4e63c972617091894135a94a9270c67f9c2c98c3d136235d8fe17d50e9efefe",
+      "admin/package.json": "b807a25cbe287f50b869280211061b3870f1699d778288e735713d5e0993eb39",
+      "admin/pnpm-lock.yaml": "1462cef4772316bf067fb27091c36206101f8e95db580124120e367963d8e517",
+      "node.exe": "86fc4785327db5f5c7558dc6156c543b433c313e813a222e088086222ab4afa6"
+    }
+  },
+  "browser": {
+    "browser": "Microsoft Edge headless 158.0.4370.33",
+    "schemes": [
+      "light",
+      "dark"
+    ],
+    "viewports": [
+      [
+        1280,
+        800
+      ],
+      [
+        360,
+        680
+      ]
+    ],
+    "verified_flows": 2,
+    "signed_fixture_sessions": 2,
+    "provider_sessions_closed": 2,
+    "same_origin_browser_posts": 6,
+    "real_provider_calls": 0,
+    "duration_seconds": 7.6211083,
+    "fingerprints_before_and_after": {
+      "services/reports/admin/admin-function.mjs": "c0de20dcaa5a7750d12f860ba309039f1c88c99ef27aea7a1be66a315e1046c0",
+      "services/reports/admin/browser-login.mjs": "7e305c4ad77d2ca3149203b3b8a1b1a117669b5fc13a3991e580782b4fda8c33",
+      "services/reports/admin/pnpm-lock.yaml": "1462cef4772316bf067fb27091c36206101f8e95db580124120e367963d8e517",
+      "services/reports/pnpm-lock.yaml": "e4e63c972617091894135a94a9270c67f9c2c98c3d136235d8fe17d50e9efefe",
+      "services/reports/usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+      "services/reports/admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+      "services/reports/service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+      "work/proofs/h052/neon-admin-browser/check-browser.mjs": "894609923743e130666e037e9f8d3214fe680b76010cfcb35bc1a7580a8cf669",
+      "work/proofs/h052/neon-admin-browser/bundle/index.mjs": "bfffca373b97d7968018ee89106542fa8621192f35182746a00a31e9b0413fff",
+      "work/toolchains/reports-neon-function/node-v24.22.3-win-x64/node.exe": "86fc4785327db5f5c7558dc6156c543b433c313e813a222e088086222ab4afa6",
+      "msedge.exe": "5b07e50eaba5ca60fe6b900cc418a2081cdb8de6c621bfaf85b58865ede378ee"
+    },
+    "transport": "Loopback browser traffic and an injected HTTPS Function request context"
+  },
+  "node_loopback_origin_and_referer": "preserved",
+  "visual_review": {
+    "login_light_sha256": "b2a9df40775b63e2b85844d260a94512be5cd5d6f9c44067d992ff4087a34a91",
+    "login_dark_sha256": "32afe238125ade57928839aed8372611ecd8596cf8dc3f59d54e74771f187e99",
+    "keyboard_focus_and_horizontal_fit": "passed"
+  },
+  "bundle": {
+    "archive_sha256": "aecc3a4f7641b0bd86dfae64bd039215ff538f030c46fac4df3bf2b3f87d87cb",
+    "entry_sha256": "bfffca373b97d7968018ee89106542fa8621192f35182746a00a31e9b0413fff",
+    "archive_entries": [
+      "index.mjs"
+    ]
+  },
+  "existing_connection_probe_inputs_unchanged": true,
+  "acceptance": {
+    "local": "passed",
+    "neon_trusted_domain": "not_configured",
+    "neon_administrator_account": "not_provisioned",
+    "live_sign_in_and_sign_out": "awaiting_project_authorization",
+    "real_user_reports": 0,
+    "development_agent_token_savings": "not_measured"
+  }
+}

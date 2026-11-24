@@ -108,3 +108,11 @@ Use Neon Managed Better Auth for the administrator Function. Pin the audience in
 Allow a valid bearer token on the private report routes. Use a same-origin POST to create a short-lived browser session for panel navigation. Use a same-origin DELETE to clear its cookie. Verify the token on every read. Keep the cookie host-only, HTTP-only, and limited to HTTPS. The managed provider's sign-out remains part of the browser sign-in test.
 
 The local bundle passed the signed session and summary checks with synthetic keys and native PostgreSQL. The administrator Function keeps intake closed. Keep the operator identifier and connection credentials in server configuration. The live Function and managed sign-in still need pilot verification. [Administrator access evidence](../proofs/h052-neon-admin-local.json)
+
+## H052-m — Browser sign-in for the administrator
+
+Open the account page at `/admin/login`. Send the credential form to the configured Managed Better Auth service over HTTPS. Require the browser request to come from the same origin. Configure that Function origin in the provider's trusted domains. Keep credential values out of application logs, responses, and storage. [Neon authentication flow](https://neon.com/docs/auth/authentication-flow)
+
+Use the temporary provider session to obtain a signed access token. End the provider session before issuing the panel cookie. Verify the token and the approved administrator subject before issuing that cookie. The account page can clear the panel cookie. The signed token remains valid only until its expiry.
+
+Two local Edge flows passed with synthetic credentials. They covered a failed sign-in, an approved operator, report navigation, and sign-out. The pilot requires a real operator and provider sign-in test. Keep report intake closed during that test. [Browser access evidence](../proofs/h052-neon-admin-browser-local.json)

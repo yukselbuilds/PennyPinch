@@ -78,6 +78,8 @@ The lead agent implemented H052-k because it controls deletion. All 34 local rep
 
 The lead agent implemented H052-l because it controls administrator access. The local Function uses the Managed Better Auth token contract. It requires the configured issuer, audience, and administrator subject. The packaged handler verified a test session and read a summary over TLS from native PostgreSQL. All 38 local reporting tests passed. The pilot still needs authorization, deployment, and a real sign-in check. [Administrator access evidence](proofs/h052-neon-admin-local.json)
 
+The lead agent implemented H052-m because it handles browser credentials. The Function bundle passed the login and sign-out flows in isolated Edge. The tests used synthetic provider responses and confirmed same-origin form requests. All 41 local reporting tests passed. The connection probe inputs still match. Next, authorize the Neon pilot and verify its connection, trusted domain, and managed login. [Browser access evidence](proofs/h052-neon-admin-browser-local.json)
+
 ### Public privacy and presentation
 
 The two public branches and two release tags use the rewritten Git history. On 24 November the GitHub Support portal showed the removal request as Open. The portal showed only the original request. Verify anonymous access after Support replies.

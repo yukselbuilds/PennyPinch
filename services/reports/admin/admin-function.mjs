@@ -1,9 +1,12 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { createReportPool } from "../function.mjs";
 import { handleReportRequest } from "../service.mjs";
+import { readLoginForm, renderAdminLogin, signInWithNeon } from "./browser-login.mjs";
 
 const cookieName = "__Host-pennypinch-reports-admin";
 const sessionPath = "/v1/admin/session";
+const loginPath = "/admin/login";
+const logoutPath = "/admin/logout";
 const maxSessionSeconds = 900;
 const signedToken = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
 
@@ -24,9 +27,10 @@ function sessionToken(request) {
   return matches?.length === 1 ? matches[0].slice(prefix.length) : undefined;
 }
 
-function sessionResponse(status, cookie) {
+function sessionResponse(status, cookie, location) {
   const headers = { "cache-control": "no-store", "x-content-type-options": "nosniff" };
   if (cookie) headers["set-cookie"] = cookie;
+  if (location) headers.location = location;
   return new Response(null, { status, headers });
 }
 
@@ -34,7 +38,9 @@ function adminCookie(token, maxAge) {
   return cookieName + "=" + token + "; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=" + maxAge;
 }
 
-export function createAdminHandler({ db, env = process.env, createKeySet = createRemoteJWKSet, clock = Date.now } = {}) {
+export function createAdminHandler({
+  db, env = process.env, createKeySet = createRemoteJWKSet, clock = Date.now, requestUpstream = fetch,
+} = {}) {
   const authUrl = secureUrl(env.NEON_AUTH_BASE_URL);
   const jwksUrl = secureUrl(env.NEON_AUTH_JWKS_URL);
   const audience = env.REPORTS_ADMIN_AUDIENCE;
@@ -63,6 +69,28 @@ export function createAdminHandler({ db, env = process.env, createKeySet = creat
     const url = new URL(request.url);
     const time = clock();
     const now = Math.floor(time / 1000);
+    if (url.pathname === loginPath || url.pathname === logoutPath) {
+      if (url.protocol !== "https:" || url.search) return sessionResponse(404);
+      if (url.pathname === loginPath && request.method === "GET") {
+        return renderAdminLogin({ signedIn: await expiresAt(sessionToken(request), now) > now });
+      }
+      if (request.method !== "POST") return sessionResponse(405);
+      if (request.headers.get("origin") !== url.origin) return sessionResponse(403);
+      if (url.pathname === logoutPath) return sessionResponse(303, adminCookie("", 0), loginPath);
+
+      const credentials = await readLoginForm(request);
+      if (!credentials) return renderAdminLogin({ status: 400 });
+      try {
+        const token = await signInWithNeon(credentials, authUrl, url.origin, requestUpstream);
+        const verifiedAt = Math.floor(clock() / 1000);
+        const expiry = await expiresAt(token, verifiedAt);
+        return expiry
+          ? sessionResponse(303, adminCookie(token, expiry - verifiedAt), loginPath)
+          : renderAdminLogin({ status: 401 });
+      } catch {
+        return renderAdminLogin({ status: 503 });
+      }
+    }
     if (url.pathname === sessionPath) {
       if (url.protocol !== "https:" || url.search) return sessionResponse(404);
       if (request.headers.get("origin") !== url.origin) return sessionResponse(403);
@@ -72,9 +100,14 @@ export function createAdminHandler({ db, env = process.env, createKeySet = creat
       const expiry = await expiresAt(token, now);
       return expiry ? sessionResponse(204, adminCookie(token, expiry - now)) : sessionResponse(401);
     }
-    return handleReportRequest(request, {
+    const response = await handleReportRequest(request, {
       db, verifyAdmin: async (req) => await expiresAt(sessionToken(req), now) > now,
     }, time);
+    if (response.status === 401 && request.method === "GET" && url.pathname === "/admin" &&
+        !request.headers.has("authorization") && request.headers.get("accept")?.includes("text/html")) {
+      return sessionResponse(303, undefined, loginPath);
+    }
+    return response;
   };
 }
 

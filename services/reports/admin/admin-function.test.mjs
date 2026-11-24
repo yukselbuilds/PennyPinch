@@ -12,6 +12,7 @@ const subject = "pilot-admin-fixture";
 const audience = "pilot-reports-fixture";
 const protectedPath = "/v1/admin/summary";
 const sessionPath = "/v1/admin/session";
+const loginPath = "/admin/login";
 const clockStart = Date.parse("2026-11-24T15:00:00Z");
 const now = clockStart / 1000;
 const env = {
@@ -52,7 +53,7 @@ test("keeps the panel, summary, and session route closed if the operator configu
     { ...env, NEON_AUTH_JWKS_URL: "http://auth.fixture.invalid/pilot/auth/jwks" },
   ]) {
     const handler = admin({ env: configuration, createKeySet: () => assert.fail("key resolver should stay off") });
-    for (const path of ["/admin", protectedPath, sessionPath]) {
+    for (const path of ["/admin", protectedPath, sessionPath, loginPath, "/admin/logout"]) {
       const result = await handler(request(path));
       assert.equal(result.status, 404);
       assert.equal(result.headers.get("cache-control"), "no-store");
@@ -131,4 +132,100 @@ test("rejects a cross-origin session change and expires and clears the session c
   assert.match(signedOut.headers.get("set-cookie"), /^__Host-pennypinch-reports-admin=; .*; Max-Age=0$/);
   time += 180 * 1000;
   assert.equal((await handler(request(protectedPath, { headers: { cookie } }))).status, 401);
+});
+
+const loginCredentials = { email: "admin@fixture.invalid", password: "test-password-0123" };
+const loginRequest = (fields = loginCredentials, from = origin) => request(loginPath, {
+  method: "POST", headers: { origin: from }, body: new URLSearchParams(fields),
+});
+const browserHeaders = { accept: "text/html" };
+const providerCookie = "__Secure-neon-auth.session_token=fixture-provider-session";
+
+function authFixture(token, { loginStatus = 200, logoutStatus = 200 } = {}) {
+  const calls = [];
+  return {
+    calls,
+    async fetch(address, init) {
+      assert.equal(init.redirect, "error");
+      assert.equal(init.cache, "no-store");
+      assert.equal(init.headers.origin, origin);
+      assert.equal(init.headers.referer, origin + "/");
+      const url = new URL(address);
+      assert.equal(url.origin, issuer);
+      calls.push(url.pathname);
+      if (url.pathname === "/pilot/auth/sign-in/email") {
+        assert.equal(init.method, "POST");
+        assert.deepEqual(JSON.parse(init.body), { ...loginCredentials, rememberMe: false });
+        const headers = new Headers();
+        headers.append("set-cookie", providerCookie + "; HttpOnly; Secure; Path=/");
+        headers.append("set-cookie", "unrelated=fixture; Secure");
+        return new Response("private provider details", { status: loginStatus, headers });
+      }
+      assert.equal(init.headers.cookie, providerCookie);
+      if (url.pathname === "/pilot/auth/token") {
+        assert.equal(init.method, "GET");
+        return Response.json({ token });
+      }
+      assert.equal(url.pathname, "/pilot/auth/sign-out");
+      assert.equal(init.method, "POST");
+      return new Response(null, { status: logoutStatus });
+    },
+  };
+}
+
+test("offers a same-origin login form and refuses cross-origin or oversized submissions", async () => {
+  const handler = admin({ requestUpstream: () => assert.fail("unexpected provider request") });
+  const start = await handler(request("/admin", { headers: browserHeaders }));
+  assert.equal(start.status, 303);
+  assert.equal(start.headers.get("location"), loginPath);
+  const page = await handler(request(loginPath));
+  assert.equal(page.status, 200);
+  assert.equal(page.headers.get("cache-control"), "no-store");
+  assert.match(page.headers.get("content-security-policy"), /form-action 'self';.*frame-ancestors 'none'/);
+  assert.match(await page.text(), /method="post" action="\/admin\/login"/);
+  assert.equal((await handler(loginRequest(loginCredentials, "https://other.fixture.invalid"))).status, 403);
+  for (const invalid of [
+    { ...loginCredentials, password: "x".repeat(4096) },
+    { ...loginCredentials, extra: "field" },
+    { ...loginCredentials, password: "" },
+  ]) {
+    assert.equal((await handler(loginRequest(invalid))).status, 400);
+  }
+});
+
+test("exchanges the short provider session for a signed panel session and then clears it", async () => {
+  const provider = authFixture(await tokenFor());
+  const handler = admin({ requestUpstream: provider.fetch });
+  const response = await handler(loginRequest());
+  assert.equal(response.status, 303);
+  assert.equal(response.headers.get("location"), loginPath);
+  assert.deepEqual(provider.calls, ["/pilot/auth/sign-in/email", "/pilot/auth/token", "/pilot/auth/sign-out"]);
+  const setCookie = response.headers.get("set-cookie");
+  assert.doesNotMatch(setCookie, /fixture-provider-session|unrelated=/);
+  const cookie = setCookie.split(";", 1)[0];
+  const account = await handler(request(loginPath, { headers: { cookie } }));
+  assert.match(await account.text(), /View reports[\s\S]*action="\/admin\/logout"/);
+  assert.equal((await handler(request("/admin", { headers: { cookie, ...browserHeaders } }))).status, 200);
+  const denied = await handler(request("/admin/logout", { method: "POST", headers: { origin: "https://other.fixture.invalid", cookie } }));
+  assert.equal(denied.status, 403);
+  assert.equal(denied.headers.has("set-cookie"), false);
+  const logout = await handler(request("/admin/logout", { method: "POST", headers: { origin, cookie } }));
+  assert.equal(logout.status, 303);
+  assert.match(logout.headers.get("set-cookie"), /; Max-Age=0$/);
+});
+
+test("leaves the panel signed out when credentials, subject, or provider sign-out fail", async () => {
+  for (const [token, settings, expected, calls] of [
+    [await tokenFor(), { loginStatus: 401 }, 401, 1],
+    [await tokenFor({ sub: "another-user" }), {}, 401, 3],
+    [await tokenFor(), { logoutStatus: 503 }, 503, 3],
+  ]) {
+    const provider = authFixture(token, settings);
+    const response = await admin({ requestUpstream: provider.fetch })(loginRequest());
+    assert.equal(response.status, expected);
+    assert.equal(response.headers.has("set-cookie"), false);
+    const html = await response.text();
+    assert.doesNotMatch(html, /private provider details|test-password-0123|admin@fixture.invalid/);
+    assert.equal(provider.calls.length, calls);
+  }
 });
