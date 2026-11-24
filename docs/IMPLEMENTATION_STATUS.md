@@ -62,7 +62,7 @@ The lead agent deferred H044. The Windows 10 ripgrep comparison ran for 136.4 se
 
 The 23 November check found RTK-OSS v1.2.1 is still the latest stable release. The paired evidence applies to that release. [Upstream release](https://github.com/rtk-ai/rtk/releases/tag/v1.2.1)
 
-The lead agent provisioned the private D1 pilot database because the action changes a live account resource. The database uses the EU jurisdiction. A read-only query returned zero application tables. The dashboard showed a seven-day Time Travel window. The account owner must activate Zero Trust Free. Next, apply the two migrations to the pilot database and verify the Worker, Access, and cleanup with synthetic reports. [Provisioning evidence](proofs/h052-private-pilot-d1.json) · [Privacy decision](decisions/032-usage-sharing-privacy.md)
+The lead agent provisioned the private EU D1 pilot database. A read-only query returned zero application tables. The dashboard showed a seven-day Time Travel window. Zero Trust Free requires a payment method at activation. The pilot is on hold under the zero-cost constraint. The migrations, live Worker, Access policy, and cleanup still need acceptance. [Provisioning evidence](proofs/h052-private-pilot-d1.json) · [Privacy decision](decisions/032-usage-sharing-privacy.md)
 
 ### Public privacy and presentation
 

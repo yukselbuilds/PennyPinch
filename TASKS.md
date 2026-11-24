@@ -15,7 +15,7 @@
 | H041 · Additional acceptance | Other live protocols and API-key checks need authorized access. The macOS 26 ARM64 package passed the 0.44.0 window and engine checks. Packaged client traffic and measurements remain open. The user deferred Windows 11 verification. The Serena pilot is complete. Broader Learn acceptance remains open. Experimental e3 is on hold, and e4 depends on e3 acceptance. [Platform tests](docs/validation/desktop-platforms.md) · [Open work items](#h041--cache-bütünlük-ve-gecikmefayda-regresyonu) |
 | H006, H037 and H042 · Clean Windows environments | H006 and H037 need clean Windows 10 and Windows 11 x64 desktops. H037 also needs a clean host without WebView2. H042 needs Windows 11 x64 update and rollback acceptance. |
 | H044 · Ripgrep candidate | Adding RTK to Headroom saved two more tokens per first request in the Windows 10 fixture. It added a recovery step. Installation remains open. [Evidence](docs/proofs/rtk-1.2.1-rg-paired.json) |
-| H052 · Private pilot database verified | The EU D1 database is ready for migrations. Zero Trust activation and live Worker acceptance remain open. H053 and H054 depend on the report service. [Privacy decision](docs/decisions/032-usage-sharing-privacy.md) |
+| H052 · Live pilot on hold | The private EU D1 database passed a read-only query. Zero Trust requires payment details. H053 and H054 depend on the report service. [Privacy decision](docs/decisions/032-usage-sharing-privacy.md) |
 
 Windows development and packaging use Headroom **0.45.0**. The public Windows preview uses **0.44.0**. H048's macOS 15.8.2 ARM64 acceptance covers **0.41.0**. H050 account connections and H051 chat metadata and navigation passed on Windows 10. Each platform, new sign-in, and release needs its own evidence. [Engine transition](docs/proofs/headroom-045-upgrade.json) · [H048](docs/proofs/macos-acceptance.json) · [H050](docs/proofs/accounts.md) · [H051](docs/proofs/sessions.md)
 
@@ -1131,7 +1131,7 @@ These three tasks do not expand the required installation for the first release.
 
 ### H052 — Private report API, storage, and admin panel
 - [ ] Prepare a Cloudflare Workers report API, a private D1 database belonging to our account, and a panel readable only by authorized administrators.
-- **In progress — 24 November.** The private EU D1 pilot database passed a read-only query. Zero Trust Free activation awaits the account owner.
+- **On hold — 24 November.** The private EU D1 pilot database passed a read-only query. The current Access setup asks for a payment method. Resume the pilot on a free path that meets the existing access and privacy criteria.
 - **Slices:** Report contract and local API/storage; authenticated admin panel; authorized free deployment and actual quota/retention acceptance. Document data region, access, and retention decisions before deployment.
 - [x] **H052 privacy design.** Record the privacy and transfer rules from KVKK, EU, and Cloudflare sources. [Privacy decision](docs/decisions/032-usage-sharing-privacy.md)
 - [x] **H052-a Daily usage storage.** The D1 module accepts valid daily summaries and keeps the counter bases separate. An identical retry keeps one row. A conflicting retry preserves the original row. The purge deletes at most 500 expired rows per call. Six local D1 tests passed. [Storage contract](docs/decisions/032-usage-sharing-privacy.md#h052-a--daily-usage-storage) [Evidence](docs/proofs/h052-daily-usage-storage.json).
