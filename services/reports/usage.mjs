@@ -1,6 +1,7 @@
 const dayMilliseconds = 86_400_000;
 const retentionDays = 30;
 const dailyWriteLimit = 128;
+const summaryRowLimit = 4096;
 export const maxUsageReportBytes = 4096;
 
 const installationId = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -23,6 +24,14 @@ function hasExactKeys(value, keys) {
 
 function counter(value) {
   return Number.isSafeInteger(value) && value >= 0;
+}
+
+function validGroups(groups) {
+  return Array.isArray(groups) && groups.length <= basisIds.size && groups.every((group) =>
+    hasExactKeys(group, groupKeys) && basisIds.has(group.basis) &&
+    counter(group.comparable_requests) && group.comparable_requests > 0 &&
+    counter(group.before_tokens) && counter(group.after_tokens),
+  ) && new Set(groups.map((group) => group.basis)).size === groups.length;
 }
 
 export function isInstallationId(value) {
@@ -54,8 +63,7 @@ function parseReport(raw, now) {
   if (schema_version !== 1 || notice_version !== 1 || engine_version !== "0.45.0" ||
       !isInstallationId(installation_id) ||
       typeof app_version !== "string" || !appVersion.test(app_version) || !osFamilies.has(os_family) ||
-      !counter(incomparable_requests) || !counter(failed_requests) ||
-      !Array.isArray(groups) || groups.length > basisIds.size) {
+      !counter(incomparable_requests) || !counter(failed_requests) || !validGroups(groups)) {
     return null;
   }
 
@@ -67,22 +75,11 @@ function parseReport(raw, now) {
     return null;
   }
 
-  const uniqueBases = new Set();
-  const orderedGroups = [];
-  let totalRequests = incomparable_requests + failed_requests;
-  for (const group of groups) {
-    if (!hasExactKeys(group, groupKeys)) return null;
-    const { basis, comparable_requests, before_tokens, after_tokens } = group;
-    if (!basisIds.has(basis) || uniqueBases.has(basis) ||
-        !counter(comparable_requests) || comparable_requests === 0 ||
-        !counter(before_tokens) || !counter(after_tokens)) {
-      return null;
-    }
-    uniqueBases.add(basis);
-    totalRequests += comparable_requests;
-    orderedGroups.push({ basis, comparable_requests, before_tokens, after_tokens });
-  }
+  const totalRequests = groups.reduce((total, group) => total + group.comparable_requests,
+    incomparable_requests + failed_requests);
   if (!Number.isSafeInteger(totalRequests) || totalRequests === 0) return null;
+  const orderedGroups = groups.map(({ basis, comparable_requests, before_tokens, after_tokens }) =>
+    ({ basis, comparable_requests, before_tokens, after_tokens }));
   orderedGroups.sort((left, right) => left.basis.localeCompare(right.basis, "en"));
   return {
     installationId: installation_id, reportDay: report_day,
@@ -125,4 +122,73 @@ export async function pruneUsageDays(db, now = Date.now()) {
     db.prepare("DELETE FROM usage_intake_quota WHERE received_day < ?").bind(cutoff),
   ]);
   return deleted.meta.changes;
+}
+
+function savingsPercent(before, after) {
+  return before === 0n ? null : 100 * (Number(before - after) / Number(before));
+}
+
+function summarizeBasis(basis, installations) {
+  let before = 0n, after = 0n, requests = 0n;
+  const ratios = [];
+  for (const usage of installations.values()) {
+    before += usage.before;
+    after += usage.after;
+    requests += usage.requests;
+    const ratio = savingsPercent(usage.before, usage.after);
+    if (ratio !== null) ratios.push(ratio);
+  }
+  ratios.sort((left, right) => left - right);
+  const middle = Math.floor(ratios.length / 2);
+  let median = ratios[middle] ?? null;
+  if (median !== null && ratios.length % 2 === 0) median = (ratios[middle - 1] + median) / 2;
+  return {
+    basis, installations: installations.size, installations_with_percentage: ratios.length,
+    comparable_requests: String(requests), before_tokens: String(before), after_tokens: String(after),
+    saved_tokens: String(before - after), weighted_saved_percent: savingsPercent(before, after),
+    median_installation_saved_percent: median,
+  };
+}
+
+export async function summarizeUsageDays(db, days, now = Date.now()) {
+  const today = utcDay(now);
+  const start = dateLabel(today - days * dayMilliseconds);
+  const end = dateLabel(today);
+  const { results } = await db.prepare(
+    "SELECT installation_id, summary FROM usage_days WHERE report_day >= ? AND report_day < ? " +
+    "ORDER BY report_day, installation_id LIMIT ?",
+  ).bind(start, end, summaryRowLimit + 1).all();
+  if (results.length > summaryRowLimit) throw new Error("summary_row_limit");
+
+  const installations = new Set();
+  const byBasis = new Map();
+  let comparable = 0n, incomparable = 0n, failed = 0n;
+  for (const { installation_id, summary } of results) {
+    const { schema_version, incomparable_requests, failed_requests, groups } = JSON.parse(summary);
+    if (!isInstallationId(installation_id) || schema_version !== 1 ||
+        !counter(incomparable_requests) || !counter(failed_requests) || !validGroups(groups)) {
+      throw new Error("invalid_stored_summary");
+    }
+    installations.add(installation_id);
+    incomparable += BigInt(incomparable_requests);
+    failed += BigInt(failed_requests);
+    for (const group of groups) {
+      if (!byBasis.has(group.basis)) byBasis.set(group.basis, new Map());
+      const basis = byBasis.get(group.basis);
+      if (!basis.has(installation_id)) basis.set(installation_id, { before: 0n, after: 0n, requests: 0n });
+      const usage = basis.get(installation_id);
+      usage.before += BigInt(group.before_tokens);
+      usage.after += BigInt(group.after_tokens);
+      const requests = BigInt(group.comparable_requests);
+      usage.requests += requests;
+      comparable += requests;
+    }
+  }
+  return {
+    schema_version: 1,
+    period: { from_day: start, to_day_exclusive: end },
+    coverage: { installations: installations.size, report_days: results.length, comparable_requests: String(comparable),
+      incomparable_requests: String(incomparable), failed_requests: String(failed) },
+    groups: [...byBasis.keys()].sort().map((basis) => summarizeBasis(basis, byBasis.get(basis))),
+  };
 }

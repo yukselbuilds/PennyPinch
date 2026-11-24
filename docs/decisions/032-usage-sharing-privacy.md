@@ -55,3 +55,15 @@ Configure six requests per installation per 60 seconds in the rate limiter. The 
 D1 accepts up to 128 new reports per UTC day for the service. The transaction reserves a slot only for a new row. An identical retry uses the existing row. Deleting an accepted report preserves the day's quota count. When the daily quota is full, the Worker returns HTTP 429 with the time until the next UTC day. Apply migration 0002 after migration 0001 to keep earlier summaries. [D1 batch transactions](https://developers.cloudflare.com/d1/worker-api/d1-database/#batch)
 
 The local tests use synthetic credentials and reports. Administrator access and bounded queries come next. Verify the account limits, logging, retention schedule, and privacy conditions before live collection. [Intake evidence](../proofs/h052-report-intake.json)
+
+## H052-c — Administrator report queries
+
+The Worker serves GET requests at `/v1/admin/summary`. Bind `ADMIN_ACCESS_ISSUER` to the Cloudflare Access team origin. Set `ADMIN_ACCESS_AUDIENCE` to the audience of the administrator Access application. Apply an Access policy that grants access to authorized administrators. The route stays closed when these bindings are absent.
+
+The Worker verifies the RS256 signature, issuer, audience, and validity times of the Access assertion. It requires an application token for an authenticated identity. It reads public signing keys from the configured team origin. It returns aggregate data with caching disabled. The response excludes installation IDs and administrator identity. [Cloudflare Access JWT validation](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/)
+
+Request 1, 7, or 30 completed UTC days. The default is seven days. D1 reads at most 4,097 rows, which includes one row for overflow detection. The Worker rejects a summary when the range contains more than 4,096 rows. It reports contributing installations, report days, comparable requests, incomparable requests, and failed requests.
+
+The summary keeps token counts exact as decimal strings. It calculates weighted savings from the total before and after counts for each counter basis. It sums each installation's counts before calculating the median percentage. A zero before count gives an undefined percentage. The coverage still includes the measured zero and negative results. The administrator view and any public summary need their own acceptance.
+
+The local tests use generated keys and synthetic reports. Verify the live Access policy before granting administrator access. [Summary evidence](../proofs/h052-admin-summary.json)

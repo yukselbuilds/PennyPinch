@@ -1,11 +1,12 @@
-import { isInstallationId, maxUsageReportBytes, saveUsageDay } from "./usage.mjs";
+import { authorizeAdmin } from "./admin-access.mjs";
+import { isInstallationId, maxUsageReportBytes, saveUsageDay, summarizeUsageDays } from "./usage.mjs";
 
 const maxPilotCredentials = 32;
 const secondsPerDay = 86400;
 const reportStatuses = { stored: 201, duplicate: 200, invalid: 400, forbidden: 403, conflict: 409 };
 
-function reply(status, code, headers) {
-  return Response.json({ status }, {
+function reply(status, code, headers, details) {
+  return Response.json({ status, ...details }, {
     status: code,
     headers: { "cache-control": "no-store", "x-content-type-options": "nosniff", ...headers },
   });
@@ -50,10 +51,29 @@ async function readReport(request) {
   }
 }
 
+async function adminSummary(request, env, url) {
+  const access = await authorizeAdmin(request, env);
+  if (access === "not_found") return reply(access, 404);
+  if (access === "unavailable") return reply(access, 503);
+  if (access === "unauthorized") return reply(access, 401);
+  if (request.method !== "GET") return reply("method_not_allowed", 405, { allow: "GET" });
+  const range = /^\?days=(1|7|30)$/.exec(url.search);
+  if (url.search && !range) return reply("invalid", 400);
+  if (!env.REPORTS_DB) return reply("unavailable", 503);
+  try {
+    const summary = await summarizeUsageDays(env.REPORTS_DB, Number(range?.[1] ?? 7));
+    return reply("ready", 200, undefined, { summary });
+  } catch {
+    return reply("unavailable", 503);
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (env.REPORTS_ENABLED !== "true" || url.protocol !== "https:" || url.pathname !== "/v1/usage" || url.search) {
+    if (url.protocol !== "https:") return reply("not_found", 404);
+    if (url.pathname === "/v1/admin/summary") return adminSummary(request, env, url);
+    if (env.REPORTS_ENABLED !== "true" || url.pathname !== "/v1/usage" || url.search) {
       return reply("not_found", 404);
     }
     if (request.method !== "POST") return reply("method_not_allowed", 405, { allow: "POST" });

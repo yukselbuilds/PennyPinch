@@ -6,7 +6,11 @@
   "scripts": {
     "test": "node --test usage.test.mjs worker.test.mjs"
   },
+  "dependencies": {
+    "jose": "6.2.18"
+  },
   "devDependencies": {
+    "esbuild": "0.28.2",
     "miniflare": "4.20260730.0"
   }
 }

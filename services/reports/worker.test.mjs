@@ -3,10 +3,13 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { build } from "esbuild";
+import { exportJWK, generateKeyPair, SignJWT } from "jose";
 import { Miniflare } from "miniflare";
 import worker from "./worker.mjs";
 
 const url = "https://pennypinch.test/v1/usage";
+const adminUrl = "https://pennypinch.test/v1/admin/summary";
 const ids = ["125d94ba-1e98-4d64-ac76-eb56f665a527", "55676b9c-87d3-479d-ab92-fa0fc07a9d32"];
 const tokens = ["A".repeat(43), "B".repeat(43)];
 const digest = (text) => createHash("sha256").update(text).digest("hex");
@@ -26,19 +29,24 @@ const headers = (token) => ({
   ...(token ? { authorization: "Bearer " + token } : {}),
 });
 const request = (body, token) => new Request(url, { method: "POST", headers: headers(token), body: JSON.stringify(body) });
+const workerScript = build({
+  entryPoints: [fileURLToPath(new URL("./worker.mjs", import.meta.url))],
+  bundle: true, write: false, format: "esm", platform: "browser",
+}).then((result) => result.outputFiles[0].text);
 
 async function applyMigration(db, name) {
   const sql = await readFile(new URL("./migrations/" + name, import.meta.url), "utf8");
   await db.batch(sql.trim().split(/\r?\n\r?\n/).map((statement) => db.prepare(statement)));
 }
 
-async function start(t, { rate = 100, bindings = {}, migrate = true } = {}) {
+async function start(t, { rate = 100, bindings = {}, migrate = true, outboundService } = {}) {
   const fixture = new Miniflare({
     host: "127.0.0.1", port: 0, modules: true,
-    scriptPath: fileURLToPath(new URL("./worker.mjs", import.meta.url)),
+    script: await workerScript,
     bindings: { REPORTS_ENABLED: "true", PILOT_USAGE_CREDENTIALS: credentials, ...bindings },
     d1Databases: { REPORTS_DB: "70edd725-b13f-490a-8ead-ab8862fa50f1" },
     ratelimits: { USAGE_RATE: { namespace_id: "1", simple: { limit: rate, period: 60 } } },
+    outboundService: outboundService ?? (() => new Response(null, { status: 502 })),
     cf: false, telemetry: { enabled: false },
   });
   t.after(() => fixture.dispose());
@@ -157,4 +165,154 @@ test("migrates saved summaries and keeps their retries outside the new write bud
   assert.equal(row.received_day, null);
   assert.equal(row.summary, JSON.stringify(stored));
   assert.equal(await db.prepare("SELECT COUNT(*) AS n FROM usage_intake_quota").first("n"), 0);
+});
+
+const issuer = "https://fixture-team.cloudflareaccess.com";
+const audience = "ab".repeat(32);
+const keys = generateKeyPair("RS256", { extractable: true });
+const fakeKeys = generateKeyPair("RS256");
+
+async function signAdmin(changes = {}, key) {
+  const now = Math.floor(Date.now() / 1000);
+  return new SignJWT({
+    iss: issuer, aud: [audience], type: "app", sub: "synthetic-admin",
+    email: "admin@pennypinch.test", iat: now - 1, nbf: now - 1, exp: now + 300, ...changes,
+  }).setProtectedHeader({ alg: "RS256", kid: "synthetic-rsa" }).sign(key ?? (await keys).privateKey);
+}
+
+async function startAdmin(t, options = {}) {
+  const publicKey = await exportJWK((await keys).publicKey);
+  return start(t, {
+    ...options,
+    bindings: {
+      ADMIN_ACCESS_ISSUER: issuer, ADMIN_ACCESS_AUDIENCE: audience, ...options.bindings,
+    },
+    outboundService: options.outboundService ?? ((request) => {
+      assert.equal(request.url, issuer + "/cdn-cgi/access/certs");
+      assert.equal(request.headers.get("cf-access-jwt-assertion"), null);
+      assert.equal(request.headers.get("cookie"), null);
+      return Response.json({ keys: [{ ...publicKey, kid: "synthetic-rsa", alg: "RS256" }] });
+    }),
+  });
+}
+
+const adminHeaders = (token) => ({ "cf-access-jwt-assertion": token });
+
+test("keeps admin reads closed without Access configuration", async (t) => {
+  const { fetch } = await start(t);
+  await expectResponse(await fetch(adminUrl), 404, "not_found");
+  await expectResponse(await worker.fetch(new Request(adminUrl), {
+    ADMIN_ACCESS_ISSUER: "https://untrusted.test", ADMIN_ACCESS_AUDIENCE: audience,
+  }), 503, "unavailable");
+});
+
+test("requires a signed identity token for the admin Access application", async (t) => {
+  const { fetch } = await startAdmin(t, { migrate: false });
+  await expectResponse(await fetch(adminUrl), 401, "unauthorized");
+  await expectResponse(await fetch(adminUrl, { headers: headers(tokens[0]) }), 401, "unauthorized");
+  const invalid = [
+    await signAdmin({ aud: ["cd".repeat(32)] }),
+    await signAdmin({ iss: "https://other-team.cloudflareaccess.com" }),
+    await signAdmin({ type: "org" }),
+    await signAdmin({ exp: Math.floor(Date.now() / 1000) - 10 }),
+    await signAdmin({ nbf: Math.floor(Date.now() / 1000) + 300 }),
+    await signAdmin({ email: undefined }),
+    await signAdmin({}, (await fakeKeys).privateKey),
+  ];
+  for (const token of invalid) {
+    await expectResponse(await fetch(adminUrl, { headers: adminHeaders(token) }), 401, "unauthorized");
+  }
+  await expectResponse(await fetch(adminUrl, { headers: adminHeaders(await signAdmin()) }), 503, "unavailable");
+});
+
+const mainBasis = "headroom-0.45.0-ws-json-v1:o200k_base";
+const otherBasis = "headroom-0.45.0-ws-json-v1:cl100k_base";
+const pair = (basis, before, after) => ({
+  basis, comparable_requests: 1, before_tokens: before, after_tokens: after,
+});
+
+test("groups weighted totals and the per-installation median by basis", async (t) => {
+  const { db, send, fetch } = await startAdmin(t);
+  await expectResponse(await send({ ...summary(ids[0]), report_day: day(-2), failed_requests: 1,
+    groups: [pair(mainBasis, 100, 60), pair(otherBasis, 0, 10)] }, tokens[0]), 201, "stored");
+  await expectResponse(await send({ ...summary(ids[0]), groups: [pair(mainBasis, 0, 5)] }, tokens[0]), 201, "stored");
+  await expectResponse(await send({ ...summary(ids[1]), groups: [pair(mainBasis, 50, 60), pair(otherBasis, 100, 90)] },
+    tokens[1]), 201, "stored");
+  const options = { headers: adminHeaders(await signAdmin()) };
+  const result = await fetch(adminUrl, options);
+  assert.equal(result.status, 200);
+  assert.equal(result.headers.get("cache-control"), "no-store");
+  const body = await result.text();
+  for (const privateValue of [...ids, "synthetic-admin", "admin@pennypinch.test", ...tokens]) {
+    assert.ok(!body.includes(privateValue));
+  }
+  const { status, summary: stats } = JSON.parse(body);
+  assert.equal(status, "ready");
+  assert.deepEqual(stats.period, { from_day: day(-7), to_day_exclusive: day(0) });
+  assert.deepEqual(stats.coverage, { installations: 2, report_days: 3, comparable_requests: "5",
+    incomparable_requests: "3", failed_requests: "1" });
+  const main = stats.groups.find((group) => group.basis === mainBasis);
+  assert.deepEqual(main, {
+    basis: mainBasis, installations: 2, installations_with_percentage: 2, comparable_requests: "3",
+    before_tokens: "150", after_tokens: "125", saved_tokens: "25",
+    weighted_saved_percent: 100 * (25 / 150), median_installation_saved_percent: 7.5,
+  });
+  const other = stats.groups.find((group) => group.basis === otherBasis);
+  assert.equal(other.weighted_saved_percent, 0);
+  assert.equal(other.installations_with_percentage, 1);
+  assert.equal(other.median_installation_saved_percent, 10);
+  const one = await fetch(adminUrl + "?days=1", options);
+  assert.equal(one.status, 200);
+  assert.equal((await one.json()).summary.coverage.report_days, 2);
+  await expectResponse(await fetch(adminUrl + "?days=7&days=1", options), 400, "invalid");
+  await expectResponse(await fetch(adminUrl + "?days=31", options), 400, "invalid");
+  const wrongMethod = await fetch(adminUrl, { ...options, method: "POST" });
+  assert.equal(wrongMethod.headers.get("allow"), "GET");
+  await expectResponse(wrongMethod, 405, "method_not_allowed");
+  assert.equal(await db.prepare("SELECT COUNT(*) AS n FROM usage_days").first("n"), 3);
+});
+
+test("preserves exact token totals and leaves a zero-base percentage undefined", async (t) => {
+  const { send, fetch } = await startAdmin(t);
+  const max = Number.MAX_SAFE_INTEGER;
+  for (let i = 0; i < ids.length; i++) {
+    await expectResponse(await send({
+      ...summary(ids[i]), groups: [pair(mainBasis, max, max - 1), pair(otherBasis, 0, 1)],
+    }, tokens[i]), 201, "stored");
+  }
+  const result = await fetch(adminUrl + "?days=30", { headers: adminHeaders(await signAdmin()) });
+  assert.equal(result.status, 200);
+  const { groups } = (await result.json()).summary;
+  const main = groups.find((group) => group.basis === mainBasis);
+  assert.equal(main.before_tokens, String(BigInt(max) * 2n));
+  assert.equal(main.saved_tokens, "2");
+  const other = groups.find((group) => group.basis === otherBasis);
+  assert.equal(other.saved_tokens, "-2");
+  assert.equal(other.weighted_saved_percent, null);
+  assert.equal(other.median_installation_saved_percent, null);
+});
+
+test("shows coverage without a savings percentage when usage has no comparable pair", async (t) => {
+  const { send, fetch } = await startAdmin(t);
+  await expectResponse(await send(summary(ids[0]), tokens[0]), 201, "stored");
+  const result = await fetch(adminUrl, { headers: adminHeaders(await signAdmin()) });
+  assert.equal(result.status, 200);
+  const stats = (await result.json()).summary;
+  assert.deepEqual(stats.coverage, { installations: 1, report_days: 1, comparable_requests: "0",
+    incomparable_requests: "1", failed_requests: "0" });
+  assert.deepEqual(stats.groups, []);
+});
+
+test("refuses a query above the report-day bound", async (t) => {
+  const { db, fetch } = await startAdmin(t);
+  await db.prepare(
+    "WITH RECURSIVE n(i) AS (VALUES(1) UNION ALL SELECT i+1 FROM n WHERE i<4097) " +
+    "INSERT INTO usage_days (report_day, installation_id, summary) SELECT ?, printf('%036d', i), '{}' FROM n",
+  ).bind(day(-1)).run();
+  await expectResponse(await fetch(adminUrl, { headers: adminHeaders(await signAdmin()) }), 503, "unavailable");
+});
+
+test("keeps reports private when Access keys are unavailable", async (t) => {
+  const { fetch } = await startAdmin(t, { outboundService: () => new Response(null, { status: 502 }) });
+  await expectResponse(await fetch(adminUrl, { headers: adminHeaders(await signAdmin()) }), 503, "unavailable");
 });
