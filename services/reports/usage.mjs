@@ -1,6 +1,8 @@
 const dayMilliseconds = 86_400_000;
 const retentionDays = 30;
 const dailyWriteLimit = 128;
+const pruneBatchSize = 500;
+const maxPruneBatches = Math.ceil(retentionDays * dailyWriteLimit / pruneBatchSize);
 const summaryRowLimit = 4096;
 export const maxUsageReportBytes = 4096;
 
@@ -117,11 +119,19 @@ export async function pruneUsageDays(db, now = Date.now()) {
     db.prepare(
       "DELETE FROM usage_days WHERE (report_day, installation_id) IN " +
       "(SELECT report_day, installation_id FROM usage_days WHERE report_day < ? " +
-      "ORDER BY report_day, installation_id LIMIT 500)",
-    ).bind(cutoff),
+      "ORDER BY report_day, installation_id LIMIT ?)",
+    ).bind(cutoff, pruneBatchSize),
     db.prepare("DELETE FROM usage_intake_quota WHERE received_day < ?").bind(cutoff),
   ]);
   return deleted.meta.changes;
+}
+
+export async function pruneExpiredUsageDays(db, now) {
+  // The full intake window can add reports to one UTC report day.
+  for (let batch = 0; batch < maxPruneBatches; batch++) {
+    if (await pruneUsageDays(db, now) < pruneBatchSize) return true;
+  }
+  return false;
 }
 
 function savingsPercent(before, after) {

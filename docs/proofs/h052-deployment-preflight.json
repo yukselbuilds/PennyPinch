@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "task": "H052-e",
+  "passed": true,
+  "owner": "lead agent",
+  "scope": "Local report retention and Wrangler deployment preflight",
+  "source_base": "6d8ceaca73a01b76fa02ee2cfa39e739b55afb86",
+  "service": {
+    "command": "pnpm.cmd --dir services/reports test",
+    "results": {
+      "tests": 27,
+      "pass": 27,
+      "fail": 0,
+      "skipped": 0
+    },
+    "seconds": 12.802
+  },
+  "retention": {
+    "schedule_utc": "5 * * * *",
+    "retained_completed_days": 30,
+    "max_report_deletes_per_batch": 500,
+    "max_report_deletes_per_run": 4000,
+    "max_batches_per_run": 8,
+    "cases": [
+      "501 expired rows and quota expiry with intake disabled",
+      "preserve the cutoff day",
+      "4,001-row backlog stops after 4,000 rows and clears on the next event",
+      "missing binding or migration fails without returning database details"
+    ]
+  },
+  "wrangler": {
+    "version": "4.167.0",
+    "dry_run": "deploy --config services/reports/wrangler.preflight.jsonc --dry-run --outdir <local-proof-directory>",
+    "migration_mode": "d1 migrations apply --local",
+    "migrations_applied": [
+      "0001_usage.sql",
+      "0002_intake.sql"
+    ],
+    "bundle_bytes": 61294,
+    "bundle_sha256": "929b0a73d839be24a1e5eed0bbae845255b3db7a54123772da291ff98262490c",
+    "seconds": 8.821
+  },
+  "input_sha256_before_and_after": {
+    "services/reports/migrations/0001_usage.sql": "f61a618f14958ecd29fcba851e6f3c514408bc76da9cdeaf5849af6ba40da853",
+    "services/reports/migrations/0002_intake.sql": "5d731c4f42ff7604cfda37fde6bc1639d2212fdb5314738511147dac556c10b8",
+    "services/reports/usage.mjs": "942d1edb30125eb97606a79bc60f51d6405d439e872f6a7d3b718cb5ca854634",
+    "services/reports/usage.test.mjs": "26d22028100c8334895738b9f23d0b3104f5e1b08e169a98ba33a50aad60817b",
+    "services/reports/worker.mjs": "f9484dea2ef4ab7c99cb1b7c0c2911bfe758769a09dd9377e972ed5d95a0eaa4",
+    "services/reports/worker.test.mjs": "5dad49b1791bda4cadde89bf9a4db6ab08a5a51cf21e4b3a8093f6784d28bc63",
+    "services/reports/admin-access.mjs": "b572094f4309c580c87b78c731f18623003d5e6ef790fc8f8c0569c8c6515305",
+    "services/reports/package.json": "c93c42b7b3063b71cb434cf61f1e504a5700a0a698bd017530eddf415893a895",
+    "services/reports/pnpm-workspace.yaml": "7099d904ec2ad5c64dbf4e7b5a14e6e3ef48747dda045f963cd8fa9944d4a989",
+    "services/reports/pnpm-lock.yaml": "6065fd9de0105aaa6d5305ed17726536ca2b79c2628d8f0b2e7afc018a063045",
+    "services/reports/admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+    "services/reports/wrangler.preflight.jsonc": "f3d9e30643713daeb2c4928fe83c9751ae76cc004bf1581fbda74df499edbe3a"
+  },
+  "environment_before_and_after": {
+    "node": "v25.2.1",
+    "pnpm": "11.25.0",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "node_sha256": "91ec09dda8f20556f366110859f106ab189d45f8f6a2bd092e6785174ad4a0fa",
+    "workerd_sha256": "01fde0df2d6211d5f3c19e5a046772c92557e3912111c22499797c9e228a3cea",
+    "wrangler_cli_sha256": "7c4f247030553b5ec713532c18759e4f431f4309c10f1a848dcb8af5f9b68c35",
+    "wrangler_workerd_sha256": "66059e3383eb08abc36c1bcec9dc99d78fb26591e726eb33a2c017ae56e1efea",
+    "installed_test_packages": {
+      "miniflare": {
+        "version": "4.20260730.0",
+        "manifest_sha256": "f0025bdc4b9b70199ea393572c23ca35ea58efa3d81b270f19f5e8c8d27771f4"
+      },
+      "sharp": {
+        "version": "0.35.5",
+        "manifest_sha256": "ad4a2535d72eb638053a38867b1abf43c328cd1c1dbae5cf4172d498365a8b97"
+      },
+      "undici": {
+        "version": "7.30.2",
+        "manifest_sha256": "f413840d65b1b99ea0993e161f31055b924bf5bc9a06d11e7a3fb1d1ba177bef"
+      },
+      "workerd": {
+        "version": "1.20260730.1",
+        "manifest_sha256": "5edae90469333c86e194a75358e80dbe5b1d3c259860794850e53ce8f240f762"
+      },
+      "esbuild": {
+        "version": "0.28.2",
+        "manifest_sha256": "9d0bc453f4e791553c4cc2298ba023b409241fd9801e494741666eb0f6051490"
+      },
+      "jose": {
+        "version": "6.2.18",
+        "manifest_sha256": "b513306bd125bc8ffbc519d68a59bfdbc7e03d4e9a360c04cec132799669e3bf"
+      },
+      "wrangler": {
+        "version": "4.167.0",
+        "manifest_sha256": "8f8a6ff7b2219132b24c3654ee0c17338ca76a1c2adfb13b2764170601522d8f"
+      },
+      "wrangler-miniflare": {
+        "version": "5.20261123.0-beta",
+        "manifest_sha256": "0ba40c37052e344f2aa1f748bfe5f02d8f97b1ccddaa1c62c48d111326bf8102"
+      }
+    }
+  },
+  "limits": {
+    "free_tier_account": "observed_workers_free",
+    "cloudflare_deployment": "not_tested",
+    "live_admin_access_policy": "not_tested",
+    "live_d1_retention": "not_tested",
+    "time_travel_restore": "not_tested",
+    "real_user_reports": 0
+  },
+  "account_observation": {
+    "observed_on": "2026-11-24",
+    "workers_plan": "Free",
+    "d1_databases": 0,
+    "zero_trust": "initial_setup_required",
+    "scope": "Read-only dashboard plan and setup indicators"
+  }
+}

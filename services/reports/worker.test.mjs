@@ -43,6 +43,7 @@ async function applyMigration(db, name) {
 async function start(t, { rate = 100, bindings = {}, migrate = true, outboundService } = {}) {
   const fixture = new Miniflare({
     host: "127.0.0.1", port: 0, modules: true,
+    unsafeTriggerHandlers: true,
     script: await workerScript,
     bindings: { REPORTS_ENABLED: "true", PILOT_USAGE_CREDENTIALS: credentials, ...bindings },
     d1Databases: { REPORTS_DB: "70edd725-b13f-490a-8ead-ab8862fa50f1" },
@@ -400,4 +401,50 @@ test("renders coverage with no comparable input and gives a distinct database er
   const fallback = await unavailable.text();
   assert.match(fallback, /Usage reports are unavailable/);
   assert.doesNotMatch(fallback, /SQLITE|usage_days/);
+});
+
+const retentionTime = Date.parse("2026-11-24T00:05:00Z");
+const scheduledUrl = "https://pennypinch.test/cdn-cgi/handler/scheduled?format=json&time=" + retentionTime;
+
+async function seedExpiredReports(db, count) {
+  await db.prepare(
+    "WITH RECURSIVE n(i) AS (VALUES(1) UNION ALL SELECT i+1 FROM n WHERE i < ?) " +
+    "INSERT INTO usage_days (report_day, installation_id, summary) SELECT '2026-10-24', printf('%036d', i), '{}' FROM n",
+  ).bind(count).run();
+}
+
+test("the retention timer removes expired reports and quotas even when intake is closed", async (t) => {
+  const { db, fetch } = await start(t, { bindings: { REPORTS_ENABLED: "false" } });
+  await seedExpiredReports(db, 501);
+  await db.prepare("INSERT INTO usage_days (report_day, installation_id, summary) VALUES (?, ?, '{}')")
+    .bind("2026-10-25", ids[0]).run();
+  await db.prepare("INSERT INTO usage_intake_quota (received_day, accepted_count) VALUES ('2026-10-24', 1), ('2026-10-25', 1)")
+    .run();
+  const response = await fetch(scheduledUrl);
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).outcome, "ok");
+  assert.deepEqual((await db.prepare("SELECT report_day FROM usage_days").all()).results,
+    [{ report_day: "2026-10-25" }]);
+  assert.deepEqual((await db.prepare("SELECT received_day FROM usage_intake_quota").all()).results,
+    [{ received_day: "2026-10-25" }]);
+});
+
+test("the retention timer limits backlog work and completes it on the next invocation", async (t) => {
+  const { db, fetch } = await start(t);
+  await seedExpiredReports(db, 4_001);
+  const first = await fetch(scheduledUrl);
+  assert.equal(first.status, 500);
+  assert.equal(await db.prepare("SELECT COUNT(*) AS n FROM usage_days").first("n"), 1);
+  const second = await fetch(scheduledUrl);
+  assert.equal(second.status, 200);
+  assert.equal((await second.json()).outcome, "ok");
+  assert.equal(await db.prepare("SELECT COUNT(*) AS n FROM usage_days").first("n"), 0);
+});
+
+test("the retention timer reports database failure without exposing binding details", async (t) => {
+  await assert.rejects(worker.scheduled({ scheduledTime: retentionTime }, {}), { message: "retention_unavailable" });
+  const { fetch } = await start(t, { migrate: false });
+  const response = await fetch(scheduledUrl);
+  assert.equal(response.status, 500);
+  assert.doesNotMatch(await response.text(), /SQLITE|usage_days|REPORTS_DB/);
 });

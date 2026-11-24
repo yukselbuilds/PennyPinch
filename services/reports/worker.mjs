@@ -1,6 +1,6 @@
 import { authorizeAdmin } from "./admin-access.mjs";
 import { renderAdminPanel } from "./admin-panel.mjs";
-import { isInstallationId, maxUsageReportBytes, saveUsageDay, summarizeUsageDays } from "./usage.mjs";
+import { isInstallationId, maxUsageReportBytes, pruneExpiredUsageDays, saveUsageDay, summarizeUsageDays } from "./usage.mjs";
 
 const maxPilotCredentials = 32;
 const secondsPerDay = 86400;
@@ -114,5 +114,14 @@ export default {
     } catch {
       return reply("unavailable", 503);
     }
+  },
+
+  async scheduled(controller, env) {
+    try {
+      if (await pruneExpiredUsageDays(env.REPORTS_DB, controller.scheduledTime)) return;
+    } catch {
+      throw new Error("retention_unavailable");
+    }
+    throw new Error("retention_backlog");
   },
 };

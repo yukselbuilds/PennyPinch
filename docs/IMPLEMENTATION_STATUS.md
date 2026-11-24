@@ -62,7 +62,7 @@ The lead agent deferred H044. The Windows 10 ripgrep comparison ran for 136.4 se
 
 The 23 November check found RTK-OSS v1.2.1 is still the latest stable release. The paired evidence applies to that release. [Upstream release](https://github.com/rtk-ai/rtk/releases/tag/v1.2.1)
 
-The lead agent completed H052-d because the panel uses the Access gate and shows measured results. All 24 local service tests passed in 11.868 seconds. Three Edge layouts passed in 6.399 seconds. The next slice verifies Free-plan capacity and the Access and D1 deployment prerequisites. Live access, retention, and privacy acceptance remain open. [Panel evidence](proofs/h052-admin-panel.json) · [Privacy decision](decisions/032-usage-sharing-privacy.md)
+The lead agent implemented H052-e because it changes stored data and deployment settings. All 27 service tests passed in 12.802 seconds. The Wrangler dry run and two local D1 migrations passed in 8.821 seconds. The account shows Workers Free and zero D1 databases. Zero Trust setup remains open. Next, finish Zero Trust setup and prepare an authorized synthetic run on an Access-protected Worker with a private EU D1 database. [Preflight evidence](proofs/h052-deployment-preflight.json) · [Privacy decision](decisions/032-usage-sharing-privacy.md)
 
 ### Public privacy and presentation
 
