@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "task": "H052-f",
+  "passed": true,
+  "owner": "lead agent",
+  "scope": "Provision and verify the private D1 pilot database",
+  "observed_on": "2026-11-24",
+  "source_base": "4d8a5219be953feff18a9feaa47c847937ea36fa",
+  "method": "Cloudflare dashboard and a read-only D1 Console query",
+  "observations": {
+    "databases_before_creation": 0,
+    "dedicated_pilot_database_provisioned": true,
+    "settings_jurisdiction": "eu",
+    "time_travel_window_days": 7,
+    "read_only_query": "SELECT COUNT(*) AS app_tables FROM sqlite_schema WHERE type = 'table' AND name IN ('usage_days', 'usage_intake_quota', 'd1_migrations');",
+    "application_tables": 0,
+    "zero_trust_selected_plan": "Free",
+    "zero_trust_displayed_monthly_price_usd": 0,
+    "zero_trust_activation": "awaiting_owner_payment_method"
+  },
+  "reused_local_preflight": {
+    "path": "docs/proofs/h052-deployment-preflight.json",
+    "input_sha256_before_and_after": {
+      "services/reports/migrations/0001_usage.sql": "f61a618f14958ecd29fcba851e6f3c514408bc76da9cdeaf5849af6ba40da853",
+      "services/reports/migrations/0002_intake.sql": "5d731c4f42ff7604cfda37fde6bc1639d2212fdb5314738511147dac556c10b8",
+      "services/reports/usage.mjs": "942d1edb30125eb97606a79bc60f51d6405d439e872f6a7d3b718cb5ca854634",
+      "services/reports/usage.test.mjs": "26d22028100c8334895738b9f23d0b3104f5e1b08e169a98ba33a50aad60817b",
+      "services/reports/worker.mjs": "f9484dea2ef4ab7c99cb1b7c0c2911bfe758769a09dd9377e972ed5d95a0eaa4",
+      "services/reports/worker.test.mjs": "5dad49b1791bda4cadde89bf9a4db6ab08a5a51cf21e4b3a8093f6784d28bc63",
+      "services/reports/admin-access.mjs": "b572094f4309c580c87b78c731f18623003d5e6ef790fc8f8c0569c8c6515305",
+      "services/reports/package.json": "c93c42b7b3063b71cb434cf61f1e504a5700a0a698bd017530eddf415893a895",
+      "services/reports/pnpm-workspace.yaml": "7099d904ec2ad5c64dbf4e7b5a14e6e3ef48747dda045f963cd8fa9944d4a989",
+      "services/reports/pnpm-lock.yaml": "6065fd9de0105aaa6d5305ed17726536ca2b79c2628d8f0b2e7afc018a063045",
+      "services/reports/admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+      "services/reports/wrangler.preflight.jsonc": "f3d9e30643713daeb2c4928fe83c9751ae76cc004bf1581fbda74df499edbe3a"
+    }
+  },
+  "open_verification": {
+    "remote_migrations": "not_applied",
+    "worker_and_access": "not_deployed",
+    "live_cleanup_and_restore": "not_tested",
+    "real_user_reports": 0,
+    "privacy_acceptance": "open"
+  }
+}

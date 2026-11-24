@@ -87,3 +87,9 @@ The owner account showed Workers Free and zero D1 databases on 24 November. The 
 Use a dedicated Free Worker and a private D1 database with the EU jurisdiction for the synthetic pilot. Protect the Worker with an Access policy for the approved administrator. Keep preview URLs off. Use the account's `workers.dev` address for this test. The owner completes any required Zero Trust Free subscription setup. [Workers Access](https://developers.cloudflare.com/workers/configuration/cloudflare-access/) · [Zero Trust setup](https://developers.cloudflare.com/cloudflare-one/setup/) · [D1 data location](https://developers.cloudflare.com/d1/configuration/data-location/)
 
 Use only synthetic reports during validation of the route, access policy, cleanup, and restore. Keep real report collection off pending the controller, notice, transfer, and retention review. D1 Free offers seven days of Time Travel. Delete expired reports and apply queued erasures before a restored database serves requests. [D1 Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/)
+
+## H052-f — Private pilot database
+
+Cloudflare created a separate D1 database for the pilot. Its Settings page showed the EU jurisdiction. D1 Console returned zero application tables in a read-only query. The Time Travel page showed a seven-day restore window. [Provisioning evidence](../proofs/h052-private-pilot-d1.json) · [D1 Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/)
+
+The Zero Trust Free activation screen awaits the account owner's payment method. Apply the two migrations to the pilot database with Wrangler. Protect the Worker with Access before serving the panel. Use synthetic reports to verify the live database, Worker, and cleanup. [D1 migrations](https://developers.cloudflare.com/d1/reference/migrations/) · [Zero Trust setup](https://developers.cloudflare.com/cloudflare-one/setup/)
