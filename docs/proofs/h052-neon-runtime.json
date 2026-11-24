@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "task": "H052",
+  "slice": "H052-i",
+  "owner": "lead agent",
+  "passed": true,
+  "observed_on": "2026-11-24",
+  "source_base": "bae5c4953d51180766a7847509e0ec0a75575536",
+  "report_source_fingerprints": {
+    "services/reports/migrations/0001_reports.sql": "65637c2f72f3bb1afe950dce87aca28583498b6b77c4782786dd6287941bbd30",
+    "services/reports/migrations/0002_reports_runtime.sql": "a8a8e34346c222fad30766518ab34329f1bcb26b00d95a263b3218ab0c01c9ff",
+    "services/reports/function.mjs": "29d868e53c06f0286e6ee19cd8e3caca96402d2fac0e8afac1fb6fe785a82b01",
+    "services/reports/service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+    "services/reports/admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+    "services/reports/usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+    "services/reports/package.json": "4503ac1c444188f2f7e2f95c0390fb097584e35f78d9e65149c3cd5d47a63d52",
+    "services/reports/pnpm-lock.yaml": "e4e63c972617091894135a94a9270c67f9c2c98c3d136235d8fe17d50e9efefe",
+    "services/reports/service.test.mjs": "4b412d8d053ea690dcbc4e333031473bfb56da139fd732e66fb1112bb41a9d52",
+    "services/reports/usage.test.mjs": "ddeeb3898507adc04895fd765ba0ed8afffc5a08f60b393ccbc6d0a69ff450a2"
+  },
+  "service_tests": {
+    "command": "pnpm --dir services/reports test",
+    "passed": 28,
+    "failed": 0,
+    "duration_seconds": 4.139375,
+    "public_entrypoint_default": "404 for intake and both administrator routes"
+  },
+  "driver": {
+    "version": "8.23.1",
+    "dependency_audit_findings": 0
+  },
+  "native_postgresql": {
+    "untrusted_cert_denied": true,
+    "postgres_version": "17.12",
+    "encrypted": true,
+    "roles_with_extra_privileges": 0,
+    "rejected_operations": 7,
+    "accepted_report": 201,
+    "identical_retry": 200,
+    "rejected_anonymous_summary": 401,
+    "accepted_admin_summary": 200,
+    "idle_disconnect_recovered": true,
+    "native_duration_seconds": 8.942,
+    "server_closed": true,
+    "node": "v25.2.1",
+    "input_fingerprints_before_and_after": {
+      "services/reports/migrations/0001_reports.sql": "65637c2f72f3bb1afe950dce87aca28583498b6b77c4782786dd6287941bbd30",
+      "services/reports/migrations/0002_reports_runtime.sql": "a8a8e34346c222fad30766518ab34329f1bcb26b00d95a263b3218ab0c01c9ff",
+      "services/reports/function.mjs": "29d868e53c06f0286e6ee19cd8e3caca96402d2fac0e8afac1fb6fe785a82b01",
+      "services/reports/service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+      "services/reports/admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+      "services/reports/usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+      "services/reports/package.json": "4503ac1c444188f2f7e2f95c0390fb097584e35f78d9e65149c3cd5d47a63d52",
+      "services/reports/pnpm-lock.yaml": "e4e63c972617091894135a94a9270c67f9c2c98c3d136235d8fe17d50e9efefe",
+      "services/reports/service.test.mjs": "4b412d8d053ea690dcbc4e333031473bfb56da139fd732e66fb1112bb41a9d52",
+      "services/reports/usage.test.mjs": "ddeeb3898507adc04895fd765ba0ed8afffc5a08f60b393ccbc6d0a69ff450a2",
+      "work/toolchains/reports-postgres-17.12/node_modules/@embedded-postgres/windows-x64/native/bin/postgres.exe": "70334b2428dac81d111b4e3a6cfed01568b216e4ef3c5cc879d423a0fe69c0df",
+      "work/toolchains/reports-postgres-17.12/node_modules/@embedded-postgres/windows-x64/native/bin/initdb.exe": "515eeba9d255c60b4a0eb2954d9b79f39f097694846e5df5a9bf308c578f1d8f",
+      "work/toolchains/reports-postgres-17.12/node_modules/@embedded-postgres/windows-x64/native/bin/pg_ctl.exe": "833ab137ed6df021e49dfbef062783be5c1e898119f43e01440373a88a6ab998",
+      "openssl.exe": "3fbfe9fa1fdfbae35980ce3b1e6f5a2db843a3d4d69b7d1c13168ec2f1b538a6",
+      "work/proofs/h052/neon-runtime/native-runtime-test.py": "eb1ba10cf66f1e8ea9651b9012ec3b75a82929dfd1deaf1a90b293fff239b671",
+      "work/proofs/h052/neon-runtime/native-runtime-check.mjs": "83cfb8b01f2f72c84353bcd4a765360385f472e18fec2531649bc3b05f7b396c"
+    }
+  },
+  "neon": {
+    "region": "AWS Europe Central 1 (Frankfurt)",
+    "version": "18.7",
+    "plan": "Free",
+    "migration_queries": 9,
+    "migration_duration_ms": 116,
+    "probe_duration_ms": 180,
+    "probe_mode": "SQL Editor with a temporary role switch and rollback",
+    "observed": [
+      "rate write",
+      "stored report",
+      "duplicate retry",
+      "report read",
+      "denied delete",
+      "denied receipt day update",
+      "denied table creation"
+    ],
+    "catalog": {
+      "login_disabled": true,
+      "no_admin_privileges": true,
+      "no_usable_role_membership": true,
+      "bounded_statement": true,
+      "required_grants": true,
+      "restricted_grants": true,
+      "rows_after_role_probe": 0
+    }
+  },
+  "limits": {
+    "native_disconnect": "Destroyed the idle client socket of the local TLS fixture",
+    "neon_password_login": "not_tested",
+    "neon_function_deployment": "not_tested",
+    "real_admin_sign_in": "not_tested",
+    "scheduled_retention": "not_tested",
+    "real_user_reports": 0,
+    "development_agent_token_savings": "not_measured"
+  },
+  "local_function_bundle": {
+    "node": "v24.22.3",
+    "node_sha256": "86fc4785327db5f5c7558dc6156c543b433c313e813a222e088086222ab4afa6",
+    "esbuild": "0.28.2",
+    "esbuild_sha256": "c7bee37877d0aa6a046e52783fa0a2cf1a9ce5579d68bb3083bda99d4bff18ef",
+    "entry_sha256": "f0e1a224f1bdbf152f44e47ed8b0e36a07a9872db3f454f57608a5ff1b48ce74",
+    "archive_sha256": "49cbf3b4fe0eff781fcba808c4ba9ebc569cc617e50b2ee7cc4945d0cc2deeb4",
+    "archive_entries": [
+      "index.mjs"
+    ],
+    "default_route_checks_passed": 4,
+    "node_24_service_tests": {
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "duration_seconds": 4.1121244
+    },
+    "native_postgres_version": "17.12",
+    "native_tls_and_role_checks_passed": true,
+    "native_disconnect_recovered": true,
+    "native_duration_seconds": 10.962,
+    "native_harness_fingerprints": {
+      "native-runtime-check.mjs": "9ac2e3cd4fffdd61ed4641bb6da33f643377ac4ea431bbd8ccc9b41fc1bab2f9",
+      "native-runtime-test.py": "76ef844deaa9d0e5bed5d29566751cd8bd2bc28011b1292734ecaf7ee7c73180"
+    }
+  }
+}

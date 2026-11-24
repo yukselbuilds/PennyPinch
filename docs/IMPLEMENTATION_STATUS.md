@@ -68,7 +68,9 @@ The lead agent completed the H052 PostgreSQL port because it changes persistent 
 
 The lead agent applied H052-h to the Neon Free pilot in Frankfurt. PostgreSQL 18.7 accepted the migration in one transaction. The synthetic storage checks took 177 milliseconds. The catalog confirmed the function matches the migration source. The catalog lists direct grants to the object owners only. The test rolled back all rows. [Neon migration evidence](proofs/h052-neon-migration.json)
 
-Next, connect the report service with a database role that has only the required permissions. Administrator sign-in, scheduled cleanup, live intake, and privacy acceptance remain open. [Privacy decision](decisions/032-usage-sharing-privacy.md)
+The lead agent implemented H052-i because it defines database access. The Neon pilot passed the service role checks. The probe inserted and read synthetic rows, checked denied actions, and rolled back all writes. All 28 local service tests passed. On Node.js 24, the Function bundle passed TLS, retry, and idle disconnect recovery checks against native PostgreSQL. [Role and Function evidence](proofs/h052-neon-runtime.json)
+
+Next, verify the deployed Function connection with a pilot-only credential. The service role has no login credential. The Function handler keeps the report routes closed. Administrator sign-in, scheduled cleanup, live intake, and privacy acceptance remain open. [Privacy decision](decisions/032-usage-sharing-privacy.md)
 
 ### Public privacy and presentation
 

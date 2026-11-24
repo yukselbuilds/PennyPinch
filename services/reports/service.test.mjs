@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { after, test } from "node:test";
 import { PGlite } from "@electric-sql/pglite";
+import neonFunction, { createReportPool } from "./function.mjs";
 import { handleReportRequest } from "./service.mjs";
 import { pruneExpiredUsageDays } from "./usage.mjs";
 
@@ -53,6 +54,15 @@ async function expectResponse(response, code, status) {
   assert.equal(response.headers.get("cache-control"), "no-store");
   assert.deepEqual(await response.json(), { status });
 }
+
+test("keeps the Neon pilot closed and refuses an owner connection URL", async () => {
+  assert.equal(createReportPool(), undefined);
+  assert.equal(createReportPool("postgresql://neondb_owner:fixture@localhost/neondb"), undefined);
+  assert.equal(createReportPool("postgresql://pennypinch_reports_runtime:%@localhost/neondb"), undefined);
+  await expectResponse(await neonFunction.fetch(request(summary(ids[0]), tokens[0])), 404, "not_found");
+  await expectResponse(await neonFunction.fetch(new Request(adminUrl)), 404, "not_found");
+  await expectResponse(await neonFunction.fetch(new Request(panelUrl)), 404, "not_found");
+});
 
 test("disables intake by default and reports missing storage", async () => {
   const sample = summary(ids[0]);
@@ -150,6 +160,24 @@ function startAdmin({ settings, ...options } = {}) {
     ...settings,
   } });
 }
+
+test("uses only the runtime grants to store a report and read the summary", async () => {
+  const { send, fetch } = await startAdmin();
+  await db.exec(await readFile(new URL("./migrations/0002_reports_runtime.sql", import.meta.url), "utf8"));
+  await db.exec("SET ROLE pennypinch_reports_runtime");
+  try {
+    await expectResponse(await send(summary(ids[0]), tokens[0]), 201, "stored");
+    await expectResponse(await send(summary(ids[0]), tokens[0]), 200, "duplicate");
+    const response = await fetch(adminUrl, adminOptions);
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).summary.coverage.installations, 1);
+    await assert.rejects(db.query("DELETE FROM reports.usage_days"), { code: "42501" });
+    await assert.rejects(db.query("UPDATE reports.usage_intake_quota SET received_day = current_date"), { code: "42501" });
+    await assert.rejects(db.query("CREATE TABLE reports.extra (id int)"), { code: "42501" });
+  } finally {
+    await db.exec("RESET ROLE");
+  }
+});
 
 test("keeps admin reads closed without a verifier", async () => {
   const { fetch } = await start();
