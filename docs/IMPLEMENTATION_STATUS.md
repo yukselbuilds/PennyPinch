@@ -72,6 +72,8 @@ GitHub About, README, and Pages now describe separate platform statuses. The liv
 
 The lead agent completed H042-ak. The public ZIP contains the installer that passed the Windows 10 upgrade. The public download pages link to the release. All three signed update files kept their digests. H042 still needs an installed update and rollback on Windows 11 x64. [Publication evidence](proofs/pennypinch-windows10-preview4-publication.json)
 
+The lead agent prepared the H042-al Windows desktop checks. The script reads the OS build, processor architecture, ZIP digest, and WebView2 registration. Six Windows 10 cases and four simulated OS cases passed in 8.822 seconds. Run the current installer and signed rollback procedures on Windows 11 x64 when a desktop is available. [Procedure](validation/windows-preview-check.md) [Preflight evidence](proofs/windows-preview-preflight.json)
+
 Tokio 1.54.1 passed the Windows 10 product gate and signed update package checks with an isolated key. The real QA app passed signature, resource pin, extraction, and probe validation. [Tokio verification](proofs/tokio-windows-1541.json) · [Public privacy and presentation checks](proofs/pennypinch-public-privacy.md)
 
 OpenTelemetry API 1.45.2 passed the Windows 10 product gate, the staged engine lifecycle test, and a local Responses stream. The local NSIS installer contains the patched package. Existing installations require the full installer for the new engine resources. [OpenTelemetry verification](proofs/opentelemetry-windows-1452.json)

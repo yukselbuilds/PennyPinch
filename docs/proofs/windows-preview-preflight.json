@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "task": "H042-al",
+  "passed": true,
+  "owner": "lead agent",
+  "scope": "Release preflight and volunteer procedure for Windows desktop verification",
+  "native_windows10": {
+    "current_zip_x64_powershell": {
+      "schema_version": 1,
+      "scope": "preflight",
+      "target": "Windows10",
+      "scenario": "Current",
+      "powershell": "5.1.19041.6456",
+      "windows": {
+        "build": 19045,
+        "workstation": true,
+        "processor_architecture_codes": [
+          9
+        ],
+        "x64": true
+      },
+      "archive": "PennyPinch_0.1.1-preview.4_Windows_x64_preview.zip",
+      "archive_sha256": "da97cc80b7a03220c64003b5c1b05cefe291ebf199132f5e7aea22ba4c7a4ff5",
+      "installer_sha256": "76556a6118252e1d0fac8380b6b60d698958208148e7dba5e8b77f1d4daedfa0",
+      "webview2_registry_versions": [
+        "158.0.4370.33"
+      ],
+      "status": "ready"
+    },
+    "current_zip_x86_powershell": {
+      "schema_version": 1,
+      "scope": "preflight",
+      "target": "Windows10",
+      "scenario": "Current",
+      "powershell": "5.1.19041.6456",
+      "windows": {
+        "build": 19045,
+        "workstation": true,
+        "processor_architecture_codes": [
+          9
+        ],
+        "x64": true
+      },
+      "archive": "PennyPinch_0.1.1-preview.4_Windows_x64_preview.zip",
+      "archive_sha256": "da97cc80b7a03220c64003b5c1b05cefe291ebf199132f5e7aea22ba4c7a4ff5",
+      "installer_sha256": "76556a6118252e1d0fac8380b6b60d698958208148e7dba5e8b77f1d4daedfa0",
+      "webview2_registry_versions": [
+        "158.0.4370.33"
+      ],
+      "status": "ready"
+    },
+    "signed_baseline_zip": {
+      "schema_version": 1,
+      "scope": "preflight",
+      "target": "Windows10",
+      "scenario": "SignedUpdate",
+      "powershell": "5.1.19041.6456",
+      "windows": {
+        "build": 19045,
+        "workstation": true,
+        "processor_architecture_codes": [
+          9
+        ],
+        "x64": true
+      },
+      "archive": "PennyPinch_0.1.1-preview.1_Windows_x64_preview.zip",
+      "archive_sha256": "90da31e3a56265ad9c547d773d618ca5b26d72edc107fe16acdbe230347e54f5",
+      "installer_sha256": "24539971538147e19769e4c35900c0158551aace72ebbbe0ea6f19d4289a7147",
+      "webview2_registry_versions": [
+        "158.0.4370.33"
+      ],
+      "status": "ready"
+    },
+    "windows10_as_windows11": {
+      "schema_version": 1,
+      "scope": "preflight",
+      "target": "Windows11",
+      "scenario": "Current",
+      "powershell": "5.1.19041.6456",
+      "windows": {
+        "build": 19045,
+        "workstation": true,
+        "processor_architecture_codes": [
+          9
+        ],
+        "x64": true
+      },
+      "status": "target_mismatch"
+    },
+    "different_release_zip": {
+      "schema_version": 1,
+      "scope": "preflight",
+      "target": "Windows10",
+      "scenario": "Current",
+      "powershell": "5.1.19041.6456",
+      "windows": {
+        "build": 19045,
+        "workstation": true,
+        "processor_architecture_codes": [
+          9
+        ],
+        "x64": true
+      },
+      "status": "archive_mismatch"
+    },
+    "missing_release_zip": {
+      "schema_version": 1,
+      "scope": "preflight",
+      "target": "Windows10",
+      "scenario": "Current",
+      "powershell": "5.1.19041.6456",
+      "windows": {
+        "build": 19045,
+        "workstation": true,
+        "processor_architecture_codes": [
+          9
+        ],
+        "x64": true
+      },
+      "status": "archive_unavailable"
+    }
+  },
+  "synthetic_os_checks": {
+    "windows11_x64": {
+      "status": "ready",
+      "build": 26100,
+      "product_type": 1,
+      "architecture_code": 9
+    },
+    "windows11_arm64": {
+      "status": "target_mismatch",
+      "build": 26100,
+      "product_type": 1,
+      "architecture_code": 12
+    },
+    "server_x64_same_build": {
+      "status": "target_mismatch",
+      "build": 26100,
+      "product_type": 3,
+      "architecture_code": 9
+    },
+    "windows10_with_new_caption": {
+      "status": "target_mismatch",
+      "build": 19045,
+      "product_type": 1,
+      "architecture_code": 9
+    }
+  },
+  "source": {
+    "script_sha256": "d048512e83e8daea234bd1614ed629b7b37446c5b760f719337f0d99874d4a92",
+    "procedure_sha256": "83951bb6e9d67aa9e0a31d3804cacc8d4413b38670e1557d47a3864ff84b1818",
+    "input_count": 8,
+    "input_set_sha256_before_and_after": "c49ded2fe07de59aa55265eeaad46b2543b6c90d4ee955f5f8798a55d42f465a",
+    "windows_powershell_sha256_before_and_after": {
+      "x64": "9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3",
+      "x86": "870eda04ea71cc066ec907f005e1d05ce592f04799c60e600e2cb986dc85b5eb"
+    }
+  },
+  "live_signed_update": {
+    "version": "0.1.1-preview.2",
+    "sha256": {
+      "updates/preview/Headroom_0.1.1-preview.2_x64-update.exe": "15708a3d73f2cf1da8612fc05b8eb832c89d8fe9073c2724b0672b5ed7daf567",
+      "updates/preview/manifest.json": "413ddd1db7d4c7733b7aeed980f8fd915312985eb2f00e571c4f92d366c7f598",
+      "updates/preview/manifest.json.sig": "8f9ab96f0e27d6f590d3a8f374158ab3a9f4d9a07f330f5d9327c4e70fa4900d"
+    }
+  },
+  "limits": {
+    "windows_11_x64_installed_update": "not_tested",
+    "windows_11_x64_clean_install": "not_tested",
+    "webview2_absent_host": "not_tested",
+    "manual_ci_dispatches": 0,
+    "provider_model_calls": 0
+  },
+  "seconds": 8.822
+}

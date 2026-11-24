@@ -81,10 +81,10 @@ See the [versioned compatibility records](compatibility/clients.json) for status
 
 | Platform | What the current record verifies | Still open |
 | --- | --- | --- |
-| **Windows 10 22H2 x64** | The preview package installed. Its resources matched the receipt. The native window opened, Headroom 0.44.0 answered a local HTTP request, and the app exited normally. A Windows 10 installation also verified the published preview update and rollback flow. | Clean-host installation without WebView2, broader installed-client traffic, and complete delivery checks remain separate acceptance items. [Windows install](docs/validation/windows-install.md) · [Update validation](docs/validation/windows-update.md) |
+| **Windows 10 22H2 x64** | The 0.1.1-preview.4 installer upgraded the public preview to Headroom 0.45.0. It kept the test preferences. The installed engine completed one local stream and stopped. An earlier signed preview passed update and rollback. | Clean installation without WebView2 and broader live client coverage remain open. [Installed upgrade](docs/proofs/windows-preview4-installed-upgrade.json) [Update validation](docs/validation/windows-update.md) |
 | **macOS ARM64** | On macOS 26.7.2, the test package started Headroom 0.45.0. A controlled Codex Desktop turn returned a response and stored local usage. The package exited normally. [Package evidence](docs/proofs/headroom-045-managed-packages.json) | Production signing, notarization, live provider traffic, and release delivery require separate checks. |
 | **Ubuntu 24.04 x64** | The Debian package installed. The app started, stopped, and restarted Headroom 0.45.0 under Xvfb. Package purge retained the separate user state. [Linux validation](docs/validation/linux.md) | Live provider use and public Linux distribution require separate checks. |
-| **Windows 11 x64** | Independent desktop acceptance pending. | Release validation. |
+| **Windows 11 x64** | Independent desktop acceptance remains open. | [Installer, engine, and rollback test procedure](docs/validation/windows-preview-check.md) |
 
 The current source pins Headroom 0.45.0. The upgrade record covers the Windows 10 package and the direct engine checks.
 [Engine verification](docs/proofs/headroom-045-upgrade.json) · [Full platform status](docs/validation/desktop-platforms.md)
