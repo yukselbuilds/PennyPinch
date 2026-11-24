@@ -78,8 +78,8 @@
             <span class="bar-track" aria-hidden="true"><span class="bar-fill"></span></span>
           </div>
         </div>
-        <p id="hero-evidence-note" class="evidence-note">Windows 10 22H2 x64. Full Chat Completions request JSON, including tool schemas, counted with <code>o200k_base</code>. No model calls.</p>
-        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-045.json">Read the request-count evidence <span aria-hidden="true">↗</span></a>
+        <p id="hero-evidence-note" class="evidence-note">Windows 10 22H2 x64. The Headroom and PennyPinch proxies matched. The count covers the full Chat Completions request JSON with <code>o200k_base</code>.</p>
+        <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-045.json">Read the matched proxy test <span aria-hidden="true">↗</span></a>
       </figure>
     </section>
 
@@ -95,10 +95,10 @@
       <div class="measurement-grid">
         <article class="measurement measurement-featured">
           <p class="measurement-kicker">Windows proxy · synthetic input</p>
-          <h3>Six selected requests</h3>
+          <h3>Headroom and PennyPinch matched</h3>
           <p class="measurement-value">122,944 <span>→</span> 69,350</p>
           <p class="measurement-result">43.59% lower counted input</p>
-          <p>The count uses <code>o200k_base</code> for the full request JSON. Headroom 0.44.0 and 0.45.0 produced the same counts with matching fixtures.</p>
+          <p>Both proxies forwarded the same JSON in all eight cases on Headroom 0.45.0. This count covers the full request JSON.</p>
           <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-045.json">Full request counts <span aria-hidden="true">↗</span></a>
         </article>
         <article class="measurement">
@@ -114,7 +114,7 @@
           <h3>Six selected SDK examples</h3>
           <p class="measurement-value">126,289 <span>→</span> 55,209</p>
           <p class="measurement-result">56.28% lower in the SDK count</p>
-          <p>The local 0.45.0 rerun uses the upstream SDK tokenizer and counts the SDK input.</p>
+          <p>The SDK estimates tokens in the messages. The same six workloads reduced the full request JSON count by 43.59% through either proxy.</p>
           <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-045.json">Local SDK counts <span aria-hidden="true">↗</span></a>
         </article>
         <article class="measurement">
@@ -133,7 +133,7 @@
         <summary>See each synthetic proxy case</summary>
         <div class="table-scroll" tabindex="0" role="region" aria-label="Synthetic proxy input counts">
           <table>
-            <thead><tr><th scope="col">Input</th><th scope="col">Direct</th><th scope="col">Through proxy</th><th scope="col">Change</th></tr></thead>
+            <thead><tr><th scope="col">Input</th><th scope="col">Direct</th><th scope="col">Through either proxy</th><th scope="col">Change</th></tr></thead>
             <tbody>
               <tr><th scope="row">JSON search results · 100 items</th><td>9,521</td><td>5,733</td><td>39.79% lower</td></tr>
               <tr><th scope="row">JSON search results · 500 items</th><td>46,794</td><td>27,768</td><td>40.66% lower</td></tr>
@@ -144,7 +144,7 @@
             </tbody>
           </table>
         </div>
-        <p class="table-note">The aggregate includes an input that grew. The percentage applies only to the six selected synthetic cases in this test.</p>
+        <p class="table-note">Both proxies kept the Python source exact. The added usage option accounts for the eight extra tokens in that request.</p>
         <a class="text-link" href="https://github.com/yukselbuilds/PennyPinch/blob/main/docs/proofs/upstream-benchmarks-045.json">Open the programmatic evidence <span aria-hidden="true">↗</span></a>
       </details>
     </section>
