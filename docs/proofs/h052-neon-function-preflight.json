@@ -45,5 +45,28 @@
   "live_deployment": "awaiting_project_authorization",
   "production_intake": "disabled",
   "real_user_reports": 0,
-  "development_agent_token_savings": "not_measured"
+  "development_agent_token_savings": "not_measured",
+  "deployment_rehearsal": {
+    "scope": "Local deployment runner with simulated Neon API and PostgreSQL responses",
+    "node": "v24.22.3",
+    "passed": 5,
+    "failed": 0,
+    "duration_ms": 224.6709,
+    "source_fingerprints_before_and_after": {
+      "deploy-pilot.mjs": "fde0f9216e35d1d5ce4c1a3718c3d07aa14c0904762c8b8ba5e0727fad42d3eb",
+      "deploy-pilot.test.mjs": "66da498eaa93d107841f136bc0bf8f71eb9fadee5760aa9604b82aa30b3d8795",
+      "run-authorized-pilot.ps1": "2362eb6fb0ad2d30c3375b0ace1beb37061e498d86338ded83042ea5770290d0",
+      "connection-check.zip": "105b7d115278e1e56bfed01a8d754346c8e6a29524f88fc2dfe6ff66d10f2114",
+      "index.zip": "49cbf3b4fe0eff781fcba808c4ba9ebc569cc617e50b2ee7cc4945d0cc2deeb4",
+      "node.exe": "86fc4785327db5f5c7558dc6156c543b433c313e813a222e088086222ab4afa6"
+    },
+    "verified": [
+      "permission and Free plan gate",
+      "nonempty pilot rejected",
+      "successful probe and closed replacement",
+      "cleanup after probe failure",
+      "changed deployment ownership is preserved"
+    ],
+    "live_deployment": "awaiting_project_authorization"
+  }
 }

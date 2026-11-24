@@ -72,7 +72,7 @@ The lead agent implemented H052-i because it defines database access. The Neon p
 
 The lead agent prepared the H052-j Function probe. Eleven local route checks passed. The bundle verified the restricted TLS connection to native PostgreSQL and refused a nonempty database. The Neon console showed no deployed Functions. The pilot awaits a project-scoped deployment credential. The service role has no login credential. The report routes remain closed. [Preflight evidence](proofs/h052-neon-function-preflight.json)
 
-After authorization, confirm the Free plan and deploy the connection probe with a short-lived database credential. Verify the private probe and closed report routes. Retire the test credential and deploy the closed handler. Administrator sign-in, scheduled cleanup, live intake, and privacy acceptance remain open. [Privacy decision](decisions/032-usage-sharing-privacy.md)
+The deployment runner passed five cases with simulated Neon and PostgreSQL responses. It checked the plan, guarded the empty pilot, and verified cleanup after a failed probe. The runner needs the scoped key before it can contact Neon. After authorization, confirm the Free plan and run the live probe. Administrator sign-in, scheduled cleanup, live intake, and privacy acceptance remain open. [Preflight evidence](proofs/h052-neon-function-preflight.json) · [Privacy decision](decisions/032-usage-sharing-privacy.md)
 
 ### Public privacy and presentation
 
