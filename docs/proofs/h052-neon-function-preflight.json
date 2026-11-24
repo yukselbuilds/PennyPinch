@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "task": "H052",
+  "slice": "H052-j",
+  "scope": "Local Function connection preflight",
+  "observed_on": "2026-11-24",
+  "owner": "lead agent",
+  "source_base": "4cd912ce639169a99a9bdd080335c97fea9b4c02",
+  "report_source_fingerprints": {
+    "services/reports/migrations/0001_reports.sql": "65637c2f72f3bb1afe950dce87aca28583498b6b77c4782786dd6287941bbd30",
+    "services/reports/migrations/0002_reports_runtime.sql": "a8a8e34346c222fad30766518ab34329f1bcb26b00d95a263b3218ab0c01c9ff",
+    "services/reports/function.mjs": "29d868e53c06f0286e6ee19cd8e3caca96402d2fac0e8afac1fb6fe785a82b01",
+    "services/reports/service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+    "services/reports/admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+    "services/reports/usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+    "services/reports/package.json": "4503ac1c444188f2f7e2f95c0390fb097584e35f78d9e65149c3cd5d47a63d52",
+    "services/reports/pnpm-lock.yaml": "e4e63c972617091894135a94a9270c67f9c2c98c3d136235d8fe17d50e9efefe",
+    "services/reports/service.test.mjs": "4b412d8d053ea690dcbc4e333031473bfb56da139fd732e66fb1112bb41a9d52",
+    "services/reports/usage.test.mjs": "ddeeb3898507adc04895fd765ba0ed8afffc5a08f60b393ccbc6d0a69ff450a2"
+  },
+  "local_bundle": {
+    "archive_sha256": "105b7d115278e1e56bfed01a8d754346c8e6a29524f88fc2dfe6ff66d10f2114",
+    "entry_sha256": "e15ad5064e78f0615e3e366119c16676e914497243b658e11f4354f6c754bc7a",
+    "bundle_sha256": "6d2aa7b2ef017bcf0abafbf93233fa8af7df35b52f66e83daec6a5b5b0f3a624",
+    "node_sha256": "86fc4785327db5f5c7558dc6156c543b433c313e813a222e088086222ab4afa6",
+    "syntax": "Node.js 24 ESM",
+    "route_checks_passed": 11,
+    "hosted_connection": "not_tested"
+  },
+  "local_postgres": {
+    "version": "17.12",
+    "node": "v24.22.3",
+    "actual_tls_connection": true,
+    "empty_pilot_status": 204,
+    "nonempty_pilot_status": 503,
+    "disabled_probe_status": 404,
+    "untrusted_certificate_denied": true,
+    "duration_seconds": 10.607,
+    "fixture_closed": true
+  },
+  "neon_console": {
+    "deployment_path": "Neon CLI or API",
+    "existing_functions": 0
+  },
+  "live_deployment": "awaiting_project_authorization",
+  "production_intake": "disabled",
+  "real_user_reports": 0,
+  "development_agent_token_savings": "not_measured"
+}

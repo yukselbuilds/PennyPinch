@@ -70,7 +70,9 @@ The lead agent applied H052-h to the Neon Free pilot in Frankfurt. PostgreSQL 18
 
 The lead agent implemented H052-i because it defines database access. The Neon pilot passed the service role checks. The probe inserted and read synthetic rows, checked denied actions, and rolled back all writes. All 28 local service tests passed. On Node.js 24, the Function bundle passed TLS, retry, and idle disconnect recovery checks against native PostgreSQL. [Role and Function evidence](proofs/h052-neon-runtime.json)
 
-Next, verify the deployed Function connection with a pilot-only credential. The service role has no login credential. The Function handler keeps the report routes closed. Administrator sign-in, scheduled cleanup, live intake, and privacy acceptance remain open. [Privacy decision](decisions/032-usage-sharing-privacy.md)
+The lead agent prepared the H052-j Function probe. Eleven local route checks passed. The bundle verified the restricted TLS connection to native PostgreSQL and refused a nonempty database. The Neon console showed no deployed Functions. The pilot awaits a project-scoped deployment credential. The service role has no login credential. The report routes remain closed. [Preflight evidence](proofs/h052-neon-function-preflight.json)
+
+After authorization, confirm the Free plan and deploy the connection probe with a short-lived database credential. Verify the private probe and closed report routes. Retire the test credential and deploy the closed handler. Administrator sign-in, scheduled cleanup, live intake, and privacy acceptance remain open. [Privacy decision](decisions/032-usage-sharing-privacy.md)
 
 ### Public privacy and presentation
 
