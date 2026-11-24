@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "task": "H052",
+  "slice": "H052-k",
+  "scope": "Local scheduled cleanup handler and restricted database role",
+  "owner": "lead agent",
+  "observed_on": "2026-11-24",
+  "source_base": "9f0d3872c20026acf319a44a13c27a6ba3edebd0",
+  "local_report_suite": {
+    "command": "node --test --test-reporter=tap",
+    "node": "v24.22.3",
+    "counts": {
+      "pass": 34.0,
+      "duration_ms": 5559.5417,
+      "tests": 34.0,
+      "fail": 0.0,
+      "skipped": 0.0
+    },
+    "fingerprints": {
+      "admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+      "function.mjs": "29d868e53c06f0286e6ee19cd8e3caca96402d2fac0e8afac1fb6fe785a82b01",
+      "retention-function.mjs": "bf245b5eb6ae0c4ff42579fc841c0d36fa22d63d39c49eb28096b1330f64a2de",
+      "retention-function.test.mjs": "10960aa225a24feeaf9e148d7bafd53e418f45e197779598ca5caf48ccbafec7",
+      "service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+      "service.test.mjs": "4b412d8d053ea690dcbc4e333031473bfb56da139fd732e66fb1112bb41a9d52",
+      "usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+      "usage.test.mjs": "ddeeb3898507adc04895fd765ba0ed8afffc5a08f60b393ccbc6d0a69ff450a2",
+      "migrations/0001_reports.sql": "65637c2f72f3bb1afe950dce87aca28583498b6b77c4782786dd6287941bbd30",
+      "migrations/0002_reports_runtime.sql": "a8a8e34346c222fad30766518ab34329f1bcb26b00d95a263b3218ab0c01c9ff",
+      "migrations/0003_reports_cleanup.sql": "9ad8ec17c20ba7c1eaab712142c2b82b2fa4d2ec345de6df2682ad05f299127f",
+      "package.json": "4503ac1c444188f2f7e2f95c0390fb097584e35f78d9e65149c3cd5d47a63d52",
+      "pnpm-lock.yaml": "e4e63c972617091894135a94a9270c67f9c2c98c3d136235d8fe17d50e9efefe",
+      "node.exe": "86fc4785327db5f5c7558dc6156c543b433c313e813a222e088086222ab4afa6"
+    }
+  },
+  "native_postgres": {
+    "untrusted_certificate_denied": true,
+    "postgres_version": "17.12",
+    "actual_tls": true,
+    "missing_header_status": 404,
+    "bounded_first_status": 503,
+    "removed_first_call": 4000,
+    "retry_status": 204,
+    "repeat_status": 204,
+    "current_row_retained": 1,
+    "current_counter_rows_retained": 2,
+    "role_summary_read_denied": true,
+    "native_duration_seconds": 22.127,
+    "server_closed": true,
+    "node": "v24.22.3",
+    "input_fingerprints_before_and_after": {
+      "services/reports/migrations/0001_reports.sql": "65637c2f72f3bb1afe950dce87aca28583498b6b77c4782786dd6287941bbd30",
+      "services/reports/migrations/0002_reports_runtime.sql": "a8a8e34346c222fad30766518ab34329f1bcb26b00d95a263b3218ab0c01c9ff",
+      "services/reports/migrations/0003_reports_cleanup.sql": "9ad8ec17c20ba7c1eaab712142c2b82b2fa4d2ec345de6df2682ad05f299127f",
+      "services/reports/retention-function.mjs": "bf245b5eb6ae0c4ff42579fc841c0d36fa22d63d39c49eb28096b1330f64a2de",
+      "services/reports/retention-function.test.mjs": "10960aa225a24feeaf9e148d7bafd53e418f45e197779598ca5caf48ccbafec7",
+      "services/reports/usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+      "services/reports/package.json": "4503ac1c444188f2f7e2f95c0390fb097584e35f78d9e65149c3cd5d47a63d52",
+      "services/reports/pnpm-lock.yaml": "e4e63c972617091894135a94a9270c67f9c2c98c3d136235d8fe17d50e9efefe",
+      "services/reports/service.test.mjs": "4b412d8d053ea690dcbc4e333031473bfb56da139fd732e66fb1112bb41a9d52",
+      "services/reports/usage.test.mjs": "ddeeb3898507adc04895fd765ba0ed8afffc5a08f60b393ccbc6d0a69ff450a2",
+      "work/toolchains/reports-postgres-17.12/node_modules/@embedded-postgres/windows-x64/native/bin/postgres.exe": "70334b2428dac81d111b4e3a6cfed01568b216e4ef3c5cc879d423a0fe69c0df",
+      "work/toolchains/reports-postgres-17.12/node_modules/@embedded-postgres/windows-x64/native/bin/initdb.exe": "515eeba9d255c60b4a0eb2954d9b79f39f097694846e5df5a9bf308c578f1d8f",
+      "work/toolchains/reports-postgres-17.12/node_modules/@embedded-postgres/windows-x64/native/bin/pg_ctl.exe": "833ab137ed6df021e49dfbef062783be5c1e898119f43e01440373a88a6ab998",
+      "openssl.exe": "3fbfe9fa1fdfbae35980ce3b1e6f5a2db843a3d4d69b7d1c13168ec2f1b538a6",
+      "work/toolchains/reports-neon-function/node-v24.22.3-win-x64/node.exe": "86fc4785327db5f5c7558dc6156c543b433c313e813a222e088086222ab4afa6",
+      "work/proofs/h052/neon-retention/bundle/index.mjs": "9e00c60eeb1784c80891ea5dd34fcb495938501b208e4efd8aaeaf4030d5913a",
+      "work/proofs/h052/neon-retention/native-runtime-test.py": "aaeea7a2113e2bc00c90013aa7ff359be8ff01d3de2e5f15e6576c32729183f0",
+      "work/proofs/h052/neon-retention/native-runtime-check.mjs": "f4dadaa6a92659a5c270b37d45457de7c42c299c35136ff04adba27e3ee7995c"
+    }
+  },
+  "bundle": {
+    "archive_sha256": "6b59ea2f8a1e7114f9da689de122b5c8b24fd7388d8dabd96436d99e17957427",
+    "entry_sha256": "9e00c60eeb1784c80891ea5dd34fcb495938501b208e4efd8aaeaf4030d5913a",
+    "archive_entries": [
+      "index.mjs"
+    ]
+  },
+  "existing_function_probe_inputs_unchanged": true,
+  "acceptance": {
+    "local": "passed",
+    "neon_cleanup_migration": "not_applied",
+    "neon_trigger_schedule": "not_configured",
+    "neon_trusted_header_and_delivery": "not_tested",
+    "provider_backup_and_restore": "open",
+    "real_user_reports": 0,
+    "development_agent_token_savings": "not_measured"
+  }
+}

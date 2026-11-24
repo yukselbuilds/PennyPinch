@@ -91,4 +91,12 @@ The database accepted 128 synthetic reports and rejected one additional report. 
 
 Migration `0002_reports_runtime.sql` defines `pennypinch_reports_runtime`. It grants read and insert access for reports, update access for the counter columns, and permission to call the storage function. It grants no report deletion, table alteration, or administrator access. The pilot role has no login credential. Neon confirmed those grants and the denied operations. The test rolled back the synthetic rows and the temporary role assignment. [Role and Function evidence](../proofs/h052-neon-runtime.json)
 
-Configure the deployed Function with a server-side connection for this role. The local adapter rejects a connection URL for another role and requires certificate verification. The Function handler keeps the intake and administrator routes closed. Verify the live connection and the administrator sign-in before enabling pilot intake. Use a separately restricted database role for scheduled deletion. [Neon Function environment variables](https://neon.com/docs/compute/functions/environment-variables)
+Configure the deployed Function with a server-side connection for this role. The local adapter rejects a connection URL for another role and requires certificate verification. The Function handler keeps the intake and administrator routes closed. Verify the live connection and the administrator sign-in before enabling pilot intake. [Neon Function environment variables](https://neon.com/docs/compute/functions/environment-variables)
+
+## H052-k — Local scheduled cleanup handler
+
+The cleanup Function uses a dedicated database role. The role can delete from the three retention tables. It can read only the columns that select expired rows. The migration grants no permission to read summaries or add records.
+
+Set `REPORTS_CLEANUP_TRIGGER_ID` to the scheduler's trigger ID. Set `REPORTS_CLEANUP_DATABASE_URL` to the restricted role's connection URL. The handler requires HTTPS, the expected trigger envelope, and the Neon invocation header. Neon documents that its edge removes client-supplied headers with the `X-Neon-` prefix. Verify this behavior on the deployed Function before enabling the schedule. [Neon trigger security](https://neon.com/docs/compute/functions/triggers/overview#confirming-a-request-came-from-neon)
+
+The handler uses its current UTC time for the retention cutoff. A backlog or a database error requests a retry after 60 seconds. The local bundle passed the cutoff, duplicate delivery, restricted role, and retry checks on PostgreSQL. The live schedule, provider logs, and backup and restore checks remain open. [Cleanup evidence](../proofs/h052-neon-retention-local.json)

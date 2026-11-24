@@ -74,6 +74,8 @@ The lead agent prepared the H052-j Function probe. Eleven local route checks pas
 
 The deployment runner passed five cases with simulated Neon and PostgreSQL responses. It checked the plan, guarded the empty pilot, and verified cleanup after a failed probe. The runner needs the scoped key before it can contact Neon. After authorization, confirm the Free plan and run the live probe. Administrator sign-in, scheduled cleanup, live intake, and privacy acceptance remain open. [Preflight evidence](proofs/h052-neon-function-preflight.json) · [Privacy decision](decisions/032-usage-sharing-privacy.md)
 
+The lead agent implemented H052-k because it controls deletion. All 34 local reporting tests passed. Native PostgreSQL verified TLS and the cleanup role. The first invocation removed 4,000 expired rows. A retry removed the final expired row. The test preserved the rows at the retention boundary. The Neon cleanup role and trigger still need deployment and live verification. The earlier Function probe inputs still match. [Cleanup evidence](proofs/h052-neon-retention-local.json)
+
 ### Public privacy and presentation
 
 The two public branches and two release tags use the rewritten Git history. On 24 November the GitHub Support portal showed the removal request as Open. The portal showed only the original request. Verify anonymous access after Support replies.
