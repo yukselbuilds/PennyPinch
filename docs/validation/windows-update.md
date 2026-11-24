@@ -177,10 +177,16 @@ The test used the public PennyPinch 0.1.1-preview.3 package that matches the rel
 
 The app kept the saved preferences and the test data file. Start opened the installed engine. The app completed one local Responses SSE request through its loopback listener. The engine stopped normally. The older installer exited with code 2. The installed version and its files matched after that attempt. The test removed the test profile and installation.
 
-The candidate executable accepted the existing update source, the public key, and the new runtime resource pin. It rejected the pin for 0.44.0. The candidate installer has no Authenticode signature. Publication and Windows 11 x64 verification remain open. [Evidence](../proofs/windows-preview4-installed-upgrade.json).
+The candidate executable accepted the existing update source, the public key, and the new runtime resource pin. It rejected the pin for 0.44.0. The candidate installer has no Authenticode signature. Windows 11 x64 verification remains open. [Evidence](../proofs/windows-preview4-installed-upgrade.json).
 
 ## 24 November 2026 — Windows 10 preview.4 delivery package
 
 The local ZIP contains the installer that passed H042-ai and the PennyPinch license. The package includes 673 indexed license and notice files. The Headroom 0.45.0 wheel and the staged runtime contain the same three Headroom notice files. The index records the new engine version and installer digest.
 
 PowerShell extracted all 678 files to a folder with Unicode and spaces on Windows 10 22H2 x64. The test matched the 677 listed SHA-256 digests. The extracted setup file matched the tested installer. The external checksum and release notes are ready for publication. The package uses the full installer for this engine upgrade. Windows 11 x64 verification remains open. [Delivery evidence](../proofs/pennypinch-windows10-preview4-delivery.json).
+
+## 24 November 2026 — Public Windows 10 preview.4
+
+GitHub Releases serves PennyPinch v0.1.1-preview.4 as a prerelease. The tag points to the source of the tested installer. Both anonymous downloads matched their SHA-256 digests. The setup file in the downloaded ZIP matched the installer from the Windows 10 upgrade test.
+
+The project page and update page link to the full installer. The signed preview feed still serves v0.1.1-preview.2 for compatible installations. Its three files kept their original digests. Use the full installer for the engine upgrade. Windows 11 x64 update and rollback remain open. [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.4) · [Publication evidence](../proofs/pennypinch-windows10-preview4-publication.json).

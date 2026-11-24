@@ -2,9 +2,9 @@
 
 ## Current status
 
-**46 of 54 main tasks are complete.** The Windows 10 preview.4 package passed ZIP extraction. Windows 11 x64 update and rollback remain open. H041 remains open. [Task list](../TASKS.md)
+**46 of 54 main tasks are complete.** The Windows 10 preview.4 release is available. Windows 11 x64 update and rollback remain open. H041 remains open. [Task list](../TASKS.md)
 
-PennyPinch v0.1.1-preview.3 is available for Windows 10 22H2 x64. The full installer updates OpenTelemetry API and Tokio. Both public downloads matched their SHA-256 digests. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.3) · [Publication evidence](proofs/pennypinch-windows10-preview3-publication.json)
+PennyPinch v0.1.1-preview.4 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. Both public downloads matched their SHA-256 digests. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.4) · [Publication evidence](proofs/pennypinch-windows10-preview4-publication.json)
 
 The source pins Headroom 0.45.0. Windows 10 built the local installer and passed the staged engine lifecycle and loopback usage tests.
 Ubuntu 24.04 x64 and macOS 26 ARM64 passed direct engine checks. [Engine verification](proofs/headroom-045-upgrade.json)
@@ -58,7 +58,7 @@ The local signing key and same-profile encrypted backup passed a signing check. 
 
 On Windows 10, the real installation upgraded from v0.1.0 with the full installer. Settings then applied the signed v0.1.1-preview.2 package. Rollback restored the previous executable and Windows registration. The test preferences matched across both restarts. The 19,484 recorded resource files matched after rollback. [Installed acceptance](proofs/pennypinch-windows10-installed-update-and-release.json)
 
-The lead agent ran the H044 ripgrep comparison on Windows 10 in 136.4 seconds. The combined route saved two more tokens than Headroom on the first request. Full readback required Headroom recovery and two RTK recalls. H044 waits for a candidate with a useful gain and a verified client recovery path. [Paired evidence](proofs/rtk-1.2.1-rg-paired.json)
+The lead agent deferred H044. The Windows 10 ripgrep comparison ran for 136.4 seconds. RTK saved two more tokens than Headroom on the first request. Full readback required Headroom recovery and two RTK recall calls. The Windows release ships without RTK. [Paired evidence](proofs/rtk-1.2.1-rg-paired.json)
 
 The 23 November check found RTK-OSS v1.2.1 is still the latest stable release. The paired evidence applies to that release. [Upstream release](https://github.com/rtk-ai/rtk/releases/tag/v1.2.1)
 
@@ -70,7 +70,7 @@ The two public branches and two release tags use the rewritten Git history. GitH
 
 GitHub About, README, and Pages now describe separate platform statuses. The live release asset IDs, SHA256 values, and signed update files matched. Secret Protection, push protection, and Dependabot alerts are on.
 
-The lead agent completed H042-aj. The local 0.1.1-preview.4 ZIP contains the tested Windows 10 installer, the PennyPinch license, and 673 indexed notice files. The test extracted 678 files and matched all 677 listed SHA-256 digests. The release ZIP, checksum, and notes are ready for publication. Windows 11 x64 remains open. [Delivery evidence](proofs/pennypinch-windows10-preview4-delivery.json) · [Release notes](releases/0.1.1-preview.4-windows10.md)
+The lead agent completed H042-ak. The public ZIP contains the installer that passed the Windows 10 upgrade. The public download pages link to the release. All three signed update files kept their digests. H042 still needs an installed update and rollback on Windows 11 x64. [Publication evidence](proofs/pennypinch-windows10-preview4-publication.json)
 
 Tokio 1.54.1 passed the Windows 10 product gate and signed update package checks with an isolated key. The real QA app passed signature, resource pin, extraction, and probe validation. [Tokio verification](proofs/tokio-windows-1541.json) · [Public privacy and presentation checks](proofs/pennypinch-public-privacy.md)
 

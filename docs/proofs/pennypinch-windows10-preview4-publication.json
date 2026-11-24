@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "task": "H042-ak",
+  "owner": "lead agent",
+  "scope": "Public Windows 10 22H2 x64 Headroom 0.45.0 prerelease",
+  "publication": {
+    "passed": true,
+    "release": {
+      "id": 456589675,
+      "html_url": "https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.4",
+      "tag_name": "v0.1.1-preview.4",
+      "name": "PennyPinch v0.1.1-preview.4 for Windows 10",
+      "draft": false,
+      "prerelease": true,
+      "published_at": "2026-11-24T10:15:54Z",
+      "target_commitish": "2358e588a8374afa33a58a726dc58e20d52c8958"
+    },
+    "tag_source": "2358e588a8374afa33a58a726dc58e20d52c8958",
+    "notes_match_local": true,
+    "published_release_list_matches": true,
+    "anonymous_assets": [
+      {
+        "name": "PennyPinch_0.1.1-preview.4_Windows_x64_preview.zip",
+        "id": 786671265,
+        "status": 200,
+        "sha256": "da97cc80b7a03220c64003b5c1b05cefe291ebf199132f5e7aea22ba4c7a4ff5",
+        "bytes": 126789222
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "id": 786671259,
+        "status": 200,
+        "sha256": "3ac6a42c3ab78b2df79ac46f6fba26e26864c98ea7d9712c4670a3f264b2c64e",
+        "bytes": 117
+      }
+    ],
+    "checksum_entry_matches_archive": true,
+    "downloaded_installer_matches_upgrade": true,
+    "installer_sha256": "76556a6118252e1d0fac8380b6b60d698958208148e7dba5e8b77f1d4daedfa0",
+    "rtk_preflight": {
+      "checked_nsis_entries": 19499,
+      "checked_zip_entries": 678,
+      "rtk_payload_paths_found": 0
+    },
+    "input_sha256_before_and_after": {
+      "release_notes": "0255c39823825f956dd60f9c792411fd3fc01d2af8457c5b663755523bda1ab1",
+      "delivery_evidence": "14756a7cf15b9e1f635e0bb69348849b6e6bb008ca050b0e7f04743dc9bc42b4",
+      "installed_upgrade": "f0a3e1781649a29c42f20cd6ca2912e653691e0231834ffbbe81420f0389007d"
+    },
+    "toolchain": {
+      "gh": "gh version 2.92.0 (2026-04-28)",
+      "curl": "curl 8.13.0 (Windows) libcurl/8.13.0 Schannel zlib/1.3.1 WinIDN",
+      "python": "3.13.13"
+    },
+    "seconds": 34.123
+  },
+  "public_project_site": {
+    "passed": true,
+    "source": "a8a6cd822480a5841e8b2c106e2fecf6cb74b2e5",
+    "previous_source": "13af106093830eb5cb7a069df9ed11b7e2240374",
+    "changed_download_links": 3,
+    "anonymous_pages_sha256": {
+      "index.html": "5554e8c295e875bdbf2b29e8b8c06cd99e2704e1d1b6139e84a7a833bcf51912",
+      "updates/index.html": "0087dd95cdc1951d0ba529475abf674aa57b4280606cd35f385542cd89d5c3f1"
+    },
+    "signed_update_files_sha256": {
+      "updates/preview/Headroom_0.1.1-preview.2_x64-update.exe": "15708a3d73f2cf1da8612fc05b8eb832c89d8fe9073c2724b0672b5ed7daf567",
+      "updates/preview/manifest.json": "413ddd1db7d4c7733b7aeed980f8fd915312985eb2f00e571c4f92d366c7f598",
+      "updates/preview/manifest.json.sig": "8f9ab96f0e27d6f590d3a8f374158ab3a9f4d9a07f330f5d9327c4e70fa4900d"
+    },
+    "signed_update_version": "0.1.1-preview.2",
+    "signed_update_files_match_live_before_and_after": true,
+    "seconds": 26.764
+  },
+  "main_download_document_sha256": {
+    "README.md": "f0b549222f21f189e29594d348bf563cb59242cf2c2a6980c21535b404bc2bc3",
+    "docs/USER_GUIDE.md": "671f27ae1f2927195039db99759b3c6dcedf1efe3f3a624af2df971254466465"
+  },
+  "rtk": {
+    "status": "deferred",
+    "release_includes_rtk": false,
+    "prior_paired_evidence_sha256": "77cb88c23e2d6215528bf41b0dec4318a2de3f7d8beb6a4f3a30da8d3f5df4e8"
+  },
+  "limits": {
+    "windows_11_x64": "not_tested",
+    "installer_authenticode": "NotSigned",
+    "live_provider_requests": 0,
+    "manual_ci_workflow_dispatches": 0
+  }
+}
