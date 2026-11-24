@@ -1,6 +1,6 @@
 # PennyPinch task list
 
-**Status date** 23 November 2026
+**Status date** 24 November 2026
 
 **Scope** [Product specification 0.6](HEADROOM_DESKTOP_SPEC.md)\
 **Targets** Windows 10 22H2 x64 and Windows 11 x64 for Codex, Claude Code and OpenCode.
@@ -15,7 +15,7 @@
 | H041 · Additional acceptance | Other live protocols and API-key checks need authorized access. The macOS 26 ARM64 package passed the 0.44.0 window and engine checks. Packaged client traffic and measurements remain open. The user deferred Windows 11 verification. The Serena pilot is complete. Broader Learn acceptance remains open. Experimental e3 is on hold, and e4 depends on e3 acceptance. [Platform tests](docs/validation/desktop-platforms.md) · [Open work items](#h041--cache-bütünlük-ve-gecikmefayda-regresyonu) |
 | H006, H037 and H042 · Clean Windows environments | H006 and H037 need clean Windows 10 and Windows 11 x64 desktops. H037 also needs a clean host without WebView2. H042 needs Windows 11 x64 update and rollback acceptance. |
 | H044 · Ripgrep candidate | Adding RTK to Headroom saved two more tokens per first request in the Windows 10 fixture. It added a recovery step. Installation remains open. [Evidence](docs/proofs/rtk-1.2.1-rg-paired.json) |
-| H052 · PostgreSQL report service verified locally | The Neon Free project is ready in Frankfurt. Live administrator sign-in, scheduled cleanup, and privacy acceptance remain open. H053 and H054 depend on the report service. [Privacy decision](docs/decisions/032-usage-sharing-privacy.md) |
+| H052 · Neon Free pilot schema verified | The Frankfurt pilot passed the database checks. The Function connection, administrator sign-in, scheduled cleanup, and privacy acceptance remain open. H053 and H054 depend on the report service. [Evidence](docs/proofs/h052-neon-migration.json) |
 
 Windows development and packaging use Headroom **0.45.0**. The public Windows preview uses **0.44.0**. H048's macOS 15.8.2 ARM64 acceptance covers **0.41.0**. H050 account connections and H051 chat metadata and navigation passed on Windows 10. Each platform, new sign-in, and release needs its own evidence. [Engine transition](docs/proofs/headroom-045-upgrade.json) · [H048](docs/proofs/macos-acceptance.json) · [H050](docs/proofs/accounts.md) · [H051](docs/proofs/sessions.md)
 
@@ -1131,7 +1131,7 @@ These three tasks do not expand the required installation for the first release.
 
 ### H052 — Private report API, storage, and admin panel
 - [ ] Run the report API and private administrator panel on Neon Free with PostgreSQL.
-- **In progress — 24 November.** The PostgreSQL report service passed local tests. Next, connect the Neon Function, administrator sign-in, and cleanup trigger.
+- **In progress — 24 November.** The Frankfurt pilot passed the schema and storage checks. Next, connect the Neon Function with a restricted database role.
 - **Slices:** Local report service, administrator sign-in, synthetic deployment, and quota, retention, and privacy acceptance.
 - [x] **H052 privacy design.** Record the privacy and transfer rules for optional reports. [Privacy decision](docs/decisions/032-usage-sharing-privacy.md).
 - [x] **H052-a Daily usage storage.** Store one report per installation and UTC day. Keep counter bases separate. An identical retry keeps one row. A conflicting retry preserves the original report.
@@ -1141,6 +1141,7 @@ These three tasks do not expand the required installation for the first release.
 - [x] **H052-e Local retention.** Delete expired reports in batches of up to 500. Limit each run to eight batches. Live scheduling remains open.
 - [x] **H052-f Private pilot database.** Verify a Neon Free PostgreSQL project in Frankfurt. Apply the project migration in the live integration slice.
 - [x] **H052-g PostgreSQL port.** The 26 service tests passed. PostgreSQL 17.12 also passed the quota race, protected schema, retry, and cleanup tests. [Evidence](docs/proofs/h052-postgres-port.json).
+- [x] **H052-h Neon migration.** PostgreSQL 18.7 passed the quota, retry, payload size, and database privilege checks. The test rolled back all synthetic rows. [Evidence](docs/proofs/h052-neon-migration.json).
 - **Acceptance:** Keep feedback and daily usage summaries separate. Do not give database/admin secrets to the client. Implement schema/measurement-basis and size validation, rate/quota limits, batch deduplication, and bounded queries. Define a random installation ID as pseudonymous data and report contributing installations rather than people. Address IP and infrastructure logs separately. Do not log content or secrets.
 - **Measurement/retention:** Show only weighted net token reduction within the same measurement basis and installation median, with zero/negative results and incomparable request counts. Use platform/model/version attribution only when evidenced. Show participation and measurement coverage. Remove daily installation summaries after 30 days. Long-term summaries do not contain installation identity or daily detail. Make feedback-text retention and deletion policy visible separately.
 - **Field benchmark:** Use comparable pairs from installations that agree to share. For each group, use the same counter, request scope, and version. Divide the net token reduction by the sum of the original token counts. Show the period, contributing installations, comparable request count, and coverage. Show approved aggregate results alongside the controlled tests.

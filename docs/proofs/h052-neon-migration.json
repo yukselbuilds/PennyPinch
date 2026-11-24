@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "task": "H052",
+  "slice": "H052-h",
+  "passed": true,
+  "observed_on": "2026-11-24",
+  "owner": "lead agent",
+  "source_base": "670a2dbb3922eafaff65871fd1d0f8f27e65e0dc",
+  "unchanged_source_fingerprints": {
+    "services/reports/migrations/0001_reports.sql": "65637c2f72f3bb1afe950dce87aca28583498b6b77c4782786dd6287941bbd30",
+    "services/reports/admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+    "services/reports/service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+    "services/reports/usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+    "services/reports/service.test.mjs": "f6fe370e1ca5b7cddecdaecf8049ce3330b33d4e977d2997f7cc38f46ca0e824",
+    "services/reports/usage.test.mjs": "ddeeb3898507adc04895fd765ba0ed8afffc5a08f60b393ccbc6d0a69ff450a2",
+    "services/reports/package.json": "c2436e611bac266e433d7febc5bb5884b91f52de9adf0391d10d9aa3786cf935",
+    "services/reports/pnpm-lock.yaml": "e04aa81b0f78a0f5cb9e71e1314296221c6277a516593b600ff683f5b8b99ac8"
+  },
+  "migration": {
+    "path": "services/reports/migrations/0001_reports.sql",
+    "sql_editor_statements": 9,
+    "sql_editor_duration_ms": 170,
+    "function_body_sha256_matches_source": true
+  },
+  "environment": {
+    "provider": "Neon",
+    "plan": "Free",
+    "region": "AWS Europe Central 1 (Frankfurt)",
+    "postgres_version": "18.7",
+    "connection": "Signed-in Neon SQL Editor on the dedicated pilot branch",
+    "preflight_user_tables": 0,
+    "preflight_reports_schema_present": false,
+    "displayed_compute_usage_before_cu_hours": 0,
+    "billing_change": false
+  },
+  "smoke_test": {
+    "scope": "Synthetic PostgreSQL transaction with automatic rollback",
+    "sql_editor_duration_ms": 177,
+    "accepted_in_transaction": 128,
+    "over_quota": "daily_quota",
+    "identical_retry": "duplicate",
+    "conflicting_retry": "conflict",
+    "original_summary_preserved": true,
+    "max_valid_object_bytes_accepted": 4096,
+    "oversized_object_bytes_rejected": 4097,
+    "array_rejected": true
+  },
+  "catalog": {
+    "pilot_tables": "usage_days, usage_intake_quota, usage_rate_limits",
+    "schema_owner_only": true,
+    "tables_owner_only": true,
+    "function_owner_only": true,
+    "invoker_and_search_path": true,
+    "function_sha256": "9bceb962e238a7d85dee447fb5c4c2c6445021825c6499da70404a1fe3dfa9c9",
+    "rows_after_rollback": 0
+  },
+  "limits": {
+    "concurrent_live_quota": "not_tested",
+    "function_deployment": "not_tested",
+    "runtime_database_role": "not_tested",
+    "admin_sign_in": "not_tested",
+    "http_intake": "not_tested",
+    "scheduled_retention": "not_tested",
+    "provider_privacy": "open",
+    "real_user_reports": 0,
+    "development_agent_token_savings": "not_measured"
+  }
+}

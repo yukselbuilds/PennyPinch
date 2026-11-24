@@ -14,7 +14,7 @@ Check GDPR Article 3 if the release targets people in the EU or monitors their b
 
 The current hosting candidate is Neon Free with PostgreSQL in AWS Europe (Frankfurt). Neon lists the Free plan at $0 and says it requires no credit card. Verify the project's plan, remaining quotas, and billing settings before the synthetic pilot. [Neon pricing](https://neon.com/pricing) · [Neon plans](https://neon.com/docs/introduction/plans)
 
-Neon documents Functions in Frankfurt and says Functions are available on any plan, subject to usage limits. The actual Function entrypoint, administrator authentication, trigger schedule, project configuration, and deployment have not passed review. Verify the database and Function regions in the actual project. Review Neon processing terms, subprocessors, provider access, and service logs before the service accepts real reports. [Neon Functions](https://neon.com/docs/compute/functions/overview) · [Neon data processing agreement](https://neon.com/pdf/DPA.pdf)
+Neon documents Functions in Frankfurt and says Functions are available on any plan, subject to usage limits. The pilot database is in Frankfurt. Verify the Function region in the deployed service. Review the Function entrypoint, administrator authentication, trigger schedule, and deployment. Review Neon processing terms, subprocessors, provider access, and service logs before the service accepts real reports. [Neon Functions](https://neon.com/docs/compute/functions/overview) · [Neon data processing agreement](https://neon.com/pdf/DPA.pdf)
 
 Daily reports are regular transfers. For transfers abroad subject to KVKK, verify whether an adequacy decision applies. Use an appropriate safeguard under Article 9 if no adequacy decision applies. Reserve the Article 9 consent exception for occasional transfers that meet its conditions. If the project uses the Turkish standard contract, secure the parties' signatures and notify the KVKK Authority within five business days of signing. If GDPR applies, verify the processor terms under Article 28 and the applicable Chapter V transfer mechanism. [KVKK transfer rules](https://www.kvkk.gov.tr/Icerik/2053/Yurtdisina-Aktarim) · [KVKK standard contract notification](https://www.kvkk.gov.tr/Icerik/8043/Standart-Sozlesme-Bildirim-Modulu-Hakkinda-Kamuoyu-Duyurusu)
 
@@ -77,6 +77,14 @@ Test cleanup, backup restore, and queued erasure with synthetic reports. Keep re
 
 ## H052-f — Neon Free candidate and live status
 
-Neon Free with PostgreSQL in Frankfurt is the current candidate. The public pricing page lists $0 and no credit-card requirement. A Frankfurt project was provisioned separately. This proves project provisioning only. It does not verify the application schema migration, Function entrypoint, administrator login, retention trigger, deployment, or live report flow. The local PostgreSQL port passed its tests. No live report was received, and no live reporting flow has passed acceptance.
+The Frankfurt project used Neon Free. Project provisioning preceded the local PostgreSQL port and the H052-h migration. Function deployment, administrator sign-in, scheduled cleanup, and live report traffic require separate acceptance.
 
 The owner approved deletion of the previous empty pilot database. The PostgreSQL port is the active implementation. Keep the existing zero-card and $0 budget limits. Keep real report intake off during the synthetic pilot. [Neon pricing](https://neon.com/pricing) · [Neon Functions](https://neon.com/docs/compute/functions/overview)
+
+## H052-h — Neon schema migration
+
+The Frankfurt pilot passed the checks on PostgreSQL 18.7. The migration created three tables and the storage function in one transaction. The catalog showed direct grants to the object owners only. The function uses the caller's permissions. Its source digest matches the migration.
+
+The database accepted 128 synthetic reports and rejected one additional report. It preserved the original report after both an identical retry and a conflicting retry. It accepted a 4,096-byte JSON object and rejected a 4,097-byte object and a JSON array. The test rolled back all writes. The three tables contain zero rows. [Neon migration evidence](../proofs/h052-neon-migration.json)
+
+Use separate credentials for the runtime database role. Grant only the schema, table, and function permissions that the service needs. Verify that role and its connection before enabling pilot intake.

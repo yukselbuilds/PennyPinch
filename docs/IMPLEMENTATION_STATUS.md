@@ -62,7 +62,13 @@ The lead agent deferred H044. The Windows 10 ripgrep comparison ran for 136.4 se
 
 The 23 November check found RTK-OSS v1.2.1 is still the latest stable release. The paired evidence applies to that release. [Upstream release](https://github.com/rtk-ai/rtk/releases/tag/v1.2.1)
 
-The lead agent completed the H052 PostgreSQL port because it changes persistent data and quota handling. All 26 report service tests passed in 2.443 seconds. Native PostgreSQL 17.12 tests passed in 5.348 seconds. The lead agent deleted the empty pilot database after the owner approved this action. The Neon Free project remains in Frankfurt. Next, apply the migration and connect the Neon Function, administrator sign-in, and cleanup trigger. The privacy review remains open. [PostgreSQL evidence](proofs/h052-postgres-port.json) · [Privacy decision](decisions/032-usage-sharing-privacy.md)
+### Reporting pilot
+
+The lead agent completed the H052 PostgreSQL port because it changes persistent data and quota handling. All 26 report service tests passed in 2.443 seconds. Native PostgreSQL 17.12 tests passed in 5.348 seconds. The lead agent deleted the previous empty pilot database after the owner approved this action. [PostgreSQL evidence](proofs/h052-postgres-port.json)
+
+The lead agent applied H052-h to the Neon Free pilot in Frankfurt. PostgreSQL 18.7 accepted the migration in one transaction. The synthetic storage checks took 177 milliseconds. The catalog confirmed the function matches the migration source. The catalog lists direct grants to the object owners only. The test rolled back all rows. [Neon migration evidence](proofs/h052-neon-migration.json)
+
+Next, connect the report service with a database role that has only the required permissions. Administrator sign-in, scheduled cleanup, live intake, and privacy acceptance remain open. [Privacy decision](decisions/032-usage-sharing-privacy.md)
 
 ### Public privacy and presentation
 
