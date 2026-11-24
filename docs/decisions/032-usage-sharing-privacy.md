@@ -26,3 +26,20 @@ Cloudflare Free is the hosting candidate. Review the account's processing terms,
 - Give manual feedback its own notice and retention policy. Preview its text and optional metadata before send. Review the processing basis and hosting route for that data before opening the endpoint.
 
 Resolve the controller, notice, rights contact, and transfer basis before accepting real reports. Verify these checks against the actual deployment. Use synthetic reports for prelaunch tests. Keep collection off while these items are open.
+
+## H052-a — Daily usage storage
+
+The storage module accepts a version 1 JSON summary of at most 4,096 bytes. Each summary has a random version 4 UUID, a completed UTC day, an OS family, application and engine versions, and a notice version. Application versions use numeric release or preview versions. The schema accepts notice version 1. H054 will bind the notice version to the user's consent action before sending.
+
+The module accepts the six known Headroom 0.45.0 WebSocket counter bases. The bases measure the whole request input. Each group has its own comparable request count and before and after token totals. The report keeps incomparable and failed request counts separate. A failed request belongs to the failed count only. A report can carry coverage counts when no measured pair exists. The module keeps zero and negative savings.
+
+The database stores one summary per installation and UTC day. It accepts identical retries and refuses changed summaries. The write and its result read run in one D1 transaction. The module accepts the 30 most recent completed UTC days. Each purge call deletes up to 500 expired rows. The first deployment needs a schedule for these calls. [D1 transactions](https://developers.cloudflare.com/d1/worker-api/d1-database/#batch)
+
+The local Miniflare tests use synthetic summaries. Run them from the source checkout.
+
+```powershell
+pnpm.cmd --dir services/reports install --ignore-scripts --frozen-lockfile
+pnpm.cmd --dir services/reports test
+```
+
+The next slice adds authenticated intake and request limits. Administrator access, collection, deployment, and aggregate publication each require their own verification. [Storage evidence](../proofs/h052-daily-usage-storage.json) · [Cloudflare local D1 tests](https://developers.cloudflare.com/d1/best-practices/local-development/)

@@ -1,0 +1,4 @@
+# Use patched test dependencies until the stable Miniflare release updates its pins.
+overrides:
+  "miniflare>sharp": "0.35.5"
+  "miniflare>undici": "7.30.2"
