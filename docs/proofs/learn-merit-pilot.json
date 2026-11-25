@@ -260,5 +260,124 @@
     },
     "rerun_command": "pinned-python -I -B bench/optimization/learn_merit_live.py --live --codex <pinned-codex.exe> --local-evidence <local-result.json>",
     "decision": "Keep the suggestion in the opt-in local preview. This single pair establishes no general benefit or per-request monetary cost."
+  },
+  "local_model_followup_045": {
+    "observed_on": "2026-11-25",
+    "scope": "Two paired read-only report tasks with actual local inference and a fixed file tool.",
+    "owner": "lead agent",
+    "windows_build": 19045,
+    "engine_for_preview": "0.45.0",
+    "model": "smollm2-135m-local-chat",
+    "model_weights_sha256": "2e8040ceae7815abe0dcb3540b9995eaa1fa0d2ca9e797d0a635ae4433c68c2d",
+    "registration_sha256": "ee8e69ee192cc6af82e3f8bdcd3739fcf94e06879ea5b2e03f68968bde14bf5c",
+    "script_sha256": "e075bbf2e712c4ecab5c9351bd71b646a43b8315919dde03fcf7fe021860a3e0",
+    "inputs_matched": 51,
+    "inputs_sha256_before_and_after": "faf6aa1bcf88f91ca16d35f6f4b1481b1a0b872053f61b776c2dcee55d3237ed",
+    "seconds": 3.227,
+    "temperature": 0,
+    "seed": 41,
+    "prompt_cache": false,
+    "max_read_attempts_per_arm": 2,
+    "max_model_requests": 12,
+    "all_answers_exact": true,
+    "benefit_gate_met": false,
+    "cases": {
+      "missing_checkout_report": {
+        "current_project_rule": {
+          "read_outcomes": [
+            "release"
+          ],
+          "exact_value": true,
+          "wrong_reads": 0,
+          "repeated_reads": 0,
+          "model_requests": 2,
+          "prompt_tokens": 200,
+          "completion_tokens": 24,
+          "total_tokens": 224
+        },
+        "current_project_rule_plus_advice": {
+          "read_outcomes": [
+            "release"
+          ],
+          "exact_value": true,
+          "wrong_reads": 0,
+          "repeated_reads": 0,
+          "model_requests": 2,
+          "prompt_tokens": 228,
+          "completion_tokens": 23,
+          "total_tokens": 251
+        }
+      },
+      "old_checkout_report": {
+        "current_project_rule_plus_advice": {
+          "read_outcomes": [
+            "release"
+          ],
+          "exact_value": true,
+          "wrong_reads": 0,
+          "repeated_reads": 0,
+          "model_requests": 2,
+          "prompt_tokens": 237,
+          "completion_tokens": 25,
+          "total_tokens": 262
+        },
+        "current_project_rule": {
+          "read_outcomes": [
+            "release"
+          ],
+          "exact_value": true,
+          "wrong_reads": 0,
+          "repeated_reads": 0,
+          "model_requests": 2,
+          "prompt_tokens": 209,
+          "completion_tokens": 25,
+          "total_tokens": 234
+        }
+      }
+    },
+    "totals": {
+      "current_project_rule": {
+        "prompt_tokens": 409,
+        "completion_tokens": 49,
+        "total_tokens": 458,
+        "wrong_reads": 0,
+        "repeated_reads": 0,
+        "model_requests": 4
+      },
+      "current_project_rule_plus_advice": {
+        "prompt_tokens": 465,
+        "completion_tokens": 48,
+        "total_tokens": 513,
+        "wrong_reads": 0,
+        "repeated_reads": 0,
+        "model_requests": 4
+      }
+    },
+    "preview_observations": {
+      "path_advice_both_clients": true,
+      "no_advice_for_visible_edits": true,
+      "previews_passed": 8
+    },
+    "local_model_calls": 8,
+    "external_model_calls": 0,
+    "owned_model_port_closed": true,
+    "product_traffic": "not_tested",
+    "live_codex_benefit": "not_tested",
+    "billing": "not_measured",
+    "development_agent_token_savings": "unmeasured",
+    "comparison": {
+      "token_basis": "Native llama.cpp prompt and completion counts across all calls",
+      "added_tokens": 55,
+      "added_percent": 12.01,
+      "quality_gate": "exact integer from the release report in every arm",
+      "benefit_gate": "same exact answers, no case with more wrong reads or tokens, and fewer wrong reads and total tokens"
+    },
+    "preview_evidence": {
+      "matched_inputs": 23,
+      "receipt_sha256": "c176658d5c633cf758a5fe1df19e98a8690020ff7fa5315fde255d057ab43915",
+      "command": "pinned-python -I -B bench/optimization/learn_merit.py --run"
+    },
+    "raw_receipt_sha256": "1ed7c68584690b046fcd66db27a5ef4d7f107869a6e1a8b5bda25029e74d70f3",
+    "next_condition": "Use a real client task with an observed repeat that the advice can prevent."
   }
 }

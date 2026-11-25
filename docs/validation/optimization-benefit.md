@@ -196,7 +196,7 @@ On 25 November 2026, **5 verification criteria and 3 optional R&D criteria** rem
 | Live Anthropic Messages | Use an authorized account. Match the usage counters of an actual Messages response to the corresponding Headroom request. [Local usage evidence](../proofs/desktop-anthropic-usage.json) |
 | Live OpenAI API-key route | Confirm authorized access to the API-key route. Collect usage evidence for the scope that H008 carried forward. [H041-d plan](../decisions/027-optimization-regression.md#h041-d-responses-httpsse-kullanım-ölçümü) |
 | Actual billing difference | Collect comparable billing data for the paired runs. The token comparison is on record. [Live comparison](../proofs/targeted-query-comparison.json) |
-| Broader acceptance of Learn benefits | Pair tasks with a known repeat pattern on the same model and effort. The first live pair showed no benefit. [Learn measurement](../proofs/learn-merit-pilot.json) |
+| Broader acceptance of Learn benefits | Pair real client tasks with an observed repeat that the advice can prevent. Use the same model and effort. The first live pair showed no benefit. Two local model pairs also showed no benefit. [Learn measurement](../proofs/learn-merit-pilot.json) |
 | Experimental rules e3 | The work is frozen. A restart requires a new candidate and predefined criteria for quality and net benefit. [R&D decision](../research/optimization-roi-review-2026-11-17.md) |
 | Experimental rules e4 | After e3 passes, verify enablement, disabling, and rollback within the selected scope. [Experimental rules plan](../decisions/027-optimization-regression.md#h041-e-deneysel-kurallar) |
 

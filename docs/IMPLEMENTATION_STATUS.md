@@ -31,6 +31,8 @@ The stock Headroom 0.45.0 proxy and PennyPinch forwarded the same JSON in eight 
 
 Codex CLI 0.171.0-alpha.13.2 opened both synthetic files under the built-in read-only profile on Windows 10. The unelevated backend refused the named profiles before the command started. MXC was unavailable. Resume the named profile check on a compatible native Windows backend. Verify an allowed read and an explicit denial. [File scope evidence](proofs/targeted-query-comparison.json) · [Open H041 criteria](validation/optimization-benefit.md#open-h041-acceptance-criteria)
 
+The lead agent checked Learn with Headroom 0.45.0. Eight previews passed. A local model returned the exact values for two paired report tasks. The advice saved no retries and added 55 tokens. Keep the advice in the opt-in preview. Broader live acceptance needs a real client task with an observed repeat that the advice can prevent. [Learn evidence](proofs/learn-merit-pilot.json)
+
 Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b2 evidence](proofs/h049-linux-transaction.json)
 
 The lead agent completed H049-b3 on Ubuntu 24.04 x64. The desktop manager ran Headroom 0.44.0 and forwarded a local Responses stream from the saved Codex endpoint.
