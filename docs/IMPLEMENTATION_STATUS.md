@@ -94,6 +94,8 @@ The lead agent ran H052-s on the closed Neon Free pilot. The project API returne
 
 The lead agent completed the H052-t public terms review. The current Neon schedule refers to the Databricks agreement and Data Processing Addendum. The schedule lists a US infrastructure subprocessor. The public KVKK rules require a separate transfer basis for regular reports. Confirm the account terms and recipient. Verify the Article 9 safeguard, internal retention, operator, and rights contact before production. Keep real intake closed. [Terms review](proofs/h052-neon-processing-terms.md)
 
+The lead agent prepared the H052-u inquiry in ignored local work files. Databricks publishes a private privacy contact for transfer questions. Neon Free support offers community and AI assistance. The inquiry covers the applicable terms, the Turkish standard contract, provider logs, and backup erasure. The inquiry awaits authorization. Record the response and the remaining account, operator, and transfer checks before production. [Databricks privacy contact](https://www.databricks.com/legal/tia-faq) · [Neon support plans](https://neon.com/docs/introduction/support)
+
 ### Public privacy and presentation
 
 The two public branches and two release tags use the rewritten Git history. On 24 November the GitHub Support portal showed the removal request as Open. The portal showed only the original request. Verify anonymous access after Support replies.
