@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "task": "H037-a9",
+  "scope": "Fresh PennyPinch profile and installation on the existing Windows 10 22H2 x64 desktop",
+  "owner": "lead agent",
+  "passed": true,
+  "release_version": "0.1.1-preview.4",
+  "release_source": "2358e588a8374afa33a58a726dc58e20d52c8958",
+  "windows_build": 19045,
+  "webview2_registry_versions": [
+    "158.0.4370.33"
+  ],
+  "installer_sha256": "76556a6118252e1d0fac8380b6b60d698958208148e7dba5e8b77f1d4daedfa0",
+  "archive_sha256": "da97cc80b7a03220c64003b5c1b05cefe291ebf199132f5e7aea22ba4c7a4ff5",
+  "runtime": {
+    "headroom": "0.45.0",
+    "opentelemetry": "1.45.2",
+    "distribution_directories": [
+      "opentelemetry_api-1.45.2.dist-info"
+    ],
+    "headroom_distribution_directories": [
+      "headroom_ai-0.45.0.dist-info"
+    ]
+  },
+  "installed_resources_and_receipt_matched": 19492,
+  "initial_preferences_file_absent": true,
+  "ui": {
+    "installed_window": true,
+    "expected_preferences": true,
+    "installed_engine_ready": true,
+    "local_responses_sse": 200,
+    "installed_engine_stopped": true,
+    "normal_exit_requested": true
+  },
+  "local_requests": 1,
+  "live_model_calls": 0,
+  "owned_ingress_closed": true,
+  "owned_installation_and_profile_removed": true,
+  "desktop_gate_preserved": true,
+  "clean_windows_10_os": "not_tested",
+  "webview2_setup_on_clean_os": "not_tested",
+  "windows_11_x64": "not_tested",
+  "inputs": {
+    "sha256_before_and_after": "734762eeac79e7b2e597669a93c356cb3180a736c9aaf1853b14aa9674ea4358",
+    "python_version": "3.14.0",
+    "node_and_playwright_versions": [
+      "v25.2.1",
+      "1.64.1"
+    ],
+    "files": 15,
+    "includes_preflight_record": true
+  },
+  "seconds": 73.966,
+  "observed_on": "2026-11-25",
+  "development_agent_token_savings": "unmeasured"
+}

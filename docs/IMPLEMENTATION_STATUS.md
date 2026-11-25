@@ -8,6 +8,8 @@ PennyPinch v0.1.1-preview.4 is available for Windows 10 22H2 x64. The full insta
 
 On 25 November, the lead agent checked public delivery. The asset records matched the publication proof. The ZIP returned the requested byte range. Both Pages links pointed to the current release. The signed manifest and signature matched the proof for 0.1.1-preview.2. Use the full installer for the engine upgrade. [Update status](https://yukselbuilds.github.io/PennyPinch/updates/)
 
+The lead agent ran H037-a9 with the public preview.4 installer and a fresh application profile. The existing Windows 10 22H2 x64 desktop had WebView2. Default preferences, engine start, one local stream, normal exit, and cleanup passed in 73.966 seconds. The test matched 19,491 installed resources and the package receipt. [First-use evidence](proofs/windows-preview4-first-use.json)
+
 Windows 10 is the first-release priority. H006 and H037 need a clean Windows 10 x64 desktop. H037 also needs a host without WebView2. Use the current ZIP and the Windows preview procedure when a suitable host is available. [Procedure](validation/windows-preview-check.md)
 
 The source pins Headroom 0.45.0. Windows 10 built the local installer and passed the staged engine lifecycle and loopback usage tests.
