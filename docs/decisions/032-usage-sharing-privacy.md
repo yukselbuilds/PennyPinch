@@ -93,6 +93,12 @@ Migration `0002_reports_runtime.sql` defines `pennypinch_reports_runtime`. It gr
 
 Configure the deployed Function with a server-side connection for this role. The local adapter rejects a connection URL for another role and requires certificate verification. The Function handler keeps the intake and administrator routes closed. Verify the live connection and the administrator sign-in before enabling pilot intake. [Neon Function environment variables](https://neon.com/docs/compute/functions/environment-variables)
 
+## H052-j — Live closed Function
+
+The lead agent checked the Neon Free plan in the console. A project-scoped key deployed the Function in Frankfurt. The connection probe and all three report routes returned 404 with no-store. The pilot database stayed empty. The lead agent revoked the key and checked the key list after reload. [Live evidence](../proofs/h052-neon-closed-function.json)
+
+The runner supplied a precomputed SCRAM verifier. The Neon control plane returned SQLSTATE XX000. The live checks confirmed a disabled runtime login. Neon requires plain text for password changes over SQL. Check a supported method that keeps connection secrets out of logs before the hosted connection test. Keep the owner credential in the operator process. [Neon role management](https://neon.com/docs/manage/roles#manage-roles-with-sql)
+
 ## H052-k — Local scheduled cleanup handler
 
 The cleanup Function uses a dedicated database role. The role can delete from the three retention tables. It can read only the columns that select expired rows. The migration grants no permission to read summaries or add records.

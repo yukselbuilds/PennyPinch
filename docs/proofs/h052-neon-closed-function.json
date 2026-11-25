@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "task": "H052",
+  "slice": "H052-j",
+  "scope": "Live closed Function deployment and restricted role preflight",
+  "status": "partial",
+  "observed_on": "2026-11-25",
+  "owner": "lead agent",
+  "source_base": "109deaf5ef938e4509284593cea1ab64befc3053",
+  "verification": {
+    "node": "v24.22.3",
+    "simulated_deployment_cases_passed": 7,
+    "elapsed_seconds_including_handoff": 25.839,
+    "input_fingerprints_before_and_after": {
+      "services/reports/migrations/0001_reports.sql": "65637c2f72f3bb1afe950dce87aca28583498b6b77c4782786dd6287941bbd30",
+      "services/reports/migrations/0002_reports_runtime.sql": "a8a8e34346c222fad30766518ab34329f1bcb26b00d95a263b3218ab0c01c9ff",
+      "services/reports/function.mjs": "29d868e53c06f0286e6ee19cd8e3caca96402d2fac0e8afac1fb6fe785a82b01",
+      "services/reports/service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+      "services/reports/admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+      "services/reports/usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+      "services/reports/package.json": "4503ac1c444188f2f7e2f95c0390fb097584e35f78d9e65149c3cd5d47a63d52",
+      "services/reports/pnpm-lock.yaml": "e4e63c972617091894135a94a9270c67f9c2c98c3d136235d8fe17d50e9efefe",
+      "services/reports/service.test.mjs": "4b412d8d053ea690dcbc4e333031473bfb56da139fd732e66fb1112bb41a9d52",
+      "services/reports/usage.test.mjs": "ddeeb3898507adc04895fd765ba0ed8afffc5a08f60b393ccbc6d0a69ff450a2",
+      "work/toolchains/reports-neon-function/node-v24.22.3-win-x64/node.exe": "86fc4785327db5f5c7558dc6156c543b433c313e813a222e088086222ab4afa6",
+      "work/proofs/h052/neon-function/deploy-pilot.mjs": "f8c5bf52fbe93d7a7a41b0d6d20bb0437c6bd2da6b5c36cee50885b0f3d49c83",
+      "work/proofs/h052/neon-function/deploy-pilot.test.mjs": "c4dca37c901f6cfa9f0731d874f6012304f7aa34fb68260ab9e85b7ff3ef583e",
+      "work/proofs/h052/neon-function/pilot-handoff.mjs": "d32c0e0f82681a3c3f28769482e35ee9dc5ab9ad373b73106755c33442b7fe7e",
+      "work/proofs/h052/neon-function/connection-check.mjs": "e15ad5064e78f0615e3e366119c16676e914497243b658e11f4354f6c754bc7a",
+      "work/proofs/h052/neon-function/connection-check.zip": "105b7d115278e1e56bfed01a8d754346c8e6a29524f88fc2dfe6ff66d10f2114",
+      "work/proofs/h052/neon-runtime/index.zip": "49cbf3b4fe0eff781fcba808c4ba9ebc569cc617e50b2ee7cc4945d0cc2deeb4",
+      "work/proofs/h052/neon-function/verify-live-pilot.ps1": "5af31f06bf8d11fc951bc65e13ba84abb1214e9be98438f2340e32d7cac0958f"
+    }
+  },
+  "live": {
+    "plan_verified_in_neon_console": true,
+    "credential_scope": "pilot project",
+    "credential_absent_after_revocation_and_reload": true,
+    "credential_saved_to_workspace": false,
+    "organization_api_http_status": 404,
+    "project_api_http_status": 200,
+    "operator_tls_connection_verified": true,
+    "role_initialization_failure": {
+      "method": "precomputed SCRAM verifier",
+      "sqlstate": "XX000",
+      "control_plane_http_status": 400
+    },
+    "plan": "Free",
+    "region": "aws-eu-central-1",
+    "deployment_verified": true,
+    "hosted_restricted_connection": "not_tested",
+    "closed_probe_status": 404,
+    "closed_report_routes": 3,
+    "role_login_disabled": true,
+    "empty_pilot": true,
+    "verified_closed_requests": [
+      "GET /_pennypinch-pilot-connection",
+      "POST /v1/usage",
+      "GET /admin",
+      "GET /v1/admin/summary"
+    ],
+    "real_user_reports": 0
+  },
+  "pending": [
+    "Connect the hosted Function through a restricted login.",
+    "Verify administrator sign-in and scheduled retention on Neon.",
+    "Verify Neon restore, processing terms, and disclosure controls before collection."
+  ],
+  "development_agent_token_savings": "not_measured"
+}
