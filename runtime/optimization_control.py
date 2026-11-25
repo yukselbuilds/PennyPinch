@@ -34,6 +34,10 @@ REPEAT_END = ").]"
 REPEAT_STATUS_TEXT = re.compile(
     r"(?im)^[^\S\r\n]*(?:stderr\b|exit[ _-](?:code|status)\b|process exited\b|error\b|fatal\b|traceback\b)"
 )
+SHELL_STATUS = re.compile(
+    r"\A(?:Chunk ID: [^\r\n]{1,64}\r?\nWall time: [^\r\n]{1,64}\r?\n)?"
+    r"(?P<line>Process exited with code (?P<code>-?[0-9]{1,12})\r?\n)"
+)
 _request = contextvars.ContextVar("headroom_desktop_request", default=None)
 
 
@@ -596,6 +600,44 @@ def _responses_call_counts(items):
                    if isinstance(item, dict) and isinstance(item.get("call_id"), str))
 
 
+def _preserve_responses_shell_status(original, forwarded):
+    if len(original) != len(forwarded):
+        return forwarded
+    shell_calls = {item["call_id"] for item in original if isinstance(item, dict)
+                   and item.get("type") == "function_call" and item.get("name") == "exec_command"
+                   and isinstance(item.get("call_id"), str)}
+    if not shell_calls:
+        return forwarded
+    counts = _responses_call_counts(original)
+    preserved = forwarded
+    for index, (raw, wire) in enumerate(zip(original, forwarded)):
+        if (not isinstance(raw, dict) or raw.get("type") != "function_call_output"
+                or not isinstance(identity := raw.get("call_id"), str)
+                or identity not in shell_calls or counts[identity] != 2
+                or not isinstance(text := raw.get("output"), str)):
+            continue
+        status = SHELL_STATUS.match(text)
+        if status is None:
+            continue
+        output = wire.get("output") if (
+            isinstance(wire, dict) and wire.get("type") == "function_call_output" and wire.get("call_id") == identity
+        ) else None
+        if output == text:
+            continue
+        replacement = raw
+        if int(status["code"]) == 0 and isinstance(output, str):
+            existing = SHELL_STATUS.match(output)
+            if existing and existing["line"] == status["line"]:
+                continue
+            if existing is None and len(status["line"]) + len(output) < len(text):
+                replacement = {**wire, "output": status["line"] + output}
+        # Keep failed output intact. Successful summaries keep the checked process status.
+        if preserved is forwarded:
+            preserved = list(forwarded)
+        preserved[index] = replacement
+    return preserved
+
+
 def _restore_ambiguous_responses_references(original, forwarded, previous):
     if not previous or len(original) != len(forwarded):
         return forwarded
@@ -1009,11 +1051,17 @@ def install(generation: str, secret: str) -> dict[str, str]:
         else:
             size = len(_encoded(body))
             result = (body, False, 0, [], "desktop_paused", size, size, 0)
-        if tracker is None: return result
         candidate, *rest = result
-        original_items = body[key]
+        original_items = body.get(key)
+        wire_items = candidate.get(key)
+        forwarded = wire_items
+        if (state.enabled and key == "input" and isinstance(original_items, list)
+                and isinstance(wire_items, list)):
+            forwarded = _preserve_responses_shell_status(original_items, wire_items)
+        if tracker is None and forwarded is wire_items:
+            return result
         try:
-            forwarded = _preserve(original_items, candidate[key], previous, prefix)
+            forwarded = _preserve(original_items, forwarded, previous, prefix)
         except ReplayUnavailable:
             state.replay_failed = True
             with gate.lock: gate.history_safe = False
@@ -1052,7 +1100,8 @@ def install(generation: str, secret: str) -> dict[str, str]:
             except (TypeError, ValueError):
                 # Optional repeat detection can leave the previously validated payload in place.
                 pass
-        gate.record(tracker, original_items, forwarded, candidate.get("tools"), state)
+        if tracker is not None:
+            gate.record(tracker, original_items, forwarded, candidate.get("tools"), state)
         if state.kind == "responses_ws" and state.enabled and body.get("generate", True) is True:
             counter = None
             if type(tokenizer) is EstimatingTokenCounter and tokenizer._fixed_ratio is None:

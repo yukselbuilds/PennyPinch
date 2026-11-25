@@ -38,6 +38,50 @@ def event(kind, **fields):
     return ("event: " + kind + "\r\ndata: " + json.dumps({"type": kind, **fields}) + "\r\n\r\n").encode()
 
 
+class ResponsesShellStatusTests(unittest.TestCase):
+    def setUp(self):
+        self.call = {"type": "function_call", "name": "exec_command", "call_id": "call-shell"}
+        self.output = {"type": "function_call_output", "call_id": "call-shell"}
+        self.summary = "Some test lines were compressed.\nRetrieve more: hash=0123456789abcdef"
+
+    def original(self, code=0):
+        header = f"Chunk ID: abc123\r\nWall time: 1.2 seconds\r\nProcess exited with code {code}\r\nOutput:\r\n"
+        text = header + "A previous test ran.\r\n" * 10 + "Check complete.\r\n"
+        return [self.call, {**self.output, "output": text}]
+
+    def test_preserves_success_status_and_retrieval_marker(self):
+        original = self.original()
+        candidate = [self.call, {**self.output, "output": self.summary}]
+        forwarded = control._preserve_responses_shell_status(original, candidate)
+        self.assertEqual(forwarded[1]["output"], "Process exited with code 0\r\n" + self.summary)
+        self.assertEqual(candidate[1]["output"], self.summary)
+        self.assertIs(control._preserve_responses_shell_status(original, forwarded), forwarded)
+
+    def test_keeps_failed_output_exact(self):
+        original = self.original(-1)
+        candidate = [self.call, {**self.output, "output": self.summary}]
+        self.assertEqual(control._preserve_responses_shell_status(original, candidate), original)
+
+    def test_restores_original_if_summary_has_a_conflicting_status(self):
+        original = self.original()
+        candidate = [self.call, {**self.output, "output": "Process exited with code 1\r\n" + self.summary}]
+        self.assertEqual(control._preserve_responses_shell_status(original, candidate), original)
+
+    def test_ignores_unrelated_tools_and_status_text_inside_output(self):
+        candidate = [self.call, {**self.output, "output": self.summary}]
+        original = self.original()
+        original[0] = {**self.call, "name": "read_report"}
+        self.assertIs(control._preserve_responses_shell_status(original, candidate), candidate)
+        original = self.original()
+        original[1]["output"] = "Output:\r\n" + original[1]["output"]
+        self.assertIs(control._preserve_responses_shell_status(original, candidate), candidate)
+
+    def test_does_not_assume_an_owner_for_reused_call_ids(self):
+        original = self.original()
+        candidate = [self.call, {**self.output, "output": self.summary}, self.call]
+        self.assertIs(control._preserve_responses_shell_status(original + [self.call], candidate), candidate)
+
+
 class ResponsesUsageTests(unittest.IsolatedAsyncioTestCase):
     def test_total_input_includes_cache_and_missing_details_remain_unknown(self):
         value = response()

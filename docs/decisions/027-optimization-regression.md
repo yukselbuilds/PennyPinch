@@ -14,6 +14,8 @@ On 15 November 2026, the user's suggestions were compared with the existing H041
 4. **Log and test output.** H044 keeps its RTK installation prerequisite. A separate H041 experiment may shorten repetitive success lines while showing the full error and necessary context immediately. Preserve the original streams from the first run, the exit code, and tool identity. Measure gains against the Headroom baseline. Retrieval requires access to the original output from the first run.
 5. **Code and client file transfers.** Initially forward protected Read output, exact numeric JSON, and diff source material intact. AST processing and logs written to files are later candidates, subject to an explicit content and route contract, original-data retrieval, task correctness, and a memory limit. Kompress background warm-up is disabled while on-demand loading remains available. A Caveman-style concise-answer preference is a separate experiment that users can see. Preserve the model, reasoning effort, history, and default response scope.
 
+**25 November, Codex shell output.** On Responses HTTP/SSE and WebSocket, preserve the process status for a completed `exec_command` with a unique call ID. If compression omits the success status, copy the original status line before forwarding. Forward a failed result in full. Apply the correction before prefix replay. Keep the original content available through existing CCR. [Verification](../proofs/responses-shell-status-045.json)
+
 <a name="birebir-tekrar-eden-yeni-araç-çıktısı-deneyi"></a>
 
 ### Experiment on exact repeats in new tool output

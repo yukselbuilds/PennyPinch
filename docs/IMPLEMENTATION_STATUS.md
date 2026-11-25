@@ -33,6 +33,8 @@ Codex CLI 0.171.0-alpha.13.2 opened both synthetic files under the built-in read
 
 The lead agent checked Learn with Headroom 0.45.0. Eight previews passed. A local model returned the exact values for two paired report tasks. The advice saved no retries and added 55 tokens. Keep the advice in the opt-in preview. Broader live acceptance needs a real client task with an observed repeat that the advice can prevent. [Learn evidence](proofs/learn-merit-pilot.json)
 
+The lead agent corrected exit-code handling for Codex `exec_command` on Responses. Successful compression keeps the exit code visible. Failed output stays intact. HTTP/SSE and WebSocket passed eight local pairs each on Windows 10. The current installer predates this source change. [Shell status evidence](proofs/responses-shell-status-045.json)
+
 Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b2 evidence](proofs/h049-linux-transaction.json)
 
 The lead agent completed H049-b3 on Ubuntu 24.04 x64. The desktop manager ran Headroom 0.44.0 and forwarded a local Responses stream from the saved Codex endpoint.

@@ -182,6 +182,17 @@ The following values are full JSON bodies counted with the same `o200k_base` enc
 
 The four fixtures matched the full-request `o200k_base` counts in the 0.44.0 run. Repeated logs used 65.28% fewer tokens. Short JSON used 5.19% more tokens. The test used local fixture traffic. [Evidence](../proofs/optimization-windows10-stability-045.json)
 
+## Codex exit status with Node test output
+
+25 November 2026. The Windows 10 test sent real Node output in the completed `exec_command` format. The previous engine summary hid the exit code in long outputs. The correction keeps the original exit code visible for successful summaries. It forwards failed output in full. CCR restored the original successful output exactly.
+
+| First request with all 227 tests | Original tokens | Forwarded tokens | Reduction |
+| --- | ---: | ---: | ---: |
+| Responses HTTP/SSE | 4,773 | 2,049 | 57.07% |
+| Responses WebSocket | 4,775 | 2,053 | 57.01% |
+
+Sixteen local pairs passed. The short output and both failures kept their original text. The two transports used independent Node runs. The counts include the full request JSON. The test made zero external model calls. [Evidence](../proofs/responses-shell-status-045.json)
+
 <a name="h041-açık-kabulleri"></a>
 
 ## Open H041 acceptance criteria

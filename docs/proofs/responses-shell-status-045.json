@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "task": "H041",
+  "status": "pass",
+  "date": "2026-11-25",
+  "owner": "lead agent",
+  "scope": "Completed Codex exec_command results with unique call IDs on Responses HTTP/SSE and WebSocket",
+  "source_base": "780a1eded99eac18ba574ed24dde3b96e408adea",
+  "engine_version": "0.45.0",
+  "windows_build": 19045,
+  "native_framing_cli": "codex-cli 0.171.0-alpha.13.2",
+  "candidate_sources_sha256": {
+    "runtime/optimization_control.py": "5398d747c1890c825457d1a0d57ee0b956a60ff60c8cb9e2b96a416f69c26b3b",
+    "runtime/desktop_controller.py": "8647533568d98b465e5bdbcc7ccf7d4cfbd3858f202cbb6e6bcdfd84a2bc6ace",
+    "runtime/manifest.json": "289ab05804ead023d4e9f81cb671e0ffd09fd9e3591b861a7f94d7441810f34b",
+    "runtime/manifest.windows.json": "7f4b7d254454264cc4a83fc4b9dc07f641727787a51dd4a9c558c47f034e3909",
+    "src-tauri/src/runtime/manager.rs": "e01cb52d2bfb534b2ec9b44119321e562d856b8c1ae993bd6a82724f5cc5f385",
+    "tests/runtime/test_responses_usage.py": "68cfc8535d4fffc341cc4ed9903c85060e942633d77bf65775a28ff4b993c111"
+  },
+  "receipts_sha256": {
+    "native_frame": "21e1c8198f909f1f49134ff36fa52110953343c4303f90870f1fbab776cb1fc3",
+    "before": "d444092e7537fe73aca9f69e70ecf2952666c611fb4313a78c70fa486a1656ea",
+    "http_sse": "09296f75a3f2aab1bba08b79651c655f38171ead60bbb16adc171d9ee7d3d1d5",
+    "websocket": "adb9cfeff768efa020395e79b35a6c6cf8703134ed5b3b3fa2e2c7f3d4b7d6ce",
+    "product_gate": "a9e30f996febb9ab7e2f2a301e9b7411942161dcd4a9edbbd0c66500f402048a",
+    "prefix_regression": "a7de87a0769f956d91025c7b5e20178b580ed770b4cf6db60be184b504b951d0"
+  },
+  "baseline_long_rows_with_status_or_error_check_failure": 4,
+  "input_basis": "canonical_full_request_json_including_added_tool_schemas",
+  "tokenizer": "o200k_base",
+  "maximum_added_time_ms_per_pair": 1000,
+  "node": "v25.2.1",
+  "candidate": {
+    "http_sse": {
+      "wire_protocol": "Responses HTTP/SSE",
+      "paired_requests": 8,
+      "first_full_suite_request": {
+        "original_tokens": 4773,
+        "forwarded_tokens": 2049,
+        "saved_percent": 57.071
+      },
+      "tool_status_and_error_visible": true,
+      "exact_ccr_recoveries": 2,
+      "exact_failed_output_requests": 4,
+      "unchanged_short_output_requests": 2,
+      "maximum_added_end_to_end_ms": 417.402,
+      "matched_inputs": 128,
+      "inputs_sha256_before_and_after": "bf7fd494d2677c8a3c987cdd9b0546d40f23d353a9a63800894792691691ed20",
+      "shutdown": {
+        "shutdown": "graceful",
+        "engine_exit_code": 0,
+        "owned_port_closed": true,
+        "force_fallback": false
+      }
+    },
+    "websocket": {
+      "wire_protocol": "Responses WebSocket",
+      "paired_requests": 8,
+      "first_full_suite_request": {
+        "original_tokens": 4775,
+        "forwarded_tokens": 2053,
+        "saved_percent": 57.0052
+      },
+      "tool_status_and_error_visible": true,
+      "exact_ccr_recoveries": 2,
+      "exact_failed_output_requests": 4,
+      "unchanged_short_output_requests": 2,
+      "maximum_added_end_to_end_ms": 307.87,
+      "matched_inputs": 129,
+      "inputs_sha256_before_and_after": "6bf64ebc9f5d7ad99b8e327d1b3713d784d5ae341bf63ac4ce08697a29361ef3",
+      "shutdown": {
+        "shutdown": "graceful",
+        "engine_exit_code": 0,
+        "owned_port_closed": true,
+        "force_fallback": false
+      }
+    }
+  },
+  "responses_usage_and_shell_unit_tests": 15,
+  "responses_prefix_pause_and_recovery_rows": 52,
+  "windows_product_gate": {
+    "matched_inputs": 371,
+    "input_set_sha256_before_and_after": "892ee64ece9467c1ad7bf6a7390d3bf062ce1eb813f41e21d21ffae57c0baaf0",
+    "toolchain": {
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0"
+    },
+    "checks": [
+      "frontend tests",
+      "frontend build",
+      "Rust format",
+      "offline Rust tests",
+      "custom-protocol build"
+    ],
+    "frontend_tests_passed": 227,
+    "rust_tests_passed": 481,
+    "rust_tests_ignored": 25
+  },
+  "external_model_calls": 0,
+  "live_task_quality": "not_tested",
+  "windows_11_x64": "not_tested",
+  "published_installer": "previous_preview",
+  "development_agent_token_savings": "unmeasured"
+}
