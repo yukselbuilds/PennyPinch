@@ -82,6 +82,8 @@ The lead agent implemented H052-m because it handles browser credentials. The Fu
 
 The lead agent implemented H052-n because it controls deletion during recovery. Native PostgreSQL copied synthetic report data from before an erasure. Recovery removed two erased reports, their rate row, and 4,001 expired reports. Two cleanup passes preserved the current record and daily quota. The operator kept report routes closed until cleanup finished. The report service rejected a revoked uploader after reopening. All 43 local reporting tests passed. Neon point-in-time recovery still needs pilot acceptance. [Restore evidence](proofs/h052-neon-restore-local.json)
 
+The lead agent completed the H052-o disclosure review on the private report response. The local fixture used 21 synthetic installations. An initial response covered 20 installations overall. One measurement basis exposed one contributor. Two overlapping totals also revealed an exact contribution. Keep the aggregate response private. Live pilot acceptance needs the Neon project key. [Disclosure evidence](proofs/h052-aggregate-disclosure.json)
+
 ### Public privacy and presentation
 
 The two public branches and two release tags use the rewritten Git history. On 24 November the GitHub Support portal showed the removal request as Open. The portal showed only the original request. Verify anonymous access after Support replies.

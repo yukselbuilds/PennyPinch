@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "task": "H052",
+  "slice": "H052-o",
+  "scope": "Disclosure checks on the private aggregate response",
+  "owner": "lead agent",
+  "observed_on": "2026-11-25",
+  "source_base": "7215dd99c827723d12a3fcc48e3c7bbf499ad81e",
+  "environment": {
+    "node": "v24.22.3",
+    "pglite": "0.6.0",
+    "storage": "Isolated PGlite database with synthetic rows",
+    "authorization": "Injected fixture verifier",
+    "duration_seconds": 1.8877145999999811
+  },
+  "fingerprints_before_and_after": {
+    "work/toolchains/reports-neon-function/node-v24.22.3-win-x64/node.exe": "86fc4785327db5f5c7558dc6156c543b433c313e813a222e088086222ab4afa6",
+    "work/proofs/h052/aggregate-disclosure/check-disclosure.mjs": "04867fe15c7d037f4ea5868545b91169911e3f98b07f158b464f1766eb7d518f",
+    "services/reports/package.json": "4503ac1c444188f2f7e2f95c0390fb097584e35f78d9e65149c3cd5d47a63d52",
+    "services/reports/pnpm-lock.yaml": "e4e63c972617091894135a94a9270c67f9c2c98c3d136235d8fe17d50e9efefe",
+    "services/reports/usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+    "services/reports/service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+    "services/reports/admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+    "services/reports/migrations/0001_reports.sql": "65637c2f72f3bb1afe950dce87aca28583498b6b77c4782786dd6287941bbd30",
+    "services/reports/node_modules/@electric-sql/pglite/package.json": "f03e1d4faf3e91704b3a62185be170f880201cbecb36a1e5a82cfbb159c71a3d",
+    "services/reports/node_modules/@electric-sql/pglite/dist/pglite.wasm": "ee67ef4ef23f7a8f5b92a06d9d4f9b4a048185bcbabf12381f7c729d166b6a22"
+  },
+  "observed": {
+    "reports_accepted": 21,
+    "small_group": {
+      "all_installations": 20,
+      "basis_installations": 1,
+      "exact_totals_revealed": true
+    },
+    "dominance": {
+      "group_installations": 20,
+      "dominant_before_share_percent": 99.00990099009901,
+      "dominant_after_share_percent": 98.90649956997174
+    },
+    "differencing": {
+      "same_period_revision": {
+        "installations": 1,
+        "comparable_requests": "2",
+        "before_tokens": "1234",
+        "after_tokens": "1000",
+        "saved_tokens": "234"
+      },
+      "overlapping_periods": {
+        "installations": 1,
+        "comparable_requests": "2",
+        "before_tokens": "1234",
+        "after_tokens": "1000",
+        "saved_tokens": "234"
+      }
+    },
+    "median": {
+      "group_installations": 21,
+      "equals_one_installation_percent": 12
+    },
+    "private_endpoint": {
+      "disabled_status": 404,
+      "unauthenticated_status": 401,
+      "payload_disclosed": false
+    },
+    "real_reports": 0
+  },
+  "acceptance": {
+    "local": "passed",
+    "private_totals": "restricted",
+    "public_field_benchmark_approval": "withheld",
+    "live_neon_pilot": "awaiting_project_authorization",
+    "real_user_reports": 0,
+    "development_agent_token_savings": "not_measured"
+  }
+}

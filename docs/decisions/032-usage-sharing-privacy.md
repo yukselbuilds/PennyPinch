@@ -126,3 +126,11 @@ Use `prepareRestoredReports(db, erasedInstallationIds)` from `services/reports/r
 Repeat the function while it returns `false`. Keep the branch isolated if an operation fails. Confirm that revoked credentials fail. Check that an authorized administrator reads only retained data before you route report traffic to the restored branch.
 
 The native test used a PostgreSQL template copy of synthetic data from before an erasure. The local suite verified rollback on an erasure failure. Neon recovery, the live erasure list, the cutover, and provider backup expiry still need acceptance. [PostgreSQL template copy](https://www.postgresql.org/docs/17/manage-ag-templatedbs.html) · [Restore evidence](../proofs/h052-neon-restore-local.json)
+
+## H052-o — Disclosure checks on field benchmarks
+
+The local test used the private report response with 21 synthetic installations. An earlier response covered 20 installations overall. One basis contained only one installation and displayed its exact totals. A different basis contained 20 installations. One installation supplied 99.01% of its original tokens. The final median matched one installation's rate.
+
+Comparing the one-day and seven-day totals recovered the exact contribution of one installation. Comparing two revisions of the same seven-day report recovered the same counts. The disabled route returned 404. A request without administrator approval returned 401. Both responses returned only a status. [Disclosure evidence](../proofs/h052-aggregate-disclosure.json)
+
+Keep the administrator response private. Before publication, review each proposed measurement basis, breakdown, and period. Check for single contributors and dominance. Check the candidate together with earlier published totals, including revisions and overlapping periods. Remove values that expose a contribution directly or through subtraction. Include counts, coverage, and medians in the review. Approve a specific public aggregate only after this review. [Eurostat disclosure control](https://cros.ec.europa.eu/book-page/statistical-disclosure-control) · [ONS guidance on overlapping totals](https://www.ons.gov.uk/methodology/methodologytopicsandstatisticalconcepts/disclosurecontrol/policyonprotectingconfidentialityintablesofbirthanddeathstatistics)
