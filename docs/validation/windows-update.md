@@ -216,3 +216,9 @@ The installed engine completed one local Responses stream and stopped normally. 
 GitHub Releases serves v0.1.1-preview.6 as a prerelease. The tag points to the source of the tested installer. Both downloads matched their SHA-256 digests without an account. The installer in the downloaded ZIP matched the installer from the Windows 10 upgrade test. [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.6) · [Publication evidence](../proofs/pennypinch-windows10-preview6-publication.json)
 
 Use the full installer to install preview.6. The signed channel serves v0.1.1-preview.2 to compatible installations. Its three files matched their recorded digests. Windows 11 x64 update and rollback remain open. [Update status](https://yukselbuilds.github.io/PennyPinch/updates/)
+
+## 25 November 2026 — Public Windows 10 preview.7
+
+GitHub Releases serves v0.1.1-preview.7 as a prerelease. The release tag points to the tested installer source. Both anonymous downloads matched their SHA-256 digests. The ZIP installer matched the local Windows 10 upgrade test.
+
+Use the full installer to install preview.7. The current Windows procedure passed five checks on Windows 10 22H2 x64. The signed channel serves preview.2 to compatible installations. Windows 11 x64 update and rollback remain open. [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.7) · [Publication evidence](../proofs/pennypinch-windows10-preview7-publication.json)

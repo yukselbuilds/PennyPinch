@@ -1,0 +1,182 @@
+{
+  "draft": {
+    "asset_ids": {
+      "PennyPinch_0.1.1-preview.7_Windows_x64_preview.zip": 792693960,
+      "SHA256SUMS.txt": 792693954
+    },
+    "delivery_proof_sha256": "4579b51b5a9a92241908e68c64ffd1f8c70cc64902c38e695e0157780556622e",
+    "id": 458503057,
+    "latest_tag_before": null,
+    "notes_sha256": "08668f878a535c2da0f66fe386cbd58b779c17defad23bec9378b06b4de95123",
+    "preflight_proof_sha256": "ddc558ffd8b80b9f439e8b1f9b69a338a284340ec1b5f5f8a72f0f1882980267",
+    "source": "17b0150cfccbe8df43e913b356a6c552a3103d92",
+    "tag": "v0.1.1-preview.7"
+  },
+  "limits": {
+    "clean_windows_10": "not_tested",
+    "development_agent_token_savings": "unmeasured",
+    "installer_authenticode": "NotSigned",
+    "live_provider_requests": 0,
+    "manual_ci_workflow_dispatches": 0,
+    "windows_11_x64": "not_tested"
+  },
+  "link_sources_sha256": {
+    "README.md": "91abf1f0f495893b25791fecbc3cdd41a05cc109b39608162b21ebde69762024",
+    "docs/USER_GUIDE.md": "4fb34827b20105c6cfd58f4acf4f7709d67e51e5d7a5c19c1ce7b3c5edf9f22e",
+    "docs/validation/windows-preview-check.md": "1b4bbd1ab1001cb90a6cc1ca14cabf283d4c13d531a668e6c4455278ef9a9266"
+  },
+  "observed_on": "2026-11-25",
+  "owner": "lead agent",
+  "preflight": {
+    "archive_sha256": "2f8a211e1a473e4853092b50a4a1ae2f0e28000b2b7412f9c8cf8173d6fe4b6b",
+    "checksum_sha256": "aeeefacbdeef9365dbd01b7b1a31a276b3257ae9fdc45001432f1f553ba7ad88",
+    "input_sha256_before_and_after": {
+      "7z.exe": "8cebb25e240db3b6986fcaed6bc0b900fa09dad763a56fb71273529266c5c525",
+      "docs/proofs/pennypinch-windows10-preview6-publication.json": "7f396710f019d8365b20958ac975a84469ad7cebb9e75ed8f0585e98f3d93cfb",
+      "docs/proofs/pennypinch-windows10-preview7-local.json": "4579b51b5a9a92241908e68c64ffd1f8c70cc64902c38e695e0157780556622e",
+      "docs/releases/0.1.1-preview.7-windows10.md": "08668f878a535c2da0f66fe386cbd58b779c17defad23bec9378b06b4de95123",
+      "work/releases/0.1.1-preview.7/PennyPinch_0.1.1-preview.7_Windows_x64_preview.zip": "2f8a211e1a473e4853092b50a4a1ae2f0e28000b2b7412f9c8cf8173d6fe4b6b",
+      "work/releases/0.1.1-preview.7/PennyPinch_0.1.1-preview.7_x64-setup.exe": "567b853ef8ff137e05f786820825973e6744349c483bc55803cd4ae57c290442",
+      "work/releases/0.1.1-preview.7/SHA256SUMS.txt": "aeeefacbdeef9365dbd01b7b1a31a276b3257ae9fdc45001432f1f553ba7ad88",
+      "work/releases/0.1.1-preview.7/check-publication.py": "a35b16051c23902f90c6851698a1c817a09c932a9ffd37e4c3cb293ae4fbdff7",
+      "work/releases/0.1.1-preview.7/publish-pages.py": "aa5b93e90dca8eb91139dff2fc7d8655b38801f184671770de0a085032eac959",
+      "work/releases/0.1.1-preview.7/publish-preview.py": "35b7335cb34bcd864de1a2fadac10413f45d4cc6c00977606acdc518ea96415a",
+      "work/releases/0.1.1-preview.7/release-notes.md": "08668f878a535c2da0f66fe386cbd58b779c17defad23bec9378b06b4de95123"
+    },
+    "installer_sha256": "567b853ef8ff137e05f786820825973e6744349c483bc55803cd4ae57c290442",
+    "notes_sha256": "08668f878a535c2da0f66fe386cbd58b779c17defad23bec9378b06b4de95123",
+    "nsis_entries": 19499,
+    "product_source": "17b0150cfccbe8df43e913b356a6c552a3103d92",
+    "public_page_sha256": {
+      "index.html": "129b7adb9964a2b1219b6ac81e2bf6aae8af10e61309a04179b9daaa1973d71d",
+      "updates/index.html": "9d07925b3b2623cfe13898da6d0a08b5ac9d81bccc92fcfa5d4ef82d02bf1887"
+    },
+    "public_refs": {
+      "refs/heads/gh-pages": "24c03304d4fe888f71e15c35918e10646f84b2d2",
+      "refs/heads/main": "844f6d5fe1e40fdb349ea4813c1f624499ae1545"
+    },
+    "public_release_at_check": "v0.1.1-preview.6",
+    "rtk_paths": 0,
+    "schema_version": 1,
+    "seconds": 7.496,
+    "signed_feed_sha256": {
+      "updates/preview/Headroom_0.1.1-preview.2_x64-update.exe": "15708a3d73f2cf1da8612fc05b8eb832c89d8fe9073c2724b0672b5ed7daf567",
+      "updates/preview/manifest.json": "413ddd1db7d4c7733b7aeed980f8fd915312985eb2f00e571c4f92d366c7f598",
+      "updates/preview/manifest.json.sig": "8f9ab96f0e27d6f590d3a8f374158ab3a9f4d9a07f330f5d9327c4e70fa4900d"
+    },
+    "status": "pass",
+    "tag": "v0.1.1-preview.7",
+    "zip_entries": 679
+  },
+  "public_project_site": {
+    "anonymous_pages_sha256": {
+      "index.html": "c082da7ecd4905a12071312bda2e6fac0dd8a24f4e0bceb320a05b7a938fa16d",
+      "updates/index.html": "0b3c6c658f8b020ffb7cd1c2e9e941229f9c52996369ee6ffa6399baf342446a"
+    },
+    "changed_download_links": 3,
+    "passed": true,
+    "previous_source": "24c03304d4fe888f71e15c35918e10646f84b2d2",
+    "seconds": 24.711,
+    "signed_update_files_match_live_before_and_after": true,
+    "signed_update_files_sha256": {
+      "updates/preview/Headroom_0.1.1-preview.2_x64-update.exe": "15708a3d73f2cf1da8612fc05b8eb832c89d8fe9073c2724b0672b5ed7daf567",
+      "updates/preview/manifest.json": "413ddd1db7d4c7733b7aeed980f8fd915312985eb2f00e571c4f92d366c7f598",
+      "updates/preview/manifest.json.sig": "8f9ab96f0e27d6f590d3a8f374158ab3a9f4d9a07f330f5d9327c4e70fa4900d"
+    },
+    "signed_update_version": "0.1.1-preview.2",
+    "source": "a65315ff937788917189c9492389ec885e19f129"
+  },
+  "publication": {
+    "anonymous_assets": [
+      {
+        "bytes": 126808166,
+        "id": 792693960,
+        "name": "PennyPinch_0.1.1-preview.7_Windows_x64_preview.zip",
+        "sha256": "2f8a211e1a473e4853092b50a4a1ae2f0e28000b2b7412f9c8cf8173d6fe4b6b",
+        "status": 200
+      },
+      {
+        "bytes": 117,
+        "id": 792693954,
+        "name": "SHA256SUMS.txt",
+        "sha256": "aeeefacbdeef9365dbd01b7b1a31a276b3257ae9fdc45001432f1f553ba7ad88",
+        "status": 200
+      }
+    ],
+    "checksum_entry_matches_archive": true,
+    "downloaded_installer_matches_upgrade": true,
+    "installer_sha256": "567b853ef8ff137e05f786820825973e6744349c483bc55803cd4ae57c290442",
+    "notes_match_local": true,
+    "passed": true,
+    "published_release_list_matches": true,
+    "release": {
+      "draft": false,
+      "html_url": "https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.7",
+      "id": 458503057,
+      "name": "PennyPinch v0.1.1-preview.7 for Windows 10",
+      "prerelease": true,
+      "published_at": "2026-11-25T18:42:14Z",
+      "tag_name": "v0.1.1-preview.7",
+      "target_commitish": "17b0150cfccbe8df43e913b356a6c552a3103d92"
+    },
+    "seconds": 71.665,
+    "stable_latest_tag_before_and_after": null,
+    "tag_source": "17b0150cfccbe8df43e913b356a6c552a3103d92"
+  },
+  "raw_evidence_sha256": {
+    "draft": "2348246331c76f28c09d53ef995abc988d87c5dac857e03dfc23d79dd4ea1efd",
+    "preflight": "ddc558ffd8b80b9f439e8b1f9b69a338a284340ec1b5f5f8a72f0f1882980267",
+    "public_project_site": "4584a8e481997354e79054de1a4f4823bbbffdf093449fb83fe4da32f0e96cd2",
+    "publication": "835f99a695f03c485a2e912067f1d1464e27b1fdcb7a00544da207f4e713f6f5",
+    "windows_download_check": "8acad25862dc17a50d1f70ad0f01581452f3fe63ba30fdeb11172e2301ca7feb"
+  },
+  "schema_version": 1,
+  "scope": "Public Windows 10 preview.7 delivery",
+  "status": "pass",
+  "task": "H042-at",
+  "windows_download_check": {
+    "cases": {
+      "current_x64": {
+        "archive_sha256": "2f8a211e1a473e4853092b50a4a1ae2f0e28000b2b7412f9c8cf8173d6fe4b6b",
+        "installer_sha256": "567b853ef8ff137e05f786820825973e6744349c483bc55803cd4ae57c290442",
+        "powershell": "5.1.19041.6456",
+        "status": "ready"
+      },
+      "current_x86": {
+        "archive_sha256": "2f8a211e1a473e4853092b50a4a1ae2f0e28000b2b7412f9c8cf8173d6fe4b6b",
+        "installer_sha256": "567b853ef8ff137e05f786820825973e6744349c483bc55803cd4ae57c290442",
+        "powershell": "5.1.19041.6456",
+        "status": "ready"
+      },
+      "previous_zip": {
+        "powershell": "5.1.19041.6456",
+        "status": "archive_mismatch"
+      },
+      "signed_baseline": {
+        "archive_sha256": "90da31e3a56265ad9c547d773d618ca5b26d72edc107fe16acdbe230347e54f5",
+        "installer_sha256": "24539971538147e19769e4c35900c0158551aace72ebbbe0ea6f19d4289a7147",
+        "powershell": "5.1.19041.6456",
+        "status": "ready"
+      },
+      "windows10_as_windows11": {
+        "powershell": "5.1.19041.6456",
+        "status": "target_mismatch"
+      }
+    },
+    "inherited_psmodulepath": false,
+    "inputs_sha256_before_and_after": {
+      "PennyPinch_0.1.1-preview.1_Windows_x64_preview.zip": "90da31e3a56265ad9c547d773d618ca5b26d72edc107fe16acdbe230347e54f5",
+      "PennyPinch_0.1.1-preview.6_Windows_x64_preview.zip": "a0a8c9f035beffbf640fe9cc662e6f697492a0f96b406e2b2f5e16667dfdac62",
+      "PennyPinch_0.1.1-preview.7_Windows_x64_preview.zip": "2f8a211e1a473e4853092b50a4a1ae2f0e28000b2b7412f9c8cf8173d6fe4b6b",
+      "check-windows-preview.ps1": "e7f44e9cd6361e9d842aa7b7ca1a1539e62b5f15aeb544b6a9159548a06bb0a8",
+      "pennypinch-windows10-installed-update-and-release.json": "a097a2fa6745a08a9fb4cc33195ec48735121c0a792e152decb71a9504f17bdc",
+      "pennypinch-windows10-preview7-local.json": "4579b51b5a9a92241908e68c64ffd1f8c70cc64902c38e695e0157780556622e",
+      "verify-public-windows.py": "406b8ae8db0447f9d4574c527a142244363636428c790b294bb3bf0b9847d7ae",
+      "windows_powershell_x64": "9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3",
+      "windows_powershell_x86": "870eda04ea71cc066ec907f005e1d05ce592f04799c60e600e2cb986dc85b5eb"
+    },
+    "passed": true,
+    "seconds": 6.025,
+    "windows_build": 19045
+  }
+}
