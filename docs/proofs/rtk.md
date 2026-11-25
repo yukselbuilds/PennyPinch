@@ -105,3 +105,16 @@ RTK showed 50 of 200 matches. Two recall calls restored all 19,184 native stdout
 Bypass preserved stdout, stderr, and exit codes. The empty search and the missing file kept their native exit codes and stderr. A separate display check matched stdout and stderr hashes from all nine rounds. It verified the 50 match lines in RTK's grouped output.
 
 The lead agent ran the comparison in 136.4 seconds. The 651 input fingerprints matched. All three engines stopped gracefully. Model answer quality, later request cost, and real client recovery remain unmeasured. H044 remains open. Installation needs a candidate with useful benefit and a verified client recovery path.
+
+## RTK-OSS 1.2.1 with Headroom 0.45.0
+
+25 November 2026. The lead agent reran 108 local requests on Windows 10 with the preview.6 engine payload. Ripgrep reported version 15.2.0. The executable digest differed from the earlier run. All 27 native stdout and stderr digests and exit codes matched the earlier records. [Evidence](rtk-1.2.1-rg-045.json)
+
+| Route for the matching search | First request tokens | Full readback calls | Bytes recovered |
+| --- | ---: | ---: | ---: |
+| Headroom | 156 | 1 | 19,184 |
+| RTK with Headroom | 154 | 3 | 24,131 |
+
+Both routes restored all 200 matches byte for byte. The combined route hid both RTK recall references in the first request. Headroom recovery returned the references. Two RTK calls then restored the native output. The byte count includes the content from each recovery step.
+
+The first request used the local `o200k_base` count. Real client recovery, total provider token use, and model answer quality remain open. H044 remains deferred. Resume when a candidate meets the net benefit and client recovery criteria.

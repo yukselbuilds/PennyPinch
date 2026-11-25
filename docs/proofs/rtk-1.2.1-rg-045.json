@@ -1,0 +1,390 @@
+{
+  "base_commit": "45fee7bf7df87e04aae9f3dfa872c800440aa33d",
+  "benchmark_source_sha256": {
+    "bench/rtk/replay.py": "56f9e0c7a087d63a6cf4a5dd881eebaca907a2cd139a58b08ee83522035c4d8e",
+    "owned_run_driver": "41ef4cc4c2d968fc91198736faf2f60ab1cffa58cca46593783aacfe93faa67e"
+  },
+  "cases": {
+    "matches": {
+      "additional_tokens_saved_vs_headroom": [
+        2
+      ],
+      "combined_added_p95_ms": 81.09,
+      "command_added_p95_ms": 31.67,
+      "engine_ccr_retrievals": {
+        "control": 0,
+        "headroom": 9,
+        "rtk": 0,
+        "rtk_headroom": 9
+      },
+      "full_readback": {
+        "headroom": {
+          "ccr_calls": [
+            1
+          ],
+          "recovered_content_bytes": [
+            19184
+          ],
+          "rtk_recall_calls": [
+            0
+          ]
+        },
+        "rtk_headroom": {
+          "ccr_calls": [
+            1
+          ],
+          "recovered_content_bytes": [
+            24131
+          ],
+          "rtk_recall_calls": [
+            2
+          ]
+        }
+      },
+      "full_request_tokens": {
+        "control": [
+          6338
+        ],
+        "headroom": [
+          156
+        ],
+        "rtk": [
+          1753
+        ],
+        "rtk_headroom": [
+          154
+        ]
+      },
+      "integrity": {
+        "bypass_exact": true,
+        "combined_rtk_references_visible": false,
+        "engine_exact_recovery": true,
+        "engine_immediate_diagnostics": true,
+        "exit_preserved": true,
+        "stderr_preserved": true,
+        "stdout_recovered_exact": true,
+        "visible_matches_intact": true
+      },
+      "minimum_command_bytes_saved_percent": 74.21288573811509,
+      "native_exit": [
+        0
+      ],
+      "native_lines": [
+        200
+      ],
+      "native_stderr_bytes": [
+        0
+      ],
+      "native_stdout_bytes": [
+        19184
+      ],
+      "passed_command_byte_threshold": true,
+      "passed_latency_thresholds": true,
+      "rtk_exit": [
+        0
+      ],
+      "rtk_recall_records": [
+        2
+      ],
+      "rtk_stderr_bytes": [
+        0
+      ],
+      "rtk_stdout_bytes": [
+        4947
+      ],
+      "visible_matches": [
+        50
+      ]
+    },
+    "missing_path": {
+      "additional_tokens_saved_vs_headroom": [
+        0
+      ],
+      "combined_added_p95_ms": 54.1,
+      "command_added_p95_ms": 21.03,
+      "engine_ccr_retrievals": {
+        "control": 0,
+        "headroom": 0,
+        "rtk": 0,
+        "rtk_headroom": 0
+      },
+      "full_readback": {
+        "headroom": {
+          "ccr_calls": [
+            0
+          ],
+          "recovered_content_bytes": [
+            0
+          ],
+          "rtk_recall_calls": [
+            0
+          ]
+        },
+        "rtk_headroom": {
+          "ccr_calls": [
+            0
+          ],
+          "recovered_content_bytes": [
+            0
+          ],
+          "rtk_recall_calls": [
+            0
+          ]
+        }
+      },
+      "full_request_tokens": {
+        "control": [
+          169
+        ],
+        "headroom": [
+          169
+        ],
+        "rtk": [
+          169
+        ],
+        "rtk_headroom": [
+          169
+        ]
+      },
+      "integrity": {
+        "bypass_exact": true,
+        "combined_rtk_references_visible": true,
+        "engine_exact_recovery": true,
+        "engine_immediate_diagnostics": true,
+        "exit_preserved": true,
+        "stderr_preserved": true,
+        "stdout_recovered_exact": true,
+        "visible_matches_intact": true
+      },
+      "minimum_command_bytes_saved_percent": 0.0,
+      "native_exit": [
+        2
+      ],
+      "native_lines": [
+        0
+      ],
+      "native_stderr_bytes": [
+        112
+      ],
+      "native_stdout_bytes": [
+        0
+      ],
+      "passed_command_byte_threshold": false,
+      "passed_latency_thresholds": true,
+      "rtk_exit": [
+        2
+      ],
+      "rtk_recall_records": [
+        0
+      ],
+      "rtk_stderr_bytes": [
+        112
+      ],
+      "rtk_stdout_bytes": [
+        0
+      ],
+      "visible_matches": [
+        0
+      ]
+    },
+    "no_matches": {
+      "additional_tokens_saved_vs_headroom": [
+        0
+      ],
+      "combined_added_p95_ms": 63.65,
+      "command_added_p95_ms": 28.71,
+      "engine_ccr_retrievals": {
+        "control": 0,
+        "headroom": 0,
+        "rtk": 0,
+        "rtk_headroom": 0
+      },
+      "full_readback": {
+        "headroom": {
+          "ccr_calls": [
+            0
+          ],
+          "recovered_content_bytes": [
+            0
+          ],
+          "rtk_recall_calls": [
+            0
+          ]
+        },
+        "rtk_headroom": {
+          "ccr_calls": [
+            0
+          ],
+          "recovered_content_bytes": [
+            0
+          ],
+          "rtk_recall_calls": [
+            0
+          ]
+        }
+      },
+      "full_request_tokens": {
+        "control": [
+          138
+        ],
+        "headroom": [
+          138
+        ],
+        "rtk": [
+          138
+        ],
+        "rtk_headroom": [
+          138
+        ]
+      },
+      "integrity": {
+        "bypass_exact": true,
+        "combined_rtk_references_visible": true,
+        "engine_exact_recovery": true,
+        "engine_immediate_diagnostics": true,
+        "exit_preserved": true,
+        "stderr_preserved": true,
+        "stdout_recovered_exact": true,
+        "visible_matches_intact": true
+      },
+      "minimum_command_bytes_saved_percent": null,
+      "native_exit": [
+        1
+      ],
+      "native_lines": [
+        0
+      ],
+      "native_stderr_bytes": [
+        0
+      ],
+      "native_stdout_bytes": [
+        0
+      ],
+      "passed_command_byte_threshold": false,
+      "passed_latency_thresholds": true,
+      "rtk_exit": [
+        1
+      ],
+      "rtk_recall_records": [
+        0
+      ],
+      "rtk_stderr_bytes": [
+        0
+      ],
+      "rtk_stdout_bytes": [
+        0
+      ],
+      "visible_matches": [
+        0
+      ]
+    }
+  },
+  "client_hook": "not_tested",
+  "cold_rounds_per_process": 1,
+  "decision": {
+    "additional_first_request_percent": 1.28,
+    "additional_first_request_tokens_saved": 2,
+    "additional_full_readback_calls": 2,
+    "additional_full_readback_content_bytes": 4947,
+    "full_client_request_cost": "not_tested",
+    "integration_status": "deferred"
+  },
+  "development_agent_token_savings": "unmeasured",
+  "edition": "rtk-oss",
+  "engine_stops": [
+    {
+      "engine_exit_code": 0,
+      "force_fallback": false,
+      "owned_port_closed": true,
+      "shutdown": "graceful"
+    },
+    {
+      "engine_exit_code": 0,
+      "force_fallback": false,
+      "owned_port_closed": true,
+      "shutdown": "graceful"
+    },
+    {
+      "engine_exit_code": 0,
+      "force_fallback": false,
+      "owned_port_closed": true,
+      "shutdown": "graceful"
+    }
+  ],
+  "engine_version": "0.45.0",
+  "external_model_requests": 0,
+  "fingerprint_after": {
+    "environment": {
+      "command_environment_sha256": "f8cb14b3dc93b2915b736a9e7e3c9a44054151aca20ecc48da1ca298ee9e0636",
+      "logical_cpus": 16,
+      "machine": "AMD64",
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "windows_build": [
+        10,
+        0,
+        19045
+      ]
+    },
+    "inputs": 663,
+    "sha256": "573ff11d879588d77610cc1152cc0711d5055fe23d8f54e606be1bd461dd1966"
+  },
+  "fingerprint_before": {
+    "environment": {
+      "command_environment_sha256": "f8cb14b3dc93b2915b736a9e7e3c9a44054151aca20ecc48da1ca298ee9e0636",
+      "logical_cpus": 16,
+      "machine": "AMD64",
+      "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+      "windows_build": [
+        10,
+        0,
+        19045
+      ]
+    },
+    "inputs": 663,
+    "sha256": "573ff11d879588d77610cc1152cc0711d5055fe23d8f54e606be1bd461dd1966"
+  },
+  "full_readback_basis": "Measured UTF-8 bytes from CCR contents and RTK recall stdout for the required full-output path",
+  "historical_native_outputs": {
+    "compared": 27,
+    "matched": 27,
+    "same_ripgrep_binary": false
+  },
+  "local_result_directory": "work/proofs/rtk/rg-paired-045/runs/f4ddd556c71343c699512e726bb169de",
+  "model_answer_quality": "not_tested",
+  "network": {
+    "hf_hub_offline": true,
+    "huggingface_hub_payload_bytes": 0,
+    "packet_capture": false,
+    "transformers_offline": true,
+    "upstream": "owned_loopback_fixture"
+  },
+  "observed_on": "2026-11-25",
+  "owner": "lead agent",
+  "processes": 3,
+  "provider_billing": "not_tested",
+  "raw_events_sha256": "180ab8bde4206a611047cd016d6e1c886b28b9f211de0c8357990f1da2f95886",
+  "raw_result_sha256": "2721784271bd6cc4182f8d9df5fe7b1b2fa0aea9808fd86f0abe96e3ac17db03",
+  "requests": 108,
+  "rg_executable_sha256": "4467192ffc472e413fb895e3e781b6c20d016a5ba61a130571d87ba380cfcaff",
+  "rg_version": "ripgrep 15.2.0",
+  "rtk_commit": "d0f0399a5ff8cd1d81325a033f0b2d8864d665f6",
+  "rtk_executable_sha256": "114d4548964528494ad5f9cda2f203677292fd34006c6a0fb3ac5458bee3f7c1",
+  "rtk_version": "rtk 1.2.1",
+  "schema_version": 1,
+  "scope": "Windows 10 22H2 x64 local ripgrep fixture with the preview.6 engine payload and offline fixture launch",
+  "seconds": 51.23,
+  "shared_benchmark_self_check": "pass",
+  "status": "measured",
+  "task": "H044-d",
+  "thresholds": {
+    "command_timeout_seconds": 30,
+    "minimum_command_saved_fraction": 0.1,
+    "request_timeout_seconds": 30,
+    "startup_timeout_seconds": 100,
+    "warm_combined_added_p95_ms": 1000,
+    "warm_command_added_p95_ms": 250
+  },
+  "token_basis": "canonical_full_request_json_including_added_tool_schemas",
+  "token_encoding": "o200k_base",
+  "warm_rounds_per_process": 2
+}

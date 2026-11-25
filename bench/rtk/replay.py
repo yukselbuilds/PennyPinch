@@ -92,7 +92,8 @@ def envelope(result):
 
 def verify_recovery(port, original, forwarded, timeout):
     if original == forwarded:
-        return {"verified": True, "retrievals": 0, "scope": "unchanged", "diagnostics_visible": True}
+        return {"verified": True, "retrievals": 0, "recovered_content_bytes": 0,
+                "scope": "unchanged", "diagnostics_visible": True}
     hashes = set(re.findall(r"(?:Retrieve more: hash=|<<ccr:)([a-fA-F0-9]{12,24})(?=[^a-fA-F0-9]|$)", forwarded))
     contents = {}
     for content_hash in hashes:
@@ -106,12 +107,14 @@ def verify_recovery(port, original, forwarded, timeout):
             connection.close()
     expected = json.loads(original)
     whole_recovered = original in contents.values()
+    recovered_bytes = sum(len(content.encode("utf-8")) for content in contents.values())
     try:
         restored = json.loads(forwarded)
     except json.JSONDecodeError:
         restored = None
     if not isinstance(restored, dict) or set(restored) != set(expected):
-        return {"verified": whole_recovered, "retrievals": len(contents), "diagnostics_visible": False,
+        return {"verified": whole_recovered, "retrievals": len(contents), "recovered_content_bytes": recovered_bytes,
+                "diagnostics_visible": False,
                 "scope": "whole_tool_output" if whole_recovered else "envelope_shape_changed"}
     diagnostics_visible = (type(restored["exit_code"]) is int and restored["exit_code"] == expected["exit_code"]
                            and restored["stderr"] == expected["stderr"])
@@ -120,7 +123,7 @@ def verify_recovery(port, original, forwarded, timeout):
             if isinstance(restored.get(field), str) and content_hash in restored[field] and content == expected[field]:
                 restored[field] = content
     return {"verified": whole_recovered or base.encoded(restored).decode("utf-8") == original,
-            "retrievals": len(contents), "diagnostics_visible": diagnostics_visible,
+            "retrievals": len(contents), "recovered_content_bytes": recovered_bytes, "diagnostics_visible": diagnostics_visible,
             "scope": "whole_tool_output" if whole_recovered else "exact_envelope_reconstruction"}
 
 

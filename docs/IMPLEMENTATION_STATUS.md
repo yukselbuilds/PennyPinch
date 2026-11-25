@@ -80,7 +80,7 @@ The local signing key and same-profile encrypted backup passed a signing check. 
 
 On Windows 10, the real installation upgraded from v0.1.0 with the full installer. Settings then applied the signed v0.1.1-preview.2 package. Rollback restored the previous executable and Windows registration. The test preferences matched across both restarts. The 19,484 recorded resource files matched after rollback. [Installed acceptance](proofs/pennypinch-windows10-installed-update-and-release.json)
 
-The lead agent deferred H044. The Windows 10 ripgrep comparison ran for 136.4 seconds. RTK saved two more tokens than Headroom on the first request. Full readback required Headroom recovery and two RTK recall calls. The Windows release ships without RTK. [Paired evidence](proofs/rtk-1.2.1-rg-paired.json)
+The lead agent completed H044-d with the Headroom 0.45.0 payload. In 108 local requests, RTK reduced the first matching request from 156 to 154 tokens. Full readback needed two additional calls and 4,947 more bytes. H044 remains deferred. Resume when an eligible route shows a net benefit and a verified client recovery path. [Current evidence](proofs/rtk-1.2.1-rg-045.json)
 
 The 23 November check found RTK-OSS v1.2.1 is still the latest stable release. The paired evidence applies to that release. [Upstream release](https://github.com/rtk-ai/rtk/releases/tag/v1.2.1)
 
