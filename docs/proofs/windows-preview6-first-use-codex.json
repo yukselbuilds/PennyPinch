@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "observed_on": "2026-11-25",
+  "scenario": "Public installer, fresh app and Codex profiles on the same volume, local Responses provider",
+  "release": "0.1.1-preview.6",
+  "source_commit": "c7daad8aa0f3664880fab8d30bc7c7cbd2a5e1c0",
+  "environment": {
+    "os": "Windows 10 22H2 x64",
+    "build": 19045,
+    "codex": "codex-cli 0.166.0",
+    "python": "3.14.0",
+    "webview_version": "158.0.0.0"
+  },
+  "inputs_sha256_before_after": {
+    "installer": "f7f6ba382e8058a81bd230695a9c5636d56f443c091be3e214fe1af0ecbe4fd2",
+    "public_zip": "a0a8c9f035beffbf640fe9cc662e6f697492a0f96b406e2b2f5e16667dfdac62",
+    "stage_receipt": "c3bbc8f18355b013fb9b6b290da03c759fe2f9269dab81c0335e57289fb6f74c",
+    "codex_exe": "9d563ee4e0441ff9d59d612013e0460ddf8e5709735c2d9f6b98b7ef8ca4eb42",
+    "python_exe": "467014615a5255aca450ae88100dd2caf887da87657f00e3c2171ec44a685aec",
+    "node_exe": "91ec09dda8f20556f366110859f106ab189d45f8f6a2bd092e6785174ad4a0fa",
+    "playwright_lockfile": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3",
+    "test_config": "1f3453376db063aeb80bf354c73ee78c59fbc63a700d9b3b55dd2a562ac0a20a",
+    "runner": "f59c871d566f758eb6dfacd5adb00ea5917dddba7c0799e388bd85114df48758",
+    "window_driver": "dee62d032b0ea7a143de45024498b1d8fb5aa02248b3c6332408f80e8ec66736",
+    "window_harness": "d0bc1f55bf5a244f45e9563909e0a2b97e97dd5243b61afd8efe8b5a71fd512a",
+    "install_harness": "736cc68c10e92948b75d443813940f096149628f48bdf605d78f73cecd4fc605",
+    "installation_reference": "2927f434f062eb38faa82d741a777a23f04509f9286aa11788b0759e4bd38f49",
+    "local_provider_fixture": "ab38b84d5f0096341e319c26fea6895aa8d402e064d3799db212ae22080fa9d9",
+    "process_supervisor": "dc067a6c76316be981ebc36d4066a5096e71b3c1ff689fff078410b06b33a2af",
+    "codex_process_supervisor": "bf887b6f783f4385debc84836353340f39e3773433782305376a3247be0f4ac1",
+    "public_release_evidence": "7f396710f019d8365b20958ac975a84469ad7cebb9e75ed8f0585e98f3d93cfb",
+    "local_release_evidence": "2e278c7a8f15e7b4e3a3b4fe8ad089f4d598bc2d4806afa945f23716a9c74da3"
+  },
+  "installed_resources_and_receipt_matched": 19492,
+  "runtime": {
+    "headroom": "0.45.0",
+    "opentelemetry": "1.45.2",
+    "distribution_directories": [
+      "opentelemetry_api-1.45.2.dist-info"
+    ],
+    "headroom_distribution_directories": [
+      "headroom_ai-0.45.0.dist-info"
+    ]
+  },
+  "ui": {
+    "engine_initially_stopped": true,
+    "cli_discovered_and_selected": true,
+    "discovery_left_config_unchanged": true,
+    "engine_ready_and_route_saved": true,
+    "undo_restored_config_and_kept_engine_ready": true,
+    "engine_stopped": true
+  },
+  "cli": {
+    "exit_code": 0,
+    "stderr_bytes": 39,
+    "endpoint_read_from_profile": true,
+    "model_and_other_settings_preserved": true,
+    "item_error_categories": [
+      "other"
+    ],
+    "event_type_counts": {
+      "item.completed": 2,
+      "thread.started": 1,
+      "turn.completed": 1,
+      "turn.started": 1
+    },
+    "item_type_counts": {
+      "agent_message": 1,
+      "error": 1
+    },
+    "terminal_status_counts": {
+      "turn.completed": 1
+    },
+    "exact_marker_item_count": 1,
+    "error_event_count": 0,
+    "error_field_name_counts": {},
+    "json_line_count": 5,
+    "invalid_json_line_count": 0,
+    "raw_output_persisted": false
+  },
+  "upstream": {
+    "responses_post_requests": 2,
+    "responses_sse_requests": 2,
+    "synthetic_auth_preserved": true,
+    "model_preserved": true
+  },
+  "normal_exit": true,
+  "owned_ingress_released": true,
+  "client_config_restored_byte_for_byte": true,
+  "synthetic_auth_file_unchanged": true,
+  "cleanup": {
+    "original_profile_matches": true,
+    "original_profile_files": 0,
+    "desktop_use_gate_restored": true,
+    "test_profile_removed": true,
+    "test_installation_removed": true,
+    "isolated_codex_profile_removed": true
+  },
+  "limits": {
+    "clean_windows_10": "not_tested",
+    "windows_11_x64": "not_tested",
+    "webview2_absent": "not_tested",
+    "live_provider_requests": 0,
+    "account_or_primary_client_profile_used": false,
+    "development_token_savings": "unmeasured"
+  },
+  "seconds": 95.801
+}
