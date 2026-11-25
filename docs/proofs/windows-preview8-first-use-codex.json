@@ -1,0 +1,139 @@
+{
+  "cleanup": {
+    "desktop_use_gate_restored": true,
+    "isolated_codex_profile_removed": true,
+    "original_empty_profile_restored": true,
+    "original_profile_files": 0,
+    "original_profile_matches": true,
+    "test_installation_removed": true,
+    "test_profile_removed": true
+  },
+  "cli": {
+    "completed_mcp_tool_calls": 2,
+    "endpoint_read_from_profile": true,
+    "error_event_count": 0,
+    "error_field_name_counts": {},
+    "event_type_counts": {
+      "item.completed": 4,
+      "item.started": 2,
+      "thread.started": 1,
+      "turn.completed": 1,
+      "turn.started": 1
+    },
+    "exact_marker_item_count": 1,
+    "exit_code": 0,
+    "invalid_json_line_count": 0,
+    "item_error_categories": [
+      "other"
+    ],
+    "item_type_counts": {
+      "agent_message": 1,
+      "error": 1,
+      "mcp_tool_call": 4
+    },
+    "json_line_count": 9,
+    "model_and_other_settings_preserved": true,
+    "raw_output_persisted": false,
+    "stderr_bytes": 39,
+    "terminal_status_counts": {
+      "turn.completed": 1
+    }
+  },
+  "client_config_restored_byte_for_byte": true,
+  "environment": {
+    "build": 19045,
+    "codex": "codex-cli 0.166.0",
+    "os": "Windows 10 22H2 x64",
+    "python": "3.13.13",
+    "webview_version": "158.0.0.0"
+  },
+  "inputs_sha256_before_after": {
+    "codex_exe": "9d563ee4e0441ff9d59d612013e0460ddf8e5709735c2d9f6b98b7ef8ca4eb42",
+    "codex_process_supervisor": "bf887b6f783f4385debc84836353340f39e3773433782305376a3247be0f4ac1",
+    "install_harness": "736cc68c10e92948b75d443813940f096149628f48bdf605d78f73cecd4fc605",
+    "installation_reference": "2927f434f062eb38faa82d741a777a23f04509f9286aa11788b0759e4bd38f49",
+    "installer": "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1",
+    "local_provider_fixture": "ab38b84d5f0096341e319c26fea6895aa8d402e064d3799db212ae22080fa9d9",
+    "local_release_evidence": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba",
+    "node_exe": "91ec09dda8f20556f366110859f106ab189d45f8f6a2bd092e6785174ad4a0fa",
+    "playwright_lockfile": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3",
+    "process_supervisor": "dc067a6c76316be981ebc36d4066a5096e71b3c1ff689fff078410b06b33a2af",
+    "public_release_evidence": "9617cca0ce19e52aa59fff2ef92d73bcf485f2c466de6ad568d078c079a2eae1",
+    "public_zip": "6fc4ae34a1a2b9404f0db1b7ea2763fd75b148cce0c0b2fd4fb0b528c85374be",
+    "python_exe": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+    "repeated_tool_fixture": "727c6e892b688d05a848a923a0c20a05ab6b9aa0e370154fe05bbdfa20bfb188",
+    "responses_fixture": "62e409f8dffffc21b895f5a6b4177c81d08e8a40d19af1b960176c0df9ef1a29",
+    "runner": "cd2900da9104619a7f6777debd7fb0ade55c3fc6c3bd361610f8ca01c6ebf8c5",
+    "stage_receipt": "d02a107398d60a2cfdb0f7092f2616729b95fd3d668b8c61ad2e2432072b7420",
+    "test_config": "fb23b77cfa8df891bc2b1f25db59f2bb4dc735768b387e1cd0ab9a21b7696fcd",
+    "window_driver": "dee62d032b0ea7a143de45024498b1d8fb5aa02248b3c6332408f80e8ec66736",
+    "window_harness": "d0bc1f55bf5a244f45e9563909e0a2b97e97dd5243b61afd8efe8b5a71fd512a"
+  },
+  "installed_resources_and_receipt_matched": 19492,
+  "limits": {
+    "account_or_primary_client_profile_used": false,
+    "clean_windows_10": "not_tested",
+    "development_token_savings": "unmeasured",
+    "live_provider_requests": 0,
+    "webview2_absent": "not_tested",
+    "windows_11_x64": "not_tested"
+  },
+  "local_receipt_sha256": "4bb2bf01b7825ebbbc26a1710e1307813e5f46098e6f142d3fad167be221dc24",
+  "normal_exit": true,
+  "observed_on": "2026-11-25",
+  "owned_ingress_released": true,
+  "release": "0.1.1-preview.8",
+  "runtime": {
+    "distribution_directories": [
+      "opentelemetry_api-1.45.2.dist-info"
+    ],
+    "headroom": "0.45.0",
+    "headroom_distribution_directories": [
+      "headroom_ai-0.45.0.dist-info"
+    ],
+    "opentelemetry": "1.45.2"
+  },
+  "scenario": "Public installer, fresh app and Codex profiles on the same volume, local Responses provider",
+  "schema_version": 1,
+  "seconds": 103.358,
+  "source_commit": "cad4f1c676d36b7f3c8dce7b0a41b732a6d3bdf9",
+  "status": "pass",
+  "synthetic_auth_file_unchanged": true,
+  "task": "H037-a11",
+  "ui": {
+    "cli_discovered_and_selected": true,
+    "discovery_left_config_unchanged": true,
+    "engine_initially_stopped": true,
+    "engine_ready_and_route_saved": true,
+    "engine_stopped": true,
+    "undo_restored_config_and_kept_engine_ready": true
+  },
+  "upstream": {
+    "model_preserved": true,
+    "responses_post_requests": 4,
+    "responses_sse_requests": 4,
+    "synthetic_auth_preserved": true,
+    "tool_steps": [
+      {
+        "expected_call_ids": 0,
+        "two_exact_results": false,
+        "wire_output_shapes": []
+      },
+      {
+        "expected_call_ids": 1,
+        "two_exact_results": false,
+        "wire_output_shapes": [
+          "list"
+        ]
+      },
+      {
+        "expected_call_ids": 2,
+        "two_exact_results": true,
+        "wire_output_shapes": [
+          "list",
+          "list"
+        ]
+      }
+    ]
+  }
+}

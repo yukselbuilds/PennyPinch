@@ -85,6 +85,10 @@ The lead agent interrupted a public download of `v0.1.1-preview.3` at 8 MiB. A s
 
 The complete 126,761,252-byte ZIP matched the public checksum and the earlier delivery record. It contains 673 license and notice files plus their matching index. The identical ZIP digest preserves the earlier verification of 677 internal file digests. [Download evidence](../proofs/windows-installer-public-preview-resume.json) · [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.3)
 
+## 25 November — Preview.8 Codex first use
+
+Windows 10 22H2 x64 installed the public ZIP into a separate test folder. Connect routed a Codex CLI turn to the local Responses fixture. Both identical tool results reached the fixture in full. Undo restored the test configuration byte for byte. The engine closed its port and the app exited normally. The host had WebView2 before installation. [First-use evidence](../proofs/windows-preview8-first-use-codex.json)
+
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria
