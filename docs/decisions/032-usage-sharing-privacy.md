@@ -135,7 +135,7 @@ Use `prepareRestoredReports(db, erasedInstallationIds)` from `services/reports/r
 
 Repeat the function while it returns `false`. Keep the branch isolated if an operation fails. Confirm that revoked credentials fail. Check that an authorized administrator reads only retained data before you route report traffic to the restored branch.
 
-The native test used a PostgreSQL template copy of synthetic data from before an erasure. The local suite verified rollback on an erasure failure. Neon recovery, the live erasure list, the cutover, and provider backup expiry still need acceptance. [PostgreSQL template copy](https://www.postgresql.org/docs/17/manage-ag-templatedbs.html) · [Restore evidence](../proofs/h052-neon-restore-local.json)
+The native test used a PostgreSQL template copy of synthetic data from before an erasure. The local suite verified rollback on an erasure failure. H052-r covers the isolated Neon recovery. Production erasure records, cutover, and provider backup expiry still need acceptance. [PostgreSQL template copy](https://www.postgresql.org/docs/17/manage-ag-templatedbs.html) · [Restore evidence](../proofs/h052-neon-restore-local.json)
 
 ## H052-o — Disclosure checks on field benchmarks
 
@@ -159,4 +159,12 @@ The first deployed handler rejected a genuine trigger because its request URL us
 
 Neon Free delivered one scheduled event on the isolated test branch. The first call removed 4,000 expired synthetic reports and two old counters. A retry removed the final expired report after 62 seconds. The cutoff report and two current counters remained. Both public test requests returned 404 and left all rows in place. The lead agent removed the test schedule and branch and revoked the project key.
 
-This test covers one scheduled event and its retry. Provider log retention, backup handling, and point-in-time restore remain open. Real report intake stays closed. [Live retention evidence](../proofs/h052-neon-retention-live.json)
+This test covers one scheduled event and its retry. Provider log retention and backup expiry remain open. H052-r covers point-in-time recovery. Real report intake stays closed. [Live retention evidence](../proofs/h052-neon-retention-live.json)
+
+## H052-r — Live recovery from history
+
+The lead agent restored a separate branch at the synthetic source's pre-erasure write-ahead log position. Neon rejected an expiring source branch because it cannot have children. The lead agent recorded the temporary source before creation and set an expiration date on the historical branch. The test confirmed the source stayed clear of erased and expired reports.
+
+The operator read the synthetic erasure list from outside the restored database. The first cleanup pass left one expired report for the next pass. The second pass removed it. The report at the 30-day boundary and the current counters remained.
+
+The private test handler used a restricted PostgreSQL login over TLS. It rejected the revoked uploader. The authorized test operator read one retained report. The lead agent revoked the login and the project key and removed both branches. Production cutover, access to production erasure records, and backup expiry still need verification. [Live restore evidence](../proofs/h052-neon-restore-live.json)
