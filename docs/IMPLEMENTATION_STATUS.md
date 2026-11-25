@@ -18,6 +18,8 @@ The lead agent completed H042-as. The local preview.7 installer upgraded the pub
 
 The lead agent completed H042-at. GitHub Releases serves preview.7 for Windows 10 22H2 x64. The public ZIP matched the installed upgrade, and five preflight cases passed. The signed preview feed serves preview.2 to compatible installations. [Publication evidence](proofs/pennypinch-windows10-preview7-publication.json)
 
+The lead agent completed H042-au on Windows 10 22H2 x64. The local preview.8 installer upgraded the public preview.7 and kept the saved test preferences. The installed engine forwarded the repeated result and recovered the compressed log exactly. The ZIP contains the verified installer and 673 third-party notices. Publication is the next distribution step. [Local package evidence](proofs/pennypinch-windows10-preview8-local.json)
+
 The lead agent ran H037-a9 with the public preview.4 installer and a fresh application profile. The existing Windows 10 22H2 x64 desktop had WebView2. Default preferences, engine start, one local stream, normal exit, and cleanup passed in 73.966 seconds. The test matched 19,491 installed resources and the package receipt. [First-use evidence](proofs/windows-preview4-first-use.json)
 
 The lead agent completed H037-a10 with the public preview.6 installer and fresh test profiles. On Windows 10 22H2 x64, the installed app connected Codex CLI to Headroom 0.45.0. One CLI turn completed against a loopback Responses provider. Undo restored the exact test configuration. Engine stop, normal exit, and cleanup passed. [First-use evidence](proofs/windows-preview6-first-use-codex.json)

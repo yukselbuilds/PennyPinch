@@ -1,0 +1,200 @@
+{
+  "build": {
+    "build_seconds": 507.355,
+    "candidate_version": "0.1.1-preview.8",
+    "changed_resources": [
+      "runtime/desktop_controller.py",
+      "runtime/manifest.json",
+      "runtime/optimization_control.py"
+    ],
+    "compiled_exe_sha256": "b90c7ddbb61421813591d6d948dfc904f2a9eeb392e79b3a7147d981ba4ddeca",
+    "embedded_exe_sha256": "3b9e27afc01d07efd13d0aa7602209da5ab25dadbd659a09849dc3b92c0f5cd2",
+    "embedded_pe_and_privacy_checks": 2,
+    "engine_version": "0.45.0",
+    "input_count": 522,
+    "input_tools": {
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0",
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)"
+    },
+    "inputs_sha256_before_after": "3832acd13c3a4afbf23de9700887b82edc7490dfbe83e7b1377138915014e5b2",
+    "installer_bytes": 125356612,
+    "installer_sha256": "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1",
+    "new_resource_pin": "65b45b7be618495fcdb50932929ac37e3d406b034680f37ab6b167a6ce2b5882",
+    "passed": true,
+    "release_base_url": "https://yukselbuilds.github.io/PennyPinch/updates/",
+    "release_key_fingerprint": "c32e894d22af6146ee736e04ec06454aaf740912aed00e65aa7a116cc7d0b52c",
+    "reused_gate_path_count": 510,
+    "reused_gate_sha256": "cffcdf915d172fe8349af536ee2c878858c27172e5361441fb20db8bc82600c9",
+    "seconds": 539.19,
+    "source_commit": "cad4f1c676d36b7f3c8dce7b0a41b732a6d3bdf9",
+    "stage_receipt_sha256": "d02a107398d60a2cfdb0f7092f2616729b95fd3d668b8c61ad2e2432072b7420",
+    "stage_resource_count": 19491,
+    "verified_bundle_entries": 19499,
+    "version_and_update_source_probes": 6
+  },
+  "delivery": {
+    "archive": {
+      "bytes": 126799539,
+      "files": 679,
+      "name": "PennyPinch_0.1.1-preview.8_Windows_x64_preview.zip",
+      "sha256": "6fc4ae34a1a2b9404f0db1b7ea2763fd75b148cce0c0b2fd4fb0b528c85374be"
+    },
+    "engine_version": "0.45.0",
+    "external_checksums_sha256": "b5f137c8c2112e90c33d9b42ced75fd5f04967f35962009330b3732a7a88725a",
+    "input_count": 24,
+    "inputs_sha256_before_after": "5b9aa1d368c6dccd9f807ea5b357043674c1a5cfcf1995d3f55276e9c28d26ae",
+    "installer": {
+      "bytes": 125356612,
+      "path": "PennyPinch_0.1.1-preview.8_x64-setup.exe",
+      "sha256": "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1"
+    },
+    "matching_license_inputs": 10,
+    "passed": true,
+    "product_source": "cad4f1c676d36b7f3c8dce7b0a41b732a6d3bdf9",
+    "release_notes_sha256": "a6e6e0b92a806f790d6c8a13c160136a0112fabeb20b4916df3bbf00e702f3d2",
+    "seconds": 8.755,
+    "third_party_notices": {
+      "components": {
+        "frontend": 6,
+        "python": 99,
+        "rust": 258
+      },
+      "count": 673,
+      "identical_to_preview7": true,
+      "index_sha256": "431dd402ccfed6b99a2e38b5b1e865496221958d027d465044241f6186284764"
+    },
+    "version": "0.1.1-preview.8",
+    "windows_extraction": {
+      "authenticode": "NotSigned",
+      "installer_matches_upgrade": true,
+      "matched_internal_hashes": 678,
+      "powershell": "7.6.9",
+      "unicode_and_spaces": true
+    }
+  },
+  "development_token_savings": "unmeasured",
+  "distribution": "local_candidate",
+  "host": {
+    "windows_10_clean_install": "not_tested",
+    "windows_11_x64": "not_tested",
+    "without_webview2": "not_tested"
+  },
+  "installed": {
+    "baseline_archive_sha256": "2f8a211e1a473e4853092b50a4a1ae2f0e28000b2b7412f9c8cf8173d6fe4b6b",
+    "cleanup": {
+      "desktop_use_gate_restored": true,
+      "local_data_directory_state_restored": true,
+      "original_profile_files": 0,
+      "original_profile_matches": true,
+      "test_profile_removed": true
+    },
+    "closed_owned_ingress": true,
+    "downgrade_exit_code": 2,
+    "exact_ccr_readbacks": 2,
+    "external_model_calls": 0,
+    "input_count": 33,
+    "inputs_sha256_before_after": "7b868902cd850f720678ccf53a5972b3cfb08feedc8c8e77470e72a9c39893eb",
+    "installed_resources_and_receipt_matched": 19492,
+    "installer_sha256": "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1",
+    "local_provider_requests": 6,
+    "new_ui": {
+      "engine_stopped": true,
+      "local_responses_sse": 200,
+      "no_update_candidate": true,
+      "responses": {
+        "exact": [
+          {
+            "exact_tool_output_on_wire": true,
+            "repeat_reference": false,
+            "token_count_forwarded": 241,
+            "token_count_original": 241
+          },
+          {
+            "exact_tool_output_on_wire": true,
+            "repeat_reference": false,
+            "token_count_forwarded": 405,
+            "token_count_original": 405
+          }
+        ],
+        "long_log": [
+          {
+            "ccr_exact": true,
+            "exact_tool_output_on_wire": false,
+            "repeat_reference": false,
+            "token_count_forwarded": 163,
+            "token_count_original": 8324
+          }
+        ]
+      },
+      "update_result": "current"
+    },
+    "normal_exit_verified": true,
+    "old_ui": {
+      "engine_stopped": true,
+      "local_responses_sse": 200,
+      "no_update_candidate": true,
+      "responses": {
+        "exact": [
+          {
+            "exact_tool_output_on_wire": true,
+            "repeat_reference": false,
+            "token_count_forwarded": 241,
+            "token_count_original": 241
+          },
+          {
+            "exact_tool_output_on_wire": false,
+            "repeat_reference": true,
+            "token_count_forwarded": 307,
+            "token_count_original": 405
+          }
+        ],
+        "long_log": [
+          {
+            "ccr_exact": true,
+            "exact_tool_output_on_wire": false,
+            "repeat_reference": false,
+            "token_count_forwarded": 163,
+            "token_count_original": 8324
+          }
+        ]
+      },
+      "update_result": "current"
+    },
+    "passed": true,
+    "preferences_preserved": true,
+    "runtime": {
+      "distribution_directories": [
+        "opentelemetry_api-1.45.2.dist-info"
+      ],
+      "headroom": "0.45.0",
+      "headroom_distribution_directories": [
+        "headroom_ai-0.45.0.dist-info"
+      ],
+      "opentelemetry": "1.45.2"
+    },
+    "seconds": 140.153,
+    "signed_feed_version": "0.1.1-preview.2",
+    "signed_metadata_sha256_before_after": {
+      "manifest.json": "413ddd1db7d4c7733b7aeed980f8fd915312985eb2f00e571c4f92d366c7f598",
+      "manifest.json.sig": "8f9ab96f0e27d6f590d3a8f374158ab3a9f4d9a07f330f5d9327c4e70fa4900d"
+    },
+    "test_marker_preserved": true,
+    "versions": [
+      "0.1.1-preview.7",
+      "0.1.1-preview.8"
+    ],
+    "windows_build": 19045
+  },
+  "local_receipts_sha256": {
+    "build-result.json": "a85463cd9ac88571bde1b246b6542cf18446716f72ac7c5f360765b565372abb",
+    "delivery-result.json": "ae3c59ccb32f567fd7247d6761e21cfe0e29028c020fb7d149538b092d40deb5",
+    "installed-result.json": "a87c4b23e903d87592df8f808459973f4b1d2957ab04b4ee07d3e3587fa27c14"
+  },
+  "observed_on": "2026-11-25",
+  "quality_gate": "Reused the full local gate with all 510 input fingerprints matched.",
+  "scope": "Local full installer and ZIP on Windows 10 22H2 x64, with an existing WebView2 runtime",
+  "source": "cad4f1c676d36b7f3c8dce7b0a41b732a6d3bdf9",
+  "task": "H042-au"
+}
