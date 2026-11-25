@@ -47,6 +47,8 @@ The lead agent checked Learn with Headroom 0.45.0. Eight previews passed. A loca
 
 The lead agent corrected exit-code handling for Codex `exec_command` on Responses. Successful compression keeps the exit code visible. Failed output stays intact. HTTP/SSE and WebSocket passed eight local pairs each on Windows 10. [Shell status evidence](proofs/responses-shell-status-045.json)
 
+The lead agent tested exact Responses repeats with Headroom 0.45.0 and SmolLM2 on Windows 10. In four paired tasks, the full-output arm answered three correctly. The reference arm answered two correctly. Model input fell from 1,420 to 964 tokens. The quality criterion failed. [Evidence](proofs/responses-repeat-local-model-045.json)
+
 The preview.5 full installer upgraded the public preview.4 on Windows 10 22H2 x64. It preserved preferences. The test matched 19,491 installed resources and the package receipt. The installed engine passed the successful and failed output checks with the same inputs in both versions. The older installer refused the downgrade. [Installed evidence](proofs/windows-preview5-shell-upgrade.json)
 
 The lead agent prepared the preview.5 delivery for H042-am. The ZIP includes the release notes and 673 third-party notices. Windows matched all 678 listed SHA-256 digests and the tested installer. [Delivery evidence](proofs/pennypinch-windows10-preview5-delivery.json)

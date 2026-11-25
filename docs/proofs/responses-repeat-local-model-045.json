@@ -1,0 +1,212 @@
+{
+  "actual_provider_billing": "not_tested",
+  "arm_order": [
+    "disabled",
+    "default"
+  ],
+  "arms": {
+    "default": {
+      "build": {
+        "engine_usage_matches": true,
+        "model": {
+          "answer": 1,
+          "cache_read": 0,
+          "input": 241,
+          "output": 10,
+          "total": 251
+        },
+        "outbound_sha256": "49b767e4ba0e527d811af0c92effa4a732ee477ab6b15137dd27c2e8aa250d7f",
+        "outbound_tokens": 426,
+        "reference": true
+      },
+      "queue": {
+        "engine_usage_matches": true,
+        "model": {
+          "answer": 1,
+          "cache_read": 0,
+          "input": 241,
+          "output": 15,
+          "total": 256
+        },
+        "outbound_sha256": "fbff838afd3200d3c4cc6bebaeedb5494d3caca465a95d5c2a778d472cef5769",
+        "outbound_tokens": 431,
+        "reference": true
+      },
+      "release": {
+        "engine_usage_matches": true,
+        "model": {
+          "answer": 6,
+          "cache_read": 0,
+          "input": 241,
+          "output": 10,
+          "total": 251
+        },
+        "outbound_sha256": "211e1b87d3b3ab59a129af3110911026830cebd32a2fc0d5357ef490e7f4f4de",
+        "outbound_tokens": 426,
+        "reference": true
+      },
+      "sync": {
+        "engine_usage_matches": true,
+        "model": {
+          "answer": 9,
+          "cache_read": 0,
+          "input": 241,
+          "output": 10,
+          "total": 251
+        },
+        "outbound_sha256": "a5c5ad86e89c5cfe233bddac3b072fe493cecbf177df9b8115eafaea50c4bb3a",
+        "outbound_tokens": 426,
+        "reference": true
+      }
+    },
+    "disabled": {
+      "build": {
+        "engine_usage_matches": true,
+        "model": {
+          "answer": 1,
+          "cache_read": 0,
+          "input": 355,
+          "output": 7,
+          "total": 362
+        },
+        "outbound_sha256": "b73f08e9938e06aa2951c7a8593ed2fdaabdb31a8a75c7cd62aea49acdb600c4",
+        "outbound_tokens": 532,
+        "reference": false
+      },
+      "queue": {
+        "engine_usage_matches": true,
+        "model": {
+          "answer": 4,
+          "cache_read": 0,
+          "input": 355,
+          "output": 7,
+          "total": 362
+        },
+        "outbound_sha256": "9423c210fc1d92c6b978a180d736c19840f7abdc4c37965027eebcae4f308545",
+        "outbound_tokens": 536,
+        "reference": false
+      },
+      "release": {
+        "engine_usage_matches": true,
+        "model": {
+          "answer": 6,
+          "cache_read": 0,
+          "input": 355,
+          "output": 7,
+          "total": 362
+        },
+        "outbound_sha256": "bb498b85a50c6f541a33cf1cbf39729822c02557f73c7ba65a5dc17819f7904d",
+        "outbound_tokens": 532,
+        "reference": false
+      },
+      "sync": {
+        "engine_usage_matches": true,
+        "model": {
+          "answer": 9,
+          "cache_read": 0,
+          "input": 355,
+          "output": 7,
+          "total": 362
+        },
+        "outbound_sha256": "ce0721be87cb9a696f016f716ae2fc2e4df942f46bc6dc47553fa191f105d8ce",
+        "outbound_tokens": 532,
+        "reference": false
+      }
+    }
+  },
+  "cache_prompt": false,
+  "cases": [
+    {
+      "case": "build",
+      "expected": 2,
+      "input_sha256": "b73f08e9938e06aa2951c7a8593ed2fdaabdb31a8a75c7cd62aea49acdb600c4",
+      "tool_result_row": 1
+    },
+    {
+      "case": "release",
+      "expected": 6,
+      "input_sha256": "bb498b85a50c6f541a33cf1cbf39729822c02557f73c7ba65a5dc17819f7904d",
+      "tool_result_row": 4
+    },
+    {
+      "case": "queue",
+      "expected": 4,
+      "input_sha256": "9423c210fc1d92c6b978a180d736c19840f7abdc4c37965027eebcae4f308545",
+      "tool_result_row": 6
+    },
+    {
+      "case": "sync",
+      "expected": 9,
+      "input_sha256": "ce0721be87cb9a696f016f716ae2fc2e4df942f46bc6dc47553fa191f105d8ce",
+      "tool_result_row": 8
+    }
+  ],
+  "comparison_completed": true,
+  "context_tokens": 4096,
+  "development_token_savings": "unmeasured",
+  "engine": "0.45.0",
+  "engine_stops": [
+    {
+      "engine_exit_code": 0,
+      "force_fallback": false,
+      "owned_port_closed": true,
+      "shutdown": "graceful"
+    },
+    {
+      "engine_exit_code": 0,
+      "force_fallback": false,
+      "owned_port_closed": true,
+      "shutdown": "graceful"
+    }
+  ],
+  "external_model_calls": 0,
+  "failure": null,
+  "input_reduction_passed": true,
+  "inputs_match": true,
+  "maximum_response_bytes": 262144,
+  "measured": true,
+  "model": "SmolLM2-135M-Instruct-Q4_K_M",
+  "model_calls": 8,
+  "model_input_percent_reduced": 32.11,
+  "model_input_tokens_reduced": 456,
+  "model_listener_closed": true,
+  "net_benefit_per_correct_task_accepted": false,
+  "observed_on": "2026-11-25",
+  "owner": "lead agent",
+  "quality_acceptance": "failed",
+  "quality_passed": false,
+  "quality_rule": "Every answer in both arms must equal the fixed value.",
+  "raw_run_sha256": "630a8714aa20f9f58b6647bfd1f8eb168cb0871f9cb93ffbedca1c98d144402f",
+  "relay_errors": [],
+  "schema_version": 1,
+  "scope": "Measured local-model comparison of exact Responses tool-result repeats",
+  "seconds": 81.255,
+  "seed": 41,
+  "server": "llama.cpp b12359",
+  "setup_has_no_model_calls": true,
+  "source": "2d396bb6c4bef7a2e2200c6c5cf662125a0e27c9",
+  "source_inputs_count": 87,
+  "source_inputs_sha256_before_after": "a7c67d486459f610ccfacdfdef7f5c6f92009259bc5f46b0c32e2d1768787a3c",
+  "summary": {
+    "exact_reference": {
+      "correct_answers": 2,
+      "local_request_json_tokens": 1709,
+      "model_input_tokens": 964,
+      "model_output_tokens": 45,
+      "model_total_tokens": 1009
+    },
+    "full_output": {
+      "correct_answers": 3,
+      "local_request_json_tokens": 2132,
+      "model_input_tokens": 1420,
+      "model_output_tokens": 28,
+      "model_total_tokens": 1448
+    }
+  },
+  "surface": "Responses HTTP/SSE",
+  "task": "H041",
+  "temperature": 0,
+  "timeout_seconds_per_call": 45,
+  "token_rule": "Every paired model input and aggregate input must decrease.",
+  "windows_build": 19045
+}
