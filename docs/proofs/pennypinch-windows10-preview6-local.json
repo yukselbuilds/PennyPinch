@@ -1,0 +1,146 @@
+{
+  "build": {
+    "build_seconds": 480.107,
+    "candidate_version": "0.1.1-preview.6",
+    "changed_resources": [],
+    "compiled_exe_sha256": "0b1540dfd69fc3120b2a1f2a88dea4ae0163c17d7758963a57642c4938c43221",
+    "embedded_exe_sha256": "49ea3e67eab2df0245274fe2bad961844443c2da557f1f0e9f403eb641142f51",
+    "embedded_pe_and_privacy_checks": 2,
+    "engine_version": "0.45.0",
+    "input_count": 519,
+    "input_tools": {
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node": "v25.2.1",
+      "pnpm.cmd": "11.25.0",
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)"
+    },
+    "inputs_sha256_before_after": "07160383ae1e8a412f2251abd4cb12fcd9b6b6b46d27fedcff220ae735dd4c4f",
+    "installer_bytes": 125348192,
+    "installer_sha256": "f7f6ba382e8058a81bd230695a9c5636d56f443c091be3e214fe1af0ecbe4fd2",
+    "new_resource_pin": "486fd6ffe19e5bce437a87918de3e6634e6cc4aa1fdf36f23025d7a1914c951f",
+    "old_resource_pin": "486fd6ffe19e5bce437a87918de3e6634e6cc4aa1fdf36f23025d7a1914c951f",
+    "passed": true,
+    "release_base_url": "https://yukselbuilds.github.io/PennyPinch/updates/",
+    "release_key_fingerprint": "c32e894d22af6146ee736e04ec06454aaf740912aed00e65aa7a116cc7d0b52c",
+    "reused_gate_path_count": 509,
+    "reused_gate_sha256": "1d566cda3f768ee4fe73f2b7cbf5475b5c56e9e8b2591e7f7cbd852d1c8db911",
+    "seconds": 17.15,
+    "source_commit": "c7daad8aa0f3664880fab8d30bc7c7cbd2a5e1c0",
+    "stage_receipt_sha256": "c3bbc8f18355b013fb9b6b290da03c759fe2f9269dab81c0335e57289fb6f74c",
+    "stage_resource_count": 19491,
+    "verification_inputs_sha256_before_after": "33fb8740418b01771d861dc516ae40fc75620df43ae340550f9bc55eb9cb6658",
+    "verification_reused_existing_bundle": true,
+    "verified_bundle_entries": 19499,
+    "version_and_update_source_probes": 6
+  },
+  "delivery": {
+    "archive": {
+      "bytes": 126790834,
+      "files": 679,
+      "name": "PennyPinch_0.1.1-preview.6_Windows_x64_preview.zip",
+      "sha256": "a0a8c9f035beffbf640fe9cc662e6f697492a0f96b406e2b2f5e16667dfdac62"
+    },
+    "engine_version": "0.45.0",
+    "external_checksums_sha256": "b7472f978335f91b5ae8ba7f3931243c1f90238751a5ad5febfbdb6dc666c2c9",
+    "input_count": 24,
+    "inputs_sha256_before_after": "7641c24228a9975003e2fc48ee2b346fada94926e57c71ea3d528c951d997c57",
+    "installer": {
+      "bytes": 125348192,
+      "path": "PennyPinch_0.1.1-preview.6_x64-setup.exe",
+      "sha256": "f7f6ba382e8058a81bd230695a9c5636d56f443c091be3e214fe1af0ecbe4fd2"
+    },
+    "matching_license_inputs": 10,
+    "passed": true,
+    "product_source": "c7daad8aa0f3664880fab8d30bc7c7cbd2a5e1c0",
+    "release_notes_sha256": "ac35894f7bfdafcea43a0d072e0060e88c9bb982292a9154ff6d996d6d13301b",
+    "seconds": 9.161,
+    "third_party_notices": {
+      "components": {
+        "frontend": 6,
+        "python": 99,
+        "rust": 258
+      },
+      "count": 673,
+      "identical_to_preview5": true,
+      "index_sha256": "4e02691b9063f7cd78946a1811d368ac5a9488b7633fa5c85265b906eb9b6561"
+    },
+    "version": "0.1.1-preview.6",
+    "windows_extraction": {
+      "authenticode": "NotSigned",
+      "installer_matches_upgrade": true,
+      "matched_internal_hashes": 678,
+      "powershell": "7.6.9",
+      "unicode_and_spaces": true
+    }
+  },
+  "installed": {
+    "baseline_archive_sha256": "782780c705fc463bcc05be2887a1dbe11f82463ac2021661d05e301e84b4e222",
+    "cleanup": {
+      "desktop_use_gate_restored": true,
+      "original_profile_files": 0,
+      "original_profile_matches": true,
+      "test_profile_removed": true
+    },
+    "closed_owned_ingress": true,
+    "downgrade_exit_code": 2,
+    "external_model_calls": 0,
+    "input_count": 18,
+    "inputs_sha256_before_after": "0058b98697f9cd165c0e7c064a32dda0ab47d8b064250c97ecfa8acb7ea6d03e",
+    "installed_resources_and_receipt_matched": 19492,
+    "installer_sha256": "f7f6ba382e8058a81bd230695a9c5636d56f443c091be3e214fe1af0ecbe4fd2",
+    "local_provider_requests": 1,
+    "new_ui": {
+      "engine_stopped": true,
+      "local_responses_sse": 200,
+      "no_update_candidate": true,
+      "update_result": "current"
+    },
+    "normal_exit_verified": true,
+    "old_ui": {
+      "no_update_candidate": true,
+      "update_result": "invalid_release"
+    },
+    "passed": true,
+    "preferences_preserved": true,
+    "runtime": {
+      "distribution_directories": [
+        "opentelemetry_api-1.45.2.dist-info"
+      ],
+      "headroom": "0.45.0",
+      "headroom_distribution_directories": [
+        "headroom_ai-0.45.0.dist-info"
+      ],
+      "opentelemetry": "1.45.2"
+    },
+    "seconds": 114.909,
+    "signed_feed_version": "0.1.1-preview.2",
+    "signed_metadata_sha256_before_after": {
+      "manifest.json": "413ddd1db7d4c7733b7aeed980f8fd915312985eb2f00e571c4f92d366c7f598",
+      "manifest.json.sig": "8f9ab96f0e27d6f590d3a8f374158ab3a9f4d9a07f330f5d9327c4e70fa4900d"
+    },
+    "test_marker_preserved": true,
+    "versions": [
+      "0.1.1-preview.5",
+      "0.1.1-preview.6"
+    ],
+    "windows_build": 19045
+  },
+  "limits": {
+    "clean_windows_10": "not_tested",
+    "development_agent_token_savings": "unmeasured",
+    "github_release": "local_candidate_only",
+    "manual_ci_dispatches": 0,
+    "windows_11_x64": "not_tested"
+  },
+  "observed_on": "2026-11-25",
+  "owner": "lead agent",
+  "raw_evidence_sha256": {
+    "build-result.json": "3b490d44e4bb1d26a72ab7444c62d303f6971d9c71480050357ae4bb708cb439",
+    "delivery-result.json": "2c337e4b301aefda1b2e45c8828d79c374af4db7bccf7c35228b02849dbaa786",
+    "installed-result.json": "783b8dc5d348c090c08f78bc306204295d7ebeadb87a23bed112f9e6e90a3a53"
+  },
+  "schema_version": 1,
+  "scope": "Local Windows 10 22H2 x64 preview.6 build, installed upgrade, and delivery ZIP",
+  "status": "pass",
+  "task": "H042-ap"
+}

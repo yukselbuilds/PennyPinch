@@ -203,4 +203,10 @@ The public preview.5 app showed a verification error after it read the older pre
 
 The lead agent repeated the check with a release-mode test executable in a separate installation on Windows 10 22H2 x64. The same channel showed that there was no newer release. The manifest and signature digests matched both runs. The engine stayed stopped. Both runs exited normally and removed their test profiles.
 
-The full local gate passed 227 application tests and 481 Rust tests. The tests also checked the signature, engine compatibility for equal and newer versions, and the schema of the older manifest. The fix awaits the next installer. [Decision](../decisions/028-update-trust.md#h042-ao--older-releases-in-the-signed-channel) · [Evidence](../proofs/windows-update-older-preview.json)
+The full local gate passed 227 application tests and 481 Rust tests. The tests also checked the signature, engine compatibility for equal and newer versions, and the schema of the older manifest. H042-ap records the full installer test. [Decision](../decisions/028-update-trust.md#h042-ao--older-releases-in-the-signed-channel) · [Evidence](../proofs/windows-update-older-preview.json)
+
+## 25 November 2026 — Local Windows 10 preview.6 installer
+
+The lead agent used the public preview.5 installer as the baseline. The local preview.6 installer upgraded it on Windows 10 22H2 x64. The app kept the saved test preferences. The signed update check showed that the channel had no newer release. Both runs used the same signed metadata. Setup rejected an attempt to install preview.5 over preview.6.
+
+The installed engine completed one local Responses stream and stopped normally. The test matched all 19,491 engine resources and the package receipt. Windows extracted 679 ZIP entries and matched the 678 listed digests. The ZIP contains the tested unsigned installer. Preview.6 is a local candidate. [Evidence](../proofs/pennypinch-windows10-preview6-local.json)

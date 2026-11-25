@@ -8,7 +8,9 @@ PennyPinch v0.1.1-preview.5 is available for Windows 10 22H2 x64. The full insta
 
 Use the full installer to install preview.5. The signed preview channel serves 0.1.1-preview.2 to compatible installations. The three signed feed files matched their recorded SHA-256 digests before and after publication. [Update status](https://yukselbuilds.github.io/PennyPinch/updates/)
 
-The lead agent completed H042-ao on Windows 10. The public preview.5 showed a verification error for the older signed release. The corrected test build showed that the channel had no newer release. All 227 application tests and 481 Rust tests passed. Include the fix in the next Windows 10 installer. [Evidence](proofs/windows-update-older-preview.json)
+The lead agent completed H042-ao on Windows 10. The public preview.5 showed a verification error for the older signed release. The corrected test build showed that the channel had no newer release. All 227 application tests and 481 Rust tests passed. The local preview.6 installer carries the fix. [Evidence](proofs/windows-update-older-preview.json)
+
+The lead agent completed H042-ap. The preview.6 installer upgraded preview.5 and kept the saved test preferences. The app found no newer release on the signed preview channel. A local Responses stream and normal exit passed. The package includes 673 third-party notices. Review the local ZIP and checksum for publication. Windows 11 x64 verification remains open. [Evidence](proofs/pennypinch-windows10-preview6-local.json)
 
 The lead agent ran H037-a9 with the public preview.4 installer and a fresh application profile. The existing Windows 10 22H2 x64 desktop had WebView2. Default preferences, engine start, one local stream, normal exit, and cleanup passed in 73.966 seconds. The test matched 19,491 installed resources and the package receipt. [First-use evidence](proofs/windows-preview4-first-use.json)
 
