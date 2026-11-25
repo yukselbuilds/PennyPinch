@@ -117,7 +117,7 @@ Use Neon Managed Better Auth for the administrator Function. Pin the audience in
 
 Allow a valid bearer token on the private report routes. Use a same-origin POST to create a short-lived browser session for panel navigation. Use a same-origin DELETE to clear its cookie. Verify the token on every read. Keep the cookie host-only, HTTP-only, and limited to HTTPS. The managed provider's sign-out remains part of the browser sign-in test.
 
-The local bundle passed the signed session and summary checks with synthetic keys and native PostgreSQL. The administrator Function keeps intake closed. Keep the operator identifier and connection credentials in server configuration. The live Function and managed sign-in still need pilot verification. [Administrator access evidence](../proofs/h052-neon-admin-local.json)
+The local bundle passed the signed session and summary checks with synthetic keys and native PostgreSQL. The administrator Function keeps intake closed. Keep the operator identifier and connection credentials in server configuration. H052-p verified the deployed token contract. [Administrator access evidence](../proofs/h052-neon-admin-local.json)
 
 ## H052-m — Browser sign-in for the administrator
 
@@ -125,7 +125,7 @@ Open the account page at `/admin/login`. Send the credential form to the configu
 
 Use the temporary provider session to obtain a signed access token. End the provider session before issuing the panel cookie. Verify the token and the approved administrator subject before issuing that cookie. The account page can clear the panel cookie. The signed token remains valid only until its expiry.
 
-Two local Edge flows passed with synthetic credentials. They covered a failed sign-in, an approved operator, report navigation, and sign-out. The pilot requires a real operator and provider sign-in test. Keep report intake closed during that test. [Browser access evidence](../proofs/h052-neon-admin-browser-local.json)
+Two local Edge flows passed with synthetic credentials. They covered a failed sign-in, an approved operator, report navigation, and sign-out. H052-p verified the flow with the real provider and synthetic users. Complete production operator enrollment before opening the service. [Browser access evidence](../proofs/h052-neon-admin-browser-local.json)
 
 ## H052-n — Report cleanup after restore
 
@@ -144,3 +144,11 @@ The local test used the private report response with 21 synthetic installations.
 Comparing the one-day and seven-day totals recovered the exact contribution of one installation. Comparing two revisions of the same seven-day report recovered the same counts. The disabled route returned 404. A request without administrator approval returned 401. Both responses returned only a status. [Disclosure evidence](../proofs/h052-aggregate-disclosure.json)
 
 Keep the administrator response private. Before publication, review each proposed measurement basis, breakdown, and period. Check for single contributors and dominance. Check the candidate together with earlier published totals, including revisions and overlapping periods. Remove values that expose a contribution directly or through subtraction. Include counts, coverage, and medians in the review. Approve a specific public aggregate only after this review. [Eurostat disclosure control](https://cros.ec.europa.eu/book-page/statistical-disclosure-control) · [ONS guidance on overlapping totals](https://www.ons.gov.uk/methodology/methodologytopicsandstatisticalconcepts/disclosurecontrol/policyonprotectingconfidentialityintablesofbirthanddeathstatistics)
+
+## H052-p — Live administrator sign-in
+
+The lead agent used a temporary branch from the verified empty pilot. Neon Auth issued signed tokens to two synthetic users. The test verified the trusted Function origin and pinned both Auth URLs to branch metadata. The configured Function used a dedicated origin for its first deployment. Earlier readiness checks returned 404. Their cause remains unverified. [Neon JWT contract](https://neon.com/docs/auth/guides/plugins/jwt)
+
+The allowed user opened the panel in Edge and read the empty summary. The other user and an invalid password returned 401. The cross-origin request returned 403 with no cookie. Sign-out cleared the panel cookie. The provider stored zero active sessions after the test.
+
+The reporting role could not read either Auth table in the test. The intake route returned 404. The lead agent removed the branch and revoked the project key. Production operator enrollment and real report intake remain pending. [Live sign-in evidence](../proofs/h052-neon-admin-live.json)
