@@ -37,6 +37,8 @@ The lead agent corrected exit-code handling for Codex `exec_command` on Response
 
 The local preview.5 full installer upgraded the public preview.4 on Windows 10 22H2 x64. It preserved preferences. The test matched 19,491 installed resources and the package receipt. The installed engine passed the successful and failed output checks with the same inputs in both versions. The older installer refused the downgrade. Preview.5 is a local candidate. [Installed evidence](proofs/windows-preview5-shell-upgrade.json)
 
+The lead agent prepared the local preview.5 delivery for H042-am. The ZIP includes the release notes and 673 third-party notices. Windows matched all 678 listed SHA-256 digests and the tested installer. Review the release assets before publication. Windows 11 x64 verification remains open. [Delivery evidence](proofs/pennypinch-windows10-preview5-delivery.json)
+
 Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b2 evidence](proofs/h049-linux-transaction.json)
 
 The lead agent completed H049-b3 on Ubuntu 24.04 x64. The desktop manager ran Headroom 0.44.0 and forwarded a local Responses stream from the saved Codex endpoint.

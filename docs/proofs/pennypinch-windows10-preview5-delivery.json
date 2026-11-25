@@ -1,0 +1,64 @@
+{
+  "delivery": {
+    "archive": {
+      "bytes": 126802073,
+      "files": 679,
+      "name": "PennyPinch_0.1.1-preview.5_Windows_x64_preview.zip",
+      "sha256": "782780c705fc463bcc05be2887a1dbe11f82463ac2021661d05e301e84b4e222"
+    },
+    "engine_version": "0.45.0",
+    "external_checksums_sha256": "7dfd514423c70f2346de5d37dca2aac84fa295e523d7deb8fe88b739fa8820bc",
+    "input_count": 30,
+    "inputs_sha256_before_after": "bde598ad4a78d8903a0af5bd4e296f1485f2f49297eaa8d7f443b93b20e4d338",
+    "installed_upgrade_evidence_sha256": "e76e408163a0a7a61c8d13747ba3bc8daafa1eaf4c184065d91ae872e1357abe",
+    "installer": {
+      "bytes": 125359519,
+      "path": "PennyPinch_0.1.1-preview.5_x64-setup.exe",
+      "sha256": "3dbb16f73ee52557daddedd7e77e4a7ac52af14011134e8d6bc59a984b048d8a"
+    },
+    "product_source": "7b6b44c4a7250e53d93b1bd0d93c8fb50a28d5cd",
+    "python": "3.13.13",
+    "release_notes_sha256": "d232a3da6b38859b730206ddd4087705fcd4c0996f1b5609ecb7704197a96704",
+    "seconds": 17.164,
+    "third_party_notices": {
+      "components": {
+        "frontend": 6,
+        "python": 99,
+        "rust": 258
+      },
+      "count": 673,
+      "index_sha256": "741e666fc608406ae49f1393841c836b1d5f5b8409358f2f2a2418a2df275150",
+      "matching_engine_payload": true,
+      "matching_license_inputs": 10,
+      "previous_release": "v0.1.1-preview.4",
+      "unchanged_entries": 673
+    },
+    "version": "0.1.1-preview.5",
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "windows_extraction": {
+      "authenticode": "NotSigned",
+      "files": 679,
+      "installer_matches_installed_upgrade": true,
+      "matched_internal_digests": 678,
+      "powershell": "7.6.9",
+      "windows_path_with_unicode_and_spaces": true
+    }
+  },
+  "limits": {
+    "clean_windows_10": "not_tested",
+    "github_release_published": false,
+    "live_provider_requests": 0,
+    "manual_ci_dispatches": 0,
+    "signed_update_feed_changed": false,
+    "windows_11_x64": "not_tested"
+  },
+  "owner": "lead agent",
+  "schema_version": 1,
+  "scope": "Local Windows 10 22H2 x64 delivery for the verified preview.5 installer",
+  "status": "pass",
+  "task": "H042-am"
+}
