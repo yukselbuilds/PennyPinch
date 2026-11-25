@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "task": "H041",
+  "status": "pass",
+  "observed_on": "2026-11-25",
+  "owner": "lead agent",
+  "scope": "Windows 10 x64 local NSIS upgrade and installed Responses HTTP/SSE",
+  "baseline": {
+    "tag": "v0.1.1-preview.4",
+    "archive_sha256": "da97cc80b7a03220c64003b5c1b05cefe291ebf199132f5e7aea22ba4c7a4ff5",
+    "installer_sha256": "76556a6118252e1d0fac8380b6b60d698958208148e7dba5e8b77f1d4daedfa0",
+    "release_source": "2358e588a8374afa33a58a726dc58e20d52c8958"
+  },
+  "candidate": {
+    "version": "0.1.1-preview.5",
+    "engine_version": "0.45.0",
+    "source_commit": "7b6b44c4a7250e53d93b1bd0d93c8fb50a28d5cd",
+    "installer_sha256": "3dbb16f73ee52557daddedd7e77e4a7ac52af14011134e8d6bc59a984b048d8a",
+    "installer_bytes": 125359519,
+    "embedded_exe_sha256": "c8a17c112b69252e2392e23712c453beafd74e80c37e24291f67034da7274c46",
+    "resource_receipt_sha256": "c3bbc8f18355b013fb9b6b290da03c759fe2f9269dab81c0335e57289fb6f74c",
+    "changed_resources": [
+      "runtime/desktop_controller.py",
+      "runtime/manifest.json",
+      "runtime/optimization_control.py"
+    ],
+    "version_and_update_source_probes": 4,
+    "embedded_pe_and_privacy_checks": 2,
+    "matched_bundle_verification_inputs": 517,
+    "bundle_verification_inputs_sha256_before_and_after": "1d6fe91593d0e81f53356b11ed08e84381d6819ee71bd032ba3e8427b9b18d40",
+    "bundle_log_seconds": 1015.636,
+    "verification_seconds": 6.234
+  },
+  "installed": {
+    "windows_build": 19045,
+    "matched_files_including_receipt": 19492,
+    "same_request_fingerprints_across_versions": true,
+    "preferences_preserved": true,
+    "test_marker_preserved": true,
+    "previous_installer_refused": 2,
+    "local_responses_calls": 4,
+    "successful_request_original_tokens": 4773,
+    "successful_request_forwarded_tokens": 2050,
+    "saved_percent": 57.05,
+    "original_ccr_recovery_exact": true,
+    "successful_exit_code_visible": true,
+    "failed_output_exact": true,
+    "failed_status_and_details_visible": true,
+    "owned_installation_profile_and_ports_cleaned": true,
+    "matched_inputs": 21,
+    "inputs_sha256_before_and_after": "7213605c7819feacfae43876e54ac25dac9e1c5a37c12b1bfd95a1f2fce35f75",
+    "seconds": 133.651
+  },
+  "raw_receipts_sha256": {
+    "build": "25e355246f070f1d63bbffcb9e4f75105166b114575cbc955cecbb90df9f0d1e",
+    "installed": "ff17a6d4bee6769689ee05ba87f26c4d0965788b9464a0af168c57b3ac23452f"
+  },
+  "full_request_tokenizer": "o200k_base",
+  "external_model_calls": 0,
+  "windows_11_x64": "not_tested",
+  "clean_windows_10": "not_tested",
+  "publication_status": "local_candidate_only",
+  "development_agent_token_savings": "unmeasured"
+}

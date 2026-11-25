@@ -33,7 +33,9 @@ Codex CLI 0.171.0-alpha.13.2 opened both synthetic files under the built-in read
 
 The lead agent checked Learn with Headroom 0.45.0. Eight previews passed. A local model returned the exact values for two paired report tasks. The advice saved no retries and added 55 tokens. Keep the advice in the opt-in preview. Broader live acceptance needs a real client task with an observed repeat that the advice can prevent. [Learn evidence](proofs/learn-merit-pilot.json)
 
-The lead agent corrected exit-code handling for Codex `exec_command` on Responses. Successful compression keeps the exit code visible. Failed output stays intact. HTTP/SSE and WebSocket passed eight local pairs each on Windows 10. The current installer predates this source change. [Shell status evidence](proofs/responses-shell-status-045.json)
+The lead agent corrected exit-code handling for Codex `exec_command` on Responses. Successful compression keeps the exit code visible. Failed output stays intact. HTTP/SSE and WebSocket passed eight local pairs each on Windows 10. [Shell status evidence](proofs/responses-shell-status-045.json)
+
+The local preview.5 full installer upgraded the public preview.4 on Windows 10 22H2 x64. It preserved preferences. The test matched 19,491 installed resources and the package receipt. The installed engine passed the successful and failed output checks with the same inputs in both versions. The older installer refused the downgrade. Preview.5 is a local candidate. [Installed evidence](proofs/windows-preview5-shell-upgrade.json)
 
 Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b2 evidence](proofs/h049-linux-transaction.json)
 
