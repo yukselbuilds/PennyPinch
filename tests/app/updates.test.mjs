@@ -67,6 +67,13 @@ test("does not use browser transport and preserves safe retry errors", async () 
   assert.deepEqual(decodeUpdateReply({ ...error, error: "file C:\\fixture.exe" }, requestId), invalid);
 });
 
+test("decodes the full installer requirement without a downloadable candidate", () => {
+  const manual = reply({ status: "error", channel: null, candidate: null, error: "full_installer_required" });
+  assert.deepEqual(decodeUpdateReply(manual, requestId), { kind: "error", code: "full_installer_required" });
+  assert.deepEqual(decodeUpdateReply({ ...manual, candidate: reply().candidate }, requestId), invalid);
+  assert.deepEqual(decodeUpdateReply({ ...manual, can_apply: true }, requestId), invalid);
+});
+
 test("installation capability is native and bound to a ready candidate", () => {
   const ready = reply({ status: "ready", can_apply: true });
   assert.equal(decodeUpdateReply(ready, requestId).snapshot.can_apply, true);

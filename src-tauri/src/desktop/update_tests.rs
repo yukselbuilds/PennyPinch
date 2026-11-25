@@ -134,7 +134,7 @@ fn rejects_tampering_mismatched_signatures_and_untrusted_keys() {
 }
 
 #[test]
-fn rejects_signed_metadata_with_duplicate_version_or_mismatched_engine_pin() {
+fn identifies_a_newer_signed_release_that_requires_the_full_installer() {
     let installed = current_version();
     let trusted = policy(&installed, UpdateChannel::Stable);
     let duplicate = include_bytes!("../../../tests/fixtures/update/duplicate-version.json");
@@ -148,7 +148,7 @@ fn rejects_signed_metadata_with_duplicate_version_or_mismatched_engine_pin() {
     );
     assert_eq!(
         verify_manifest(wrong_pin, wrong_pin_sig, &trusted).unwrap_err(),
-        UpdateError::EnginePinMismatch
+        UpdateError::FullInstallerRequired
     );
     let installed = Version::new(0, 1, 1);
     assert_eq!(
@@ -215,7 +215,7 @@ fn enforces_installed_identity_and_closes_the_manifest_schema() {
         (
             "/engine/version",
             json!("latest"),
-            UpdateError::EnginePinMismatch,
+            UpdateError::InvalidManifest,
         ),
         (
             "/installer/size_bytes",
@@ -323,8 +323,40 @@ fn application_downloads_from_release_sources_require_the_same_runtime_resources
     manifest["application"]["runtime_resources_sha256"] = json!("0".repeat(64));
     assert_eq!(
         verify(&manifest).unwrap_err(),
+        UpdateError::FullInstallerRequired
+    );
+    let equal_install = Version::new(0, 1, 1);
+    let equal_policy = policy(&equal_install, UpdateChannel::Stable);
+    assert_eq!(
+        parse_manifest(&serde_json::to_vec(&manifest).unwrap(), &equal_policy).unwrap_err(),
         UpdateError::RuntimeResourcesMismatch
     );
+    for (pointer, value, error) in [
+        (
+            "/application/sha256",
+            json!("bad"),
+            UpdateError::InvalidManifest,
+        ),
+        (
+            "/application/state_format",
+            json!(2),
+            UpdateError::StateFormatMismatch,
+        ),
+        (
+            "/engine/runtime_manifest_sha256",
+            json!("bad"),
+            UpdateError::InvalidManifest,
+        ),
+        (
+            "/application/runtime_resources_sha256",
+            json!("bad"),
+            UpdateError::InvalidManifest,
+        ),
+    ] {
+        let mut rejected = manifest.clone();
+        *rejected.pointer_mut(pointer).unwrap() = value;
+        assert_eq!(verify(&rejected).unwrap_err(), error, "{pointer}");
+    }
     let newer_install = Version::new(0, 1, 2);
     let newer_policy = policy(&newer_install, UpdateChannel::Stable);
     manifest["application"]["state_format"] = json!(UPDATE_STATE_FORMAT + 1);

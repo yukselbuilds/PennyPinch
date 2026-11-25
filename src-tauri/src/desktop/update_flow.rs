@@ -39,6 +39,8 @@ pub(crate) enum Failure {
     Unavailable,
     SourceFailed,
     InvalidRelease,
+    #[cfg(windows)]
+    FullInstallerRequired,
     CandidateChanged,
     StorageFailed,
     DownloadFailed,

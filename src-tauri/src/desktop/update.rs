@@ -45,6 +45,7 @@ pub(crate) enum UpdateError {
     VersionNotNewer,
     EnginePinMismatch,
     RuntimeResourcesMismatch,
+    FullInstallerRequired,
     StateFormatMismatch,
     InstallerRead,
     InstallerSizeMismatch,
@@ -194,14 +195,13 @@ impl VerifiedUpdate {
     }
 }
 
+fn valid_sha256(hash: &str) -> bool {
+    hash.len() == 64 && hash.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
+}
+
 impl Artifact {
     fn valid(&self, limit: u64) -> bool {
-        (1..=limit).contains(&self.size_bytes)
-            && self.sha256.len() == 64
-            && self
-                .sha256
-                .bytes()
-                .all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
+        (1..=limit).contains(&self.size_bytes) && valid_sha256(&self.sha256)
     }
 
     fn verify(&self, bytes: impl Read) -> Result<(), UpdateError> {
@@ -280,18 +280,19 @@ fn parse_manifest(bytes: &[u8], policy: &UpdatePolicy<'_>) -> Result<VerifiedUpd
     let precedence = version.cmp_precedence(policy.installed_version);
     // A signed older release can require the engine resources that shipped with it.
     let older = precedence.is_lt();
-    let application = match (manifest.schema_version, manifest.application) {
-        (1, None) => None,
+    let (application, resources_match) = match (manifest.schema_version, manifest.application) {
+        (1, None) => (None, true),
         (2 | 3, Some(application)) => {
-            match (
+            let resources_match = match (
                 manifest.schema_version,
                 application.runtime_resources_sha256.as_deref(),
             ) {
-                (2, None) => {}
-                (3, Some(pin)) if older || pin == windows_runtime_resources_sha256() => {}
-                (3, Some(_)) => return Err(UpdateError::RuntimeResourcesMismatch),
+                (2, None) => true,
+                (3, Some(pin)) if valid_sha256(pin) => {
+                    older || pin == windows_runtime_resources_sha256()
+                }
                 _ => return Err(UpdateError::InvalidManifest),
-            }
+            };
             if !older && application.state_format != UPDATE_STATE_FORMAT {
                 return Err(UpdateError::StateFormatMismatch);
             }
@@ -302,16 +303,29 @@ fn parse_manifest(bytes: &[u8], policy: &UpdatePolicy<'_>) -> Result<VerifiedUpd
             if !artifact.valid(APPLICATION_LIMIT) {
                 return Err(UpdateError::InvalidManifest);
             }
-            Some(artifact)
+            (Some(artifact), resources_match)
         }
         (1..=3, _) => return Err(UpdateError::InvalidManifest),
         _ => return Err(UpdateError::UnsupportedSchema),
     };
-    if !older
-        && (manifest.engine.version != EXPECTED_ENGINE_VERSION
-            || manifest.engine.runtime_manifest_sha256 != EXPECTED_RUNTIME_MANIFEST_SHA256)
-    {
-        return Err(UpdateError::EnginePinMismatch);
+    let engine = manifest.engine;
+    let engine_matches = engine.version == EXPECTED_ENGINE_VERSION
+        && engine.runtime_manifest_sha256 == EXPECTED_RUNTIME_MANIFEST_SHA256;
+    if !older && (!engine_matches || !resources_match) {
+        if precedence.is_gt() && matches!(manifest.schema_version, 1 | 3) {
+            if engine.version.len() > VERSION_LIMIT
+                || Version::parse(&engine.version).is_err()
+                || !valid_sha256(&engine.runtime_manifest_sha256)
+            {
+                return Err(UpdateError::InvalidManifest);
+            }
+            return Err(UpdateError::FullInstallerRequired);
+        }
+        return Err(if resources_match {
+            UpdateError::EnginePinMismatch
+        } else {
+            UpdateError::RuntimeResourcesMismatch
+        });
     }
     if !precedence.is_gt() {
         return Err(UpdateError::VersionNotNewer);

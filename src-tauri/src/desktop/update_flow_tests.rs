@@ -11,12 +11,17 @@ const STABLE: &[u8] = include_bytes!("../../../tests/fixtures/update/stable.json
 const STABLE_SIGNATURE: &[u8] = include_bytes!("../../../tests/fixtures/update/stable.json.sig");
 const PREVIEW: &[u8] = include_bytes!("../../../tests/fixtures/update/preview.json");
 const PREVIEW_SIGNATURE: &[u8] = include_bytes!("../../../tests/fixtures/update/preview.json.sig");
+const DIFFERENT_PIN: &[u8] =
+    include_bytes!("../../../tests/fixtures/update/different-engine-pin.json");
+const DIFFERENT_PIN_SIGNATURE: &[u8] =
+    include_bytes!("../../../tests/fixtures/update/different-engine-pin.json.sig");
 const INSTALLER: &[u8] = b"headroom-h042-fixture-installer-v0.1.1\n";
 
 #[derive(Clone, Copy)]
 enum Mode {
     Normal,
     InvalidSignature,
+    DifferentPin,
     Redirect,
     WrongHash,
     ShortBody,
@@ -109,6 +114,10 @@ fn serve(mut stream: TcpStream, mode: &Mutex<Mode>, hits: &Mutex<Vec<String>>) {
         return;
     }
     let data: &[u8] = match path.as_str() {
+        "/releases/stable/manifest.json" if matches!(mode, Mode::DifferentPin) => DIFFERENT_PIN,
+        "/releases/stable/manifest.json.sig" if matches!(mode, Mode::DifferentPin) => {
+            DIFFERENT_PIN_SIGNATURE
+        }
         "/releases/stable/manifest.json" => STABLE,
         "/releases/preview/manifest.json" => PREVIEW,
         "/releases/stable/manifest.json.sig" if matches!(mode, Mode::InvalidSignature) => {
@@ -278,6 +287,42 @@ fn rejects_redirects_and_untrusted_metadata_without_a_candidate() {
         assert_eq!(request(&flow, Action::Snapshot, true).status, Status::Idle);
         assert_eq!(feed.hits.lock().unwrap().len(), hits);
     }
+}
+
+#[test]
+fn a_signed_incompatible_release_clears_the_previous_candidate() {
+    let feed = Feed::start(Mode::Normal);
+    let flow = feed.flow(None);
+    let previous = check(&flow, UpdateChannel::Stable);
+    *feed.mode.lock().unwrap() = Mode::DifferentPin;
+    let reply = request(
+        &flow,
+        Action::Check {
+            channel: UpdateChannel::Stable,
+        },
+        true,
+    );
+    assert_eq!(reply.error, Some(Failure::FullInstallerRequired));
+    assert!(reply.candidate.is_none());
+    assert!(!reply.can_apply);
+    let download = request(
+        &flow,
+        Action::Download {
+            candidate_id: previous.id,
+        },
+        true,
+    );
+    assert_eq!(download.error, Some(Failure::CandidateChanged));
+    assert_eq!(request(&flow, Action::Snapshot, true).status, Status::Idle);
+    assert_eq!(
+        *feed.hits.lock().unwrap(),
+        [
+            "/releases/stable/manifest.json",
+            "/releases/stable/manifest.json.sig",
+            "/releases/stable/manifest.json",
+            "/releases/stable/manifest.json.sig",
+        ]
+    );
 }
 
 #[test]

@@ -163,6 +163,7 @@ impl ReleaseSource {
             }
             Ok(_) => Err(Failure::InvalidRelease),
             Err(UpdateError::VersionNotNewer) => Ok(None),
+            Err(UpdateError::FullInstallerRequired) => Err(Failure::FullInstallerRequired),
             Err(_) => Err(Failure::InvalidRelease),
         }
     }

@@ -9,7 +9,8 @@ export type UpdateAction = { kind: "snapshot" }
 
 const statuses = ["unavailable", "idle", "current", "available", "waiting_for_engine", "ready", "exiting"] as const;
 const failureCodes = ["validation_failed", "busy", "unavailable", "source_failed", "invalid_release",
-  "candidate_changed", "storage_failed", "download_failed", "integrity_failed", "preparation_failed", "engine_running"] as const;
+  "full_installer_required", "candidate_changed", "storage_failed", "download_failed", "integrity_failed",
+  "preparation_failed", "engine_running"] as const;
 
 type UpdateStatus = (typeof statuses)[number];
 export type UpdateFailure = (typeof failureCodes)[number] | "invalid_response" | "request_failed";

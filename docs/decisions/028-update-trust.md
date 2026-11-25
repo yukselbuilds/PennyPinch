@@ -86,3 +86,9 @@ Pass a valid app through preparation, signature/hash/extraction/probe, and befor
 On 25 November, preview.5 showed a verification error when it read the signed preview.2 metadata. The earlier release requires a different engine and different runtime resources.
 
 Verify the signature before parsing the manifest. Check the application, platform, channel, schema, and artifact fields. Return no candidate when the signed release is older. Check engine and resource compatibility for equal and newer releases. Offer an update only when its version is newer and all checks pass.
+
+## H042-ar — Full installer guidance for engine changes
+
+Verify the signature before reading the manifest. Check the application, platform, channel, schema, artifacts, and version. For a newer schema 1 or 3 release, show the full installer instruction if the engine pin or runtime resource digest differs. Keep the candidate empty. An invalid signature, an invalid manifest, or an incompatible state format still causes a verification error. Keep the existing version and channel rules.
+
+The Windows 10 native Settings test used a signed loopback feed. It checked the instruction in Turkish and English, an invalid signature, and a compatible preview. The parser tests also cover the schema 3 resource digest and malformed fields. The change is ready in source. [Evidence](../proofs/windows-update-full-installer.json)

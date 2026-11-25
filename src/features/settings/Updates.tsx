@@ -17,6 +17,7 @@ const copy = {
     downloading: "Paket indiriliyor ve doğrulanıyor…",
     unavailable: "Bu derleme için güncelleme kaynağı kullanılamıyor.",
     current: "Bu kanalda daha yeni sürüm bulunmadı.",
+    fullInstaller: "Yeni sürüm tam kurulum gerektiriyor. Paketi GitHub Releases sayfasından indir.",
     available: "İmzalı bir güncelleme bulundu.",
     waiting_for_engine: "Paket doğrulandı. Motorun durması bekleniyor.",
     ready: "Paket doğrulandı ve bu oturum için hazır.",
@@ -64,6 +65,7 @@ const copy = {
     downloading: "Downloading and verifying the package…",
     unavailable: "An update source is unavailable for this build.",
     current: "No newer release was found on this channel.",
+    fullInstaller: "The new release requires the full installer. Download it from GitHub Releases.",
     available: "A signed update is available.",
     waiting_for_engine: "Package verified. Waiting for the engine to stop.",
     ready: "Package verified and ready for this session.",
@@ -152,13 +154,14 @@ export function Updates({ language, runtimeKey }: { language: PreferenceLanguage
   const selected = snapshot?.channel === channel ? snapshot : null;
   const candidate = selected?.candidate;
   const status = selected?.status;
+  const failure = actionFailure ?? (readFailure === "unavailable" ? null : readFailure);
   const line = pending === "check" ? text.checking : pending === "download" ? text.downloading
     : snapshot?.status === "exiting" ? text.exiting
     : pending === "apply" ? text.applying : pending === "rollback" ? text.restoring
+    : failure === "full_installer_required" ? text.fullInstaller
     : snapshot?.status === "unavailable" || readFailure === "unavailable" ? text.unavailable
       : !snapshot && !readFailure ? text.loading
         : status && status !== "idle" ? text[status] : "";
-  const failure = actionFailure ?? (readFailure === "unavailable" ? null : readFailure);
 
   return <section className="operating-settings" aria-labelledby="updates-title">
     <div className="operating-settings__heading"><h3 id="updates-title">{text.title}</h3>
@@ -179,7 +182,8 @@ export function Updates({ language, runtimeKey }: { language: PreferenceLanguage
           onClick={() => void run({ kind: "check", channel })}>{text.check}</button>
       </>}
       {line && <p className="operating-settings__status-line" role="status" aria-live="polite">{line}</p>}
-      {failure && <p className="operating-settings__field-error" role="alert">{text.errors[failure]}</p>}
+      {failure && failure !== "full_installer_required"
+        && <p className="operating-settings__field-error" role="alert">{text.errors[failure]}</p>}
       {readFailure && readFailure !== "unavailable" && <button className="text-button update-refresh" type="button"
         onClick={() => { setReadFailure(null); setActionFailure(null); setRefresh(value => value + 1); }}>{text.refresh}</button>}
       {candidate && <div className="update-candidate">
