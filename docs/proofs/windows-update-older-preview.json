@@ -1,0 +1,136 @@
+{
+  "candidate_build": {
+    "input_count": 517,
+    "inputs_sha256_before_after": "507fbb342b19e9a160e9002fa9dca89755af5ef850f0ce2023367aabacecb07a",
+    "mode": "qa",
+    "passed": true,
+    "result": {
+      "seconds": 74.1,
+      "sha256": "6683a40f547d9bc889f45ca8e460a855c49106e0147f1e71121f6c19db100da2",
+      "test_profile_codegen_units": 16,
+      "test_profile_lto": false,
+      "update_probe_passed": true,
+      "version": "0.1.1-preview.5"
+    },
+    "seconds": 74.528,
+    "update_sources_sha256": {
+      "src-tauri/src/desktop/update.rs": "0444395f4c8c05cef1378b1acb2e801c1dfd8bcec6c1d21bf93dcd99905a2b06",
+      "src-tauri/src/desktop/update_flow.rs": "aad2b8d17cb42dcacbc632923c0ad4fa1a057d05a90a6a167e2098f7f40e4291",
+      "src-tauri/src/desktop/update_source.rs": "c8efd97fab3845e65ef189ac701f2799f80323ec052a2fd760bc6918abaea276",
+      "src-tauri/src/desktop/update_tests.rs": "6f56643fd23d74c38b2fd24e11a72fd495935848ae5de641451a155a747c8a77"
+    },
+    "windows_build": 19045
+  },
+  "limits": {
+    "development_agent_token_savings": "unmeasured",
+    "fix_available_in_public_installer": false,
+    "live_model_calls": 0,
+    "manual_ci_dispatches": 0,
+    "windows_11_x64": "not_tested"
+  },
+  "local_gate": {
+    "input_count": 509,
+    "inputs_sha256_before_after": "1d566cda3f768ee4fe73f2b7cbf5475b5c56e9e8b2591e7f7cbd852d1c8db911",
+    "mode": "gate",
+    "passed": true,
+    "result": {
+      "app tests": {
+        "passed": true,
+        "seconds": 1.216,
+        "tests": 227
+      },
+      "desktop build": {
+        "passed": true,
+        "seconds": 17.449
+      },
+      "frontend build": {
+        "passed": true,
+        "seconds": 2.284
+      },
+      "rust formatting": {
+        "passed": true,
+        "seconds": 1.516
+      },
+      "rust tests": {
+        "passed": true,
+        "seconds": 15.093,
+        "skipped": 25,
+        "tests": 481
+      }
+    },
+    "seconds": 37.941,
+    "update_sources_sha256": {
+      "src-tauri/src/desktop/update.rs": "0444395f4c8c05cef1378b1acb2e801c1dfd8bcec6c1d21bf93dcd99905a2b06",
+      "src-tauri/src/desktop/update_flow.rs": "aad2b8d17cb42dcacbc632923c0ad4fa1a057d05a90a6a167e2098f7f40e4291",
+      "src-tauri/src/desktop/update_source.rs": "c8efd97fab3845e65ef189ac701f2799f80323ec052a2fd760bc6918abaea276",
+      "src-tauri/src/desktop/update_tests.rs": "6f56643fd23d74c38b2fd24e11a72fd495935848ae5de641451a155a747c8a77"
+    },
+    "windows_build": 19045
+  },
+  "observed_on": "2026-11-25",
+  "owner": "lead agent",
+  "public_product_source": "7b6b44c4a7250e53d93b1bd0d93c8fb50a28d5cd",
+  "published_installer": {
+    "archive_sha256": "782780c705fc463bcc05be2887a1dbe11f82463ac2021661d05e301e84b4e222",
+    "cleanup": {
+      "desktop_use_gate_restored": true,
+      "original_profile_files": 0,
+      "original_profile_matches": true,
+      "test_profile_removed": true
+    },
+    "engine_stayed_stopped": true,
+    "input_count": 13,
+    "inputs_sha256_before_after": "b25f65693b4b81b387212e9a2a9aac448ebf6747fb40d3c1cf07c23666dd3fef",
+    "installed_via_public_zip": true,
+    "installer_sha256": "3dbb16f73ee52557daddedd7e77e4a7ac52af14011134e8d6bc59a984b048d8a",
+    "no_candidate": true,
+    "no_download_control": true,
+    "normal_exit_requested": true,
+    "outcome": "invalid_release",
+    "passed": true,
+    "seconds": 50.481,
+    "signed_feed_sha256_before_after": {
+      "manifest.json": "413ddd1db7d4c7733b7aeed980f8fd915312985eb2f00e571c4f92d366c7f598",
+      "manifest.json.sig": "8f9ab96f0e27d6f590d3a8f374158ab3a9f4d9a07f330f5d9327c4e70fa4900d"
+    },
+    "signed_feed_version": "0.1.1-preview.2",
+    "test_binary_replacement": false,
+    "test_executable_sha256": "c8a17c112b69252e2392e23712c453beafd74e80c37e24291f67034da7274c46",
+    "version": "0.1.1-preview.5",
+    "windows_build": 19045
+  },
+  "release_mode_test_build": {
+    "archive_sha256": "782780c705fc463bcc05be2887a1dbe11f82463ac2021661d05e301e84b4e222",
+    "cleanup": {
+      "desktop_use_gate_restored": true,
+      "original_profile_files": 0,
+      "original_profile_matches": true,
+      "test_profile_removed": true
+    },
+    "engine_stayed_stopped": true,
+    "input_count": 14,
+    "inputs_sha256_before_after": "1c156342ad2f307fb255b29e175d78e523936178fecc6ad0a6f081e5ecc60af0",
+    "installed_via_public_zip": true,
+    "installer_sha256": "3dbb16f73ee52557daddedd7e77e4a7ac52af14011134e8d6bc59a984b048d8a",
+    "no_candidate": true,
+    "no_download_control": true,
+    "normal_exit_requested": true,
+    "outcome": "current",
+    "passed": true,
+    "seconds": 50.971,
+    "signed_feed_sha256_before_after": {
+      "manifest.json": "413ddd1db7d4c7733b7aeed980f8fd915312985eb2f00e571c4f92d366c7f598",
+      "manifest.json.sig": "8f9ab96f0e27d6f590d3a8f374158ab3a9f4d9a07f330f5d9327c4e70fa4900d"
+    },
+    "signed_feed_version": "0.1.1-preview.2",
+    "test_binary_replacement": true,
+    "test_executable_sha256": "6683a40f547d9bc889f45ca8e460a855c49106e0147f1e71121f6c19db100da2",
+    "version": "0.1.1-preview.5",
+    "windows_build": 19045
+  },
+  "same_metadata_before_and_after": true,
+  "schema_version": 1,
+  "scope": "Windows 10 22H2 x64 installed check of the older live signed preview",
+  "status": "pass",
+  "task": "H042-ao"
+}

@@ -80,3 +80,9 @@ Focused gate uses pinned Python, test_windows_update_package.py, normal update R
 At the user's request to continue, verify the remaining connection within local preparation: use a release-mode executable built from current Headroom source in the same command instead of a small probe fixture. Without changing source, use TAURI_CONFIG for a separate QA identity/version and a temporary public key in the build environment. Do not add an HTTPS source or the update-fixture feature. Preserve the previously used QA profile with LTO off and 16 codegen units; this is not a distributable production build or production performance acceptance.
 
 Pass a valid app through preparation, signature/hash/extraction/probe, and before/after input equality. A mismatch in config version/identity or executable public key must not produce ready output. Delete the test key's private part afterwards; do not write to existing install/data roots. Reuse unchanged tests and frontend build only when source/tool inputs match. Build and preparation evidence comes from a new run; external acceptance remains open.
+
+## H042-ao — Older releases in the signed channel
+
+On 25 November, preview.5 showed a verification error when it read the signed preview.2 metadata. The earlier release requires a different engine and different runtime resources.
+
+Verify the signature before parsing the manifest. Check the application, platform, channel, schema, and artifact fields. Return no candidate when the signed release is older. Check engine and resource compatibility for equal and newer releases. Offer an update only when its version is newer and all checks pass.

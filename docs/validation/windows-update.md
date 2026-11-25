@@ -196,3 +196,11 @@ The project page and update page link to the full installer. The signed preview 
 GitHub Releases serves v0.1.1-preview.5 as a prerelease for Windows 10 22H2 x64. Both downloads matched their SHA-256 digests without an account. The installer matched the Windows 10 upgrade test. The desktop check script passed five cases on Windows 10. [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.5) · [Publication evidence](../proofs/pennypinch-windows10-preview5-publication.json)
 
 Use the full installer to install preview.5. The signed channel serves v0.1.1-preview.2 to compatible installations. Its three files kept their recorded digests. Windows 11 x64 update and rollback remain open. [Update status](https://yukselbuilds.github.io/PennyPinch/updates/)
+
+## 25 November 2026 — Check an older signed release
+
+The public preview.5 app showed a verification error after it read the older preview.2 metadata. The earlier release uses Headroom 0.44.0. The installed preview.5 uses Headroom 0.45.0. The old check tested engine compatibility before it handled the version difference.
+
+The lead agent repeated the check with a release-mode test executable in a separate installation on Windows 10 22H2 x64. The same channel showed that there was no newer release. The manifest and signature digests matched both runs. The engine stayed stopped. Both runs exited normally and removed their test profiles.
+
+The full local gate passed 227 application tests and 481 Rust tests. The tests also checked the signature, engine compatibility for equal and newer versions, and the schema of the older manifest. The fix awaits the next installer. [Decision](../decisions/028-update-trust.md#h042-ao--older-releases-in-the-signed-channel) · [Evidence](../proofs/windows-update-older-preview.json)

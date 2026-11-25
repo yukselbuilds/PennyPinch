@@ -254,33 +254,6 @@ fn decode_tauri_text(text: &str, limit: usize) -> Option<String> {
 fn parse_manifest(bytes: &[u8], policy: &UpdatePolicy<'_>) -> Result<VerifiedUpdate, UpdateError> {
     let manifest: Manifest =
         serde_json::from_slice(bytes).map_err(|_| UpdateError::InvalidManifest)?;
-    let application = match (manifest.schema_version, manifest.application) {
-        (1, None) => None,
-        (2 | 3, Some(application)) => {
-            match (
-                manifest.schema_version,
-                application.runtime_resources_sha256.as_deref(),
-            ) {
-                (2, None) => {}
-                (3, Some(pin)) if pin == windows_runtime_resources_sha256() => {}
-                (3, Some(_)) => return Err(UpdateError::RuntimeResourcesMismatch),
-                _ => return Err(UpdateError::InvalidManifest),
-            }
-            if application.state_format != UPDATE_STATE_FORMAT {
-                return Err(UpdateError::StateFormatMismatch);
-            }
-            let artifact = Artifact {
-                size_bytes: application.size_bytes,
-                sha256: application.sha256,
-            };
-            if !artifact.valid(APPLICATION_LIMIT) {
-                return Err(UpdateError::InvalidManifest);
-            }
-            Some(artifact)
-        }
-        (1..=3, _) => return Err(UpdateError::InvalidManifest),
-        _ => return Err(UpdateError::UnsupportedSchema),
-    };
     if manifest.app_identifier != policy.app_identifier || manifest.target != WINDOWS_TARGET {
         return Err(UpdateError::WrongAppOrTarget);
     }
@@ -304,12 +277,43 @@ fn parse_manifest(bytes: &[u8], policy: &UpdatePolicy<'_>) -> Result<VerifiedUpd
     if version.pre.is_empty() != (manifest.channel == UpdateChannel::Stable) {
         return Err(UpdateError::WrongChannel);
     }
-    if manifest.engine.version != EXPECTED_ENGINE_VERSION
-        || manifest.engine.runtime_manifest_sha256 != EXPECTED_RUNTIME_MANIFEST_SHA256
+    let precedence = version.cmp_precedence(policy.installed_version);
+    // A signed older release can require the engine resources that shipped with it.
+    let older = precedence.is_lt();
+    let application = match (manifest.schema_version, manifest.application) {
+        (1, None) => None,
+        (2 | 3, Some(application)) => {
+            match (
+                manifest.schema_version,
+                application.runtime_resources_sha256.as_deref(),
+            ) {
+                (2, None) => {}
+                (3, Some(pin)) if older || pin == windows_runtime_resources_sha256() => {}
+                (3, Some(_)) => return Err(UpdateError::RuntimeResourcesMismatch),
+                _ => return Err(UpdateError::InvalidManifest),
+            }
+            if !older && application.state_format != UPDATE_STATE_FORMAT {
+                return Err(UpdateError::StateFormatMismatch);
+            }
+            let artifact = Artifact {
+                size_bytes: application.size_bytes,
+                sha256: application.sha256,
+            };
+            if !artifact.valid(APPLICATION_LIMIT) {
+                return Err(UpdateError::InvalidManifest);
+            }
+            Some(artifact)
+        }
+        (1..=3, _) => return Err(UpdateError::InvalidManifest),
+        _ => return Err(UpdateError::UnsupportedSchema),
+    };
+    if !older
+        && (manifest.engine.version != EXPECTED_ENGINE_VERSION
+            || manifest.engine.runtime_manifest_sha256 != EXPECTED_RUNTIME_MANIFEST_SHA256)
     {
         return Err(UpdateError::EnginePinMismatch);
     }
-    if !version.cmp_precedence(policy.installed_version).is_gt() {
+    if !precedence.is_gt() {
         return Err(UpdateError::VersionNotNewer);
     }
     Ok(VerifiedUpdate {

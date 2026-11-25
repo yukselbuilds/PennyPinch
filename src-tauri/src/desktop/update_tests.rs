@@ -160,6 +160,16 @@ fn rejects_signed_metadata_with_duplicate_version_or_mismatched_engine_pin() {
         .unwrap_err(),
         UpdateError::EnginePinMismatch
     );
+    let newer_install = Version::new(0, 1, 2);
+    let newer_policy = policy(&newer_install, UpdateChannel::Stable);
+    assert_eq!(
+        verify_manifest(wrong_pin, wrong_pin_sig, &newer_policy).unwrap_err(),
+        UpdateError::VersionNotNewer
+    );
+    assert_eq!(
+        verify_manifest(wrong_pin, STABLE_SIG, &newer_policy).unwrap_err(),
+        UpdateError::InvalidSignature
+    );
 }
 
 #[test]
@@ -315,6 +325,19 @@ fn application_downloads_from_release_sources_require_the_same_runtime_resources
         verify(&manifest).unwrap_err(),
         UpdateError::RuntimeResourcesMismatch
     );
+    let newer_install = Version::new(0, 1, 2);
+    let newer_policy = policy(&newer_install, UpdateChannel::Stable);
+    manifest["application"]["state_format"] = json!(UPDATE_STATE_FORMAT + 1);
+    assert_eq!(
+        parse_manifest(&serde_json::to_vec(&manifest).unwrap(), &newer_policy).unwrap_err(),
+        UpdateError::VersionNotNewer
+    );
+    manifest["application"]["runtime_resources_sha256"] = Value::Null;
+    assert_eq!(
+        parse_manifest(&serde_json::to_vec(&manifest).unwrap(), &newer_policy).unwrap_err(),
+        UpdateError::InvalidManifest
+    );
+    manifest["application"]["state_format"] = json!(UPDATE_STATE_FORMAT);
     manifest["application"]["runtime_resources_sha256"] = json!(windows_runtime_resources_sha256());
     assert!(verify(&manifest).unwrap().allows_release_download());
 }
