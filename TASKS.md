@@ -1,23 +1,23 @@
 # PennyPinch task list
 
-**Status date** 24 November 2026
+**Status date** 25 November 2026
 
 **Scope** [Product specification 0.6](HEADROOM_DESKTOP_SPEC.md)\
 **Targets** Windows 10 22H2 x64 and Windows 11 x64 for Codex, Claude Code and OpenCode.
 
-**First-use priority** The Windows 10 preview ZIP is ready for local testing. [Windows 10 delivery evidence](docs/proofs/pennypinch-windows10-activity-delivery.json)
+**First-use priority** PennyPinch v0.1.1-preview.4 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. [Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.4) · [Publication evidence](docs/proofs/pennypinch-windows10-preview4-publication.json)
 
 **46 of 54 main tasks are complete.** H001–H005, H007–H036, H038–H040, H043 and H045–H051 meet their recorded acceptance criteria. H042 passed its Windows 10 release checks. Windows 11 x64 remains open.
 
 | Open work | Condition for proceeding |
 | --- | --- |
 | H041 · Windows 10 evidence | The team recorded a sustained 0.44.0 workload, retrieval of original content in chunks and an initial live Learn comparison. [Measurements and open acceptance criteria](docs/validation/optimization-benefit.md#headroom-0440-ile-süreli-yük) |
-| H041 · Additional acceptance | Other live protocols and API-key checks need authorized access. The macOS 26 ARM64 package passed the 0.44.0 window and engine checks. Packaged client traffic and measurements remain open. The user deferred Windows 11 verification. The Serena pilot is complete. Broader Learn acceptance remains open. Experimental e3 is on hold, and e4 depends on e3 acceptance. [Platform tests](docs/validation/desktop-platforms.md) · [Open work items](#h041--cache-bütünlük-ve-gecikmefayda-regresyonu) |
+| H041 · Additional acceptance | The macOS 26 ARM64 package passed a controlled Codex Desktop turn with local usage. Live Anthropic, live API-key use, and actual billing need separate evidence. The user deferred Windows 11 verification. Broader Learn acceptance remains open. Experimental e3 is on hold. Experimental e4 depends on e3 acceptance. [Open criteria](docs/validation/optimization-benefit.md#open-h041-acceptance-criteria) |
 | H006, H037 and H042 · Clean Windows environments | H006 and H037 need clean Windows 10 and Windows 11 x64 desktops. H037 also needs a clean host without WebView2. H042 needs Windows 11 x64 update and rollback acceptance. |
 | H044 · Ripgrep candidate | Adding RTK to Headroom saved two more tokens per first request in the Windows 10 fixture. It added a recovery step. Installation remains open. [Evidence](docs/proofs/rtk-1.2.1-rg-paired.json) |
-| H052 · Account-specific confirmation pending | The public terms and synthetic pilot checks are complete. A private inquiry is ready. Confirm the Free account terms, provider retention, and the production transfer basis. [Terms review](docs/proofs/h052-neon-processing-terms.md) |
+| H052–H054 · Deferred from the first release | The first release measures savings locally. Resume provider and privacy checks before enabling remote reporting. [Scope decision](docs/decisions/032-usage-sharing-privacy.md#25-november--first-release-scope) |
 
-Windows development and packaging use Headroom **0.45.0**. The public Windows preview uses **0.44.0**. H048's macOS 15.8.2 ARM64 acceptance covers **0.41.0**. H050 account connections and H051 chat metadata and navigation passed on Windows 10. Each platform, new sign-in, and release needs its own evidence. [Engine transition](docs/proofs/headroom-045-upgrade.json) · [H048](docs/proofs/macos-acceptance.json) · [H050](docs/proofs/accounts.md) · [H051](docs/proofs/sessions.md)
+Windows development and the public Windows preview use Headroom **0.45.0**. The full installer upgrades the engine. The signed preview feed serves 0.1.1-preview.2 to compatible installations. H048's macOS 15.8.2 ARM64 acceptance covers **0.41.0**. H050 account connections and H051 chat metadata and navigation passed on Windows 10. Each platform, new sign-in, and release needs its own evidence. [Engine transition](docs/proofs/headroom-045-upgrade.json) · [H048](docs/proofs/macos-acceptance.json) · [H050](docs/proofs/accounts.md) · [H051](docs/proofs/sessions.md)
 
 The 21 October audit covered an older list with 45 tasks and 12 completed tasks. H018 was accepted later, and the list grew through H054. H040–H042 became first-release gates after the 20 October comparison. H043–H045 remained optional additions. Counts in dated entries reflect their original scope. Use the first checkbox under each H task heading for the current total. Subtasks, DEV001, DEV002 and UX001 are outside that count. H039's acceptance covers the local Windows 10 candidate. [20 October comparison](docs/research/desktop-comparison-2026-10-20.md)
 
@@ -1131,7 +1131,7 @@ These three tasks do not expand the required installation for the first release.
 
 ### H052 — Private report API, storage, and admin panel
 - [ ] Run the report API and private administrator panel on Neon Free with PostgreSQL.
-- **In progress — 25 November.** The synthetic pilot and public terms review are complete. A private inquiry awaits authorization. Verify the account terms, Article 9 basis, and internal retention. Real report intake stays closed.
+- **Deferred from the first release — 25 November.** The synthetic pilot and public terms review are complete. Keep real report intake closed. Verify the account terms, Article 9 basis, and provider retention before production.
 - **Slices:** Local report service, administrator sign-in, synthetic deployment, and quota, retention, and privacy acceptance.
 - [x] **H052 privacy design.** Record the privacy and transfer rules for optional reports. [Privacy decision](docs/decisions/032-usage-sharing-privacy.md).
 - [x] **H052-a Daily usage storage.** Store one report per installation and UTC day. Keep counter bases separate. An identical retry keeps one row. A conflicting retry preserves the original report.
@@ -1167,7 +1167,7 @@ These three tasks do not expand the required installation for the first release.
 
 ### H053 — User feedback form
 - [ ] The user writes a bug report/suggestion, previews the data to be sent, and sends it to the report API by an explicit action.
-- **Deferred — 13 November.** Do not start until H052's real report service is ready. No local draft-submission screen or simulated delivery acceptance was made.
+- **Deferred from the first release — 25 November.** Start after H052 passes production acceptance.
 - **Acceptance:** Show free text and optional bounded diagnostic metadata. Do not automatically attach conversations/code/client auth files. The usage-sharing preference is independent of the manual feedback action. The user can cancel. Repeated clicks/timeouts do not duplicate the report. Quota/connection errors do not block engine or model requests.
 - **Privacy acceptance.** Show the feedback notice before submission. Verify the processing basis and retention for feedback text. [Privacy decision](docs/decisions/032-usage-sharing-privacy.md)
 - **Verification:** Preview/send/cancel, empty and oversized content, preservation of diagnostic fields with secret fixtures, offline/timeout/retry, and an actual authorized delivery receipt from the API. Show the scope of manual text sharing clearly to the user.
@@ -1178,7 +1178,7 @@ These three tasks do not expand the required installation for the first release.
 
 ### H054 — Daily savings summaries and sharing preference
 - [ ] Show the summary to be shared on first open. Daily sends run automatically only after the user's explicit one-time choice.
-- **Deferred — 13 November.** Do not start until H052's real report service is ready. Sharing or background sending has not been enabled.
+- **Deferred from the first release — 25 November.** Start after H052 passes production acceptance.
 - **Acceptance:** No remote send before the initial choice. Sharing can be turned off in Settings, which also clears pending reports. Do not silently enable it for existing users after an update. Local measurement and remote sending are separate preferences. Payload contains only allowed app/engine version, OS family, evidenced client/model class, before/after counters on the same basis, request/unmeasurable/error counts, and the minimum ID needed for deduplication. Do not send private model names or free-form labels directly to the remote schema. Do not send conversations/code, project/file paths, keys/tokens, or account/chat IDs.
 - **Consent acceptance.** Show the notice before the separate consent action. Record the action and notice version. Use only measurements made after opt-in. On withdrawal, stop new uploads and clear the queue. Test pending uploads and retries. Verify the access and erasure path for earlier reports. [Privacy decision](docs/decisions/032-usage-sharing-privacy.md)
 - **Queue/measurement:** Fix 24-hour summaries and bounded retries in the implementation slice, along with local queue size/TTL. Do not turn unknown measurement into savings. Preserve negative net differences. Telemetry must not enter the critical path for model traffic during API outage, quota failure, or shutdown. Show the summary and last-send time to the user. Verify remote-data deletion and installation-ID reset together with the retention policy.

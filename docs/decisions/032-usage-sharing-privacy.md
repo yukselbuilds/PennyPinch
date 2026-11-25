@@ -182,3 +182,9 @@ The query from one to six days before the test returned zero records. An empty h
 Use the current Neon product schedule and its linked Databricks agreement when reviewing the account. The agreement incorporates the Databricks Data Processing Addendum. The schedule lists Grafana Labs in the United States for infrastructure services. Confirm the legal recipient and actual processing scope before completing the notice.
 
 Keep daily reports opt-in. Confirm a KVKK Article 9 basis separately before any regular transfer from Türkiye. If the operator uses the controller-to-processor standard contract, verify the signatures, annexes, onward transfers, and five-business-day notification. Keep intake closed while account terms, the transfer basis, provider retention, and production access remain unverified. [Terms review](../proofs/h052-neon-processing-terms.md)
+
+## 25 November — First-release scope
+
+The owner deferred the report service, remote feedback, and daily usage sharing (H052–H054) from the first release. The first release measures savings locally and uses controlled benchmarks. Keep real report intake closed.
+
+The H052-u inquiry remains a local draft. Resume the account, retention, production access, and transfer checks before enabling collection in a later release. [Open tasks](../../TASKS.md#h052--özel-rapor-apisi-depolama-ve-yönetim-paneli)

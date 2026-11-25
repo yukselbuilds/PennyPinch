@@ -4,7 +4,11 @@
 
 **46 of 54 main tasks are complete.** The Windows 10 preview.4 release is available. Windows 11 x64 update and rollback remain open. H041 remains open. [Task list](../TASKS.md)
 
-PennyPinch v0.1.1-preview.4 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. Both public downloads matched their SHA-256 digests. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.4) · [Publication evidence](proofs/pennypinch-windows10-preview4-publication.json)
+PennyPinch v0.1.1-preview.4 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. Both public downloads matched their SHA-256 digests at publication. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.4) · [Publication evidence](proofs/pennypinch-windows10-preview4-publication.json)
+
+On 25 November, the lead agent checked public delivery. The asset records matched the publication proof. The ZIP returned the requested byte range. Both Pages links pointed to the current release. The signed manifest and signature matched the proof for 0.1.1-preview.2. Use the full installer for the engine upgrade. [Update status](https://yukselbuilds.github.io/PennyPinch/updates/)
+
+Windows 10 is the first-release priority. H006 and H037 need a clean Windows 10 x64 desktop. H037 also needs a host without WebView2. Use the current ZIP and the Windows preview procedure when a suitable host is available. [Procedure](validation/windows-preview-check.md)
 
 The source pins Headroom 0.45.0. Windows 10 built the local installer and passed the staged engine lifecycle and loopback usage tests.
 Ubuntu 24.04 x64 and macOS 26 ARM64 passed direct engine checks. [Engine verification](proofs/headroom-045-upgrade.json)
@@ -94,7 +98,7 @@ The lead agent ran H052-s on the closed Neon Free pilot. The project API returne
 
 The lead agent completed the H052-t public terms review. The current Neon schedule refers to the Databricks agreement and Data Processing Addendum. The schedule lists a US infrastructure subprocessor. The public KVKK rules require a separate transfer basis for regular reports. Confirm the account terms and recipient. Verify the Article 9 safeguard, internal retention, operator, and rights contact before production. Keep real intake closed. [Terms review](proofs/h052-neon-processing-terms.md)
 
-The lead agent prepared the H052-u inquiry in ignored local work files. Databricks publishes a private privacy contact for transfer questions. Neon Free support offers community and AI assistance. The inquiry covers the applicable terms, the Turkish standard contract, provider logs, and backup erasure. The inquiry awaits authorization. Record the response and the remaining account, operator, and transfer checks before production. [Databricks privacy contact](https://www.databricks.com/legal/tia-faq) · [Neon support plans](https://neon.com/docs/introduction/support)
+On 25 November, the owner deferred H052, H053 and H054 from the first release. The lead agent recorded the decision. The H052-u inquiry remains a local draft. Keep real report intake closed. Resume the account, retention, and transfer checks before production. [Scope decision](decisions/032-usage-sharing-privacy.md#25-november--first-release-scope)
 
 ### Public privacy and presentation
 
