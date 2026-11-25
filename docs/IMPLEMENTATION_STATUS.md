@@ -2,11 +2,11 @@
 
 ## Current status
 
-**46 of 54 main tasks are complete.** The Windows 10 preview.7 release is available. The owner deferred Windows 11 x64 verification to December 2026. H041 remains open. [Task list](../TASKS.md)
+**46 of 54 main tasks are complete.** The Windows 10 preview.8 release is available. The owner deferred Windows 11 x64 verification to December 2026. H041 remains open. [Task list](../TASKS.md)
 
-PennyPinch v0.1.1-preview.7 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. Both public downloads matched their SHA-256 digests. GitHub Pages links to the new release. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.7) · [Publication evidence](proofs/pennypinch-windows10-preview7-publication.json)
+PennyPinch v0.1.1-preview.8 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. Both public downloads matched their SHA-256 digests. GitHub Pages links to the release. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.8) · [Publication evidence](proofs/pennypinch-windows10-preview8-publication.json)
 
-Use the full installer to install preview.7. The signed preview channel serves 0.1.1-preview.2 to compatible installations. The three signed feed files matched their recorded SHA-256 digests before and after publication. [Update status](https://yukselbuilds.github.io/PennyPinch/updates/)
+Use the full installer to install preview.8. The signed preview channel serves 0.1.1-preview.2 to compatible installations. The three signed feed files matched their recorded SHA-256 digests before and after publication. [Update status](https://yukselbuilds.github.io/PennyPinch/updates/)
 
 The lead agent completed H042-ao on Windows 10. The public preview.5 showed a verification error for the older signed release. The corrected test build showed that the channel had no newer release. All 227 application tests and 481 Rust tests passed. The preview.6 installer carries the fix. [Evidence](proofs/windows-update-older-preview.json)
 
@@ -19,6 +19,8 @@ The lead agent completed H042-as. The local preview.7 installer upgraded the pub
 The lead agent completed H042-at. GitHub Releases serves preview.7 for Windows 10 22H2 x64. The public ZIP matched the installed upgrade, and five preflight cases passed. The signed preview feed serves preview.2 to compatible installations. [Publication evidence](proofs/pennypinch-windows10-preview7-publication.json)
 
 The lead agent completed H042-au on Windows 10 22H2 x64. The local preview.8 installer upgraded the public preview.7 and kept the saved test preferences. The installed engine forwarded the repeated result and recovered the compressed log exactly. The ZIP contains the verified installer and 673 third-party notices. Publication is the next distribution step. [Local package evidence](proofs/pennypinch-windows10-preview8-local.json)
+
+The lead agent completed H042-av. GitHub Releases serves preview.8 for Windows 10 22H2 x64. The public ZIP matched the tested installer. Five Windows 10 preflight cases passed. The signed preview channel serves preview.2. Windows 11 x64 update and rollback remain open. [Publication evidence](proofs/pennypinch-windows10-preview8-publication.json)
 
 The lead agent ran H037-a9 with the public preview.4 installer and a fresh application profile. The existing Windows 10 22H2 x64 desktop had WebView2. Default preferences, engine start, one local stream, normal exit, and cleanup passed in 73.966 seconds. The test matched 19,491 installed resources and the package receipt. [First-use evidence](proofs/windows-preview4-first-use.json)
 

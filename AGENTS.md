@@ -59,6 +59,8 @@
 ## Completion and handoff
 
 - Complete the active main task before moving to the next. Update `TASKS.md` as work progresses. Tell the user when each main task is complete, stop and wait for the user to continue. Report subtask acceptance at its own scope.
+
+- Complete at least one subtask with verified acceptance before the final reply to a request to continue.
 - Mark a task complete once its acceptance criteria have concrete evidence. Leave partial work and external verification open.
 - Review product behavior through the path from UI action to manager to engine or client. Check the connected path in addition to any button or mock tests.
 - At interruption or close, record the last verified slice, evidence, open items and next concrete action in the checkpoint. Include the implementer or takeover rationale and any measured duration, correction cycles or model use. Keep the checkpoint consistent with TASKS.

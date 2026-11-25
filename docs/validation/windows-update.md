@@ -222,3 +222,9 @@ Use the full installer to install preview.6. The signed channel serves v0.1.1-pr
 GitHub Releases serves v0.1.1-preview.7 as a prerelease. The release tag points to the tested installer source. Both anonymous downloads matched their SHA-256 digests. The ZIP installer matched the local Windows 10 upgrade test.
 
 Use the full installer to install preview.7. The current Windows procedure passed five checks on Windows 10 22H2 x64. The signed channel serves preview.2 to compatible installations. Windows 11 x64 update and rollback remain open. [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.7) · [Publication evidence](../proofs/pennypinch-windows10-preview7-publication.json)
+
+## 25 November 2026 — Windows 10 preview.8 publication
+
+GitHub Releases serves PennyPinch preview.8 as a prerelease. Both public assets matched their recorded SHA-256 digests. The downloaded ZIP contained the installer from the Windows 10 upgrade test.
+
+The project page and update page link to the full installer. Five Windows 10 preflight cases passed. The signed preview channel serves preview.2 to compatible installations. The three signed files matched before and after publication. Windows 11 x64 update and rollback remain open. [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.8) · [Publication evidence](../proofs/pennypinch-windows10-preview8-publication.json)
