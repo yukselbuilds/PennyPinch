@@ -168,3 +168,11 @@ The lead agent restored a separate branch at the synthetic source's pre-erasure 
 The operator read the synthetic erasure list from outside the restored database. The first cleanup pass left one expired report for the next pass. The second pass removed it. The report at the 30-day boundary and the current counters remained.
 
 The private test handler used a restricted PostgreSQL login over TLS. It rejected the revoked uploader. The authorized test operator read one retained report. The lead agent revoked the login and the project key and removed both branches. Production cutover, access to production erasure records, and backup expiry still need verification. [Live restore evidence](../proofs/h052-neon-restore-live.json)
+
+## H052-s — Provider backup inventory and visible logs
+
+The Neon Free project reports a six-hour change history. The project has one branch and zero listed snapshots. The backup schedule API returned an empty list. H052-r demonstrated a restore within the configured window. Physical expiry of provider copies remains unverified. [Neon history window](https://neon.com/docs/postgres/backup-restore/history-window) · [Neon snapshots](https://neon.com/docs/reference/api/snapshots/list-snapshots)
+
+The closed pilot Function returned 404 for one synthetic upload. The exact trace contained two invocation records and zero application records. The visible records contained none of the synthetic installation ID, bearer token, or query marker. The sample did not show recognized client address fields. The provider's internal logs remain outside this check. [Function logs](https://neon.com/docs/compute/functions/logs)
+
+The query from one to six days before the test returned zero records. An empty historical query cannot establish the log retention period. Verify the provider's processing scope and retention before describing infrastructure logs or backup deletion in the production notice. Keep report intake closed while these items remain open. [Log query contract](https://neon.com/docs/reference/api/logs/query-project-branch-logs) · [Provider evidence](../proofs/h052-neon-provider-retention.json)

@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "task": "H052",
+  "slice": "H052-s",
+  "status": "passed",
+  "scope": "Read-only backup inventory and one closed Function log sample on the existing Neon Free pilot",
+  "owner": "lead agent",
+  "observed_on": "2026-11-25",
+  "source_base": "0e50ed8e6cb58eec20cc37d72eb9bee9e6c7ef45",
+  "results": {
+    "plan": "Free",
+    "region": "aws-eu-central-1",
+    "configured_history_seconds": 21600,
+    "branch_count": 1,
+    "listed_snapshots": 0,
+    "backup_schedule_status": 200,
+    "backup_schedule_entries": 0,
+    "closed_intake_status": 404,
+    "exact_trace_matched": true,
+    "query_window_records": 2,
+    "platform_invocation_starts": 1,
+    "platform_invocation_ends": 1,
+    "application_log_records": 0,
+    "test_body_identifier_visible": false,
+    "test_authorization_value_visible": false,
+    "test_query_value_visible": false,
+    "authorization_field_visible": false,
+    "address_field_visible": false,
+    "ipv4_value_visible": false,
+    "url_field_visible": false,
+    "older_than_one_day_records_returned": 0,
+    "older_query_truncated": false,
+    "oldest_returned_age_hours": null,
+    "provider_internal_logging": "not_observable",
+    "physical_expiry_of_provider_copies": "not_observable",
+    "real_user_reports": 0
+  },
+  "verification": {
+    "plan_confirmed_in_neon_console": true,
+    "project_key_absent_after_neon_console_reload": true,
+    "checked_application_modules": [
+      "services/reports/function.mjs",
+      "services/reports/service.mjs",
+      "services/reports/usage.mjs",
+      "services/reports/admin-panel.mjs",
+      "services/reports/retention-function.mjs",
+      "services/reports/admin/admin-function.mjs",
+      "services/reports/admin/browser-login.mjs"
+    ],
+    "direct_application_log_calls": 0,
+    "older_query_age_hours": [
+      24,
+      144
+    ],
+    "input_fingerprints_before_and_after": {
+      "docs/proofs/h052-neon-closed-function.json": "a9b93cfdfea067dcf0e56bca0fc6bf02869ef49300704cd28193245a6be042b1",
+      "docs/proofs/h052-neon-restore-live.json": "fcc4c9a5c6a45c3f447dfd83d60d27091b66ec3e92ca91c2b8895c5ed4eabb05",
+      "services/reports/admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+      "services/reports/admin/admin-function.mjs": "c0de20dcaa5a7750d12f860ba309039f1c88c99ef27aea7a1be66a315e1046c0",
+      "services/reports/admin/browser-login.mjs": "7e305c4ad77d2ca3149203b3b8a1b1a117669b5fc13a3991e580782b4fda8c33",
+      "services/reports/function.mjs": "29d868e53c06f0286e6ee19cd8e3caca96402d2fac0e8afac1fb6fe785a82b01",
+      "services/reports/retention-function.mjs": "af4e1196e6cfb33029b3da8a49b4bab9dd258e01cbad227bfb81bd89fd2625c7",
+      "services/reports/service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+      "services/reports/usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+      "work/proofs/h052/neon-function/live-closed-result.json": "9b096fead8e950091741cfec5a4442f80eef5ab983d59afc01f3359d80563e7c",
+      "work/proofs/h052/neon-function/pilot-handoff.mjs": "80b8e6302163c68582063d437690601a221a8106fcef76a82fafcb0864a017d0",
+      "work/proofs/h052/neon-function/provider-retention-check.mjs": "d6f976545bee6729923b71963bc17582238a19fb34783a0d018a08fef091e125",
+      "work/toolchains/reports-neon-function/node-v24.22.3-win-x64/node.exe": "86fc4785327db5f5c7558dc6156c543b433c313e813a222e088086222ab4afa6"
+    }
+  },
+  "limits": [
+    "A query with no older entries cannot establish the log retention period.",
+    "The trace checks the fields visible to the project operator for one rejected synthetic request.",
+    "The project settings and snapshot inventory do not measure erasure from internal provider copies."
+  ],
+  "pending": [
+    "Verify applicable processing terms, infrastructure logging and retention disclosures, and transfer safeguards.",
+    "Verify the production operator, erasure records, and cutover before opening real report intake."
+  ],
+  "development_agent_token_savings": "not_measured"
+}
