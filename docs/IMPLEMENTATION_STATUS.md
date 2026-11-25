@@ -14,6 +14,8 @@ The lead agent completed H042-ap and H042-aq. The preview.6 installer upgraded p
 
 The lead agent completed H042-ar. The Windows 10 Settings window showed the full installer instruction in Turkish and English. A newer signed manifest required a different engine pin. The app dropped the previous candidate and made no installer request. The local gate passed 228 app tests and 482 Rust tests. The published preview.6 predates this change. [Evidence](proofs/windows-update-full-installer.json)
 
+The lead agent completed H042-as. The local preview.7 installer upgraded the public preview.6 on Windows 10. The app kept the saved test preferences. The installed engine completed a local Responses stream. The delivery ZIP contains the tested installer and 673 third-party notices. The published Windows 10 release remains preview.6. [Local package evidence](proofs/pennypinch-windows10-preview7-local.json)
+
 The lead agent ran H037-a9 with the public preview.4 installer and a fresh application profile. The existing Windows 10 22H2 x64 desktop had WebView2. Default preferences, engine start, one local stream, normal exit, and cleanup passed in 73.966 seconds. The test matched 19,491 installed resources and the package receipt. [First-use evidence](proofs/windows-preview4-first-use.json)
 
 The lead agent completed H037-a10 with the public preview.6 installer and fresh test profiles. On Windows 10 22H2 x64, the installed app connected Codex CLI to Headroom 0.45.0. One CLI turn completed against a loopback Responses provider. Undo restored the exact test configuration. Engine stop, normal exit, and cleanup passed. [First-use evidence](proofs/windows-preview6-first-use-codex.json)
