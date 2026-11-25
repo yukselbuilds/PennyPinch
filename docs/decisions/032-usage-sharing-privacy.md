@@ -116,3 +116,13 @@ Open the account page at `/admin/login`. Send the credential form to the configu
 Use the temporary provider session to obtain a signed access token. End the provider session before issuing the panel cookie. Verify the token and the approved administrator subject before issuing that cookie. The account page can clear the panel cookie. The signed token remains valid only until its expiry.
 
 Two local Edge flows passed with synthetic credentials. They covered a failed sign-in, an approved operator, report navigation, and sign-out. The pilot requires a real operator and provider sign-in test. Keep report intake closed during that test. [Browser access evidence](../proofs/h052-neon-admin-browser-local.json)
+
+## H052-n — Report cleanup after restore
+
+Recover the data on an isolated branch. Check the restored branch identity and keep report reads, intake, and scheduled jobs closed while you prepare it. Use the current list of verified erasures from outside the database copy. Apply current credential revocations before reconnecting the service. A restored copy can contain data that the operator erased after its recovery point. [Neon restore limits](https://neon.com/docs/introduction/plans#instant-restore)
+
+Use `prepareRestoredReports(db, erasedInstallationIds)` from `services/reports/restore.mjs` with the authorized maintenance connection. Pass an empty list only after checking that no erasures apply. The function removes each installation's summaries and rate row in one database statement. The daily intake counter has no installation ID and retains its value until expiry.
+
+Repeat the function while it returns `false`. Keep the branch isolated if an operation fails. Confirm that revoked credentials fail. Check that an authorized administrator reads only retained data before you route report traffic to the restored branch.
+
+The native test used a PostgreSQL template copy of synthetic data from before an erasure. The local suite verified rollback on an erasure failure. Neon recovery, the live erasure list, the cutover, and provider backup expiry still need acceptance. [PostgreSQL template copy](https://www.postgresql.org/docs/17/manage-ag-templatedbs.html) · [Restore evidence](../proofs/h052-neon-restore-local.json)

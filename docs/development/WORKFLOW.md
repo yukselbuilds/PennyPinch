@@ -92,7 +92,7 @@ H038 verified uninstall on Windows 10 with real NSIS and an isolated application
 
 For the H039 Windows release check, `build-windows.ps1` points `HEADROOM_RELEASE_EXE_CANDIDATE` at the owned release executable after packaging, runs `test_windows_release_executable.py` and restores the previous process environment. The test reads the actual file's PE, x64, PE32+ and GUI subsystem=2 fields. The Windows release build remaps the checkout and profile paths during Rust compilation. The test checks the executable for both original paths. A direct run without that environment variable explicitly skips the check and leaves release acceptance open. [Release candidate evidence](../validation/release-candidate.md)
 
-Install the pinned administrator dependency with `pnpm --dir services/reports/admin install --frozen-lockfile` from the repository root. Run `node --test` from `services/reports` with Node.js 24. The suite tests the reporting service, scheduled cleanup, and administrator access. Verify the deployed Neon trigger, database permissions, and managed sign-in in the pilot. [Administrator access evidence](../proofs/h052-neon-admin-local.json)
+Install the pinned administrator dependency with `pnpm --dir services/reports/admin install --frozen-lockfile` from the repository root. Run `node --test` from `services/reports` with Node.js 24. The suite tests the reporting service, scheduled cleanup, administrator access, and restore cleanup. Verify the deployed Neon trigger, database permissions, managed sign-in, and restore in the pilot. [Restore evidence](../proofs/h052-neon-restore-local.json)
 
 ## Historical code audit scope
 

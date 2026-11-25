@@ -80,6 +80,8 @@ The lead agent implemented H052-l because it controls administrator access. The 
 
 The lead agent implemented H052-m because it handles browser credentials. The Function bundle passed the login and sign-out flows in isolated Edge. The tests used synthetic provider responses and confirmed same-origin form requests. All 41 local reporting tests passed. The connection probe inputs still match. Next, authorize the Neon pilot and verify its connection, trusted domain, and managed login. [Browser access evidence](proofs/h052-neon-admin-browser-local.json)
 
+The lead agent implemented H052-n because it controls deletion during recovery. Native PostgreSQL copied synthetic report data from before an erasure. Recovery removed two erased reports, their rate row, and 4,001 expired reports. Two cleanup passes preserved the current record and daily quota. The operator kept report routes closed until cleanup finished. The report service rejected a revoked uploader after reopening. All 43 local reporting tests passed. Neon point-in-time recovery still needs pilot acceptance. [Restore evidence](proofs/h052-neon-restore-local.json)
+
 ### Public privacy and presentation
 
 The two public branches and two release tags use the rewritten Git history. On 24 November the GitHub Support portal showed the removal request as Open. The portal showed only the original request. Verify anonymous access after Support replies.
