@@ -29,7 +29,7 @@ Luna reviewed the upstream sources. Development token savings remain unknown.
 
 The stock Headroom 0.45.0 proxy and PennyPinch forwarded the same JSON in eight matched Windows 10 cases. The six headline cases returned 43.59% fewer tokens in both proxies. The SDK uses a message estimator. [Matched comparison](proofs/upstream-benchmarks-045.json).
 
-Codex CLI 0.171.0-alpha.13 stopped the named Windows 10 file tests before any command started. The unelevated backend refused the profile. MXC was unavailable. Resume this check on a compatible native Windows sandbox. Check an allowed read and an explicit denial. [Open H041 criteria](validation/optimization-benefit.md#open-h041-acceptance-criteria).
+Codex CLI 0.171.0-alpha.13.2 opened both synthetic files under the built-in read-only profile on Windows 10. The unelevated backend refused the named profiles before the command started. MXC was unavailable. Resume the named profile check on a compatible native Windows backend. Verify an allowed read and an explicit denial. [File scope evidence](proofs/targeted-query-comparison.json) · [Open H041 criteria](validation/optimization-benefit.md#open-h041-acceptance-criteria)
 
 Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b2 evidence](proofs/h049-linux-transaction.json)
 

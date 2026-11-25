@@ -1427,6 +1427,73 @@
       "environment_sha256": "12169bee3f33a20bbaf8deb1c0ba0baca2abf6d6327a1293e108eda287a053ea",
       "receipt_sha256": "410b7bfe699e82747f98f415fa6f0bfb937c56657ff2a963f6d8af9988d421c7",
       "next_condition": "A native Windows backend that supports the restricted read profile"
+    },
+    "windows_native_0171_patch2_recheck": {
+      "date": "2026-11-25",
+      "owner": "lead agent",
+      "cli": "codex-cli 0.171.0-alpha.13.2",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "scope": "Local synthetic allowed reads and one named file denial in a separate Codex profile",
+      "named_profiles": {
+        "unelevated": {
+          "control": {
+            "exit_code": 1,
+            "status": "restricted_backend_required",
+            "command_started": false,
+            "inside_exact": false,
+            "outside_denied": false
+          },
+          "restricted": {
+            "exit_code": 1,
+            "status": "restricted_backend_required",
+            "command_started": false,
+            "inside_exact": false,
+            "outside_denied": false
+          }
+        },
+        "mxc": {
+          "control": {
+            "exit_code": 1,
+            "status": "mxc_unavailable",
+            "command_started": false,
+            "inside_exact": false,
+            "outside_denied": false
+          },
+          "restricted": {
+            "exit_code": 1,
+            "status": "mxc_unavailable",
+            "command_started": false,
+            "inside_exact": false,
+            "outside_denied": false
+          }
+        }
+      },
+      "builtin_read_only": {
+        "exit_code": 0,
+        "status": "control_reads_both",
+        "command_started": true,
+        "inside_exact": true,
+        "outside_denied": false,
+        "outside": "opened"
+      },
+      "native_file_scope_verified": false,
+      "network_model_requests": 0,
+      "runs": {
+        "named_profiles": {
+          "matched_inputs": 10,
+          "inputs_sha256_before_and_after": "a5678cb8b283eecdb0689bcbc6cb08fe5589cde159008e0b9539ed6c9cf183fe",
+          "environment_sha256": "a4b227fe3bdb8f418e98ccefd09e3a4a0100b1260311c20d7f552fd4d62fdfed",
+          "receipt_sha256": "344945c988f1b56cfe7f4d97e74a5ba30132dcc1054945c008ffb27a6a574561"
+        },
+        "builtin_read_only": {
+          "matched_inputs": 10,
+          "inputs_sha256_before_and_after": "67b0d513441f3de92bc2e05c880455d5fb618ba4188b8c62f5b1a1fbc49ce9e1",
+          "environment_sha256": "5b782b3d8464ce8451dcda2b935e641d9b1454e620bdcab3469eb24957bea8b9",
+          "receipt_sha256": "b874004c0f53bd51682b1cf16cba9b7aa878ba0353a28f0eafef7fad352ef987"
+        }
+      },
+      "next_condition": "Use a native Windows backend that supports the named restricted read profile",
+      "development_agent_token_savings": "unmeasured"
     }
   }
 }

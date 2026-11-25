@@ -186,11 +186,11 @@ The four fixtures matched the full-request `o200k_base` counts in the 0.44.0 run
 
 ## Open H041 acceptance criteria
 
-On 24 November 2026, **5 verification criteria and 3 optional R&D criteria** remain open. The main task count is **46/54**.
+On 25 November 2026, **5 verification criteria and 3 optional R&D criteria** remain open. The main task count is **46/54**.
 
 | Criterion | Evidence needed |
 | --- | --- |
-| Restricted native Windows file profile for Codex | Check an allowed read and an explicit denial in a supported native sandbox. On Windows 10, Codex CLI 0.171.0-alpha.13 stopped before the file command in both tested backends. WSL2 verified the same file boundary. [File and archive evidence](../proofs/targeted-query-comparison.json) |
+| Restricted native Windows file profile for Codex | Verify an allowed read and an explicit denial in a supported native sandbox. On Windows 10, Codex CLI 0.171.0-alpha.13.2 opened both synthetic files with the built-in read-only profile. The unelevated backend refused the named profiles. MXC was unavailable. WSL2 verified the same file boundary. [File and archive evidence](../proofs/targeted-query-comparison.json) |
 | Windows 11 x64 | The owner deferred verification to December 2026. Use the current package on a Windows 11 x64 desktop. Verify engine traffic and shutdown. [Windows procedure](windows-preview-check.md) |
 | macOS ARM64 | **Verified on 24 November.** The 0.45.0 package passed the controlled Codex Desktop turn, local usage, and normal exit checks. The earlier 0.44.0 package passed the start, stop, and restart checks. [Current package evidence](../proofs/headroom-045-managed-packages.json) · [Earlier lifecycle](../proofs/macos-044-package-lifecycle.json) |
 | Live Anthropic Messages | Use an authorized account. Match the usage counters of an actual Messages response to the corresponding Headroom request. [Local usage evidence](../proofs/desktop-anthropic-usage.json) |
