@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "task": "H041-a3",
+  "date": "2026-11-25",
+  "owner": "lead agent",
+  "status": "passed",
+  "scope": "Windows 10 22H2 x64, one packaged engine and paced serial pairs across four loopback protocols",
+  "engine_version": "0.45.0",
+  "manifest_sha256": "f53f8a26c50bc6d4c7e5ed6f5afc6b2c566db6aaadfbcaf38f9121d33ee33869",
+  "release_source": "2358e588a8374afa33a58a726dc58e20d52c8958",
+  "staging_receipt_sha256": "6ffb2b5f2cb7d638716f9230c58c984ec2c8b315144df5dd0ba85e716cf6d18d",
+  "fixture_network": {
+    "hf_hub_offline": true,
+    "transformers_offline": true,
+    "upstream": "owned_loopback_fixture",
+    "huggingface_hub_payload_bytes": 0,
+    "packet_capture": false
+  },
+  "external_provider_calls": 0,
+  "cash_savings": "not_measured",
+  "model_quality": "not_measured",
+  "windows_11_x64": "not_tested",
+  "environment": {
+    "windows_build": [
+      10,
+      0,
+      19045
+    ],
+    "python": "3.13.13 (main, May  4 2026, 21:18:21) [MSC v.1944 64 bit (AMD64)]",
+    "logical_cpus": 16
+  },
+  "plan_sha256": "e54202f73ce3ad93e77e6b6f31de176b6bebc8643a962de3f45589a507152335",
+  "plan_matches_044": true,
+  "raw_receipt_sha256": "2163ca12a8dab82a7f5eb77ea94e0a5c852b4e610815e1b2abc650b8df7a7bf6",
+  "input_count": 699,
+  "input_set_sha256_before_and_after": "27d187fcd1680bc098b37a5047b36c4de320c92d9754e3580cb20c7a12e7eeb1",
+  "elapsed_seconds": 300.0,
+  "warmup_requests": 96,
+  "measured_requests": 600,
+  "completed_pairs": 300,
+  "pairs_per_surface": {
+    "responses_http_sse": 84,
+    "chat_http_sse": 72,
+    "anthropic_http_sse": 72,
+    "responses_websocket": 72
+  },
+  "exact_ccr_recoveries": 249,
+  "token_basis": "canonical_full_request_json_including_added_tool_schemas",
+  "token_encoding": "o200k_base",
+  "local_request_tokens_by_fixture": {
+    "source_read": {
+      "requests": 75,
+      "original_tokens": 724026,
+      "forwarded_tokens": 725970,
+      "saved_tokens": -1944,
+      "saved_percent": -0.2685
+    },
+    "numeric_read": {
+      "requests": 75,
+      "original_tokens": 1114776,
+      "forwarded_tokens": 1116720,
+      "saved_tokens": -1944,
+      "saved_percent": -0.1744
+    },
+    "repetitive_logs": {
+      "requests": 75,
+      "original_tokens": 3110226,
+      "forwarded_tokens": 1079854,
+      "saved_tokens": 2030372,
+      "saved_percent": 65.2805
+    },
+    "short_json": {
+      "requests": 75,
+      "original_tokens": 37476,
+      "forwarded_tokens": 39420,
+      "saved_tokens": -1944,
+      "saved_percent": -5.1873
+    }
+  },
+  "warm_added_p95_ms": 47.866,
+  "warm_request_cpu_p95_ms": 31.25,
+  "peak_engine_private_bytes": 961650688,
+  "private_memory_growth_bytes": 20942848,
+  "combined_cpu_percent_of_one_core": 3.6458,
+  "checks": {
+    "duration": true,
+    "load": true,
+    "memory": true,
+    "cpu": true,
+    "latency": true
+  },
+  "stopped": {
+    "shutdown": "graceful",
+    "engine_exit_code": 0,
+    "owned_port_closed": true,
+    "force_fallback": false
+  },
+  "development_agent_token_savings": "unmeasured"
+}

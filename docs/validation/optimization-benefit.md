@@ -168,6 +168,20 @@ The following values are full JSON bodies counted with the same `o200k_base` enc
 | Repeated log | 3,110,226 | 1,079,854 | 65.28% reduction |
 | Short JSON | 37,476 | 39,420 | 5.19% increase |
 
+## Timed load with Headroom 0.45.0
+
+25 November 2026. Windows 10 ran the same plan with the engine pinned in the public preview.4. The run completed 96 warmup requests and 300 measured pairs across four loopback protocols. All 600 measured requests passed the integrity checks. The engine restored the original content in 249 CCR requests. It stopped normally and released its port.
+
+| Measurement | Observed | Plan limit |
+| --- | ---: | ---: |
+| Measured pairs | 300 | At least 250 |
+| Private-memory growth after warmup | 19.97 MiB | At most 128 MiB |
+| Observed private-memory peak | 917.10 MiB | At most 1,536 MiB |
+| Additional p95 latency | 47.87 ms | At most 1,000 ms |
+| Combined CPU as a percentage of one core | 3.65% | At most 25% |
+
+The four fixtures matched the full-request `o200k_base` counts in the 0.44.0 run. Repeated logs used 65.28% fewer tokens. Short JSON used 5.19% more tokens. The test used local fixture traffic. [Evidence](../proofs/optimization-windows10-stability-045.json)
+
 <a name="h041-açık-kabulleri"></a>
 
 ## Open H041 acceptance criteria
@@ -177,7 +191,7 @@ On 24 November 2026, **5 verification criteria and 3 optional R&D criteria** rem
 | Criterion | Evidence needed |
 | --- | --- |
 | Restricted native Windows file profile for Codex | Check an allowed read and an explicit denial in a supported native sandbox. On Windows 10, Codex CLI 0.171.0-alpha.13 stopped before the file command in both tested backends. WSL2 verified the same file boundary. [File and archive evidence](../proofs/targeted-query-comparison.json) |
-| Windows 11 x64 | Test the packaged 0.44.0 engine, shutdown, and traffic on actual Windows 11 x64. The standard GitHub Windows 11 image was ARM64. CircleCI offered Windows Server images. [Standard GitHub runners](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-private-repositories) · [CircleCI Windows images](https://circleci.com/docs/guides/execute/using-windows/) |
+| Windows 11 x64 | The owner deferred verification to December 2026. Use the current package on a Windows 11 x64 desktop. Verify engine traffic and shutdown. [Windows procedure](windows-preview-check.md) |
 | macOS ARM64 | **Verified on 24 November.** The 0.45.0 package passed the controlled Codex Desktop turn, local usage, and normal exit checks. The earlier 0.44.0 package passed the start, stop, and restart checks. [Current package evidence](../proofs/headroom-045-managed-packages.json) · [Earlier lifecycle](../proofs/macos-044-package-lifecycle.json) |
 | Live Anthropic Messages | Use an authorized account. Match the usage counters of an actual Messages response to the corresponding Headroom request. [Local usage evidence](../proofs/desktop-anthropic-usage.json) |
 | Live OpenAI API-key route | Confirm authorized access to the API-key route. Collect usage evidence for the scope that H008 carried forward. [H041-d plan](../decisions/027-optimization-regression.md#h041-d-responses-httpsse-kullanım-ölçümü) |
