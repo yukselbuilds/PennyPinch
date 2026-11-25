@@ -89,6 +89,10 @@ The complete 126,761,252-byte ZIP matched the public checksum and the earlier de
 
 Windows 10 22H2 x64 installed the public ZIP into a separate test folder. Connect routed a Codex CLI turn to the local Responses fixture. Both identical tool results reached the fixture in full. Undo restored the test configuration byte for byte. The engine closed its port and the app exited normally. The host had WebView2 before installation. [First-use evidence](../proofs/windows-preview8-first-use-codex.json)
 
+## 25 November — Preview.8 Claude Code first use
+
+The public installer ran on Windows 10 22H2 x64 with WebView2 present. Connect saved the route in separate Claude Code 2.1.158 user settings. One local Anthropic stream delivered text before completion and preserved the selected model and effort. Undo restored the settings byte for byte. The engine released its port and the app exited normally. [First-use evidence](../proofs/windows-preview8-first-use-claude.json)
+
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria

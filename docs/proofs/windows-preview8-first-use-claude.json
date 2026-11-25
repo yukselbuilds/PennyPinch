@@ -1,0 +1,96 @@
+{
+  "claude_code": "2.1.158",
+  "cleanup": {
+    "desktop_use_gate_restored": true,
+    "original_profile_files": 0,
+    "original_profile_matches": true,
+    "test_installation_removed": true,
+    "test_profile_removed": true
+  },
+  "cli": {
+    "completed_text": true,
+    "early_text_before_completion": true,
+    "effort": "high",
+    "error_event": false,
+    "exit_code": 0,
+    "malformed_lines": 0,
+    "model": "claude-opus-4-6",
+    "observed_usage": {
+      "input_tokens": 12,
+      "output_tokens": 4
+    },
+    "oversized_lines": 0,
+    "passed": true,
+    "post_requests": 1,
+    "provider_version_header_present": true,
+    "route_loaded_from_settings": true,
+    "stream": true,
+    "synthetic_auth_preserved": true,
+    "tools_sent": 0,
+    "usage_source": "usage"
+  },
+  "config_restored_byte_for_byte": true,
+  "environment": "Windows 10 22H2 x64 with an existing WebView2 runtime",
+  "inputs_sha256_before_after": {
+    "build_record": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba",
+    "claude_exe": "10fa305545b20baf6e074a086762bd252b89dfe7035848a5d41385503b1a6c74",
+    "engine_supervisor": "dc067a6c76316be981ebc36d4066a5096e71b3c1ff689fff078410b06b33a2af",
+    "git_exe": "da240fe9bc24895b3e04150a4990b8a6ff329ecabcd8f19684c2cc310da5ef3f",
+    "install_harness": "736cc68c10e92948b75d443813940f096149628f48bdf605d78f73cecd4fc605",
+    "install_reference": "2927f434f062eb38faa82d741a777a23f04509f9286aa11788b0759e4bd38f49",
+    "installer": "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1",
+    "local_fixture": "e69c49f33437f679b3f271102a95db01354d9f075a4a7f7bf0572d6ebc2112a5",
+    "lockfile": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3",
+    "node_exe": "91ec09dda8f20556f366110859f106ab189d45f8f6a2bd092e6785174ad4a0fa",
+    "original_cli_harness": "6f3e65d518375500e5fcfd565573bc299c658e719d0999702d0407e38414bbfd",
+    "public_zip": "6fc4ae34a1a2b9404f0db1b7ea2763fd75b148cce0c0b2fd4fb0b528c85374be",
+    "published_release": "9617cca0ce19e52aa59fff2ef92d73bcf485f2c466de6ad568d078c079a2eae1",
+    "runtime_python": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+    "stage_receipt": "d02a107398d60a2cfdb0f7092f2616729b95fd3d668b8c61ad2e2432072b7420",
+    "stream_observer": "6034f8b65d162bd1824358e724f5c5e7c41699605d2ff4a0672902741146a120",
+    "test_config": "d4caa0fc691ecab9aa00448da8ff9d7e2b9f6abc261663231cb1a9269c55a944",
+    "test_script": "03b55ba42c2d77d6737bdc054afece04b3fea6e4bd8efefc5043566551316652",
+    "window_driver": "1ff7dee4eaabfccc8cd51ce800f47f6af7c7ab77e49d6943991dfab77737e7cd",
+    "window_harness": "d0bc1f55bf5a244f45e9563909e0a2b97e97dd5243b61afd8efe8b5a71fd512a"
+  },
+  "limits": {
+    "clean_windows_10": "not_tested",
+    "development_token_savings": "unmeasured",
+    "external_model_calls": 0,
+    "live_provider": "not_tested",
+    "windows_11_x64": "not_tested",
+    "without_webview2": "not_tested"
+  },
+  "local_receipt_sha256": "f1c65dcbbc0b006873f7fb99242e1c95684ea58f99e87432c12db69836ca80f2",
+  "normal_exit": true,
+  "observed_on": "2026-11-25",
+  "owned_ingress_released": true,
+  "release": "0.1.1-preview.8",
+  "runtime": {
+    "distribution_directories": [
+      "opentelemetry_api-1.45.2.dist-info"
+    ],
+    "headroom": "0.45.0",
+    "headroom_distribution_directories": [
+      "headroom_ai-0.45.0.dist-info"
+    ],
+    "opentelemetry": "1.45.2"
+  },
+  "scenario": "Installed public preview, isolated Claude Code user settings, local Anthropic stream",
+  "schema_version": 1,
+  "seconds": 87.866,
+  "source_commit": "cad4f1c676d36b7f3c8dce7b0a41b732a6d3bdf9",
+  "status": "pass",
+  "task": "H037-a12",
+  "ui": {
+    "cli_discovered_and_selected": true,
+    "discovery_left_config_unchanged": true,
+    "engine_initially_stopped": true,
+    "engine_ready_and_route_saved": true,
+    "engine_stopped": true,
+    "undo_restored_config_and_kept_engine_ready": true
+  },
+  "verified_installed_resources_and_receipt": 19492,
+  "webview2": "158.0.0.0",
+  "windows_build": 19045
+}

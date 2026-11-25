@@ -28,6 +28,8 @@ The lead agent completed H037-a10 with the public preview.6 installer and fresh 
 
 The lead agent completed H037-a11 with the public preview.8 installer on Windows 10 22H2 x64. Connect saved the route for the isolated Codex CLI. The local Responses fixture received two complete copies of the tool result in one turn. Undo restored the CLI configuration byte for byte. Engine stop and cleanup passed. The clean Windows 10, Windows 11 x64, and WebView2 prerequisite checks remain open. Use this ZIP for the clean-host check. [First-use evidence](proofs/windows-preview8-first-use-codex.json) · [Windows procedure](validation/windows-preview-check.md)
 
+The lead agent completed H037-a12 with the public preview.8 installer on Windows 10 22H2 x64. The local Claude Code stream and exact Undo passed. The full test took 87.866 seconds. Clean-host and live-provider checks remain open. Verify OpenCode first use with this ZIP and an isolated profile. [First-use evidence](proofs/windows-preview8-first-use-claude.json)
+
 Windows 10 is the first-release priority. H006 and H037 need a clean Windows 10 x64 desktop. H037 also needs a host without WebView2. Use the current ZIP and the Windows preview procedure when a suitable host is available. [Procedure](validation/windows-preview-check.md)
 
 The lead agent ran H041-a3 with Headroom 0.45.0 on Windows 10. The same 300-second plan passed 300 request pairs and 249 exact CCR recoveries. Extra p95 latency was 47.87 ms. The engine stopped and released its port. All four fixtures matched the 0.44.0 token counts. [Timed load evidence](proofs/optimization-windows10-stability-045.json)
