@@ -1,0 +1,189 @@
+{
+  "development_token_savings": "unmeasured",
+  "headroom_version": "0.45.0",
+  "installed_package": "not_tested",
+  "local_model_test": {
+    "candidate_tokens": {
+      "cache_read": 0,
+      "input": 1420,
+      "output": 28
+    },
+    "cases": [
+      {
+        "case": "build",
+        "expected": 2,
+        "input_sha256": "b73f08e9938e06aa2951c7a8593ed2fdaabdb31a8a75c7cd62aea49acdb600c4",
+        "tool_result_row": 1
+      },
+      {
+        "case": "release",
+        "expected": 6,
+        "input_sha256": "bb498b85a50c6f541a33cf1cbf39729822c02557f73c7ba65a5dc17819f7904d",
+        "tool_result_row": 4
+      },
+      {
+        "case": "queue",
+        "expected": 4,
+        "input_sha256": "9423c210fc1d92c6b978a180d736c19840f7abdc4c37965027eebcae4f308545",
+        "tool_result_row": 6
+      },
+      {
+        "case": "sync",
+        "expected": 9,
+        "input_sha256": "ce0721be87cb9a696f016f716ae2fc2e4df942f46bc6dc47553fa191f105d8ce",
+        "tool_result_row": 8
+      }
+    ],
+    "correct": 3,
+    "external_model_calls": 0,
+    "graceful_engine_stops": 1,
+    "local_receipt_sha256": "6b8c1ae20ab6540f608a29f051fc552147d0c491307b63e4ccca57b71983216c",
+    "model": "SmolLM2-135M-Instruct-Q4_K_M",
+    "model_listener_closed": true,
+    "new_model_requests": 4,
+    "passed": true,
+    "prior_record": "responses-repeat-local-model-045.json",
+    "prior_record_sha256": "56de68184f8aa24700c4309ffa45fadb0ce40675aecac5ab60e29952e7173d5f",
+    "prior_reference_tokens": {
+      "cache_read": 0,
+      "input": 964,
+      "output": 45
+    },
+    "recovered_cases": [
+      "queue"
+    ],
+    "results": {
+      "build": {
+        "engine_usage_matches": true,
+        "model": {
+          "answer": 1,
+          "cache_read": 0,
+          "input": 355,
+          "output": 7,
+          "total": 362
+        },
+        "outbound_sha256": "b73f08e9938e06aa2951c7a8593ed2fdaabdb31a8a75c7cd62aea49acdb600c4",
+        "outbound_tokens": 532,
+        "reference": false
+      },
+      "queue": {
+        "engine_usage_matches": true,
+        "model": {
+          "answer": 4,
+          "cache_read": 0,
+          "input": 355,
+          "output": 7,
+          "total": 362
+        },
+        "outbound_sha256": "9423c210fc1d92c6b978a180d736c19840f7abdc4c37965027eebcae4f308545",
+        "outbound_tokens": 536,
+        "reference": false
+      },
+      "release": {
+        "engine_usage_matches": true,
+        "model": {
+          "answer": 6,
+          "cache_read": 0,
+          "input": 355,
+          "output": 7,
+          "total": 362
+        },
+        "outbound_sha256": "bb498b85a50c6f541a33cf1cbf39729822c02557f73c7ba65a5dc17819f7904d",
+        "outbound_tokens": 532,
+        "reference": false
+      },
+      "sync": {
+        "engine_usage_matches": true,
+        "model": {
+          "answer": 9,
+          "cache_read": 0,
+          "input": 355,
+          "output": 7,
+          "total": 362
+        },
+        "outbound_sha256": "ce0721be87cb9a696f016f716ae2fc2e4df942f46bc6dc47553fa191f105d8ce",
+        "outbound_tokens": 532,
+        "reference": false
+      }
+    },
+    "same_answers_and_usage_as_full_output_control": true,
+    "same_wire_hashes_as_full_output_control": true,
+    "seconds": 19.335,
+    "server": "llama.cpp b12359",
+    "source_inputs_count": 82,
+    "source_inputs_sha256_before_after": "fb308df18fffc64124be06adf2c609227a780bc261eabfd7ff62e82cd35bf8ce",
+    "surface": "Responses HTTP/SSE"
+  },
+  "observed_on": "2026-11-25",
+  "operating_system": "Windows 10 22H2 x64",
+  "optimization_control_sha256": "ab2d1bad8e157c47943bd03534a86103db54e16d9ea3370ce94022bee112f776",
+  "provider_billing": "not_tested",
+  "quality_gate": {
+    "checks": {
+      "app tests": {
+        "passed": true,
+        "seconds": 1.245,
+        "tests": 228
+      },
+      "desktop build": {
+        "passed": true,
+        "seconds": 9.51
+      },
+      "frontend build": {
+        "passed": true,
+        "seconds": 2.104
+      },
+      "rust formatting": {
+        "passed": true,
+        "seconds": 1.418
+      },
+      "rust tests": {
+        "passed": true,
+        "seconds": 49.494,
+        "skipped": 25,
+        "tests": 482
+      }
+    },
+    "input_count": 510,
+    "inputs_sha256_before_after": "cffcdf915d172fe8349af536ee2c878858c27172e5361441fb20db8bc82600c9",
+    "local_receipt_sha256": "0219860bf2f229f3662cd3f60c6d7b02997ca3c737dd34fb28cb77d736a3aecf",
+    "optimization_control_sha256": "ab2d1bad8e157c47943bd03534a86103db54e16d9ea3370ce94022bee112f776",
+    "passed": true,
+    "seconds": 64.977,
+    "toolchain": {
+      "cargo.exe": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node.exe": "v25.2.1",
+      "pnpm.cmd": "11.25.0",
+      "rustc.exe": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "rustfmt.exe": "rustfmt 1.8.0-stable (ded5c06cf2 2025-12-08)"
+    },
+    "windows_build": 19045
+  },
+  "scope": "Local Responses tests of the Headroom engine in the PennyPinch runtime",
+  "windows_build": 19045,
+  "wire_test": {
+    "call_id_reuse_checks": 2,
+    "counter": "o200k_base",
+    "exact_ccr_recoveries": 3,
+    "graceful_engine_stops": 2,
+    "local_receipt_sha256": "accff1391c28ffd510438695217f3b9f0a7b02634cd956064180c3b4e996f663",
+    "passed": true,
+    "paused_requests": 2,
+    "regression_reproduced_on_prior_source": true,
+    "requests": 52,
+    "requests_by_transport": {
+      "http": 27,
+      "websocket": 25
+    },
+    "same_repeat_local_json_tokens": {
+      "forwarded": 405,
+      "original": 405
+    },
+    "same_repeat_result_tokens": {
+      "forwarded": 112,
+      "original": 112
+    },
+    "source_inputs_count": 50,
+    "source_inputs_sha256_before_after": "beac8d0cb5387b72df07c09366fbbbb756d185278861e7699274b3fb4af7502e"
+  }
+}

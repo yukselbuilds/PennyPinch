@@ -36,6 +36,8 @@ In Anthropic, 14 earlier message prefixes changed in both arms. Focused diagnosi
 
 ### Correctness of repeat references in Responses
 
+The current 0.45.0 runtime disables cross-turn repeat references in Responses. The later model test found a wrong answer after replacing the latest result with a reference. Keep normal per-result compression and CCR retrieval. The 0.44.0 pilot below recorded the wire behavior of the retired rule. [Model comparison](../proofs/responses-repeat-local-model-045.json) · [Correction evidence](../proofs/responses-repeat-output-045.json)
+
 The lead agent owns the engine's final wire format and call scope. For Responses HTTP and WebSocket, replace the previous span reference with a full-output reference for a new `function_call_output` under the same explicit session ID, tool, and arguments. The earlier call and its complete result must be visible in the same request sequence. The earlier result must equal the new raw result, and the call ID must resolve exactly once. References apply only to full results. The rule uses the current deduplication setting and messages already sent, with no need for a response archive or a new tool.
 
 1. Use two distinct call IDs with the same tool, arguments, and full output. The second result points to the single preceding call ID and shrinks under the same local tokenizer. The next request carries the same history without reporting an additional repeat. Pausing preserves access to the existing reference.

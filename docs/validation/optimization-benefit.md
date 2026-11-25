@@ -206,6 +206,8 @@ Sixteen local pairs passed. The short output and both failures kept their origin
 
 All eight model usage records matched the engine records. One case failed in both arms. A second case passed with full output and failed with the reference. The 32.11% reduction applies to model input in these four tasks. The result failed the quality criterion. It provides no verified net benefit per correct task. External model quality and actual charges remain open. [Evidence](../proofs/responses-repeat-local-model-045.json)
 
+The corrected 0.45.0 runtime removed Responses repeat references. In four new local model requests, the forwarded request hashes, answers, and usage matched the earlier full-output arm. The model answered three tasks correctly and used 1,420 input tokens. It recovered the answer that the reference changed. The repeat example used 405 local JSON tokens before and after. Three CCR retrievals restored long log results exactly. [Correction evidence](../proofs/responses-repeat-output-045.json)
+
 <a name="h041-açık-kabulleri"></a>
 
 ## Open H041 acceptance criteria

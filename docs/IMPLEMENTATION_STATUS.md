@@ -49,6 +49,8 @@ The lead agent corrected exit-code handling for Codex `exec_command` on Response
 
 The lead agent tested exact Responses repeats with Headroom 0.45.0 and SmolLM2 on Windows 10. In four paired tasks, the full-output arm answered three correctly. The reference arm answered two correctly. Model input fell from 1,420 to 964 tokens. The quality criterion failed. [Evidence](proofs/responses-repeat-local-model-045.json)
 
+The lead agent removed Responses repeat references from the 0.45.0 runtime. Windows 10 passed 52 wire checks, three exact CCR recoveries, 228 app tests, and 482 Rust tests. The local model matched the full-output control on all four answers and token counts. The correction requires a new Windows package. Resume verification from the open H041 criteria. [Correction evidence](proofs/responses-repeat-output-045.json) · [Open criteria](validation/optimization-benefit.md#open-h041-acceptance-criteria)
+
 The preview.5 full installer upgraded the public preview.4 on Windows 10 22H2 x64. It preserved preferences. The test matched 19,491 installed resources and the package receipt. The installed engine passed the successful and failed output checks with the same inputs in both versions. The older installer refused the downgrade. [Installed evidence](proofs/windows-preview5-shell-upgrade.json)
 
 The lead agent prepared the preview.5 delivery for H042-am. The ZIP includes the release notes and 673 third-party notices. Windows matched all 678 listed SHA-256 digests and the tested installer. [Delivery evidence](proofs/pennypinch-windows10-preview5-delivery.json)

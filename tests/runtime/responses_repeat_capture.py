@@ -1,4 +1,4 @@
-"""Verify Responses whole-result references at an owned Windows upstream."""
+"""Verify repeated Responses results at a local Windows upstream."""
 import argparse
 from contextlib import nullcontext
 from copy import deepcopy
@@ -21,7 +21,6 @@ dedup = runpy.run_path(str(BENCH / "dedup.py"))
 surface, base, require = (dedup[name] for name in ("surface", "base", "require"))
 usage = runpy.run_path(str(BENCH / "anthropic_usage.py"))
 PLAN, TIMEOUT = dedup["PLAN"], 30
-REFERENCE = "[Identical to the complete tool result above (call_id: {}).]"
 
 
 def set_enabled(engine, enabled, revision):
@@ -107,18 +106,10 @@ def exercise(engine, server, wire, disabled, count, rows):
                     captured = server.captured.pop(capture_key, [])
                 require(len(captured) == 1 and captured[0]["auth_preserved"], f"{wire}_{case}_upstream")
                 sent = captured[0]["body"]
-                restored = case == "exact" and turn == 4
-                prior = {**previous, "input": body["input"][:len(previous["input"])]} if restored else previous
-                base.validate_body(body, sent, prior, False)
+                base.validate_body(body, sent, previous, False)
                 expected = {call: value for _, call, value in dedup["output_items"](body, "responses")}
                 actual = {call: value for _, call, value in dedup["output_items"](sent, "responses")}
-                reference_count, ccr_count = 0, 0
-                if case == "exact" and 1 <= turn <= 3 and not disabled:
-                    first, second = (requests[i][1] for i in (0, 1))
-                    require(actual[first] == expected[first] == expected[second]
-                            and actual[second] == REFERENCE.format(first), f"{wire}_reference_unresolved")
-                    expected[second] = actual[second]
-                    reference_count = 1
+                ccr_count = 0
                 if case == "long_log":
                     checks = dedup["proof_for_outputs"](engine, body, sent, "responses", count)
                     require(all(row["exact"] and not row["pointers"] for row in checks.values())
@@ -131,11 +122,11 @@ def exercise(engine, server, wire, disabled, count, rows):
                 before, after = count(base.encoded(body).decode()), count(base.encoded(payload).decode())
                 output_before = count(body["input"][-1]["output"]) if case == "exact" and turn == 1 else None
                 output_after = count(actual[identity]) if output_before is not None else None
-                if output_before is not None and not disabled:
-                    require(after < before and output_after < output_before, f"{wire}_repeat_did_not_shrink")
+                if output_before is not None:
+                    require(after == before and output_after == output_before, f"{wire}_repeat_count_changed")
                 rows.append({"wire": wire, "dedupe": not disabled, "case": case, "turn": turn,
-                             "reference_count": reference_count, "ccr_exact": ccr_count, "paused": paused,
-                             "restored_on_id_reuse": restored,
+                             "ccr_exact": ccr_count, "paused": paused,
+                             "call_id_reuse": case == "exact" and turn == 4,
                              "input_tokens": before, "forwarded_tokens": after,
                              "new_result_tokens": output_before, "forwarded_result_tokens": output_after})
                 previous = sent
@@ -196,7 +187,9 @@ def main():
             finally:
                 engine.close()
                 stops.append(engine.stopped)
-        require(sum(row["reference_count"] for row in rows) == 6 and len(rows) == 52, "coverage_changed")
+        require(len(rows) == 52 and sum(row["paused"] for row in rows) == 2
+                and sum(row["call_id_reuse"] for row in rows) == 2
+                and any(row["ccr_exact"] for row in rows), "coverage_changed")
     except Exception as error:
         failure = str(error) if isinstance(error, AssertionError) and re.fullmatch(r"[a-z_]+", str(error)) else type(error).__name__
     finally:
