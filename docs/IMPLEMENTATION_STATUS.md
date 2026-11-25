@@ -2,11 +2,11 @@
 
 ## Current status
 
-**46 of 54 main tasks are complete.** The Windows 10 preview.4 release is available. The owner deferred Windows 11 x64 verification to December 2026. H041 remains open. [Task list](../TASKS.md)
+**46 of 54 main tasks are complete.** The Windows 10 preview.5 release is available. The owner deferred Windows 11 x64 verification to December 2026. H041 remains open. [Task list](../TASKS.md)
 
-PennyPinch v0.1.1-preview.4 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. Both public downloads matched their SHA-256 digests at publication. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.4) · [Publication evidence](proofs/pennypinch-windows10-preview4-publication.json)
+PennyPinch v0.1.1-preview.5 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. Both public downloads matched their SHA-256 digests at publication. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.5) · [Publication evidence](proofs/pennypinch-windows10-preview5-publication.json)
 
-On 25 November, the lead agent checked public delivery. The asset records matched the publication proof. The ZIP returned the requested byte range. Both Pages links pointed to the current release. The signed manifest and signature matched the proof for 0.1.1-preview.2. Use the full installer for the engine upgrade. [Update status](https://yukselbuilds.github.io/PennyPinch/updates/)
+Use the full installer to install preview.5. The signed preview channel serves 0.1.1-preview.2 to compatible installations. The three signed feed files matched their recorded SHA-256 digests before and after publication. [Update status](https://yukselbuilds.github.io/PennyPinch/updates/)
 
 The lead agent ran H037-a9 with the public preview.4 installer and a fresh application profile. The existing Windows 10 22H2 x64 desktop had WebView2. Default preferences, engine start, one local stream, normal exit, and cleanup passed in 73.966 seconds. The test matched 19,491 installed resources and the package receipt. [First-use evidence](proofs/windows-preview4-first-use.json)
 
@@ -35,9 +35,11 @@ The lead agent checked Learn with Headroom 0.45.0. Eight previews passed. A loca
 
 The lead agent corrected exit-code handling for Codex `exec_command` on Responses. Successful compression keeps the exit code visible. Failed output stays intact. HTTP/SSE and WebSocket passed eight local pairs each on Windows 10. [Shell status evidence](proofs/responses-shell-status-045.json)
 
-The local preview.5 full installer upgraded the public preview.4 on Windows 10 22H2 x64. It preserved preferences. The test matched 19,491 installed resources and the package receipt. The installed engine passed the successful and failed output checks with the same inputs in both versions. The older installer refused the downgrade. Preview.5 is a local candidate. [Installed evidence](proofs/windows-preview5-shell-upgrade.json)
+The preview.5 full installer upgraded the public preview.4 on Windows 10 22H2 x64. It preserved preferences. The test matched 19,491 installed resources and the package receipt. The installed engine passed the successful and failed output checks with the same inputs in both versions. The older installer refused the downgrade. [Installed evidence](proofs/windows-preview5-shell-upgrade.json)
 
-The lead agent prepared the local preview.5 delivery for H042-am. The ZIP includes the release notes and 673 third-party notices. Windows matched all 678 listed SHA-256 digests and the tested installer. Review the release assets before publication. Windows 11 x64 verification remains open. [Delivery evidence](proofs/pennypinch-windows10-preview5-delivery.json)
+The lead agent prepared the preview.5 delivery for H042-am. The ZIP includes the release notes and 673 third-party notices. Windows matched all 678 listed SHA-256 digests and the tested installer. [Delivery evidence](proofs/pennypinch-windows10-preview5-delivery.json)
+
+The lead agent completed H042-an. The release tag points to the tested source. The downloaded installer matches the Windows 10 upgrade test. Three live Pages links point to preview.5. The desktop check script accepts the new ZIP on Windows 10. Use the current ZIP and the signed rollback procedure when a Windows 11 x64 desktop is available. [Publication evidence](proofs/pennypinch-windows10-preview5-publication.json)
 
 Ubuntu passed the configuration transaction and recovery checks on ext4. [H049-b2 evidence](proofs/h049-linux-transaction.json)
 

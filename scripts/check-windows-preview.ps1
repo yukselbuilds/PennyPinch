@@ -41,7 +41,7 @@ try {
     $status = 'release_evidence_unavailable'
     $proofs = Join-Path $PSScriptRoot '../docs/proofs'
     $evidence = if ($Scenario -eq 'Current') {
-        Join-Path $proofs 'pennypinch-windows10-preview4-delivery.json'
+        Join-Path $proofs 'pennypinch-windows10-preview5-delivery.json'
     } else {
         Join-Path $proofs 'pennypinch-windows10-installed-update-and-release.json'
     }

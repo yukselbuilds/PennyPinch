@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "task": "H042-an",
+  "owner": "lead agent",
+  "scope": "Publication preflight for the Windows 10 22H2 x64 preview",
+  "observed_on": "2026-11-25",
+  "preflight": {
+    "archive_sha256": "782780c705fc463bcc05be2887a1dbe11f82463ac2021661d05e301e84b4e222",
+    "checksum_sha256": "7dfd514423c70f2346de5d37dca2aac84fa295e523d7deb8fe88b739fa8820bc",
+    "input_sha256_before_and_after": {
+      "7z.exe": "8cebb25e240db3b6986fcaed6bc0b900fa09dad763a56fb71273529266c5c525",
+      "PennyPinch_0.1.1-preview.5_Windows_x64_preview.zip": "782780c705fc463bcc05be2887a1dbe11f82463ac2021661d05e301e84b4e222",
+      "PennyPinch_0.1.1-preview.5_x64-setup.exe": "3dbb16f73ee52557daddedd7e77e4a7ac52af14011134e8d6bc59a984b048d8a",
+      "SHA256SUMS.txt": "7dfd514423c70f2346de5d37dca2aac84fa295e523d7deb8fe88b739fa8820bc",
+      "check-publication.py": "a82ce2d575d29f4e7c9770c135cf833eb8ee9c4a0d69574332bf1a9cd7f7c427",
+      "pennypinch-windows10-preview4-publication.json": "1d8cad34bd372710669888b42b7be226e80ec2ebfad960a503a6dfa3f2170b50",
+      "pennypinch-windows10-preview5-delivery.json": "e1eb2b27fda1dcb8178a2ede56e22ac98eef8d7b5dd0dc299330ba04cbf14396",
+      "python.exe": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+      "release-notes.md": "d232a3da6b38859b730206ddd4087705fcd4c0996f1b5609ecb7704197a96704",
+      "windows-preview5-shell-upgrade.json": "e76e408163a0a7a61c8d13747ba3bc8daafa1eaf4c184065d91ae872e1357abe"
+    },
+    "installer_sha256": "3dbb16f73ee52557daddedd7e77e4a7ac52af14011134e8d6bc59a984b048d8a",
+    "notes_sha256": "d232a3da6b38859b730206ddd4087705fcd4c0996f1b5609ecb7704197a96704",
+    "nsis_entries": 19499,
+    "product_source": "7b6b44c4a7250e53d93b1bd0d93c8fb50a28d5cd",
+    "public_candidate_release_exists": false,
+    "public_candidate_tag_exists": false,
+    "public_page_sha256": {
+      "index.html": "5554e8c295e875bdbf2b29e8b8c06cd99e2704e1d1b6139e84a7a833bcf51912",
+      "updates/index.html": "0087dd95cdc1951d0ba529475abf674aa57b4280606cd35f385542cd89d5c3f1"
+    },
+    "public_refs": {
+      "refs/heads/gh-pages": "a8a6cd822480a5841e8b2c106e2fecf6cb74b2e5",
+      "refs/heads/main": "1e23af61bafc9e70704fe4e612db22180052a2dd"
+    },
+    "public_release_at_check": "v0.1.1-preview.4",
+    "rtk_paths": 0,
+    "schema_version": 1,
+    "seconds": 8.521,
+    "signed_feed_sha256": {
+      "updates/preview/Headroom_0.1.1-preview.2_x64-update.exe": "15708a3d73f2cf1da8612fc05b8eb832c89d8fe9073c2724b0672b5ed7daf567",
+      "updates/preview/manifest.json": "413ddd1db7d4c7733b7aeed980f8fd915312985eb2f00e571c4f92d366c7f598",
+      "updates/preview/manifest.json.sig": "8f9ab96f0e27d6f590d3a8f374158ab3a9f4d9a07f330f5d9327c4e70fa4900d"
+    },
+    "status": "pass",
+    "tag": "v0.1.1-preview.5",
+    "zip_entries": 679
+  },
+  "limits": {
+    "windows_11_x64": "not_tested",
+    "manual_ci_dispatches": 0,
+    "live_provider_requests": 0
+  }
+}

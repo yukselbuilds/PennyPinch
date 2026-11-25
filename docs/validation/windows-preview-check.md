@@ -9,10 +9,10 @@ Use this procedure on a test Windows desktop. Use a separate Windows user for th
 3. Run the command for the selected test before you install PennyPinch.
 4. Save the JSON line that the script prints.
 
-For the current installer, use the `0.1.1-preview.4` ZIP. [Current preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.4)
+For the current installer, use the `0.1.1-preview.5` ZIP. [Current preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.5)
 
 ```powershell
-powershell.exe -NoProfile -File .\scripts\check-windows-preview.ps1 -Archive .\PennyPinch_0.1.1-preview.4_Windows_x64_preview.zip
+powershell.exe -NoProfile -File .\scripts\check-windows-preview.ps1 -Archive .\PennyPinch_0.1.1-preview.5_Windows_x64_preview.zip
 ```
 
 For the signed update and rollback test, use the `0.1.1-preview.1` ZIP. [Signed update baseline](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.1)

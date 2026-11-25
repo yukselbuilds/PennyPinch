@@ -190,3 +190,9 @@ PowerShell extracted all 678 files to a folder with Unicode and spaces on Window
 GitHub Releases serves PennyPinch v0.1.1-preview.4 as a prerelease. The tag points to the source of the tested installer. Both anonymous downloads matched their SHA-256 digests. The setup file in the downloaded ZIP matched the installer from the Windows 10 upgrade test.
 
 The project page and update page link to the full installer. The signed preview feed still serves v0.1.1-preview.2 for compatible installations. Its three files kept their original digests. Use the full installer for the engine upgrade. Windows 11 x64 update and rollback remain open. [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.4) · [Publication evidence](../proofs/pennypinch-windows10-preview4-publication.json).
+
+## 25 November 2026 — Public Windows 10 preview.5
+
+GitHub Releases serves v0.1.1-preview.5 as a prerelease for Windows 10 22H2 x64. Both downloads matched their SHA-256 digests without an account. The installer matched the Windows 10 upgrade test. The desktop check script passed five cases on Windows 10. [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.5) · [Publication evidence](../proofs/pennypinch-windows10-preview5-publication.json)
+
+Use the full installer to install preview.5. The signed channel serves v0.1.1-preview.2 to compatible installations. Its three files kept their recorded digests. Windows 11 x64 update and rollback remain open. [Update status](https://yukselbuilds.github.io/PennyPinch/updates/)
