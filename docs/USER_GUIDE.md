@@ -1,6 +1,6 @@
 # PennyPinch user guide
 
-This guide covers the Windows 10 preview. The release notes give installation and upgrade steps. The platform validation matrix gives the tested platforms and remaining checks. [Release notes](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.5) · [Platform validation](validation/desktop-platforms.md)
+This guide covers the Windows 10 preview. The release notes give installation and upgrade steps. The platform validation matrix gives the tested platforms and remaining checks. [Release notes](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.6) · [Platform validation](validation/desktop-platforms.md)
 
 ## Connect a coding agent
 
@@ -54,7 +54,7 @@ Open **Tool output protection** under **Operating preferences** to keep selected
 
 Reducing the retention period can permanently delete older measurement records. Increasing it applies to the retained and future data.
 
-Use the full installer to upgrade to v0.1.1-preview.5. It keeps exit codes visible when it compresses Codex command output. Select **Do not uninstall** when setup offers that option. [Windows 10 release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.5)
+Use the full installer to upgrade to v0.1.1-preview.6. It corrects the check for older signed releases. Select **Do not uninstall** when setup offers that option. [Windows 10 release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.6)
 
 **App updates** offers signed application updates when the update matches the installed engine files. Select **Preview** as the release channel. Select **Check for updates**. The app shows the verified version and lets you start the download. [Windows update validation](validation/windows-update.md)
 

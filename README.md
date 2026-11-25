@@ -25,7 +25,7 @@ PennyPinch is an open-source desktop app for local context compression with Code
 
 Windows 10 22H2 x64 is the first release target. Use the full installer to get Headroom 0.45.0. This preview uses an unsigned installer.
 
-[**Download the Windows 10 preview**](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.5) · [Update status](https://yukselbuilds.github.io/PennyPinch/updates/) · [Platform validation](docs/validation/desktop-platforms.md)
+[**Download the Windows 10 preview**](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.6) · [Update status](https://yukselbuilds.github.io/PennyPinch/updates/) · [Platform validation](docs/validation/desktop-platforms.md)
 
 ## What PennyPinch does
 

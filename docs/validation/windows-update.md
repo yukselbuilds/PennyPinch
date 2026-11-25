@@ -209,4 +209,10 @@ The full local gate passed 227 application tests and 481 Rust tests. The tests a
 
 The lead agent used the public preview.5 installer as the baseline. The local preview.6 installer upgraded it on Windows 10 22H2 x64. The app kept the saved test preferences. The signed update check showed that the channel had no newer release. Both runs used the same signed metadata. Setup rejected an attempt to install preview.5 over preview.6.
 
-The installed engine completed one local Responses stream and stopped normally. The test matched all 19,491 engine resources and the package receipt. Windows extracted 679 ZIP entries and matched the 678 listed digests. The ZIP contains the tested unsigned installer. Preview.6 is a local candidate. [Evidence](../proofs/pennypinch-windows10-preview6-local.json)
+The installed engine completed one local Responses stream and stopped normally. The test matched all 19,491 engine resources and the package receipt. Windows extracted 679 ZIP entries and matched the 678 listed digests. The ZIP contains the tested unsigned installer. H042-aq records publication. [Evidence](../proofs/pennypinch-windows10-preview6-local.json)
+
+## 25 November 2026 — Public Windows 10 preview.6
+
+GitHub Releases serves v0.1.1-preview.6 as a prerelease. The tag points to the source of the tested installer. Both downloads matched their SHA-256 digests without an account. The installer in the downloaded ZIP matched the installer from the Windows 10 upgrade test. [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.6) · [Publication evidence](../proofs/pennypinch-windows10-preview6-publication.json)
+
+Use the full installer to install preview.6. The signed channel serves v0.1.1-preview.2 to compatible installations. Its three files matched their recorded digests. Windows 11 x64 update and rollback remain open. [Update status](https://yukselbuilds.github.io/PennyPinch/updates/)
