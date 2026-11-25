@@ -97,7 +97,11 @@ Configure the deployed Function with a server-side connection for this role. The
 
 The lead agent checked the Neon Free plan in the console. A project-scoped key deployed the Function in Frankfurt. The connection probe and all three report routes returned 404 with no-store. The pilot database stayed empty. The lead agent revoked the key and checked the key list after reload. [Live evidence](../proofs/h052-neon-closed-function.json)
 
-The runner supplied a precomputed SCRAM verifier. The Neon control plane returned SQLSTATE XX000. The live checks confirmed a disabled runtime login. Neon requires plain text for password changes over SQL. Check a supported method that keeps connection secrets out of logs before the hosted connection test. Keep the owner credential in the operator process. [Neon role management](https://neon.com/docs/manage/roles#manage-roles-with-sql)
+The first attempt supplied a precomputed SCRAM verifier. Neon returned SQLSTATE XX000. Neon documents that SQL password changes require plain text. [Neon role management](https://neon.com/docs/manage/roles#manage-roles-with-sql)
+
+Neon returned HTTP 412 for both schema-only requests. The runner checked the empty pilot, then created a temporary branch from that state. The test branch used the same migration grants. The runner created the role with login disabled. It confirmed that the initial password could not authenticate. The Neon API then returned a replacement password. The runner enabled login after the reset finished. [Neon SDK role provisioning](https://github.com/neondatabase/neon-pkgs/blob/main/packages/sdk/src/neon/resources/roles.ts)
+
+The hosted probe returned 204 over the restricted connection. An unapproved probe and all report routes returned 404. The runner disabled the role and checked that the credential failed. It then removed the branch and revoked the project API key. The parent role remained disabled. Real report intake stays closed. [Live connection evidence](../proofs/h052-neon-restricted-connection.json)
 
 ## H052-k — Local scheduled cleanup handler
 

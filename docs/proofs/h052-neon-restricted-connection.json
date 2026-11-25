@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "task": "H052",
+  "slice": "H052-j",
+  "scope": "Live restricted Function connection on an isolated Neon Free branch",
+  "status": "passed",
+  "observed_on": "2026-11-25",
+  "owner": "lead agent",
+  "source_base": "8c330ec034e485fe843466bd12560c6ce673f36c",
+  "connection": {
+    "plan": "Free",
+    "region": "aws-eu-central-1",
+    "isolation": "branch from the verified empty pilot",
+    "role": "pennypinch_reports_runtime",
+    "node": "v24.22.3",
+    "postgresql": "18.7",
+    "rotated_password_used": true,
+    "bootstrap_denied": true,
+    "login_denied_before_enable": true,
+    "restricted_tls_connection": true,
+    "direct_denied_operations": 3,
+    "hosted_probe_status": 204,
+    "anonymous_probe_status": 404,
+    "closed_report_routes": 3,
+    "real_user_reports": 0,
+    "credential_denied_after_disable": true,
+    "test_branch_removed": true,
+    "parent_runtime_login_disabled": true,
+    "parent_closed_routes": 4,
+    "duration_seconds": 20.226
+  },
+  "verification": {
+    "plan_confirmed_in_neon_console": true,
+    "schema_only_branch_requests": {
+      "attempts": 2,
+      "http_status": 412
+    },
+    "source_checked_before_branch_creation": [
+      "one database",
+      "three known empty report tables",
+      "no object buckets",
+      "no Auth integration"
+    ],
+    "active_password_source": "Neon password reset API",
+    "project_key_removed_after_neon_console_reload": true,
+    "operator_guard_tests_passed": 2,
+    "input_fingerprints_before_and_after": {
+      "services/reports/migrations/0001_reports.sql": "65637c2f72f3bb1afe950dce87aca28583498b6b77c4782786dd6287941bbd30",
+      "services/reports/migrations/0002_reports_runtime.sql": "a8a8e34346c222fad30766518ab34329f1bcb26b00d95a263b3218ab0c01c9ff",
+      "services/reports/function.mjs": "29d868e53c06f0286e6ee19cd8e3caca96402d2fac0e8afac1fb6fe785a82b01",
+      "services/reports/service.mjs": "1735758537f24949e2d0de212195dcb870fa61a528cb3cd9423ff0a612e18def",
+      "services/reports/admin-panel.mjs": "27d711c6cc13c85b15e72724378759b9e0e5739676b7da4f4eaf9845fa1902d3",
+      "services/reports/usage.mjs": "f5f817895579d571475bf4cdb8da06425e7e5b832538ec94b7b330edc7dc1c66",
+      "services/reports/package.json": "4503ac1c444188f2f7e2f95c0390fb097584e35f78d9e65149c3cd5d47a63d52",
+      "services/reports/pnpm-lock.yaml": "e4e63c972617091894135a94a9270c67f9c2c98c3d136235d8fe17d50e9efefe",
+      "services/reports/service.test.mjs": "4b412d8d053ea690dcbc4e333031473bfb56da139fd732e66fb1112bb41a9d52",
+      "services/reports/usage.test.mjs": "ddeeb3898507adc04895fd765ba0ed8afffc5a08f60b393ccbc6d0a69ff450a2",
+      "work/toolchains/reports-neon-function/node-v24.22.3-win-x64/node.exe": "86fc4785327db5f5c7558dc6156c543b433c313e813a222e088086222ab4afa6",
+      "work/proofs/h052/neon-function/isolated-pilot.mjs": "4a9526ce091fd24f19df4a75f3d6863c896a061f060ea83cfa3936377df4cda6",
+      "work/proofs/h052/neon-function/isolated-pilot.test.mjs": "aed60260c2017dd48c3814ce3de8750e513e18037480267ba5c2cc854f052683",
+      "work/proofs/h052/neon-function/deploy-pilot.mjs": "f8c5bf52fbe93d7a7a41b0d6d20bb0437c6bd2da6b5c36cee50885b0f3d49c83",
+      "work/proofs/h052/neon-function/pilot-handoff.mjs": "7a49ee037b37cdeddd2f338d25fd7d3d9043675f4b3866589b9529ef414aa226",
+      "work/proofs/h052/neon-function/connection-check.zip": "105b7d115278e1e56bfed01a8d754346c8e6a29524f88fc2dfe6ff66d10f2114",
+      "work/proofs/h052/neon-function/connection-check.mjs": "e15ad5064e78f0615e3e366119c16676e914497243b658e11f4354f6c754bc7a"
+    }
+  },
+  "pending": [
+    "Provision the login for the deployed administrator and report service.",
+    "Verify managed administrator sign-in against Neon Auth.",
+    "Verify the live retention trigger, restore behavior, provider logs, and privacy acceptance."
+  ],
+  "development_agent_token_savings": "not_measured"
+}
