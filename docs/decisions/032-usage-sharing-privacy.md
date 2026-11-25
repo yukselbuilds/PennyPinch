@@ -69,7 +69,7 @@ Serve aggregate data only. Disable caching. Use nonce-bound styles. Block script
 
 ## H052-e — Bounded retention and scheduled cleanup
 
-Expire reports after 30 days. The local PostgreSQL implementation deletes up to 500 rows per batch and stops after at most 8 batches per call. Keep expired records out of query results while cleanup is delayed. Resume a backlog on the next cleanup call. Local expiry passed against PostgreSQL 17.12. No Neon trigger has been configured or tested for this project.
+Expire reports after 30 days. The local PostgreSQL implementation deletes up to 500 rows per batch and stops after at most 8 batches per call. Exclude expired records from query results during a cleanup delay. Resume a backlog on the next cleanup call. Local expiry passed against PostgreSQL 17.12. H052-q verified the schedule and retry on a temporary Neon Free branch.
 
 Neon documents that function triggers can retry and deliver events more than once or out of order. Make cleanup safe to repeat. Verify actual Free-plan limits and retry behavior before scheduling a trigger. [Neon Function Triggers](https://neon.com/docs/compute/functions/triggers/overview) · [Neon plans](https://neon.com/docs/introduction/plans)
 
@@ -107,9 +107,9 @@ The hosted probe returned 204 over the restricted connection. An unapproved prob
 
 The cleanup Function uses a dedicated database role. The role can delete from the three retention tables. It can read only the columns that select expired rows. The migration grants no permission to read summaries or add records.
 
-Set `REPORTS_CLEANUP_TRIGGER_ID` to the scheduler's trigger ID. Set `REPORTS_CLEANUP_DATABASE_URL` to the restricted role's connection URL. The handler requires HTTPS, the expected trigger envelope, and the Neon invocation header. Neon documents that its edge removes client-supplied headers with the `X-Neon-` prefix. Verify this behavior on the deployed Function before enabling the schedule. [Neon trigger security](https://neon.com/docs/compute/functions/triggers/overview#confirming-a-request-came-from-neon)
+Set `REPORTS_CLEANUP_TRIGGER_ID` to the scheduler's trigger ID. Set `REPORTS_CLEANUP_DATABASE_URL` to the restricted role's connection URL. The public Function URL uses HTTPS. The handler accepts internal HTTP with the expected trigger envelope and the Neon invocation header. Neon documents that its edge strips client-supplied headers with the `X-Neon-` prefix. H052-q verified that the deployed Function rejected a public request with this header. [Neon trigger security](https://neon.com/docs/compute/functions/triggers/overview#confirming-a-request-came-from-neon)
 
-The handler uses its current UTC time for the retention cutoff. A backlog or a database error requests a retry after 60 seconds. The local bundle passed the cutoff, duplicate delivery, restricted role, and retry checks on PostgreSQL. The live schedule, provider logs, and backup and restore checks remain open. [Cleanup evidence](../proofs/h052-neon-retention-local.json)
+The handler uses its current UTC time for the retention cutoff. A backlog or a database error requests a retry after 60 seconds. The local bundle passed the cutoff, duplicate delivery, restricted role, and retry checks on PostgreSQL. H052-q covers the live schedule. Provider logs, backup, and restore acceptance remain open. [Cleanup evidence](../proofs/h052-neon-retention-local.json)
 
 ## H052-l — Local administrator access
 
@@ -152,3 +152,11 @@ The lead agent used a temporary branch from the verified empty pilot. Neon Auth 
 The allowed user opened the panel in Edge and read the empty summary. The other user and an invalid password returned 401. The cross-origin request returned 403 with no cookie. Sign-out cleared the panel cookie. The provider stored zero active sessions after the test.
 
 The reporting role could not read either Auth table in the test. The intake route returned 404. The lead agent removed the branch and revoked the project key. Production operator enrollment and real report intake remain pending. [Live sign-in evidence](../proofs/h052-neon-admin-live.json)
+
+## H052-q — Live scheduled retention
+
+The first deployed handler rejected a genuine trigger because its request URL used internal HTTP. The handler reported 404 before it queried PostgreSQL. The revised handler accepts internal HTTP and keeps the trusted header, method, path, and envelope checks. The PostgreSQL connection still requires TLS.
+
+Neon Free delivered one scheduled event on the isolated test branch. The first call removed 4,000 expired synthetic reports and two old counters. A retry removed the final expired report after 62 seconds. The cutoff report and two current counters remained. Both public test requests returned 404 and left all rows in place. The lead agent removed the test schedule and branch and revoked the project key.
+
+This test covers one scheduled event and its retry. Provider log retention, backup handling, and point-in-time restore remain open. Real report intake stays closed. [Live retention evidence](../proofs/h052-neon-retention-live.json)

@@ -32,8 +32,8 @@ function reply(status, extraHeaders) {
 export async function handleScheduledCleanup(request, { db, triggerId } = {}, now = Date.now()) {
   const url = new URL(request.url);
   const invocationId = request.headers.get("x-neon-trigger-invocation-id");
-  // Neon strips this header from requests that did not originate from its trigger service.
-  if (!triggerId || !invocationId || request.method !== "POST" || url.protocol !== "https:" ||
+  // Neon can deliver schedules over internal HTTP. Its edge strips this header from public requests.
+  if (!triggerId || !invocationId || request.method !== "POST" || !["http:", "https:"].includes(url.protocol) ||
       url.pathname !== cleanupPath || url.search) {
     return reply(404);
   }

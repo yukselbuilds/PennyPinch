@@ -5,6 +5,7 @@ import { PGlite } from "@electric-sql/pglite";
 import retention, { createCleanupPool, handleScheduledCleanup } from "./retention-function.mjs";
 
 const base = "https://fixture.invalid/internal/expire-usage";
+const internal = "http://fixture.invalid/internal/expire-usage";
 const id = "trigger-retention-fixture";
 const invocation = "retention-delivery-1";
 const now = Date.parse("2026-11-24T15:00:00Z");
@@ -43,8 +44,9 @@ test("rejects unauthenticated and misrouted requests before storage access", asy
   const settings = { triggerId: id, db: { query: () => assert.fail("unexpected query") } };
   for (const req of [
     request({ headers: { "content-type": "application/json" } }),
+    request({ headers: { "content-type": "application/json" } }, internal),
     request({ body: undefined, method: "GET" }),
-    request({}, base.replace("https:", "http:")),
+    request({}, "file:///internal/expire-usage"),
     request({}, base + "?trigger=fixture"),
     request({}, "https://fixture.invalid/admin"),
   ]) {
@@ -85,7 +87,7 @@ test("uses processing time and preserves current records under the cleanup role"
     await assert.rejects(db.query("UPDATE reports.usage_intake_quota SET accepted_count = 2"), { code: "42501" });
     await assert.rejects(db.query("INSERT INTO reports.usage_intake_quota VALUES (current_date,1)"), { code: "42501" });
     await assert.rejects(db.query("TRUNCATE reports.usage_days"), { code: "42501" });
-    assert.equal((await handleScheduledCleanup(request(), { db, triggerId: id }, now)).status, 204);
+    assert.equal((await handleScheduledCleanup(request({}, internal), { db, triggerId: id }, now)).status, 204);
     assert.equal((await handleScheduledCleanup(request(), { db, triggerId: id }, now)).status, 204);
   } finally {
     await db.exec("RESET ROLE");
