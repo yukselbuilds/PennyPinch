@@ -40,6 +40,8 @@ The lead agent completed H037-a14 with the public preview.8 installer on Windows
 
 Windows 10 is the first-release priority. H006 and H037 need a clean Windows 10 x64 desktop. H037 also needs a host without WebView2. Use the current ZIP and the Windows preview procedure when a suitable host is available. [Procedure](validation/windows-preview-check.md)
 
+The lead agent completed the existing H041 Next optimization slices item. The installed preview.8 evidence passed the exact-repeat and long-log checks. The matching 0.45.0 runtime passed 16 local test-output pairs on Windows 10. CCR returned 4 complete originals. The engine forwarded all 8 failed outputs in full. The task list has 17 open subtasks and 8 open main tasks. See the current H041 acceptance table for the remaining criteria. [Evidence](proofs/h041-core-optimization-completion.json)
+
 The lead agent ran H041-a3 with Headroom 0.45.0 on Windows 10. The same 300-second plan passed 300 request pairs and 249 exact CCR recoveries. Extra p95 latency was 47.87 ms. The engine stopped and released its port. All four fixtures matched the 0.44.0 token counts. [Timed load evidence](proofs/optimization-windows10-stability-045.json)
 
 The source pins Headroom 0.45.0. Windows 10 built the local installer and passed the staged engine lifecycle and loopback usage tests.

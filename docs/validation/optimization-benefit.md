@@ -193,6 +193,8 @@ The four fixtures matched the full-request `o200k_base` counts in the 0.44.0 run
 
 Sixteen local pairs passed. The short output and both failures kept their original text. The two transports used independent Node runs. The counts include the full request JSON. The test made zero external model calls. [Evidence](../proofs/responses-shell-status-045.json)
 
+The lead agent checked the preview.8 engine overlays against the release receipt on 26 November 2026. The installed repeat and log tests used these files. The new test-output runs used the same pinned 0.45.0 engine and repeated the checks on both Responses transports. All 16 pairs passed. CCR returned 4 complete originals. The engine forwarded all 8 failed outputs in full. This completes the existing Next optimization slices item. [Evidence](../proofs/h041-core-optimization-completion.json)
+
 ## Exact repeats and local-model answer quality
 
 25 November 2026. The Windows 10 test used four paired Responses HTTP/SSE tasks with Headroom 0.45.0. The model was SmolLM2-135M-Instruct Q4_K_M on llama.cpp b12359. Each pair compared the full repeated tool result with a reference to the identical earlier result. Each arm sent the same original request. A fixture established the preceding result without a model call. The eight model requests had zero cache reads. [Responses endpoint](https://github.com/ggml-org/llama.cpp/blob/b12359/tools/server/README.md#post-v1responses-openai-compatible-responses-api)

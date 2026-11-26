@@ -1,0 +1,106 @@
+{
+  "task": "H041",
+  "checklist_item": "Next optimization slices",
+  "status": "pass",
+  "date": "2026-11-26",
+  "owner": "lead agent",
+  "source_commit": "58f66d776178af5df29448b66d706e6fb1a6d383",
+  "engine_version": "0.45.0",
+  "windows_build": 19045,
+  "release_overlays_sha256": {
+    "desktop_controller.py": "a3779d70b4fefca414365e8d871756bcd6dc64471397f0c80881d6b69f3d0803",
+    "desktop_helper.py": "e663ac42634f7a5a34b30a8409105d0cdef6f40879207006bea3b13272407b31",
+    "cache_control_shim.py": "09eb94e7edd4877da1c92223baa2b4871ba71dbc8355fdf162f2b3d44b1db340",
+    "optimization_control.py": "ab2d1bad8e157c47943bd03534a86103db54e16d9ea3370ce94022bee112f776",
+    "optimization-sources.json": "53ce06d596b6e0a928d030caae607d95ddce2151aec05d74d6027e93561f5fa8",
+    "retrieval_bridge.py": "163a28b73967782668f557ae509c45b55c63087eb4523ba7a294aaf9839a3b5a"
+  },
+  "release_staging_receipt_sha256": "d02a107398d60a2cfdb0f7092f2616729b95fd3d668b8c61ad2e2432072b7420",
+  "prior_installed_evidence": {
+    "path": "docs/proofs/pennypinch-windows10-preview8-local.json",
+    "sha256": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba",
+    "repeat_results_forwarded_exactly": 2,
+    "long_log": {
+      "ccr_exact": true,
+      "exact_tool_output_on_wire": false,
+      "repeat_reference": false,
+      "token_count_forwarded": 163,
+      "token_count_original": 8324
+    }
+  },
+  "prior_repeat_quality_evidence": {
+    "path": "docs/proofs/responses-repeat-output-045.json",
+    "sha256": "ca30358201510e6164f71118d4cd09e9114aac9dde46380a86dbf00bd884a227"
+  },
+  "test_output": {
+    "pair_count": 16,
+    "exact_original_readbacks": 4,
+    "full_failure_output_pairs": 8,
+    "protocols": {
+      "Responses HTTP/SSE": {
+        "pairs": 8,
+        "app_tests": 228,
+        "exact_original_readbacks": 2,
+        "full_failure_output_pairs": 4,
+        "test_output_request_tokens": [
+          {
+            "turn": 1,
+            "original_request_tokens": 4799,
+            "forwarded_request_tokens": 2054,
+            "saved_percent": 57.1994
+          },
+          {
+            "turn": 2,
+            "original_request_tokens": 4826,
+            "forwarded_request_tokens": 2081,
+            "saved_percent": 56.8794
+          }
+        ],
+        "max_added_end_to_end_ms": 507.076,
+        "max_allowed_ms": 1000,
+        "input_count": 128,
+        "inputs_sha256_before_after": "104ff2835f6fd4045949d4b9ac1ab15b4d29bffbe02a9b700a45a88042500ebe",
+        "local_receipt_sha256": "9421864005bc76364750f5d7aca14b54d756c0e01cda49bb1f8244fbb31c029d",
+        "engine_seconds": 57.18
+      },
+      "Responses WebSocket": {
+        "pairs": 8,
+        "app_tests": 228,
+        "exact_original_readbacks": 2,
+        "full_failure_output_pairs": 4,
+        "test_output_request_tokens": [
+          {
+            "turn": 1,
+            "original_request_tokens": 4797,
+            "forwarded_request_tokens": 2059,
+            "saved_percent": 57.0773
+          },
+          {
+            "turn": 2,
+            "original_request_tokens": 4824,
+            "forwarded_request_tokens": 2086,
+            "saved_percent": 56.7579
+          }
+        ],
+        "max_added_end_to_end_ms": 274.961,
+        "max_allowed_ms": 1000,
+        "input_count": 129,
+        "inputs_sha256_before_after": "f413c5ab8262cc3978709ba24efb1d6bca168a5725ff940a757371f475b8352b",
+        "local_receipt_sha256": "7cd439eb61bd39b98de05c512ea3002b9873fa588584252e374020e2feb9049c",
+        "engine_seconds": 15.073
+      }
+    }
+  },
+  "limits": {
+    "token_basis": "local o200k_base full request JSON",
+    "external_model_calls": 0,
+    "windows_11_x64": "not_tested",
+    "live_billing": "not_tested",
+    "development_token_savings": "unmeasured"
+  },
+  "open_checklist": {
+    "subtasks_before": 18,
+    "subtasks_after": 17,
+    "main_tasks": 8
+  }
+}
