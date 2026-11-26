@@ -36,6 +36,28 @@ def qmp(stream, command, **arguments):
             return response["return"]
 
 
+def setup_display(stream):
+    # Keep the screenshot in the disposable runner. Report only recognized installation states.
+    states = {
+        "press any key to boot": "boot_prompt",
+        "installing windows": "installing",
+        "where do you want to install windows": "disk_selection",
+        "windows setup": "setup",
+        "could not parse or process": "answer_file_error",
+        "let's connect you to a network": "oobe_network",
+        "sign in": "sign_in",
+        "getting ready": "getting_ready",
+        "error": "error_text",
+    }
+    try:
+        qmp(stream, "screendump", filename=str(Path("setup.ppm").resolve()))
+        scan = subprocess.run(["tesseract", "setup.ppm", "stdout"], capture_output=True, check=True, timeout=10)
+        screen = " ".join(scan.stdout.decode("utf-8", errors="replace").lower().split())
+    except (RuntimeError, subprocess.SubprocessError):
+        return ["diagnostic_unavailable"]
+    return [value for key, value in states.items() if key in screen] or ["unclassified"]
+
+
 def main(process):
     with socket.socket(socket.AF_UNIX) as monitor:
         monitor.settimeout(8)
@@ -53,9 +75,22 @@ def main(process):
             qmp(stream, "cont")
             notice("boot", {"kvm": qmp(stream, "query-kvm")["enabled"], "disk": "new_qcow2"})
             start = time.monotonic()
-            preflight = False
+            preflight = None
+            diagnostic = iter([90, 220, 380, 540])
+            next_diagnostic = next(diagnostic)
             done = 0
-            while time.monotonic() - start < 1000:
+            while True:
+                elapsed = time.monotonic() - start
+                if not preflight and elapsed >= next_diagnostic:
+                    states = setup_display(stream)
+                    notice(f"boot at {next_diagnostic} seconds", {"screen": states})
+                    if "boot_prompt" in states:
+                        qmp(stream, "human-monitor-command", **{"command-line": "sendkey ret"})
+                    next_diagnostic = next(diagnostic, float("inf"))
+                if not preflight and elapsed >= 550:
+                    raise RuntimeError("guest_timeout_before_baseline")
+                if preflight and time.monotonic() - preflight >= 490:
+                    raise RuntimeError("guest_timeout_after_baseline")
                 if receipts.exists():
                     raw = receipts.read_bytes()
                     lines = raw.split(b"\n")[:-1]
@@ -67,8 +102,10 @@ def main(process):
                         notice(event.decode("ascii"), result)
                         if event == b"before":
                             assert not preflight and result["preflight"]["status"] == "ready"
-                            preflight = True
+                            preflight = time.monotonic()
                             qmp(stream, "set_link", name="guestnic", up=True)
+                        if event == b"installed":
+                            qmp(stream, "set_link", name="guestnic", up=False)
                         if event == b"complete":
                             notice("duration", {"guest_seconds": round(time.monotonic() - start, 3)})
                             return result["status"] == "pass"
@@ -76,7 +113,6 @@ def main(process):
                 if process.poll() is not None:
                     raise RuntimeError("vm_exited_before_receipt")
                 time.sleep(1)
-            raise RuntimeError("guest_timeout_after_baseline" if preflight else "guest_timeout_before_baseline")
 
 
 with subprocess.Popen(guest) as process:

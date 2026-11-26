@@ -5,7 +5,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: h037-clean-windows10
+  group: h037-clean-windows10-lifecycle
   cancel-in-progress: false
 jobs:
   preview:
@@ -23,7 +23,7 @@ jobs:
           test -c /dev/kvm
           sudo setfacl -m "u:$USER:rw" /dev/kvm
           sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends qemu-system-x86 qemu-utils xorriso
+          sudo apt-get install -y -qq --no-install-recommends qemu-system-x86 qemu-utils xorriso tesseract-ocr
           mkdir -p "$RUNNER_TEMP/pp-clean/answer/scripts" "$RUNNER_TEMP/pp-clean/answer/docs/proofs"
           recipe="$GITHUB_WORKSPACE/.github/h037-clean-windows10"
           cp "$recipe/guest.ps1" "$recipe/desktop.ps1" "$RUNNER_TEMP/pp-clean/answer/"

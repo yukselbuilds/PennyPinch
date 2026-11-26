@@ -43,7 +43,7 @@ function Invoke-Page([string]$expression) {
 }
 
 function Has-Engine([string]$expected) {
-    $state = Invoke-Page "window.__TAURI_INTERNALS__.invoke('get_runtime_snapshot', {requestId: crypto.randomUUID()}).then(v => v.engine.status)"
+    $state = Invoke-Page "window.__TAURI_INTERNALS__?.invoke('get_runtime_snapshot', {requestId: crypto.randomUUID()}).then(v => v.engine.status)"
     return $state -ceq $expected
 }
 
@@ -123,7 +123,7 @@ function Test-Desktop {
     Remove-Item Env:\WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS
     $target = Wait-For 45 {
         try {
-            Invoke-RestMethod 'http://127.0.0.1:49257/json/list' -TimeoutSec 2 |
+            (Invoke-RestMethod 'http://127.0.0.1:49257/json/list' -TimeoutSec 2) |
                 Where-Object { $_.type -ceq 'page' -and $_.url -like 'http://tauri.localhost/*' } |
                 Select-Object -First 1
         } catch [System.Net.WebException] {}
@@ -147,6 +147,8 @@ function Test-Desktop {
             throw 'engine_start_control_missing'
         }
         if (!(Wait-For 155 { Has-Engine ready })) { throw 'engine_not_ready' }
+        $result.engine_version = Invoke-Page "window.__TAURI_INTERNALS__.invoke('get_runtime_snapshot', {requestId: crypto.randomUUID()}).then(v => v.engine_version)"
+        if ($result.engine_version -cne '0.45.0') { throw 'engine_version_mismatch' }
         $result.checks.engine_ready = $true
         $endpointFile = Join-Path $profile 'runtime/connection-endpoint.json'
         $enginePort = (Get-Content -LiteralPath $endpointFile -Raw -Encoding UTF8 | ConvertFrom-Json).port
@@ -159,10 +161,12 @@ function Test-Desktop {
         if (!(Invoke-Page "(() => {const d = document.querySelector('.optimization-control__more'); if (!d) return false; d.open = true; const b = d.querySelector('button'); if (!b || b.disabled) return false; b.click(); return true;})()")) {
             throw 'engine_stop_control_missing'
         }
-        if (!(Wait-For 50 { (Has-Engine stopped) -and !(Get-NetTCPConnection -LocalPort $enginePort -State Listen -ErrorAction SilentlyContinue) })) {
-            throw 'engine_or_listener_still_running'
+        if (!(Wait-For 50 {
+            (Has-Engine stopped) -and (Invoke-Page "window.__TAURI_INTERNALS__.invoke('get_ingress_snapshot', {requestId: crypto.randomUUID()}).then(v => v.backend.status === 'stopped' && v.endpoint.status === 'ready')")
+        })) {
+            throw 'engine_backend_not_stopped'
         }
-        $result.checks.engine_stopped_and_port_closed = $true
+        $result.checks.engine_stopped_with_stable_route = $true
         Send-Receipt lifecycle @{checks = $result.checks}
 
         $result.phase = 'tray_close_and_reopen'
@@ -195,6 +199,10 @@ public static class Pointer {
         $result.desktop_exit = $app.ExitCode
         if ($app.ExitCode -ne 0) { throw 'desktop_failed_exit' }
         $result.checks.tray_exit = $true
+        if (Get-NetTCPConnection -LocalAddress 127.0.0.1 -LocalPort $enginePort -State Listen -ErrorAction SilentlyContinue) {
+            throw 'stable_listener_survived_exit'
+        }
+        $result.checks.stable_listener_closed_on_exit = $true
     } finally {
         $socket.Dispose()
     }

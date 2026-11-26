@@ -61,7 +61,7 @@
       <FirstLogonCommands>
         <SynchronousCommand wcm:action="add">
           <Order>1</Order>
-          <CommandLine>powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$r=(Get-Volume -FileSystemLabel PPAUDIT).DriveLetter; &amp; ($r + ':\guest.ps1')"</CommandLine>
+          <CommandLine>powershell.exe -NoProfile -Command "$r=(Get-Volume -FileSystemLabel PPAUDIT).DriveLetter; Start-Process powershell.exe ('-NoLogo -NoProfile -ExecutionPolicy Bypass -File ' + $r + ':\guest.ps1')"</CommandLine>
           <Description>Verify the public PennyPinch preview</Description>
         </SynchronousCommand>
       </FirstLogonCommands>
