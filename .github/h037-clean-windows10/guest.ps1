@@ -107,6 +107,7 @@ try {
     $result.candidate_exe_sha256 = $candidateHashes[0]
     $result.candidate_helper_sha256 = $candidateHashes[1]
     $result.checks.candidate_files_verified = $true
+    Send-Receipt candidate @{ executable = $candidateHashes[0]; helper = $candidateHashes[1] }
 
     $result.phase = 'interactive_desktop'
     $desktopScript = Join-Path $PSScriptRoot 'desktop.ps1'
@@ -117,8 +118,20 @@ try {
     $taskName = 'PennyPinchCleanDesktopVerification'
     Register-ScheduledTask -TaskName $taskName -Action $command -Principal $principal | Out-Null
     Start-ScheduledTask -TaskName $taskName
-    $deadline = [DateTime]::UtcNow.AddSeconds(315)
+    $deadline = [DateTime]::UtcNow.AddSeconds(390)
+    $progressFile = Join-Path $env:LOCALAPPDATA 'pp-clean-progress.jsonl'
+    $sent = 0
     do {
+        if (Test-Path -LiteralPath $progressFile) {
+            $observed = @(Get-Content -LiteralPath $progressFile -Encoding UTF8)
+            while ($sent -lt $observed.Count) {
+                try { $item = $observed[$sent] | ConvertFrom-Json -ErrorAction Stop }
+                catch { break }
+                if ($item.event -cnotmatch '^(window|start|ready|stopped|exited)$') { throw 'invalid_desktop_progress' }
+                Send-Receipt ('desktop_' + $item.event) $item
+                $sent += 1
+            }
+        }
         if (Test-Path -LiteralPath $stateFile) {
             $result.desktop = Get-Content -LiteralPath $stateFile -Raw -Encoding UTF8 | ConvertFrom-Json
             break

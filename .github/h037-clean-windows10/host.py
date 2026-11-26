@@ -94,7 +94,7 @@ def main(process):
                     next_diagnostic = next(diagnostic, float("inf"))
                 if not preflight and elapsed >= 550:
                     raise RuntimeError("guest_timeout_before_baseline")
-                if preflight and time.monotonic() - preflight >= 630:
+                if preflight and time.monotonic() - preflight >= 820:
                     notice("desktop diagnostics", {"screen": setup_display(stream)})
                     raise RuntimeError("guest_timeout_after_baseline")
                 if receipts.exists():

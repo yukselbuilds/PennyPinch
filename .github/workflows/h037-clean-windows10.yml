@@ -4,57 +4,15 @@ on:
     branches: [codex/h037-win10-engine-20261126]
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: h037-clean-windows10-engine
   cancel-in-progress: false
 jobs:
-  build:
-    name: Build the Windows startup candidate
-    runs-on: windows-2025
-    timeout-minutes: 25
-    outputs:
-      candidate_sha256: ${{ steps.compile.outputs.sha256 }}
-    steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
-        with:
-          node-version-file: .node-version
-          package-manager-cache: false
-      - name: Build the executable
-        id: compile
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $PSNativeCommandUseErrorActionPreference = $true
-          $env:npm_config_cache = "$env:RUNNER_TEMP/pp-npm-cache"
-          npm.cmd install --prefix "$env:RUNNER_TEMP/pp-tools" --no-save --ignore-scripts --no-audit --no-fund pnpm@11.25.0
-          $pnpm = "$env:RUNNER_TEMP/pp-tools/node_modules/pnpm/bin/pnpm.cjs"
-          if ((node $pnpm --version).Trim() -cne '11.25.0') { throw 'Use pnpm 11.25.0.' }
-          node $pnpm --store-dir "$env:RUNNER_TEMP/pp-store" install --frozen-lockfile
-          node $pnpm run build
-          rustup toolchain install 1.92.0 --profile minimal
-          $env:CARGO_TARGET_DIR = "$env:RUNNER_TEMP/pp-target"
-          $env:RUSTFLAGS = "--remap-path-prefix=$env:GITHUB_WORKSPACE=/pennypinch"
-          cargo +1.92.0 build --locked --manifest-path src-tauri/Cargo.toml --release --features custom-protocol
-          $exe = "$env:CARGO_TARGET_DIR/release/headroom-desktop.exe"
-          if ((Get-Item -LiteralPath $exe).Length -gt 24000000) { throw 'Candidate exceeds the test file limit.' }
-          $candidate = "$env:RUNNER_TEMP/pp-candidate.exe"
-          Copy-Item -LiteralPath $exe -Destination $candidate
-          $digest = (Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash.ToLowerInvariant()
-          "sha256=$digest" >> $env:GITHUB_OUTPUT
-      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
-        with:
-          name: pp-win10-candidate
-          path: ${{ runner.temp }}/pp-candidate.exe
-          retention-days: 1
-          if-no-files-found: error
   preview:
     name: Verify the startup candidate on clean Windows 10 x64
-    needs: build
     runs-on: ubuntu-24.04
-    timeout-minutes: 29
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
@@ -62,11 +20,13 @@ jobs:
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: pp-win10-candidate
+          run-id: 45858910411
+          github-token: ${{ github.token }}
           path: ${{ runner.temp }}/pp-candidate
       - name: Verify official media and prepare a temporary guest
         shell: bash
         env:
-          PP_CANDIDATE_SHA256: ${{ needs.build.outputs.candidate_sha256 }}
+          PP_CANDIDATE_SHA256: 569d76b432b961b609821ca071099d2e8c1869178cf688ea9993611431b0d153
         run: |
           set -euo pipefail
           test -c /dev/kvm

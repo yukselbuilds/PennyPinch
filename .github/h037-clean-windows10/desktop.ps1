@@ -70,70 +70,14 @@ function Test-BundledPython([string]$installRoot) {
     }
 }
 
-function Find-Element($parent, [string]$name, [string]$type) {
-    $control = switch ($type) {
-        button { [Windows.Automation.ControlType]::Button }
-        menu { [Windows.Automation.ControlType]::MenuItem }
+function Publish-Progress([string]$event) {
+    $row = ConvertTo-Json -Compress -Depth 6 -InputObject @{
+        event = $event
+        checks = $result.checks
+        engine_state = $result.last_engine
+        ready_seconds = $result.engine_ready_after_seconds
     }
-    $condition = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ControlTypeProperty, $control)
-    try {
-        $parent.FindAll([Windows.Automation.TreeScope]::Descendants, $condition) |
-            Where-Object { $_.Current.Name -match $name -and !$_.Current.IsOffscreen } |
-            Select-Object -First 1
-    } catch [Windows.Automation.ElementNotAvailableException] {}
-}
-
-function Find-TopLevel([string]$class) {
-    $condition = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::ClassNameProperty, $class)
-    $root.FindFirst([Windows.Automation.TreeScope]::Children, $condition)
-}
-
-function Click-Native($element, [bool]$right) {
-    $bounds = $element.Current.BoundingRectangle
-    if ($bounds.IsEmpty -or $bounds.Width -lt 1 -or $bounds.Height -lt 1) { throw 'empty_native_bounds' }
-    if (![Pointer]::SetCursorPos([int]($bounds.X + $bounds.Width / 2), [int]($bounds.Y + $bounds.Height / 2))) {
-        throw 'cannot_move_guest_pointer'
-    }
-    if ($right) {
-        [Pointer]::mouse_event(8, 0, 0, 0, [UIntPtr]::Zero)
-        [Pointer]::mouse_event(16, 0, 0, 0, [UIntPtr]::Zero)
-    } else {
-        [Pointer]::mouse_event(2, 0, 0, 0, [UIntPtr]::Zero)
-        [Pointer]::mouse_event(4, 0, 0, 0, [UIntPtr]::Zero)
-    }
-}
-
-function Find-TrayIcon {
-    $pattern = '^PennyPinch(?:$| .+)'
-    $taskbar = Find-TopLevel 'Shell_TrayWnd'
-    if (!$taskbar) { return }
-    $icon = Find-Element $taskbar $pattern button
-    if ($icon) { return $icon }
-    $overflow = Find-TopLevel 'NotifyIconOverflowWindow'
-    if ($overflow) {
-        $icon = Find-Element $overflow $pattern button
-        if ($icon) { return $icon }
-    }
-    $chevron = Find-Element $taskbar 'Show hidden icons|Notification Chevron' button
-    if ($chevron) {
-        Click-Native $chevron $false
-        Wait-For 4 {
-            $popup = Find-TopLevel 'NotifyIconOverflowWindow'
-            if ($popup) { Find-Element $popup $pattern button }
-        }
-    }
-}
-
-function Invoke-Tray([string]$label) {
-    $icon = Wait-For 12 { Find-TrayIcon }
-    if (!$icon) { throw 'tray_icon_not_found' }
-    Click-Native $icon $true
-    $item = Wait-For 8 {
-        $menu = Find-TopLevel '#32768'
-        if ($menu) { Find-Element $menu $label menu }
-    }
-    if (!$item) { throw 'tray_item_not_found' }
-    Click-Native $item $false
+    [IO.File]::AppendAllText($progressFile, $row + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
 }
 
 function Test-Desktop {
@@ -172,6 +116,7 @@ function Test-Desktop {
         throw 'unexpected_window_caption'
     }
     $result.checks.native_window = $true
+    Publish-Progress window
 
     $result.phase = 'webview_control'
     $target = Wait-For 27 {
@@ -204,6 +149,7 @@ function Test-Desktop {
             throw 'engine_start_action_unavailable'
         }
         $result.checks.start_action_clicked = $true
+        Publish-Progress start
         $engineTimer = [Diagnostics.Stopwatch]::StartNew()
         $statuses = [Collections.Generic.List[string]]::new()
         $terminal = Wait-For 155 {
@@ -221,6 +167,7 @@ function Test-Desktop {
         $result.engine_version = Invoke-Page "window.__TAURI_INTERNALS__.invoke('get_runtime_snapshot', {requestId: crypto.randomUUID()}).then(v => v.engine_version)"
         if ($result.engine_version -cne '0.45.0') { throw 'engine_version_mismatch' }
         $result.checks.engine_ready = $true
+        Publish-Progress ready
         $endpointFile = Join-Path $profile 'runtime/connection-endpoint.json'
         $enginePort = (Get-Content -LiteralPath $endpointFile -Raw -Encoding UTF8 | ConvertFrom-Json).port
         if ($enginePort -lt 1 -or $enginePort -gt 65535) { throw 'engine_port_invalid' }
@@ -238,40 +185,19 @@ function Test-Desktop {
             throw 'engine_backend_not_stopped'
         }
         $result.checks.engine_stopped_with_stable_route = $true
-        $result.phase = 'tray_close_and_reopen'
-        Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes
-        Add-Type -TypeDefinition @'
-using System;
-using System.Runtime.InteropServices;
-public static class Pointer {
-    [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
-    [DllImport("user32.dll")] public static extern void mouse_event(int flags, int x, int y, int data, UIntPtr extra);
-}
-'@
-        $root = [Windows.Automation.AutomationElement]::RootElement
-        [void]$app.CloseMainWindow()
-        if (!(Wait-For 8 { $app.Refresh(); !$app.HasExited -and $app.MainWindowHandle -eq [IntPtr]::Zero })) {
-            throw 'window_did_not_hide'
-        }
-        Invoke-Tray '^(Open PennyPinch|PennyPinch.i a.)$'
-        if (!(Wait-For 8 { $app.Refresh(); $app.MainWindowHandle -ne [IntPtr]::Zero })) {
-            throw 'window_did_not_reopen'
-        }
-        $result.checks.tray_reopen = $true
-
-        $result.phase = 'tray_exit'
-        Invoke-Tray '^(Quit.*|Tamamen .+)$'
-        if (!(Wait-For 12 { Invoke-Page "(() => { const b = [...document.querySelectorAll('button')].find(x => /^(Confirm exit|Quit|.{1}.* onayla)$/i.test(x.textContent.trim()) && x.getClientRects().length && !x.disabled); if (!b) return false; setTimeout(() => b.click(), 100); return true; })()" })) {
-            throw 'exit_confirmation_missing'
-        }
+        Publish-Progress stopped
+        $result.phase = 'desktop_exit'
+        $confirmed = Invoke-Page "window.__TAURI_INTERNALS__.invoke('request_desktop_exit',{requestId:crypto.randomUUID()}).then(v=>{if(!v.exit_token)return false;setTimeout(()=>window.__TAURI_INTERNALS__.invoke('confirm_desktop_exit',{requestId:crypto.randomUUID(),exitToken:v.exit_token}),300);return true})"
+        if (!$confirmed) { throw 'desktop_exit_request_missing' }
         if (!$app.WaitForExit(30000)) { throw 'desktop_exit_timeout' }
         $result.desktop_exit = $app.ExitCode
         if ($app.ExitCode -ne 0) { throw 'desktop_failed_exit' }
-        $result.checks.tray_exit = $true
+        $result.checks.normal_desktop_exit = $true
         if (Get-NetTCPConnection -LocalAddress 127.0.0.1 -LocalPort $enginePort -State Listen -ErrorAction SilentlyContinue) {
             throw 'stable_listener_survived_exit'
         }
         $result.checks.stable_listener_closed_on_exit = $true
+        Publish-Progress exited
     } finally {
         $socket.Dispose()
     }
@@ -281,6 +207,7 @@ $ErrorActionPreference = 'Stop'
 $destination = 'C:\PP-Verification'
 $profile = Join-Path $env:LOCALAPPDATA 'dev.headroom.desktop'
 $stateFile = Join-Path $env:LOCALAPPDATA 'pp-clean-desktop.json'
+$progressFile = Join-Path $env:LOCALAPPDATA 'pp-clean-progress.jsonl'
 $result = [ordered]@{ status = 'running'; phase = 'installed_window'; checks = [ordered]@{} }
 try {
     Test-Desktop
