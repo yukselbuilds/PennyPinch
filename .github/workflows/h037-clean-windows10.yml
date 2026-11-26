@@ -1,21 +1,58 @@
-name: H037 clean Windows 10 runner probe
+name: H037 clean Windows 10 preview
 on:
   push:
     branches: [codex/h037-clean-windows10-20261126]
 permissions:
   contents: read
+concurrency:
+  group: h037-clean-windows10
+  cancel-in-progress: false
 jobs:
-  capacity:
-    name: Check free hosted guest capacity
+  preview:
+    name: Boot clean Windows 10 x64 and verify preview.8
     runs-on: ubuntu-24.04
-    timeout-minutes: 3
+    timeout-minutes: 27
     steps:
-      - shell: bash
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Verify official media and prepare a temporary guest
+        shell: bash
         run: |
           set -euo pipefail
-          kvm=false
-          if [[ -c /dev/kvm ]] && grep -Eq '\b(vmx|svm)\b' /proc/cpuinfo; then kvm=true; fi
-          disk_bytes=$(df -B1 --output=avail "$RUNNER_TEMP" | tail -1 | tr -d ' ')
-          printf '::notice title=H037 runner capacity::{"kvm":%s,"disk_bytes":%s,"cores":%s,"ram_kib":%s}\n' \
-            "$kvm" "$disk_bytes" "$(nproc)" "$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
-          [[ "$kvm" == true && "$disk_bytes" -ge 23622320128 ]]
+          test -c /dev/kvm
+          sudo setfacl -m "u:$USER:rw" /dev/kvm
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends qemu-system-x86 qemu-utils xorriso
+          mkdir -p "$RUNNER_TEMP/pp-clean/answer/scripts" "$RUNNER_TEMP/pp-clean/answer/docs/proofs"
+          recipe="$GITHUB_WORKSPACE/.github/h037-clean-windows10"
+          cp "$recipe/guest.ps1" "$recipe/desktop.ps1" "$RUNNER_TEMP/pp-clean/answer/"
+          cp scripts/check-windows-preview.ps1 "$RUNNER_TEMP/pp-clean/answer/scripts/"
+          cp docs/proofs/pennypinch-windows10-preview8-local.json "$RUNNER_TEMP/pp-clean/answer/docs/proofs/"
+          cd "$RUNNER_TEMP/pp-clean"
+          test "$(df --output=avail -B1 . | tail -1)" -ge 23622320128
+          python3 - "$recipe/Autounattend.xml" <<'PY'
+          from pathlib import Path
+          import secrets
+          import sys
+          import xml.etree.ElementTree as ET
+          source = Path(sys.argv[1]).read_text()
+          assert source.count("EPHEMERAL-PASSWORD") == 2
+          answer = source.replace("EPHEMERAL-PASSWORD", "Pp1-" + secrets.token_hex(20))
+          ET.fromstring(answer)
+          Path("answer/Autounattend.xml").write_text(answer)
+          PY
+          curl --silent --show-error --fail --location --retry 1 --max-time 420 \
+            --output windows.iso 'https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso'
+          printf 'ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668  windows.iso\n' | sha256sum -c -
+          curl --silent --show-error --fail --location --retry 1 --max-time 120 \
+            --output answer/preview.zip 'https://github.com/yukselbuilds/PennyPinch/releases/download/v0.1.1-preview.8/PennyPinch_0.1.1-preview.8_Windows_x64_preview.zip'
+          printf '6fc4ae34a1a2b9404f0db1b7ea2763fd75b148cce0c0b2fd4fb0b528c85374be  answer/preview.zip\n' | sha256sum -c -
+          printf '::notice title=H037 verified inputs::%s\n' "$(sha256sum windows.iso answer/preview.zip | tr '\n' ' ')"
+          xorriso -as mkisofs -quiet -J -r -V PPAUDIT -o answer.iso answer
+          qemu-img create -f qcow2 clean.qcow2 45G
+      - name: Install and verify the public preview
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/pp-clean"
+          python3 "$GITHUB_WORKSPACE/.github/h037-clean-windows10/host.py"
