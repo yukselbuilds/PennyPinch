@@ -1,0 +1,103 @@
+{
+  "acceptance": {
+    "webview2_on_clean_host": "pass",
+    "windows10_clean_client_connect_and_request": "not_tested",
+    "windows10_clean_installer": "pass",
+    "windows10_clean_tray": "not_tested",
+    "windows10_clean_window_and_engine": "not_verified",
+    "windows11_x64": "not_tested"
+  },
+  "installation_run": {
+    "checks": {
+      "fresh_installation": true,
+      "no_dev_tools_in_path": true,
+      "nsis_installation": true,
+      "setup_sha256_verified": true,
+      "webview2_installed_by_setup": true
+    },
+    "conclusion": "failure",
+    "guest_seconds": 753.186,
+    "head_sha": "7c5d1fc17ea699b6cedd9aba366ac70211884f7f",
+    "job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45835715966/job/139963907147",
+    "last_error": "installed_window_unavailable",
+    "last_phase": "installed_desktop",
+    "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45835715966",
+    "source_sha256": {
+      ".github/h037-clean-windows10/Autounattend.xml": "db2849e042a278cd7355bfe9082e655cb61e844918efd2ae9021d6479be8053e",
+      ".github/h037-clean-windows10/desktop.ps1": "25ca2e1cc4bba504746009a65f42728b3ea2880c7e1b450709784e7758aa28e0",
+      ".github/h037-clean-windows10/guest.ps1": "dcd68f611f8863ecb5f01c63350458753b33ea3654196c29b304a92f9fd9284f",
+      ".github/h037-clean-windows10/host.py": "a0e4dbf056947041ae8c232befd51bd67a262355971ae97983c739fe932b2ce5",
+      ".github/workflows/h037-clean-windows10.yml": "c324fabafef55c4c31da8576ae8b831971ab00ea6ef5de1edb0802a2b3afe54e",
+      "docs/proofs/pennypinch-windows10-preview8-local.json": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba",
+      "scripts/check-windows-preview.ps1": "5efe8ae566838aa048973440108e25859f1df569a4dd6ee39a9bc8a72e27df82"
+    }
+  },
+  "lifecycle_run": {
+    "after": [],
+    "before": [],
+    "checks": {
+      "fresh_installation": true,
+      "no_dev_tools_in_path": true,
+      "setup_sha256_verified": true
+    },
+    "conclusion": "failure",
+    "desktop_exit": null,
+    "engine_version": null,
+    "error_code": "setup_timeout",
+    "guest_test_seconds": 256.771,
+    "head_sha": "fa2c11af681d6712123754858fdd1ce55b28cad4",
+    "job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45836916513/job/139968118724",
+    "phase": "nsis_installation",
+    "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45836916513",
+    "setup_timeout_seconds": 240,
+    "source_sha256": {
+      ".github/h037-clean-windows10/Autounattend.xml": "2b425679d1cf9f9f6ff345db63f92cf9e9813577a0b2018901bda15e361d3ff8",
+      ".github/h037-clean-windows10/desktop.ps1": "425fbcbe9684cc2cdc5630d19f494e3ea9f5463492c065987140d6b3f69af10e",
+      ".github/h037-clean-windows10/guest.ps1": "dcd68f611f8863ecb5f01c63350458753b33ea3654196c29b304a92f9fd9284f",
+      ".github/h037-clean-windows10/host.py": "27aa084f6f906e5d386145bed6d7ff8de06f8e2d26a15f9b130b5a8d504f9ea4",
+      ".github/workflows/h037-clean-windows10.yml": "faea01b2240466a0d32f68ff63075a8afcc338a2b3fa2aadbb5ed3bb07cc0a92",
+      "docs/proofs/pennypinch-windows10-preview8-local.json": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba",
+      "scripts/check-windows-preview.ps1": "5efe8ae566838aa048973440108e25859f1df569a4dd6ee39a9bc8a72e27df82"
+    }
+  },
+  "media": {
+    "iso_sha256": "ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668",
+    "microsoft_hash_reference": "https://download.microsoft.com/download/c/1/1/c11d2ca5-967c-45c0-bc7d-2d9ca3f1fe07/Windows10Enterprise22H2HashValues.pdf"
+  },
+  "release": {
+    "archive_sha256": "6fc4ae34a1a2b9404f0db1b7ea2763fd75b148cce0c0b2fd4fb0b528c85374be",
+    "installed_exe_sha256": "3b9e27afc01d07efd13d0aa7602209da5ab25dadbd659a09849dc3b92c0f5cd2",
+    "installer_sha256": "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1",
+    "setup_exit": 0,
+    "version": "0.1.1-preview.8"
+  },
+  "runner": {
+    "capacity_probe": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45834935964",
+    "fresh_virtual_disk": true,
+    "kvm": true,
+    "label": "ubuntu-24.04",
+    "local_vm_install": false
+  },
+  "schema_version": 1,
+  "task": "H037 clean Windows 10 setup and WebView2 prerequisite",
+  "webview2": {
+    "after_setup": [
+      "158.0.4370.45"
+    ],
+    "before_guest_network": [],
+    "bootstrapper_from_setup": true,
+    "immediately_before_setup": []
+  },
+  "windows": {
+    "build": 19045,
+    "caption": "Microsoft Windows 10 Enterprise Evaluation",
+    "display_version": "22H2",
+    "processor_architecture_codes": [
+      9
+    ],
+    "ubr": 2006,
+    "version": "10.0.19045",
+    "workstation": true,
+    "x64": true
+  }
+}

@@ -101,12 +101,20 @@ The public installer ran on Windows 10 22H2 x64 with WebView2 present. The test 
 
 The test used a separate installation on Windows 10 22H2 x64 with WebView2 present. After one engine file changed, PennyPinch showed a configuration conflict and kept the engine unavailable. The upstream fixture received zero requests. The same installer restored the original file digest and preserved the test settings. The repaired engine completed one local Responses stream and released its port on exit. The test matched 19,491 resources and the packaging receipt. [Repair evidence](../proofs/windows-preview8-repair.json)
 
+## 26 November — Clean Windows 10 installer and WebView2
+
+A standard GitHub Actions Ubuntu job installed Windows 10 Enterprise Evaluation 22H2 x64 on a new KVM disk. The clean guest reported build 19045.2006. The ZIP, installer, and installed executable matched the recorded SHA-256 digests. The NSIS process exited with code 0.
+
+The WebView2 registry records were empty before guest network access and again immediately before setup. Windows recorded the WebView2 bootstrapper as a child of the NSIS process. After setup, the registry reported WebView2 158.0.4370.45. This passes the clean-host WebView2 prerequisite acceptance. [Installation run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45835715966) · [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
+
+The first run could not verify the window after setup. The second setup reached the 240-second test limit. [Lifecycle run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45836916513)
+
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria
 
-1. **Clean Windows 10 and Windows 11 x64 desktops.** The user's available external environment at this stage was GitHub Actions. The 15 November 2026 check found that private-repository standard Windows x64 jobs use Server 2022 or 2025 and the standard Windows 11 job uses ARM64. The Windows 11 x64 desktop image is a larger-runner option for GitHub Team or Enterprise Cloud. The desktop test status is `not_tested`. [Standard images](https://github.com/actions/runner-images#available-images) · [Larger-runner images](https://docs.github.com/en/actions/reference/runners/larger-runners#runner-images) · [Plan requirements](https://docs.github.com/en/actions/how-tos/manage-runners/larger-runners/use-larger-runners)
-2. **Microsoft WebView2 setup on a clean host without the runtime.** The controlled NSIS failure branch and same-version repair passed in their local slices. [Microsoft WebView2 distribution](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution)
+1. **Clean Windows 10 window and client flow.** Verify the window and the engine lifecycle. Complete Connect, a small real request, Undo, and tray exit. [Windows procedure](windows-preview-check.md)
+2. **Clean Windows 11 x64 desktop.** The clean installation and client flow remain `not_tested`. GitHub's standard Windows 11 desktop image uses ARM64. [Standard images](https://github.com/actions/runner-images#available-images) · [Larger-runner images](https://docs.github.com/en/actions/reference/runners/larger-runners#runner-images)
 
 The 15 November private-repository check estimated ten standard Windows minutes from the reported $0.10 allowance. On 23 November, the GitHub API reported PennyPinch as public. Standard hosted jobs now run outside that allowance. The standard Windows x64 images still run Windows Server. The standard Windows 11 desktop image uses ARM64. Keep the Windows 11 x64 desktop status as `not_tested` until a suitable environment is available. [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions) · [Runner images](https://github.com/actions/runner-images#available-images)
 
