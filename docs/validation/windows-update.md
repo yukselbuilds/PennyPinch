@@ -228,3 +228,11 @@ Use the full installer to install preview.7. The current Windows procedure passe
 GitHub Releases serves PennyPinch preview.8 as a prerelease. Both public assets matched their recorded SHA-256 digests. The downloaded ZIP contained the installer from the Windows 10 upgrade test.
 
 The project page and update page link to the full installer. Five Windows 10 preflight cases passed. The signed preview channel serves preview.2 to compatible installations. The three signed files matched before and after publication. Windows 11 x64 update and rollback remain open. [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.8) · [Publication evidence](../proofs/pennypinch-windows10-preview8-publication.json)
+
+## 26 November 2026 — Windows 10 preview.8 update compatibility
+
+The test compiled the verifier from each release tag. The preview.7 verifier required the full installer for signed preview.8 test metadata. The preview.8 verifier found its own version current. The verifier offered a download when a lower test version used the preview.8 resource digest.
+
+The packaged executable matched the one from the Windows 10 upgrade test. The verifier rejected changed metadata and rejected the disposable signature with the production public key. Both release executables accepted their own resource digest and rejected the other digest.
+
+Windows could not open the signing password backup. Production signing of preview.8 remains open. The signed channel serves preview.2. Its three live files matched the expected SHA-256 digests. Windows 11 x64 update and rollback remain open. [Evidence](../proofs/windows-preview8-update-compatibility.json)

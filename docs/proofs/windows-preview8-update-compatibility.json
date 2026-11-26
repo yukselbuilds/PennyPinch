@@ -1,0 +1,61 @@
+{
+  "task": "H042-aw",
+  "status": "pass",
+  "date": "2026-11-26",
+  "owner": "lead agent",
+  "scope": "Native Windows 10 update verification with released app probes and disposable test metadata.",
+  "windows": {
+    "release": "Windows 10 22H2 x64",
+    "build": 19045
+  },
+  "releases": {
+    "0.1.1-preview.7": {
+      "source_commit": "17b0150cfccbe8df43e913b356a6c552a3103d92",
+      "exe_sha256": "e679863a99cf5361eb0472435fc08e29f5f3482a9be322e963ebc1132cf30191",
+      "runtime_resources_sha256": "486fd6ffe19e5bce437a87918de3e6634e6cc4aa1fdf36f23025d7a1914c951f"
+    },
+    "0.1.1-preview.8": {
+      "source_commit": "cad4f1c676d36b7f3c8dce7b0a41b732a6d3bdf9",
+      "exe_sha256": "3b9e27afc01d07efd13d0aa7602209da5ab25dadbd659a09849dc3b92c0f5cd2",
+      "runtime_resources_sha256": "65b45b7be618495fcdb50932929ac37e3d406b034680f37ab6b167a6ce2b5882"
+    }
+  },
+  "verification": {
+    "released_app_probes_match_embedded_source_key_and_resource_pin": 2,
+    "released_app_probes_reject_swapped_resource_pin": 2,
+    "preview_7_with_newer_preview_8": "full_installer_required",
+    "preview_8_with_its_own_version": "current",
+    "preview_8_resources_with_lower_test_version": "verified_download_candidate",
+    "reject_test_signature_with_release_key": "pass",
+    "reject_changed_metadata_with_test_key": "pass",
+    "installer_hash_and_extracted_application": "match",
+    "fixture_private_key_removed": true
+  },
+  "artifact_sha256": {
+    "Headroom_0.1.1-preview.8_x64-update.exe": "874ad458835f79e6cca64840725b7a4804cc97c150ae94433193b02688398632",
+    "manifest.json": "0863201a26e0bf3a038e10ba620ce9ba90de2545d4b3298674ea6e823f98c2dc",
+    "manifest.json.sig": "5fa54e32974909d468620dd172027b4b45646ea9aff86456ace7262da7611236"
+  },
+  "input_count": 37,
+  "inputs_sha256_before": "6e3dcde5947562bc8f12383620edc9bb8e2b838ed66f52bc26344e58dc05bdae",
+  "inputs_sha256_after": "6e3dcde5947562bc8f12383620edc9bb8e2b838ed66f52bc26344e58dc05bdae",
+  "duration_seconds": 19.908,
+  "limits": {
+    "production_signing": "not_tested_dpapi_backup_unavailable",
+    "preview_8_live_feed": "not_published",
+    "new_native_webview_run": "not_tested",
+    "windows_11_x64": "not_tested",
+    "paid_ci": "not_used",
+    "development_token_savings": "unmeasured"
+  },
+  "live_feed": {
+    "source": "https://yukselbuilds.github.io/PennyPinch/updates/",
+    "channel": "preview",
+    "observed_version": "0.1.1-preview.2",
+    "matched_files": 3,
+    "expected_digests": "docs/proofs/pennypinch-windows10-signed-preview.json",
+    "expected_digests_sha256": "fca46850ac17d1daec8ca72f42555e16bdfa128c353771244d136afb05393731",
+    "http_redirects": 0,
+    "duration_seconds": 2.332
+  }
+}
