@@ -1,0 +1,264 @@
+{
+  "task": "H041-d",
+  "status": "pass",
+  "date": "2026-11-26",
+  "owner": "lead agent",
+  "engine": "0.45.0",
+  "windows_build": 19045,
+  "release": "0.1.1-preview.8",
+  "release_source_commit": "cad4f1c676d36b7f3c8dce7b0a41b732a6d3bdf9",
+  "release_stage_sha256": "d02a107398d60a2cfdb0f7092f2616729b95fd3d668b8c61ad2e2432072b7420",
+  "focused_tests": {
+    "sse_observer": 3,
+    "normalization": 18,
+    "desktop_reader": 5,
+    "activity_transport": 9
+  },
+  "fixture_scenarios": {
+    "complete": {
+      "attempts": [
+        {
+          "status": 200,
+          "usage": {
+            "cache_creation_input_tokens": 100,
+            "cache_read_input_tokens": 900,
+            "input_tokens": 80,
+            "output_tokens": 6
+          }
+        },
+        {
+          "status": 200,
+          "usage": {
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 1100,
+            "input_tokens": 220,
+            "output_tokens": 23
+          }
+        }
+      ],
+      "client_status": 200,
+      "surface": "anthropic_messages",
+      "truncated": false,
+      "usage": {
+        "cache_creation_input_tokens": 100,
+        "cache_read_input_tokens": 2000,
+        "input_tokens": 300,
+        "output_tokens": 29,
+        "total_input_tokens": 2400,
+        "total_tokens": 2429
+      },
+      "native_detail_projection": "pass"
+    },
+    "missing_cache_write": {
+      "attempts": [
+        {
+          "status": 200,
+          "usage": {
+            "cache_creation_input_tokens": null,
+            "cache_read_input_tokens": 900,
+            "input_tokens": 80,
+            "output_tokens": 6
+          }
+        },
+        {
+          "status": 200,
+          "usage": {
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 1100,
+            "input_tokens": 220,
+            "output_tokens": 23
+          }
+        }
+      ],
+      "client_status": 200,
+      "surface": "anthropic_messages",
+      "truncated": false,
+      "usage": {
+        "cache_creation_input_tokens": null,
+        "cache_read_input_tokens": 2000,
+        "input_tokens": 300,
+        "output_tokens": 29,
+        "total_input_tokens": null,
+        "total_tokens": null
+      }
+    },
+    "failed_continuation": {
+      "attempts": [
+        {
+          "status": 200,
+          "usage": {
+            "cache_creation_input_tokens": 100,
+            "cache_read_input_tokens": 900,
+            "input_tokens": 80,
+            "output_tokens": 6
+          }
+        },
+        {
+          "status": 429,
+          "usage": null
+        }
+      ],
+      "client_status": 502,
+      "surface": "anthropic_messages",
+      "truncated": false,
+      "usage": {
+        "cache_creation_input_tokens": null,
+        "cache_read_input_tokens": null,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_input_tokens": null,
+        "total_tokens": null
+      }
+    },
+    "retry": {
+      "attempts": [
+        {
+          "status": 429,
+          "usage": null
+        },
+        {
+          "status": 200,
+          "usage": {
+            "cache_creation_input_tokens": null,
+            "cache_read_input_tokens": null,
+            "input_tokens": 1,
+            "output_tokens": 1
+          }
+        }
+      ],
+      "client_status": 200,
+      "surface": "anthropic_messages",
+      "truncated": false,
+      "usage": {
+        "cache_creation_input_tokens": null,
+        "cache_read_input_tokens": null,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_input_tokens": null,
+        "total_tokens": null
+      }
+    },
+    "sse-a": {
+      "attempts": [
+        {
+          "status": 200,
+          "usage": {
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 700,
+            "input_tokens": 31,
+            "output_tokens": 7
+          }
+        }
+      ],
+      "client_status": 200,
+      "surface": "anthropic_messages",
+      "truncated": false,
+      "usage": {
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 700,
+        "input_tokens": 31,
+        "output_tokens": 7,
+        "total_input_tokens": 731,
+        "total_tokens": 738
+      }
+    },
+    "sse-b": {
+      "attempts": [
+        {
+          "status": 200,
+          "usage": {
+            "cache_creation_input_tokens": 200,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 42,
+            "output_tokens": 9
+          }
+        }
+      ],
+      "client_status": 200,
+      "surface": "anthropic_messages",
+      "truncated": false,
+      "usage": {
+        "cache_creation_input_tokens": 200,
+        "cache_read_input_tokens": 0,
+        "input_tokens": 42,
+        "output_tokens": 9,
+        "total_input_tokens": 242,
+        "total_tokens": 251
+      }
+    }
+  },
+  "native_engine_runs_closed": 2,
+  "fixture_receipt_sha256": "37372e6c86d8af73bded3ffbd17bfc99fd0b8dc5c4d846704c309d10466677d0",
+  "fixture_inputs": 47,
+  "fixture_inputs_sha256_before_after": "a8e07eaa73f0b7ea74f2a02865dd68a6e1be1dabe93cec88bdc6f823cdf201e6",
+  "inputs": {
+    "count": 432,
+    "sha256_before": "7ad8031e738d90abff0de3527332e41949c0f54b77037b1cfde71e3eae42ba14",
+    "sha256_after": "7ad8031e738d90abff0de3527332e41949c0f54b77037b1cfde71e3eae42ba14",
+    "reused_native_input_count": 426,
+    "native_reader_sha256": "58ea4db97155580c793262b7fe97d96b58222665d6fd7214675f8485fee3c8bd"
+  },
+  "other_protocol_evidence": {
+    "sha256": "440dec1d40722665218428160068d11fbb56608b2427592d6ddd0b089c01f79a",
+    "scenarios": 32
+  },
+  "seconds": 33.222,
+  "external_model_requests": 0,
+  "source_evidence": {
+    "providers_besides_anthropic": "docs/proofs/h041-usage-protocols-045.json",
+    "local_anthropic_run_sha256": "fcf9a9817c4cc81f64e4230f753b41454cfcdea03ef74d7ec3f6fe7310e80117"
+  },
+  "installed_activity": {
+    "status": "pass",
+    "source_commit": "cad4f1c676d36b7f3c8dce7b0a41b732a6d3bdf9",
+    "elapsed_seconds": 93.539,
+    "receipt_sha256": "6f0e410da45f960abc1f09935132af64d02d72db364d648d68db7d3ca53ca82f",
+    "installed_resource_files_and_receipt": 19492,
+    "webview2_version": "158.0.0.0",
+    "inputs_sha256_before_after": {
+      "installer": "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1",
+      "public_zip": "6fc4ae34a1a2b9404f0db1b7ea2763fd75b148cce0c0b2fd4fb0b528c85374be",
+      "stage_receipt": "d02a107398d60a2cfdb0f7092f2616729b95fd3d668b8c61ad2e2432072b7420",
+      "published_release": "9617cca0ce19e52aa59fff2ef92d73bcf485f2c466de6ad568d078c079a2eae1",
+      "build_record": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba",
+      "test_config": "d4caa0fc691ecab9aa00448da8ff9d7e2b9f6abc261663231cb1a9269c55a944",
+      "claude_exe": "10fa305545b20baf6e074a086762bd252b89dfe7035848a5d41385503b1a6c74",
+      "test_script": "920588168153bcaa643502978023df1541ebb87b72260dbb643759fa51c88872",
+      "window_driver": "ce9c8624a154c35dd80d4719efa8b2df2871090971fd55a2f5285d0de366b588",
+      "window_harness": "d0bc1f55bf5a244f45e9563909e0a2b97e97dd5243b61afd8efe8b5a71fd512a",
+      "install_harness": "736cc68c10e92948b75d443813940f096149628f48bdf605d78f73cecd4fc605",
+      "install_reference": "2927f434f062eb38faa82d741a777a23f04509f9286aa11788b0759e4bd38f49",
+      "engine_supervisor": "dc067a6c76316be981ebc36d4066a5096e71b3c1ff689fff078410b06b33a2af",
+      "original_cli_harness": "6f3e65d518375500e5fcfd565573bc299c658e719d0999702d0407e38414bbfd",
+      "stream_observer": "6034f8b65d162bd1824358e724f5c5e7c41699605d2ff4a0672902741146a120",
+      "local_fixture": "e69c49f33437f679b3f271102a95db01354d9f075a4a7f7bf0572d6ebc2112a5",
+      "runtime_python": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+      "node_exe": "91ec09dda8f20556f366110859f106ab189d45f8f6a2bd092e6785174ad4a0fa",
+      "lockfile": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3",
+      "git_exe": "da240fe9bc24895b3e04150a4990b8a6ff329ecabcd8f19684c2cc310da5ef3f"
+    },
+    "provider_report": {
+      "input_total": null,
+      "output": 4,
+      "cache_read": null,
+      "cache_write": null,
+      "attempts": 1
+    },
+    "claude_reported_uncached_input": 12,
+    "configuration_restored": true,
+    "owned_ingress_released": true,
+    "test_installation_removed": true
+  },
+  "limits": {
+    "live_anthropic_messages": "open",
+    "live_openai_api_key": "open",
+    "windows_11_x64": "not_tested",
+    "billing": "unmeasured",
+    "development_token_savings": "unmeasured"
+  },
+  "open_checklist": {
+    "subtasks_before": 16,
+    "subtasks_after": 15,
+    "main_tasks": 8
+  }
+}
