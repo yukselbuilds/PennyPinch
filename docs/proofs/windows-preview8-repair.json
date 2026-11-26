@@ -1,0 +1,68 @@
+{
+  "cleanup": {
+    "desktop_use_gate_restored": true,
+    "original_profile_files": 0,
+    "original_profile_matches": true,
+    "test_installation_removed": true,
+    "test_profile_removed": true
+  },
+  "engine_version": "0.45.0",
+  "failed_start": {
+    "backend_unavailable": true,
+    "engine_status": "unavailable",
+    "failure": "config_conflict",
+    "ingress_closed_on_exit": true,
+    "upstream_requests": 0
+  },
+  "inputs_sha256_before_after": {
+    "archive": "6fc4ae34a1a2b9404f0db1b7ea2763fd75b148cce0c0b2fd4fb0b528c85374be",
+    "candidate": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba",
+    "engine_supervisor": "dc067a6c76316be981ebc36d4066a5096e71b3c1ff689fff078410b06b33a2af",
+    "fixture": "f951a49a0655bae8343656589fabc4ca82e6593416c407e48dfbcb5fd774b356",
+    "installation_harness": "736cc68c10e92948b75d443813940f096149628f48bdf605d78f73cecd4fc605",
+    "installation_reference": "2927f434f062eb38faa82d741a777a23f04509f9286aa11788b0759e4bd38f49",
+    "installer": "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1",
+    "lockfile": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3",
+    "node": "91ec09dda8f20556f366110859f106ab189d45f8f6a2bd092e6785174ad4a0fa",
+    "publication": "9617cca0ce19e52aa59fff2ef92d73bcf485f2c466de6ad568d078c079a2eae1",
+    "python": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+    "stage": "d02a107398d60a2cfdb0f7092f2616729b95fd3d668b8c61ad2e2432072b7420",
+    "test_runner": "00660f36f98d236c25ae2f178331791f4ab94fa6571280e50a830bbe6ae82568",
+    "window_driver": "c8981901dadd7de492e0266ec8bd6f769876d626a284af1e11aeb2aec2d1868e",
+    "window_harness": "d0bc1f55bf5a244f45e9563909e0a2b97e97dd5243b61afd8efe8b5a71fd512a",
+    "windows_powershell": "9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3"
+  },
+  "installed_resources_and_receipt": 19492,
+  "limits": {
+    "clean_windows_10": "not_tested",
+    "development_token_savings": "unmeasured",
+    "external_model_calls": 0,
+    "windows_11_x64": "not_tested",
+    "without_webview2": "not_tested"
+  },
+  "local_receipt_sha256": "2fce70ac2ca3ab029c4794ec97d2014ae2dddeb65d418ee87c18d0ca78db380e",
+  "normal_exit": true,
+  "observed_on": "2026-11-26",
+  "owned_test_settings_exact": true,
+  "preferences_exact": true,
+  "release": "0.1.1-preview.8",
+  "repaired_start": {
+    "engine_stopped": true,
+    "ingress_closed_on_exit": true,
+    "local_responses_sse": 200,
+    "upstream_requests": 1
+  },
+  "resource": {
+    "altered_sha256": "54f3588efd5d0d0b49cd556df43fe3a04c5cb76a3ca7d7e9e34a2a4f91df9ec3",
+    "original_and_repaired_sha256": "ab2d1bad8e157c47943bd03534a86103db54e16d9ea3370ce94022bee112f776",
+    "path": "runtime/optimization_control.py"
+  },
+  "same_version_reinstall": true,
+  "scenario": "Installed public preview, altered runtime resource, same-version repair",
+  "schema_version": 1,
+  "seconds": 112.582,
+  "source_commit": "cad4f1c676d36b7f3c8dce7b0a41b732a6d3bdf9",
+  "status": "pass",
+  "task": "H037-a14",
+  "windows_build": 19045
+}

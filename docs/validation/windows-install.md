@@ -97,6 +97,10 @@ The public installer ran on Windows 10 22H2 x64 with WebView2 present. Connect s
 
 The public installer ran on Windows 10 22H2 x64 with WebView2 present. The test started the engine in Overview. Preview left the separate OpenCode 2.3.0 settings unchanged. Apply saved the eligible routes and bound the installed retrieval bridge. The CLI completed one local Chat Completions stream and one local Responses stream. Model selection and synthetic authentication matched. Undo restored the exact JSONC bytes. The app exited and released the engine port. [First-use evidence](../proofs/windows-preview8-first-use-opencode.json)
 
+## 26 November — Preview.8 repair
+
+The test used a separate installation on Windows 10 22H2 x64 with WebView2 present. After one engine file changed, PennyPinch showed a configuration conflict and kept the engine unavailable. The upstream fixture received zero requests. The same installer restored the original file digest and preserved the test settings. The repaired engine completed one local Responses stream and released its port on exit. The test matched 19,491 resources and the packaging receipt. [Repair evidence](../proofs/windows-preview8-repair.json)
+
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria
