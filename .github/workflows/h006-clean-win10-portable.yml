@@ -1,0 +1,83 @@
+name: H006 Windows 10 portable engine
+on:
+  push:
+    branches: [codex/h006-win10-portable-20261127]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: h006-clean-windows10-portable
+  cancel-in-progress: false
+jobs:
+  preview:
+    name: Verify the portable candidate on clean Windows 10 x64
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: pp-win10-candidate
+          run-id: 45858910411
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/pp-candidate
+      - name: Verify official media and prepare a temporary guest
+        shell: bash
+        env:
+          PP_CANDIDATE_SHA256: 569d76b432b961b609821ca071099d2e8c1869178cf688ea9993611431b0d153
+        run: |
+          set -euo pipefail
+          test -c /dev/kvm
+          sudo setfacl -m "u:$USER:rw" /dev/kvm
+          timeout 180 sudo apt-get update -qq
+          timeout 180 sudo apt-get install -y -qq --no-install-recommends qemu-system-x86 qemu-utils xorriso tesseract-ocr aria2 p7zip-full
+          mkdir -p "$RUNNER_TEMP/pp-clean/answer"
+          recipe="$GITHUB_WORKSPACE/.github/h006-clean-win10-portable"
+          cp "$recipe/prepare.ps1" "$recipe/desktop.ps1" "$RUNNER_TEMP/pp-clean/answer/"
+          cp "$recipe/portable-guest.ps1" "$RUNNER_TEMP/pp-clean/answer/guest.ps1"
+          cd "$RUNNER_TEMP/pp-clean"
+          test "$(df --output=avail -B1 . | tail -1)" -ge 23622320128
+          expected_helper=$(sed -n '/^const EXPECTED_HELPER_SHA256:/{n;s/[^0-9a-f]//g;p;q;}' "$GITHUB_WORKSPACE/src-tauri/src/runtime/manager.rs")
+          [[ "$expected_helper" =~ ^[0-9a-f]{64}$ ]]
+          printf '%s  %s\n' "$expected_helper" "$GITHUB_WORKSPACE/runtime/desktop_helper.py" | sha256sum -c -
+          python3 - "$recipe/Autounattend.xml" <<'PY'
+          from pathlib import Path
+          import secrets
+          import sys
+          import xml.etree.ElementTree as ET
+          source = Path(sys.argv[1]).read_text()
+          assert source.count("EPHEMERAL-PASSWORD") == 2
+          answer = source.replace("EPHEMERAL-PASSWORD", "Pp1-" + secrets.token_hex(20))
+          ET.fromstring(answer)
+          Path("answer/Autounattend.xml").write_text(answer)
+          PY
+          echo '::notice title=H037 download stage::{"stage":"windows_iso"}'
+          if ! timeout 360 aria2c --dir=. --out=windows.iso \
+            --max-connection-per-server=8 --split=8 --min-split-size=32M \
+            --file-allocation=none --summary-interval=0 --console-log-level=warn \
+            --connect-timeout=15 --timeout=30 --max-tries=2 --retry-wait=2 \
+            --checksum=sha-256=ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668 \
+            'https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso'; then
+            echo '::error title=H037 media preparation::Windows evaluation ISO download failed.'
+            exit 1
+          fi
+          printf 'ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668  windows.iso\n' | sha256sum -c -
+          echo '::notice title=H037 preview download::{"stage":"preview_archive"}'
+          curl --silent --show-error --fail --location --retry 1 --max-time 120 \
+            --output preview.zip 'https://github.com/yukselbuilds/PennyPinch/releases/download/v0.1.1-preview.8/PennyPinch_0.1.1-preview.8_Windows_x64_preview.zip'
+          python3 "$recipe/make-portable.py" "$RUNNER_TEMP/pp-candidate/pp-candidate.exe" \
+            "$GITHUB_WORKSPACE/runtime/desktop_helper.py" "$PP_CANDIDATE_SHA256"
+          echo '::notice title=H037 dependency download::{"stage":"webview2"}'
+          curl --silent --show-error --fail --location --retry 1 --max-time 160 \
+            --output answer/webview2.exe 'https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/58f85fae-b5f5-4443-9b8d-6d4cf627d6f6/MicrosoftEdgeWebView2RuntimeInstallerX64.exe'
+          printf '45769d66809a9652050f8a91ab5329881b65cc4123fe7c733841deefbef91bf6  answer/webview2.exe\n' | sha256sum -c -
+          printf '::notice title=H037 verified inputs::%s\n' "$(sha256sum windows.iso preview.zip answer/webview2.exe answer/portable.zip | tr '\n' ' ')"
+          xorriso -as mkisofs -quiet -J -r -V PPAUDIT -o answer.iso answer
+          qemu-img create -f qcow2 clean.qcow2 45G
+      - name: Open the portable candidate and verify engine start and stop
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/pp-clean"
+          python3 "$GITHUB_WORKSPACE/.github/h006-clean-win10-portable/host.py"
