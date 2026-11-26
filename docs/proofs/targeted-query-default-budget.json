@@ -90,5 +90,66 @@
       "path": "docs/proofs/targeted-query-client.json",
       "sha256": "d4adfee7a4dbf5e2f537825c432857a82ab0e4da601448e9333ce0b8ac71bceb"
     }
+  },
+  "current_engine_and_cli_recheck": {
+    "date": "2026-11-26",
+    "task": "H041",
+    "owner": "lead agent",
+    "scope": "Current Windows 10 engine and real Codex CLI with an isolated loopback provider.",
+    "engine": "0.45.0",
+    "cli": "codex-cli 0.171.0-alpha.13.2",
+    "windows_build": 19045,
+    "passed": true,
+    "local_upstream_requests": 34,
+    "matched_usage_records": 34,
+    "requests_by_scenario": {
+      "authorized": 22,
+      "foreign": 3,
+      "disabled": 4,
+      "failed_report": 5
+    },
+    "successful_original": {
+      "parts": 19,
+      "stdout_bytes": 107498,
+      "stderr_bytes": 0,
+      "exit_code": 0,
+      "max_encoded_reply_bytes": 7536,
+      "exact": true
+    },
+    "failed_original": {
+      "parts": 2,
+      "stdout_bytes": 16,
+      "stderr_bytes": 23,
+      "exit_code": 9,
+      "max_encoded_reply_bytes": 232,
+      "exact": true
+    },
+    "foreign_reference_rejected": true,
+    "disabled_original_read_rejected": true,
+    "tool_output_token_limit_override": null,
+    "focused_tests": {
+      "tests_run": 23,
+      "skipped": 0,
+      "inputs_matched": 11,
+      "inputs_sha256_before_after": "909a21fd31f07a5dc565ed76654df9592cf95642b333d960438aa79817cb27e7"
+    },
+    "fixture_engine_shutdown": {
+      "shutdown": "graceful",
+      "engine_exit_code": 0,
+      "owned_port_closed": true,
+      "force_fallback": false
+    },
+    "matching_engine_inputs": 45,
+    "engine_inputs_sha256_before_after": "614ac2f88510802009fc5d1b2fdf8b62679e5fd4423fdd6a7d0f820afff8817e",
+    "driver_inputs_sha256_before_after": "3567d7b00d91a3771e0240593cee6119633f3a339215108cffb84be0f5f38789",
+    "executed_replay_source_sha256": "f44e7ec34be1ccef6fd31604c0acc7b5c62b5d6815339c410f1c990ed7921b37",
+    "driver_sha256": "d504f182bc8da198591df6676b3f56edd78d618b6110d0d3c21ba1c52f3f52fc",
+    "engine_receipt_sha256": "4f60dbceb3775c97604aeb0bc6e3ee542c10618339f418ce0745b52eeb8006e4",
+    "driver_receipt_sha256": "17e08143dc25e556f46626717cf52d6ec58c68b11e79e8f3da4262a48f50d2a4",
+    "local_seconds": 29.772,
+    "external_model_requests": 0,
+    "real_provider_optimization_benefit": "not_tested",
+    "live_billing": "not_tested",
+    "development_agent_token_savings": "unmeasured"
   }
 }
