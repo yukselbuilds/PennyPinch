@@ -22,8 +22,14 @@ jobs:
           set -euo pipefail
           test -c /dev/kvm
           sudo setfacl -m "u:$USER:rw" /dev/kvm
-          timeout 180 sudo apt-get update -qq
-          timeout 180 sudo apt-get install -y -qq --no-install-recommends qemu-system-x86 qemu-utils xorriso tesseract-ocr aria2 p7zip-full
+          if ! timeout 180 sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 update -qq; then
+            echo '::error title=H037 toolchain::{"stage":"apt_update_failed"}'
+            exit 1
+          fi
+          if ! timeout 180 sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 install -y -qq --no-install-recommends qemu-system-x86 qemu-utils xorriso tesseract-ocr aria2 p7zip-full; then
+            echo '::error title=H037 toolchain::{"stage":"apt_install_failed"}'
+            exit 1
+          fi
           mkdir -p "$RUNNER_TEMP/pp-clean/answer"
           recipe="$GITHUB_WORKSPACE/.github/h006-clean-win10-portable"
           cp "$recipe/prepare.ps1" "$recipe/controller.py" "$RUNNER_TEMP/pp-clean/answer/"
