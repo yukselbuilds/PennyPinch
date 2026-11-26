@@ -600,6 +600,12 @@ On 18 November, eight local scenarios passed again using the existing preview so
 
 The first cache read was zero in both arms. Total usage increased by 10,707 tokens (35.05%), including cache reads on later requests. The suggestion showed neither an avoided repeat nor an accuracy increase on this task, despite the extra check. Both engines closed normally, and 40 shared input fingerprints matched. One synthetic task with a fixed arm order does not replace broader benefit or billing acceptance. The Learn suggestion remains a user-selected local preview. [Results and rerun](../proofs/learn-merit-pilot.json).
 
+#### Release decision for Learn
+
+Keep Learn as a local preview in Settings. The user selects a saved Codex or Claude Code session file. Learn shows repeated tool failures and suggests a check.
+
+In two live OpenCode comparisons, both arms gave the correct answers. All eight provider usage records matched the engine. Learn advice prevented zero retries and added 52 tokens (4.58%). Use the preview for troubleshooting. Keep background learning off. [Live evidence](../proofs/learn-merit-pilot.json)
+
 <a name="ilk-ölçümlerin-planı"></a>
 
 ## Initial measurement plan

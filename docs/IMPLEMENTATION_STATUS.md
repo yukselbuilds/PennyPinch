@@ -2,7 +2,7 @@
 
 ## Current status
 
-**46 of 54 main tasks are complete.** **13 subtasks remain open.** The Windows 10 preview.8 release is available. The owner deferred Windows 11 x64 verification to December 2026. H041 remains open. [Task list](../TASKS.md)
+**46 of 54 main tasks are complete.** **12 subtasks remain open.** The Windows 10 preview.8 release is available. The owner deferred Windows 11 x64 verification to December 2026. H041 remains open. [Task list](../TASKS.md)
 
 PennyPinch v0.1.1-preview.8 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. Both public downloads matched their SHA-256 digests. GitHub Pages links to the release. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.8) · [Publication evidence](proofs/pennypinch-windows10-preview8-publication.json)
 
@@ -63,9 +63,11 @@ Luna reviewed the upstream sources. Development token savings remain unknown.
 
 The stock Headroom 0.45.0 proxy and PennyPinch forwarded the same JSON in eight matched Windows 10 cases. The six headline cases returned 43.59% fewer tokens in both proxies. The SDK uses a message estimator. [Matched comparison](proofs/upstream-benchmarks-045.json).
 
-Codex CLI 0.171.0-alpha.13.2 opened both synthetic files under the built-in read-only profile on Windows 10. The unelevated backend refused the named profiles before the command started. MXC was unavailable. Resume the named profile check on a compatible native Windows backend. Verify an allowed read and an explicit denial. [File scope evidence](proofs/targeted-query-comparison.json) · [Open H041 criteria](validation/optimization-benefit.md#open-h041-acceptance-criteria)
+Codex CLI 0.171.0-alpha.13.2 opened both synthetic files under the built-in read-only profile on Windows 10. The unelevated backend refused the named profiles before the command started. MXC was unavailable. These local checks did not verify the named profile on Windows 10. [File scope evidence](proofs/targeted-query-comparison.json) · [Open H041 criteria](validation/optimization-benefit.md#open-h041-acceptance-criteria)
 
-On 26 November 2026, CLI 0.171.0-alpha.13.2 requested sandbox setup on Windows 10. The isolated elevated control timed out before the read command started. The test added no deny-read entries. The named file profile check remains open. [Windows sandbox requirements](https://learn.chatgpt.com/docs/windows/windows-sandbox#configure-a-legacy-fallback)
+On 26 November 2026, CLI 0.171.0-alpha.13.2 requested sandbox setup on Windows 10. The isolated elevated control timed out before the read command started. The test added no deny-read entries. The elevated check remains unverified on that Windows 10 host. [Windows sandbox requirements](https://learn.chatgpt.com/docs/windows/windows-sandbox#configure-a-legacy-fallback)
+
+The lead agent verified the native Codex file profile on the standard Windows Server 2025 x64 runner. The profile returned the exact 35 approved bytes and denied the second file. Switching profiles left the read denial in place. The runner kept the test settings within a disposable VM. The check matched seven input hashes and made zero model requests. [Evidence](proofs/targeted-query-comparison.json) · [GitHub run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45819720053)
 
 The lead agent completed the Learn suggestion benefit pilot on Windows 10. Eight previews passed with the current inputs. Both arms chose the older source in the first run. The lead agent clarified the read options. Both arms then answered two release checks correctly. No retries occurred. The advice increased local usage from 459 to 515 tokens (12.20%). Keep the suggestion in the opt-in preview. [Learn evidence](proofs/learn-merit-pilot.json)
 

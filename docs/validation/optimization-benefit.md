@@ -220,15 +220,16 @@ The corrected 0.45.0 runtime removed Responses repeat references. In four new lo
 
 The broader live Learn test used OpenCode 1.19.3 and Qwen3.8-Flash-Next. Both arms answered two published release checks correctly. All eight provider counters matched Headroom 0.45.0. The advice added 52 tokens (4.58%). Both arms had zero incorrect reads, retries, and extra path checks. [Learn measurement](../proofs/learn-merit-pilot.json)
 
+The native Codex sandbox passed the allowed and denied reads on Windows Server 2025 x64. The named elevated profile returned exact bytes from one file and denied the second file. The denial persisted after a switch to the control profile. The test ran in a disposable VM. [File and archive evidence](../proofs/targeted-query-comparison.json) · [GitHub run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45819720053)
+
 <a name="h041-açık-kabulleri"></a>
 
 ## Open H041 acceptance criteria
 
-On 26 November 2026, **5 verification criteria and 2 optional R&D criteria** remain open. The main task count is **46/54**.
+On 26 November 2026, **4 verification criteria and 2 optional R&D criteria** remain open. The main task count is **46/54**.
 
 | Criterion | Evidence needed |
 | --- | --- |
-| Restricted native Windows file profile for Codex | Verify an allowed read and an explicit denial in a supported native sandbox. On Windows 10, Codex CLI 0.171.0-alpha.13.2 opened both synthetic files with the built-in read-only profile. The unelevated backend refused the named profiles. MXC was unavailable. WSL2 verified the same file boundary. [File and archive evidence](../proofs/targeted-query-comparison.json) |
 | Windows 11 x64 | The owner deferred verification to December 2026. Use the current package on a Windows 11 x64 desktop. Verify engine traffic and shutdown. [Windows procedure](windows-preview-check.md) |
 | macOS ARM64 | **Verified on 24 November.** The 0.45.0 package passed the controlled Codex Desktop turn, local usage, and normal exit checks. The earlier 0.44.0 package passed the start, stop, and restart checks. [Current package evidence](../proofs/headroom-045-managed-packages.json) · [Earlier lifecycle](../proofs/macos-044-package-lifecycle.json) |
 | Live Anthropic Messages | Use an authorized account. Match the usage counters of an actual Messages response to the corresponding Headroom request. [Local usage evidence](../proofs/desktop-anthropic-usage.json) |

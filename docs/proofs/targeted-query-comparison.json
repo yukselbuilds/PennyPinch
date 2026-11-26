@@ -1495,5 +1495,44 @@
       "next_condition": "Use a native Windows backend that supports the named restricted read profile",
       "development_agent_token_savings": "unmeasured"
     }
+  },
+  "windows_server_2025_native_file_profile": {
+    "observed_on": "2026-11-26",
+    "owner": "lead agent",
+    "status": "native_allowed_read_and_explicit_denial_verified",
+    "scope": "Read-only check of two synthetic files in a named native Codex sandbox profile.",
+    "platform": "Windows Server 2025 x64 standard runner",
+    "runner_label": "windows-2025",
+    "cli": "0.171.0-alpha.13.2",
+    "backend": "elevated",
+    "sandbox_account": "offline non-administrator",
+    "shell_language_mode": "ConstrainedLanguage",
+    "controls": {
+      "initial_control_read_both": true,
+      "restricted_allowed_bytes_exact": 35,
+      "restricted_other_read_denied": true,
+      "control_after_profile_switch": "access_denied"
+    },
+    "runner_cleanup": "The disposable VM held all test state.",
+    "automatic_permission_restore": "not_verified",
+    "earlier_recovery_check": {
+      "fixture_reopened_after_test_owned_acl_restore": true,
+      "exact_acl_comparison": "failed",
+      "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45818746113"
+    },
+    "windows_10_named_profile": "not_verified",
+    "windows_11_desktop": "not_tested",
+    "targeted_query_product_activation": "not_tested",
+    "external_model_requests": 0,
+    "matched_inputs": 7,
+    "inputs_sha256_before_and_after": "62e4788fa2247501d25a4fb362ec2182d9241b77f58343ec546adc50bc37c903",
+    "workflow_sha256": "a08c77f0a972097d4eb5cf9405baba577142ecb095c4c2237dc3feecbbfa4654",
+    "workflow_commit": "eb213e4526b7c10dd472ac7482a4363825d4c99c",
+    "workflow_source": "https://github.com/yukselbuilds/PennyPinch/blob/eb213e4526b7c10dd472ac7482a4363825d4c99c/.github/workflows/h041-native-file-profile.yml",
+    "job_seconds": 23.0,
+    "run_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45819720053",
+    "job_url": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45819720053/job/139908524420",
+    "api_receipt_sha256": "62ff6ee8f24f8101a7a809521b706acd5aa67a56f78f911310e2d4c117ada105",
+    "development_agent_token_savings": "unmeasured"
   }
 }
