@@ -109,11 +109,17 @@ The WebView2 registry records were empty before guest network access and again i
 
 The first run could not verify the window after setup. The second setup reached the 240-second test limit. [Lifecycle run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45836916513)
 
+## 26 November — Clean Windows 10 desktop lifecycle
+
+The public preview.8 opened in a non-elevated session on a clean Windows 10 22H2 x64 guest. The guest installed the signed WebView2 158.0.4370.45 Runtime from the offline Microsoft setup. The Windows network adapter stayed disconnected. [Offline lifecycle run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45840842814) · [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
+
+The app bridge reported Stopped before the start test. The test reached the 155-second limit before it saw Ready. The primary control can show Start or Refresh status. The action sent on click and the final engine error are unknown.
+
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria
 
-1. **Clean Windows 10 window and client flow.** Verify the window and the engine lifecycle. Complete Connect, a small real request, Undo, and tray exit. [Windows procedure](windows-preview-check.md)
+1. **Clean Windows 10 client flow.** Verify the engine lifecycle. Complete Connect, a small real request, and Undo. Verify tray exit. [Windows procedure](windows-preview-check.md)
 2. **Clean Windows 11 x64 desktop.** The clean installation and client flow remain `not_tested`. GitHub's standard Windows 11 desktop image uses ARM64. [Standard images](https://github.com/actions/runner-images#available-images) · [Larger-runner images](https://docs.github.com/en/actions/reference/runners/larger-runners#runner-images)
 
 The 15 November private-repository check estimated ten standard Windows minutes from the reported $0.10 allowance. On 23 November, the GitHub API reported PennyPinch as public. Standard hosted jobs now run outside that allowance. The standard Windows x64 images still run Windows Server. The standard Windows 11 desktop image uses ARM64. Keep the Windows 11 x64 desktop status as `not_tested` until a suitable environment is available. [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions) · [Runner images](https://github.com/actions/runner-images#available-images)

@@ -40,7 +40,11 @@ The lead agent completed H037-a14 with the public preview.8 installer on Windows
 
 The lead agent closed the existing H037 WebView2 prerequisite acceptance. The standard GitHub Actions job used a new Windows 10 22H2 x64 guest. The preview.8 installer registered the missing WebView2 Runtime as 158.0.4370.45. The first guest run ended 753.186 seconds after VM boot. The first run could not verify the window after setup. The second setup reached the 240-second test limit. [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
 
-The clean Windows 10 window, engine, client, and tray checks remain open. Use the public preview.8 ZIP for the next clean Windows check. Record the native startup process before the window check. [Procedure](validation/windows-preview-check.md)
+The public preview.8 opened in a non-elevated session on a clean Windows 10 22H2 x64 guest. The guest test ended 764.600 seconds after boot. The test installed WebView2 from Microsoft's offline setup. [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
+
+The app bridge reported Stopped before the start test. The test reached the 155-second limit before it saw Ready. The primary control can show Start or Refresh status. The action sent on click and the final engine error are unknown. Require the Start label before the next click. Record engine states and the final error code.
+
+Verify the engine lifecycle, client connection, small real request, and tray flow on clean Windows 10 x64. Verify the full flow on clean Windows 11 x64. [Procedure](validation/windows-preview-check.md)
 
 The lead agent completed the existing H041 Next optimization slices item. The installed preview.8 evidence passed the exact-repeat and long-log checks. The matching 0.45.0 runtime passed 16 local test-output pairs on Windows 10. CCR returned 4 complete originals. The engine forwarded all 8 failed outputs in full. The task list had 17 open subtasks and 8 open main tasks. See the current H041 acceptance table for the remaining criteria. [Evidence](proofs/h041-core-optimization-completion.json)
 
