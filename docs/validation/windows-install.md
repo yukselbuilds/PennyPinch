@@ -115,6 +115,10 @@ The public preview.8 opened in a non-elevated session on a clean Windows 10 22H2
 
 The app bridge reported Stopped before the start test. The test reached the 155-second limit before it saw Ready. The primary control can show Start or Refresh status. The action sent on click and the final engine error are unknown.
 
+The Windows candidate allows 20 seconds for Headroom preload. The staged controller reported Ready in 13.836 seconds on the development host. The controller stopped normally and released its port. [Startup evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
+
+The second guest run stopped during media preparation. A download returned exit code 28. The third run verified the media and installed preview.8. The runner reached its time limit before it reported that the guest had the candidate files. The clean engine lifecycle remains open. [Clean guest run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45866157790)
+
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria
