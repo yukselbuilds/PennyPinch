@@ -1,0 +1,21 @@
+name: H037 clean Windows 10 runner probe
+on:
+  push:
+    branches: [codex/h037-clean-windows10-20261126]
+permissions:
+  contents: read
+jobs:
+  capacity:
+    name: Check free hosted guest capacity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - shell: bash
+        run: |
+          set -euo pipefail
+          kvm=false
+          if [[ -c /dev/kvm ]] && grep -Eq '\b(vmx|svm)\b' /proc/cpuinfo; then kvm=true; fi
+          disk_bytes=$(df -B1 --output=avail "$RUNNER_TEMP" | tail -1 | tr -d ' ')
+          printf '::notice title=H037 runner capacity::{"kvm":%s,"disk_bytes":%s,"cores":%s,"ram_kib":%s}\n' \
+            "$kvm" "$disk_bytes" "$(nproc)" "$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
+          [[ "$kvm" == true && "$disk_bytes" -ge 23622320128 ]]
