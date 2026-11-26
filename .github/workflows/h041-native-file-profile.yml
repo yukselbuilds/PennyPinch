@@ -221,7 +221,21 @@ jobs:
           }
           $phase = 'control'
           $null = Invoke-Probe 'probe-control' 'opened'
-          $acl = Get-Acl -LiteralPath $denied
+          $access = [Security.AccessControl.AccessControlSections]::Access
+          $baselineAcl = (Get-Acl -LiteralPath $denied).GetSecurityDescriptorSddlForm($access)
+          function Restore-ProbeAcl {
+            $fixture = Get-Item -LiteralPath $denied
+            if ($fixture.FullName -ne (Join-Path $work 'excluded.txt') -or
+                $fixture.Attributes.HasFlag([IO.FileAttributes]::ReparsePoint)) { throw 'Unexpected test file scope.' }
+            $current = Get-Acl -LiteralPath $denied
+            if ($current.GetSecurityDescriptorSddlForm($access) -ne $baselineAcl) {
+              $current.SetSecurityDescriptorSddlForm($baselineAcl, $access)
+              Set-Acl -LiteralPath $denied -AclObject $current
+            }
+            if ((Get-Acl -LiteralPath $denied).GetSecurityDescriptorSddlForm($access) -ne $baselineAcl) {
+              throw 'The fixture access control list did not match its baseline.'
+            }
+          }
           try {
             $phase = 'deny'
             $null = Invoke-Probe 'probe-denied' 'access_denied'
@@ -229,16 +243,15 @@ jobs:
             $switchResult = Invoke-Probe 'probe-control' 'observe'
           } finally {
             $phase = 'restore_owned_fixture'
-            $fixture = Get-Item -LiteralPath $denied
-            if ($fixture.FullName -ne (Join-Path $work 'excluded.txt') -or
-                $fixture.Attributes.HasFlag([IO.FileAttributes]::ReparsePoint)) { throw 'Unexpected test file scope.' }
-            if ((Get-Acl -LiteralPath $denied).Sddl -ne $acl.Sddl) {
-              Set-Acl -LiteralPath $denied -AclObject $acl
-            }
+            Restore-ProbeAcl
           }
-          $phase = 'control_after_fixture_cleanup'
-          $null = Invoke-Probe 'probe-control' 'opened'
-          if ((Get-Acl -LiteralPath $denied).Sddl -ne $acl.Sddl) { throw 'The fixture ACL did not match its baseline.' }
+          try {
+            $phase = 'control_after_fixture_cleanup'
+            $null = Invoke-Probe 'probe-control' 'opened'
+          } finally {
+            $phase = 'restore_fixture_after_final_control'
+            Restore-ProbeAcl
+          }
           $phase = 'fingerprint_sources'
           $after = Get-InputFingerprints
           $changed = @(Get-ChangedInputs $before $after)
