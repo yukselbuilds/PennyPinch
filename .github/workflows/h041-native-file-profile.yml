@@ -129,30 +129,33 @@ jobs:
           }
           $nativeCode = @'
           $ErrorActionPreference = 'Stop'
-          $me = [Security.Principal.WindowsIdentity]::GetCurrent()
-          $principal = [Security.Principal.WindowsPrincipal]::new($me)
+          $ProgressPreference = 'SilentlyContinue'
+          $identity = & whoami.exe
+          if ($LASTEXITCODE -ne 0) { throw 'Windows identity check failed.' }
+          $groups = & whoami.exe /groups /fo csv /nh
+          if ($LASTEXITCODE -ne 0) { throw 'Windows group check failed.' }
           $row = @{
             started = $true
-            offline = $me.Name.Split('\')[-1] -eq 'CodexSandboxOffline'
-            admin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+            offline = $identity -match '\\CodexSandboxOffline$'
+            admin = [bool]($groups -match '\bS-1-5-32-544\b')
+            language_mode = [string]$ExecutionContext.SessionState.LanguageMode
             allowed = $null
             allowed_error = $null
             excluded = 'unread'
           }
           try {
-            $row.allowed = [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path (Get-Location).Path 'approved.txt')))
+            $row.allowed = @(Get-Content -LiteralPath 'approved.txt' -Encoding Byte -Raw -ErrorAction Stop |
+              ForEach-Object { foreach ($byte in $_) { [int]$byte } })
           } catch {
-            $cause = $_.Exception
-            while ($cause.InnerException) { $cause = $cause.InnerException }
-            $row.allowed_error = $cause.GetType().Name
+            $row.allowed_error = [string]$_.CategoryInfo.Category
           }
           try {
-            $null = [IO.File]::ReadAllBytes((Join-Path (Get-Location).Path 'excluded.txt'))
+            $null = Get-Content -LiteralPath 'excluded.txt' -Encoding Byte -Raw -ErrorAction Stop
             $row.excluded = 'opened'
           } catch {
-            $cause = $_.Exception
-            while ($cause.InnerException) { $cause = $cause.InnerException }
-            $row.excluded = if ($cause -is [System.UnauthorizedAccessException]) { 'access_denied' } else { $cause.GetType().Name }
+            $row.excluded = if ($_.CategoryInfo.Category -eq 'PermissionDenied') { 'access_denied' } else {
+              [string]$_.CategoryInfo.Category
+            }
           }
           Write-Output ('PP_FILE_RESULT=' + ($row | ConvertTo-Json -Compress))
           '@
@@ -180,12 +183,12 @@ jobs:
             $line = @($output | Where-Object { $_ -is [string] -and $_.StartsWith('PP_FILE_RESULT=') })
             if ($line.Count -ne 1) { throw 'Expected one tagged native result.' }
             $r = $line[0].Substring('PP_FILE_RESULT='.Length) | ConvertFrom-Json
-            if (!$r.started -or !$r.offline -or $r.admin -or $r.allowed -cne $exact -or $r.excluded -ne $expectedOutside) {
-              $matched = $r.allowed -ceq $exact
+            $matched = $null -ne $r.allowed -and [Convert]::ToBase64String([byte[]]$r.allowed) -ceq $exact
+            if (!$r.started -or !$r.offline -or $r.admin -or !$matched -or $r.excluded -ne $expectedOutside) {
               Write-Host "::error title=H041 native result mismatch::profile=$profileName started=$($r.started) offline=$($r.offline) admin=$($r.admin) allowed=$matched allowed_error=$($r.allowed_error) excluded=$($r.excluded)"
               throw 'Native file boundary did not match the expected result.'
             }
-            Write-Host "$profileName allowed=exact excluded=$($r.excluded) sandbox=offline_nonadmin"
+            Write-Host "::notice title=H041 native file result::$profileName allowed=exact excluded=$($r.excluded) sandbox=offline_nonadmin language=$($r.language_mode)"
           }
           $phase = 'fingerprint_sources'
           $before = Get-InputDigest
