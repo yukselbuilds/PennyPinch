@@ -182,6 +182,10 @@ The following values are full JSON bodies counted with the same `o200k_base` enc
 
 The four fixtures matched the full-request `o200k_base` counts in the 0.44.0 run. Repeated logs used 65.28% fewer tokens. Short JSON used 5.19% more tokens. The test used local fixture traffic. [Evidence](../proofs/optimization-windows10-stability-045.json)
 
+## Usage counters on the Windows preview.8 engine
+
+On 26 November 2026, the preview.8 engine passed 32 checks on Windows 10 22H2 x64. The test matched counters across Responses HTTP/SSE, WebSocket, and Chat Completions JSON and SSE. It tested buffered Chat CCR in a separate profile. The native reader stored matched usage in SQLite and returned it in Activity details. The run used a local provider fixture. The earlier ChatGPT and AI Horde live tests used 0.44.0. [Evidence](../proofs/h041-usage-protocols-045.json)
+
 ## Codex exit status with Node test output
 
 25 November 2026. The Windows 10 test sent real Node output in the completed `exec_command` format. The previous engine summary hid the exit code in long outputs. The correction keeps the original exit code visible for successful summaries. It forwards failed output in full. CCR restored the original successful output exactly.

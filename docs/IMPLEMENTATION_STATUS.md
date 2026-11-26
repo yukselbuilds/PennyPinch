@@ -2,7 +2,7 @@
 
 ## Current status
 
-**46 of 54 main tasks are complete.** The Windows 10 preview.8 release is available. The owner deferred Windows 11 x64 verification to December 2026. H041 remains open. [Task list](../TASKS.md)
+**46 of 54 main tasks are complete.** **16 subtasks remain open.** The Windows 10 preview.8 release is available. The owner deferred Windows 11 x64 verification to December 2026. H041 remains open. [Task list](../TASKS.md)
 
 PennyPinch v0.1.1-preview.8 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. Both public downloads matched their SHA-256 digests. GitHub Pages links to the release. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.8) · [Publication evidence](proofs/pennypinch-windows10-preview8-publication.json)
 
@@ -40,7 +40,9 @@ The lead agent completed H037-a14 with the public preview.8 installer on Windows
 
 Windows 10 is the first-release priority. H006 and H037 need a clean Windows 10 x64 desktop. H037 also needs a host without WebView2. Use the current ZIP and the Windows preview procedure when a suitable host is available. [Procedure](validation/windows-preview-check.md)
 
-The lead agent completed the existing H041 Next optimization slices item. The installed preview.8 evidence passed the exact-repeat and long-log checks. The matching 0.45.0 runtime passed 16 local test-output pairs on Windows 10. CCR returned 4 complete originals. The engine forwarded all 8 failed outputs in full. The task list has 17 open subtasks and 8 open main tasks. See the current H041 acceptance table for the remaining criteria. [Evidence](proofs/h041-core-optimization-completion.json)
+The lead agent completed the existing H041 Next optimization slices item. The installed preview.8 evidence passed the exact-repeat and long-log checks. The matching 0.45.0 runtime passed 16 local test-output pairs on Windows 10. CCR returned 4 complete originals. The engine forwarded all 8 failed outputs in full. The task list had 17 open subtasks and 8 open main tasks. See the current H041 acceptance table for the remaining criteria. [Evidence](proofs/h041-core-optimization-completion.json)
+
+The lead agent completed the existing H041-d Usage measurement for other protocols item. Windows 10 passed 32 local checks in 82.015 seconds. The native reader carried usage to Activity details on all three paths. The earlier live counter tests used Headroom 0.44.0. Live Anthropic and OpenAI API-key checks remain open. [Evidence](proofs/h041-usage-protocols-045.json)
 
 The lead agent ran H041-a3 with Headroom 0.45.0 on Windows 10. The same 300-second plan passed 300 request pairs and 249 exact CCR recoveries. Extra p95 latency was 47.87 ms. The engine stopped and released its port. All four fixtures matched the 0.44.0 token counts. [Timed load evidence](proofs/optimization-windows10-stability-045.json)
 
@@ -60,6 +62,8 @@ Luna reviewed the upstream sources. Development token savings remain unknown.
 The stock Headroom 0.45.0 proxy and PennyPinch forwarded the same JSON in eight matched Windows 10 cases. The six headline cases returned 43.59% fewer tokens in both proxies. The SDK uses a message estimator. [Matched comparison](proofs/upstream-benchmarks-045.json).
 
 Codex CLI 0.171.0-alpha.13.2 opened both synthetic files under the built-in read-only profile on Windows 10. The unelevated backend refused the named profiles before the command started. MXC was unavailable. Resume the named profile check on a compatible native Windows backend. Verify an allowed read and an explicit denial. [File scope evidence](proofs/targeted-query-comparison.json) · [Open H041 criteria](validation/optimization-benefit.md#open-h041-acceptance-criteria)
+
+On 26 November 2026, CLI 0.171.0-alpha.13.2 requested sandbox setup on Windows 10. The isolated elevated control timed out before the read command started. The test added no deny-read entries. The named file profile check remains open. [Windows sandbox requirements](https://learn.chatgpt.com/docs/windows/windows-sandbox#configure-a-legacy-fallback)
 
 The lead agent checked Learn with Headroom 0.45.0. Eight previews passed. A local model returned the exact values for two paired report tasks. The advice saved no retries and added 55 tokens. Keep the advice in the opt-in preview. Broader live acceptance needs a real client task with an observed repeat that the advice can prevent. [Learn evidence](proofs/learn-merit-pilot.json)
 

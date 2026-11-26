@@ -1,0 +1,142 @@
+{
+  "task": "H041-d",
+  "status": "pass",
+  "date": "2026-11-26",
+  "owner": "lead agent",
+  "engine": "0.45.0",
+  "preview_version": "0.1.1-preview.8",
+  "source_commit": "cad4f1c676d36b7f3c8dce7b0a41b732a6d3bdf9",
+  "active_commit": "d0072832b545f0830ab2330b7a5113f13b35f6ae",
+  "windows_build": 19045,
+  "preview_stage_sha256": "d02a107398d60a2cfdb0f7092f2616729b95fd3d668b8c61ad2e2432072b7420",
+  "native_reader_sha256_before_after": "58ea4db97155580c793262b7fe97d96b58222665d6fd7214675f8485fee3c8bd",
+  "source_inputs": {
+    "count": 426,
+    "sha256_before": "b2072a22e262ddc300d7c89da63b764aab4903e03bf8e93da10c91388bb1463d",
+    "sha256_after": "b2072a22e262ddc300d7c89da63b764aab4903e03bf8e93da10c91388bb1463d",
+    "tool_versions": {
+      "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)"
+    }
+  },
+  "routes": {
+    "responses": {
+      "status": "pass",
+      "scenarios": 8,
+      "case_ids": [
+        "complete",
+        "failed_continuation",
+        "missing_usage",
+        "missing_write",
+        "retry",
+        "sse-a",
+        "sse-b",
+        "zero"
+      ],
+      "closed_engine_runs": 2,
+      "source_inputs": 41,
+      "source_inputs_sha256_before_after": "64cc641111d5565e83651e25e5ddd9b8a5b0205b82e59dc3442481932e7d14dc",
+      "local_receipt_sha256": "8a21c9193c8decf39cc9540fa1e31cf3b88443caf02c542d6c7244523c3ba965",
+      "seconds": 34.664,
+      "sqlite_activity_detail": "pass"
+    },
+    "ws": {
+      "status": "pass",
+      "scenarios": 13,
+      "case_ids": [
+        "ccr",
+        "cut",
+        "failed_then_complete",
+        "fallback",
+        "handshake_retry",
+        "interleaved",
+        "missing",
+        "native_projection",
+        "parallel_connections",
+        "sequence_1",
+        "sequence_2",
+        "sequence_3",
+        "warm_turn"
+      ],
+      "closed_engine_runs": 2,
+      "source_inputs": 42,
+      "source_inputs_sha256_before_after": "52f94d88e0bf0a6c1d8d52fb6000efc3aac8747f816111132cdcd71ace3936d3",
+      "local_receipt_sha256": "8fdcc311b686b6c7e4932831cfef22e96cc245112343de948b6a0e2cf3db43b6",
+      "seconds": 38.277,
+      "sqlite_activity_detail": "pass"
+    },
+    "chat": {
+      "status": "pass",
+      "scenarios": 10,
+      "case_ids": [
+        "ccr-error",
+        "ccr-json",
+        "json",
+        "local_response_cache",
+        "retry",
+        "sse-a",
+        "sse-b",
+        "sse-cut",
+        "sse-disabled",
+        "zero"
+      ],
+      "closed_engine_runs": 2,
+      "source_inputs": 48,
+      "source_inputs_sha256_before_after": "7df8b14eb066a158378a932ac13c12b2a2ddc9d379819c099fb32d5411a0065f",
+      "local_receipt_sha256": "b0f4dfa2e270ff2f8032d9a83fae1b6174cad63f37c23f2ee33c4977451b3599",
+      "seconds": 32.015,
+      "sqlite_activity_detail": "pass"
+    },
+    "chat-buffered": {
+      "status": "pass",
+      "scenarios": 1,
+      "case_ids": [
+        "ccr-sse"
+      ],
+      "closed_engine_runs": 1,
+      "source_inputs": 48,
+      "source_inputs_sha256_before_after": "e35e6a7b301a79bba184a3f4629fccc26129f8363c128821cae141813a628133",
+      "local_receipt_sha256": "be1e76e2ff0e5fb5f51cb236c028c384de580727ddf31f344f78316d745a4f02",
+      "seconds": 16.149
+    }
+  },
+  "total_scenarios": 32,
+  "seconds": 82.015,
+  "external_model_requests": 0,
+  "ci_runs_started": 0,
+  "prior_live_counter_evidence": [
+    {
+      "surface": "Responses HTTP/SSE",
+      "engine": "0.44.0",
+      "matched_requests": 5,
+      "source": "docs/proofs/rules-json-live-pilot.json",
+      "sha256": "c3730210b65d4c1dc23e0b960185048034eb14363c6820df4b5c8753cb8fb975"
+    },
+    {
+      "surface": "Responses WebSocket",
+      "engine": "0.44.0",
+      "matched_generations": 1,
+      "source": "docs/proofs/websocket-usage-desktop.json",
+      "sha256": "6eb1de8d6d57da84ce81cb6f0331ced5e83810674faca1a21cd3d131ad4199b9"
+    },
+    {
+      "surface": "Chat Completions JSON/SSE",
+      "engine": "0.44.0",
+      "matched_requests": 2,
+      "source": "docs/proofs/chat-completions-usage.json",
+      "sha256": "0f85e098c9a8da1055b0d985b9e94a71004baf2281d8d989f7cdad986f6eb002"
+    }
+  ],
+  "limits": {
+    "live_anthropic_messages": "open",
+    "live_openai_api_key": "open",
+    "live_provider_recheck_on_preview_8": "not_tested",
+    "windows_11_x64": "not_tested",
+    "billing_and_development_token_savings": "unmeasured"
+  },
+  "open_checklist": {
+    "subtasks_before": 17,
+    "subtasks_after": 16,
+    "main_tasks": 8
+  }
+}
