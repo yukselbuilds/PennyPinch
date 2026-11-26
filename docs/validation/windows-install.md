@@ -93,6 +93,10 @@ Windows 10 22H2 x64 installed the public ZIP into a separate test folder. Connec
 
 The public installer ran on Windows 10 22H2 x64 with WebView2 present. Connect saved the route in separate Claude Code 2.1.158 user settings. One local Anthropic stream delivered text before completion and preserved the selected model and effort. Undo restored the settings byte for byte. The engine released its port and the app exited normally. [First-use evidence](../proofs/windows-preview8-first-use-claude.json)
 
+## 26 November — Preview.8 OpenCode first use
+
+The public installer ran on Windows 10 22H2 x64 with WebView2 present. The test started the engine in Overview. Preview left the separate OpenCode 2.3.0 settings unchanged. Apply saved the eligible routes and bound the installed retrieval bridge. The CLI completed one local Chat Completions stream and one local Responses stream. Model selection and synthetic authentication matched. Undo restored the exact JSONC bytes. The app exited and released the engine port. [First-use evidence](../proofs/windows-preview8-first-use-opencode.json)
+
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria

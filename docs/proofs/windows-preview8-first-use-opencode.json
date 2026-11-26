@@ -1,0 +1,126 @@
+{
+  "cleanup": {
+    "desktop_use_gate_restored": true,
+    "original_profile_files": 0,
+    "original_profile_matches": true,
+    "test_installation_removed": true,
+    "test_profile_removed": true
+  },
+  "cli": {
+    "cases": [
+      {
+        "event_types": [
+          "step_start",
+          "text",
+          "step_finish"
+        ],
+        "exit_code": 0,
+        "final_marker_exact": true,
+        "owned_processes_after_exit": 0,
+        "protocol": "chat",
+        "selector": "lab/slot",
+        "steps": 1,
+        "usage": "synthetic_not_a_savings_measurement",
+        "wire": {
+          "protocol": "chat",
+          "stream_requested": true,
+          "synthetic_auth_preserved": true,
+          "wire_model_preserved": true
+        }
+      },
+      {
+        "event_types": [
+          "step_start",
+          "text",
+          "step_finish"
+        ],
+        "exit_code": 0,
+        "final_marker_exact": true,
+        "owned_processes_after_exit": 0,
+        "protocol": "responses",
+        "selector": "openai/slot",
+        "steps": 1,
+        "usage": "synthetic_not_a_savings_measurement",
+        "wire": {
+          "protocol": "responses",
+          "stream_requested": true,
+          "synthetic_auth_preserved": true,
+          "wire_model_preserved": true
+        }
+      }
+    ],
+    "nonroute_settings_preserved": true,
+    "packaged_bridge_matches": true,
+    "passed": true,
+    "requests": 2,
+    "two_provider_endpoints_saved": true
+  },
+  "inputs_sha256_before_after": {
+    "client_settings_fixture": "32f4824e1193173b325ea29a8a7cdbcce89288dea323240e8cef20b114bf36f5",
+    "install_harness": "736cc68c10e92948b75d443813940f096149628f48bdf605d78f73cecd4fc605",
+    "install_reference": "2927f434f062eb38faa82d741a777a23f04509f9286aa11788b0759e4bd38f49",
+    "installer": "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1",
+    "local_build": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba",
+    "lockfile": "36114012132961286f7b561aaa673e827ede13b781d6501a769cf83485d468d3",
+    "node_exe": "91ec09dda8f20556f366110859f106ab189d45f8f6a2bd092e6785174ad4a0fa",
+    "opencode_exe": "2359208e2f81539fd16eb755a4d8a747e87c6fd5cd59a49bb552f8a610d33eb9",
+    "output_reader": "d22ac395c98c361a0f1560e0fd49f6b67b4a752b7fdc7300d6e81f069d60f251",
+    "pinned_cli_runner": "ef6770f970af2364a3e28b9d978c21bc1777850ff40654d0b0f2c127df7f2290",
+    "process_supervisor": "dc067a6c76316be981ebc36d4066a5096e71b3c1ff689fff078410b06b33a2af",
+    "public_zip": "6fc4ae34a1a2b9404f0db1b7ea2763fd75b148cce0c0b2fd4fb0b528c85374be",
+    "publication": "9617cca0ce19e52aa59fff2ef92d73bcf485f2c466de6ad568d078c079a2eae1",
+    "python_exe": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07",
+    "responses_fixture": "2d686c853c3b87c407fef28762d936aea3c30138c57a03218b5de85b33ab9744",
+    "stage_receipt": "d02a107398d60a2cfdb0f7092f2616729b95fd3d668b8c61ad2e2432072b7420",
+    "test_config": "4b89ad3f89363c15278a45b2b8c36722472761a19a6d472342cde75da36959a0",
+    "test_runner": "6610abbb00606c15645c6d03311768d9b2a957a1eaf0203150ba78f90d26773a",
+    "window_driver": "7e0383381fc0d251eb619b7546061c0609965d7454d0548c4c7c84d3636400c8",
+    "window_harness": "d0bc1f55bf5a244f45e9563909e0a2b97e97dd5243b61afd8efe8b5a71fd512a"
+  },
+  "installed_resources_and_receipt": 19492,
+  "limits": {
+    "clean_windows_10": "not_tested",
+    "development_token_savings": "unmeasured",
+    "external_model_calls": 0,
+    "live_provider": "not_tested",
+    "windows_11_x64": "not_tested",
+    "without_webview2": "not_tested"
+  },
+  "local_receipt_sha256": "01f064a6970c511f4f9cb35c4f2d6ea255da59502028720da469f283dbd11ae5",
+  "normal_exit": true,
+  "observed_on": "2026-11-26",
+  "opencode_cli": "2.3.0",
+  "os": "Windows 10 22H2 x64",
+  "owned_ingress_released": true,
+  "release": "0.1.1-preview.8",
+  "routing_ownership_released": true,
+  "runtime": {
+    "distribution_directories": [
+      "opentelemetry_api-1.45.2.dist-info"
+    ],
+    "headroom": "0.45.0",
+    "headroom_distribution_directories": [
+      "headroom_ai-0.45.0.dist-info"
+    ],
+    "opentelemetry": "1.45.2"
+  },
+  "scenario": "Public preview, isolated OpenCode V2 settings, local Chat Completions and Responses",
+  "schema_version": 1,
+  "seconds": 156.985,
+  "settings_restored_byte_for_byte": true,
+  "source_commit": "cad4f1c676d36b7f3c8dce7b0a41b732a6d3bdf9",
+  "status": "pass",
+  "task": "H037-a13",
+  "ui": {
+    "cli_discovered_and_selected": true,
+    "discovery_left_config_unchanged": true,
+    "engine_initially_stopped": true,
+    "engine_ready_and_route_saved": true,
+    "engine_started_from_overview": true,
+    "engine_stopped": true,
+    "preview_left_config_unchanged": true,
+    "undo_restored_config_and_kept_engine_ready": true
+  },
+  "webview2": "158.0.0.0",
+  "windows_build": 19045
+}

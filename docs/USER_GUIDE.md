@@ -5,7 +5,11 @@ This guide covers the Windows 10 preview. The release notes give installation an
 ## Connect a coding agent
 
 1. Open PennyPinch and go to **Applications**. Choose **Scan for clients** to look in known local installation locations. Use **Add from file** if PennyPinch cannot find your installation. The selected file is only recorded permanently when you save the installation choice or connect.
-2. Open **Manage connection** for the client. Confirm the installation and surface, such as Codex CLI or Codex Desktop, and review the proposed settings change. **Connect** saves your choice, starts PennyPinch's engine if needed and applies the proposed route when the configuration can be changed safely. The dialog explains any conflict that blocks the change.
+2. Connect your client.
+   - **Codex and Claude Code.** Open **Manage connection**. Confirm the installation. Select **Connect**. PennyPinch starts the engine if necessary.
+   - **OpenCode.** Select **Start** in **Overview**. Open **Manage connection** for OpenCode. Confirm the installation. Select **Preview**. Review the proposed routes. Select **Apply**.
+
+   The connection dialog describes any conflict that blocks the route.
 3. Start a new CLI process or fully quit and reopen the desktop client. Existing chats can continue to use their previous route. Check **Activity** after sending a request. A saved connection and observed traffic are separate states.
 
 **Start** in **Overview** runs the local Headroom engine. Use **Manage connection** to set up a client route. Sign in to your provider through the client. The client controls your model, reasoning level and authentication method.
