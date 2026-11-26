@@ -50,7 +50,11 @@ The second guest run stopped during media preparation. A download returned exit 
 
 The lead agent verified the H006 portable Windows 10 package and window. The packaged controller reached Ready in 73.718 seconds on the development host. The engine stopped normally and released its port. The clean guest timed out before Windows preflight. [Window test](https://github.com/yukselbuilds/PennyPinch/actions/runs/45897208162) · [Controller test](https://github.com/yukselbuilds/PennyPinch/actions/runs/45899760014) [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
 
-Record the last Windows Setup state and a preflight result in separate CI notices. Verify controller start and stop on clean Windows 10 x64. Verify the updated full installer, the client connection, a small real request, and the tray flow. [Procedure](validation/windows-preview-check.md)
+The earlier controller reached the startup deadline on clean Windows 10. The controller returned `helper_timeout`. The new Windows helper defers optional transform loading until first use. The startup deadline remains 90 seconds. The clean Windows 10 run logged the zero preload budget and loaded the native core. The controller still reported `helper_timeout`. [Earlier controller run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45901530341) · [Updated controller run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45904486183)
+
+The updated packaged controller reached Ready in 13.338 seconds on the development host. It completed one loopback test request with optimization enabled and the native core loaded. It stopped normally and released its port. The clean test ran the packaged engine directly. The full installer needs its own lifecycle test. [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
+
+Record elapsed time at helper spawn, the proxy startup markers, listener binding, and the readiness reply. Verify engine start and stop within the existing deadline on clean Windows 10 x64. [Procedure](validation/windows-preview-check.md)
 
 The lead agent completed the existing H041 Next optimization slices item. The installed preview.8 evidence passed the exact-repeat and long-log checks. The matching 0.45.0 runtime passed 16 local test-output pairs on Windows 10. CCR returned 4 complete originals. The engine forwarded all 8 failed outputs in full. The task list had 17 open subtasks and 8 open main tasks. See the current H041 acceptance table for the remaining criteria. [Evidence](proofs/h041-core-optimization-completion.json)
 
