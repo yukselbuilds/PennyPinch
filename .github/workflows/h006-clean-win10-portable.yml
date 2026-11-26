@@ -4,7 +4,6 @@ on:
     branches: [codex/h006-win10-portable-20261127]
 permissions:
   contents: read
-  actions: read
 concurrency:
   group: h006-clean-windows10-portable
   cancel-in-progress: false
@@ -17,16 +16,8 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
-        with:
-          name: pp-win10-candidate
-          run-id: 45858910411
-          github-token: ${{ github.token }}
-          path: ${{ runner.temp }}/pp-candidate
       - name: Verify official media and prepare a temporary guest
         shell: bash
-        env:
-          PP_CANDIDATE_SHA256: 569d76b432b961b609821ca071099d2e8c1869178cf688ea9993611431b0d153
         run: |
           set -euo pipefail
           test -c /dev/kvm
@@ -67,8 +58,7 @@ jobs:
           echo '::notice title=H037 preview download::{"stage":"preview_archive"}'
           curl --silent --show-error --fail --location --retry 1 --max-time 120 \
             --output preview.zip 'https://github.com/yukselbuilds/PennyPinch/releases/download/v0.1.1-preview.8/PennyPinch_0.1.1-preview.8_Windows_x64_preview.zip'
-          python3 "$recipe/make-portable.py" "$RUNNER_TEMP/pp-candidate/pp-candidate.exe" \
-            "$GITHUB_WORKSPACE/runtime/desktop_helper.py" "$PP_CANDIDATE_SHA256"
+          python3 "$recipe/make-portable.py" "$GITHUB_WORKSPACE/runtime/desktop_helper.py" "$expected_helper"
           printf '::notice title=H037 verified inputs::%s\n' "$(sha256sum windows.iso preview.zip answer/portable.zip | tr '\n' ' ')"
           xorriso -as mkisofs -quiet -J -r -V PPAUDIT -o answer.iso answer
           qemu-img create -f qcow2 clean.qcow2 45G

@@ -12,6 +12,23 @@ from time import monotonic
 from uuid import uuid4
 
 
+def startup_markers(workspace):
+    expected = {
+        b"registered compress-turn extension": "turn_extension_registered",
+        b"event=rust_core_loaded": "rust_core_loaded",
+        b"headroom proxy started": "proxy_startup_entered",
+        b"pre-loading compressors and parsers": "preload_check_entered",
+        b"eager preload exceeded 0s": "zero_preload_budget",
+        b"headroom proxy session summary": "shutdown_summary",
+    }
+    observed = set()
+    for path in (workspace / "logs").glob("proxy-*.log"):
+        with path.open("rb") as log:
+            data = log.read(65536).lower()
+        observed.update(marker for text, marker in expected.items() if text in data)
+    return sorted(observed)
+
+
 def verify(bundle, receipt, result):
     assert not windll.shell32.IsUserAnAdmin(), "elevated_test_process"
     state = receipt.parent / f"pp-clean-controller-{uuid4().hex[:8]}"
@@ -96,6 +113,10 @@ def verify(bundle, receipt, result):
             except subprocess.TimeoutExpired:
                 child.terminate()
                 child.wait(timeout=10)
+        try:
+            result["startup_markers"] = startup_markers(workspace)
+        except OSError:
+            result["startup_marker_read_failed"] = True
 
 
 bundle = Path(sys.argv[1]).resolve(strict=True)

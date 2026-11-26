@@ -6,8 +6,7 @@ try {
     $descriptor = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'bundle.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     $source = Join-Path $PSScriptRoot 'portable.zip'
     if (Test-Path -LiteralPath $destination) { throw 'existing_destination' }
-    $candidate = '569d76b432b961b609821ca071099d2e8c1869178cf688ea9993611431b0d153'
-    if ($descriptor.candidate_executable_sha256 -cne $candidate) { throw 'wrong_candidate_executable' }
+    if ($descriptor.archive_scope -cne 'engine_only') { throw 'wrong_package_scope' }
     if ((Get-Item -LiteralPath $source).Length -ne $descriptor.portable_archive_bytes -or
         (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash -ine $descriptor.portable_archive_sha256) {
         throw 'portable_archive_hash_mismatch'
@@ -18,7 +17,6 @@ try {
     [IO.Compression.ZipFile]::ExtractToDirectory($source, $destination)
     $report.phase = 'portable_verify'
     $resources = @(
-        @{ name = 'headroom-desktop.exe'; hash = $descriptor.candidate_executable_sha256 },
         @{ name = 'runtime/desktop_helper.py'; hash = $descriptor.candidate_helper_sha256 },
         @{ name = 'package-inputs.json'; hash = $descriptor.resource_receipt_sha256 }
     )
@@ -31,7 +29,7 @@ try {
     $count = @([IO.Directory]::EnumerateFiles($destination, '*', [IO.SearchOption]::AllDirectories)).Length
     if ($count -ne $descriptor.file_count) { throw 'extracted_file_count_mismatch' }
     $report.file_count = $count
-    $report.candidate_executable_sha256 = $candidate
+    $report.archive_scope = $descriptor.archive_scope
     $report.candidate_helper_sha256 = $descriptor.candidate_helper_sha256
     $report.status = 'pass'
     $report.phase = 'complete'

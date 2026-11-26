@@ -15,8 +15,8 @@ bundle.mkdir()
 archive = root / "preview.zip"
 installer = work / "preview8-setup.exe"
 destination = root / "answer"
-candidate, overlay = map(lambda path: Path(path).resolve(strict=True), sys.argv[1:3])
-asset_sha = sys.argv[3]
+overlay = Path(sys.argv[1]).resolve(strict=True)
+expected_helper = sys.argv[2]
 expected_installer = "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1"
 expected_archive = "6fc4ae34a1a2b9404f0db1b7ea2763fd75b148cce0c0b2fd4fb0b528c85374be"
 expected_executable = "3b9e27afc01d07efd13d0aa7602209da5ab25dadbd659a09849dc3b92c0f5cd2"
@@ -56,15 +56,11 @@ pinned = receipt["resources"]
 assert len(pinned) == 19491
 assert members.keys() == pinned.keys() | {exe_name, receipt_name}
 assert all(digest(members[k]) == v for k, v in pinned.items())
-assert digest(members[exe_name]) == expected_executable
-assert re.fullmatch(r"[0-9a-f]{64}", asset_sha) and digest(candidate) == asset_sha
+assert digest(members.pop(exe_name)) == expected_executable
 helper_sha = digest(overlay)
-assert helper_sha == "7924afe121c0dead22424c8cfceaa7fc614732573393686f8cb7c7aa84977504"
-managed_marker = b"__TAURI_BUNDLE_TYPE_VAR_UNK"
-assert candidate.read_bytes().count(managed_marker) == 1
-shutil.copyfile(candidate, members[exe_name])
+assert re.fullmatch(r"[0-9a-f]{64}", expected_helper) and helper_sha == expected_helper
 shutil.copyfile(overlay, members[helper_name])
-assert digest(members[exe_name]) == asset_sha and digest(members[helper_name]) == helper_sha
+assert digest(members[helper_name]) == helper_sha
 receipt["resources"][helper_name] = helper_sha
 receipt["inputs"]["runtime/desktop_helper.py"] = helper_sha
 members[receipt_name].write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
@@ -73,7 +69,7 @@ with ZipFile(output, "x", compression=ZIP_DEFLATED, compresslevel=1) as zipped:
     for name, path in sorted(members.items()):
         zipped.write(path, name)
 facts = {"source_archive_sha256": expected_archive, "source_installer_sha256": expected_installer,
-         "candidate_executable_sha256": asset_sha, "candidate_helper_sha256": helper_sha,
+         "archive_scope": "engine_only", "candidate_helper_sha256": helper_sha,
          "portable_archive_sha256": digest(output), "portable_archive_bytes": output.stat().st_size,
          "resource_receipt_sha256": digest(members[receipt_name]), "file_count": len(members)}
 (destination / "bundle.json").write_text(json.dumps(facts, separators=(",", ":")) + "\n", encoding="utf-8")
