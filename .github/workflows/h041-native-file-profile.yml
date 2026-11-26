@@ -83,7 +83,7 @@ jobs:
             }
           } finally { Pop-Location }
 
-      - name: Verify exact allowed bytes, explicit denial, and restored access
+      - name: Verify exact allowed bytes and explicit denial
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -221,37 +221,10 @@ jobs:
           }
           $phase = 'control'
           $null = Invoke-Probe 'probe-control' 'opened'
-          $access = [Security.AccessControl.AccessControlSections]::Access
-          $baselineAcl = (Get-Acl -LiteralPath $denied).GetSecurityDescriptorSddlForm($access)
-          function Restore-ProbeAcl {
-            $fixture = Get-Item -LiteralPath $denied
-            if ($fixture.FullName -ne (Join-Path $work 'excluded.txt') -or
-                $fixture.Attributes.HasFlag([IO.FileAttributes]::ReparsePoint)) { throw 'Unexpected test file scope.' }
-            $current = Get-Acl -LiteralPath $denied
-            if ($current.GetSecurityDescriptorSddlForm($access) -ne $baselineAcl) {
-              $current.SetSecurityDescriptorSddlForm($baselineAcl, $access)
-              Set-Acl -LiteralPath $denied -AclObject $current
-            }
-            if ((Get-Acl -LiteralPath $denied).GetSecurityDescriptorSddlForm($access) -ne $baselineAcl) {
-              throw 'The fixture access control list did not match its baseline.'
-            }
-          }
-          try {
-            $phase = 'deny'
-            $null = Invoke-Probe 'probe-denied' 'access_denied'
-            $phase = 'observe_profile_switch'
-            $switchResult = Invoke-Probe 'probe-control' 'observe'
-          } finally {
-            $phase = 'restore_owned_fixture'
-            Restore-ProbeAcl
-          }
-          try {
-            $phase = 'control_after_fixture_cleanup'
-            $null = Invoke-Probe 'probe-control' 'opened'
-          } finally {
-            $phase = 'restore_fixture_after_final_control'
-            Restore-ProbeAcl
-          }
+          $phase = 'deny'
+          $null = Invoke-Probe 'probe-denied' 'access_denied'
+          $phase = 'observe_profile_switch'
+          $switchResult = Invoke-Probe 'probe-control' 'observe'
           $phase = 'fingerprint_sources'
           $after = Get-InputFingerprints
           $changed = @(Get-ChangedInputs $before $after)
@@ -265,9 +238,9 @@ jobs:
             result = 'native_file_boundary_verified'
             target = 'Windows Server 2025 x64 standard runner'
             cli = '0.171.0-alpha.13.2'
-            checks = @('both_opened','allowed_exact_and_denied','both_opened_again')
-            profile_switch_before_fixture_cleanup = $switchResult
-            file_acl_restored_by_fixture = $true
+            checks = @('both_opened','allowed_exact_and_denied','profile_switch_observed')
+            profile_switch = $switchResult
+            cleanup = 'disposable_runner'
             initialized_inputs = $initialized
             matched_inputs = $before.Count
             inputs_sha256_before_after = $combined
