@@ -116,9 +116,26 @@ jobs:
           Add-Content -LiteralPath $cfg -Value ([Environment]::NewLine + $settings) -Encoding utf8NoBOM
           $cli = Join-Path $root 'codex.exe'
           $nativeShell = Join-Path $env:SystemRoot 'System32/WindowsPowerShell/v1.0/powershell.exe'
-          function Get-InputDigest {
-            $paths = @($cli, $cfg, $allowed, $denied, $nativeShell)
-            return ($paths | ForEach-Object { (Get-FileHash -LiteralPath $_).Hash }) -join ':'
+          function Get-InputFingerprints {
+            $files = [ordered]@{
+              cli = $cli
+              setup = Join-Path $root 'codex-windows-sandbox-setup.exe'
+              command_runner = Join-Path $root 'codex-command-runner.exe'
+              configuration = $cfg
+              allowed = $allowed
+              excluded = $denied
+              shell = $nativeShell
+            }
+            $hashes = [ordered]@{}
+            foreach ($name in $files.Keys) {
+              $hashes[$name] = (Get-FileHash -LiteralPath $files[$name]).Hash
+            }
+            return $hashes
+          }
+          function Get-ChangedInputs($old, $new) {
+            foreach ($name in $old.Keys) {
+              if ($old[$name] -ne $new[$name]) { $name }
+            }
           }
           $phase = 'build_child_probe'
           trap {
@@ -194,8 +211,14 @@ jobs:
             Write-Host "::notice title=H041 native file result::$profileName allowed=exact excluded=$($r.excluded) sandbox=offline_nonadmin language=$($r.language_mode)"
             return $r.excluded
           }
-          $phase = 'fingerprint_sources'
-          $before = Get-InputDigest
+          $phase = 'initialize_profile'
+          $preSetup = Get-InputFingerprints
+          $null = Invoke-Probe 'probe-control' 'opened'
+          $before = Get-InputFingerprints
+          $initialized = @(Get-ChangedInputs $preSetup $before)
+          if (@($initialized | Where-Object { $_ -ne 'configuration' }).Count -ne 0) {
+            throw 'A non-configuration input changed during the first control.'
+          }
           $phase = 'control'
           $null = Invoke-Probe 'probe-control' 'opened'
           $acl = Get-Acl -LiteralPath $denied
@@ -216,7 +239,15 @@ jobs:
           $phase = 'control_after_fixture_cleanup'
           $null = Invoke-Probe 'probe-control' 'opened'
           if ((Get-Acl -LiteralPath $denied).Sddl -ne $acl.Sddl) { throw 'The fixture ACL did not match its baseline.' }
-          if ((Get-InputDigest) -ne $before) { throw 'Verification inputs changed.' }
+          $phase = 'fingerprint_sources'
+          $after = Get-InputFingerprints
+          $changed = @(Get-ChangedInputs $before $after)
+          if ($changed.Count -ne 0) {
+            Write-Host "::error title=H041 changed verification inputs::changed=$($changed -join ',') initialized=$($initialized -join ',')"
+            throw 'Verification inputs changed.'
+          }
+          $hashInput = [Text.Encoding]::UTF8.GetBytes(($before | ConvertTo-Json -Compress))
+          $combined = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($hashInput)).ToLowerInvariant()
           $result = [ordered]@{
             result = 'native_file_boundary_verified'
             target = 'Windows Server 2025 x64 standard runner'
@@ -224,7 +255,9 @@ jobs:
             checks = @('both_opened','allowed_exact_and_denied','both_opened_again')
             profile_switch_before_fixture_cleanup = $switchResult
             file_acl_restored_by_fixture = $true
-            matched_inputs = 5
+            initialized_inputs = $initialized
+            matched_inputs = $before.Count
+            inputs_sha256_before_after = $combined
             allowed_bytes = [Text.Encoding]::UTF8.GetByteCount($text)
             external_model_requests = 0
           }
