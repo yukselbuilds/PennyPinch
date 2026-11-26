@@ -20,7 +20,11 @@ guest = [
 
 
 def notice(name, data):
-    print(f"::notice title=H037 {name}::{json.dumps(data, separators=(',', ':'), ensure_ascii=True)}", flush=True)
+    data = json.dumps(data, separators=(",", ":"), ensure_ascii=True)
+    if name in {"boot", "before", "portable", "complete", "duration", "host problem"}:
+        print(f"::notice title=H037 {name}::{data}", flush=True)
+    else:
+        print(f"H037 {name}: {data}", flush=True)
 
 
 def qmp(stream, command, **arguments):

@@ -35,7 +35,7 @@ jobs:
           timeout 180 sudo apt-get install -y -qq --no-install-recommends qemu-system-x86 qemu-utils xorriso tesseract-ocr aria2 p7zip-full
           mkdir -p "$RUNNER_TEMP/pp-clean/answer"
           recipe="$GITHUB_WORKSPACE/.github/h006-clean-win10-portable"
-          cp "$recipe/prepare.ps1" "$recipe/desktop.ps1" "$RUNNER_TEMP/pp-clean/answer/"
+          cp "$recipe/prepare.ps1" "$recipe/controller.py" "$RUNNER_TEMP/pp-clean/answer/"
           cp "$recipe/portable-guest.ps1" "$RUNNER_TEMP/pp-clean/answer/guest.ps1"
           cd "$RUNNER_TEMP/pp-clean"
           test "$(df --output=avail -B1 . | tail -1)" -ge 23622320128
@@ -69,14 +69,10 @@ jobs:
             --output preview.zip 'https://github.com/yukselbuilds/PennyPinch/releases/download/v0.1.1-preview.8/PennyPinch_0.1.1-preview.8_Windows_x64_preview.zip'
           python3 "$recipe/make-portable.py" "$RUNNER_TEMP/pp-candidate/pp-candidate.exe" \
             "$GITHUB_WORKSPACE/runtime/desktop_helper.py" "$PP_CANDIDATE_SHA256"
-          echo '::notice title=H037 dependency download::{"stage":"webview2"}'
-          curl --silent --show-error --fail --location --retry 1 --max-time 160 \
-            --output answer/webview2.exe 'https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/58f85fae-b5f5-4443-9b8d-6d4cf627d6f6/MicrosoftEdgeWebView2RuntimeInstallerX64.exe'
-          printf '45769d66809a9652050f8a91ab5329881b65cc4123fe7c733841deefbef91bf6  answer/webview2.exe\n' | sha256sum -c -
-          printf '::notice title=H037 verified inputs::%s\n' "$(sha256sum windows.iso preview.zip answer/webview2.exe answer/portable.zip | tr '\n' ' ')"
+          printf '::notice title=H037 verified inputs::%s\n' "$(sha256sum windows.iso preview.zip answer/portable.zip | tr '\n' ' ')"
           xorriso -as mkisofs -quiet -J -r -V PPAUDIT -o answer.iso answer
           qemu-img create -f qcow2 clean.qcow2 45G
-      - name: Open the portable candidate and verify engine start and stop
+      - name: Verify engine start and stop with the packaged controller
         shell: bash
         run: |
           cd "$RUNNER_TEMP/pp-clean"
