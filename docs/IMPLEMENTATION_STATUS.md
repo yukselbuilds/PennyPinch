@@ -2,7 +2,7 @@
 
 ## Current status
 
-**46 of 54 main tasks are complete.** **14 subtasks remain open.** The Windows 10 preview.8 release is available. The owner deferred Windows 11 x64 verification to December 2026. H041 remains open. [Task list](../TASKS.md)
+**46 of 54 main tasks are complete.** **13 subtasks remain open.** The Windows 10 preview.8 release is available. The owner deferred Windows 11 x64 verification to December 2026. H041 remains open. [Task list](../TASKS.md)
 
 PennyPinch v0.1.1-preview.8 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. Both public downloads matched their SHA-256 digests. GitHub Pages links to the release. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.8) · [Publication evidence](proofs/pennypinch-windows10-preview8-publication.json)
 
@@ -67,7 +67,9 @@ Codex CLI 0.171.0-alpha.13.2 opened both synthetic files under the built-in read
 
 On 26 November 2026, CLI 0.171.0-alpha.13.2 requested sandbox setup on Windows 10. The isolated elevated control timed out before the read command started. The test added no deny-read entries. The named file profile check remains open. [Windows sandbox requirements](https://learn.chatgpt.com/docs/windows/windows-sandbox#configure-a-legacy-fallback)
 
-The lead agent completed the Learn suggestion benefit pilot on Windows 10. Eight previews passed with the current inputs. Both arms chose the older source in the first run. The lead agent clarified the read options. Both arms then answered two release checks correctly. No retries occurred. The advice increased local usage from 459 to 515 tokens (12.20%). Keep the suggestion in the opt-in preview. Broader live acceptance needs a real client task with an observed repeat that the advice can prevent. [Learn evidence](proofs/learn-merit-pilot.json)
+The lead agent completed the Learn suggestion benefit pilot on Windows 10. Eight previews passed with the current inputs. Both arms chose the older source in the first run. The lead agent clarified the read options. Both arms then answered two release checks correctly. No retries occurred. The advice increased local usage from 459 to 515 tokens (12.20%). Keep the suggestion in the opt-in preview. [Learn evidence](proofs/learn-merit-pilot.json)
+
+The lead agent completed broader Learn measurement on Windows 10. OpenCode 1.19.3 used the same Qwen3.8-Flash-Next settings in both arms. The two release checks were correct in both arms. Both arms had zero retries, incorrect reads, and extra path checks. All eight provider counters matched the 0.45.0 engine. Learn increased total usage from 1,136 to 1,188 tokens (4.58%). The anonymous provider received only public release facts and the fixed test text. [Learn evidence](proofs/learn-merit-pilot.json)
 
 The lead agent corrected exit-code handling for Codex `exec_command` on Responses. Successful compression keeps the exit code visible. Failed output stays intact. HTTP/SSE and WebSocket passed eight local pairs each on Windows 10. [Shell status evidence](proofs/responses-shell-status-045.json)
 

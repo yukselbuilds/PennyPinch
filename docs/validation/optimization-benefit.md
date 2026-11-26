@@ -218,11 +218,13 @@ All eight model usage records matched the engine records. One case failed in bot
 
 The corrected 0.45.0 runtime removed Responses repeat references. In four new local model requests, the forwarded request hashes, answers, and usage matched the earlier full-output arm. The model answered three tasks correctly and used 1,420 input tokens. It recovered the answer that the reference changed. The repeat example used 405 local JSON tokens before and after. Three CCR retrievals restored long log results exactly. [Correction evidence](../proofs/responses-repeat-output-045.json)
 
+The broader live Learn test used OpenCode 1.19.3 and Qwen3.8-Flash-Next. Both arms answered two published release checks correctly. All eight provider counters matched Headroom 0.45.0. The advice added 52 tokens (4.58%). Both arms had zero incorrect reads, retries, and extra path checks. [Learn measurement](../proofs/learn-merit-pilot.json)
+
 <a name="h041-açık-kabulleri"></a>
 
 ## Open H041 acceptance criteria
 
-On 26 November 2026, **5 verification criteria and 3 optional R&D criteria** remain open. The main task count is **46/54**.
+On 26 November 2026, **5 verification criteria and 2 optional R&D criteria** remain open. The main task count is **46/54**.
 
 | Criterion | Evidence needed |
 | --- | --- |
@@ -232,7 +234,6 @@ On 26 November 2026, **5 verification criteria and 3 optional R&D criteria** rem
 | Live Anthropic Messages | Use an authorized account. Match the usage counters of an actual Messages response to the corresponding Headroom request. [Local usage evidence](../proofs/desktop-anthropic-usage.json) |
 | Live OpenAI API-key route | Confirm authorized access to the API-key route. Collect usage evidence for the scope that H008 carried forward. [H041-d plan](../decisions/027-optimization-regression.md#h041-d-responses-httpsse-kullanım-ölçümü) |
 | Actual billing difference | Collect comparable billing data for the paired runs. The token comparison is on record. [Live comparison](../proofs/targeted-query-comparison.json) |
-| Broader acceptance of Learn benefits | Pair real client tasks with an observed repeat that the advice can prevent. Use the same model and effort. The first live pair and the local pairs showed no benefit. With clear source choices, the release checks passed and the advice increased local token use by 12.20%. [Learn measurement](../proofs/learn-merit-pilot.json) |
 | Experimental rules e3 | The work is frozen. A restart requires a new candidate and predefined criteria for quality and net benefit. [R&D decision](../research/optimization-roi-review-2026-11-17.md) |
 | Experimental rules e4 | After e3 passes, verify enablement, disabling, and rollback within the selected scope. [Experimental rules plan](../decisions/027-optimization-regression.md#h041-e-deneysel-kurallar) |
 
