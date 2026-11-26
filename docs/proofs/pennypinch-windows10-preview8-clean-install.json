@@ -4,6 +4,9 @@
     "windows10_clean_candidate_engine_lifecycle": "not_verified",
     "windows10_clean_client_connect_and_request": "not_tested",
     "windows10_clean_installer": "pass",
+    "windows10_clean_portable_candidate_engine_lifecycle": "not_verified",
+    "windows10_clean_portable_candidate_package": "pass",
+    "windows10_clean_portable_candidate_window": "pass",
     "windows10_clean_tray": "not_tested",
     "windows10_clean_window": "pass",
     "windows10_clean_window_and_engine": "not_verified",
@@ -110,6 +113,113 @@
       "display_version": "22H2",
       "ubr": 2006,
       "version": "10.0.19045"
+    }
+  },
+  "portable_candidate_controller_run": {
+    "boot": {
+      "disk": "new_qcow2",
+      "kvm": true
+    },
+    "conclusion": "failure",
+    "development_host_result": {
+      "engine": "0.45.0",
+      "local_readiness_http": 200,
+      "loopback_closed": true,
+      "model_requests": 0,
+      "normal_user": true,
+      "phase": "complete",
+      "ready_seconds": 73.718,
+      "shutdown": "graceful",
+      "source_sha256_before_and_after": {
+        "desktop_controller.py": "a3779d70b4fefca414365e8d871756bcd6dc64471397f0c80881d6b69f3d0803",
+        "desktop_helper.py": "7924afe121c0dead22424c8cfceaa7fc614732573393686f8cb7c7aa84977504",
+        "manifest.json": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+        "package-inputs.json": "62c17409133e012190723ef3075dda9bd0faf57afdb65fe4d8b730f26357c4e8",
+        "python.exe": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07"
+      },
+      "status": "pass",
+      "total_seconds": 80.676
+    },
+    "fixed_failure": {
+      "code": "guest_timeout_before_baseline"
+    },
+    "guest_package_extraction": "not_verified",
+    "head_sha": "6e24f9d2e857c627cf860c14bcdaef758b037f6b",
+    "host_prepared_package": {
+      "candidate_executable_sha256": "569d76b432b961b609821ca071099d2e8c1869178cf688ea9993611431b0d153",
+      "candidate_helper_sha256": "7924afe121c0dead22424c8cfceaa7fc614732573393686f8cb7c7aa84977504",
+      "file_count": 19493,
+      "portable_archive_bytes": 205093867,
+      "portable_archive_sha256": "aa67793f82fc9cbf1bf7cbacb779c0282a34c1a2e00115a4143940b86544abf1",
+      "resource_receipt_sha256": "e5dc94d943e1bd70855ca44c9d68dcfcffdd82865dc8bb8506dbe8b6fc0bbd06",
+      "source_archive_sha256": "6fc4ae34a1a2b9404f0db1b7ea2763fd75b148cce0c0b2fd4fb0b528c85374be",
+      "source_installer_sha256": "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1"
+    },
+    "job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45899760014/job/140182372497",
+    "last_phase": null,
+    "result": {},
+    "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45899760014",
+    "source_sha256": {
+      ".github/h006-clean-win10-portable/Autounattend.xml": "2b425679d1cf9f9f6ff345db63f92cf9e9813577a0b2018901bda15e361d3ff8",
+      ".github/h006-clean-win10-portable/controller.py": "3fa7197944bbb593cc93478470a12ce58c702c21d8f2266252c64eec91f42246",
+      ".github/h006-clean-win10-portable/host.py": "b61bb58da361cfc5dbc792753d6df2d40e2bbd7def60b5cfe8c8d89f57c82953",
+      ".github/h006-clean-win10-portable/make-portable.py": "3d48a34fac8d1efd42dc9e0e43df9f88b3e911da45e8e2a2d2a0e97ec497dfce",
+      ".github/h006-clean-win10-portable/portable-guest.ps1": "f70db328d2080ebb16bd947e177de9d6b0671173def3e9e3dfbe56fe77149ecf",
+      ".github/h006-clean-win10-portable/prepare.ps1": "c556977b94dbd99446769981ed1dec08beef79b7fbec7943e1843d598579551e",
+      ".github/workflows/h006-clean-win10-portable.yml": "de019b20ba70adc3ab7cc67305e059115113bf9f739e192c081e65fe1519e123",
+      "docs/proofs/pennypinch-windows10-preview8-local.json": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba",
+      "runtime/desktop_helper.py": "7924afe121c0dead22424c8cfceaa7fc614732573393686f8cb7c7aa84977504",
+      "src-tauri/src/runtime/manager.rs": "0c488134441797f22c489699955e6b34bc5a0fbfad8ba670d6b633d0decdb93a"
+    }
+  },
+  "portable_candidate_window_run": {
+    "conclusion": "failure",
+    "engine_status": "not_verified",
+    "guest_nic_disconnected": true,
+    "head_sha": "965c9e488a4a4537c2d72a6b2850b04f0a146bcb",
+    "job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45897208162/job/140173959877",
+    "new_disk": true,
+    "no_dev_tools_in_path": true,
+    "package": {
+      "candidate_executable_sha256": "569d76b432b961b609821ca071099d2e8c1869178cf688ea9993611431b0d153",
+      "candidate_helper_sha256": "7924afe121c0dead22424c8cfceaa7fc614732573393686f8cb7c7aa84977504",
+      "file_count": 19493,
+      "portable_archive_bytes": 205093867,
+      "portable_archive_sha256": "bb36f64701455922f50f2bd6515ed160ea6676834a60d163d2332a3ad24e25ed",
+      "resource_receipt_sha256": "e5dc94d943e1bd70855ca44c9d68dcfcffdd82865dc8bb8506dbe8b6fc0bbd06",
+      "source_archive_sha256": "6fc4ae34a1a2b9404f0db1b7ea2763fd75b148cce0c0b2fd4fb0b528c85374be",
+      "source_installer_sha256": "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1"
+    },
+    "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45897208162",
+    "source_sha256": {
+      ".github/h006-clean-win10-portable/Autounattend.xml": "2b425679d1cf9f9f6ff345db63f92cf9e9813577a0b2018901bda15e361d3ff8",
+      ".github/h006-clean-win10-portable/desktop.ps1": "3493698ff2b97c28eac4ca49ff3ed796ff31a017593cce79d16d1de6c0c1c952",
+      ".github/h006-clean-win10-portable/host.py": "cc356aeff296b1fbc00eacf929ac0ff82a84ae672d0e743a7524cc6585bc3e11",
+      ".github/h006-clean-win10-portable/make-portable.py": "3d48a34fac8d1efd42dc9e0e43df9f88b3e911da45e8e2a2d2a0e97ec497dfce",
+      ".github/h006-clean-win10-portable/portable-guest.ps1": "f55e26e07b2997b559454e35566f2d819b754c600d2586d2830fb5a39274db66",
+      ".github/h006-clean-win10-portable/prepare.ps1": "c556977b94dbd99446769981ed1dec08beef79b7fbec7943e1843d598579551e",
+      ".github/workflows/h006-clean-win10-portable.yml": "eb1016afb6acdd69e0f9e7135f04ab8c28c08e59ba19d97146f440460466a990",
+      "docs/proofs/pennypinch-windows10-preview8-local.json": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba",
+      "runtime/desktop_helper.py": "7924afe121c0dead22424c8cfceaa7fc614732573393686f8cb7c7aa84977504",
+      "src-tauri/src/runtime/manager.rs": "0c488134441797f22c489699955e6b34bc5a0fbfad8ba670d6b633d0decdb93a"
+    },
+    "webview2_runtime": [
+      "158.0.4370.45"
+    ],
+    "window": {
+      "checks": {
+        "native_window": true,
+        "normal_interactive_token": true
+      },
+      "engine_state": null,
+      "event": "window",
+      "ready_seconds": null
+    },
+    "windows": {
+      "architecture": 9,
+      "build": 19045,
+      "display_version": "22H2",
+      "edition": "Microsoft Windows 10 Enterprise Evaluation"
     }
   },
   "release": {
