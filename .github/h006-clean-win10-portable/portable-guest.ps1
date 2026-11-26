@@ -13,6 +13,7 @@ function Send-Receipt([string]$kind, $data) {
 }
 
 try {
+    Send-Receipt guest_entry @{started = $true}
     $system = Get-CimInstance Win32_OperatingSystem
     $build = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
     $architecture = @(Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Architecture -Unique)
@@ -48,6 +49,7 @@ try {
     $taskName = 'PennyPinchCleanControllerVerification'
     Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal | Out-Null
     Start-ScheduledTask -TaskName $taskName
+    Send-Receipt controller_task @{started = $true}
     $deadline = [DateTime]::UtcNow.AddSeconds(210)
     while (!(Test-Path -LiteralPath $stateFile) -and [DateTime]::UtcNow -lt $deadline) {
         Start-Sleep -Seconds 1

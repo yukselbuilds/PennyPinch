@@ -119,6 +119,10 @@ The Windows candidate allows 20 seconds for Headroom preload. The staged control
 
 The second guest run stopped during media preparation. A download returned exit code 28. The third run verified the media and installed preview.8. The runner reached its time limit before it reported that the guest had the candidate files. The clean engine lifecycle remains open. [Clean guest run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45866157790)
 
+## 27 November — Portable candidate on clean Windows 10
+
+The portable ZIP contained 19,493 files. A clean Windows 10 22H2 x64 guest extracted it and verified the package digests. PennyPinch opened under a standard user token. The packaged controller reached Ready in 73.718 seconds on the development host. The engine stopped normally and released its port. The clean guest timed out before Windows preflight. [Window test](https://github.com/yukselbuilds/PennyPinch/actions/runs/45897208162) · [Controller test](https://github.com/yukselbuilds/PennyPinch/actions/runs/45899760014) [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
+
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria

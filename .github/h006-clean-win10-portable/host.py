@@ -1,12 +1,16 @@
 from base64 import b64decode
 import json
 from pathlib import Path
+import re
 import socket
 import subprocess
 import time
 
 socket_path = Path("qmp.socket").resolve()
 receipts = Path("guest.serial")
+BOOT_LIMIT_SECONDS = 810
+CONTROLLER_TEST_LIMIT_SECONDS = 450
+ANNOTATED_EVENTS = {"boot", "guest_entry", "setup", "before", "portable", "controller_task", "complete", "duration", "host problem"}
 guest = [
     "qemu-system-x86_64", "-enable-kvm", "-machine", "pc", "-cpu", "host",
     "-smp", "4", "-m", "8192", "-S", "-boot", "order=c,once=d",
@@ -21,7 +25,7 @@ guest = [
 
 def notice(name, data):
     data = json.dumps(data, separators=(",", ":"), ensure_ascii=True)
-    if name in {"boot", "before", "portable", "complete", "duration", "host problem"}:
+    if name in ANNOTATED_EVENTS:
         print(f"::notice title=H037 {name}::{data}", flush=True)
     else:
         print(f"H037 {name}: {data}", flush=True)
@@ -44,6 +48,8 @@ def setup_display(stream):
     # Keep the screenshot in the disposable runner. Report only recognized installation states.
     states = {
         "press any key to boot": "boot_prompt",
+        "no bootable device": "no_boot_device",
+        "no bootable disk": "no_boot_device",
         "installing windows": "installing",
         "where do you want to install windows": "disk_selection",
         "windows setup": "setup",
@@ -51,6 +57,7 @@ def setup_display(stream):
         "let's connect you to a network": "oobe_network",
         "sign in": "sign_in",
         "getting ready": "getting_ready",
+        "getting devices ready": "getting_devices_ready",
         "pennypinch": "application_title",
         "procedure entry point": "missing_entry_point",
         "could not be located": "missing_entry_point",
@@ -64,7 +71,12 @@ def setup_display(stream):
         screen = " ".join(scan.stdout.decode("utf-8", errors="replace").lower().split())
     except (RuntimeError, subprocess.SubprocessError):
         return ["diagnostic_unavailable"]
-    return [value for key, value in states.items() if key in screen] or ["unclassified"]
+    result = sorted({value for key, value in states.items() if key in screen})
+    if "installing" in result:
+        percentage = re.search(r"(\d{1,3})\s*%", screen)
+        if percentage and 0 <= int(percentage[1]) <= 100:
+            result.append(f"{percentage[1]}_percent")
+    return result or ["unclassified"]
 
 
 def main(process):
@@ -85,22 +97,19 @@ def main(process):
             notice("boot", {"kvm": qmp(stream, "query-kvm")["enabled"], "disk": "new_qcow2"})
             start = time.monotonic()
             preflight = None
-            diagnostic = iter([90, 220, 380, 540])
+            setup_samples = []
+            diagnostic = iter([4, 11, 28, 90, 220, 380, 540, 670, 800])
             next_diagnostic = next(diagnostic)
             done = 0
             while True:
                 elapsed = time.monotonic() - start
                 if not preflight and elapsed >= next_diagnostic:
                     states = setup_display(stream)
-                    notice(f"boot at {next_diagnostic} seconds", {"screen": states})
+                    setup_samples.append({"seconds": next_diagnostic, "screen": states})
+                    notice(f"boot at {next_diagnostic} seconds", setup_samples[-1])
                     if "boot_prompt" in states:
                         qmp(stream, "human-monitor-command", **{"command-line": "sendkey ret"})
                     next_diagnostic = next(diagnostic, float("inf"))
-                if not preflight and elapsed >= 550:
-                    raise RuntimeError("guest_timeout_before_baseline")
-                if preflight and time.monotonic() - preflight >= 730:
-                    notice("desktop diagnostics", {"screen": setup_display(stream)})
-                    raise RuntimeError("guest_timeout_after_baseline")
                 if receipts.exists():
                     raw = receipts.read_bytes()
                     lines = raw.split(b"\n")[:-1]
@@ -112,15 +121,21 @@ def main(process):
                         notice(event.decode("ascii"), result)
                         if event == b"before":
                             assert not preflight and result["preflight"]["status"] == "ready"
+                            notice("setup", {"samples": setup_samples, "preflight_after_seconds": round(elapsed, 3)})
                             preflight = time.monotonic()
                         if event == b"complete":
                             notice("duration", {"guest_seconds": round(time.monotonic() - start, 3)})
-                            if result["status"] != "pass":
-                                notice("desktop diagnostics", {"screen": setup_display(stream)})
+                            if not preflight:
+                                notice("setup", {"samples": setup_samples, "preflight_after_seconds": None})
                             return result["status"] == "pass"
                     done = len(lines)
                 if process.poll() is not None:
                     raise RuntimeError("vm_exited_before_receipt")
+                if not preflight and elapsed >= BOOT_LIMIT_SECONDS:
+                    notice("setup", {"samples": setup_samples, "preflight_after_seconds": None})
+                    raise RuntimeError("guest_timeout_before_baseline")
+                if preflight and time.monotonic() - preflight >= CONTROLLER_TEST_LIMIT_SECONDS:
+                    raise RuntimeError("guest_timeout_after_baseline")
                 time.sleep(1)
 
 
