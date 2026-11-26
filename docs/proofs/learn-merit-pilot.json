@@ -379,5 +379,249 @@
     },
     "raw_receipt_sha256": "1ed7c68584690b046fcd66db27a5ef4d7f107869a6e1a8b5bda25029e74d70f3",
     "next_condition": "Use a real client task with an observed repeat that the advice can prevent."
+  },
+  "local_project_task_pilot_045": {
+    "observed_on": "2026-11-26",
+    "owner": "lead agent",
+    "scope": "Two paired checks of real PennyPinch release records and source with one local model.",
+    "engine_for_preview": "0.45.0",
+    "windows_build": 19045,
+    "model": "smollm2-135m-local-chat",
+    "model_weights_sha256": "2e8040ceae7815abe0dcb3540b9995eaa1fa0d2ca9e797d0a635ae4433c68c2d",
+    "git_version": "git version 2.53.0.windows.1",
+    "git_sha256": "da240fe9bc24895b3e04150a4990b8a6ff329ecabcd8f19684c2cc310da5ef3f",
+    "head_at_measurement": "70f2b1f97fda0c3eb0e9344a1b818033a07d29c1",
+    "temperature": 0,
+    "seed": 41,
+    "prompt_cache": false,
+    "max_reads_per_arm": 2,
+    "max_model_requests_per_run": 12,
+    "token_basis": "Native llama.cpp prompt and completion tokens for every call, including incorrect reads.",
+    "comparison": "The control used the current working-root rule. The second arm added the displayed English Learn advice.",
+    "benefit_gate": "Exact answers in all arms. Fewer wrong reads and total tokens. No regression in either measure for any task.",
+    "registered_sources": {
+      "preview8_install_requests": {
+        "archive": "docs/proofs/pennypinch-windows10-preview7-local.json",
+        "release": "docs/proofs/pennypinch-windows10-preview8-local.json"
+      },
+      "preview8_responses_repeat_removal": {
+        "archive": "v0.1.1-preview.7:runtime/optimization_control.py",
+        "release": "v0.1.1-preview.8:runtime/optimization_control.py"
+      }
+    },
+    "source_commits": {
+      "archive": "17b0150cfccbe8df43e913b356a6c552a3103d92",
+      "release": "cad4f1c676d36b7f3c8dce7b0a41b732a6d3bdf9"
+    },
+    "source_sha256": {
+      "archive": "5398d747c1890c825457d1a0d57ee0b956a60ff60c8cb9e2b96a416f69c26b3b",
+      "release": "ab2d1bad8e157c47943bd03534a86103db54e16d9ea3370ce94022bee112f776"
+    },
+    "report_sha256": {
+      "archive": "4579b51b5a9a92241908e68c64ffd1f8c70cc64902c38e695e0157780556622e",
+      "release": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba"
+    },
+    "expected_values": {
+      "archive": {
+        "local_provider_requests": 1,
+        "definition_count": 1
+      },
+      "release": {
+        "local_provider_requests": 6,
+        "definition_count": 0
+      }
+    },
+    "preview_evidence": {
+      "path_advice_both_clients": true,
+      "no_advice_for_visible_edits": true,
+      "previews_passed": 8,
+      "matched_inputs": 23,
+      "receipt_sha256": "272245e624b9adeb9e79d7ac8f00f0243dd81b8184faa2119322c925d9883a90",
+      "command": "pinned-python -I -B bench/optimization/learn_merit.py --run"
+    },
+    "runs": {
+      "initial_read_options": {
+        "condition": "The tool offered previous and current.",
+        "raw_receipt_sha256": "17214f5b09769f1fccd673b3c1b8d1638942c3805fd4abee25832de3e0dbfe3a",
+        "registration_sha256": "2b9961d38f309e23407a27f893ced8a7eb039ba7fa901c59e273f2ec10f5d204",
+        "script_sha256": "0415a845e5f1dd7497545ef05fa16d213b1b99b497be87ff56743c6a58e651c1",
+        "inputs_matched": 64,
+        "inputs_sha256_before_and_after": "4fe410074dab273e5ab41cfaf1892f4a4bdd432a40d073a427648b68ba220d0a",
+        "seconds": 4.146,
+        "all_answers_exact": false,
+        "benefit_gate_met": false,
+        "cases": {
+          "preview8_install_requests": {
+            "current_project_rule": {
+              "read_outcomes": [
+                "previous",
+                "previous"
+              ],
+              "exact_value": false,
+              "wrong_reads": 2,
+              "repeated_reads": 1,
+              "model_requests": 2,
+              "prompt_tokens": 220,
+              "completion_tokens": 29,
+              "total_tokens": 249
+            },
+            "current_project_rule_plus_advice": {
+              "read_outcomes": [
+                "previous",
+                "previous"
+              ],
+              "exact_value": false,
+              "wrong_reads": 2,
+              "repeated_reads": 1,
+              "model_requests": 2,
+              "prompt_tokens": 248,
+              "completion_tokens": 29,
+              "total_tokens": 277
+            }
+          },
+          "preview8_responses_repeat_removal": {
+            "current_project_rule_plus_advice": {
+              "read_outcomes": [
+                "previous",
+                "previous"
+              ],
+              "exact_value": false,
+              "wrong_reads": 2,
+              "repeated_reads": 1,
+              "model_requests": 2,
+              "prompt_tokens": 252,
+              "completion_tokens": 29,
+              "total_tokens": 281
+            },
+            "current_project_rule": {
+              "read_outcomes": [
+                "previous",
+                "previous"
+              ],
+              "exact_value": false,
+              "wrong_reads": 2,
+              "repeated_reads": 1,
+              "model_requests": 2,
+              "prompt_tokens": 224,
+              "completion_tokens": 29,
+              "total_tokens": 253
+            }
+          }
+        },
+        "totals": {
+          "current_project_rule": {
+            "prompt_tokens": 444,
+            "completion_tokens": 58,
+            "total_tokens": 502,
+            "wrong_reads": 4,
+            "repeated_reads": 2,
+            "model_requests": 4
+          },
+          "current_project_rule_plus_advice": {
+            "prompt_tokens": 500,
+            "completion_tokens": 58,
+            "total_tokens": 558,
+            "wrong_reads": 4,
+            "repeated_reads": 2,
+            "model_requests": 4
+          }
+        },
+        "added_tokens": 56,
+        "added_percent": 11.16
+      },
+      "explicit_read_options": {
+        "condition": "The tool offered archive and release. Both arms received the instruction to read from the release.",
+        "raw_receipt_sha256": "a0ed7680424115b93d9b082679d9a3ed273023ea62b898f19d3857f0ae757878",
+        "registration_sha256": "9cb4b12abcd8d3668fc475fa66d3ced5bad3fe1076cf79761f3d1bfca2745e9f",
+        "script_sha256": "c43380b84e3201fd8ad533f8e8f5ac15c515962920ecfe3e3f44e1414fd0bb8d",
+        "inputs_matched": 64,
+        "inputs_sha256_before_and_after": "648a5bfdcf470a486c26dc6641a53c1f60f259af707eaa1157c29175190ead8a",
+        "seconds": 3.641,
+        "all_answers_exact": true,
+        "benefit_gate_met": false,
+        "cases": {
+          "preview8_install_requests": {
+            "current_project_rule": {
+              "read_outcomes": [
+                "release"
+              ],
+              "exact_value": true,
+              "wrong_reads": 0,
+              "repeated_reads": 0,
+              "model_requests": 2,
+              "prompt_tokens": 203,
+              "completion_tokens": 24,
+              "total_tokens": 227
+            },
+            "current_project_rule_plus_advice": {
+              "read_outcomes": [
+                "release"
+              ],
+              "exact_value": true,
+              "wrong_reads": 0,
+              "repeated_reads": 0,
+              "model_requests": 2,
+              "prompt_tokens": 231,
+              "completion_tokens": 24,
+              "total_tokens": 255
+            }
+          },
+          "preview8_responses_repeat_removal": {
+            "current_project_rule_plus_advice": {
+              "read_outcomes": [
+                "release"
+              ],
+              "exact_value": true,
+              "wrong_reads": 0,
+              "repeated_reads": 0,
+              "model_requests": 2,
+              "prompt_tokens": 233,
+              "completion_tokens": 27,
+              "total_tokens": 260
+            },
+            "current_project_rule": {
+              "read_outcomes": [
+                "release"
+              ],
+              "exact_value": true,
+              "wrong_reads": 0,
+              "repeated_reads": 0,
+              "model_requests": 2,
+              "prompt_tokens": 205,
+              "completion_tokens": 27,
+              "total_tokens": 232
+            }
+          }
+        },
+        "totals": {
+          "current_project_rule": {
+            "prompt_tokens": 408,
+            "completion_tokens": 51,
+            "total_tokens": 459,
+            "wrong_reads": 0,
+            "repeated_reads": 0,
+            "model_requests": 4
+          },
+          "current_project_rule_plus_advice": {
+            "prompt_tokens": 464,
+            "completion_tokens": 51,
+            "total_tokens": 515,
+            "wrong_reads": 0,
+            "repeated_reads": 0,
+            "model_requests": 4
+          }
+        },
+        "added_tokens": 56,
+        "added_percent": 12.2
+      }
+    },
+    "local_model_calls": 16,
+    "external_model_calls": 0,
+    "instruction_files_changed": false,
+    "owned_model_ports_closed": true,
+    "product_traffic": "not_tested",
+    "broader_live_acceptance": "open",
+    "billing": "not_measured",
+    "development_agent_token_savings": "unmeasured"
   }
 }
