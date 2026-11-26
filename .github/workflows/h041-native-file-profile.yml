@@ -1,0 +1,177 @@
+name: H041 native Windows file profile
+
+on:
+  push:
+    branches:
+      - codex/h041-native-file-check-20261126
+
+permissions: {}
+
+jobs:
+  native-file-profile:
+    if: github.repository == 'yukselbuilds/PennyPinch' && github.event.repository.visibility == 'public'
+    runs-on: windows-2025
+    timeout-minutes: 7
+    steps:
+      - name: Verify the standard runner and the pinned Codex binaries
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_ARCH -ne 'X64') {
+            throw 'Expected a GitHub-hosted x64 runner.'
+          }
+          $platform = Get-CimInstance Win32_OperatingSystem
+          if ($platform.Caption -notmatch 'Windows Server 2025') { throw 'Expected Windows Server 2025.' }
+          $principal = [Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())
+          if (!$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+            throw 'The isolated runner requires administrator setup.'
+          }
+          $root = [IO.Path]::GetFullPath((Join-Path $env:RUNNER_TEMP 'pennypinch-h041-file-profile'))
+          New-Item -ItemType Directory -Path $root | Out-Null
+          Add-Content -LiteralPath $env:GITHUB_ENV -Value "PP_FILE_PROBE_ROOT=$root"
+          $assetRoot = 'https://github.com/openai/codex/releases/download/rust-v0.171.0-alpha.13.2'
+          function Receive-Pin([string]$asset, [string]$target, [string]$digest) {
+            $file = Join-Path $root $target
+            Invoke-WebRequest -Uri "$assetRoot/$asset" -OutFile $file -TimeoutSec 110 -MaximumRedirection 3
+            if ((Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ne $digest) { throw 'Asset digest mismatch.' }
+          }
+          Receive-Pin 'codex-x86_64-pc-windows-msvc.exe.tar.gz' 'codex.tar.gz' '6a9de1bd10cd57b255f4ed31ab620e9b97854905ce51602eaaf56837b007dfeb'
+          $archive = Join-Path $root 'codex.tar.gz'
+          $entries = @(& tar.exe -tzf $archive)
+          if ($LASTEXITCODE -ne 0 -or $entries.Count -ne 1 -or $entries[0] -notmatch '^(?:\./)?codex-x86_64-pc-windows-msvc\.exe$') {
+            throw 'Unexpected archive contents.'
+          }
+          & tar.exe -xzf $archive -C $root $entries[0]
+          if ($LASTEXITCODE -ne 0) { throw 'Archive extraction failed.' }
+          Move-Item -LiteralPath (Join-Path $root 'codex-x86_64-pc-windows-msvc.exe') -Destination (Join-Path $root 'codex.exe')
+          $cliDigest = '3b0b6d91b32a43b6e708a200445a7dff190b0116009ca29c3bca3623a1bbb69e'
+          if ((Get-FileHash -LiteralPath (Join-Path $root 'codex.exe')).Hash -ne $cliDigest) { throw 'CLI digest mismatch.' }
+          Receive-Pin 'codex-windows-sandbox-setup-x86_64-pc-windows-msvc.exe' 'codex-windows-sandbox-setup.exe' '74dbef6a8da18c14c8f80f60f91ea4c17f5ed2e6212487cca4060f6d66074c2b'
+          Receive-Pin 'codex-command-runner-x86_64-pc-windows-msvc.exe' 'codex-command-runner.exe' '80fe20b26a2bcefc766d6c8d0f2402475e880f6ee873c5cedc0de640e1c09c0e'
+          $version = & (Join-Path $root 'codex.exe') --version
+          if ($LASTEXITCODE -ne 0 -or $version -ne 'codex-cli 0.171.0-alpha.13.2') { throw 'CLI version mismatch.' }
+          Write-Host "Verified $version on $($platform.Caption) build $($platform.BuildNumber)."
+
+      - name: Provision the elevated sandbox in the isolated runner
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = $env:PP_FILE_PROBE_ROOT
+          $profile = Join-Path $root 'profile'
+          $work = Join-Path $root 'workspace'
+          New-Item -ItemType Directory -Path $profile,$work | Out-Null
+          $env:CODEX_HOME = $profile
+          $env:CODEX_SQLITE_HOME = Join-Path $root 'sqlite'
+          $env:RUST_LOG = 'off'
+          $cfg = Join-Path $profile 'config.toml'
+          $defaults = @'
+          approval_policy = "never"
+          check_for_update_on_startup = false
+          web_search = "disabled"
+          chatgpt_base_url = "http://127.0.0.1:9/backend-api/"
+          [windows]
+          sandbox = "elevated"
+          '@
+          Set-Content -LiteralPath $cfg -Value $defaults -Encoding utf8NoBOM
+          Push-Location -LiteralPath $work
+          try {
+            $report = & (Join-Path $root 'codex.exe') sandbox setup --elevated --current-user --codex-home $profile 2>&1
+            if ($LASTEXITCODE -ne 0) {
+              $diagnostic = ($report -join ' ') -replace '[A-Za-z]:[\\/][^\s"]+', '[path]'
+              Write-Host ($diagnostic.Substring(0, [Math]::Min(360, $diagnostic.Length)))
+              throw 'Sandbox setup failed.'
+            }
+          } finally { Pop-Location }
+
+      - name: Verify exact allowed bytes, explicit denial, and restored access
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = $env:PP_FILE_PROBE_ROOT
+          $work = Join-Path $root 'workspace'
+          $env:CODEX_HOME = Join-Path $root 'profile'
+          $env:CODEX_SQLITE_HOME = Join-Path $root 'sqlite'
+          $env:RUST_LOG = 'off'
+          $allowed = Join-Path $work 'approved.txt'
+          $denied = Join-Path $work 'excluded.txt'
+          $text = 'PennyPinch approved synthetic file.'
+          [IO.File]::WriteAllText($allowed, $text)
+          [IO.File]::WriteAllText($denied, 'PennyPinch synthetic deny probe.')
+          $cfg = Join-Path $env:CODEX_HOME 'config.toml'
+          $denyPath = ConvertTo-Json -InputObject $denied -Compress
+          $settings = @"
+          [permissions.probe-control.filesystem]
+          ":root" = "read"
+          ":workspace_roots" = "read"
+          [permissions.probe-control.network]
+          enabled = false
+          [permissions.probe-denied.filesystem]
+          ":root" = "read"
+          ":workspace_roots" = "read"
+          $denyPath = "deny"
+          [permissions.probe-denied.network]
+          enabled = false
+          "@
+          Add-Content -LiteralPath $cfg -Value ([Environment]::NewLine + $settings) -Encoding utf8NoBOM
+          $cli = Join-Path $root 'codex.exe'
+          $nativeShell = Join-Path $env:SystemRoot 'System32/WindowsPowerShell/v1.0/powershell.exe'
+          function Get-InputDigest {
+            $paths = @($cli, $cfg, $allowed, $denied, $nativeShell)
+            return ($paths | ForEach-Object { (Get-FileHash -LiteralPath $_).Hash }) -join ':'
+          }
+          $nativeCode = @'
+          $ErrorActionPreference = 'Stop'
+          $me = [Security.Principal.WindowsIdentity]::GetCurrent()
+          $principal = [Security.Principal.WindowsPrincipal]::new($me)
+          $row = @{
+            started = $true
+            offline = $me.Name.Split('\')[-1] -eq 'CodexSandboxOffline'
+            admin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+            allowed = [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path (Get-Location) 'approved.txt')))
+            excluded = 'unread'
+          }
+          try {
+            $null = [IO.File]::ReadAllBytes((Join-Path (Get-Location) 'excluded.txt'))
+            $row.excluded = 'opened'
+          } catch [System.UnauthorizedAccessException] {
+            $row.excluded = 'access_denied'
+          }
+          $row | ConvertTo-Json -Compress
+          '@
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($nativeCode))
+          $exact = [Convert]::ToBase64String([IO.File]::ReadAllBytes($allowed))
+          function Invoke-Probe([string]$profileName, [string]$expectedOutside) {
+            $probeArgs = @('sandbox','--include-managed-config','--permission-profile',$profileName,'-C',$work,
+                           '--',$nativeShell,'-NoLogo','-NoProfile','-NonInteractive','-EncodedCommand',$encoded)
+            $output = & $cli @probeArgs 2>&1
+            if ($LASTEXITCODE -ne 0) {
+              $diagnostic = ($output -join ' ') -replace '[A-Za-z]:[\\/][^\s"]+', '[path]'
+              Write-Host ($diagnostic.Substring(0, [Math]::Min(400, $diagnostic.Length)))
+              throw 'Codex sandbox command failed.'
+            }
+            $r = ($output -join [Environment]::NewLine) | ConvertFrom-Json
+            if (!$r.started -or !$r.offline -or $r.admin -or $r.allowed -cne $exact -or $r.excluded -ne $expectedOutside) {
+              throw 'Native file boundary did not match the expected result.'
+            }
+            Write-Host "$profileName allowed=exact excluded=$($r.excluded) sandbox=offline_nonadmin"
+          }
+          $before = Get-InputDigest
+          Invoke-Probe 'probe-control' 'opened'
+          $acl = (Get-Acl -LiteralPath $denied).Sddl
+          Invoke-Probe 'probe-denied' 'access_denied'
+          Invoke-Probe 'probe-control' 'opened'
+          if ((Get-Acl -LiteralPath $denied).Sddl -ne $acl) { throw 'The file ACL did not return to the control state.' }
+          if ((Get-InputDigest) -ne $before) { throw 'Verification inputs changed.' }
+          $result = [ordered]@{
+            result = 'native_file_boundary_verified'
+            target = 'Windows Server 2025 x64 standard runner'
+            cli = '0.171.0-alpha.13.2'
+            checks = @('both_opened','allowed_exact_and_denied','both_opened_again')
+            file_acl_restored = $true
+            matched_inputs = 5
+            allowed_bytes = [Text.Encoding]::UTF8.GetByteCount($text)
+            external_model_requests = 0
+          }
+          $json = $result | ConvertTo-Json -Compress
+          Write-Host $json
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $json
