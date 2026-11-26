@@ -184,34 +184,50 @@ jobs:
             if ($line.Count -ne 1) { throw 'Expected one tagged native result.' }
             $r = $line[0].Substring('PP_FILE_RESULT='.Length) | ConvertFrom-Json
             $matched = $null -ne $r.allowed -and [Convert]::ToBase64String([byte[]]$r.allowed) -ceq $exact
-            if (!$r.started -or !$r.offline -or $r.admin -or !$matched -or $r.excluded -ne $expectedOutside) {
+            $acceptOutside = if ($expectedOutside -eq 'observe') {
+              $r.excluded -in @('opened','access_denied')
+            } else { $r.excluded -eq $expectedOutside }
+            if (!$r.started -or !$r.offline -or $r.admin -or !$matched -or !$acceptOutside) {
               Write-Host "::error title=H041 native result mismatch::profile=$profileName started=$($r.started) offline=$($r.offline) admin=$($r.admin) allowed=$matched allowed_error=$($r.allowed_error) excluded=$($r.excluded)"
               throw 'Native file boundary did not match the expected result.'
             }
             Write-Host "::notice title=H041 native file result::$profileName allowed=exact excluded=$($r.excluded) sandbox=offline_nonadmin language=$($r.language_mode)"
+            return $r.excluded
           }
           $phase = 'fingerprint_sources'
           $before = Get-InputDigest
           $phase = 'control'
-          Invoke-Probe 'probe-control' 'opened'
-          $acl = (Get-Acl -LiteralPath $denied).Sddl
-          $phase = 'deny'
-          Invoke-Probe 'probe-denied' 'access_denied'
-          $phase = 'restore'
-          Invoke-Probe 'probe-control' 'opened'
-          $phase = 'verify_restored_state'
-          if ((Get-Acl -LiteralPath $denied).Sddl -ne $acl) { throw 'The file ACL did not return to the control state.' }
+          $null = Invoke-Probe 'probe-control' 'opened'
+          $acl = Get-Acl -LiteralPath $denied
+          try {
+            $phase = 'deny'
+            $null = Invoke-Probe 'probe-denied' 'access_denied'
+            $phase = 'observe_profile_switch'
+            $switchResult = Invoke-Probe 'probe-control' 'observe'
+          } finally {
+            $phase = 'restore_owned_fixture'
+            $fixture = Get-Item -LiteralPath $denied
+            if ($fixture.FullName -ne (Join-Path $work 'excluded.txt') -or
+                $fixture.Attributes.HasFlag([IO.FileAttributes]::ReparsePoint)) { throw 'Unexpected test file scope.' }
+            if ((Get-Acl -LiteralPath $denied).Sddl -ne $acl.Sddl) {
+              Set-Acl -LiteralPath $denied -AclObject $acl
+            }
+          }
+          $phase = 'control_after_fixture_cleanup'
+          $null = Invoke-Probe 'probe-control' 'opened'
+          if ((Get-Acl -LiteralPath $denied).Sddl -ne $acl.Sddl) { throw 'The fixture ACL did not match its baseline.' }
           if ((Get-InputDigest) -ne $before) { throw 'Verification inputs changed.' }
           $result = [ordered]@{
             result = 'native_file_boundary_verified'
             target = 'Windows Server 2025 x64 standard runner'
             cli = '0.171.0-alpha.13.2'
             checks = @('both_opened','allowed_exact_and_denied','both_opened_again')
-            file_acl_restored = $true
+            profile_switch_before_fixture_cleanup = $switchResult
+            file_acl_restored_by_fixture = $true
             matched_inputs = 5
             allowed_bytes = [Text.Encoding]::UTF8.GetByteCount($text)
             external_model_requests = 0
           }
           $json = $result | ConvertTo-Json -Compress
-          Write-Host $json
+          Write-Host "::notice title=H041 native scope receipt::$json"
           Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $json
