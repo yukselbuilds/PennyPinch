@@ -236,3 +236,18 @@ The test compiled the verifier from each release tag. The preview.7 verifier req
 The packaged executable matched the one from the Windows 10 upgrade test. The verifier rejected changed metadata and rejected the disposable signature with the production public key. Both release executables accepted their own resource digest and rejected the other digest.
 
 Windows could not open the signing password backup. Production signing of preview.8 remains open. The signed channel serves preview.2. Its three live files matched the expected SHA-256 digests. Windows 11 x64 update and rollback remain open. [Evidence](../proofs/windows-preview8-update-compatibility.json)
+
+## 26 November 2026 — Older Windows releases and the preview feed
+
+The Windows 10 test checked the update settings embedded in six released executables. It compiled each verifier with its original engine resources. It used the recorded preview.2 manifest and the disposable signature for the preview.8 test manifest.
+
+| Installed preview | Signed preview.2 record | Signed preview.8 test record |
+| --- | --- | --- |
+| Preview.1 | Verified download | Verification error |
+| Preview.2 | Current | Verification error |
+| Preview.3 to preview.5 | Verification error | Verification error |
+| Preview.6 | Current | Verification error |
+
+The preview.1 verifier also checked the signed installer size and digest. Each legacy verifier rejected the preview.8 manifest because its resource digest differed. The released update source maps that error to a verification error.
+
+Users can upgrade to preview.8 with the full installer. Replacing the signed preview record would also remove the verified preview.1 to preview.2 download path. [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.8) · [Evidence](../proofs/windows-preview-feed-compatibility.json)

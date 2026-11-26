@@ -1,0 +1,109 @@
+{
+  "task": "H042-ax",
+  "status": "pass",
+  "date": "2026-11-26",
+  "owner": "lead agent",
+  "scope": "Windows 10 release verifier checks with recorded preview.2 and signed preview.8 test metadata.",
+  "windows_build": 19045,
+  "verification": {
+    "release_probes": 6,
+    "manifest_checks": 12,
+    "results": {
+      "0.1.1-preview.1": {
+        "verifier_source_tag": "v0.1.1-preview.1",
+        "exe_sha256": "480f5641ece6d68bde0e6021b9f26be0b50b942f33bd9982e1d16dc7fd93c6d5",
+        "resource_pin_sha256": "02af2411184956207d3440b138de4e9c1bfbf0b061b7ef531e3ccca720558bc0",
+        "release_probe": "pass",
+        "preview_2": "VerifiedDownload",
+        "preview_8_test": "RuntimeResourcesMismatch"
+      },
+      "0.1.1-preview.2": {
+        "verifier_source_tag": "v0.1.1-preview.1",
+        "exe_sha256": "7fee64123fa18734ba46c6e89f8abaa05439cd7f431d75c07eda5397febf209a",
+        "resource_pin_sha256": "02af2411184956207d3440b138de4e9c1bfbf0b061b7ef531e3ccca720558bc0",
+        "release_probe": "pass",
+        "preview_2": "VersionNotNewer",
+        "preview_8_test": "RuntimeResourcesMismatch"
+      },
+      "0.1.1-preview.3": {
+        "verifier_source_tag": "v0.1.1-preview.3",
+        "exe_sha256": "1b0518f035c5bc7f54b8468b9a6370879b9aafb382eeeb5d41d3b72d780137a3",
+        "resource_pin_sha256": "ce023b4ba70cc097c9426e1f14f46c500206c6a9f213cad57ed357609df1b978",
+        "release_probe": "pass",
+        "preview_2": "RuntimeResourcesMismatch",
+        "preview_8_test": "RuntimeResourcesMismatch"
+      },
+      "0.1.1-preview.4": {
+        "verifier_source_tag": "v0.1.1-preview.4",
+        "exe_sha256": "cea8b0e9d0d0852bb4114be3d875baa90d89ecb7c35a5e02acc90ddb8ac0d62b",
+        "resource_pin_sha256": "8554027a438cdc37310ba8aa7d7dc283cfa71acb973506d1583bfc136076aeec",
+        "release_probe": "pass",
+        "preview_2": "RuntimeResourcesMismatch",
+        "preview_8_test": "RuntimeResourcesMismatch"
+      },
+      "0.1.1-preview.5": {
+        "verifier_source_tag": "v0.1.1-preview.5",
+        "exe_sha256": "c8a17c112b69252e2392e23712c453beafd74e80c37e24291f67034da7274c46",
+        "resource_pin_sha256": "486fd6ffe19e5bce437a87918de3e6634e6cc4aa1fdf36f23025d7a1914c951f",
+        "release_probe": "pass",
+        "preview_2": "RuntimeResourcesMismatch",
+        "preview_8_test": "RuntimeResourcesMismatch"
+      },
+      "0.1.1-preview.6": {
+        "verifier_source_tag": "v0.1.1-preview.6",
+        "exe_sha256": "49ea3e67eab2df0245274fe2bad961844443c2da557f1f0e9f403eb641142f51",
+        "resource_pin_sha256": "486fd6ffe19e5bce437a87918de3e6634e6cc4aa1fdf36f23025d7a1914c951f",
+        "release_probe": "pass",
+        "preview_2": "VersionNotNewer",
+        "preview_8_test": "RuntimeResourcesMismatch"
+      }
+    },
+    "source_sha256": {
+      "0.1.1-preview.1": {
+        "src-tauri/src/desktop/update.rs": "22ad3ed18cb50e0e3f39005c9fb1dc5f25a5858dc6b48c049776888eea012af6",
+        "src-tauri/src/desktop/update_source.rs": "c8efd97fab3845e65ef189ac701f2799f80323ec052a2fd760bc6918abaea276",
+        "src-tauri/Cargo.lock": "4d38badcab3da0d8a9aac3a0fe13c1a175a3d6862ebf5432bb9b65f080486bda"
+      },
+      "0.1.1-preview.2": {
+        "src-tauri/src/desktop/update.rs": "22ad3ed18cb50e0e3f39005c9fb1dc5f25a5858dc6b48c049776888eea012af6",
+        "src-tauri/src/desktop/update_source.rs": "c8efd97fab3845e65ef189ac701f2799f80323ec052a2fd760bc6918abaea276",
+        "src-tauri/Cargo.lock": "4d38badcab3da0d8a9aac3a0fe13c1a175a3d6862ebf5432bb9b65f080486bda"
+      },
+      "0.1.1-preview.3": {
+        "src-tauri/src/desktop/update.rs": "22ad3ed18cb50e0e3f39005c9fb1dc5f25a5858dc6b48c049776888eea012af6",
+        "src-tauri/src/desktop/update_source.rs": "c8efd97fab3845e65ef189ac701f2799f80323ec052a2fd760bc6918abaea276",
+        "src-tauri/Cargo.lock": "0a9ae9ec89b51fd5cb8601726e81c0a429ce5464f0be0110af39242eb2bb5c4d"
+      },
+      "0.1.1-preview.4": {
+        "src-tauri/src/desktop/update.rs": "22ad3ed18cb50e0e3f39005c9fb1dc5f25a5858dc6b48c049776888eea012af6",
+        "src-tauri/src/desktop/update_source.rs": "c8efd97fab3845e65ef189ac701f2799f80323ec052a2fd760bc6918abaea276",
+        "src-tauri/Cargo.lock": "5cad0f81196938bdf21dd8377e3ff437e5b74dcdac1dbe06b659b247108e5843"
+      },
+      "0.1.1-preview.5": {
+        "src-tauri/src/desktop/update.rs": "22ad3ed18cb50e0e3f39005c9fb1dc5f25a5858dc6b48c049776888eea012af6",
+        "src-tauri/src/desktop/update_source.rs": "c8efd97fab3845e65ef189ac701f2799f80323ec052a2fd760bc6918abaea276",
+        "src-tauri/Cargo.lock": "5cad0f81196938bdf21dd8377e3ff437e5b74dcdac1dbe06b659b247108e5843"
+      },
+      "0.1.1-preview.6": {
+        "src-tauri/src/desktop/update.rs": "0444395f4c8c05cef1378b1acb2e801c1dfd8bcec6c1d21bf93dcd99905a2b06",
+        "src-tauri/src/desktop/update_source.rs": "c8efd97fab3845e65ef189ac701f2799f80323ec052a2fd760bc6918abaea276",
+        "src-tauri/Cargo.lock": "5cad0f81196938bdf21dd8377e3ff437e5b74dcdac1dbe06b659b247108e5843"
+      }
+    }
+  },
+  "inputs": {
+    "count": 107,
+    "sha256_before": "e894177be6759ce3781aa9dd5d31d4bf92517d5b5d5650486d4698cec2995121",
+    "sha256_after": "e894177be6759ce3781aa9dd5d31d4bf92517d5b5d5650486d4698cec2995121",
+    "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)"
+  },
+  "duration_seconds": 17.606,
+  "limits": {
+    "windows_11_x64": "not_tested",
+    "production_preview_8_signing": "not_tested",
+    "live_feed_changed": false,
+    "native_settings_retested": false,
+    "paid_ci": "not_used",
+    "development_token_savings": "unmeasured"
+  }
+}
