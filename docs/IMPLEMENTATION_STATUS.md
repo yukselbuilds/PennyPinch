@@ -73,6 +73,10 @@ The lead agent completed the Learn suggestion benefit pilot on Windows 10. Eight
 
 The lead agent completed broader Learn measurement on Windows 10. OpenCode 1.19.3 used the same Qwen3.8-Flash-Next settings in both arms. The two release checks were correct in both arms. Both arms had zero retries, incorrect reads, and extra path checks. All eight provider counters matched the 0.45.0 engine. Learn increased total usage from 1,136 to 1,188 tokens (4.58%). The anonymous provider received only public release facts and the fixed test text. [Learn evidence](proofs/learn-merit-pilot.json)
 
+The lead agent ran the pinned upstream Learn suite on Windows 10. The 18 test modules passed 478 tests and skipped eight. All 44 inputs matched. The isolated run used no active session files and made zero external model requests. The release keeps Learn as a user-selected local preview. [Evidence](proofs/learn-merit-pilot.json)
+
+The lead agent prepared the live Anthropic Messages check. One loopback SSE response matched the engine usage record. The test made no provider request and stopped the engine normally. The live check awaits authorized access to a free-credit test account. [Open criteria](validation/optimization-benefit.md#open-h041-acceptance-criteria)
+
 The lead agent corrected exit-code handling for Codex `exec_command` on Responses. Successful compression keeps the exit code visible. Failed output stays intact. HTTP/SSE and WebSocket passed eight local pairs each on Windows 10. [Shell status evidence](proofs/responses-shell-status-045.json)
 
 The lead agent tested exact Responses repeats with Headroom 0.45.0 and SmolLM2 on Windows 10. In four paired tasks, the full-output arm answered three correctly. The reference arm answered two correctly. Model input fell from 1,420 to 964 tokens. The quality criterion failed. [Evidence](proofs/responses-repeat-local-model-045.json)

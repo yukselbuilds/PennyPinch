@@ -606,6 +606,10 @@ Keep Learn as a local preview in Settings. The user selects a saved Codex or Cla
 
 In two live OpenCode comparisons, both arms gave the correct answers. All eight provider usage records matched the engine. Learn advice prevented zero retries and added 52 tokens (4.58%). Use the preview for troubleshooting. Keep background learning off. [Live evidence](../proofs/learn-merit-pilot.json)
 
+#### Upstream Headroom Learn verification
+
+The lead agent ran 18 Headroom 0.45.0 Learn test modules against the pinned Windows runtime. The run passed 478 tests and skipped eight. The isolated run used no active session files and made zero external model requests. The tests cover error loops, repeated fetches, duplicate replay, and updates to the generated instruction block. The loop test replaces the model with a test response. Headroom estimates loop waste at four bytes per token. The published 27 MB figure is an estimate from past logs. These checks provide no measured net token reduction across later sessions. [Loop tests](https://github.com/headroomlabs-ai/headroom/blob/ce0460cfa8598dc939243dbc7aec4b2d35f4e44a/tests/test_learn/test_loop_weighting.py) · [Headroom results](https://github.com/headroomlabs-ai/headroom/blob/ce0460cfa8598dc939243dbc7aec4b2d35f4e44a/wiki/learn.md#real-world-results) · [Local evidence](../proofs/learn-merit-pilot.json)
+
 <a name="ilk-ölçümlerin-planı"></a>
 
 ## Initial measurement plan
