@@ -16,7 +16,7 @@ function Invoke-Page([string]$expression) {
     $bytes = [Text.Encoding]::UTF8.GetBytes($request)
     $stop = [Threading.CancellationTokenSource]::new(6000)
     try {
-        $socket.SendAsync([ArraySegment[byte]]::new($bytes), [Net.WebSockets.WebSocketMessageType]::Text,
+        [void]$socket.SendAsync([ArraySegment[byte]]::new($bytes), [Net.WebSockets.WebSocketMessageType]::Text,
             $true, $stop.Token).GetAwaiter().GetResult()
         $buffer = New-Object byte[] 16384
         do {
@@ -192,7 +192,7 @@ function Test-Desktop {
     $socket = [Net.WebSockets.ClientWebSocket]::new()
     try {
         $stop = [Threading.CancellationTokenSource]::new(8000)
-        try { $socket.ConnectAsync([uri]$target.webSocketDebuggerUrl, $stop.Token).GetAwaiter().GetResult() }
+        try { [void]$socket.ConnectAsync([uri]$target.webSocketDebuggerUrl, $stop.Token).GetAwaiter().GetResult() }
         finally { $stop.Dispose() }
         $script:cdpSequence = 0
         if (!(Wait-For 20 { $app.Refresh(); $app.MainWindowHandle -ne [IntPtr]::Zero -and (Has-Engine stopped) })) {

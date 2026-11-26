@@ -30,6 +30,8 @@ PROFILE_ENV = {
     "HEADROOM_MODEL_ROUTER_ENABLED": "0",
     "HEADROOM_NO_MEMORY_TOOLS": "1",
     "HEADROOM_NO_MEMORY_CONTEXT": "1",
+    # Headroom's 120-second default exceeds the desktop's 90-second startup deadline.
+    "HEADROOM_EAGER_PRELOAD_TIMEOUT_SECONDS": "20",
     # Load Kompress only when compression needs it, rather than in a daemon after ready.
     "HEADROOM_KOMPRESS_WARMUP": "0",
 }

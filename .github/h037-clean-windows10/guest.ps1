@@ -90,6 +90,24 @@ try {
     }
     Send-Receipt installed @{checks = $result.checks; exe_sha256 = $result.installed_exe_sha256}
 
+    $result.phase = 'verified_candidate'
+    $candidateHashes = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot 'candidate.sha256'))
+    if ($candidateHashes.Count -ne 2 -or @($candidateHashes | Where-Object { $_ -cnotmatch '^[a-f0-9]{64}$' }).Count) {
+        throw 'invalid_candidate_digests'
+    }
+    foreach ($file in @(
+        @{ name = 'candidate.exe'; destination = $installedExe; sha256 = $candidateHashes[0] },
+        @{ name = 'desktop_helper.py'; destination = (Join-Path $destination 'runtime/desktop_helper.py'); sha256 = $candidateHashes[1] }
+    )) {
+        $inputFile = Join-Path $PSScriptRoot $file.name
+        if ((Get-FileHash -LiteralPath $inputFile -Algorithm SHA256).Hash -ine $file.sha256) { throw 'candidate_input_mismatch' }
+        Copy-Item -LiteralPath $inputFile -Destination $file.destination -Force
+        if ((Get-FileHash -LiteralPath $file.destination -Algorithm SHA256).Hash -ine $file.sha256) { throw 'candidate_install_mismatch' }
+    }
+    $result.candidate_exe_sha256 = $candidateHashes[0]
+    $result.candidate_helper_sha256 = $candidateHashes[1]
+    $result.checks.candidate_files_verified = $true
+
     $result.phase = 'interactive_desktop'
     $desktopScript = Join-Path $PSScriptRoot 'desktop.ps1'
     $stateFile = Join-Path $env:LOCALAPPDATA 'pp-clean-desktop.json'
