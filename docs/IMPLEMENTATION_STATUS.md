@@ -44,6 +44,8 @@ The public preview.8 opened in a non-elevated session on a clean Windows 10 22H2
 
 The app bridge reported Stopped before the start test. The test reached the 155-second limit before it saw Ready. The primary control can show Start or Refresh status. The action sent on click and the final engine error are unknown. Require the Start label before the next click. Record engine states and the final error code.
 
+The published preview.8 reported a timeout after Start on an offline Windows 10 guest. The lead agent set a 20-second preload budget for the candidate. With a controlled preload stall, local startup continued after 20.006 seconds. The staged controller reported Ready after 13.836 seconds on the Windows 10 development host. It stopped normally and released the engine port. The first guest run installed preview.8. The test runner stopped before it received a result for the candidate. [Startup evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
+
 Verify the engine lifecycle, client connection, small real request, and tray flow on clean Windows 10 x64. Verify the full flow on clean Windows 11 x64. [Procedure](validation/windows-preview-check.md)
 
 The lead agent completed the existing H041 Next optimization slices item. The installed preview.8 evidence passed the exact-repeat and long-log checks. The matching 0.45.0 runtime passed 16 local test-output pairs on Windows 10. CCR returned 4 complete originals. The engine forwarded all 8 failed outputs in full. The task list had 17 open subtasks and 8 open main tasks. See the current H041 acceptance table for the remaining criteria. [Evidence](proofs/h041-core-optimization-completion.json)

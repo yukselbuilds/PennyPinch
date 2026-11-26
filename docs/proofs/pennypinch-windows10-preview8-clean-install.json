@@ -126,6 +126,65 @@
     "local_vm_install": false
   },
   "schema_version": 1,
+  "startup_budget_validation": {
+    "candidate": {
+      "candidate_executable_sha256": "569d76b432b961b609821ca071099d2e8c1869178cf688ea9993611431b0d153",
+      "ci_build_run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45858910411",
+      "first_guest_result": "runner_timeout_before_desktop_result",
+      "retry_run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45863703618"
+    },
+    "changed_source_sha256": {
+      "runtime/desktop_helper.py": "7924afe121c0dead22424c8cfceaa7fc614732573393686f8cb7c7aa84977504",
+      "src-tauri/src/runtime/manager.rs": "0c488134441797f22c489699955e6b34bc5a0fbfad8ba670d6b633d0decdb93a"
+    },
+    "desktop_controller_ready_deadline_seconds": 90,
+    "headroom_default_preload_budget_seconds": 120,
+    "local_controlled_preload": {
+      "headroom_preload_seconds": 20.0,
+      "preload_blocked_until_startup_returned": true,
+      "startup_return_after_preload_entry_seconds": 20.006
+    },
+    "local_controller_lifecycle": {
+      "engine": "0.45.0",
+      "local_readiness_http": 200,
+      "loopback_closed": true,
+      "model_requests": 0,
+      "passed": true,
+      "ready_seconds": 13.836,
+      "shutdown": "graceful",
+      "source_sha256_before_and_after": {
+        "desktop_controller.py": "a3779d70b4fefca414365e8d871756bcd6dc64471397f0c80881d6b69f3d0803",
+        "desktop_helper.py": "7924afe121c0dead22424c8cfceaa7fc614732573393686f8cb7c7aa84977504",
+        "manifest.json": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+        "package-inputs.json": "62c17409133e012190723ef3075dda9bd0faf57afdb65fe4d8b730f26357c4e8",
+        "python.exe": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07"
+      },
+      "total_seconds": 14.779
+    },
+    "local_package_preparation": {
+      "bytecode_archived": 3,
+      "candidate_helper_sha256": "7924afe121c0dead22424c8cfceaa7fc614732573393686f8cb7c7aa84977504",
+      "passed": true,
+      "payload": {
+        "bytes": 505296374,
+        "files": 19483,
+        "tree_sha256": "1fb3d6638718c833d82b9f11e63a4e44b44c3212bacedd799b285bd67e961f79"
+      },
+      "stage_receipt_sha256": "62c17409133e012190723ef3075dda9bd0faf57afdb65fe4d8b730f26357c4e8",
+      "stage_resource_count_including_receipt": 19492
+    },
+    "measured_on": "Windows 10 22H2 development host",
+    "native_gate_input_sha256_before_and_after": "aacfc88f2149c98052bbb46bb2de83ff5db1368e258ead1b691c865f5730e2a7",
+    "published_preview8_timeout": {
+      "engine_statuses": [
+        "starting",
+        "failed"
+      ],
+      "error_code": "timeout",
+      "head_sha": "3bfcc92b34e2fcdc71bb2ccfc7042c02ec844ab3",
+      "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45845029867"
+    }
+  },
   "task": "H037 clean Windows 10 setup and WebView2 prerequisite",
   "webview2": {
     "after_setup": [
