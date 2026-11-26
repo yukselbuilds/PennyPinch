@@ -87,6 +87,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $false
           $root = $env:PP_FILE_PROBE_ROOT
           $work = Join-Path $root 'workspace'
           $env:CODEX_HOME = Join-Path $root 'profile'
@@ -162,6 +163,10 @@ jobs:
                            '--',$nativeShell,'-NoLogo','-NoProfile','-NonInteractive','-EncodedCommand',$encoded)
             $output = & $cli @probeArgs 2>&1
             if ($LASTEXITCODE -ne 0) {
+              $sample = (($output -join ' ') -replace '[A-Za-z]:[\\/][^\s"]+', '[path]' -replace '[A-Za-z0-9_%-]{28,}', '[redacted]' -replace '[\x00-\x1f]+', ' ')
+              $sample = $sample.Substring(0, [Math]::Min(224, $sample.Length))
+              $printed = [regex]::Replace($sample, '[^\w .:,\-\[\]()]', ' ')
+              Write-Host "::error title=H041 bounded diagnostic::$printed"
               $diagnostic = ($output -join ' ').ToLowerInvariant()
               $safeWords = 'error','permission','profile','filesystem','elevated','unsupported','backend','setup','mismatch',
                            'command','failed','access','denied','missing','system','invalid','syntax','application','unavailable',
