@@ -1,6 +1,6 @@
 # PennyPinch user guide
 
-This guide covers the Windows 10 preview. The release notes give installation and upgrade steps. The platform validation matrix gives the tested platforms and remaining checks. [Release notes](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.8) · [Platform validation](validation/desktop-platforms.md)
+This guide covers the Windows 10 stable release. The release notes give installation and upgrade steps. The platform validation matrix gives the tested platforms and remaining checks. [Release notes](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1) · [Platform validation](validation/desktop-platforms.md)
 
 ## Connect a coding agent
 
@@ -58,9 +58,9 @@ Open **Tool output protection** under **Operating preferences** to keep selected
 
 Reducing the retention period can permanently delete older measurement records. Increasing it applies to the retained and future data.
 
-Use the full installer to upgrade to v0.1.1-preview.8. Select **Do not uninstall** when setup offers that option. [Windows 10 release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.8)
+Use the full installer to upgrade from preview.8 to v0.1.1. Select **Do not uninstall** when setup offers that option. [Windows 10 release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1)
 
-**App updates** offers signed application updates when the update matches the installed engine files. Select **Preview** as the release channel. Select **Check for updates**. The app shows the verified version and lets you start the download. [Windows update validation](validation/windows-update.md)
+**App updates** offers signed application updates when the update matches the installed engine files. Select **Stable** as the release channel. Select **Check for updates**. Select **Download and verify**. Select **Update and restart** to apply the verified update. [Windows update validation](validation/windows-update.md)
 
 ## Verified coverage
 

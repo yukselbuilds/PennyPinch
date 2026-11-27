@@ -277,3 +277,11 @@ The Windows 10 22H2 x64 test used the verified `0.1.1` installer and its staged 
 Settings verified the signed manifest and downloaded the NSIS update. The app reopened as `0.1.2`. The Restore action reopened `0.1.1`. The original executable and preferences matched byte for byte. The installer registration and 19,492 resources matched after rollback. The test removed its temporary private keys.
 
 Windows could not open the existing production signing password backup. Production signing and the live stable channel remain open. [Evidence](../proofs/windows-stable-update-rollback-local.json)
+
+### Windows 10 v0.1.1 publication
+
+The v0.1.1 full installer uses the production stable update source and its own public key. The signing key and backup use Windows DPAPI for the current Windows user. A separate process restored the backup and signed a test file. The stable manifest binds the package to the same engine resources.
+
+The released installer upgraded preview.8 and preserved the preferences. A test installation used a production-channel 0.1.0 executable to verify the hosted update. The app downloaded v0.1.1 through Settings and opened the new version. Restore recovered the original executable and preferences byte for byte.
+
+Both public release downloads and all six stable and preview update files matched their recorded hashes. The Windows 10 NSIS installer is unsigned. Windows 11 x64 uses a separate native test record. [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1) · [Evidence](../proofs/pennypinch-windows10-stable-release.json)

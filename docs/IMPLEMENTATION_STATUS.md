@@ -2,7 +2,9 @@
 
 ## Current status
 
-**46 of 54 main tasks are complete.** **12 subtasks remain open.** The Windows 10 preview.8 release is available. The owner deferred Windows 11 x64 verification to December 2026. H041 remains open. [Task list](../TASKS.md)
+**46 of 54 main tasks are complete.** **12 subtasks remain open.** The Windows 10 v0.1.1 stable release is available. The owner approved the Windows 11 x64 test on a free standard runner. H041 remains open. [Task list](../TASKS.md)
+
+PennyPinch v0.1.1 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. The installer preserved preferences on upgrade from preview.8. The installed app applied the signed update from GitHub Pages and restored the earlier version. [Download](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1) · [Evidence](proofs/pennypinch-windows10-stable-release.json)
 
 PennyPinch v0.1.1-preview.8 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. Both public downloads matched their SHA-256 digests. GitHub Pages links to the release. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.8) · [Publication evidence](proofs/pennypinch-windows10-preview8-publication.json)
 
@@ -150,7 +152,7 @@ The lead agent verified the H049-b4 regression on macOS 26.7.2 ARM64. The job pa
 
 GitHub lists free standard hosted compute for public repositories. Standard Windows x64 runners use Windows Server. The standard Windows 11 desktop runner uses ARM64. Windows 11 x64 acceptance remains open. [Windows acceptance](validation/windows-install.md#open-acceptance-criteria)
 
-The Windows 10 test used a disposable KVM guest on a standard Ubuntu x64 runner. In December, check whether a Windows 11 x64 evaluation guest boots on the same runner class. The Windows 11 check needs its own test result. [Windows 10 run](https://github.com/yukselbuilds/PennyPinch/actions/runs/46030502571)
+The Windows 10 test used a disposable KVM guest on a standard Ubuntu x64 runner. The Windows 11 x64 test uses the same runner class. The Windows 11 check needs its own test result. [Windows 10 run](https://github.com/yukselbuilds/PennyPinch/actions/runs/46030502571)
 
 ### Windows release evidence
 

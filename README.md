@@ -13,7 +13,7 @@
   <a href="https://github.com/yukselbuilds/PennyPinch/releases"><img src="docs/branding/readme-releases.png" width="147" height="38" alt="GitHub Releases"></a>
 </p>
 
-<p align="center">Windows 10 22H2 x64 preview · <a href="#platform-validation">macOS and Linux status</a> · Apache License 2.0</p>
+<p align="center">Windows 10 22H2 x64 stable release · <a href="#platform-validation">macOS and Linux status</a> · Apache License 2.0</p>
 
 <p align="center">
   <a href="https://yukselbuilds.github.io/PennyPinch/#benchmarks"><img src="docs/branding/pennypinch-benchmarks.png" alt="Windows 10 local proxy test. Six synthetic requests fell from 122,944 to 69,350 input tokens, a reduction of 43.59%." width="100%"></a>
@@ -21,11 +21,11 @@
 
 PennyPinch is an open-source desktop app for local context compression with Codex, Claude Code, and OpenCode. Connect a supported route to Headroom and see the input token change in Activity. Your client keeps control of its model, reasoning level, and sign-in.
 
-## Download the Windows preview
+## Download PennyPinch for Windows 10
 
-Windows 10 22H2 x64 is the first release target. Use the full installer to get Headroom 0.45.0. This preview uses an unsigned installer.
+The Windows 10 22H2 x64 installer includes Headroom 0.45.0. Use the full installer to upgrade from preview.8. PennyPinch verifies signed updates in Settings. The NSIS installer is unsigned.
 
-[**Download the Windows 10 preview**](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.8) · [Update status](https://yukselbuilds.github.io/PennyPinch/updates/) · [Platform validation](docs/validation/desktop-platforms.md)
+[**Download the Windows 10 release**](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1) · [Update status](https://yukselbuilds.github.io/PennyPinch/updates/) · [Platform validation](docs/validation/desktop-platforms.md)
 
 ## What PennyPinch does
 
@@ -81,7 +81,7 @@ See the [versioned compatibility records](compatibility/clients.json) for status
 
 | Platform | What the current record verifies | Still open |
 | --- | --- | --- |
-| **Windows 10 22H2 x64** | The 0.1.1-preview.4 installer upgraded the public preview to Headroom 0.45.0. It kept the test preferences. The installed engine completed one local stream and stopped. An earlier signed preview passed update and rollback. | Clean installation without WebView2 and broader live client coverage remain open. [Installed upgrade](docs/proofs/windows-preview4-installed-upgrade.json) [Update validation](docs/validation/windows-update.md) |
+| **Windows 10 22H2 x64** | v0.1.1 upgraded preview.8 and kept its preferences. The installed app applied a signed update from GitHub Pages and restored the earlier version. [Release evidence](docs/proofs/pennypinch-windows10-stable-release.json) | Live Anthropic and OpenAI API-key validation have separate requirements. |
 | **macOS ARM64** | On macOS 26.7.2, the test package started Headroom 0.45.0. A controlled Codex Desktop turn returned a response and stored local usage. The package exited normally. [Package evidence](docs/proofs/headroom-045-managed-packages.json) | Production signing, notarization, live provider traffic, and release delivery require separate checks. |
 | **Ubuntu 24.04 x64** | The Debian package installed. The app started, stopped, and restarted Headroom 0.45.0 under Xvfb. Package purge retained the separate user state. [Linux validation](docs/validation/linux.md) | Live provider use and public Linux distribution require separate checks. |
 | **Windows 11 x64** | Independent desktop acceptance remains open. | [Installer, engine, and rollback test procedure](docs/validation/windows-preview-check.md) |
