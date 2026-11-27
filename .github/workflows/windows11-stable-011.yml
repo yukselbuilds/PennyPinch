@@ -1,0 +1,87 @@
+name: PennyPinch stable Windows 11 x64
+on:
+  push:
+    branches: [codex/windows11-stable-011]
+permissions:
+  contents: read
+concurrency:
+  group: pennypinch-win11-stable-011
+  cancel-in-progress: false
+jobs:
+  windows11:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Prepare the official Windows 11 x64 evaluation guest
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -c /dev/kvm
+          sudo setfacl -m "u:$USER:rw" /dev/kvm
+          timeout 180 sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 update -qq
+          timeout 180 sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 install -y -qq --no-install-recommends qemu-system-x86 qemu-utils xorriso tesseract-ocr aria2 ovmf swtpm
+          recipe="$GITHUB_WORKSPACE/.github/pennypinch-win11"
+          mkdir -p "$RUNNER_TEMP/pennypinch-win11/answer"
+          cd "$RUNNER_TEMP/pennypinch-win11"
+          test "$(df --output=avail -B1 . | tail -1)" -ge 24696061952
+          test -f /usr/share/OVMF/OVMF_CODE_4M.secboot.fd
+          cp /usr/share/OVMF/OVMF_VARS_4M.ms.fd firmware-vars.fd
+          cp "$recipe/"{guest.ps1,desktop.ps1,engine-processes.py,stable-update.ps1,candidate.json,predecessor.exe} answer/
+          echo '::notice title=Windows 11 media::{ "source": "Microsoft Evaluation Center", "edition": "Enterprise LTSC", "architecture": "x64" }'
+          timeout 485 aria2c --dir=. --out=windows.iso --max-connection-per-server=8 --split=8 --min-split-size=32M \
+            --file-allocation=none --summary-interval=0 --console-log-level=warn --connect-timeout=15 --timeout=30 --max-tries=3 \
+            'https://software-static.download.prss.microsoft.com/dbazure/888969d5-f34g-4e03-ac9d-1f9786c66749/26100.1742.240906-0331.ge_release_svc_refresh_CLIENT_LTSC_EVAL_x64FRE_en-us.iso'
+          test "$(stat -c %s windows.iso)" = 5112850432
+          printf '::notice title=Windows 11 ISO SHA-256::%s\n' "$(sha256sum windows.iso | cut -d' ' -f1)"
+          curl --silent --show-error --fail --location --retry 2 --max-time 180 --output release.zip \
+            'https://github.com/yukselbuilds/PennyPinch/releases/download/v0.1.1/PennyPinch_0.1.1_Windows_x64.zip'
+          curl --silent --show-error --fail --location --retry 2 --max-time 150 --output answer/webview2.exe \
+            'https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/58f85fae-b5f5-4443-9b8d-6d4cf627d6f6/MicrosoftEdgeWebView2RuntimeInstallerX64.exe'
+          printf '45769d66809a9652050f8a91ab5329881b65cc4123fe7c733841deefbef91bf6  answer/webview2.exe\n' | sha256sum -c -
+          python3 - "$recipe/Autounattend.xml" <<'PY'
+          from hashlib import file_digest
+          import json
+          from pathlib import Path
+          import secrets
+          import shutil
+          import sys
+          import xml.etree.ElementTree as ET
+          from zipfile import ZipFile
+
+          root = Path("answer")
+          candidate = json.loads((root / "candidate.json").read_bytes())
+          with Path("release.zip").open("rb") as archive:
+              assert file_digest(archive, "sha256").hexdigest() == candidate["archive_sha256"]
+          with ZipFile("release.zip") as bundle, bundle.open("PennyPinch_0.1.1_x64-setup.exe") as source:
+              with (root / "setup.exe").open("xb") as target:
+                  shutil.copyfileobj(source, target, 1024 * 1024)
+          for name, field in (("setup.exe", "installer_sha256"), ("predecessor.exe", "predecessor_sha256")):
+              with (root / name).open("rb") as stream:
+                  assert file_digest(stream, "sha256").hexdigest() == candidate[field]
+          template = Path(sys.argv[1]).read_text()
+          assert template.count("EPHEMERAL-PASSWORD") == 2
+          answer = template.replace("EPHEMERAL-PASSWORD", "Pp1-" + secrets.token_hex(20))
+          ET.fromstring(answer)
+          (root / "Autounattend.xml").write_text(answer)
+          print("Verified the stable installer and the update test executable.")
+          PY
+          xorriso -as mkisofs -quiet -J -r -V PPAUDIT -o answer.iso answer
+          qemu-img create -f qcow2 clean.qcow2 70G
+      - name: Verify Windows 11 setup, application and signed update
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/pennypinch-win11"
+          mkdir tpm
+          swtpm socket --tpm2 --tpmstate dir="$PWD/tpm" --ctrl type=unixio,path="$PWD/tpm-control.sock" --flags not-need-init,startup-clear &
+          tpm_pid=$!
+          trap 'kill "$tpm_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 50); do
+            if test -S tpm-control.sock; then break; fi
+            sleep 0.1
+          done
+          test -S tpm-control.sock
+          python3 "$GITHUB_WORKSPACE/.github/pennypinch-win11/host.py"

@@ -1,0 +1,12 @@
+{
+  "source_commit": "1a94cc133ed573a1218b1c321dab6f0aa390274f",
+  "version": "0.1.1",
+  "installer_sha256": "0e09f8e9e5e48570631d6742dec4b3cfe91f6e3eb45765c2b7a1cf96ce22b49c",
+  "executable_sha256": "41cdd046f503634a6895d8d200d2aa2bf4fb21ee8b6990413f00f909bf1db214",
+  "predecessor_sha256": "930dea11aa089ffaccf7f9cea455f8e1d4dd408b85502d01b036a1dc2a2a4d51",
+  "predecessor_version": "0.1.0",
+  "helper_sha256": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+  "manifest_sha256": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+  "resource_receipt_sha256": "7dbcf84d77febd5c131287b4dab4c8c1125a64b86389677ddd0c4fc58a464f80",
+  "archive_sha256": "00062e3a534ae582edd62373205a58174c307fbcfac025edb79bd35514ea5596"
+}
