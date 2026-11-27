@@ -17,9 +17,9 @@ public static class TrayProbe {
     [DllImport("user32.dll")]
     public static extern bool GetWindowRect(IntPtr window, out Bounds rectangle);
     [DllImport("user32.dll")]
-    public static extern bool SetCursorPos(int x, int y);
+    public static extern int GetSystemMetrics(int metric);
     [DllImport("user32.dll")]
-    public static extern void mouse_event(uint flags, int x, int y, uint data, UIntPtr extra);
+    public static extern bool SetProcessDPIAware();
 
     [StructLayout(LayoutKind.Sequential)]
     public struct Bounds {
@@ -105,6 +105,7 @@ public static class TrayProbe {
     }
 }
 '@
+    [void][TrayProbe]::SetProcessDPIAware()
 }
 
 function Find-NativeControl([IntPtr]$window, [string]$pattern, [string]$kind) {
@@ -120,14 +121,16 @@ function Find-NativeControl([IntPtr]$window, [string]$pattern, [string]$kind) {
 }
 
 function Click-TrayPoint([int]$x, [int]$y, [bool]$right) {
-    if (![TrayProbe]::SetCursorPos($x, $y)) { throw 'cannot_move_guest_pointer' }
-    if ($right) {
-        [TrayProbe]::mouse_event(8, 0, 0, 0, [UIntPtr]::Zero)
-        [TrayProbe]::mouse_event(16, 0, 0, 0, [UIntPtr]::Zero)
-    } else {
-        [TrayProbe]::mouse_event(2, 0, 0, 0, [UIntPtr]::Zero)
-        [TrayProbe]::mouse_event(4, 0, 0, 0, [UIntPtr]::Zero)
+    $row = ConvertTo-Json -Compress -InputObject @{
+        event = 'pointer'
+        phase = $result.phase
+        x = $x
+        y = $y
+        right = $right
+        width = [TrayProbe]::GetSystemMetrics(0)
+        height = [TrayProbe]::GetSystemMetrics(1)
     }
+    [IO.File]::AppendAllText($progressFile, $row + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
 }
 
 function Get-TrayBounds([IntPtr]$handle) {

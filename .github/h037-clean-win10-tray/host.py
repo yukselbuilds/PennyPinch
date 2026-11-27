@@ -10,11 +10,11 @@ socket_path = Path("qmp.socket").resolve()
 receipts = Path("guest.serial")
 BOOT_LIMIT_SECONDS = 810
 INSTALLED_TEST_LIMIT_SECONDS = 925
-ANNOTATED_EVENTS = {"boot", "guest_entry", "setup", "before", "runtime", "installed", "tray", "complete", "duration", "host problem"}
+ANNOTATED_EVENTS = {"boot", "setup", "before", "runtime", "installed", "tray", "native input", "complete", "duration", "host problem"}
 guest = [
     "qemu-system-x86_64", "-enable-kvm", "-machine", "pc", "-cpu", "host",
     "-smp", "4", "-m", "8192", "-S", "-boot", "order=c,once=d",
-    "-display", "none", "-vga", "std", "-rtc", "base=localtime",
+    "-display", "none", "-vga", "std", "-rtc", "base=localtime", "-usb", "-device", "usb-tablet",
     "-drive", "file=clean.qcow2,format=qcow2,index=0",
     "-drive", "file=windows.iso,format=raw,media=cdrom,index=2,readonly=on",
     "-drive", "file=answer.iso,format=raw,media=cdrom,index=3,readonly=on",
@@ -42,6 +42,56 @@ def qmp(stream, command, **arguments):
             raise RuntimeError("monitor_command_failed_" + command)
         if "return" in response:
             return response["return"]
+
+
+def validate_pointer(row, screen):
+    if row.get("event") != "pointer" or row.get("phase") not in {"tray_open", "tray_pause", "tray_resume", "tray_quit"}:
+        raise RuntimeError("unexpected_pointer_phase")
+    width, height = screen
+    x, y = row.get("x"), row.get("y")
+    if (row.get("width"), row.get("height")) != screen or not (640 <= width <= 3840 and 480 <= height <= 2160):
+        raise RuntimeError("pointer_screen_size_mismatch")
+    if (type(x) is not int or type(y) is not int or not (0 <= x < width and 0 <= y < height)
+            or type(row.get("right")) is not bool):
+        raise RuntimeError("pointer_position_outside_guest")
+    return round(32767 * x / (width - 1)), round(32767 * y / (height - 1))
+
+
+def screen_size(stream):
+    path = Path("pointer.ppm").resolve()
+    qmp(stream, "screendump", filename=str(path))
+    with path.open("rb") as image:
+        header = image.read(80)
+    match = re.match(rb"P6\s+(\d+)\s+(\d+)\s+255\s", header)
+    if not match:
+        raise RuntimeError("invalid_guest_frame")
+    return int(match[1]), int(match[2])
+
+
+def send_pointer(stream, row, counter):
+    phase = row.get("phase")
+    count = counter.setdefault(phase, {"left": 0, "right": 0})
+    button = "right" if row.get("right") is True else "left"
+    if count[button] >= (1 if button == "right" else 2):
+        raise RuntimeError("unexpected_number_of_tray_clicks")
+    x, y = validate_pointer(row, screen_size(stream))
+    if sum(sum(counts.values()) for counts in counter.values()) == 0:
+        tablets = [item for item in qmp(stream, "query-mice") if item["absolute"]]
+        if len(tablets) != 1:
+            raise RuntimeError("guest_tablet_missing")
+        if not tablets[0]["current"]:
+            index = tablets[0]["index"]
+            assert type(index) is int and 0 <= index <= 31
+            qmp(stream, "human-monitor-command", **{"command-line": f"mouse_set {index}"})
+    qmp(stream, "input-send-event", events=[
+        {"type": "abs", "data": {"axis": "x", "value": x}},
+        {"type": "abs", "data": {"axis": "y", "value": y}},
+    ])
+    time.sleep(0.09)
+    for down in (True, False):
+        qmp(stream, "input-send-event", events=[{"type": "btn", "data": {"button": button, "down": down}}])
+        time.sleep(0.09)
+    count[button] += 1
 
 
 def setup_display(stream):
@@ -101,6 +151,7 @@ def main(process):
             diagnostic = iter([4, 11, 28, 90, 220, 380, 540, 670, 800])
             next_diagnostic = next(diagnostic)
             done = 0
+            input_counts = {}
             while True:
                 elapsed = time.monotonic() - start
                 if not preflight and elapsed >= next_diagnostic:
@@ -118,12 +169,19 @@ def main(process):
                             continue
                         _, event, payload = line.split()
                         result = json.loads(b64decode(payload, validate=True))
+                        if event == b"pointer":
+                            if not preflight:
+                                raise RuntimeError("pointer_before_guest_ready")
+                            send_pointer(stream, result, input_counts)
+                            continue
                         notice(event.decode("ascii"), result)
                         if event == b"before":
                             assert not preflight and result["preflight"]["status"] == "ready"
                             notice("setup", {"samples": setup_samples, "preflight_after_seconds": round(elapsed, 3)})
                             preflight = time.monotonic()
                         if event == b"complete":
+                            if input_counts:
+                                notice("native input", {"method": "qmp_usb_tablet", "clicks": input_counts})
                             notice("duration", {"guest_seconds": round(time.monotonic() - start, 3)})
                             if not preflight:
                                 notice("setup", {"samples": setup_samples, "preflight_after_seconds": None})

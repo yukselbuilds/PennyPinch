@@ -67,7 +67,7 @@ try {
             while ($sent -lt $rows.Count) {
                 try { $item = $rows[$sent] | ConvertFrom-Json -ErrorAction Stop }
                 catch { break }
-                if ($item.event -cnotmatch '^(installed|window|start|ready|tray|exited)$') { throw 'invalid_desktop_progress' }
+                if ($item.event -cnotmatch '^(installed|window|start|ready|pointer|tray|exited)$') { throw 'invalid_desktop_progress' }
                 Send-Receipt $item.event $item
                 $sent += 1
             }
