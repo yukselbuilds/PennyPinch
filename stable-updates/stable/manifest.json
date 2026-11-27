@@ -1,0 +1,22 @@
+{
+  "schema_version": 3,
+  "app_identifier": "dev.headroom.desktop",
+  "target": "windows-x86_64",
+  "channel": "stable",
+  "version": "0.1.1",
+  "notes": "PennyPinch 0.1.1\nWindows 10 22H2 x64\nHeadroom engine 0.45.0\n\nThis is the first stable release for Windows 10 22H2 x64. Use the full installer to upgrade from 0.1.1-preview.8. The verified local upgrade preserved user preferences byte for byte.\n\nPennyPinch verifies signed update metadata and asks for confirmation before it applies an in-app update. The installer is not Authenticode signed. Windows 11 x64 validation is not complete.\n",
+  "engine": {
+    "version": "0.45.0",
+    "runtime_manifest_sha256": "ef1ed3803ebfd7c819eefd2b5662f3cc72d5d688cfcd2b8eb4b5d2221ac80c29"
+  },
+  "installer": {
+    "size_bytes": 5081302,
+    "sha256": "e7cc1f1b70efe89ac7dc9cdb6c5c5b75f65c0b4efe7002c534979069cb753e01"
+  },
+  "application": {
+    "state_format": 1,
+    "size_bytes": 12062720,
+    "sha256": "41cdd046f503634a6895d8d200d2aa2bf4fb21ee8b6990413f00f909bf1db214",
+    "runtime_resources_sha256": "ccbbf8339719cd0bcad260d1edb9c3e5428bc43af4455ed10272a3230618d2f8"
+  }
+}
