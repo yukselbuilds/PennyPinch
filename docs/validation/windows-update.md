@@ -269,3 +269,11 @@ The test installed the public `0.1.1-preview.8` on Windows 10 22H2 x64. It saved
 The upgrade kept the `dev.headroom.desktop` identifier and preserved the preference file byte for byte. Headroom 0.45.0 completed one local Responses stream. The app closed normally and released its port. The test removed the installation and restored the original profile.
 
 The local installer had no Authenticode signature. Signed stable delivery, rollback, and Windows 11 x64 acceptance are open. [Evidence](../proofs/windows-stable-installer-local.json)
+
+### 28 November 2026 — Local signed stable update and rollback
+
+The Windows 10 22H2 x64 test used the verified `0.1.1` installer and its staged engine resources. The isolated installation used test builds of `0.1.1` and `0.1.2`. The test builds used a local HTTPS source with a private TLS root. The test app trusted this root for its own update requests.
+
+Settings verified the signed manifest and downloaded the NSIS update. The app reopened as `0.1.2`. The Restore action reopened `0.1.1`. The original executable and preferences matched byte for byte. The installer registration and 19,492 resources matched after rollback. The test removed its temporary private keys.
+
+Windows could not open the existing production signing password backup. Production signing and the live stable channel remain open. [Evidence](../proofs/windows-stable-update-rollback-local.json)

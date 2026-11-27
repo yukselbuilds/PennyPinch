@@ -1,0 +1,91 @@
+{
+  "build": {
+    "app_identifier": "dev.headroom.desktop",
+    "applications": [
+      {
+        "seconds": 43.676,
+        "sha256": "8f9609b81c4b69dd668108c409e3af6457660f42e21aedc3659446866c768b46",
+        "version": "0.1.1"
+      },
+      {
+        "seconds": 39.656,
+        "sha256": "ea89866192e25d3137941091076529db36edb6c8f1e85a3d0cf22c172eba40c3",
+        "version": "0.1.2"
+      }
+    ],
+    "channel": "stable",
+    "engine_version": "0.45.0",
+    "input_count": 518,
+    "inputs_sha256_before_after": "10bff8b0e84ca7b4b2401ae727879084e46ca2cf08bcdbc39fd334c3be1d9b5e",
+    "package_files": {
+      "Headroom_0.1.2_x64-update.exe": "0ea7294da8317c6a0ec24d737efced0a8cd4ef6cc7266b29017c95052f442e11",
+      "manifest.json": "aa17fa5b78e72ef8ce82fb18230d136001baa56d0d26bc085ab43139d6c4a3d6",
+      "manifest.json.sig": "5f64861b5788089eb81cd581767dff81e09529e513b4cb1f6854f3e903ac505a"
+    },
+    "package_release_pin": "ccbbf8339719cd0bcad260d1edb9c3e5428bc43af4455ed10272a3230618d2f8",
+    "package_verifier": "signature_manifest_package_extraction_and_application_probe",
+    "passed": true,
+    "release_source_test_copy_sha256": "b90e965affa59d35ae5bcfb45d5bd8cb217a4c9f0d37bd6711b5d2bfc8e762a7",
+    "root_certificate_sha256": "02ca977a83d7b7eccaf043abe47447a154789eb66c8b4ed5f3ed7c6eeae36ad1",
+    "seconds": 93.878,
+    "server_certificate_sha256": "3fe876e1f5d1b4f3c2a71e3c8033484e53efbd5b93efbcd540810a302c5b74b8",
+    "signing_public_key_sha256": "a8f3d1ac39e880a02e1d8d5210d418b04dd08d52dc3670f7b2e2805b26c4ff8d",
+    "source_commit": "1ff7b3facb2584baf218b5ee33df48df5568cfd4"
+  },
+  "development_token_savings": "unmeasured",
+  "installed": {
+    "app_identifier": "dev.headroom.desktop",
+    "application_resources_verified": 19492,
+    "architecture": "x64",
+    "checks": {
+      "cancel_keeps_installed_version": true,
+      "normal_exit_requested": true,
+      "real_installed_window_and_preferences": true,
+      "rollback_restarted_and_kept_preferences": true,
+      "signed_stable_available": true,
+      "update_restarted_and_kept_preferences": true,
+      "verified_download_can_install": true
+    },
+    "cleanup": {
+      "desktop_use_gate_restored": true,
+      "original_profile_files": 0,
+      "original_profile_matches": true,
+      "test_profile_removed": true
+    },
+    "external_model_calls": 0,
+    "https_stable_requests": {
+      "Headroom_0.1.2_x64-update.exe": 1,
+      "manifest.json": 4,
+      "manifest.json.sig": 4
+    },
+    "input_count": 16,
+    "inputs_sha256_before_after": "c5ee458a72ec8f31ff18521f445ff759ac6a4880881aded97cefb619b52b57df",
+    "installed_state_restored": true,
+    "installer_sha256": "5fe824445a2531f45363a8a78e7733d7b04f36da2da87e8e44d916238d11035f",
+    "owned_test_bootstrap": true,
+    "passed": true,
+    "preferences_preserved_byte_for_byte": true,
+    "seconds": 61.412,
+    "test_executable_sha256_before_and_after_rollback": "8f9609b81c4b69dd668108c409e3af6457660f42e21aedc3659446866c768b46",
+    "test_private_keys_removed": true,
+    "tls_transport": "loopback_https_with_process_only_test_trust",
+    "updated_exe_sha256": "ea89866192e25d3137941091076529db36edb6c8f1e85a3d0cf22c172eba40c3",
+    "versions": [
+      "0.1.1",
+      "0.1.2",
+      "0.1.1"
+    ],
+    "windows_build": 19045
+  },
+  "observed_on": "2026-11-28",
+  "production_signing": "blocked_existing_password_backup_unavailable",
+  "production_stable_channel": "not_published",
+  "receipts_sha256": {
+    "build.json": "394882c795b5bc469d601a90ec1ed22c9c6ddb2150d4fdf7a0dc5a4b505395c7",
+    "installed.json": "13d2b98a4ba0f6182b9441d5a8502c87abd8ac49c70c9fb7aae7a2403a3059a1"
+  },
+  "scope": "Local signed stable update and rollback on Windows 10 22H2 x64",
+  "status": "local_pass",
+  "task": "H042 stable release preparation",
+  "windows_11_x64": "deferred"
+}

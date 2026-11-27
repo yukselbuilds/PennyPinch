@@ -28,6 +28,8 @@ The lead agent completed H042-ax on Windows 10 22H2 x64. Six release executables
 
 The lead agent completed H042-ay with an unsigned local installer on Windows 10 22H2 x64. The installer upgraded the public preview.8 to `0.1.1` in the same installation. The app kept its identifier and saved preferences. The app completed one local stream and closed normally. 228 app tests and 482 Rust tests passed. The next stable check is a signed update and rollback. [Evidence](proofs/windows-stable-installer-local.json)
 
+The lead agent verified the Windows 10 stable update and rollback with a temporary key. Settings downloaded and applied `0.1.2` over `0.1.1`. Restore reopened `0.1.1` and recovered the original executable bytes. The preferences and Windows registration matched. Windows could not open the existing production signing password backup. Resolve signing access before publishing the stable feed. [Evidence](proofs/windows-stable-update-rollback-local.json)
+
 The lead agent ran H037-a9 with the public preview.4 installer and a fresh application profile. The existing Windows 10 22H2 x64 desktop had WebView2. Default preferences, engine start, one local stream, normal exit, and cleanup passed in 73.966 seconds. The test matched 19,491 installed resources and the package receipt. [First-use evidence](proofs/windows-preview4-first-use.json)
 
 The lead agent completed H037-a10 with the public preview.6 installer and fresh test profiles. On Windows 10 22H2 x64, the installed app connected Codex CLI to Headroom 0.45.0. One CLI turn completed against a loopback Responses provider. Undo restored the exact test configuration. Engine stop, normal exit, and cleanup passed. [First-use evidence](proofs/windows-preview6-first-use-codex.json)
@@ -147,6 +149,8 @@ H049 is complete for Ubuntu 24.04 x64. The installed Debian package passed the n
 The lead agent verified the H049-b4 regression on macOS 26.7.2 ARM64. The job passed 16 Rust tests, the frontend build, and the locked native build. GitHub cancelled the macOS 15 job before runner assignment. [Regression evidence](proofs/h049-macos-cli-regression.json)
 
 GitHub lists free standard hosted compute for public repositories. Standard Windows x64 runners use Windows Server. The standard Windows 11 desktop runner uses ARM64. Windows 11 x64 acceptance remains open. [Windows acceptance](validation/windows-install.md#open-acceptance-criteria)
+
+The Windows 10 test used a disposable KVM guest on a standard Ubuntu x64 runner. In December, check whether a Windows 11 x64 evaluation guest boots on the same runner class. The Windows 11 check needs its own test result. [Windows 10 run](https://github.com/yukselbuilds/PennyPinch/actions/runs/46030502571)
 
 ### Windows release evidence
 
