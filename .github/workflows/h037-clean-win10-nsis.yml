@@ -1,0 +1,160 @@
+name: H037 clean Windows 10 NSIS lifecycle
+on:
+  push:
+    branches: [codex/h037-clean-win10-nsis-20261127]
+permissions:
+  contents: read
+concurrency:
+  group: h037-clean-win10-nsis-20261127
+  cancel-in-progress: false
+jobs:
+  package:
+    name: Build the current NSIS installer on Windows
+    runs-on: windows-2025
+    timeout-minutes: 40
+    env:
+      GIT_CONFIG_COUNT: '1'
+      GIT_CONFIG_KEY_0: core.autocrlf
+      GIT_CONFIG_VALUE_0: 'false'
+    outputs:
+      installer_sha256: ${{ steps.bundle.outputs.installer_sha256 }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - name: Prepare the pinned engine payload
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          New-Item -ItemType Directory -Path 'work/h037-clean-build' | Out-Null
+          $archive = 'work/h037-clean-build/preview.zip'
+          curl.exe --fail --location --silent --show-error --retry 2 --max-time 180 --output $archive 'https://github.com/yukselbuilds/PennyPinch/releases/download/v0.1.1-preview.8/PennyPinch_0.1.1-preview.8_Windows_x64_preview.zip'
+          $extract = (Get-Command '7z.exe' -ErrorAction SilentlyContinue).Source
+          if (!$extract) { $extract = Join-Path $env:ProgramFiles '7-Zip/7z.exe' }
+          python -I -B .github/h037-clean-win10-nsis/stage-payload.py $extract
+      - name: Compile and bundle PennyPinch
+        id: bundle
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $env:npm_config_cache = "$env:RUNNER_TEMP/pp-npm-cache"
+          npm.cmd install --prefix "$env:RUNNER_TEMP/pp-tools" --no-save --ignore-scripts --no-audit --no-fund pnpm@11.25.0
+          $pnpm = "$env:RUNNER_TEMP/pp-tools/node_modules/pnpm/bin/pnpm.cjs"
+          if ((node $pnpm --version).Trim() -cne '11.25.0') { throw 'Use pnpm 11.25.0.' }
+          node $pnpm --store-dir "$env:RUNNER_TEMP/pp-store" install --frozen-lockfile
+          rustup toolchain install 1.92.0 --profile minimal
+          $env:RUSTUP_TOOLCHAIN = '1.92.0'
+          $root = (Get-Location).Path
+          $env:CARGO_TARGET_DIR = Join-Path $root 'work/h037-win-target'
+          $env:CARGO_ENCODED_RUSTFLAGS = @("--remap-path-prefix=$root=/pennypinch", "--remap-path-prefix=$env:USERPROFILE=/build-user") -join [char]31
+          node $pnpm run tauri build --config src-tauri/installer.conf.json --ci --no-sign -- --locked
+          $release = Join-Path $env:CARGO_TARGET_DIR 'release'
+          $settings = Get-Content -LiteralPath 'runtime/manifest.json' -Raw -Encoding utf8 | ConvertFrom-Json
+          $python = Resolve-Path -LiteralPath ('runtime/' + $settings.engine.payload_root + '/' + $settings.engine.python)
+          $packages = @(Get-ChildItem -LiteralPath (Join-Path $release 'bundle/nsis') -Filter '*_x64-setup.exe' -File)
+          if ($packages.Count -ne 1 -or $packages[0].Length -gt 170000000) { throw 'Unexpected installer.' }
+          $extract = (Get-Command '7z.exe' -ErrorAction SilentlyContinue).Source
+          if (!$extract) { $extract = Join-Path $env:ProgramFiles '7-Zip/7z.exe' }
+          $packed = Join-Path $root 'work/h037-clean-build/packed'
+          & $extract x -y "-o$packed" '-i!headroom-desktop.exe' $packages[0].FullName | Out-Null
+          $env:HEADROOM_RELEASE_EXE_CANDIDATE = Join-Path $packed 'headroom-desktop.exe'
+          & $python.Path -I -B -m unittest discover -s tests/runtime -p test_windows_release_executable.py
+          $resources = 'work/build/windows/pennypinch'
+          $receiptPath = Join-Path $resources 'package-inputs.json'
+          $receipt = Get-Content -LiteralPath $receiptPath -Raw -Encoding utf8 | ConvertFrom-Json -AsHashtable
+          if ($receipt.resources.Count -ne 19491) { throw 'Unexpected staged resource count.' }
+          function Hash-File([string]$p) { (Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant() }
+          $output = Join-Path $env:RUNNER_TEMP 'h037-installer'
+          New-Item -ItemType Directory -Path $output | Out-Null
+          Copy-Item -LiteralPath $packages[0].FullName -Destination (Join-Path $output 'setup.exe')
+          $facts = [ordered]@{
+            source_commit = (git rev-parse HEAD).Trim()
+            installer_sha256 = Hash-File (Join-Path $output 'setup.exe')
+            installer_bytes = $packages[0].Length
+            executable_sha256 = Hash-File $env:HEADROOM_RELEASE_EXE_CANDIDATE
+            helper_sha256 = Hash-File (Join-Path $resources 'runtime/desktop_helper.py')
+            manifest_sha256 = Hash-File (Join-Path $resources 'runtime/manifest.json')
+            resource_receipt_sha256 = Hash-File $receiptPath
+            resource_count = $receipt.resources.Count
+          }
+          $json = ConvertTo-Json -InputObject $facts -Compress
+          [IO.File]::WriteAllText((Join-Path $output 'candidate.json'), $json, [Text.UTF8Encoding]::new($false))
+          Write-Output "::notice title=H037 built installer::$json"
+          "installer_sha256=$($facts.installer_sha256)" >> $env:GITHUB_OUTPUT
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: h037-win10-test-installer
+          path: ${{ runner.temp }}/h037-installer/*
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+  desktop:
+    name: Install and verify engine controls on clean Windows 10 x64
+    needs: package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 44
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: h037-win10-test-installer
+          path: ${{ runner.temp }}/pp-clean/answer
+      - name: Verify installation media and prepare a temporary guest
+        shell: bash
+        env:
+          PP_INSTALLER_SHA256: ${{ needs.package.outputs.installer_sha256 }}
+        run: |
+          set -euo pipefail
+          test -c /dev/kvm
+          sudo setfacl -m "u:$USER:rw" /dev/kvm
+          timeout 180 sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 update -qq
+          timeout 180 sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 install -y -qq --no-install-recommends qemu-system-x86 qemu-utils xorriso tesseract-ocr aria2
+          recipe="$GITHUB_WORKSPACE/.github/h037-clean-win10-nsis"
+          cd "$RUNNER_TEMP/pp-clean"
+          test "$(df --output=avail -B1 . | tail -1)" -ge 23622320128
+          [[ "$PP_INSTALLER_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          printf '%s  answer/setup.exe\n' "$PP_INSTALLER_SHA256" | sha256sum -c -
+          cp "$recipe/guest.ps1" "$recipe/desktop.ps1" answer/
+          python3 - "$recipe/Autounattend.xml" <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import secrets
+          import sys
+          import xml.etree.ElementTree as ET
+          info = json.loads(Path("answer/candidate.json").read_bytes())
+          assert info["source_commit"] == os.environ["GITHUB_SHA"]
+          assert info["installer_sha256"] == os.environ["PP_INSTALLER_SHA256"]
+          assert info["installer_bytes"] == Path("answer/setup.exe").stat().st_size
+          source = Path(sys.argv[1]).read_text()
+          assert source.count("EPHEMERAL-PASSWORD") == 2
+          answer = source.replace("EPHEMERAL-PASSWORD", "Pp1-" + secrets.token_hex(20))
+          ET.fromstring(answer)
+          Path("answer/Autounattend.xml").write_text(answer)
+          PY
+          echo '::notice title=H037 media download::{"stage":"windows_iso"}'
+          timeout 360 aria2c --dir=. --out=windows.iso --max-connection-per-server=8 --split=8 --min-split-size=32M \
+            --file-allocation=none --summary-interval=0 --console-log-level=warn --connect-timeout=15 --timeout=30 --max-tries=2 --retry-wait=2 \
+            --checksum=sha-256=ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668 \
+            'https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso'
+          printf 'ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668  windows.iso\n' | sha256sum -c -
+          echo '::notice title=H037 prerequisite download::{"stage":"webview2"}'
+          curl --silent --show-error --fail --location --retry 2 --max-time 150 \
+            --output answer/webview2.exe 'https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/58f85fae-b5f5-4443-9b8d-6d4cf627d6f6/MicrosoftEdgeWebView2RuntimeInstallerX64.exe'
+          printf '45769d66809a9652050f8a91ab5329881b65cc4123fe7c733841deefbef91bf6  answer/webview2.exe\n' | sha256sum -c -
+          printf '::notice title=H037 verified inputs::%s\n' "$(sha256sum windows.iso answer/setup.exe answer/webview2.exe | tr '\n' ' ')"
+          xorriso -as mkisofs -quiet -J -r -V PPAUDIT -o answer.iso answer
+          qemu-img create -f qcow2 clean.qcow2 45G
+      - name: Check the current installed app on the clean guest
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/pp-clean"
+          python3 "$GITHUB_WORKSPACE/.github/h037-clean-win10-nsis/host.py"
