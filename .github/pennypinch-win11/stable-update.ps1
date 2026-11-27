@@ -64,10 +64,17 @@ function Test-StableUpdate {
         $app = Start-Process -FilePath $exe -WorkingDirectory $destination -WindowStyle Normal -PassThru
         $socket = Open-UpdateSocket
         if (!(Wait-For 25 { (Update-Snapshot).installed_version -ceq '0.1.0' })) { throw 'predecessor_window_missing' }
-        if (!(Wait-For 25 { Click-UpdateButton 'Settings' })) { throw 'settings_button_missing' }
-        $prefsControl = Invoke-Page @'
+        if (!(Wait-For 25 { (Click-UpdateButton 'Settings') -or (Click-UpdateButton 'Ayarlar') })) { throw 'settings_button_missing' }
+        if (!(Wait-For 25 { Invoke-Page @'
+(()=>{const s=[...document.querySelectorAll('select')].find(x=>[...x.options].some(o=>o.value==='tr')&&[...x.options].some(o=>o.value==='en'));if(!s||s.disabled)return false;if(s.value!=='en'){s.value='en';s.dispatchEvent(new Event('change',{bubbles:true}))}return true})()
+'@
+        }) -or !(Wait-For 25 {
+            (Invoke-Page "window.__TAURI_INTERNALS__.invoke('get_preferences',{requestId:crypto.randomUUID()}).then(v=>v.preferences.language)") -ceq 'en'
+        })) { throw 'update_language_not_saved' }
+        $prefsControl = Wait-For 25 { Invoke-Page @'
 (()=>{const s=[...document.querySelectorAll('select')].find(x=>[...x.options].some(o=>o.value==='dark')&&[...x.options].some(o=>o.value==='light'));if(!s)return false;s.value='dark';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()
 '@
+        }
         if (!$prefsControl -or !(Wait-For 25 {
             (Invoke-Page "window.__TAURI_INTERNALS__.invoke('get_preferences',{requestId:crypto.randomUUID()}).then(v=>v.preferences.theme)") -ceq 'dark'
         })) { throw 'update_preferences_not_saved' }
