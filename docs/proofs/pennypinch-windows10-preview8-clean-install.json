@@ -3,6 +3,7 @@
     "webview2_on_clean_host": "pass",
     "windows10_clean_candidate_engine_lifecycle": "pass",
     "windows10_clean_client_connect_and_request": "not_tested",
+    "windows10_clean_client_loopback_and_undo": "pass",
     "windows10_clean_installer": "pass",
     "windows10_clean_portable_candidate_engine_lifecycle": "pass",
     "windows10_clean_portable_candidate_package": "pass",
@@ -551,6 +552,147 @@
         }
       ]
     }
+  },
+  "installed_candidate_opencode": {
+    "build": {
+      "executable_sha256": "cbe2cc931298dce472a16327c91fbcd6d32fa28f0639699743006f4bb05c6c9b",
+      "helper_sha256": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+      "installer_bytes": 125261850,
+      "installer_sha256": "9857aca2c1fe31b3976685c18b94d02f93887756680f0fd7a1b569449fc4dfeb",
+      "manifest_sha256": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+      "resource_count": 19491,
+      "resource_receipt_sha256": "7dbcf84d77febd5c131287b4dab4c8c1125a64b86389677ddd0c4fc58a464f80",
+      "source_commit": "be0e1562e7a65bbff4555408b9f310e32b471158"
+    },
+    "build_run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45967293974",
+    "earlier_attempt": {
+      "correction": "Allow the local retrieval bridge in the isolated OpenCode test profile.",
+      "phase": "connection_preview",
+      "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45982152398"
+    },
+    "guest_elapsed_seconds": 746.192,
+    "head_sha": "12b90dc7eeff525c73dd5d4b2a37bcfba5e02094",
+    "job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45984452107/job/140456365557",
+    "live_provider": "not_tested",
+    "offline_webview2": {
+      "exit": 0,
+      "versions": [
+        "158.0.4370.45"
+      ]
+    },
+    "os_preflight": {
+      "network_disconnected": true,
+      "no_dev_tools_in_path": true,
+      "webview2_absent_before": true
+    },
+    "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45984452107",
+    "scope": "Current unsigned test installer with a real OpenCode 2.3.0 CLI and a local test provider on clean Windows 10.",
+    "source_sha256": {
+      ".github/h037-clean-win10-client/Autounattend.xml": "2b425679d1cf9f9f6ff345db63f92cf9e9813577a0b2018901bda15e361d3ff8",
+      ".github/h037-clean-win10-client/client.py": "cb963760bb83d21640f1c283599ed2c7b661d47e05a49dd961f45db48599f1db",
+      ".github/h037-clean-win10-client/desktop.ps1": "895f4fb5bf73b75ddf8f215ce80a3e052f73c801d08e94835d193bec1f4867ac",
+      ".github/h037-clean-win10-client/engine-processes.py": "165f467cdec884ba8decad8995ebcd8f38614ac44f6d6063dfeba6c97580ccd8",
+      ".github/h037-clean-win10-client/guest.ps1": "7f20cc38ab8ed0955c53ab1f61e59e8896c245ed54bf743575a35ea983162045",
+      ".github/h037-clean-win10-client/host.py": "fc0610a671679707dbca853012ca91f794da997bbd93cb80eb357cc08b58ccbf",
+      ".github/workflows/h037-clean-win10-client.yml": "e59e192069da24cd785a9c187fb013c990642e0cc2db4830fbbfefed59cff395",
+      "runtime/desktop_helper.py": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+      "runtime/manifest.windows.json": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+      "runtime/windows-payload.json": "c38b289c05add3b07317ac4c886ef354810fd812bd22cbe4b1e30fbd03b1c0ae",
+      "scripts/package-windows.py": "3288a635d66bd0ac180582fcb2f0c4029a1f3c55bc6f09a2fec4529307e6b869",
+      "src-tauri/installer.conf.json": "76c5386a92c037129978bdc5fbdb929b807c3d96c0983e1431cc09858914412a",
+      "src-tauri/src/integrations/discovery.rs": "b3fbacd2989d4ca72a45174636d42b3a54a1118cad885d0a18bfea726fbcba5c",
+      "src-tauri/src/integrations/opencode_retrieval.rs": "3f2e6538b5f0f746e86cfbbe4e953064eb489daf1e5ebcba19463055b7f4323d",
+      "src-tauri/src/runtime/manager.rs": "188faf5ccfa6a3700f2b8f9114717b8c761abcc6f4a3079a90ef5a7c386772fe",
+      "src-tauri/tauri.conf.json": "ae96df9429b098ec90b499e6fe66592dc68cd9ab19dac4b2775fb41052454784",
+      "src-tauri/windows-hooks.nsh": "4c160b0ed88fdb486ebc45b1cc30f63a597807c5c537d2ac9a7b98971e7db88c",
+      "src-tauri/windows-installer.nsi": "ea04f8d68051d38c9c96d843109a9bfe41904c0f8e042b97ee84780f21dd0023",
+      "src/features/integrations/ConnectDialog.tsx": "69dee0b9f9a3186b8538e7f3a138ec6d992282de668f19beceddc194bc8c0fd6",
+      "tests/fixtures/opencode/openai_fixture.py": "6057e56ec426abd5b95e51518c346b9e095029eeef2048986ac54e696eb5fcbe"
+    },
+    "test": {
+      "checks": {
+        "applied_owned_loopback_route": true,
+        "backend_port_released": true,
+        "client_one_stream_through_engine": true,
+        "current_user_nsis": true,
+        "engine_ready": true,
+        "engine_stopped_with_stable_route": true,
+        "installed_file_digests_match": true,
+        "installed_python_processes_ended": true,
+        "native_window": true,
+        "no_previous_installation": true,
+        "normal_desktop_exit": true,
+        "normal_interactive_token": true,
+        "opencode_auto_discovered": true,
+        "owned_loopback_listener": true,
+        "preview_read_only": true,
+        "stable_listener_closed_on_exit": true,
+        "start_action_clicked": true,
+        "started_stopped": true,
+        "undo_exact_and_released_owner": true
+      },
+      "client": {
+        "applied_sha256": "16d472c8b5f424b7da0d6951cf24143e7b766e697dd291dad175f24debf62511",
+        "cli": {
+          "exit": 0,
+          "marker_exact": true,
+          "stderr_bytes": 0,
+          "steps": 1,
+          "unexpected_event": false
+        },
+        "opencode_sha256": "2359208e2f81539fd16eb755a4d8a747e87c6fd5cd59a49bb552f8a610d33eb9",
+        "original_sha256": "11c6fced8d6a17399e331655ea31e16e961a5a11f12927425275dfcb8d2d4fbc",
+        "restored_sha256": "11c6fced8d6a17399e331655ea31e16e961a5a11f12927425275dfcb8d2d4fbc",
+        "transport": "loopback_chat_completions",
+        "upstream": {
+          "correct_request": true,
+          "posts": 1,
+          "stream_ended": true
+        },
+        "version": "2.3.0"
+      },
+      "desktop_exit": 0,
+      "engine_ready_after_seconds": 30.903,
+      "engine_statuses": [
+        "starting",
+        "ready"
+      ],
+      "engine_stop_seconds": 1.204,
+      "engine_version": "0.45.0",
+      "installed_exe_sha256": "cbe2cc931298dce472a16327c91fbcd6d32fa28f0639699743006f4bb05c6c9b",
+      "installed_helper_sha256": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+      "installed_manifest_sha256": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+      "installed_product": "PennyPinch",
+      "installed_python_processes_after_start": 3,
+      "installed_receipt_sha256": "7dbcf84d77febd5c131287b4dab4c8c1125a64b86389677ddd0c4fc58a464f80",
+      "installer_sha256": "9857aca2c1fe31b3976685c18b94d02f93887756680f0fd7a1b569449fc4dfeb",
+      "last_engine": {
+        "error_code": null,
+        "status": "ready"
+      },
+      "phase": "complete",
+      "process_chain_counts": {
+        "controller": 1,
+        "engine": 1,
+        "helper": 1
+      },
+      "readiness": {
+        "ready": true,
+        "rust_core": "loaded",
+        "upstream_probe_enabled": false
+      },
+      "setup_exit": 0,
+      "status": "pass"
+    },
+    "token_savings": "not_measured",
+    "tray": "not_tested",
+    "windows": {
+      "architecture": 9,
+      "build": 19045,
+      "display_version": "22H2",
+      "ubr": 2006
+    },
+    "windows_iso_sha256": "ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668"
   },
   "lifecycle_run": {
     "after": [],

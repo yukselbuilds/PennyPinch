@@ -62,9 +62,13 @@ This test covers the portable engine. The full installer, client connection, rea
 
 The lead agent completed H037-a15. The current NSIS candidate installed for a standard user on clean Windows 10 22H2 x64. The Start control reached Ready in 31.203 seconds. The Stop engine control stopped the packaged processes in 1.182 seconds. The local route stayed open until the app exited. [Clean installation run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45971537433)
 
-The test installed the standalone WebView2 Runtime first. It kept the guest network disconnected. Client connection, a model request, and tray behavior need separate evidence. [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
+The test installed the standalone WebView2 Runtime first. It kept the guest network disconnected. [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
 
-Use the current installer to verify Connect, a client request, and Undo on clean Windows 10 x64. Verify the tray flow separately. [Procedure](validation/windows-preview-check.md)
+The lead agent completed H037-a16. The installed app found OpenCode 2.3.0 on clean Windows 10 22H2 x64. Preview left the settings unchanged. Apply saved the local route. The CLI completed one stream through the installed engine to a local test provider. Undo restored the JSONC file byte for byte. [Clean OpenCode run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45984452107)
+
+The lead agent corrected the test profile once. The original test policy blocked the local retrieval bridge. The request preserved the model and synthetic authentication. The guest network stayed disconnected during the test. The live provider and tray checks remain open. [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
+
+Verify the tray flow with the current installer on clean Windows 10 x64. [Procedure](validation/windows-preview-check.md)
 
 The lead agent completed the existing H041 Next optimization slices item. The installed preview.8 evidence passed the exact-repeat and long-log checks. The matching 0.45.0 runtime passed 16 local test-output pairs on Windows 10. CCR returned 4 complete originals. The engine forwarded all 8 failed outputs in full. The task list had 17 open subtasks and 8 open main tasks. See the current H041 acceptance table for the remaining criteria. [Evidence](proofs/h041-core-optimization-completion.json)
 
