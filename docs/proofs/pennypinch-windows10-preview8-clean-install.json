@@ -4,7 +4,7 @@
     "windows10_clean_candidate_engine_lifecycle": "not_verified",
     "windows10_clean_client_connect_and_request": "not_tested",
     "windows10_clean_installer": "pass",
-    "windows10_clean_portable_candidate_engine_lifecycle": "not_verified",
+    "windows10_clean_portable_candidate_engine_lifecycle": "pass",
     "windows10_clean_portable_candidate_package": "pass",
     "windows10_clean_portable_candidate_window": "pass",
     "windows10_clean_tray": "not_tested",
@@ -389,6 +389,306 @@
       "docs/proofs/pennypinch-windows10-preview8-local.json": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba",
       "scripts/check-windows-preview.ps1": "5efe8ae566838aa048973440108e25859f1df569a4dd6ee39a9bc8a72e27df82"
     }
+  },
+  "local_readiness_without_provider": {
+    "cause": "Headroom 0.45.0 gates readyz on a HEAD request to the Anthropic base URL by default.",
+    "clean_candidate": {
+      "boot": {
+        "disk": "new_qcow2",
+        "kvm": true
+      },
+      "conclusion": "success",
+      "controller": {
+        "controller_reply_seconds": 14.656,
+        "engine": "0.45.0",
+        "local_readiness_http": 200,
+        "loopback_closed": true,
+        "model_requests": 0,
+        "normal_user": true,
+        "phase": "complete",
+        "readiness": {
+          "http": 200,
+          "local_startup_ok": true,
+          "ready": true,
+          "rust_core_loaded": true,
+          "upstream_check_enabled": false,
+          "upstream_ok": true
+        },
+        "ready_seconds": 14.656,
+        "shutdown": "graceful",
+        "source_sha256_before_and_after": {
+          "desktop_controller.py": "a3779d70b4fefca414365e8d871756bcd6dc64471397f0c80881d6b69f3d0803",
+          "desktop_helper.py": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+          "manifest.json": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+          "package-inputs.json": "b7de24dbbd335899fb099268e2ec5cc7ed63a4969fd6a32216973552d7ffe607",
+          "python.exe": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07"
+        },
+        "startup_timeline": {
+          "engine_spawn_observed_seconds": 1.364,
+          "first_owned_readiness": {
+            "http": 200,
+            "local_startup_ok": true,
+            "observed_seconds": 14.082,
+            "ready": true,
+            "rust_core_loaded": true,
+            "upstream_check_enabled": false,
+            "upstream_ok": true
+          },
+          "first_ready": {
+            "http": 200,
+            "local_startup_ok": true,
+            "observed_seconds": 14.082,
+            "ready": true,
+            "rust_core_loaded": true,
+            "upstream_check_enabled": false,
+            "upstream_ok": true
+          },
+          "helper_spawn_observed_seconds": 0.553,
+          "markers": {
+            "lifespan_near_end": 13.985,
+            "proxy_startup_entered": 13.985,
+            "rust_core_loaded": 13.985,
+            "turn_extension_registered": 13.985,
+            "zero_preload_budget": 13.985
+          },
+          "owned_port_observed_seconds": 13.986
+        },
+        "status": "pass",
+        "total_seconds": 16.037
+      },
+      "guest_seconds": 628.82,
+      "head_sha": "6caec41ff7128bf6cdd3dc41dc628893e2ef251d",
+      "job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45961626023/job/140380542563",
+      "package": {
+        "archive_scope": "engine_only",
+        "candidate_helper_sha256": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+        "file_count": 19492,
+        "portable_archive_bytes": 198544226,
+        "portable_archive_sha256": "cf368de1a912ab36e45e14dda443ca4713f7add22acaa84f457a929da94e968a",
+        "resource_receipt_sha256": "b7de24dbbd335899fb099268e2ec5cc7ed63a4969fd6a32216973552d7ffe607",
+        "source_archive_sha256": "6fc4ae34a1a2b9404f0db1b7ea2763fd75b148cce0c0b2fd4fb0b528c85374be",
+        "source_installer_sha256": "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1"
+      },
+      "preflight": {
+        "network_disconnected": true,
+        "no_dev_tools_in_path": true
+      },
+      "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45961626023",
+      "setup": {
+        "preflight_after_seconds": 508.781,
+        "samples": [
+          {
+            "screen": [
+              "unclassified"
+            ],
+            "seconds": 4
+          },
+          {
+            "screen": [
+              "unclassified"
+            ],
+            "seconds": 11
+          },
+          {
+            "screen": [
+              "unclassified"
+            ],
+            "seconds": 28
+          },
+          {
+            "screen": [
+              "installing",
+              "setup",
+              "0_percent"
+            ],
+            "seconds": 90
+          },
+          {
+            "screen": [
+              "setup"
+            ],
+            "seconds": 220
+          },
+          {
+            "screen": [
+              "getting_ready"
+            ],
+            "seconds": 380
+          }
+        ]
+      },
+      "source_sha256": {
+        ".github/h006-clean-win10-portable/Autounattend.xml": "2b425679d1cf9f9f6ff345db63f92cf9e9813577a0b2018901bda15e361d3ff8",
+        ".github/h006-clean-win10-portable/controller.py": "10b059d3b194859257391a1c7dfbb69fc88c0969f996b876a740b34aa1ed7eb2",
+        ".github/h006-clean-win10-portable/host.py": "e6635349132748fbbafc15c3999020d5a5790ee9f2eb359c7fe6c1ba07830b20",
+        ".github/h006-clean-win10-portable/make-portable.py": "466bc60fd5ee70e1288adaea192ace828d179dcfa025b56c5923ce8d74d1c5ff",
+        ".github/h006-clean-win10-portable/portable-guest.ps1": "cfeb97fb3eed24684b774d2fad20a6f840b946d627b0a28d04aaad03939f4548",
+        ".github/h006-clean-win10-portable/prepare.ps1": "bd0d7d175b047d7033c521162ddaf57de733e46a3a33dd859ece35812db017cf",
+        ".github/workflows/h006-clean-win10-portable.yml": "4e0d8e54f426fe219c6f3fd62adcb437bdaefadf829d75fba3c7c167ec1ac33c",
+        "docs/proofs/pennypinch-windows10-preview8-local.json": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba",
+        "runtime/desktop_helper.py": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+        "src-tauri/src/runtime/manager.rs": "188faf5ccfa6a3700f2b8f9114717b8c761abcc6f4a3079a90ef5a7c386772fe"
+      },
+      "windows": {
+        "architecture": 9,
+        "build": 19045,
+        "display_version": "22H2",
+        "edition": "Microsoft Windows 10 Enterprise Evaluation"
+      }
+    },
+    "local_comparison": {
+      "baseline": {
+        "controller_error": "helper_timeout",
+        "controller_reply_seconds": 90.172,
+        "error_code": "controller_did_not_reach_ready",
+        "error_type": "AssertionError",
+        "normal_user": true,
+        "phase": "start",
+        "startup_timeline": {
+          "engine_spawn_observed_seconds": 0.848,
+          "first_owned_readiness": {
+            "http": 503,
+            "local_startup_ok": true,
+            "observed_seconds": 46.466,
+            "ready": false,
+            "rust_core_loaded": true,
+            "upstream_check_enabled": true,
+            "upstream_ok": false
+          },
+          "helper_spawn_observed_seconds": 0.43,
+          "markers": {
+            "lifespan_near_end": 44.0,
+            "proxy_startup_entered": 44.0,
+            "rust_core_loaded": 44.0,
+            "turn_extension_registered": 43.585,
+            "zero_preload_budget": 44.0
+          },
+          "owned_port_observed_seconds": 44.0,
+          "sample_error": "TimeoutError"
+        },
+        "status": "fail"
+      },
+      "baseline_helper_sha256": "fafbb3fe62f6a65762003f66773b20e0d1f9c24ee9daf2677e877288e9f48a12",
+      "candidate": {
+        "controller_reply_seconds": 10.372,
+        "engine": "0.45.0",
+        "local_readiness_http": 200,
+        "loopback_closed": true,
+        "model_requests": 0,
+        "normal_user": true,
+        "phase": "complete",
+        "readiness": {
+          "http": 200,
+          "local_startup_ok": true,
+          "ready": true,
+          "rust_core_loaded": true,
+          "upstream_check_enabled": false,
+          "upstream_ok": true
+        },
+        "ready_seconds": 10.372,
+        "shutdown": "graceful",
+        "source_sha256_before_and_after": {
+          "desktop_controller.py": "a3779d70b4fefca414365e8d871756bcd6dc64471397f0c80881d6b69f3d0803",
+          "desktop_helper.py": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+          "manifest.json": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+          "package-inputs.json": "7dbcf84d77febd5c131287b4dab4c8c1125a64b86389677ddd0c4fc58a464f80",
+          "python.exe": "282c2635fbd49b4aeefda4a965d84a745508c87e6e5eb95947efd0b5a1c1fb07"
+        },
+        "startup_timeline": {
+          "engine_spawn_observed_seconds": 0.432,
+          "first_owned_readiness": {
+            "http": 200,
+            "local_startup_ok": true,
+            "observed_seconds": 9.997,
+            "ready": true,
+            "rust_core_loaded": true,
+            "upstream_check_enabled": false,
+            "upstream_ok": true
+          },
+          "first_ready": {
+            "http": 200,
+            "local_startup_ok": true,
+            "observed_seconds": 9.997,
+            "ready": true,
+            "rust_core_loaded": true,
+            "upstream_check_enabled": false,
+            "upstream_ok": true
+          },
+          "helper_spawn_observed_seconds": 0.432,
+          "markers": {
+            "lifespan_near_end": 9.989,
+            "proxy_startup_entered": 9.989,
+            "rust_core_loaded": 9.989,
+            "turn_extension_registered": 9.989,
+            "zero_preload_budget": 9.989
+          },
+          "owned_port_observed_seconds": 9.99
+        },
+        "status": "pass",
+        "total_seconds": 11.214
+      },
+      "fixture": "Both provider URLs point to a reserved loopback port without a listener."
+    },
+    "local_gate": {
+      "checks": {
+        "app_build": {
+          "seconds": 1.551,
+          "summary": []
+        },
+        "app_tests": {
+          "seconds": 1.234,
+          "summary": [
+            "\u2139 tests 228",
+            "\u2139 pass 228",
+            "\u2139 fail 0"
+          ]
+        },
+        "embedded_build": {
+          "seconds": 10.46,
+          "summary": []
+        },
+        "python_controller": {
+          "seconds": 12.752,
+          "summary": [
+            "Ran 10 tests in 12.467s",
+            "OK"
+          ]
+        },
+        "python_package": {
+          "seconds": 7.044,
+          "summary": [
+            "Ran 29 tests in 6.700s",
+            "OK (skipped=2)"
+          ]
+        },
+        "rust_fmt": {
+          "seconds": 1.317,
+          "summary": []
+        },
+        "rust_tests": {
+          "seconds": 15.704,
+          "summary": [
+            "test result: ok. 482 passed; 0 failed; 25 ignored; 0 measured; 0 filtered out; finished in 14.94s"
+          ]
+        }
+      },
+      "fingerprinted_inputs": 455,
+      "initial_rust_failure": {
+        "cause": "Instant underflow when the test subtracts 900 seconds soon after boot.",
+        "rerun_host_uptime_seconds": 905.015,
+        "test": "replay_archive_preserves_bytes_and_rejects_wrong_scope_replacement_and_expiry"
+      },
+      "source_sha256_before_and_after": "8df6d1721d4d42dc9d8648b227dac62fd890cfd15aa5f00f77b6a643be181dff",
+      "status": "pass",
+      "versions": {
+        "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)",
+        "node": "v25.2.1",
+        "pnpm": "11.25.0",
+        "python": "Python 3.13.13",
+        "rust": "rustc 1.92.0 (ded5c06cf 2025-12-08)"
+      }
+    },
+    "policy": "Windows reports local engine readiness separately from provider verification."
   },
   "media": {
     "iso_sha256": "ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668",

@@ -32,6 +32,8 @@ PROFILE_ENV = {
     "HEADROOM_NO_MEMORY_CONTEXT": "1",
     # Headroom 0.45.0 uses asyncio.wait_for. Zero leaves optional transforms for the first request.
     "HEADROOM_EAGER_PRELOAD_TIMEOUT_SECONDS": "0",
+    # The desktop verifies provider connections separately from local readiness.
+    "HEADROOM_SKIP_UPSTREAM_CHECK": "1",
     # Load Kompress only when compression needs it, rather than in a daemon after ready.
     "HEADROOM_KOMPRESS_WARMUP": "0",
 }

@@ -127,6 +127,12 @@ The earlier controller reached the startup deadline on clean Windows 10. The con
 
 The updated packaged controller reached Ready in 13.338 seconds on the development host. It completed one loopback test request with optimization enabled and the native core loaded. It stopped normally and released its port. The clean test ran the packaged engine directly. The full installer needs its own lifecycle test. [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
 
+The earlier package bound its local port and loaded the native core. Its readiness endpoint returned HTTP 503 when the provider was unavailable. The updated package returned HTTP 200 with the same unavailable-provider fixture. The Windows helper matches the macOS readiness policy.
+
+The packaged Headroom 0.45.0 engine reached Ready in 14.656 seconds on offline Windows 10 22H2 x64. The native core loaded. The engine stopped normally and released its port. The test observed the owned listener at 13.986 seconds. [Clean controller run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45961626023)
+
+This test covers the portable engine. The full installer, client connection, real request, and tray flow need separate evidence. [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
+
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria

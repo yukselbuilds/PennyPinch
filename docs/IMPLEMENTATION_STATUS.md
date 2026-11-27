@@ -54,7 +54,13 @@ The earlier controller reached the startup deadline on clean Windows 10. The con
 
 The updated packaged controller reached Ready in 13.338 seconds on the development host. It completed one loopback test request with optimization enabled and the native core loaded. It stopped normally and released its port. The clean test ran the packaged engine directly. The full installer needs its own lifecycle test. [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
 
-Record elapsed time at helper spawn, the proxy startup markers, listener binding, and the readiness reply. Verify engine start and stop within the existing deadline on clean Windows 10 x64. [Procedure](validation/windows-preview-check.md)
+The earlier package bound its local port and loaded the native core. Its readiness endpoint returned HTTP 503 when the provider was unavailable. The updated package returned HTTP 200 with the same unavailable-provider fixture. The Windows helper matches the macOS readiness policy.
+
+The packaged Headroom 0.45.0 engine reached Ready in 14.656 seconds on offline Windows 10 22H2 x64. The native core loaded. The engine stopped normally and released its port. The test observed the owned listener at 13.986 seconds. [Clean controller run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45961626023)
+
+This test covers the portable engine. The full installer, client connection, real request, and tray flow need separate evidence. [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
+
+Test the updated full installer on clean Windows 10 x64. Verify engine start, a client request, Undo, and tray exit. [Procedure](validation/windows-preview-check.md)
 
 The lead agent completed the existing H041 Next optimization slices item. The installed preview.8 evidence passed the exact-repeat and long-log checks. The matching 0.45.0 runtime passed 16 local test-output pairs on Windows 10. CCR returned 4 complete originals. The engine forwarded all 8 failed outputs in full. The task list had 17 open subtasks and 8 open main tasks. See the current H041 acceptance table for the remaining criteria. [Evidence](proofs/h041-core-optimization-completion.json)
 
