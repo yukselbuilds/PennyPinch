@@ -268,6 +268,10 @@ function Test-Desktop {
         }
         $result.checks.stable_listener_closed_on_exit = $true
         Publish-Progress exited
+        if (!$result.checks.live_chatgpt_turn_observed) {
+            $result.phase = 'codex_provider'
+            throw 'codex_provider_not_verified'
+        }
     } finally {
         foreach ($owned in $ownedProcesses) { $owned.Dispose() }
         $socket.Dispose()

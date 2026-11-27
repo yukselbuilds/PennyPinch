@@ -69,9 +69,8 @@ function Test-CodexLive([int]$enginePort) {
         }
     } finally { $call.Dispose() }
     $result.codex.live = Get-Content -LiteralPath (Join-Path $clientRoot 'live-result.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-    if ($result.codex.live.status -cne 'pass') { throw 'codex_provider_not_verified' }
     if (!$result.codex.live.temporary_auth_removed) { throw 'temporary_codex_auth_remains' }
-    $result.checks.live_chatgpt_turn_observed = $true
+    if ($result.codex.live.status -ceq 'pass') { $result.checks.live_chatgpt_turn_observed = $true }
 
     $result.phase = 'codex_undo'
     $remove = "const b=buttons.find(e=>e.getClientRects().length&&!e.disabled&&/^(Remove connection|Ba\u011flant\u0131y\u0131 kald\u0131r)$/.test(e.textContent.trim()));if(!b)return false;b.click();return true;"
@@ -86,7 +85,7 @@ function Test-CodexLive([int]$enginePort) {
         throw 'codex_undo_changed_config'
     }
     $result.checks.codex_undo_restored_original = $true
-    Publish-Progress provider
+    if ($result.checks.live_chatgpt_turn_observed) { Publish-Progress provider }
     if (!(Wait-For 20 { Invoke-Page "(() => {$button const b=buttons.find(e=>e.getClientRects().length&&!e.disabled&&e.closest('.connection-dialog__footer')&&/^(Close|Kapat)$/.test(e.textContent.trim()));if(!b)return false;b.click();return true;})()" }) -or
         !(Wait-For 20 { Invoke-Page "(() => {const b=document.querySelector('button[data-screen=overview]');if(!b||b.disabled)return false;b.click();return true;})()" })) {
         throw 'overview_return_failed'
