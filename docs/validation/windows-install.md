@@ -123,6 +123,10 @@ The second guest run stopped during media preparation. A download returned exit 
 
 The portable ZIP contained 19,493 files. A clean Windows 10 22H2 x64 guest extracted it and verified the package digests. PennyPinch opened under a standard user token. The packaged controller reached Ready in 73.718 seconds on the development host. The engine stopped normally and released its port. The clean guest timed out before Windows preflight. [Window test](https://github.com/yukselbuilds/PennyPinch/actions/runs/45897208162) · [Controller test](https://github.com/yukselbuilds/PennyPinch/actions/runs/45899760014) [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
 
+The earlier controller reached the startup deadline on clean Windows 10. The controller returned `helper_timeout`. The new Windows helper defers optional transform loading until first use. The startup deadline remains 90 seconds. The clean Windows 10 run logged the zero preload budget and loaded the native core. The controller still reported `helper_timeout`. [Earlier controller run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45901530341) · [Updated controller run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45904486183)
+
+The updated packaged controller reached Ready in 13.338 seconds on the development host. It completed one loopback test request with optimization enabled and the native core loaded. It stopped normally and released its port. The clean test ran the packaged engine directly. The full installer needs its own lifecycle test. [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
+
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria
