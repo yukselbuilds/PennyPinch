@@ -10,7 +10,7 @@ socket_path = Path("qmp.socket").resolve()
 receipts = Path("guest.serial")
 BOOT_LIMIT_SECONDS = 810
 INSTALLED_TEST_LIMIT_SECONDS = 925
-ANNOTATED_EVENTS = {"boot", "guest_entry", "setup", "before", "runtime", "installed", "complete", "duration", "host problem"}
+ANNOTATED_EVENTS = {"boot", "guest_entry", "setup", "before", "runtime", "installed", "ready", "complete", "duration", "host problem"}
 guest = [
     "qemu-system-x86_64", "-enable-kvm", "-machine", "pc", "-cpu", "host",
     "-smp", "4", "-m", "8192", "-S", "-boot", "order=c,once=d",

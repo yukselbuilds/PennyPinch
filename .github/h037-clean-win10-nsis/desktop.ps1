@@ -81,9 +81,12 @@ function Publish-Progress([string]$event) {
     [IO.File]::AppendAllText($progressFile, $row + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
 }
 
-function Get-InstalledPythonProcess {
-    $path = Join-Path $destination 'runtime\payload\python.exe'
-    Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object ExecutablePath -ieq $path
+function Get-EngineProcesses([int]$owner) {
+    $python = Join-Path $destination 'runtime\payload\python.exe'
+    $scriptPath = Join-Path $PSScriptRoot 'engine-processes.py'
+    $snapshot = & $python -I -B $scriptPath $owner
+    if ($LASTEXITCODE -ne 0) { throw 'engine_process_snapshot_failed' }
+    return ($snapshot | ConvertFrom-Json)
 }
 
 function Test-Desktop {
@@ -181,7 +184,7 @@ function Test-Desktop {
         if (!(Wait-For 20 { $app.Refresh(); $app.MainWindowHandle -ne [IntPtr]::Zero -and (Has-Engine stopped) })) {
             throw 'desktop_did_not_start_stopped'
         }
-        if (@(Get-InstalledPythonProcess).Count -ne 0) { throw 'engine_already_running' }
+        if (@((Get-EngineProcesses $app.Id).controller).Count -ne 0) { throw 'engine_already_running' }
         $result.checks.started_stopped = $true
         $result.phase = 'engine_start'
         $engineTimer = [Diagnostics.Stopwatch]::StartNew()
@@ -214,18 +217,23 @@ function Test-Desktop {
         $listener = @(Get-NetTCPConnection -LocalAddress 127.0.0.1 -LocalPort $enginePort -State Listen -ErrorAction SilentlyContinue)
         if (!$listener -or $listener[0].OwningProcess -ne $app.Id) { throw 'owned_route_not_listening' }
         $result.checks.owned_loopback_listener = $true
-        $installedPython = @(Get-InstalledPythonProcess)
-        if ($installedPython.Count -lt 3 -or @($installedPython | Where-Object ParentProcessId -eq $app.Id).Count -ne 1) {
+        $chain = Get-EngineProcesses $app.Id
+        $result.process_chain_counts = @{controller = @($chain.controller).Count; helper = @($chain.helper).Count; engine = @($chain.engine).Count}
+        if ($result.process_chain_counts.controller -ne 1 -or $result.process_chain_counts.helper -ne 1 -or
+            $result.process_chain_counts.engine -ne 1) {
             throw 'installed_controller_chain_missing'
         }
+        $ownedIds = @($chain.controller) + @($chain.helper) + @($chain.engine)
+        $ownedProcesses = @($ownedIds | ForEach-Object { [Diagnostics.Process]::GetProcessById($_) })
+        foreach ($owned in $ownedProcesses) { [void]$owned.Handle }
         $backend = @(Get-NetTCPConnection -LocalAddress 127.0.0.1 -State Listen -ErrorAction SilentlyContinue |
-            Where-Object { $_.OwningProcess -in $installedPython.ProcessId })
+            Where-Object { $_.OwningProcess -eq $chain.engine[0] })
         if ($backend.Count -ne 1) { throw 'installed_engine_listener_missing' }
         $readiness = Invoke-RestMethod ("http://127.0.0.1:{0}/readyz" -f $backend[0].LocalPort) -TimeoutSec 4
         if (!$readiness.ready -or $readiness.version -cne '0.45.0' -or $readiness.rust_core -cne 'loaded' -or
             !$readiness.checks.startup.ready -or $readiness.checks.upstream.enabled -ne $false) { throw 'local_readiness_invalid' }
         $result.readiness = @{ready = $true; rust_core = 'loaded'; upstream_probe_enabled = $false}
-        $result.installed_python_processes_after_start = $installedPython.Count
+        $result.installed_python_processes_after_start = $ownedProcesses.Count
 
         $result.phase = 'engine_stop'
         $stopTimer = [Diagnostics.Stopwatch]::StartNew()
@@ -233,13 +241,17 @@ function Test-Desktop {
             throw 'engine_stop_control_missing'
         }
         if (!(Wait-For 50 {
-            (Has-Engine stopped) -and @((Get-InstalledPythonProcess)).Count -eq 0 -and
+            (Has-Engine stopped) -and @($ownedProcesses | Where-Object { !$_.HasExited }).Count -eq 0 -and
                 (Invoke-Page "window.__TAURI_INTERNALS__.invoke('get_ingress_snapshot', {requestId: crypto.randomUUID()}).then(v => v.backend.status === 'stopped' && v.endpoint.status === 'ready')")
         })) {
             throw 'engine_backend_not_stopped'
         }
+        if (Get-NetTCPConnection -LocalAddress 127.0.0.1 -LocalPort $backend[0].LocalPort -State Listen -ErrorAction SilentlyContinue) {
+            throw 'engine_port_still_listening'
+        }
         $result.engine_stop_seconds = [math]::Round($stopTimer.Elapsed.TotalSeconds, 3)
         $result.checks.installed_python_processes_ended = $true
+        $result.checks.backend_port_released = $true
         $result.checks.engine_stopped_with_stable_route = $true
         Publish-Progress stopped
         $result.phase = 'desktop_exit'
@@ -255,6 +267,7 @@ function Test-Desktop {
         $result.checks.stable_listener_closed_on_exit = $true
         Publish-Progress exited
     } finally {
+        foreach ($owned in $ownedProcesses) { $owned.Dispose() }
         $socket.Dispose()
     }
 }
