@@ -1,0 +1,117 @@
+{
+  "build": {
+    "app_identifier": "dev.headroom.desktop",
+    "build_seconds": 521.132,
+    "changed_resources": [
+      "runtime/desktop_helper.py"
+    ],
+    "embedded_configuration_probes": 8,
+    "embedded_exe_sha256": "5f9854ce62bd0b4268c24c943242b736e2aaf145f945de19da5f8ef081414425",
+    "embedded_pe_privacy_checks": 2,
+    "engine_version": "0.45.0",
+    "input_count": 520,
+    "inputs_sha256_before_after": "89e297555dc87c42cfcc889f456fdb98601a53a85d36d3fe47569ce0c2494983",
+    "installer_bytes": 125337607,
+    "installer_sha256": "5fe824445a2531f45363a8a78e7733d7b04f36da2da87e8e44d916238d11035f",
+    "passed": true,
+    "public_update_source": "https://yukselbuilds.github.io/PennyPinch/updates/",
+    "quality_gate": {
+      "app_tests": {
+        "passed": true,
+        "seconds": 1.415,
+        "tests": 228
+      },
+      "frontend_build": {
+        "passed": true,
+        "seconds": 2.524
+      },
+      "rust_custom_protocol": {
+        "passed": true,
+        "seconds": 25.762
+      },
+      "rust_fmt": {
+        "passed": true,
+        "seconds": 1.751
+      },
+      "rust_tests": {
+        "ignored": 25,
+        "passed": true,
+        "seconds": 29.158,
+        "tests": 482
+      }
+    },
+    "resource_pin": "ccbbf8339719cd0bcad260d1edb9c3e5428bc43af4455ed10272a3230618d2f8",
+    "resource_receipt_sha256": "7dbcf84d77febd5c131287b4dab4c8c1125a64b86389677ddd0c4fc58a464f80",
+    "seconds": 614.795,
+    "source_commit": "453962d01135b03db32ef186a247846c2c3ffe8b",
+    "stage_resource_count": 19492,
+    "toolchain": {
+      "cargo.exe": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node.exe": "v25.2.1",
+      "pnpm.cmd": "11.25.0",
+      "rustc.exe": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "rustfmt.exe": "rustfmt 1.8.0-stable (ded5c06cf2 2025-12-08)"
+    },
+    "update_key_fingerprint": "c32e894d22af6146ee736e04ec06454aaf740912aed00e65aa7a116cc7d0b52c",
+    "version": "0.1.1"
+  },
+  "development_token_savings": "unmeasured",
+  "installed": {
+    "app_identifier": "dev.headroom.desktop",
+    "architecture": "x64",
+    "cleanup": {
+      "desktop_use_gate_restored": true,
+      "original_profile_files": 0,
+      "original_profile_matches": true,
+      "test_profile_removed": true
+    },
+    "external_model_calls": 0,
+    "input_count": 18,
+    "inputs_sha256_before_after": "1cea98a49a1b4918e527f5858c7caa0bec9dc66d063961021228439b66bd66cc",
+    "installed_engine": {
+      "distribution_directories": [
+        "opentelemetry_api-1.45.2.dist-info"
+      ],
+      "headroom": "0.45.0",
+      "headroom_distribution_directories": [
+        "headroom_ai-0.45.0.dist-info"
+      ],
+      "opentelemetry": "1.45.2"
+    },
+    "installed_resources_verified": 19492,
+    "installed_versions": [
+      "0.1.1-preview.8",
+      "0.1.1"
+    ],
+    "installer_metadata": {
+      "authenticode": "NotSigned",
+      "versions": [
+        "0.1.1",
+        "0.1.1"
+      ]
+    },
+    "local_responses_streams": 1,
+    "normal_exit": true,
+    "owned_port_released": true,
+    "passed": true,
+    "preferences_preserved_byte_for_byte": true,
+    "preview_archive_sha256": "6fc4ae34a1a2b9404f0db1b7ea2763fd75b148cce0c0b2fd4fb0b528c85374be",
+    "preview_installer_sha256": "1bafc5fb7404bc9bd61f134a0072f571e184ce4c5a8621331430155361d83ea1",
+    "seconds": 117.801,
+    "stable_exe_sha256": "5f9854ce62bd0b4268c24c943242b736e2aaf145f945de19da5f8ef081414425",
+    "stable_installer_sha256": "5fe824445a2531f45363a8a78e7733d7b04f36da2da87e8e44d916238d11035f",
+    "test_state_preserved": true,
+    "windows_build": 19045
+  },
+  "local_receipts_sha256": {
+    "build.json": "f8b85b8e079e7ecf51de2f80fe88b25d1b95ae96980ff3bb5961b76e13a0d16e",
+    "installed.json": "502cc54dfb3576161748fba34c9a642d4a74fa4e412800aad242baeb00bf22d6"
+  },
+  "observed_on": "2026-11-27",
+  "result": "pass",
+  "scope": "Windows 10 22H2 x64 preview-to-stable full installer upgrade",
+  "stable_distribution": "local_candidate",
+  "stable_update_and_rollback": "not_tested",
+  "task": "H042-ay",
+  "windows_11_x64": "deferred"
+}

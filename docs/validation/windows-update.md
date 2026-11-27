@@ -261,3 +261,11 @@ Keep the application identifier `dev.headroom.desktop` for the first stable rele
 The online preview manifest and its signature returned HTTP 200 on 27 November. The manifest still declares preview.2. Both stable URLs returned HTTP 404. Keep the existing preview feed for compatible installations. For stable delivery, verify the signed package for one stable upgrade and its rollback before publishing the stable feed. Use the configured production URL and public key in the release build. Publish a new stable tag after the package and upgrade checks pass. Update the README, release notes, and download page for that tag. [Preview feed status](https://yukselbuilds.github.io/PennyPinch/updates/)
 
 Record Authenticode separately from the update signature. GitHub serves the unsigned preview.8 installer. Check SignPath eligibility for the bundled installer under the owner's free-use limit. Record the verified operating systems and the actual signature status for each released package. [SignPath conditions](https://signpath.org/terms) · [SmartScreen behavior](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation)
+
+### Windows 10 local stable installer upgrade
+
+The test installed the public `0.1.1-preview.8` on Windows 10 22H2 x64. It saved the language and theme in the running app. The local `0.1.1` installer upgraded the same installation. The installer, Windows registration, and app reported version `0.1.1`.
+
+The upgrade kept the `dev.headroom.desktop` identifier and preserved the preference file byte for byte. Headroom 0.45.0 completed one local Responses stream. The app closed normally and released its port. The test removed the installation and restored the original profile.
+
+The local installer had no Authenticode signature. Signed stable delivery, rollback, and Windows 11 x64 acceptance are open. [Evidence](../proofs/windows-stable-installer-local.json)
