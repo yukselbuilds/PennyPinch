@@ -72,7 +72,11 @@ The lead agent completed H037-a17. A native close request hid the installed app 
 
 The first probe could not find the icon through UI Automation. The second probe could not move the guest pointer. The lead agent used Windows notification coordinates and sent clicks through the guest's virtual USB mouse. The test used a fresh Windows 10 guest with its network disconnected. The live provider and Windows 11 checks remain open. [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
 
-Verify one live-provider request in an authorized Windows 10 test profile without new charges. [Procedure](validation/windows-preview-check.md)
+The lead agent completed H037-a18. The installed app connected signed Codex CLI 0.166.0 on clean Windows 10 22H2 x64. The CLI confirmed ChatGPT sign-in. Undo restored the original TOML file byte for byte and released the connection. The test removed the temporary authentication file. [Clean Codex run](https://github.com/yukselbuilds/PennyPinch/actions/runs/46024916822)
+
+The first test saved the route. The device code expired before sign-in. The second run did not verify a completed provider response or the Stop engine control. The test did not retain raw output. The cause of the unverified provider response is unknown. [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
+
+On the next authorized live test, record the CLI exit code and terminal event types. Keep raw output private. Wait for the Stop engine control before testing shutdown. [Procedure](validation/windows-preview-check.md)
 
 The lead agent completed the existing H041 Next optimization slices item. The installed preview.8 evidence passed the exact-repeat and long-log checks. The matching 0.45.0 runtime passed 16 local test-output pairs on Windows 10. CCR returned 4 complete originals. The engine forwarded all 8 failed outputs in full. The task list had 17 open subtasks and 8 open main tasks. See the current H041 acceptance table for the remaining criteria. [Evidence](proofs/h041-core-optimization-completion.json)
 

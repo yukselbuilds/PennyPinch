@@ -151,11 +151,17 @@ A native close request hid the installed app on clean Windows 10 22H2 x64. The W
 
 The test used a fresh Windows 10 guest with its network disconnected. The live provider and Windows 11 checks remain open. [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
 
+## 27 November — Codex connection on clean Windows 10
+
+The installed app connected signed Codex CLI 0.166.0 on clean Windows 10 22H2 x64. The CLI confirmed ChatGPT sign-in. Undo restored the original TOML file byte for byte and released the connection. The test removed the temporary authentication file. [Clean Codex run](https://github.com/yukselbuilds/PennyPinch/actions/runs/46024916822)
+
+The first test saved the route. The device code expired before sign-in. The second run did not verify a completed provider response or the Stop engine control. The test did not retain raw output. The cause of the unverified provider response is unknown. [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
+
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria
 
-1. **Clean Windows 10 desktop.** Verify a live-provider request. [Windows procedure](windows-preview-check.md)
+1. **Clean Windows 10 desktop.** Verify a live-provider response. [Windows procedure](windows-preview-check.md)
 2. **Clean Windows 11 x64 desktop.** The clean installation and client flow remain `not_tested`. GitHub's standard Windows 11 desktop image uses ARM64. [Standard images](https://github.com/actions/runner-images#available-images) · [Larger-runner images](https://docs.github.com/en/actions/reference/runners/larger-runners#runner-images)
 
 The 15 November private-repository check estimated ten standard Windows minutes from the reported $0.10 allowance. On 23 November, the GitHub API reported PennyPinch as public. Standard hosted jobs now run outside that allowance. The standard Windows x64 images still run Windows Server. The standard Windows 11 desktop image uses ARM64. Keep the Windows 11 x64 desktop status as `not_tested` until a suitable environment is available. [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions) · [Runner images](https://github.com/actions/runner-images#available-images)
