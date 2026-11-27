@@ -8,7 +8,7 @@
     "windows10_clean_portable_candidate_engine_lifecycle": "pass",
     "windows10_clean_portable_candidate_package": "pass",
     "windows10_clean_portable_candidate_window": "pass",
-    "windows10_clean_tray": "not_tested",
+    "windows10_clean_tray": "pass",
     "windows10_clean_window": "pass",
     "windows10_clean_window_and_engine": "not_verified",
     "windows11_x64": "not_tested"
@@ -686,6 +686,165 @@
     },
     "token_savings": "not_measured",
     "tray": "not_tested",
+    "windows": {
+      "architecture": 9,
+      "build": 19045,
+      "display_version": "22H2",
+      "ubr": 2006
+    },
+    "windows_iso_sha256": "ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668"
+  },
+  "installed_candidate_tray": {
+    "build": {
+      "executable_sha256": "cbe2cc931298dce472a16327c91fbcd6d32fa28f0639699743006f4bb05c6c9b",
+      "helper_sha256": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+      "installer_bytes": 125261850,
+      "installer_sha256": "9857aca2c1fe31b3976685c18b94d02f93887756680f0fd7a1b569449fc4dfeb",
+      "manifest_sha256": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+      "resource_count": 19491,
+      "resource_receipt_sha256": "7dbcf84d77febd5c131287b4dab4c8c1125a64b86389677ddd0c4fc58a464f80",
+      "source_commit": "be0e1562e7a65bbff4555408b9f310e32b471158"
+    },
+    "build_run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45967293974",
+    "development_token_savings": "unmeasured",
+    "earlier_attempts": [
+      {
+        "correction": "Use the Windows notification API to locate the test app's own icon.",
+        "phase": "tray_open",
+        "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45987905528"
+      },
+      {
+        "correction": "Send clicks through the virtual machine's USB tablet.",
+        "phase": "tray_open",
+        "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45990240305"
+      }
+    ],
+    "guest_elapsed_seconds": 833.543,
+    "head_sha": "12bbffa195707af5541a13bdc34e906423facaed",
+    "job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45992437027/job/140483380713",
+    "native_input": {
+      "clicks": {
+        "tray_open": {
+          "left": 2,
+          "right": 1
+        },
+        "tray_pause": {
+          "left": 2,
+          "right": 1
+        },
+        "tray_quit": {
+          "left": 2,
+          "right": 1
+        },
+        "tray_resume": {
+          "left": 2,
+          "right": 1
+        }
+      },
+      "method": "qmp_usb_tablet"
+    },
+    "offline_webview2": {
+      "exit": 0,
+      "versions": [
+        "158.0.4370.45"
+      ]
+    },
+    "os_preflight": {
+      "network_disconnected": true,
+      "no_dev_tools_in_path": true,
+      "webview2_absent_before": true
+    },
+    "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45992437027",
+    "scope": "Current unsigned test installer and native Explorer tray on a new Windows 10 guest. No provider requests.",
+    "source_sha256": {
+      ".github/h037-clean-win10-tray/Autounattend.xml": "2b425679d1cf9f9f6ff345db63f92cf9e9813577a0b2018901bda15e361d3ff8",
+      ".github/h037-clean-win10-tray/desktop.ps1": "2b0e3a50baab4b0153df5ab1b6d27e20a35325aa52917930c6d6832744a02490",
+      ".github/h037-clean-win10-tray/engine-processes.py": "165f467cdec884ba8decad8995ebcd8f38614ac44f6d6063dfeba6c97580ccd8",
+      ".github/h037-clean-win10-tray/guest.ps1": "b3bfae2588cf8ef1bdf08f652e4306f32e71169a824d5d3339b34f88d8b74977",
+      ".github/h037-clean-win10-tray/host.py": "f44efcdbacdc6d8c0cabfdb5738bfe1fde3d8538ffdd65fce7c63e0052fe66b3",
+      ".github/h037-clean-win10-tray/tray.ps1": "935d8bd3628f81f6ecf28bbb5637c2fbe7bcc23bd65ea9b20a74cfd9bb619b50",
+      ".github/workflows/h037-clean-win10-tray.yml": "2608c1a8ae0b5ec38e3109b0a667d3151452831e36a359e4e21a0c07fadf83a2",
+      "runtime/desktop_helper.py": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+      "runtime/manifest.windows.json": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+      "runtime/windows-payload.json": "c38b289c05add3b07317ac4c886ef354810fd812bd22cbe4b1e30fbd03b1c0ae",
+      "scripts/package-windows.py": "3288a635d66bd0ac180582fcb2f0c4029a1f3c55bc6f09a2fec4529307e6b869",
+      "src-tauri/installer.conf.json": "76c5386a92c037129978bdc5fbdb929b807c3d96c0983e1431cc09858914412a",
+      "src-tauri/src/desktop/lifecycle.rs": "cac64e2483c66bd099d6acd9fa3520736e2856d5dba101658c0712bf6f4f4b04",
+      "src-tauri/src/desktop/tray.rs": "cfddc7e6fd15fe0410bf8bfe29386ec003d284b8b10c649599afef7ef39e9184",
+      "src-tauri/src/main.rs": "2e49de4d6ba7eabbc860a1e7a25a1887225e698ad9f229c74d18380060c91cb5",
+      "src-tauri/src/runtime/manager.rs": "188faf5ccfa6a3700f2b8f9114717b8c761abcc6f4a3079a90ef5a7c386772fe",
+      "src-tauri/tauri.conf.json": "ae96df9429b098ec90b499e6fe66592dc68cd9ab19dac4b2775fb41052454784",
+      "src-tauri/windows-hooks.nsh": "4c160b0ed88fdb486ebc45b1cc30f63a597807c5c537d2ac9a7b98971e7db88c",
+      "src-tauri/windows-installer.nsi": "ea04f8d68051d38c9c96d843109a9bfe41904c0f8e042b97ee84780f21dd0023",
+      "src/components/DesktopLifecycle.tsx": "b236695d40a97953b3be8dc6cd8ccd8fc828f00cfac799fb387aa1ebb06aaeda"
+    },
+    "test": {
+      "checks": {
+        "backend_port_released": true,
+        "close_hid_native_window": true,
+        "current_user_nsis": true,
+        "engine_ready": true,
+        "engine_ready_while_hidden": true,
+        "installed_file_digests_match": true,
+        "installed_python_processes_ended": true,
+        "native_window": true,
+        "no_previous_installation": true,
+        "normal_interactive_token": true,
+        "normal_tray_exit": true,
+        "owned_loopback_listener": true,
+        "reopened_from_native_tray": true,
+        "stable_listener_closed_on_exit": true,
+        "start_action_clicked": true,
+        "started_stopped": true,
+        "tray_icon_owned_by_app": true,
+        "tray_pause_resume_same_generation": true,
+        "tray_quit_required_confirmation": true,
+        "used_notification_overflow": true
+      },
+      "desktop_exit": 0,
+      "engine_ready_after_seconds": 38.209,
+      "engine_statuses": [
+        "starting",
+        "ready"
+      ],
+      "engine_version": "0.45.0",
+      "installed_exe_sha256": "cbe2cc931298dce472a16327c91fbcd6d32fa28f0639699743006f4bb05c6c9b",
+      "installed_helper_sha256": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+      "installed_manifest_sha256": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+      "installed_product": "PennyPinch",
+      "installed_python_processes_after_start": 3,
+      "installed_receipt_sha256": "7dbcf84d77febd5c131287b4dab4c8c1125a64b86389677ddd0c4fc58a464f80",
+      "installer_sha256": "9857aca2c1fe31b3976685c18b94d02f93887756680f0fd7a1b569449fc4dfeb",
+      "last_engine": {
+        "error_code": null,
+        "status": "ready"
+      },
+      "phase": "complete",
+      "process_chain_counts": {
+        "controller": 1,
+        "engine": 1,
+        "helper": 1
+      },
+      "readiness": {
+        "ready": true,
+        "rust_core": "loaded",
+        "upstream_probe_enabled": false
+      },
+      "setup_exit": 0,
+      "status": "pass",
+      "tray": {
+        "modes": [
+          "enabled",
+          "paused",
+          "enabled"
+        ],
+        "revisions": [
+          0,
+          1,
+          2
+        ]
+      }
+    },
     "windows": {
       "architecture": 9,
       "build": 19045,

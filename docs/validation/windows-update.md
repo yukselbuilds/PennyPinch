@@ -251,3 +251,13 @@ The Windows 10 test checked the update settings embedded in six released executa
 The preview.1 verifier also checked the signed installer size and digest. Each legacy verifier rejected the preview.8 manifest because its resource digest differed. The released update source maps that error to a verification error.
 
 Users can upgrade to preview.8 with the full installer. Replacing the signed preview record would also remove the verified preview.1 to preview.2 download path. [Release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.8) · [Evidence](../proofs/windows-preview-feed-compatibility.json)
+
+## 27 November 2026 — Stable Windows release preparation
+
+The preview.8 build used the release version while the source defaults stayed at 0.1.0. The installed verifier reported preview.8 as current. Use one release version for the stable executable, package, manifest, and tag. Check the embedded version as well as the artifact name. [Preview version evidence](../proofs/windows-preview8-update-compatibility.json)
+
+Keep the application identifier `dev.headroom.desktop` for the first stable release. Its value connects existing installations to their local settings and update identity. Test a full installer upgrade from the public preview and verify that it keeps the user settings.
+
+The online preview manifest and its signature returned HTTP 200 on 27 November. The manifest still declares preview.2. Both stable URLs returned HTTP 404. Keep the existing preview feed for compatible installations. For stable delivery, verify the signed package for one stable upgrade and its rollback before publishing the stable feed. Use the configured production URL and public key in the release build. Publish a new stable tag after the package and upgrade checks pass. Update the README, release notes, and download page for that tag. [Preview feed status](https://yukselbuilds.github.io/PennyPinch/updates/)
+
+Record Authenticode separately from the update signature. GitHub serves the unsigned preview.8 installer. Check SignPath eligibility for the bundled installer under the owner's free-use limit. Record the verified operating systems and the actual signature status for each released package. [SignPath conditions](https://signpath.org/terms) · [SmartScreen behavior](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation)

@@ -66,9 +66,13 @@ The test installed the standalone WebView2 Runtime first. It kept the guest netw
 
 The lead agent completed H037-a16. The installed app found OpenCode 2.3.0 on clean Windows 10 22H2 x64. Preview left the settings unchanged. Apply saved the local route. The CLI completed one stream through the installed engine to a local test provider. Undo restored the JSONC file byte for byte. [Clean OpenCode run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45984452107)
 
-The lead agent corrected the test profile once. The original test policy blocked the local retrieval bridge. The request preserved the model and synthetic authentication. The guest network stayed disconnected during the test. The live provider and tray checks remain open. [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
+The lead agent corrected the test profile once. The original test policy blocked the local retrieval bridge. The request preserved the model and synthetic authentication. The guest network stayed disconnected during the test. The live-provider check remains open. [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
 
-Verify the tray flow with the current installer on clean Windows 10 x64. [Procedure](validation/windows-preview-check.md)
+The lead agent completed H037-a17. A native close request hid the installed app on clean Windows 10 22H2 x64. The Windows tray menu reopened the same window. Pause and Resume kept the same engine generation. Quit required confirmation. The app stopped the three engine processes and released both loopback ports. [Clean tray run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45992437027)
+
+The first probe could not find the icon through UI Automation. The second probe could not move the guest pointer. The lead agent used Windows notification coordinates and sent clicks through the guest's virtual USB mouse. The test used a fresh Windows 10 guest with its network disconnected. The live provider and Windows 11 checks remain open. [Evidence](proofs/pennypinch-windows10-preview8-clean-install.json)
+
+Verify one live-provider request in an authorized Windows 10 test profile without new charges. [Procedure](validation/windows-preview-check.md)
 
 The lead agent completed the existing H041 Next optimization slices item. The installed preview.8 evidence passed the exact-repeat and long-log checks. The matching 0.45.0 runtime passed 16 local test-output pairs on Windows 10. CCR returned 4 complete originals. The engine forwarded all 8 failed outputs in full. The task list had 17 open subtasks and 8 open main tasks. See the current H041 acceptance table for the remaining criteria. [Evidence](proofs/h041-core-optimization-completion.json)
 

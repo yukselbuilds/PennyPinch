@@ -143,13 +143,19 @@ The test installed the standalone WebView2 Runtime first. It kept the guest netw
 
 The installed app found OpenCode 2.3.0 on clean Windows 10 22H2 x64. Preview left the settings unchanged. Apply saved the local route. The CLI completed one stream through the installed engine to a local test provider. Undo restored the JSONC file byte for byte. [Clean OpenCode run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45984452107)
 
-The request preserved the model and synthetic authentication. The guest network stayed disconnected during the test. The live provider and tray checks remain open. [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
+The request preserved the model and synthetic authentication. The guest network stayed disconnected during the test. The live-provider check remains open. [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
+
+## 27 November — Native tray on clean Windows 10
+
+A native close request hid the installed app on clean Windows 10 22H2 x64. The Windows tray menu reopened the same window. Pause and Resume kept the same engine generation. Quit required confirmation. The app stopped the three engine processes and released both loopback ports. [Clean tray run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45992437027)
+
+The test used a fresh Windows 10 guest with its network disconnected. The live provider and Windows 11 checks remain open. [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
 
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria
 
-1. **Clean Windows 10 desktop.** Verify a live-provider request. Verify tray exit. [Windows procedure](windows-preview-check.md)
+1. **Clean Windows 10 desktop.** Verify a live-provider request. [Windows procedure](windows-preview-check.md)
 2. **Clean Windows 11 x64 desktop.** The clean installation and client flow remain `not_tested`. GitHub's standard Windows 11 desktop image uses ARM64. [Standard images](https://github.com/actions/runner-images#available-images) · [Larger-runner images](https://docs.github.com/en/actions/reference/runners/larger-runners#runner-images)
 
 The 15 November private-repository check estimated ten standard Windows minutes from the reported $0.10 allowance. On 23 November, the GitHub API reported PennyPinch as public. Standard hosted jobs now run outside that allowance. The standard Windows x64 images still run Windows Server. The standard Windows 11 desktop image uses ARM64. Keep the Windows 11 x64 desktop status as `not_tested` until a suitable environment is available. [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions) · [Runner images](https://github.com/actions/runner-images#available-images)
