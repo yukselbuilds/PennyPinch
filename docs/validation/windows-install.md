@@ -133,11 +133,17 @@ The packaged Headroom 0.45.0 engine reached Ready in 14.656 seconds on offline W
 
 This test covers the portable engine. The full installer, client connection, real request, and tray flow need separate evidence. [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
 
+## 27 November — Current NSIS candidate on clean Windows 10
+
+The current NSIS candidate installed for a standard user on clean Windows 10 22H2 x64. The Start control reached Ready in 31.203 seconds. The Stop engine control stopped the packaged processes in 1.182 seconds. The local route stayed open until the app exited. [Clean installation run](https://github.com/yukselbuilds/PennyPinch/actions/runs/45971537433)
+
+The test installed the standalone WebView2 Runtime first. It kept the guest network disconnected. Client connection, a model request, and tray behavior need separate evidence. [Evidence](../proofs/pennypinch-windows10-preview8-clean-install.json)
+
 <a name="açık-kabul"></a>
 
 ## Open acceptance criteria
 
-1. **Clean Windows 10 client flow.** Verify the engine lifecycle. Complete Connect, a small real request, and Undo. Verify tray exit. [Windows procedure](windows-preview-check.md)
+1. **Clean Windows 10 client flow.** Complete Connect, a small real request, and Undo. Verify tray exit. [Windows procedure](windows-preview-check.md)
 2. **Clean Windows 11 x64 desktop.** The clean installation and client flow remain `not_tested`. GitHub's standard Windows 11 desktop image uses ARM64. [Standard images](https://github.com/actions/runner-images#available-images) · [Larger-runner images](https://docs.github.com/en/actions/reference/runners/larger-runners#runner-images)
 
 The 15 November private-repository check estimated ten standard Windows minutes from the reported $0.10 allowance. On 23 November, the GitHub API reported PennyPinch as public. Standard hosted jobs now run outside that allowance. The standard Windows x64 images still run Windows Server. The standard Windows 11 desktop image uses ARM64. Keep the Windows 11 x64 desktop status as `not_tested` until a suitable environment is available. [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions) · [Runner images](https://github.com/actions/runner-images#available-images)
