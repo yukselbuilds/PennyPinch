@@ -47,13 +47,23 @@ jobs:
           npm.cmd install --prefix "$env:RUNNER_TEMP/pp-tools" --no-save --ignore-scripts --no-audit --no-fund pnpm@11.25.0
           $pnpm = "$env:RUNNER_TEMP/pp-tools/node_modules/pnpm/bin/pnpm.cjs"
           if ((node $pnpm --version).Trim() -cne '11.25.0') { throw 'Use pnpm 11.25.0.' }
+          $env:PATH = "$env:RUNNER_TEMP/pp-tools/node_modules/.bin;$env:PATH"
+          if ((pnpm.cmd --version).Trim() -cne '11.25.0') { throw 'Use the pinned pnpm in the Tauri build hook.' }
           node $pnpm --store-dir "$env:RUNNER_TEMP/pp-store" install --frozen-lockfile
+          Write-Output '::notice title=H037 frontend dependencies::{"ready":true}'
           rustup toolchain install 1.92.0 --profile minimal
           $env:RUSTUP_TOOLCHAIN = '1.92.0'
           $root = (Get-Location).Path
           $env:CARGO_TARGET_DIR = Join-Path $root 'work/h037-win-target'
           $env:CARGO_ENCODED_RUSTFLAGS = @("--remap-path-prefix=$root=/pennypinch", "--remap-path-prefix=$env:USERPROFILE=/build-user") -join [char]31
-          node $pnpm run tauri build --config src-tauri/installer.conf.json --ci --no-sign -- --locked
+          Write-Output '::notice title=H037 compiler ready::{"rust":"1.92.0"}'
+          try {
+            node $pnpm run tauri build --config src-tauri/installer.conf.json --ci --no-sign -- --locked
+          } catch {
+            Write-Output '::error title=H037 packaging failure::{"stage":"tauri_build_failed"}'
+            throw
+          }
+          Write-Output '::notice title=H037 bundle compiled::{"ready":true}'
           $release = Join-Path $env:CARGO_TARGET_DIR 'release'
           $settings = Get-Content -LiteralPath 'runtime/manifest.json' -Raw -Encoding utf8 | ConvertFrom-Json
           $python = Resolve-Path -LiteralPath ('runtime/' + $settings.engine.payload_root + '/' + $settings.engine.python)
