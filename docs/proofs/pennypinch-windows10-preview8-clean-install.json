@@ -2,7 +2,7 @@
   "acceptance": {
     "webview2_on_clean_host": "pass",
     "windows10_clean_candidate_engine_lifecycle": "pass",
-    "windows10_clean_client_connect_and_request": "not_verified",
+    "windows10_clean_client_connect_and_request": "pass",
     "windows10_clean_client_loopback_and_undo": "pass",
     "windows10_clean_codex_device_login_and_undo": "pass",
     "windows10_clean_installer": "pass",
@@ -647,6 +647,197 @@
         }
       ]
     }
+  },
+  "installed_candidate_live_codex": {
+    "billing": "not_measured",
+    "build": {
+      "executable_sha256": "cbe2cc931298dce472a16327c91fbcd6d32fa28f0639699743006f4bb05c6c9b",
+      "helper_sha256": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+      "installer_bytes": 125261850,
+      "installer_sha256": "9857aca2c1fe31b3976685c18b94d02f93887756680f0fd7a1b569449fc4dfeb",
+      "manifest_sha256": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+      "resource_count": 19491,
+      "resource_receipt_sha256": "7dbcf84d77febd5c131287b4dab4c8c1125a64b86389677ddd0c4fc58a464f80",
+      "source_commit": "be0e1562e7a65bbff4555408b9f310e32b471158"
+    },
+    "build_run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45967293974",
+    "credential_scope": "temporary_guest_only",
+    "development_token_savings": "unmeasured",
+    "earlier_attempt": {
+      "connected": true,
+      "device_auth_completed": true,
+      "provider_response": "not_verified",
+      "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/46024916822"
+    },
+    "guest_elapsed_seconds": 1179.57,
+    "head_sha": "4cfadda53f994609139e198635d66ff2e76a5dab",
+    "job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/46030502571/job/140612784340",
+    "live_api_key": "not_tested",
+    "offline_webview2": {
+      "exit": 0,
+      "versions": [
+        "158.0.4370.45"
+      ]
+    },
+    "os_preflight": {
+      "network_disconnected": true,
+      "no_dev_tools_in_path": true,
+      "webview2_absent_before": true
+    },
+    "provider_auth": "chatgpt_device_code",
+    "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/46030502571",
+    "scope": "One live Codex CLI turn on a fresh Windows 10 guest. The guest network opened after OS preflight.",
+    "source_sha256": {
+      ".github/h037-clean-win10-live/Autounattend.xml": "2b425679d1cf9f9f6ff345db63f92cf9e9813577a0b2018901bda15e361d3ff8",
+      ".github/h037-clean-win10-live/cli-preflight.py": "91c80f2407acd54ef8cdff619a138db7cc65591dfe7c9c6c6072812cfc9b00e3",
+      ".github/h037-clean-win10-live/codex-live.ps1": "55e96f6354942682f7a47692e71a87116f27481d312f1279e8b52ca5e5ffeabc",
+      ".github/h037-clean-win10-live/desktop.ps1": "592fbef6d1e5bf32b2f79b97d8bdcb5777a21645100a2a304f22537ddda6796c",
+      ".github/h037-clean-win10-live/encrypt-challenge.ps1": "a6733356b24ad60fdf106a3ed66fe618ddd2d1cb062a09b0dbf1ff5f4ab4de7d",
+      ".github/h037-clean-win10-live/engine-processes.py": "165f467cdec884ba8decad8995ebcd8f38614ac44f6d6063dfeba6c97580ccd8",
+      ".github/h037-clean-win10-live/guest.ps1": "a9f4b324d1a716973e5689ebe3604ce91436e15d83b8ff8e92a2ac65075d6536",
+      ".github/h037-clean-win10-live/host.py": "685e14353ad702c724cd5a2fc22c3a989ce2db7547a7cc6ecfd4e06b8b0e97ca",
+      ".github/h037-clean-win10-live/live-client.py": "8c22ab4e5f1106f0530a5e3d0c205208c0f4439942ff95e30656db4c595e3289",
+      ".github/h037-clean-win10-live/turn_diagnostics.py": "093b957182850f873f40973fab30641104b6754694f7a0ee32efc66e3d582219",
+      ".github/workflows/h037-clean-win10-live.yml": "4abc0ec526f452bddce93590baa3893c54b3350c28a8a44515918f669ba2c54a",
+      "runtime/desktop_helper.py": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+      "runtime/manifest.windows.json": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+      "runtime/windows-payload.json": "c38b289c05add3b07317ac4c886ef354810fd812bd22cbe4b1e30fbd03b1c0ae",
+      "scripts/package-windows.py": "3288a635d66bd0ac180582fcb2f0c4029a1f3c55bc6f09a2fec4529307e6b869",
+      "src-tauri/installer.conf.json": "76c5386a92c037129978bdc5fbdb929b807c3d96c0983e1431cc09858914412a",
+      "src-tauri/src/integrations/codex_binary.rs": "3f2fefa34a4c6cea5da55079dba6ed5eb991bba68e0de97ca9bbbd276381f949",
+      "src-tauri/src/integrations/connection_actions.rs": "935bac043c368064921c78941a33af01ef83edb75445b7d16010bbe686af8385",
+      "src-tauri/src/runtime/manager.rs": "188faf5ccfa6a3700f2b8f9114717b8c761abcc6f4a3079a90ef5a7c386772fe",
+      "src-tauri/tauri.conf.json": "ae96df9429b098ec90b499e6fe66592dc68cd9ab19dac4b2775fb41052454784",
+      "src-tauri/windows-hooks.nsh": "4c160b0ed88fdb486ebc45b1cc30f63a597807c5c537d2ac9a7b98971e7db88c",
+      "src-tauri/windows-installer.nsi": "ea04f8d68051d38c9c96d843109a9bfe41904c0f8e042b97ee84780f21dd0023",
+      "src/features/integrations/ConnectDialog.tsx": "69dee0b9f9a3186b8538e7f3a138ec6d992282de668f19beceddc194bc8c0fd6"
+    },
+    "test": {
+      "checks": {
+        "backend_port_released": true,
+        "codex_authenticode_valid": true,
+        "codex_connect_applied": true,
+        "codex_discovered": true,
+        "codex_local_preflight": true,
+        "codex_undo_restored_original": true,
+        "current_user_nsis": true,
+        "engine_ready": true,
+        "engine_stopped_with_stable_route": true,
+        "installed_file_digests_match": true,
+        "installed_python_processes_ended": true,
+        "live_chatgpt_turn_observed": true,
+        "native_window": true,
+        "no_previous_installation": true,
+        "normal_desktop_exit": true,
+        "normal_interactive_token": true,
+        "owned_loopback_listener": true,
+        "stable_listener_closed_on_exit": true,
+        "start_action_clicked": true,
+        "started_stopped": true
+      },
+      "codex": {
+        "applied_config_sha256": "024098f473701d6fcdd0a8417a85ef2b22051d489a55da286dc77a3e295ea4d4",
+        "executable_sha256": "9d563ee4e0441ff9d59d612013e0460ddf8e5709735c2d9f6b98b7ef8ca4eb42",
+        "live": {
+          "diagnostic": {
+            "advisory_items": 1,
+            "events": {
+              "item.completed": 2,
+              "thread.started": 1,
+              "turn.completed": 1,
+              "turn.started": 1
+            },
+            "exit": 0,
+            "invalid_lines": 0,
+            "marker": true,
+            "message_count": 1,
+            "outcome": "pass",
+            "stderr_bytes": 39,
+            "stdout_bytes": 714,
+            "tool_item_count": 0
+          },
+          "live_turns": 1,
+          "marker_present": true,
+          "matched_proxy_rows": 1,
+          "reported_model": "gpt-6-luna",
+          "status": "pass",
+          "temporary_auth_removed": true,
+          "turn_completed": true,
+          "usage_inputs": 10544,
+          "usage_outputs": 24
+        },
+        "original_config_sha256": "c4b83d3aec778e8f67f2f4097fb53c637efb69900c93edb85d2072c3e4afa0c2",
+        "preflight": {
+          "diagnostic": {
+            "advisory_items": 1,
+            "events": {
+              "item.completed": 2,
+              "thread.started": 1,
+              "turn.completed": 1,
+              "turn.started": 1
+            },
+            "exit": 0,
+            "invalid_lines": 0,
+            "marker": true,
+            "message_count": 1,
+            "outcome": "pass",
+            "stderr_bytes": 39,
+            "stdout_bytes": 560,
+            "tool_item_count": 0
+          },
+          "handshake": {
+            "accepted": 1,
+            "requests": 5
+          },
+          "loopback_frames": {
+            "turn": 1,
+            "warmup": 1
+          },
+          "passed": true
+        },
+        "restored_config_sha256": "c4b83d3aec778e8f67f2f4097fb53c637efb69900c93edb85d2072c3e4afa0c2",
+        "version": "0.166.0"
+      },
+      "desktop_exit": 0,
+      "engine_ready_after_seconds": 38.186,
+      "engine_statuses": [
+        "starting",
+        "ready"
+      ],
+      "engine_stop_seconds": 2.086,
+      "engine_version": "0.45.0",
+      "installed_exe_sha256": "cbe2cc931298dce472a16327c91fbcd6d32fa28f0639699743006f4bb05c6c9b",
+      "installed_helper_sha256": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+      "installed_manifest_sha256": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+      "installed_product": "PennyPinch",
+      "installed_python_processes_after_start": 3,
+      "installed_receipt_sha256": "7dbcf84d77febd5c131287b4dab4c8c1125a64b86389677ddd0c4fc58a464f80",
+      "installer_sha256": "9857aca2c1fe31b3976685c18b94d02f93887756680f0fd7a1b569449fc4dfeb",
+      "last_engine": {
+        "error_code": null,
+        "status": "ready"
+      },
+      "phase": "complete",
+      "process_chain_counts": {
+        "controller": 1,
+        "engine": 1,
+        "helper": 1
+      },
+      "readiness": {
+        "ready": true,
+        "rust_core": "loaded",
+        "upstream_probe_enabled": false
+      },
+      "setup_exit": 0,
+      "status": "pass"
+    },
+    "windows": {
+      "architecture": 9,
+      "build": 19045,
+      "display_version": "22H2",
+      "ubr": 2006
+    },
+    "windows_iso_sha256": "ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668"
   },
   "installed_candidate_opencode": {
     "build": {
