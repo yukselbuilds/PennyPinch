@@ -239,7 +239,7 @@ function Test-Desktop {
 
         $result.phase = 'engine_stop'
         $stopTimer = [Diagnostics.Stopwatch]::StartNew()
-        if (!(Invoke-Page "(() => {const d = document.querySelector('.optimization-control__more'); if (!d) return false; d.open = true; const b = d.querySelector('button'); if (!b || b.disabled || !/^(Stop engine|Motoru durdur)$/.test(b.textContent.trim())) return false; b.click(); return true;})()")) {
+        if (!(Wait-For 25 { Invoke-Page "(() => {const d=document.querySelector('.optimization-control__more');if(!d)return false;d.open=true;const b=Array.from(d.querySelectorAll('button')).find(e=>/^(Stop engine|Motoru durdur)$/.test(e.textContent.trim()));if(!b||b.disabled)return false;b.click();return true;})()" })) {
             throw 'engine_stop_control_missing'
         }
         if (!(Wait-For 50 {

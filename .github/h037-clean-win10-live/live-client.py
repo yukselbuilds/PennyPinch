@@ -10,11 +10,12 @@ import time
 import tomllib
 import uuid
 
-
+recipe = Path(__file__).resolve().parent
+sys.path.insert(0, str(recipe))
+from turn_diagnostics import MAX_OUTPUT, run_turn
 CODEX_SHA256 = "9d563ee4e0441ff9d59d612013e0460ddf8e5709735c2d9f6b98b7ef8ca4eb42"
 DEVICE_URL = "https://auth.openai.com/codex/device"
 ANSI = re.compile(r"\x1b\[[\d;]*[A-Za-z]")
-MAX_OUTPUT = 512 * 1024
 
 
 def atomic_json(path, payload):
@@ -98,19 +99,9 @@ def run_live():
     login()
     atomic_json(work / "login-complete.json", {"auth": "chatgpt"})
     marker = "PENNYPINCH_CLEAN_WIN10_" + uuid.uuid4().hex[:12].upper()
-    result = call([str(client), "--no-daemon", "-a", "never", "exec", "--ephemeral", "--json", "--color", "never",
-                   "--sandbox", "read-only", "--skip-git-repo-check", "-C", str(workdir),
-                   f"Reply with exactly {marker} and no other text. Use no tools or subagents."], 110)
-    assert 0 < len(result.stdout) <= MAX_OUTPUT, "cli_output_invalid_size"
-    events = [json.loads(line) for line in result.stdout.splitlines() if line]
-    terminal = [row for row in events if row.get("type") == "turn.completed"]
-    items = [row["item"] for row in events if row.get("type") == "item.completed"]
-    answers = [item.get("text", "").strip() for item in items if item.get("type") == "agent_message"]
-    assert result.returncode == 0 and len(terminal) == 1 and answers == [marker], "live_turn_not_complete"
-    assert not any(row.get("type") in ("error", "turn.failed") for row in events), "live_turn_reported_error"
-    assert all(item.get("type") in ("agent_message", "reasoning") for item in items), "unexpected_tool_or_item"
-    usage = terminal[0]["usage"]
-    assert type(usage["input_tokens"]) is int and usage["input_tokens"] > 0 and usage["output_tokens"] > 0, "provider_usage_unavailable"
+    diagnostic, usage = run_turn(client, workdir, marker)
+    atomic_json(work / "live-diagnostic.json", diagnostic)
+    assert diagnostic["outcome"] == "pass", "live_turn_not_complete"
     end = time.monotonic() + 12
     matched = []
     while time.monotonic() < end:
@@ -126,14 +117,13 @@ def run_live():
     assert len(matched) == 1 and config.read_bytes() == original, "live_turn_not_correlated_to_engine"
     model = matched[0]["model"]
     assert re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", model), "unknown_reported_model"
-    return {"live_turns": 1, "turn_completed": True, "marker_exact": True, "matched_proxy_rows": 1,
+    return {"live_turns": 1, "turn_completed": True, "marker_present": True, "matched_proxy_rows": 1,
             "reported_model": model, "usage_inputs": usage["input_tokens"], "usage_outputs": usage["output_tokens"]}
 
 
 work = Path(sys.argv[1]).resolve(strict=True)
 profile = Path(sys.argv[2]).resolve(strict=True)
 port = int(sys.argv[3])
-recipe = Path(__file__).resolve().parent
 client = work / "codex.exe"
 config = work / "profile/config.toml"
 auth = config.with_name("auth.json")
@@ -160,4 +150,7 @@ finally:
     report["temporary_auth_removed"] = not auth.exists()
     if not report["temporary_auth_removed"]:
         report["status"] = "fail"
+    diagnostic_path = work / "live-diagnostic.json"
+    if diagnostic_path.is_file():
+        report["diagnostic"] = json.loads(diagnostic_path.read_bytes())
     atomic_json(work / "live-result.json", report)

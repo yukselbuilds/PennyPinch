@@ -40,7 +40,8 @@ jobs:
           [[ "$PP_INSTALLER_SHA256" =~ ^[0-9a-f]{64}$ ]]
           printf '%s  answer/setup.exe\n' "$PP_INSTALLER_SHA256" | sha256sum -c -
           cp "$recipe/guest.ps1" "$recipe/desktop.ps1" "$recipe/engine-processes.py" "$recipe/codex-live.ps1" \
-            "$recipe/live-client.py" "$recipe/encrypt-challenge.ps1" "$recipe/device-public.json" answer/
+            "$recipe/live-client.py" "$recipe/turn_diagnostics.py" "$recipe/cli-preflight.py" \
+            "$recipe/encrypt-challenge.ps1" "$recipe/device-public.json" answer/
           python3 - "$recipe/Autounattend.xml" <<'PY'
           import json
           import os

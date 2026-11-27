@@ -2,8 +2,9 @@
   "acceptance": {
     "webview2_on_clean_host": "pass",
     "windows10_clean_candidate_engine_lifecycle": "pass",
-    "windows10_clean_client_connect_and_request": "not_tested",
+    "windows10_clean_client_connect_and_request": "not_verified",
     "windows10_clean_client_loopback_and_undo": "pass",
+    "windows10_clean_codex_device_login_and_undo": "pass",
     "windows10_clean_installer": "pass",
     "windows10_clean_portable_candidate_engine_lifecycle": "pass",
     "windows10_clean_portable_candidate_package": "pass",
@@ -362,6 +363,100 @@
       "docs/proofs/pennypinch-windows10-preview8-local.json": "1c87aa1acded8adaa98feb77bb60e5836b9516d55e9ae69d08431a277f1743ba",
       "scripts/check-windows-preview.ps1": "5efe8ae566838aa048973440108e25859f1df569a4dd6ee39a9bc8a72e27df82"
     }
+  },
+  "installed_candidate_codex_connection": {
+    "billing": "not_measured",
+    "build": {
+      "executable_sha256": "cbe2cc931298dce472a16327c91fbcd6d32fa28f0639699743006f4bb05c6c9b",
+      "helper_sha256": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+      "installer_bytes": 125261850,
+      "installer_sha256": "9857aca2c1fe31b3976685c18b94d02f93887756680f0fd7a1b569449fc4dfeb",
+      "manifest_sha256": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+      "resource_count": 19491,
+      "resource_receipt_sha256": "7dbcf84d77febd5c131287b4dab4c8c1125a64b86389677ddd0c4fc58a464f80",
+      "source_commit": "be0e1562e7a65bbff4555408b9f310e32b471158"
+    },
+    "build_run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/45967293974",
+    "checks": {
+      "codex_authenticode_valid": true,
+      "codex_connect_applied": true,
+      "codex_discovered": true,
+      "codex_undo_restored_original": true,
+      "current_user_nsis": true,
+      "engine_ready": true,
+      "installed_file_digests_match": true,
+      "no_previous_installation": true,
+      "normal_interactive_token": true,
+      "owned_loopback_listener": true
+    },
+    "codex": {
+      "applied_config_sha256": "4130b93780ae172d3ea1fe9676b977031c73680e4e05639e712430e39c56afb8",
+      "executable_sha256": "9d563ee4e0441ff9d59d612013e0460ddf8e5709735c2d9f6b98b7ef8ca4eb42",
+      "original_config_sha256": "c4b83d3aec778e8f67f2f4097fb53c637efb69900c93edb85d2072c3e4afa0c2",
+      "restored_config_sha256": "c4b83d3aec778e8f67f2f4097fb53c637efb69900c93edb85d2072c3e4afa0c2",
+      "version": "0.166.0"
+    },
+    "credential_scope": "temporary_guest_only",
+    "development_token_savings": "unmeasured",
+    "earlier_attempt": {
+      "connected": true,
+      "device_auth_completed": false,
+      "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/46001306784"
+    },
+    "guest_elapsed_seconds": 1392.266,
+    "head_sha": "977df7c8fedb5c7a97166e9b736e7be06531dc9b",
+    "job": "https://github.com/yukselbuilds/PennyPinch/actions/runs/46024916822/job/140593704315",
+    "live_api_key": "not_tested",
+    "login_verified": true,
+    "offline_webview2": {
+      "exit": 0,
+      "versions": [
+        "158.0.4370.45"
+      ]
+    },
+    "os_preflight": {
+      "network_disconnected": true,
+      "no_dev_tools_in_path": true,
+      "webview2_absent_before": true
+    },
+    "provider_auth": "chatgpt_device_code",
+    "run": "https://github.com/yukselbuilds/PennyPinch/actions/runs/46024916822",
+    "scope": "Codex connection, device sign-in, and exact Undo on a fresh Windows 10 guest.",
+    "source_sha256": {
+      ".github/h037-clean-win10-live/Autounattend.xml": "2b425679d1cf9f9f6ff345db63f92cf9e9813577a0b2018901bda15e361d3ff8",
+      ".github/h037-clean-win10-live/codex-live.ps1": "5ae82a85b2dca956d7a2824f81bdc356fc347fe555cdd39da980519a75a101cb",
+      ".github/h037-clean-win10-live/desktop.ps1": "73c734ac9e7be10a5b18227f7153730b8bac9f81e935db74016ef43895b25a79",
+      ".github/h037-clean-win10-live/encrypt-challenge.ps1": "a6733356b24ad60fdf106a3ed66fe618ddd2d1cb062a09b0dbf1ff5f4ab4de7d",
+      ".github/h037-clean-win10-live/engine-processes.py": "165f467cdec884ba8decad8995ebcd8f38614ac44f6d6063dfeba6c97580ccd8",
+      ".github/h037-clean-win10-live/guest.ps1": "a9f4b324d1a716973e5689ebe3604ce91436e15d83b8ff8e92a2ac65075d6536",
+      ".github/h037-clean-win10-live/host.py": "685e14353ad702c724cd5a2fc22c3a989ce2db7547a7cc6ecfd4e06b8b0e97ca",
+      ".github/h037-clean-win10-live/live-client.py": "9bf94a066f387a4b34dd40a6e8dbcc8c06f11c08314942cb30262587ec0fb5dd",
+      ".github/workflows/h037-clean-win10-live.yml": "20636253d50caa3285bd95273cf2d23b17b2d3a6c5ab2da448b00bf3b3b7cdd2",
+      "runtime/desktop_helper.py": "2fc0dc0c114eaa194a796815a514cdc9989653649a44c9e04d2133e4eca049de",
+      "runtime/manifest.windows.json": "15e1a28252274aae7278e249e8d3d9fbe2a50bc259cd3bb028cd406ce698189f",
+      "runtime/windows-payload.json": "c38b289c05add3b07317ac4c886ef354810fd812bd22cbe4b1e30fbd03b1c0ae",
+      "scripts/package-windows.py": "3288a635d66bd0ac180582fcb2f0c4029a1f3c55bc6f09a2fec4529307e6b869",
+      "src-tauri/installer.conf.json": "76c5386a92c037129978bdc5fbdb929b807c3d96c0983e1431cc09858914412a",
+      "src-tauri/src/integrations/codex_binary.rs": "3f2fefa34a4c6cea5da55079dba6ed5eb991bba68e0de97ca9bbbd276381f949",
+      "src-tauri/src/integrations/connection_actions.rs": "935bac043c368064921c78941a33af01ef83edb75445b7d16010bbe686af8385",
+      "src-tauri/src/runtime/manager.rs": "188faf5ccfa6a3700f2b8f9114717b8c761abcc6f4a3079a90ef5a7c386772fe",
+      "src-tauri/tauri.conf.json": "ae96df9429b098ec90b499e6fe66592dc68cd9ab19dac4b2775fb41052454784",
+      "src-tauri/windows-hooks.nsh": "4c160b0ed88fdb486ebc45b1cc30f63a597807c5c537d2ac9a7b98971e7db88c",
+      "src-tauri/windows-installer.nsi": "ea04f8d68051d38c9c96d843109a9bfe41904c0f8e042b97ee84780f21dd0023",
+      "src/features/integrations/ConnectDialog.tsx": "69dee0b9f9a3186b8538e7f3a138ec6d992282de668f19beceddc194bc8c0fd6"
+    },
+    "temporary_auth_removed": true,
+    "unverified_checks": {
+      "live_provider_response": "completion_criteria_not_met",
+      "normal_stop": "control_not_observed"
+    },
+    "windows": {
+      "architecture": 9,
+      "build": 19045,
+      "display_version": "22H2",
+      "ubr": 2006
+    },
+    "windows_iso_sha256": "ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668"
   },
   "installed_candidate_lifecycle": {
     "build": {

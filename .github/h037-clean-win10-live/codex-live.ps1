@@ -24,6 +24,16 @@ function Enter-CodexFixture {
         'web_search = "disabled"' + [char]10), [Text.UTF8Encoding]::new($false))
     $result.codex = [ordered]@{ executable_sha256 = $digest; original_config_sha256 = (Get-Digest $clientConfig); version = '0.166.0' }
     $result.checks.codex_authenticode_valid = $true
+    $result.phase = 'codex_local_preflight'
+    $smoke = New-Item -ItemType Directory -Path (Join-Path $clientRoot 'local-preflight')
+    $python = Join-Path $destination 'runtime/payload/python.exe'
+    $script = Join-Path $PSScriptRoot 'cli-preflight.py'
+    $null = & $python -I -B $script $client $smoke.FullName
+    $code = $LASTEXITCODE
+    $record = Join-Path $smoke.FullName 'synthetic-preflight.json'
+    if (Test-Path -LiteralPath $record) { $result.codex.preflight = Get-Content -LiteralPath $record -Raw -Encoding UTF8 | ConvertFrom-Json }
+    if ($code -ne 0 -or !$result.codex.preflight.passed) { throw 'codex_local_preflight_not_verified' }
+    $result.checks.codex_local_preflight = $true
 }
 
 function Test-CodexLive([int]$enginePort) {
