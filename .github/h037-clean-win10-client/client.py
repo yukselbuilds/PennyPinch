@@ -32,13 +32,18 @@ def prepare(work, profile):
         "update": "disable", "share": "disabled", "plugins": [],
         "warming": False, "snapshots": False, "compaction": {"auto": False},
         "agents": {"title": {"disabled": True}},
-        "permissions": [{"action": "*", "resource": "*", "effect": "deny"}],
+        "permissions": [
+            {"action": "*", "resource": "*", "effect": "deny"},
+            {"action": "headroom_retrieve", "resource": "*", "effect": "allow"},
+        ],
         "policies": [
             *({"action": action, "resource": "*", "effect": "deny"} for action in
               ("provider.use", "tool.use", "integration.connect", "integration.use",
                "mcp.use", "skill.use", "plugin.use", "websearch.use")),
             {"action": "provider.use", "resource": "lab", "effect": "allow"},
             {"action": "integration.use", "resource": "lab", "effect": "allow"},
+            {"action": "mcp.use", "resource": "headroom", "effect": "allow"},
+            {"action": "tool.use", "resource": "headroom_retrieve:*", "effect": "allow"},
         ],
         "providers": {"lab": {
             "package": "@opencode/ai/providers/openai-compatible",

@@ -140,10 +140,12 @@ function Test-ClientRoundTrip([int]$enginePort) {
         throw 'connection_preview_control_missing'
     }
     $apply = "const b=buttons.find(e=>e.getClientRects().length && /^(Apply|Uygula)$/.test(e.textContent.trim()));"
-    if (!(Wait-For 90 { Invoke-Page "(() => { $button $apply return !!b && !b.disabled; })()" })) {
-        throw 'connection_preview_not_ready'
+    $preview = Wait-For 90 {
+        Invoke-Page "(() => { $button $apply if(b && !b.disabled) return 'ready'; if(d?.querySelector('.connection-dialog__result.is-blocked')) return 'blocked'; return ''; })()"
     }
     if ((Get-ContentDigest $clientConfig) -cne $result.client.original_sha256) { throw 'preview_modified_client_config' }
+    if ($preview -ceq 'blocked') { throw 'connection_preview_blocked' }
+    if ($preview -cne 'ready') { throw 'connection_preview_not_ready' }
     $result.checks.preview_read_only = $true
     $result.phase = 'connection_apply'
     if (!(Invoke-Page "(() => { $button $apply if(!b || b.disabled) return false; b.click(); return true; })()") -or
