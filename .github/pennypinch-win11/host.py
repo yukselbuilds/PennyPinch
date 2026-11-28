@@ -13,7 +13,7 @@ INSTALLED_TEST_LIMIT_SECONDS = 1230
 ANNOTATED_EVENTS = {"boot", "specialize", "guest_entry", "setup", "before", "portable", "controller_task", "runtime", "installed", "ready", "exited", "complete", "duration", "host problem"}
 guest = [
     "qemu-system-x86_64", "-enable-kvm", "-machine", "q35,smm=on", "-cpu", "host",
-    "-smp", "4,sockets=1,cores=4,threads=1", "-m", "8192", "-S",
+    "-smp", "4", "-m", "8192", "-S",
     "-global", "driver=cfi.pflash01,property=secure,value=on",
     "-drive", "if=pflash,format=raw,unit=0,file=/usr/share/OVMF/OVMF_CODE_4M.secboot.fd,readonly=on",
     "-drive", "if=pflash,format=raw,unit=1,file=firmware-vars.fd",
@@ -26,7 +26,7 @@ guest = [
     "-device", "ide-cd,drive=media,bus=ide.2,bootindex=1",
     "-drive", "if=none,id=answer,file=answer.iso,format=raw,media=cdrom,readonly=on",
     "-device", "ide-cd,drive=answer,bus=ide.3",
-    "-nic", "none",
+    "-netdev", "user,id=nat,restrict=on", "-device", "e1000e,netdev=nat,id=guestnic",
     "-serial", "file:guest.serial", "-qmp", f"unix:{socket_path},server=on,wait=off",
 ]
 
@@ -114,8 +114,9 @@ def main(process):
         with monitor.makefile("rwb", buffering=0) as stream:
             assert "QMP" in json.loads(stream.readline())
             qmp(stream, "qmp_capabilities")
+            qmp(stream, "set_link", name="guestnic", up=False)
             qmp(stream, "cont")
-            notice("boot", {"kvm": qmp(stream, "query-kvm")["enabled"], "disk": "new_qcow2", "network_device": False})
+            notice("boot", {"kvm": qmp(stream, "query-kvm")["enabled"], "disk": "new_qcow2", "network_restricted_and_link_down": True})
             start = time.monotonic()
             preflight = None
             setup_samples = []
@@ -155,6 +156,7 @@ def main(process):
                     raise RuntimeError("vm_exited_before_receipt")
                 if not preflight and elapsed >= BOOT_LIMIT_SECONDS:
                     notice("setup", {"samples": setup_samples, "preflight_after_seconds": None})
+                    qmp(stream, "screendump", filename=str(Path("setup-timeout.ppm").resolve()))
                     raise RuntimeError("guest_timeout_before_baseline")
                 if preflight and time.monotonic() - preflight >= INSTALLED_TEST_LIMIT_SECONDS:
                     raise RuntimeError("guest_timeout_after_baseline")

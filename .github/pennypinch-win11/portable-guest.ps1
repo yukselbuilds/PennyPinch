@@ -22,12 +22,15 @@ try {
     $secureBoot = (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot\State' -Name UEFISecureBootEnabled).UEFISecureBootEnabled
     $tpm = Get-CimInstance -Namespace 'root/cimv2/security/microsofttpm' -ClassName Win32_Tpm
     if ($secureBoot -ne 1 -or $tpm.SpecVersion -notmatch '^2\.0') { throw 'secure_boot_or_tpm_missing' }
-    if (@(Get-NetAdapter -Physical).Count) { throw 'unexpected_guest_network_adapter' }
+    $adapters = @(Get-NetAdapter -Physical)
+    if ($adapters.Count -ne 1) { throw 'unexpected_guest_network_adapter' }
+    Disable-NetAdapter -InputObject $adapters[0] -Confirm:$false
+    if ((Get-NetAdapter -InterfaceIndex $adapters[0].ifIndex).Status -ne 'Disabled') { throw 'guest_network_not_disabled' }
     if (@(Get-Command cargo,rustc,node,pnpm,py,cl,msbuild -ErrorAction SilentlyContinue).Count) { throw 'development_tools_present' }
     $result.windows = @{ build = 26100; display_version = '24H2'; architecture = 9; ubr = [int]$build.UBR;
         edition = $build.EditionID; secure_boot = $true; tpm2 = $true }
     $result.checks.no_dev_tools_in_path = $true
-    $result.checks.network_device_absent = $true
+    $result.checks.network_disabled = $true
     Send-Receipt before @{ preflight = @{ status = 'ready'; windows = $result.windows }; already_online = $false }
 
     $result.phase = 'portable_preparation'
