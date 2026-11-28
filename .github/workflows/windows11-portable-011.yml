@@ -22,7 +22,7 @@ jobs:
           test -c /dev/kvm
           sudo setfacl -m "u:$USER:rw" /dev/kvm
           timeout 180 sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 update -qq
-          timeout 180 sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 install -y -qq --no-install-recommends qemu-system-x86 qemu-utils xorriso tesseract-ocr aria2 ovmf swtpm p7zip-full
+          timeout 180 sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 install -y -qq --no-install-recommends qemu-system-x86 qemu-utils xorriso tesseract-ocr aria2 ovmf swtpm p7zip-full ntfs-3g
           recipe="$GITHUB_WORKSPACE/.github/pennypinch-win11"
           mkdir -p "$RUNNER_TEMP/pennypinch-win11/answer"
           cd "$RUNNER_TEMP/pennypinch-win11"
@@ -85,6 +85,33 @@ jobs:
           done
           test -S tpm-control.sock
           python3 "$GITHUB_WORKSPACE/.github/pennypinch-win11/host.py"
+      - name: Read the Windows Setup failure codes from the offline disk
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/pennypinch-win11"
+          if ! test -f setup-timeout.ppm; then exit 0; fi
+          mkdir -p setup-diagnostics
+          if sudo modprobe nbd max_part=8 && test -b /dev/nbd0; then
+            sudo qemu-nbd --format=qcow2 --read-only --connect=/dev/nbd0 clean.qcow2
+            mkdir -p setup-mount
+            trap 'sudo umount setup-mount 2>/dev/null || true; sudo qemu-nbd --disconnect /dev/nbd0 >/dev/null 2>&1 || true' EXIT
+            sudo udevadm settle --timeout=10
+            test -b /dev/nbd0p3 || sudo partx --add /dev/nbd0
+            sudo udevadm settle --timeout=10
+            sudo ntfs-3g -o ro,norecover /dev/nbd0p3 setup-mount
+            sudo cp -n setup-mount/Windows/Panther/{setupact,setuperr}.log setup-diagnostics/ || true
+            sudo cp -n setup-mount/Windows/Panther/UnattendGC/setupact.log setup-diagnostics/oobe.log || true
+          else
+            timeout 180 sudo apt-get -o Acquire::Retries=2 install -y -qq --no-install-recommends libguestfs-tools
+            sudo env LIBGUESTFS_BACKEND=direct LIBGUESTFS_MEMSIZE=768 timeout 180 guestfish --ro --format=qcow2 -a clean.qcow2 -m /dev/sda3:/ <<'GUEST'
+          -download /Windows/Panther/setupact.log setup-diagnostics/setupact.log
+          -download /Windows/Panther/setuperr.log setup-diagnostics/setuperr.log
+          -download /Windows/Panther/UnattendGC/setupact.log setup-diagnostics/oobe.log
+          GUEST
+          fi
+          sudo python3 "$GITHUB_WORKSPACE/.github/pennypinch-win11/setup-summary.py"
       - name: Save the blocked Windows Setup screen
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

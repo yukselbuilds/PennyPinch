@@ -2,6 +2,7 @@ from base64 import b64decode
 import json
 from pathlib import Path
 import re
+import shutil
 import socket
 import subprocess
 import time
@@ -61,6 +62,8 @@ def setup_display(stream):
         "installing windows": "installing",
         "where do you want to install windows": "disk_selection",
         "windows setup": "setup",
+        "restarted unexpectedly": "windows_setup_unexpected_restart",
+        "installation cannot proceed": "windows_setup_unexpected_restart",
         "could not install required files": "setup_files_error",
         "windows installation failed": "setup_install_failed",
         "your pc/device needs to be repaired": "windows_recovery",
@@ -85,7 +88,7 @@ def setup_display(stream):
     }
     try:
         qmp(stream, "screendump", filename=str(Path("setup.ppm").resolve()))
-        scan = subprocess.run(["tesseract", "setup.ppm", "stdout"], capture_output=True, check=True, timeout=10)
+        scan = subprocess.run(["tesseract", "setup.ppm", "stdout", "--psm", "11"], capture_output=True, check=True, timeout=10)
         screen = " ".join(scan.stdout.decode("utf-8", errors="replace").lower().split())
     except (RuntimeError, subprocess.SubprocessError):
         return ["diagnostic_unavailable"]
@@ -127,6 +130,9 @@ def main(process):
                 elapsed = time.monotonic() - start
                 if not preflight and elapsed >= next_diagnostic:
                     states = setup_display(stream)
+                    if "windows_setup_unexpected_restart" in states:
+                        shutil.copyfile("setup.ppm", "setup-timeout.ppm")
+                        raise RuntimeError("windows_setup_unexpected_restart")
                     setup_samples.append({"seconds": next_diagnostic, "screen": states})
                     notice(f"boot at {next_diagnostic} seconds", setup_samples[-1])
                     # A prompt after the installer restarts must time out to the installed disk.
