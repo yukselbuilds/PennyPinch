@@ -56,6 +56,8 @@ Open **Tool output protection** under **Operating preferences** to keep selected
 
 ## Preferences and updates
 
+Open **Settings → Language** to choose English or Turkish. PennyPinch uses the saved language when it reopens.
+
 Reducing the retention period can permanently delete older measurement records. Increasing it applies to the retained and future data.
 
 Use the full installer to upgrade from preview.8 to v0.1.1. Select **Do not uninstall** when setup offers that option. [Windows 10 release](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1)

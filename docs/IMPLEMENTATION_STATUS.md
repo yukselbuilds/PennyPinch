@@ -6,6 +6,8 @@
 
 PennyPinch v0.1.1 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. The installer preserved preferences on upgrade from preview.8. The installed app applied the signed update from GitHub Pages and restored the earlier version. [Download](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1) · [Evidence](proofs/pennypinch-windows10-stable-release.json)
 
+The lead agent verified the H015 language change on Windows 10 22H2 x64. A new native profile opened in English. Settings saved Turkish. The second launch read the same preference file. 228 app tests and 482 Rust tests passed. The change is ready in source for a future release. [Evidence](proofs/english-first-launch.json)
+
 PennyPinch v0.1.1-preview.8 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. Both public downloads matched their SHA-256 digests. GitHub Pages links to the release. [Download the Windows preview](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1-preview.8) · [Publication evidence](proofs/pennypinch-windows10-preview8-publication.json)
 
 Use the full installer to install preview.8. The signed preview channel serves 0.1.1-preview.2 to compatible installations. The three signed feed files matched their recorded SHA-256 digests before and after publication. [Update status](https://yukselbuilds.github.io/PennyPinch/updates/)

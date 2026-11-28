@@ -588,7 +588,7 @@ fn missing_state_returns_defaults_without_creating_a_file() {
     let fixture = Fixture::new();
     let value = snapshot(fixture.store.get_preferences(REQUEST_ID.to_owned()));
     assert_eq!(value.revision, 0);
-    assert_eq!(value.preferences.language, "tr");
+    assert_eq!(value.preferences.language, "en");
     assert_eq!(value.preferences.theme, "system");
     assert_eq!(value.runtime_manifest.engine_version, "0.45.0");
     assert_eq!(value.runtime_manifest.ccr_ttl_seconds, 7200);
@@ -602,13 +602,13 @@ fn save_and_reopen_preserves_only_allowlisted_preferences_and_manifest_reference
     let fixture = Fixture::new();
     let saved = snapshot(fixture.store.save_preferences(
         REQUEST_ID.to_owned(),
-        "en".to_owned(),
+        "tr".to_owned(),
         "dark".to_owned(),
         0,
         None,
     ));
     assert_eq!(saved.revision, 1);
-    assert_eq!(saved.preferences.language, "en");
+    assert_eq!(saved.preferences.language, "tr");
     assert_eq!(saved.preferences.theme, "dark");
     assert!(saved.state_fingerprint.is_some());
     assert_eq!(

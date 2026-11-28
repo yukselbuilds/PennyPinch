@@ -33,7 +33,7 @@ use metrics::collector::{OverviewManager, OverviewReply};
 use metrics::store::{MetricsError, MetricsQueryRequest, MetricsReply, MetricsStore};
 use runtime::manager::{IngressReply, RuntimeManager, RuntimeReply};
 use state::choices::ChoiceStore;
-use state::store::{OperatingPreferences, PreferenceStore, PreferencesReply};
+use state::store::{OperatingPreferences, PreferenceStore, PreferencesReply, UserPreferences};
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::Arc;
 use tauri::Manager;
@@ -953,7 +953,7 @@ fn main() {
                 .get_preferences(uuid::Uuid::new_v4().to_string())
             {
                 PreferencesReply::Snapshot(snapshot) => snapshot.preferences.language,
-                _ => "tr".to_owned(),
+                _ => UserPreferences::default().language,
             };
             app.manage(desktop::tray::TrayController::install(
                 app.handle(),

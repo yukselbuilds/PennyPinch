@@ -149,7 +149,7 @@ impl OperatingPreferences {
 impl Default for UserPreferences {
     fn default() -> Self {
         Self {
-            language: "tr".to_owned(),
+            language: "en".to_owned(),
             theme: "system".to_owned(),
             operating: OperatingPreferences::default(),
             show_recommendations: false,

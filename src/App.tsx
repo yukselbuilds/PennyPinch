@@ -207,7 +207,7 @@ export default function App() {
   const [zoomPending, setZoomPending] = useState(false);
   const [zoomFailed, setZoomFailed] = useState(false);
   const zoomLock = useRef(false);
-  const [language, setLanguage] = useState<PreferenceLanguage>("tr");
+  const [language, setLanguage] = useState<PreferenceLanguage>("en");
   const [preferencesStatus, setPreferencesStatus] = useState<PreferenceUiStatus>("loading");
   const [preferencesIssue, setPreferencesIssue] = useState<PreferenceIssue | null>(null);
   const [snapshot, setSnapshot] = useState<RuntimeSnapshot | null>(null);
@@ -223,7 +223,7 @@ export default function App() {
   const preferencesWriteLocked = useRef(false);
   const preferencesRevision = useRef(0);
   const preferencesFingerprint = useRef<string | null>(null);
-  const persistedPreferences = useRef<UserPreferences>({ language: "tr", theme: "system", operating: defaultOperatingPreferences(), show_recommendations: false, experimental_rules: false });
+  const persistedPreferences = useRef<UserPreferences>({ language, theme: "system", operating: defaultOperatingPreferences(), show_recommendations: false, experimental_rules: false });
   const showRecommendations = persistedPreferences.current.show_recommendations;
   const overview = useOverviewMetrics(period, screen === "overview", showRecommendations);
   const labels = copy[language] as Labels;

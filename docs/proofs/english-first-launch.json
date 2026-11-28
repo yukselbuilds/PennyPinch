@@ -1,0 +1,85 @@
+{
+  "development_token_savings": "unmeasured",
+  "language": {
+    "new_profile": "en",
+    "saved_language_tested": "tr"
+  },
+  "native_windows_10": {
+    "build_seconds": 61.089,
+    "changed_inputs": {
+      "index.html": "f8f485862d57b2bc074b8ea0c48fefcf1c89e8aedc5a889604b85daaf00b425b",
+      "src-tauri/src/main.rs": "396880d3a98ae8c3df1e0b24c2270344d603031f07114c9abda5eec1acb674ab",
+      "src-tauri/src/state/store.rs": "7ddaa8facc39c698764f4c5f207bc8397e879e6b10c84b3dca8ec0eaec33d911",
+      "src-tauri/src/state/store_tests.rs": "799f44df738f7af286d8b8b9e0f4adbb84134c13e4d9cecb7568a46d90a891d4",
+      "src/App.tsx": "216a0643f380245ccdefc423526a9b862c10dd77c57b17bb814a96db561d8fa2"
+    },
+    "fresh_language": "en",
+    "input_count": 373,
+    "inputs_sha256_before_after": "f680ad69c653a87598bc9025505dc2bb0d562910bfee1fa103607779075f086d",
+    "isolated_state_removed": true,
+    "native_exe_sha256": "7ca7cac9bfdb6b649d77b98d0ba03fa621e05684b80d7dcbc4317180a363680c",
+    "normal_exit_count": 2,
+    "passed": true,
+    "preferences_sha256": "6efc75ee64f58d2bf66b73ad03e68c08e6348aaf0883f90f70053e7cc3522298",
+    "preferences_unchanged_on_reopen": true,
+    "reopen_language": "tr",
+    "scope": "isolated native release-mode app",
+    "seconds": 66.358,
+    "windows_build": 19045
+  },
+  "observed_on": "2026-11-28",
+  "published_release": "source_change_only",
+  "quality_gate": {
+    "changed_inputs": {
+      "index.html": "f8f485862d57b2bc074b8ea0c48fefcf1c89e8aedc5a889604b85daaf00b425b",
+      "src-tauri/src/main.rs": "396880d3a98ae8c3df1e0b24c2270344d603031f07114c9abda5eec1acb674ab",
+      "src-tauri/src/state/store.rs": "7ddaa8facc39c698764f4c5f207bc8397e879e6b10c84b3dca8ec0eaec33d911",
+      "src-tauri/src/state/store_tests.rs": "799f44df738f7af286d8b8b9e0f4adbb84134c13e4d9cecb7568a46d90a891d4",
+      "src/App.tsx": "216a0643f380245ccdefc423526a9b862c10dd77c57b17bb814a96db561d8fa2"
+    },
+    "checks": {
+      "app_tests": {
+        "passed": true,
+        "seconds": 1.145,
+        "tests": 228
+      },
+      "custom_protocol_build": {
+        "passed": true,
+        "seconds": 26.108
+      },
+      "formatting": {
+        "passed": true,
+        "seconds": 1.289
+      },
+      "frontend_build": {
+        "passed": true,
+        "seconds": 2.1
+      },
+      "rust_tests": {
+        "ignored": 25,
+        "passed": true,
+        "seconds": 24.952,
+        "tests": 482
+      }
+    },
+    "input_count": 511,
+    "input_sha256_before_after": "5ecec976ce46207f4fcc0ee7dc610535d18336189674ce6923726b70360b2a46",
+    "passed": true,
+    "seconds": 64.262,
+    "source_base_commit": "236b5d9a074dd4f7e7ba450503b19f1b1b2d731c",
+    "toolchain": {
+      "cargo.exe": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "node.exe": "v25.2.1",
+      "pnpm.cmd": "11.25.0",
+      "rustc.exe": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+      "rustfmt.exe": "rustfmt 1.8.0-stable (ded5c06cf2 2025-12-08)"
+    },
+    "windows_build": 19045
+  },
+  "receipt_sha256": {
+    "gate.json": "453e2bfd4846917ba9310b073e1c1db50d96597de8e9f83297bf5fe62fdcd98b",
+    "native.json": "fe639bcc394d1d661a2665d04fd12567017d237a955e3b34e02e68d0f0dfb233"
+  },
+  "status": "pass",
+  "task": "H015 first-launch language"
+}
