@@ -2,7 +2,7 @@
 
 ## Current status
 
-**46 of 54 main tasks are complete.** **12 subtasks remain open.** The Windows 10 v0.1.1 stable release is available. The owner approved the Windows 11 x64 test on a free standard runner. H041 remains open. [Task list](../TASKS.md)
+**47 of 54 main tasks are complete.** **12 subtasks remain open.** The Windows 10 v0.1.1 stable release is available. The Windows 11 portable engine passed. H041 remains open. [Task list](../TASKS.md)
 
 PennyPinch v0.1.1 is available for Windows 10 22H2 x64. The full installer includes Headroom 0.45.0. The installer preserved preferences on upgrade from preview.8. The installed app applied the signed update from GitHub Pages and restored the earlier version. [Download](https://github.com/yukselbuilds/PennyPinch/releases/tag/v0.1.1) · [Evidence](proofs/pennypinch-windows10-stable-release.json)
 
@@ -152,9 +152,11 @@ H049 is complete for Ubuntu 24.04 x64. The installed Debian package passed the n
 
 The lead agent verified the H049-b4 regression on macOS 26.7.2 ARM64. The job passed 16 Rust tests, the frontend build, and the locked native build. GitHub cancelled the macOS 15 job before runner assignment. [Regression evidence](proofs/h049-macos-cli-regression.json)
 
-GitHub lists free standard hosted compute for public repositories. Standard Windows x64 runners use Windows Server. The standard Windows 11 desktop runner uses ARM64. Windows 11 x64 acceptance remains open. [Windows acceptance](validation/windows-install.md#open-acceptance-criteria)
+GitHub lists free standard hosted compute for public repositories. Standard Windows x64 runners use Windows Server. The standard Windows 11 desktop runner uses ARM64. Full Windows 11 x64 desktop acceptance remains open. [Windows acceptance](validation/windows-install.md#open-acceptance-criteria)
 
-The Windows 10 test used a disposable KVM guest on a standard Ubuntu x64 runner. The Windows 11 x64 test uses the same runner class. An earlier guest reached Windows 11 and stopped at the network check. The next run returned to the installation media and reached the boot timeout. The lead agent limited the boot key to the first launch. Read the active run before updating Windows 11 acceptance. [Current Windows 11 run](https://github.com/yukselbuilds/PennyPinch/actions/runs/46122345851) · [Windows 10 run](https://github.com/yukselbuilds/PennyPinch/actions/runs/46030502571)
+The lead agent completed H006 with the portable engine from the published v0.1.1 installer. The portable Headroom 0.45.0 engine reached Ready in 70.420 seconds on clean Windows 11 24H2 x64. The native core loaded offline. The engine stopped normally and released its port. The engine-only ZIP had 198,544,748 bytes. The test used a standard desktop user token. [GitHub run](https://github.com/yukselbuilds/PennyPinch/actions/runs/46140058906) · [Evidence](proofs/pennypinch-windows11-portable-engine.json)
+
+The full Windows 11 run reached the system disk and stopped before the desktop test reported. Use the first desktop sign-in to verify the installed app and the signed update. [Desktop run](https://github.com/yukselbuilds/PennyPinch/actions/runs/46126574469)
 
 ### Windows release evidence
 
