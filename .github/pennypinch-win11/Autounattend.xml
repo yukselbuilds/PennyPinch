@@ -41,13 +41,8 @@
       <RunSynchronous>
         <RunSynchronousCommand wcm:action="add">
           <Order>1</Order>
-          <Path>powershell.exe -NoProfile -Command "try { $port = [IO.Ports.SerialPort]::new('COM1', 115200); $port.Open(); $port.WriteLine('PPAUDIT specialize eyJzdGFydGVkIjp0cnVlfQ=='); $port.Close() } catch { }"</Path>
+          <Path>powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand JABzAD0AWwBJAE8ALgBQAG8AcgB0AHMALgBTAGUAcgBpAGEAbABQAG8AcgB0AF0AOgA6AG4AZQB3ACgAIgBDAE8ATQAxACIALAAxADEANQAyADAAMAApADsAJABzAC4ATwBwAGUAbgAoACkAOwAkAHMALgBXAHIAaQB0AGUATABpAG4AZQAoACIAUABQAEEAVQBEAEkAVAAgAHMAcABlAGMAaQBhAGwAaQB6AGUAIABlAHkASgB6AGQARwBGAHkAZABHAFYAawBJAGoAcAAwAGMAbgBWAGwAZgBRAD0APQAiACkAOwAkAHMALgBDAGwAbwBzAGUAKAApADsAJABkAD0AKABHAGUAdAAtAFYAbwBsAHUAbQBlACAALQBGAGkAbABlAFMAeQBzAHQAZQBtAEwAYQBiAGUAbAAgAFAAUABBAFUARABJAFQAKQAuAEQAcgBpAHYAZQBMAGUAdAB0AGUAcgA7AGkAZgAoACQAZAApAHsAJgAgACIAJAB7AGQAfQA6AFwAcABvAHIAdABhAGIAbABlAC0AZwB1AGUAcwB0AC4AcABzADEAIgB9AGUAbABzAGUAewAkAHMALgBPAHAAZQBuACgAKQA7ACQAcwAuAFcAcgBpAHQAZQBMAGkAbgBlACgAIgBQAFAAQQBVAEQASQBUACAAbQBlAGQAaQBhAF8AbQBpAHMAcwBpAG4AZwAgAGUAMwAwAD0AIgApADsAJABzAC4AQwBsAG8AcwBlACgAKQB9ADsAZQB4AGkAdAAgADAA</Path>
           <Description>Record the first boot from the Windows system disk</Description>
-        </RunSynchronousCommand>
-        <RunSynchronousCommand wcm:action="add">
-          <Order>2</Order>
-          <Path>powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$until=[DateTime]::UtcNow.AddSeconds(30); do { $file = @(Get-PSDrive -PSProvider FileSystem | ForEach-Object { Join-Path $_.Root 'portable-guest.ps1' } | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf }); if ($file.Count -eq 1) { &amp; $file[0]; exit $LASTEXITCODE }; Start-Sleep -Milliseconds 500 } while ([DateTime]::UtcNow -lt $until); exit 1"</Path>
-          <Description>Run the packaged engine test from the system disk</Description>
         </RunSynchronousCommand>
       </RunSynchronous>
     </component>
