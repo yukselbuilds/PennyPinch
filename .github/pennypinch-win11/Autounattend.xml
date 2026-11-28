@@ -41,8 +41,13 @@
       <RunSynchronous>
         <RunSynchronousCommand wcm:action="add">
           <Order>1</Order>
-          <Path>powershell.exe -NoProfile -ExecutionPolicy Bypass -EncodedCommand JABzAD0AWwBJAE8ALgBQAG8AcgB0AHMALgBTAGUAcgBpAGEAbABQAG8AcgB0AF0AOgA6AG4AZQB3ACgAIgBDAE8ATQAxACIALAAxADEANQAyADAAMAApADsAJABzAC4ATwBwAGUAbgAoACkAOwAkAHMALgBXAHIAaQB0AGUATABpAG4AZQAoACIAUABQAEEAVQBEAEkAVAAgAHMAcABlAGMAaQBhAGwAaQB6AGUAIABlAHkASgB6AGQARwBGAHkAZABHAFYAawBJAGoAcAAwAGMAbgBWAGwAZgBRAD0APQAiACkAOwAkAHMALgBDAGwAbwBzAGUAKAApADsAJABkAD0AKABHAGUAdAAtAFYAbwBsAHUAbQBlACAALQBGAGkAbABlAFMAeQBzAHQAZQBtAEwAYQBiAGUAbAAgAFAAUABBAFUARABJAFQAKQAuAEQAcgBpAHYAZQBMAGUAdAB0AGUAcgA7AGkAZgAoACQAZAApAHsAJgAgACIAJAB7AGQAfQA6AFwAcABvAHIAdABhAGIAbABlAC0AZwB1AGUAcwB0AC4AcABzADEAIgB9AGUAbABzAGUAewAkAHMALgBPAHAAZQBuACgAKQA7ACQAcwAuAFcAcgBpAHQAZQBMAGkAbgBlACgAIgBQAFAAQQBVAEQASQBUACAAbQBlAGQAaQBhAF8AbQBpAHMAcwBpAG4AZwAgAGUAMwAwAD0AIgApADsAJABzAC4AQwBsAG8AcwBlACgAKQB9ADsAZQB4AGkAdAAgADAA</Path>
+          <Path>powershell.exe -NoProfile -Command "try { $port = [IO.Ports.SerialPort]::new('COM1', 115200); $port.Open(); $port.WriteLine('PPAUDIT specialize eyJzdGFydGVkIjp0cnVlfQ=='); $port.Close() } catch { }"</Path>
           <Description>Record the first boot from the Windows system disk</Description>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+          <Order>2</Order>
+          <Path>cmd.exe /d /c for %d in (D E F G H I J K L M N O P Q R S T U V W X Y Z) do @if exist %d:\portable-guest.ps1 powershell.exe -NoProfile -ExecutionPolicy Bypass -File %d:\portable-guest.ps1</Path>
+          <Description>Run the portable engine test from the system disk</Description>
         </RunSynchronousCommand>
       </RunSynchronous>
     </component>

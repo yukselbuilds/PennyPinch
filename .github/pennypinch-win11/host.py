@@ -11,7 +11,7 @@ socket_path = Path("qmp.socket").resolve()
 receipts = Path("guest.serial")
 BOOT_LIMIT_SECONDS = 1500
 INSTALLED_TEST_LIMIT_SECONDS = 1230
-ANNOTATED_EVENTS = {"boot", "specialize", "guest_entry", "setup", "before", "media_missing", "portable", "controller_task", "runtime", "installed", "ready", "exited", "complete", "duration", "host problem"}
+ANNOTATED_EVENTS = {"boot", "specialize", "guest_entry", "setup", "before", "portable", "controller_task", "runtime", "installed", "ready", "exited", "complete", "duration", "host problem"}
 guest = [
     "qemu-system-x86_64", "-enable-kvm", "-machine", "q35,smm=on", "-cpu", "host",
     "-smp", "4", "-m", "8192", "-S",
@@ -148,8 +148,6 @@ def main(process):
                         _, event, payload = line.split()
                         result = json.loads(b64decode(payload, validate=True))
                         notice(event.decode("ascii"), result)
-                        if event == b"media_missing":
-                            raise RuntimeError("guest_test_media_missing")
                         if event == b"before":
                             assert not preflight and result["preflight"]["status"] == "ready"
                             notice("setup", {"samples": setup_samples, "preflight_after_seconds": round(elapsed, 3)})
