@@ -154,7 +154,7 @@ The lead agent verified the H049-b4 regression on macOS 26.7.2 ARM64. The job pa
 
 GitHub lists free standard hosted compute for public repositories. Standard Windows x64 runners use Windows Server. The standard Windows 11 desktop runner uses ARM64. Windows 11 x64 acceptance remains open. [Windows acceptance](validation/windows-install.md#open-acceptance-criteria)
 
-The Windows 10 test used a disposable KVM guest on a standard Ubuntu x64 runner. The Windows 11 x64 test uses the same runner class. The Windows 11 check needs its own test result. [Windows 10 run](https://github.com/yukselbuilds/PennyPinch/actions/runs/46030502571)
+The Windows 10 test used a disposable KVM guest on a standard Ubuntu x64 runner. The Windows 11 x64 test uses the same runner class. An earlier guest reached Windows 11 and stopped at the network check. The next run returned to the installation media and reached the boot timeout. The lead agent limited the boot key to the first launch. Read the active run before updating Windows 11 acceptance. [Current Windows 11 run](https://github.com/yukselbuilds/PennyPinch/actions/runs/46122345851) · [Windows 10 run](https://github.com/yukselbuilds/PennyPinch/actions/runs/46030502571)
 
 ### Windows release evidence
 
