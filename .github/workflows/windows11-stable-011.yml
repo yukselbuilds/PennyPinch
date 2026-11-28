@@ -33,10 +33,11 @@ jobs:
           echo '::notice title=Windows 11 media::{ "source": "Microsoft Evaluation Center", "edition": "Enterprise LTSC", "architecture": "x64" }'
           timeout 485 aria2c --dir=. --out=windows.iso --max-connection-per-server=8 --split=8 --min-split-size=32M \
             --file-allocation=none --summary-interval=0 --console-log-level=warn --connect-timeout=15 --timeout=30 --max-tries=3 \
-            --checksum=sha-256=67cec5865eaa037a72ddc633a717a10a2bed50778862223ddb9c60ef5da68 \
             'https://software-static.download.prss.microsoft.com/dbazure/888969d5-f34g-4e03-ac9d-1f9786c66749/26100.1742.240906-0331.ge_release_svc_refresh_CLIENT_LTSC_EVAL_x64FRE_en-us.iso'
           test "$(stat -c %s windows.iso)" = 5112850432
-          printf '::notice title=Windows 11 ISO SHA-256::%s\n' "$(sha256sum windows.iso | cut -d' ' -f1)"
+          iso_sha256="$(sha256sum windows.iso | cut -d' ' -f1)"
+          test "$iso_sha256" = "67cec5865eaa037a72ddc633a717a10a2bed50778862267223ddb9c60ef5da68"
+          printf '::notice title=Windows 11 ISO SHA-256::%s\n' "$iso_sha256"
           curl --silent --show-error --fail --location --retry 2 --max-time 180 --output release.zip \
             'https://github.com/yukselbuilds/PennyPinch/releases/download/v0.1.1/PennyPinch_0.1.1_Windows_x64.zip'
           curl --silent --show-error --fail --location --retry 2 --max-time 150 --output answer/webview2.exe \
