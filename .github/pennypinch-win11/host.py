@@ -13,16 +13,19 @@ INSTALLED_TEST_LIMIT_SECONDS = 1230
 ANNOTATED_EVENTS = {"boot", "guest_entry", "setup", "before", "runtime", "installed", "ready", "complete", "duration", "host problem"}
 guest = [
     "qemu-system-x86_64", "-enable-kvm", "-machine", "q35,smm=on", "-cpu", "host",
-    "-smp", "4", "-m", "8192", "-S", "-boot", "order=c,once=d",
+    "-smp", "4", "-m", "8192", "-S",
     "-global", "driver=cfi.pflash01,property=secure,value=on",
     "-drive", "if=pflash,format=raw,unit=0,file=/usr/share/OVMF/OVMF_CODE_4M.secboot.fd,readonly=on",
     "-drive", "if=pflash,format=raw,unit=1,file=firmware-vars.fd",
     "-chardev", "socket,id=chrtpm,path=tpm-control.sock",
     "-tpmdev", "emulator,id=tpm0,chardev=chrtpm", "-device", "tpm-tis,tpmdev=tpm0",
     "-display", "none", "-vga", "std", "-rtc", "base=localtime",
-    "-drive", "file=clean.qcow2,format=qcow2,index=0",
-    "-drive", "file=windows.iso,format=raw,media=cdrom,index=2,readonly=on",
-    "-drive", "file=answer.iso,format=raw,media=cdrom,index=3,readonly=on",
+    "-drive", "if=none,id=system,file=clean.qcow2,format=qcow2",
+    "-device", "ide-hd,drive=system,bus=ide.0,bootindex=0",
+    "-drive", "if=none,id=media,file=windows.iso,format=raw,media=cdrom,readonly=on",
+    "-device", "ide-cd,drive=media,bus=ide.2,bootindex=1",
+    "-drive", "if=none,id=answer,file=answer.iso,format=raw,media=cdrom,readonly=on",
+    "-device", "ide-cd,drive=answer,bus=ide.3",
     "-netdev", "user,id=nat", "-device", "e1000e,netdev=nat,id=guestnic",
     "-serial", "file:guest.serial", "-qmp", f"unix:{socket_path},server=on,wait=off",
 ]
@@ -58,6 +61,11 @@ def setup_display(stream):
         "installing windows": "installing",
         "where do you want to install windows": "disk_selection",
         "windows setup": "setup",
+        "could not install required files": "setup_files_error",
+        "windows installation failed": "setup_install_failed",
+        "your pc/device needs to be repaired": "windows_recovery",
+        "security violation": "firmware_security_violation",
+        "bdsdxe: failed": "firmware_boot_failed",
         "could not parse or process": "answer_file_error",
         "let's connect you to a network": "oobe_network",
         "sign in": "sign_in",
@@ -77,6 +85,10 @@ def setup_display(stream):
     except (RuntimeError, subprocess.SubprocessError):
         return ["diagnostic_unavailable"]
     result = sorted({value for key, value in states.items() if key in screen})
+    if "error_text" in result:
+        code = re.search(r"\b0x[0-9a-f]{8}\b", screen)
+        if code:
+            result.append(code[0])
     if "installing" in result:
         percentage = re.search(r"(\d{1,3})\s*%", screen)
         if percentage and 0 <= int(percentage[1]) <= 100:
@@ -114,7 +126,7 @@ def main(process):
                     notice(f"boot at {next_diagnostic} seconds", setup_samples[-1])
                     # A prompt after the installer restarts must time out to the installed disk.
                     if "boot_prompt" in states and elapsed < 45:
-                        qmp(stream, "human-monitor-command", **{"command-line": "sendkey ret"})
+                        qmp(stream, "send-key", keys=[{"type": "qcode", "data": "ret"}], **{"hold-time": 250})
                     next_diagnostic = next(diagnostic, float("inf"))
                 if receipts.exists():
                     raw = receipts.read_bytes()
