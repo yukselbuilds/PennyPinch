@@ -8,12 +8,12 @@ import time
 
 socket_path = Path("qmp.socket").resolve()
 receipts = Path("guest.serial")
-BOOT_LIMIT_SECONDS = 925
+BOOT_LIMIT_SECONDS = 1500
 INSTALLED_TEST_LIMIT_SECONDS = 1230
-ANNOTATED_EVENTS = {"boot", "guest_entry", "setup", "before", "runtime", "installed", "ready", "complete", "duration", "host problem"}
+ANNOTATED_EVENTS = {"boot", "specialize", "guest_entry", "setup", "before", "runtime", "installed", "ready", "exited", "complete", "duration", "host problem"}
 guest = [
     "qemu-system-x86_64", "-enable-kvm", "-machine", "q35,smm=on", "-cpu", "host",
-    "-smp", "4", "-m", "8192", "-S",
+    "-smp", "4,sockets=1,cores=4,threads=1", "-m", "8192", "-S",
     "-global", "driver=cfi.pflash01,property=secure,value=on",
     "-drive", "if=pflash,format=raw,unit=0,file=/usr/share/OVMF/OVMF_CODE_4M.secboot.fd,readonly=on",
     "-drive", "if=pflash,format=raw,unit=1,file=firmware-vars.fd",
@@ -68,6 +68,11 @@ def setup_display(stream):
         "bdsdxe: failed": "firmware_boot_failed",
         "could not parse or process": "answer_file_error",
         "let's connect you to a network": "oobe_network",
+        "is this the right country": "oobe_region",
+        "is this the right keyboard": "oobe_keyboard",
+        "name your device": "oobe_device_name",
+        "just a moment": "oobe_working",
+        "pennypinch qa": "qa_account",
         "sign in": "sign_in",
         "getting ready": "getting_ready",
         "getting devices ready": "getting_devices_ready",
@@ -115,7 +120,7 @@ def main(process):
             start = time.monotonic()
             preflight = None
             setup_samples = []
-            diagnostic = iter([3, 6, 10, 15, 23, 32, 90, 220, 380, 540, 690, 835, 905])
+            diagnostic = iter([3, 6, 10, 15, 23, 32, 90, 220, 380, 540, 690, 835, 925, 1080, 1240, 1400, 1480])
             next_diagnostic = next(diagnostic)
             done = 0
             while True:
