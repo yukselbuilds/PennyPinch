@@ -13,7 +13,7 @@ function Send-Receipt([string]$kind, $value) {
 }
 
 try {
-    Send-Receipt guest_entry @{ started = $true; phase = 'specialize' }
+    Send-Receipt guest_entry @{ started = $true; phase = 'first_logon' }
     $system = Get-CimInstance Win32_OperatingSystem
     $build = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
     $architecture = @(Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Architecture -Unique)
@@ -46,25 +46,32 @@ try {
     $directory = 'C:\PP-Verification-State'
     if (Test-Path -LiteralPath $directory) { throw 'existing_test_state' }
     $null = New-Item -ItemType Directory -Path $directory
-    $localService = [Security.Principal.SecurityIdentifier]::new('S-1-5-19')
-    $localServiceName = $localService.Translate([Security.Principal.NTAccount]).Value
-    $acl = Get-Acl -LiteralPath $directory
-    $inheritance = [Security.AccessControl.InheritanceFlags]'ContainerInherit,ObjectInherit'
-    $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($localService, 'Modify', $inheritance, 'None', 'Allow'))
-    Set-Acl -LiteralPath $directory -AclObject $acl
+    $session = (Get-Process -Id $PID).SessionId
+    if ($session -eq 0) { throw 'interactive_session_unavailable' }
+    $shellDeadline = [DateTime]::UtcNow.AddSeconds(45)
+    do {
+        $shell = Get-Process -Name explorer -ErrorAction SilentlyContinue | Where-Object SessionId -eq $session | Select-Object -First 1
+        if ($shell) { break }
+        Start-Sleep -Seconds 1
+    } while ([DateTime]::UtcNow -lt $shellDeadline)
+    if (!$shell) { throw 'interactive_shell_unavailable' }
     $stateFile = Join-Path $directory 'controller.json'
-    $script = Join-Path $PSScriptRoot 'controller.py'
+    $script = Join-Path $directory 'controller.py'
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'controller.py') -Destination $script
     $python = Join-Path $bundle 'payload\python.exe'
-    $action = New-ScheduledTaskAction -Execute $python -Argument ('-I -B -u "{0}" "{1}" "{2}"' -f $script, $bundle, $stateFile)
-    $principal = New-ScheduledTaskPrincipal -UserId $localServiceName -LogonType ServiceAccount -RunLevel Limited
+    $action = New-ScheduledTaskAction -Execute $python -WorkingDirectory $bundle -Argument ('-I -B -u "{0}" "{1}" "{2}"' -f $script, $bundle, $stateFile)
+    $principal = New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited
     $taskName = 'PennyPinchPortableVerification'
     Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal | Out-Null
     Start-ScheduledTask -TaskName $taskName
-    Send-Receipt controller_task @{ started = $true; identity = 'LocalService'; elevated = $false }
+    Send-Receipt controller_task @{ started = $true; identity = 'interactive'; elevated = $false }
     $deadline = [DateTime]::UtcNow.AddSeconds(235)
     while (!(Test-Path -LiteralPath $stateFile) -and [DateTime]::UtcNow -lt $deadline) { Start-Sleep -Seconds 1 }
     if (!(Test-Path -LiteralPath $stateFile)) {
-        $result.task_exit = (Get-ScheduledTaskInfo -TaskName $taskName).LastTaskResult
+        $info = Get-ScheduledTaskInfo -TaskName $taskName
+        $result.task_exit = $info.LastTaskResult
+        $result.task_state = [string](Get-ScheduledTask -TaskName $taskName).State
+        $result.task_has_run = $info.LastRunTime -gt [DateTime]::UtcNow.AddMinutes(-5)
         throw 'controller_receipt_missing'
     }
     $result.controller = Get-Content -LiteralPath $stateFile -Raw -Encoding UTF8 | ConvertFrom-Json

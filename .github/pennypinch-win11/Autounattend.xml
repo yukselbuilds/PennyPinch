@@ -44,11 +44,6 @@
           <Path>powershell.exe -NoProfile -Command "try { $port = [IO.Ports.SerialPort]::new('COM1', 115200); $port.Open(); $port.WriteLine('PPAUDIT specialize eyJzdGFydGVkIjp0cnVlfQ=='); $port.Close() } catch { }"</Path>
           <Description>Record the first boot from the Windows system disk</Description>
         </RunSynchronousCommand>
-        <RunSynchronousCommand wcm:action="add">
-          <Order>2</Order>
-          <Path>cmd.exe /d /c for %d in (D E F G H I J K L M N O P Q R S T U V W X Y Z) do @if exist %d:\portable-guest.ps1 powershell.exe -NoProfile -ExecutionPolicy Bypass -File %d:\portable-guest.ps1</Path>
-          <Description>Run the portable engine test from the system disk</Description>
-        </RunSynchronousCommand>
       </RunSynchronous>
     </component>
   </settings>
@@ -76,6 +71,13 @@
         <Password><Value>EPHEMERAL-PASSWORD</Value><PlainText>true</PlainText></Password>
         <Enabled>true</Enabled><LogonCount>1</LogonCount><Username>PPTest</Username>
       </AutoLogon>
+      <FirstLogonCommands>
+        <SynchronousCommand wcm:action="add">
+          <Order>1</Order>
+          <CommandLine>cmd.exe /d /c for %d in (D E F G H I J K L M N O P Q R S T U V W X Y Z) do @if exist %d:\portable-guest.ps1 powershell.exe -NoProfile -ExecutionPolicy Bypass -File %d:\portable-guest.ps1</CommandLine>
+          <Description>Verify the portable engine after first desktop sign-in</Description>
+        </SynchronousCommand>
+      </FirstLogonCommands>
     </component>
   </settings>
 </unattend>
