@@ -29,15 +29,20 @@ try {
     $architecture = @(Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Architecture -Unique)
     if ($system.BuildNumber -ne '26100' -or $system.ProductType -ne 1 -or
         $build.DisplayVersion -ne '24H2' -or !$architecture.Count -or $architecture[0] -ne 9) { throw 'incorrect_windows_target' }
-    if (@(Get-NetIPConfiguration | Where-Object IPv4DefaultGateway).Count) { throw 'guest_network_not_disconnected' }
+    $guestAdapters = @(Get-NetAdapter -Physical)
+    if ($guestAdapters.Count -ne 1) { throw 'unexpected_guest_network_adapter_count' }
+    $guestAdapter = $guestAdapters[0]
+    Disable-NetAdapter -InputObject $guestAdapter -Confirm:$false
+    if ((Get-NetAdapter -InterfaceIndex $guestAdapter.ifIndex).Status -ne 'Disabled') { throw 'guest_network_not_disabled' }
+    $networkReady = Join-Path $env:LOCALAPPDATA 'pp-clean-network-ready'
+    if (Test-Path -LiteralPath $networkReady) { throw 'existing_network_receipt' }
     if (@(Get-Command cargo,rustc,node,pnpm,py,cl,msbuild -ErrorAction SilentlyContinue).Count) { throw 'development_tools_present' }
     $priorWebView = @(Get-WebViewVersion | Sort-Object -Unique)
     $secureBoot = (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot\State' -Name UEFISecureBootEnabled).UEFISecureBootEnabled
     $tpm = Get-CimInstance -Namespace 'root/cimv2/security/microsofttpm' -ClassName Win32_Tpm
     if ($secureBoot -ne 1 -or $tpm.SpecVersion -notmatch '^2\.0') { throw 'secure_boot_or_tpm_missing' }
-    $media = @(Get-Volume | Where-Object { $_.DriveType -eq 'CD-ROM' -and $_.DriveLetter } | ForEach-Object {
-        Join-Path ($_.DriveLetter + ':') 'setup.exe'
-    } | Where-Object { (Test-Path -LiteralPath $_ -PathType Leaf) -and $_ -ine (Join-Path $PSScriptRoot 'setup.exe') })
+    $media = @(Get-Volume | Where-Object { $_.DriveType -eq 'CD-ROM' -and $_.DriveLetter -and $_.FileSystemLabel -ne 'PPAUDIT' } |
+        ForEach-Object { '{0}:\setup.exe' -f $_.DriveLetter } | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf })
     if ($media.Count -ne 1) { throw 'unexpected_iso_setup_source' }
     $signature = Get-AuthenticodeSignature -LiteralPath $media[0]
     if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'Microsoft') { throw 'iso_setup_signature_failed' }
@@ -83,6 +88,18 @@ try {
                 catch { break }
                 if ($item.event -cnotmatch '^(installed|window|start|ready|stopped|exited)$') { throw 'invalid_desktop_progress' }
                 Send-Receipt $item.event $item
+                if ($item.event -ceq 'exited') {
+                    Enable-NetAdapter -InputObject (Get-NetAdapter -InterfaceIndex $guestAdapter.ifIndex) -Confirm:$false
+                    $waitForNetwork = [DateTime]::UtcNow.AddSeconds(95)
+                    do {
+                        $network = Get-NetIPConfiguration -InterfaceIndex $guestAdapter.ifIndex -ErrorAction SilentlyContinue
+                        if ($network.NetAdapter.Status -eq 'Up' -and $network.IPv4DefaultGateway) { break }
+                        Start-Sleep -Seconds 1
+                    } while ([DateTime]::UtcNow -lt $waitForNetwork)
+                    if ($network.NetAdapter.Status -ne 'Up' -or !$network.IPv4DefaultGateway) { throw 'signed_update_network_unavailable' }
+                    [IO.File]::WriteAllText($networkReady, 'ready')
+                    $result.checks.network_ready_for_signed_update = $true
+                }
                 $sent += 1
             }
         }

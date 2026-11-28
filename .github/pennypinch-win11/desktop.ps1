@@ -280,6 +280,8 @@ $progressFile = Join-Path $env:LOCALAPPDATA 'pp-clean-progress.jsonl'
 $result = [ordered]@{ status = 'running'; phase = 'installed_window'; checks = [ordered]@{} }
 try {
     Test-Desktop
+    $result.phase = 'update_network'
+    if (!(Wait-For 105 { Test-Path -LiteralPath (Join-Path $env:LOCALAPPDATA 'pp-clean-network-ready') -PathType Leaf })) { throw 'update_network_receipt_missing' }
     . (Join-Path $PSScriptRoot 'stable-update.ps1')
     Test-StableUpdate
     $result.status = 'pass'
