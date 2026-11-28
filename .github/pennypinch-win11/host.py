@@ -112,7 +112,8 @@ def main(process):
                     states = setup_display(stream)
                     setup_samples.append({"seconds": next_diagnostic, "screen": states})
                     notice(f"boot at {next_diagnostic} seconds", setup_samples[-1])
-                    if "boot_prompt" in states:
+                    # A prompt after the installer restarts must time out to the installed disk.
+                    if "boot_prompt" in states and elapsed < 45:
                         qmp(stream, "human-monitor-command", **{"command-line": "sendkey ret"})
                     next_diagnostic = next(diagnostic, float("inf"))
                 if receipts.exists():
